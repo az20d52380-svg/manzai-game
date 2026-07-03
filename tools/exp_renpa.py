@@ -36,9 +36,9 @@ def run_dynasty(pol, seed, step, kwargs, heritage=0):
     for year in range(1, MAX_YEARS + 1):
         defending = streak > 0
         if defending:
-            line = 95 + step * streak
+            line = C.GP_FINAL_LINE + step * streak
         elif titles:
-            line = 95 + heritage * titles
+            line = C.GP_FINAL_LINE + heritage * titles
         else:
             line = None
         won, _, _ = C.run_year(pol, s, year, rng, seed_final=defending, final_line=line)
