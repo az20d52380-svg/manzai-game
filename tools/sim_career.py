@@ -89,6 +89,9 @@ TOURNAMENTS = {
 
 EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
 
+# 敗者復活の実測用カウンタ（improvement_proposals_v0.md 課題#1）
+REVIVAL_STATS = {"attempts": 0, "passes": 0}
+
 # ============================================================
 # ボット（既存のバランス型・調整型を流用）
 # キャリア用の最小補正を2点だけ加える（1年版のロジック自体は変えない）:
@@ -188,7 +191,9 @@ def run_year(pol, s, year, rng):
             if revival:                              # 敗者復活 → 通過なら同週の決勝へ
                 ok, _ = B.perform(s, GP_REVIVAL_LINE, rng)
                 acted = True
+                REVIVAL_STATS["attempts"] += 1
                 if ok:
+                    REVIVAL_STATS["passes"] += 1
                     B.add(s, "fame", GP_ROUND_FAME)
                     finalist = True
             if finalist:                             # 決勝
