@@ -156,13 +156,15 @@ def enter_tournament(s, pol, t, rng):
         B.add(s, "fame", t["fame"])
     return True
 
-def run_year(pol, s, year, rng):
-    """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。優勝=キャリア終了（勇退）"""
+def run_year(pol, s, year, rng, seed_final=False, final_line=None):
+    """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。
+    seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
     gp_stage = 0               # 次に挑む GP_ROUNDS のインデックス
-    gp_alive = True            # 今年のグランプリ挑戦が続いているか
-    finalist = False
+    gp_alive = not seed_final  # 今年のグランプリ挑戦が続いているか（王者は予選免除）
+    finalist = seed_final
     revival = False            # 準決勝敗退→敗者復活に回るか
+    line_final = GP_FINAL_LINE if final_line is None else final_line
 
     for week in range(1, B.WEEKS + 1):
         acted = False
@@ -197,7 +199,7 @@ def run_year(pol, s, year, rng):
                     B.add(s, "fame", GP_ROUND_FAME)
                     finalist = True
             if finalist:                             # 決勝
-                ok, _ = B.perform(s, GP_FINAL_LINE, rng)
+                ok, _ = B.perform(s, line_final, rng)
                 acted = True
                 if ok:
                     s.money += GP_PRIZE
