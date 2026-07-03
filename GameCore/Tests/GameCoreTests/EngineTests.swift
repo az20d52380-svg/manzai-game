@@ -73,6 +73,16 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(s2.発想, 13, accuracy: 1e-12)
     }
 
+    func testAbilityCaps() {
+        var config = GameConfig()
+        config.growthDecayD = nil   // クランプだけを見る
+        var s = GameState(config: config)
+        GameEngine.add(.ability(.センス), 500, to: &s, config: config)
+        XCTAssertEqual(s.センス, config.abilityCap, accuracy: 1e-12)   // 演技系は120
+        GameEngine.add(.ability(.メンタル), 500, to: &s, config: config)
+        XCTAssertEqual(s.メンタル, config.mentalCap, accuracy: 1e-12)  // メンタルは100
+    }
+
     func testCompatGrowthFlagAndCap() {
         var config = GameConfig()
         var s = GameState(config: config)

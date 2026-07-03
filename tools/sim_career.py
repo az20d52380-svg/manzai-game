@@ -47,16 +47,18 @@ BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 # 1回戦の実通過率16.6%はアマチュア含む数字であり、プロのコンビには易しい想定でライン30とした。
 # ------------------------------------------------------------
 
+# ラインは docs/endgame_design_v0.md の「中辛(95)」を採用（能力上限120・逓減D=120前提）。
+# 初回プレイ＝優勝なしほぼ100%だが決勝到達2〜3割、トロフィー(D解放)・相方で優勝が現実化する設計
 GP_ROUNDS = [
     # (週, ライン, ラベル)      実在対応: 開催時期 / 通過組数(2025)
     (30, 30, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
     (39, 45, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
-    (41, 55, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
-    (43, 65, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
-    (45, 75, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
+    (41, 60, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
+    (43, 72, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
+    (45, 85, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
 ]
-GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 80   # 敗者復活: 12月下旬(決勝と同週) / 約21 → 1 (5%)
-GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 85   # 決勝: 第47週固定 / 10 → 優勝1 (10%)
+GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 92   # 敗者復活: 12月下旬(決勝と同週) / 約21 → 1 (5%)
+GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 95   # 決勝: 第47週固定 / 10 → 優勝1 (10%)
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 
 GP_ROUND_FAME = 3    # GP各回戦通過の知名度上昇【仮】
@@ -96,14 +98,18 @@ EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
 #  (2) 調整型の「大会前週に体力を整える」対象週を新カレンダー（大会6種＋GP各回戦）に差し替える
 # ============================================================
 
+def _cap_of(key):
+    return B.MENTAL_CAP if key == "mental" else B.ABILITY_CAP
+
 def redirect_capped_training(s, choice):
     act, arg = choice
     if act != "train":
         return choice
-    if getattr(s, B.TRAININGS[arg]["main"][0]) < 100:
+    key = B.TRAININGS[arg]["main"][0]
+    if getattr(s, key) < _cap_of(key):
         return choice
     cands = [(getattr(s, t["main"][0]), name) for name, t in B.TRAININGS.items()
-             if t["cost"] <= s.money and getattr(s, t["main"][0]) < 100]
+             if t["cost"] <= s.money and getattr(s, t["main"][0]) < _cap_of(t["main"][0])]
     if not cands:
         return ("rest", "完全休養")   # 全能力カンスト後は休むしかない
     cands.sort()
@@ -148,7 +154,7 @@ def enter_tournament(s, pol, t, rng):
     return True
 
 def run_year(pol, s, year, rng):
-    """1年48週。優勝したら True を返す（キャリア終了＝勇退）"""
+    """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。優勝=キャリア終了（勇退）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
     gp_stage = 0               # 次に挑む GP_ROUNDS のインデックス
     gp_alive = True            # 今年のグランプリ挑戦が続いているか
@@ -191,7 +197,7 @@ def run_year(pol, s, year, rng):
                 if ok:
                     s.money += GP_PRIZE
                     B.add(s, "fame", FAME_CHAMP)
-                    return True                      # 初優勝＝勇退
+                    return True, gp_stage, True      # 初優勝＝勇退
 
         # --- 通常行動（大会がなかった週） ---
         if not acted:
@@ -211,39 +217,48 @@ def run_year(pol, s, year, rng):
             s.money -= B.LIVING_COST
         s.min_money = min(s.min_money, s.money)
 
-    return False
+    return False, gp_stage, finalist
 
 def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
-    """1キャリア。初優勝年（なければ None）を返す"""
+    """1キャリア。(初優勝年 or None, 最終状態, 最高到達回戦数0〜5, 決勝経験) を返す"""
     rng = random.Random(seed)
     s = new_state(init_ability, compat)
+    best_stage, ever_final = 0, False
     for year in range(1, YEARS + 1):
-        won = run_year(pol, s, year, rng)
+        won, stage, finalist = run_year(pol, s, year, rng)
+        best_stage = max(best_stage, stage)
+        ever_final = ever_final or finalist
         if money_log is not None:
             money_log[year - 1].append(s.money)
         if won:
-            return year, s
-    return None, s
+            return year, s, best_stage, ever_final
+    return None, s, best_stage, ever_final
 
 # ============================================================
 # 集計
 # ============================================================
 
-def run_config(pol_cls, n, init_ability=None, compat_fixed=None, track_money=False):
-    """1設定×nキャリア。compat_fixed 指定時は相性成長もOFFにする"""
+def run_config(pol_cls, n, init_ability=None, compat_fixed=None, compat_start=None, track_money=False):
+    """1設定×nキャリア。compat_fixed=成長OFFで固定 / compat_start=初期値だけ変えて成長は既定のまま"""
     saved = B.COMPAT_GROWS
     if compat_fixed is not None:
         B.COMPAT_GROWS = False
     try:
         pol = pol_cls()
         money_log = [[] for _ in range(YEARS)] if track_money else None
-        wins, finals = [], []
+        wins, finals, semi_in, final_in = [], [], 0, 0
         for i in range(n):
-            year, s = run_career(pol, BASE_SEED + i,
-                                 init_ability=init_ability, compat=compat_fixed,
-                                 money_log=money_log)
+            year, s, best_stage, ever_final = run_career(
+                pol, BASE_SEED + i,
+                init_ability=init_ability,
+                compat=compat_fixed if compat_fixed is not None else compat_start,
+                money_log=money_log)
             wins.append(year)
             finals.append(s.money)
+            if best_stage >= 4:   # 準々決勝を通過＝準決勝の舞台に立った
+                semi_in += 1
+            if ever_final:
+                final_in += 1
     finally:
         B.COMPAT_GROWS = saved
 
@@ -252,6 +267,8 @@ def run_config(pol_cls, n, init_ability=None, compat_fixed=None, track_money=Fal
     med = statistics.median((w if w is not None else YEARS + 1) for w in wins)
     return dict(name=pol.name, n=n, dist=dist, none=none, median=med,
                 none_rate=100.0 * none / n,
+                semi_rate=100.0 * semi_in / n,
+                final_rate=100.0 * final_in / n,
                 final_money=statistics.median(finals),
                 money_log=money_log)
 
@@ -260,7 +277,8 @@ def fmt_dist(r):
     cells = " ".join(f"{y}年:{100.0 * c / n:4.1f}%" for y, c in enumerate(r["dist"], 1))
     med = f"{r['median']:.0f}年目" if r["median"] <= YEARS else f">{YEARS}年(優勝なし)"
     return (f"  {r['name']:　<8}| {cells} | なし:{r['none_rate']:5.1f}%\n"
-            f"  {'':　<8}| 初優勝中央値: {med} / 優勝なし率: {r['none_rate']:.1f}% / 最終所持金中央値: {B.yen(r['final_money'])}")
+            f"  {'':　<8}| 初優勝中央値: {med} / 優勝なし率: {r['none_rate']:.1f}% / "
+            f"準決到達: {r['semi_rate']:.1f}% / 決勝到達: {r['final_rate']:.1f}% / 最終所持金中央値: {B.yen(r['final_money'])}")
 
 # ============================================================
 # メイン: 感度実験 A / B / C

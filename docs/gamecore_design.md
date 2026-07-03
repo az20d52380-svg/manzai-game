@@ -32,6 +32,7 @@ GameCore/
 | `TRAININGS` / `JOBS` / `RESTS` | `GameConfig.trainings` / `jobs` / `rests` |
 | `OFFER_MONEY` / `OFFER_EXP` / `OFFER_RATES` | `GameConfig.offerMoney` / `offerExp` / `offerRates` |
 | `W_SENSE`〜`W_CHARA` / `STAM_PEN` | `GameConfig.weight*` / `staminaPenalties` |
+| `GROWTH_DECAY_D` / `ABILITY_CAP` / `MENTAL_CAP` | `GameConfig.growthDecayD` / `abilityCap` / `mentalCap` |
 | `blur_width` / `jitsuryoku` | `GameEngine.blurWidth` / `jitsuryoku` |
 | `add` / `do_training` / `do_job` / `do_rest` / `do_offer` / `roll_offer` / `perform` | `GameEngine.add` / `applyTraining` / `applyJob` / `applyRest` / `applyOffer` / `rollOffer` / `perform` |
 | 生活費（`run_one` 末尾） | `GameEngine.applyWeekEnd` |
@@ -63,7 +64,7 @@ s = B.S()
 
 ## 【設計上の懸念】
 
-1. **成長逓減の正式採用**: `GameConfig.growthDecayD = 120` を既定にした（根拠: `docs/career_report_v1.md`）。ただし Python 側の `balance_sim.py` 本体には未組み込みで、`exp_decay.py` のパッチ注入で揃えている。逓減を正式確定したら `balance_sim.py` の `add()` に組み込み、golden 値を再生成すること。ここがズレたままだと以後の全バランス実験が実装と乖離する。
+1. **成長逓減の正式採用**: ~~Python側未組み込み~~ → **解消済み**。`balance_sim.py` v0.2 で `GROWTH_DECAY_D=120`・`ABILITY_CAP=120`・`MENTAL_CAP=100` を本体に組み込み、golden 値が変わらないことを検証済み（12週スクリプトはクランプ・逓減の境界に届かないため期待値は同一）。エンドゲーム設計は `docs/endgame_design_v0.md` を参照。
 2. **Linux環境のためSwiftビルド未検証**: この環境ではSwiftツールチェーンが取得できない（ネットワークポリシーで遮断）。Mac側で最初に `cd GameCore && swift test` を実行し、コンパイル・全テスト通過を確認してから積み上げること。GoldenTests が通れば数式同期は保証される。
 3. **enum名を日本語にした**: 稽古・バイト・休む・能力のenumケースは仕様書の日本語名をそのまま使用（`case ネタ作り` 等）。Python辞書キーとの目視対照を優先した。ローカライズや保存形式（rawValue）を考える段階で英語ID＋表示名の分離に変える可能性がある。
 

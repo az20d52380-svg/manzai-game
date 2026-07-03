@@ -16,7 +16,8 @@ public enum GameEngine {
             if let d = config.growthDecayD, amount > 0 {
                 amt = amount * max(0, 1 - s[a] / d)
             }
-            s[a] = clamp(s[a] + amt, 0, 100)
+            let cap = (a == .メンタル) ? config.mentalCap : config.abilityCap
+            s[a] = clamp(s[a] + amt, 0, cap)
         case .コンビ相性:
             if config.compatGrows {
                 s.compat = clamp(s.compat + amount, 0, config.compatCap)

@@ -16,21 +16,12 @@ import statistics
 import balance_sim as B
 import sim_career as C
 
-DECAY_CANDIDATES = (None, 150, 120, 100)   # None=逓減なし（v0と同条件）
-ABILITIES = {"sense", "idea", "expr", "chara", "mental"}
-
-_ORIG_ADD = B.add
+DECAY_CANDIDATES = (None, 150, 120, 100)   # None=逓減なし
 
 def install_decay(D):
-    """能力5種の正の上昇にのみ逓減を掛ける（体力・知名度・相性は対象外）"""
-    if D is None:
-        B.add = _ORIG_ADD
-        return
-    def add(s, key, amt):
-        if key in ABILITIES and amt > 0:
-            amt = amt * max(0.0, 1.0 - getattr(s, key) / D)
-        _ORIG_ADD(s, key, amt)
-    B.add = add
+    """逓減の強さを切り替える。balance_sim v0.2 で本体に組み込まれたため定数の差し替えだけでよい。
+    注意: docs/career_report_v1.md の数値は能力上限100時代の計測。現在は上限120なので再実行すると変わる"""
+    B.GROWTH_DECAY_D = D
 
 def show(r, extra=""):
     n = r["n"]

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-漫才師育成SLG バランス検証シミュレータ v0.1
+漫才師育成SLG バランス検証シミュレータ v0.2
+- v0.2: 成長逓減(GROWTH_DECAY_D=120)と能力上限120(メンタルのみ100)を正式組み込み
 - MVP仕様書 v1.2 の数式・数値【仮】を忠実に実装
 - 5つの戦略ボットで48週×N回を自動プレイし、§12要調整リストの当たりを付ける
 - 標準ライブラリのみ。使い方: python3 balance_sim.py [試行回数]
@@ -25,6 +26,11 @@ INIT_ABILITY    = 10       # 能力5種 一律
 COMPAT_INIT     = 5        # コンビ相性（谷口）
 COMPAT_CAP      = 20       # 【仮】相性の成長上限（成長させるか自体がTBD）
 COMPAT_GROWS    = True     # 【TBD】コンビ練習/相方と過ごす で+1
+
+# --- 成長逓減と能力上限（docs/career_report_v1.md・endgame_design_v0.md で採用。GameCoreと同期） ---
+GROWTH_DECAY_D  = 120      # 【仮】能力上昇量×(1−現在値/D)。Noneで無効。D=100まで下げると10年で優勝不能になる崖あり
+ABILITY_CAP     = 120      # 【仮】センス/発想/表現/華の上限（100→120）。Dと一致させ「成長の漸近線＝上限」とする
+MENTAL_CAP      = 100      # メンタルはブレ幅式(1−メンタル/100)に直結するため100のまま
 
 LIVING_COST     = 100_000  # 4週ごと（マイナスOK・ペナルティなし＝仕様どおり）
 LIVING_INTERVAL = 4
@@ -108,7 +114,11 @@ def add(s, key, amt):
     elif key == "fame":
         s.fame = clamp(s.fame + amt, 0, 100)
     else:
-        setattr(s, key, clamp(getattr(s, key) + amt, 0, 100))
+        # 能力5種: 成長逓減（正の上昇のみ）を掛けてから上限にクランプ
+        if GROWTH_DECAY_D and amt > 0:
+            amt = amt * max(0.0, 1 - getattr(s, key) / GROWTH_DECAY_D)
+        cap = MENTAL_CAP if key == "mental" else ABILITY_CAP
+        setattr(s, key, clamp(getattr(s, key) + amt, 0, cap))
 
 def jitsuryoku(s):
     return s.sense * W_SENSE + s.idea * W_IDEA + s.expr * W_EXPR + s.chara * W_CHARA
@@ -321,7 +331,7 @@ def yen(v):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
-    print(f"=== 漫才師育成SLG バランス検証 v0.1 | {WEEKS}週 × {n}回/戦略 | 数値は全て【仮】 ===")
+    print(f"=== 漫才師育成SLG バランス検証 v0.2 | {WEEKS}週 × {n}回/戦略 | 逓減D={GROWTH_DECAY_D} 上限{ABILITY_CAP} | 数値は全て【仮】 ===")
     print(f"通過ライン: 大阪戎{OSAKA_LINE}(第{OSAKA_WEEK}週) / GP予選{GPQ_LINE}(第{GPQ_WEEK}週) / GP決勝{GPF_LINE}(第{GPF_WEEK}週)")
     print()
     hdr = f"{'戦略':　<10}| 戎出場% | 戎通過% | GP予選% | 優勝% | 最終所持金 | 年間最低金 | 実力値 | 知名度"

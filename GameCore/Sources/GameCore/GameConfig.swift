@@ -84,9 +84,15 @@ public struct GameConfig {
     public var compatGrows = true      // 【TBD】コンビ練習/相方と過ごす で+1
 
     /// 成長逓減【仮】: 能力上昇量 × (1 − 現在値/D)。nil で逓減なし。
-    /// docs/career_report_v1.md 実験Dより D=120 を採用候補（初優勝中央値が6〜7年目に入る）。
-    /// D=100 まで下げると10年で優勝がほぼ不可能になる崖がある点に注意。
+    /// docs/career_report_v1.md・endgame_design_v0.md で正式採用（balance_sim.py GROWTH_DECAY_D と同期）。
+    /// D±1で10年優勝率が約15〜25pt動く鋭いレバー。トロフィー（才能解放）はDを+1ずつ上げる設計。
     public var growthDecayD: Double? = 120
+
+    /// 演技系4能力（センス/発想/表現/華）の上限【仮】。D と一致させ「成長の漸近線＝上限」とする。
+    /// トロフィーで D が上限を超えた分は、上限までの到達が速く・確実になる形で効く（balance_sim.py ABILITY_CAP と同期）
+    public var abilityCap = 120.0
+    /// メンタルの上限。ブレ幅式 (1−メンタル/100) に直結するため 100 のまま（balance_sim.py MENTAL_CAP と同期）
+    public var mentalCap = 100.0
 
     // --- 生活費（Python: LIVING_COST / LIVING_INTERVAL） ---
     public var livingCost = 100_000
