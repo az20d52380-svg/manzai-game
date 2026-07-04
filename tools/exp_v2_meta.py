@@ -54,10 +54,12 @@ def run_dynasty(pol, seed, step, kw):
     s = C.new_state(kw["init_ability"], kw["compat_start"])
     C.RUN_EVENTS_FIRED = set()
     streak = titles = max_streak = dry = 0
+    prev_stage = 0
     for year in range(1, MAX_YEARS + 1):
         defending = streak > 0
         line = C.GP_FINAL_LINE + step * streak if defending else None
-        won, _, _ = C.run_year(pol, s, year, rng, seed_final=defending, final_line=line)
+        won, prev_stage, _ = C.run_year(pol, s, year, rng, seed_final=defending, final_line=line,
+                                        gp_seed=(not defending and prev_stage >= 3))
         if won:
             titles += 1
             streak += 1
