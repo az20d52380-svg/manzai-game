@@ -56,24 +56,29 @@
 
 ### 解法: WeekRunner（ステップ実行機）を追加し、runYear をその上に再実装する
 
+【2026-07-04追記】WeekRunner本体は実装済み（`Sources/GameCore/WeekRunner.swift`・runYearには未接続の「追加のみ」）。実装で確定したAPI:
+
 ```swift
-// 設計仕様（実装はMacで swift test が通ってから。runYearと同一セマンティクス必須）
-public struct WeekRunner {
+public struct WeekRunner<R: RandomSource> {
     public enum Phase {
         case tournamentDecision(TournamentSpec)      // 大会週: 出る?移動手段は? → resolveTournament(travel:)
         case freeAction(offer: OfferSpec?)           // 自由週: オファー抽選済み → resolveAction(_:)
-        case gpAuto(round: Int)                      // GP回戦・決勝: 入力不要。演出後 resolveAuto()
-        case weekDone(WeekSummary)                   // 結果（UIがトースト表示に使う差分）
+        case gpRound(index: Int, name: String)       // GP回戦: 入力不要。演出後 resolveAuto()
+        case gpRevival                               // 敗者復活: 入力不要
+        case gpFinal                                 // 決勝: 入力不要（優勝なら resolveAuto() が yearDone を返す）
+        case weekDone(WeekSummary)                   // 週の結果（results=大会結果一覧・state=週末処理後）
         case yearDone(YearOutcome)
     }
-    public mutating func begin() -> Phase            // 週の開始（RNG消費はここから正典順で）
-    public mutating func resolveTournament(travel: Travel?) -> Phase
+    public private(set) var state: GameState         // 年をまたぐ時は state/rng を次の WeekRunner に渡す
+    public private(set) var rng: R
+    public mutating func begin() -> Phase            // 次の週を開始（RNG消費は正典順）
+    public mutating func resolveTournament(travel: Travel?) -> Phase   // nil=不出場
     public mutating func resolveAction(_ a: WeekAction) -> Phase
     public mutating func resolveAuto() -> Phase
 }
 ```
 
-- **正典性の担保**: `GameCareer.runYear(policy:)` を「WeekRunnerを回してpolicyに聞くだけ」に書き換える→ CareerGoldenTests（3年ビット一致）がそのままWeekRunnerの検証になる。**この書き換えはMacでgoldenが通る状態を確認してから行う**（順序: ①現状のswift test green確認 → ②WeekRunner追加とrunYear委譲 → ③再びgreen＝等価証明）
+- **正典性の担保**: `WeekRunnerGoldenTests` が CareerGoldenTests と同一の3年期待値（Python生成）でWeekRunnerを直接駆動する＝**runYearに触れずに等価証明できるテストを準備済み**。Macで両テストのgreenを確認したら、`GameCareer.runYear(policy:)` を「WeekRunnerを回してpolicyに聞くだけ」の委譲に書き換える（順序: ①swift test green確認〈CareerGolden＋WeekRunnerGolden〉 → ②runYear委譲 → ③再びgreen＝二重証明）
 - ViewModel: `@Observable final class GameSession` が WeekRunner・GameState・演出キューを持つ。View層はPhaseのswitchで描画するだけ
 - 保存: 週末ごとに GameState+進行状態をCodableでローカル保存（中断復帰）。GameState等へのCodable付与はこの段階で
 
@@ -87,8 +92,8 @@ public struct WeekRunner {
 
 ## 7. 実装順（Mac作業の推奨手順）
 
-1. `swift test` green確認（GameCore検証）
-2. WeekRunner追加 → golden再green（§5）
+1. `swift test` green確認（GameCore検証。WeekRunnerGoldenTests 含む——WeekRunner実装は済んでいるので、ここが通れば§5の等価証明も同時に完了）
+2. runYear を WeekRunner への委譲に書き換え → golden再green（§5）
 3. Xcodeプロジェクト作成（iOSアプリターゲット・GameCoreをローカルパッケージ参照）
 4. S2週メイン（プレースホルダUI）→ 1年通しでタップ可能に＝**最初の触れるビルド**
 5. S3大会（波形・講評）→ S6リザルト → S1/S4/S5

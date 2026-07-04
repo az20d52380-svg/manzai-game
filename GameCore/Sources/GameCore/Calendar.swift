@@ -67,6 +67,8 @@ public struct CalendarConfig {
 
     /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。実在準拠の週配置・ラインは docs/endgame_design_v0.md）
     public var gpRounds: [(week: Int, line: Double)] = [(30, 30), (39, 45), (41, 60), (43, 72), (45, 86)]
+    /// 回戦の表示名（Python: GP_ROUNDS のラベルと同一・UI用）
+    public var gpRoundNames = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
     public var gpFinalWeek = 47
     public var gpRevivalLine = 88.0   // 敗者復活（準決勝敗退のみ・決勝と同週）
     public var gpFinalLine = 94.0     // イベント込み正典・準決86/人気補正1.5とセットで初回優勝1.5%（2026-07-04改訂）

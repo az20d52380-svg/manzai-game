@@ -151,6 +151,111 @@ def _track_pass(s):
         RUN_TRACK["subzero_pass"] = True
 
 # ============================================================
+# 挑戦者側の「飽きられ」機構（dynasty_design_v0.md §3・既定OFF・golden非対象）
+# exp_challenger.py がONにして初回分布への影響を測る
+# ============================================================
+
+AUDIENCE_SPLIT = False    # 客層二層化: 準決まで=コア客(センス・発想の重み×K) / 決勝=お茶の間(表現・華×K)。重みは再正規化
+AUDIENCE_K     = 1.1      # 二層化の強さ【仮】（1.1で優勝率+0.8pt→係数を下げて帯内に収める。exp_challenger参照）
+BOREDOM_ON     = False    # 飽きられデバフ: 同一回戦で3年連続敗退→その回戦の実効ライン+BOREDOM_PEN（通過で解除）
+BOREDOM_PEN    = 3.0
+UPSET_ON       = False    # 波乱の年: 毎年UPSET_Pの確率でその年のGP全ライン±UPSET_DELTA
+UPSET_P        = 1.0 / 6.0
+UPSET_DELTA    = 3.0
+RUN_BOREDOM    = None     # {回戦idx: 連続敗退数} run_careerが管理
+CHALLENGER_STATS = {"boredom_applied": 0, "upset_years": 0}
+
+def _gp_perform(s, line, rng, final):
+    """GP本番。AUDIENCE_SPLIT時のみ重み替えで再計算（OFFならB.performと完全同値）"""
+    if not AUDIENCE_SPLIT:
+        return B.perform(s, line, rng)
+    if final:
+        w = ((s.sense, B.W_SENSE), (s.idea, B.W_IDEA), (s.expr, B.W_EXPR * AUDIENCE_K), (s.chara, B.W_CHARA * AUDIENCE_K))
+    else:
+        w = ((s.sense, B.W_SENSE * AUDIENCE_K), (s.idea, B.W_IDEA * AUDIENCE_K), (s.expr, B.W_EXPR), (s.chara, B.W_CHARA))
+    tot = sum(wt for _, wt in w)
+    jitsu = sum(v * wt for v, wt in w) / tot
+    b = B.blur_width(s.mental)
+    roll = rng.uniform(-b, b)
+    pen = 0
+    for th, p in B.STAM_PEN:
+        if s.stamina < th:
+            pen = p
+            break
+    return jitsu + s.compat + roll + pen >= line, 0.0
+
+# ============================================================
+# ネタ資産層（neta_system_design_v0.md §6・既定OFF・golden非対象）
+# ボットは「2本を作って磨く」最小戦略（実プレイヤーの4枠運用の下位近似）
+# ============================================================
+
+NETA_ON          = False
+NETA_CREATE_COMP = 30.0    # 新ネタの初期完成度
+NETA_WRITE_GAIN  = 8.0     # ネタ作り=改稿
+NETA_STAGE_GAIN  = 12.0    # ネタ見せ会=劇場で試す
+NETA_STAGE_FRESH = -2.0
+NETA_LIVE_FRESH  = 5.0     # フリーライブ=客前で寝かせる
+NETA_USE_FRESH   = -10.0   # 大会で掛ける【仮】
+NETA_COEF_COMP   = 0.04    # 完成度係数【採用値】。設計初期値0.06は優勝率+1.2ptの易化→0.04で帯内（exp_neta参照）
+NETA_COEF_FRESH  = 0.02
+NETA_CLAMP       = 5.0
+NETA_SECOND_PEN  = 3.0     # 決勝2本目の完成度60未満ペナルティ
+NETA_RANDOM_PICK = False   # 計測C: ネタ選択をランダム化（プレイヤースキル寄与の測定）
+
+def _neta_new():
+    return dict(comp=NETA_CREATE_COMP, fresh=100.0, used=set())
+
+def _neta_bonus(n, series):
+    comp_part = (n["comp"] - 50) * NETA_COEF_COMP
+    if series in n["used"]:
+        comp_part *= 0.5   # 同一大会系統への再投入は完成度補正半減（審査員は覚えている）
+    bonus = comp_part + (n["fresh"] - 50) * NETA_COEF_FRESH
+    return max(-NETA_CLAMP, min(NETA_CLAMP, bonus))
+
+def _neta_pick(s, series, rng):
+    if not getattr(s, "netas", None):
+        return None
+    if NETA_RANDOM_PICK:
+        return rng.choice(s.netas)
+    return max(s.netas, key=lambda n: _neta_bonus(n, series))
+
+def _neta_use(n, series):
+    n["used"].add(series)
+    n["fresh"] = max(0.0, n["fresh"] + NETA_USE_FRESH)
+
+def _neta_on_train(s, arg):
+    """稽古行動をネタ資産に接続（能力効果は従来どおり併存）"""
+    if arg == "ネタ作り":
+        if len(s.netas) < 2:
+            s.netas.append(_neta_new())
+        else:
+            n = min(s.netas, key=lambda x: x["comp"])
+            n["comp"] = min(100.0, n["comp"] + NETA_WRITE_GAIN)
+    elif arg == "ネタ見せ会" and s.netas:
+        n = max(s.netas, key=lambda x: x["comp"])
+        n["comp"] = min(100.0, n["comp"] + NETA_STAGE_GAIN)
+        n["fresh"] = max(0.0, n["fresh"] + NETA_STAGE_FRESH)
+    elif arg == "フリーライブ" and s.netas:
+        n = min(s.netas, key=lambda x: x["fresh"])
+        n["fresh"] = min(100.0, n["fresh"] + NETA_LIVE_FRESH)
+
+def _neta_line_adj(s, series, rng, final=False):
+    """大会の実効ラインへの調整量（=−ネタ補正。決勝は2本制チェック込み）。ネタ消費も行う"""
+    if not NETA_ON:
+        return 0.0
+    n = _neta_pick(s, series, rng)
+    if n is None:
+        return NETA_SECOND_PEN if final else 0.0   # ネタ0本で決勝は2本目ペナルティ相当
+    adj = -_neta_bonus(n, series)
+    _neta_use(n, series)
+    if final:
+        others = [x for x in s.netas if x is not n]
+        second = max(others, key=lambda x: x["comp"]) if others else None
+        if second is None or second["comp"] < 60:
+            adj += NETA_SECOND_PEN   # 「2本目がなかった」敗因
+    return adj
+
+# ============================================================
 # ボット（既存のバランス型・調整型を流用）
 # キャリア用の最小補正を2点だけ加える（1年版のロジック自体は変えない）:
 #  (1) 選んだ稽古の主効果が上限100に達していたら、主効果が最も低い稽古に差し替える
@@ -198,6 +303,8 @@ def new_state(init_ability=None, compat=None):
         s.sense = s.idea = s.expr = s.chara = s.mental = float(init_ability)
     if compat is not None:
         s.compat = float(compat)
+    if NETA_ON:
+        s.netas = [_neta_new()]   # 結成時の初ネタ1本
     return s
 
 def enter_tournament(s, pol, t, rng):
@@ -210,11 +317,14 @@ def enter_tournament(s, pol, t, rng):
         B.add(s, "stamina", tr["stam"])
         if RUN_TRACK is not None and tr is B.BUS:
             RUN_TRACK["bus"] = RUN_TRACK.get("bus", 0) + 1
-    ok, _ = B.perform(s, t["line"], rng)
+    line = t["line"] + _neta_line_adj(s, t["name"], rng)
+    ok, _ = B.perform(s, line, rng)
     if ok:
         s.money += t["prize"]
         B.add(s, "fame", t["fame"])
         _track_pass(s)
+        if RUN_BOREDOM is not None:
+            RUN_BOREDOM.clear()   # 飽きられ解除(b): 他大会での優勝＝再評価（dynasty §3-2）
     return True, ok
 
 def run_year(pol, s, year, rng, seed_final=False, final_line=None):
@@ -229,6 +339,10 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
     finalist = seed_final
     revival = False            # 準決勝敗退→敗者復活に回るか
     line_final = GP_FINAL_LINE if final_line is None else final_line
+    upset = 0.0                # 波乱の年（dynasty §3）: その年のGP全ラインを揺らす
+    if UPSET_ON and rng.random() < UPSET_P:
+        upset = UPSET_DELTA if rng.random() < 0.5 else -UPSET_DELTA
+        CHALLENGER_STATS["upset_years"] += 1
 
     for week in range(1, B.WEEKS + 1):
         acted = False
@@ -246,22 +360,35 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
         # --- グランプリ各回戦（東京・遠征不要・毎年1回戦からエントリー【仮】） ---
         if not acted and gp_alive and gp_stage < len(GP_ROUNDS) and week == GP_ROUNDS[gp_stage][0]:
             _, line, _ = GP_ROUNDS[gp_stage]
-            ok, _ = B.perform(s, line, rng)
+            line += upset
+            if BOREDOM_ON and RUN_BOREDOM is not None and RUN_BOREDOM.get(gp_stage, 0) >= 3:
+                line += BOREDOM_PEN                  # 飽きられ: 同じ壁に3年連続で跳ね返された翌年から
+                CHALLENGER_STATS["boredom_applied"] += 1
+            line += _neta_line_adj(s, f"GP{year}", rng)
+            ok, _ = _gp_perform(s, line, rng, final=False)
             acted = True
             if ok:
+                if RUN_BOREDOM is not None:
+                    RUN_BOREDOM[gp_stage] = 0        # 壁を越えたら既視感リセット
                 B.add(s, "fame", GP_ROUND_FAME)
                 _track_pass(s)
                 gp_stage += 1
                 if gp_stage == len(GP_ROUNDS):
                     finalist = True
             else:
+                if RUN_BOREDOM is not None:          # 「同一回戦で連続」のみ数える
+                    for k in list(RUN_BOREDOM):
+                        if k != gp_stage:
+                            RUN_BOREDOM[k] = 0
+                    RUN_BOREDOM[gp_stage] = RUN_BOREDOM.get(gp_stage, 0) + 1
                 if gp_stage == len(GP_ROUNDS) - 1:   # 準決勝敗退のみ敗者復活へ
                     revival = True
                 gp_alive = False                     # 落ちたら今年の挑戦終了（翌年また1回戦から）
 
         if week == GP_FINAL_WEEK:
-            if revival:                              # 敗者復活 → 通過なら同週の決勝へ
-                ok, _ = B.perform(s, GP_REVIVAL_LINE, rng)
+            if revival:                              # 敗者復活 → 通過なら同週の決勝へ（客層はお茶の間=視聴者投票想定）
+                rev_line = GP_REVIVAL_LINE + upset + _neta_line_adj(s, f"GP{year}", rng)
+                ok, _ = _gp_perform(s, rev_line, rng, final=True)
                 acted = True
                 REVIVAL_STATS["attempts"] += 1
                 if ok:
@@ -272,8 +399,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                         RUN_TRACK["revival_pass"] = True
                     finalist = True
             if finalist:                             # 決勝（人気補正＝機微はここだけ効く）
-                eff_line = line_final - FAME_FINAL_BONUS * (s.fame - 50) / 50
-                ok, _ = B.perform(s, eff_line, rng)
+                eff_line = line_final + upset - FAME_FINAL_BONUS * (s.fame - 50) / 50
+                eff_line += _neta_line_adj(s, f"GP決勝{year}", rng, final=True)
+                ok, _ = _gp_perform(s, eff_line, rng, final=True)
                 acted = True
                 if ok:
                     s.money += GP_PRIZE
@@ -300,8 +428,11 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
             if act == "train":
                 if not B.do_training(s, arg):
                     B.do_rest(s, "完全休養")
-                elif RUN_TRACK is not None:
-                    RUN_TRACK["trains"] = RUN_TRACK.get("trains", 0) + 1
+                else:
+                    if NETA_ON:
+                        _neta_on_train(s, arg)
+                    if RUN_TRACK is not None:
+                        RUN_TRACK["trains"] = RUN_TRACK.get("trains", 0) + 1
             elif act == "job":
                 B.do_job(s, arg)
             elif act == "offer" and offer:
@@ -332,11 +463,13 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
 
 def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     """1キャリア。(初優勝年 or None, 最終状態, 最高到達回戦数0〜5, 決勝経験) を返す"""
-    global RUN_EVENTS_FIRED
+    global RUN_EVENTS_FIRED, RUN_BOREDOM
     rng = random.Random(seed)
     s = new_state(init_ability, compat)
     if EVENTS_ON:
         RUN_EVENTS_FIRED = set()
+    if BOREDOM_ON:
+        RUN_BOREDOM = {}
     best_stage, ever_final = 0, False
     for year in range(1, YEARS + 1):
         won, stage, finalist = run_year(pol, s, year, rng)
