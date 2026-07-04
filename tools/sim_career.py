@@ -117,6 +117,8 @@ INJURY_MENTAL  = -5.0   # ダウン時のメンタル打撃【仮】
 INJURY_ABILITY = 0.0    # ダウン時のランダム演技能力の低下量（重症変種の比較用）【仮】
 STAMINA_GATE   = None   # 例 20.0: 体力がこの値未満だと稽古を選べない（ハードゲート方式の比較用・選択は休養に差し替え）
 CAP_CURVE      = None   # (基準, 傾き, 下限): その年の年間成長上限 = max(下限, 基準−傾き×(年−1))。正典v2の年齢カーブ（human_calibration §5）
+CAREER_BUDGET  = False  # Trueで成長予算をキャリア累計化（年初リセットせず、CAP_CURVEの累計が上限。初期能力ボーナスは予算の前借り＝canonical_v2_spec §2-B）
+GROWTH_END_YEAR = 15    # 成長が完成する結成年数（GP挑戦資格15年のloreと一致）【仮】
 # (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
 EVENT_TABLE = [
     (0,  10, 0, None, 0),          # 廃棄弁当/班長の弁当
@@ -311,6 +313,8 @@ def new_state(init_ability=None, compat=None):
     s = B.S()
     if init_ability is not None:
         s.sense = s.idea = s.expr = s.chara = s.mental = float(init_ability)
+        if CAREER_BUDGET and init_ability > B.INIT_ABILITY:
+            s._yg = float(init_ability - B.INIT_ABILITY)   # 初期ボーナスは成長予算の前借り（実力値換算・重み合計1.0）
     if compat is not None:
         s.compat = float(compat)
     if NETA_ON:
@@ -343,8 +347,16 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
     s.stamina = 100.0          # 体力のみ年初に全回復
     if CAP_CURVE is not None:
         base, slope, floor = CAP_CURVE
-        B.YEAR_GROWTH_CAP = max(floor, base - slope * (year - 1))   # 年齢カーブ型上限【実験】
-    if B.YEAR_GROWTH_CAP is not None:
+        if CAREER_BUDGET:
+            # キャリア累計予算: 結成からの成長総量に天井（初期ボーナスは前借り済み・_ygはリセットしない）
+            B.YEAR_GROWTH_CAP = sum(max(floor, base - slope * (k - 1))
+                                    for k in range(1, min(year, GROWTH_END_YEAR) + 1))
+            if not hasattr(s, "_yg"):
+                s._yg = 0.0
+        else:
+            B.YEAR_GROWTH_CAP = max(floor, base - slope * (year - 1))   # 年齢カーブ型上限【実験】
+            s._yg = 0.0
+    elif B.YEAR_GROWTH_CAP is not None:
         s._yg = 0.0            # 年間成長上限の年初リセット【実験】
     if RUN_TRACK is not None:
         RUN_TRACK["year_wins"] = []
