@@ -3,6 +3,7 @@
 - 日付: 2026-07-05
 - 位置づけ: human_calibration_v0.md（発見と決定の経緯）・rule_holes_v0.md（生活ルール）で確定した**正典v2の全採用値を1枚に集約**し、旧正典からの移行手順を固定する。実装の参照はまず本書。数値は全て【仮】（§4の検証状況を併記）。
 - 設定ヘルパ: `tools/canon_v2.py`（simでv2一式を再現する唯一の入口。実験は必ずこれを経由）
+- **大会ライン等の数値は本書 canonical_v2 が唯一の正典**（準決74/決勝80・敗者復活=決勝−4・王者ライン=決勝80+2×連覇・成長上限=max(2.0, 6.0−0.4×(年−1))キャリア累計）。他ドキュメントと矛盾する数値は本書を優先し、旧値は履歴として扱う。
 
 ## 1. 採用値一覧
 
@@ -80,7 +81,7 @@
 4. ✅ gen_golden正典順序の改訂＋golden再生成（新規rng消費: perform=2draw〈出来ブレ→ハマ〉・体調ダウン判定1draw。docstringに全順序を明記）
 5. ✅ GameCore同期（GameConfig/GameState/GameEngine/Calendar/Career/WeekRunner。夜逃げは YearOutcome.bankrupt）
 6. ✅ CareerGoldenTestsのデータ再生成（WeekRunnerGoldenTestsは同一データ参照で自動追従・12週GoldenTestsは上限非発動域のため不変で有効）。**sim_career.run_year ⇔ gen_golden複製ループの3年ビット一致をクロス検証済み**
-7. ✅ master_spec の背骨数値をv2化・検証台帳に移行注記（2026-07-05）
+7. ◐ 部分（master_spec の大会ライン/王者ライン/成長の各行に v2読替の行内注記を挿入済み〈サイクルC1・2026-07-05〉・純v2化への数値表本体の書き換えは今後）
 8. ✅ 影響ドキュメント10本に「正典v2移行」バナーを一括挿入（数値は旧正典の履歴として保存・設計結論は有効の明記。個別の数値書き換えはしない方針を採用）
 9. ✅ **Macで swift test【2026-07-04 green】**（実機Swift 6.3.3で**17テスト全通過**: CareerGolden 1・CareerLogic 4・Engine 9・Golden 1・WeekRunnerGolden 2。Python⇔Swiftの乱数列ビット一致を実機で証明＝正典v2大改修の検証が完結。※CLT単体にXCTestが無く `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` でXcodeツールチェーン指定が必要だった）
 
@@ -92,7 +93,7 @@
 | 項目 | 状態 |
 |---|---|
 | 成長収束・縮退戦略の閉鎖・生活ルール無害性 | ✅実測（human_calibration / rule_holes） |
-| ハマった夜による決勝特別化 | ✅実測（準決76/決勝82で分散型0.7%・到達29%） |
+| ハマった夜による決勝特別化 | ✅実測（準決76/決勝82で分散型0.7%・到達29%）※76/82は旧測定・最終アンカーは74/80。74/80での確定到達率へ一本化予定（concerns_register・Fable検証待ち）。§2の43.5%とは測定ライン差につき二重状態を flag |
 | 最終アンカー | ✅確定（準決74/決勝80・エントリー費・シード制込みで再確認） |
 | トロフィー・相方・王者編・稽古+1特典のv2再スキャン | ✅実測（§2-B） |
 | MVP 1年版のv2体感（上限6.0で48週の伸び） | ⛔未（フリップ後にbalance_sim単体で確認） |
