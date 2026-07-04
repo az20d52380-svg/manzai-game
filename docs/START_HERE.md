@@ -27,10 +27,10 @@ cd GameCore && swift test
 
 ## 次にやること（red_team_v0.md §4 のトリアージ順）
 
-1. swift test 緑化（上記）
-2. **裏天井の設計＋sim較正**（初回の保証弁。決勝未到達のまま晩年でハマ率累積。`tools/exp_v2_anchor.py`の枠で帯維持を確認）
-3. 決勝敗北時の「優勝者指名」演出（ライバル名鑑接続。判定は絶対ラインのまま表示だけ相対化）
-4. 成長上限の可視化（谷口の台詞化・`docs/ui_design_v0.md`改訂）
+1. ✅ swift test 緑化（2026-07-04 green）
+2. **裏天井の設計＋sim較正**（初回の保証弁。決勝未到達のまま晩年でハマ率累積。`tools/exp_v2_anchor.py`の枠で帯維持を確認）← **Fable待ちの本命**
+3. ✅ 決勝敗北時の「優勝者指名」演出＝**設計完了**（`finals_direction_v0.md §4-D`。名鑑接続・判定は絶対ラインのまま表示だけ相対化）※コード実装は後
+4. ✅ 成長上限の可視化＝**設計完了**（`ui_design_v0.md §2-B`。谷口の台詞化＋メンタル/相性/知名度の別出口設計）※コード実装は後
 5. runYear→WeekRunner委譲（ui_design §5。golden緑の確認後）＋ GameStateのCodable化・中断復帰
 6. Xcodeプロジェクト作成→S2週メインから触れるビルド（ui_design §7）
 
