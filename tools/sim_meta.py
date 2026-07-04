@@ -8,6 +8,9 @@
   (2) GP挑戦資格「結成15年以内」【仮】の影響（王座陥落後の返り咲き期限）
   (3) 事務所モディファイアのEV中立性（agency_fanbase_design_v0.md §4-1）
 - 人脈Pの獲得式・ティア解放閾値は本ファイルが初出の【仮】設計。結果を見て調整する
+- 【正典v2化 2026-07-05】トロフィー=成長上限カーブ+0.02×pt/年（D加算から置換）・王者の特権（初優勝後は
+  成長期限15年を解除）・王者STEP=2・相方ティア再価格(SSR=相性上限+4)・シード制・イベント層ON・
+  プレイヤー原型ボット(やり込み=分散稽古型/のんびり改)で計測。canonical_v2_spec.md 参照
 - 使い方: python3 sim_meta.py [フランチャイズ数]   （省略時 400）
 """
 
@@ -18,15 +21,17 @@ import sys
 
 import balance_sim as B
 import sim_career as C
+from exp_human import PCasual2
+from exp_human_fix import PSpread
 
 RUNS          = 12    # 追う周回数
 GP_YEAR_LIMIT = 15    # 【仮】挑戦者としてのGP出場は結成15年以内（実在準拠）。王者防衛は対象外
-STEP          = 5     # 王者ライン = 決勝ライン + STEP×連覇数（dynasty_design_v0.md）
+STEP          = 2     # 【正典v2】王者ライン = 決勝ライン + STEP×連覇数（canonical_v2_spec §2-B）
 MAX_YEARS     = 25
 TROPHY_CAP    = 30    # 才能ポイント総枠（trophy_design_v1.md）
 
-# 相方ティア: (名前, 相性初期値, 相性上限)
-TIERS = [("N", 5.0, 20.0), ("R", 10.0, 22.0), ("SR", 15.0, 25.0), ("SSR", 20.0, 30.0)]
+# 相方ティア: (名前, 相性初期値, 相性上限)【正典v2再価格: SSR=+4。canonical_v2_spec §2-B】
+TIERS = [("N", 5.0, 20.0), ("R", 10.0, 21.0), ("SR", 15.0, 22.0), ("SSR", 20.0, 24.0)]
 TIER_THRESHOLDS = [0, 60, 140, 260]   # 旧・閾値解放モデル（GACHA_MODE=Falseで再現用に残置）
 
 # 【v0.2】B案確定に伴う名鑑所有モデル（monetization_decision_v0.md §7）
@@ -72,16 +77,25 @@ TOURNAMENT_TROPHY = {
     "大阪戎コンクール": "戎の福", "若手限定賞": "五年目の全力", "推薦制中堅賞": "選ばれる側へ",
 }
 
-def run_meta_career(pol, seed, D, tier, allow_dynasty=True):
-    """1キャリア。allow_dynasty=False なら初優勝で勇退（王者編未解禁）"""
+BASE_CURVE = C.CAP_CURVE
+LIFT_PER_PT = 0.02   # トロフィー1pt = 成長上限カーブ+0.02/年【正典v2】
+
+def run_meta_career(pol, seed, pts, tier, allow_dynasty=True):
+    """1キャリア。allow_dynasty=False なら初優勝で勇退（王者編未解禁）。
+    pts=トロフィー累計（才能解放=上限カーブの持ち上げ）。初優勝で成長期限が解除（王者の特権）"""
     _, start, cap = tier
-    B.GROWTH_DECAY_D = D
+    lift = LIFT_PER_PT * pts
+    C.CAP_CURVE = (BASE_CURVE[0] + lift, BASE_CURVE[1], BASE_CURVE[2] + lift)
+    C.GROWTH_END_YEAR = 15
     B.COMPAT_CAP = cap
     rng = random.Random(seed)
     s = C.new_state(compat=start)
+    if C.EVENTS_ON:
+        C.RUN_EVENTS_FIRED = set()
     C.RUN_TRACK = track = {}
     streak = titles = max_streak = comebacks = dry = 0
     first, reached_final, best_stage, years = None, False, 0, 0
+    prev_stage = 0
     for year in range(1, MAX_YEARS + 1):
         years = year
         defending = streak > 0
@@ -89,9 +103,10 @@ def run_meta_career(pol, seed, D, tier, allow_dynasty=True):
             won, stage, fin = C.run_year(pol, s, year, rng, seed_final=True,
                                          final_line=C.GP_FINAL_LINE + STEP * streak)
         elif year <= GP_YEAR_LIMIT:
-            won, stage, fin = C.run_year(pol, s, year, rng)
+            won, stage, fin = C.run_year(pol, s, year, rng, gp_seed=(prev_stage >= 3))
         else:
             break                          # 挑戦資格切れ・無冠（元王者含む）は勇退【仮】
+        prev_stage = stage
         best_stage = max(best_stage, stage)
         reached_final = reached_final or fin
         if won:
@@ -102,6 +117,7 @@ def run_meta_career(pol, seed, D, tier, allow_dynasty=True):
             max_streak = max(max_streak, streak)
             if first is None:
                 first = year
+            C.GROWTH_END_YEAR = MAX_YEARS  # 王者の特権: 成長期限の解除【正典v2】
             dry = 0
             if not allow_dynasty:
                 break                      # 王者編未解禁: 初優勝で勇退
@@ -177,7 +193,7 @@ def run_franchise(pol_cls, fseed):
             tier_idx = max(TIER_OF[c[:-1]] for c in owned)
         else:
             tier_idx = max(i for i, th in enumerate(TIER_THRESHOLDS) if meta["jinmyaku"] >= th)
-        res = run_meta_career(pol, fseed * 1000 + run, 120 + pts, TIERS[tier_idx],
+        res = run_meta_career(pol, fseed * 1000 + run, pts, TIERS[tier_idx],
                               allow_dynasty=(pts >= DYNASTY_GATE_PT))
         meta["bus_total"] += res["track"].get("bus", 0)
         meta["train_total"] += res["track"].get("trains", 0)
@@ -190,10 +206,10 @@ def run_franchise(pol_cls, fseed):
     return log, earned
 
 def meta_section(n):
-    print(f"== メタ周回（{RUNS}周×{n}フランチャイズ・GP挑戦資格{GP_YEAR_LIMIT}年・王者STEP={STEP}） ==")
-    saved = dict(GROWTH_DECAY_D=B.GROWTH_DECAY_D, COMPAT_CAP=B.COMPAT_CAP)
+    print(f"== メタ周回（{RUNS}周×{n}フランチャイズ・GP挑戦資格{GP_YEAR_LIMIT}年・王者STEP={STEP}・正典v2） ==")
+    saved = dict(CAP_CURVE=C.CAP_CURVE, GROWTH_END_YEAR=C.GROWTH_END_YEAR, COMPAT_CAP=B.COMPAT_CAP)
     try:
-        for cls in C.BOTS:
+        for cls in (PSpread, PCasual2):
             logs, earneds = [], []
             for f in range(n):
                 log, earned = run_franchise(cls, C.BASE_SEED + f)
@@ -215,8 +231,9 @@ def meta_section(n):
             rare = sorted(counts.items(), key=lambda x: x[1])[:5]
             print("  12周後の未取得が多い順:", " / ".join(f"{nm} {100.0 * c / n:.0f}%" for nm, c in rare))
     finally:
-        for k, v in saved.items():
-            setattr(B, k, v)
+        C.CAP_CURVE = saved["CAP_CURVE"]
+        C.GROWTH_END_YEAR = saved["GROWTH_END_YEAR"]
+        B.COMPAT_CAP = saved["COMPAT_CAP"]
 
 # --- 事務所EV検証（初回キャリア・2000回） ---
 
@@ -229,6 +246,7 @@ AGENCIES = {
     "気楽舎":           dict(income_mult=1.2, rate_mult=0.90),
     "太陽プロ":         dict(income_mult=1.1, rate_mult=1.05),
     "白虎堂":           dict(rate_mult=0.90, butai_stam=-20),
+    "白虎堂(新特典案)":  dict(rate_mult=0.90, train_bonus=1),   # v2で稽古+1が無害化(テンポ特典化)したため解禁候補
     "果林カンパニー":   dict(income_mult=1.3),
     "フリー":           dict(income_mult=2.0, rate_mult=0.75, butai_cost=100_000),
 }
@@ -277,7 +295,8 @@ def agency_section(n):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 400
-    print(f"=== メタ周回検証 v0 | シード{C.BASE_SEED} | 数値は全て【仮】 ===")
+    C.EVENTS_ON = True   # 正典v2の計測条件（イベント層込み）
+    print(f"=== メタ周回検証 v2 | シード{C.BASE_SEED} | 決勝{C.GP_FINAL_LINE} | 数値は全て【仮】 ===")
     print()
     meta_section(n)
     print()
