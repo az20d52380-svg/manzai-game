@@ -27,7 +27,7 @@ struct GoldenPolicy: WeekPolicy {
 
 final class CareerGoldenTests: XCTestCase {
 
-    // gen_golden.py seed=424242 / 決勝93(人気補正1.5込み) 復活88 / D=120 上限120
+    // gen_golden.py seed=424242 / 準決86 決勝94(人気補正1.5込み) 復活88 / D=120 上限120（イベント層はgolden対象外・既定OFF）
     // (year, week, money, stamina, fame, sense, idea, expr, chara, mental, compat)
     static let year1: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double)] = [
         (1, 1, 300000, 80.0, 3, 10.916666666666666, 12.75, 10, 10, 10, 5),

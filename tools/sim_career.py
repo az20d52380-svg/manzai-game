@@ -49,17 +49,18 @@ BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 
 # ラインは docs/endgame_design_v0.md 採用値（能力上限120・逓減D=120前提）。
 # 初回プレイ＝優勝率1%前後（「普通にやったら優勝できちゃうのが1%くらい」）・決勝到達2〜3割、
-# トロフィー(D解放)・相方で優勝が現実化する設計。決勝93+人気補正1.5(実効91.5)・復活88（2026-07-04改訂）
+# トロフィー(D解放)・相方で優勝が現実化する設計。正典バランスは【イベント層ON】で計測:
+# 準決86・決勝94+人気補正1.5(実効92.5)・復活88 → 初回優勝1.5%・決勝到達25〜35%（2026-07-04改訂）
 GP_ROUNDS = [
     # (週, ライン, ラベル)      実在対応: 開催時期 / 通過組数(2025)
     (30, 30, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
     (39, 45, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
     (41, 60, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
     (43, 72, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
-    (45, 85, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
+    (45, 86, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
 ]
 GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 88   # 敗者復活: 12月下旬(決勝と同週) / 約21 → 1 (5%)
-GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 93   # 決勝: 第47週固定。人気補正1.5とセットで実効91.5前後（2026-07-04改訂）
+GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 94   # 決勝: 第47週固定。イベント込み正典で優勝1.5%（準決86とセット・2026-07-04改訂）
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 
 FAME_FINAL_BONUS = 1.5  # 決勝のみの人気補正【確定・機微】: 実効ライン = ライン − 1.5×(知名度−50)/50。judge_design §10-F
@@ -96,6 +97,48 @@ REVIVAL_STATS = {"attempts": 0, "passes": 0}
 
 # 周回トロフィー判定用の計測フック（sim_meta.py が dict を差して有効化。None なら計測しない）
 RUN_TRACK = None
+
+# ============================================================
+# 突発イベント層（event_design_v0/v1・dialogue_batch2 の数値効果を代表近似）
+# 既定OFF: ベースライン・golden生成には影響しない。exp_events.py がONにして分布への影響を測る
+# ============================================================
+
+EVENTS_ON   = False
+RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（run_careerが管理）
+EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
+# (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
+EVENT_TABLE = [
+    (0,  10, 0, None, 0),          # 廃棄弁当/班長の弁当
+    (0,   5, 0, "idea", 1),        # 百円パスタの発明
+    (0,  20, 0, None, 0),          # 先輩の焼肉（相性+1は近似で省略）
+    (0, -20, 0, None, 0),          # 流行り風邪/労働のギックリ
+    (0,   0, 2, "mental", 2),      # 伝説の出待ち
+    (0,   0, 0, "sense", 2),       # 楽屋の神様
+    (0,   0, 3, None, 0),          # 切り抜きバズ（減衰は省略）
+    (0,   0, 2, "idea", 1),        # 深夜ラジオ採用
+    (30_000, 0, 0, None, 0),       # シフトの恩人
+    (0,   0, 0, "mental", -3),     # 同期の解散（発想+2とセット）
+    (0,   0, 0, "idea", 2),        # 対バンの化け物/夜勤明けの発明
+    (10_000, 0, 1, None, 0),       # 財布を拾う/福引き係
+    (0,   0, 0, "mental", 2),      # 占い師/銭湯の常連
+    (-20_000, 0, 0, "chara", 2),   # 古着屋の衣装（ミニ二択の採択側近似）
+    (-8_000, -10, 0, "idea", 2),   # 先輩の飲み
+    (-5_000, 0, 0, None, 0),       # 谷口の誕生日（相性+2は近似で省略）
+    (0, -10, 0, "expr", 2),        # 照明さんの雑談
+    (0,   5, 0, "mental", 1),      # 常連のおばあちゃん
+]
+# 季節催事（週固定・毎年）
+SEASONAL = {1: (0, 10, 0, None, 0), 26: (0, 0, 0, "mental", 2)}
+
+def _apply_event(s, ev):
+    dm, dst, df, key, dab = ev
+    s.money += dm
+    if dst:
+        B.add(s, "stamina", dst)
+    if df:
+        B.add(s, "fame", df)
+    if key:
+        B.add(s, key, dab)
 
 def _track_pass(s):
     """回戦・大会を通過した瞬間の状態記録（満身創痍/どん底トロフィー用）"""
@@ -244,6 +287,14 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
         # --- 通常行動（大会がなかった週） ---
         if not acted:
             offer = B.roll_offer(s, rng)
+            if EVENTS_ON and offer is not None and s.fame < 20:
+                # 変な仕事テーブル（下積み期はまともなオファーの代わりに変な誘い）: 受けると小銭と話のタネ
+                offer = None
+                s.money += 25_000
+                B.add(s, "stamina", -15)
+                B.add(s, rng.choice(["idea", "chara", "expr"]), 1)
+                acted = True
+        if not acted:
             act, arg = pol.choose(s, week, offer, rng)
             if act == "train":
                 if not B.do_training(s, arg):
@@ -257,6 +308,19 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
             elif act == "rest":
                 B.do_rest(s, arg)
 
+        if EVENTS_ON:
+            if week in SEASONAL:
+                _apply_event(s, SEASONAL[week])
+            if not acted and rng.random() < EVENT_RATE:
+                # 同一イベントは同一キャリアで原則1回（event_design_v0 §頻度設計）。全消化後は発生しない
+                idx = int(rng.random() * len(EVENT_TABLE))
+                if RUN_EVENTS_FIRED is not None:
+                    if idx not in RUN_EVENTS_FIRED:
+                        RUN_EVENTS_FIRED.add(idx)
+                        _apply_event(s, EVENT_TABLE[idx])
+                else:
+                    _apply_event(s, EVENT_TABLE[idx])
+
         if week % B.LIVING_INTERVAL == 0:
             s.money -= B.LIVING_COST
         s.min_money = min(s.min_money, s.money)
@@ -265,8 +329,11 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
 
 def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     """1キャリア。(初優勝年 or None, 最終状態, 最高到達回戦数0〜5, 決勝経験) を返す"""
+    global RUN_EVENTS_FIRED
     rng = random.Random(seed)
     s = new_state(init_ability, compat)
+    if EVENTS_ON:
+        RUN_EVENTS_FIRED = set()
     best_stage, ever_final = 0, False
     for year in range(1, YEARS + 1):
         won, stage, finalist = run_year(pol, s, year, rng)
