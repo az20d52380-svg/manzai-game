@@ -23,28 +23,26 @@ final class CareerLogicTests: XCTestCase {
         return config
     }
 
+    /// 敗者復活→同週決勝→優勝のルート検証【正典v2改訂】。
+    /// ラインを極端値に固定して経路だけを検証する（数値の正しさはgoldenが担保。旧版の乱数計画方式は
+    /// v2のperform=2draw化・エントリー費で崩れるため、レッドチーム指摘により全面書き直し）
     func testRevivalRouteToChampionship() {
-        let config = bareConfig()
+        var config = bareConfig()
+        config.calendar.gpRounds = [(30, -999), (39, -999), (41, -999), (43, -999), (45, 999)]  // 準決だけ必ず落ちる
+        config.calendar.gpRevivalLine = -999   // 敗者復活は必ず通る
+        config.calendar.gpFinalLine = -999     // 決勝は必ず勝つ
         var s = GameState(config: config)
-        for a in [Ability.センス, .発想, .表現, .華] { s[a] = 78 }   // 実力値78
-        s.メンタル = 100                                             // ブレ幅±5
-        s.compat = 10                                                // 素点88
-
-        // 乱数計画: 自由週=0.9 / 回戦u=0.5(ブレ0→88で通過) / 準決u=0.0(83<85で敗退→復活へ)
-        //           / 敗者復活u=0.9(92≥88通過) / 決勝u=0.95(92.5≥91優勝)
-        var vals = Array(repeating: 0.9, count: 29)   // 第1〜29週
-        vals += [0.5]                                  // 第30週 1回戦
-        vals += Array(repeating: 0.9, count: 8)        // 第31〜38週
-        vals += [0.5, 0.9, 0.5, 0.9, 0.5, 0.9, 0.0, 0.9, 0.9, 0.95]
-        var rng = SeqRandom(values: vals)
+        s.money = 10_000_000                   // エントリー費・生活費で詰まらない潤沢な資金
+        var rng = FixedRandom(value: 0.5)      // 0.5 > ハマ率0.10 なのでハマは発生しない・決定的
         var policy = RestOnlyPolicy()
 
         let outcome = GameCareer.runYear(state: &s, year: 1, config: config, policy: &policy, rng: &rng)
         XCTAssertTrue(outcome.champion)
         XCTAssertTrue(outcome.reachedFinal)
+        XCTAssertFalse(outcome.bankrupt)
         XCTAssertEqual(outcome.roundsPassed, 4)   // 準決勝は落ちている（復活経由）
-        // 生活費11回(第4〜44週)と優勝賞金が反映される
-        XCTAssertEqual(s.money, 300_000 - 1_100_000 + 5_000_000)
+        // 生活費11回(第4〜44週・優勝週の週末処理は走らない)＋エントリー費2,000＋優勝賞金
+        XCTAssertEqual(s.money, 10_000_000 - 1_100_000 - 2_000 + 5_000_000)
         // 知名度: 3 + 回戦通過3×4 + 復活3 + 優勝20
         XCTAssertEqual(s.fame, 38, accuracy: 1e-9)
     }
@@ -94,9 +92,12 @@ final class CareerLogicTests: XCTestCase {
         }
         var policy = BusPolicy()
         var rng = FixedRandom(value: 0.9)
-        // 第12週の大阪大会は交通費不足で不参加→自由週として処理され、体力は満タンのまま週を終える
-        _ = GameCareer.runYear(state: &s, year: 1, config: config, policy: &policy, rng: &rng)
-        // バス代を引かれた形跡がない（生活費のみ12回）
-        XCTAssertEqual(s.money, 5_000 - 1_200_000)
+        // 第12週の大阪大会は「エントリー費2,000+バス代1万」が払えず不参加→自由週として処理される。
+        // GPも第30週時点で赤字のためエントリー費が払えず今年は不出場【正典v2】
+        let outcome = GameCareer.runYear(state: &s, year: 1, config: config, policy: &policy, rng: &rng)
+        // 収入ゼロのまま生活費が積もり、第44週の支払いで-100万を割って夜逃げ（第45週以降は走らない）
+        XCTAssertTrue(outcome.bankrupt)
+        XCTAssertEqual(outcome.roundsPassed, 0)
+        XCTAssertEqual(s.money, 5_000 - 1_100_000)   // 生活費11回で夜逃げライン超え・大会費用の形跡なし
     }
 }

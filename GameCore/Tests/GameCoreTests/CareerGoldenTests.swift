@@ -119,8 +119,13 @@ final class CareerGoldenTests: XCTestCase {
         XCTAssertEqual(rowIndex, 48, "48週ぶんの検証が走っていない")
         XCTAssertFalse(outcome1.champion)
 
+        // シード制の配線: 正典生成器(gen_golden.py main)と同じく前年到達回戦を持ち回る。
+        // 現goldenでは3年とも非発生(到達2,2,4)だが、配線しないと再生成時に無言でズレる時限爆弾になる（レッドチーム指摘）
+        var prevStage = outcome1.roundsPassed
         for expected in Self.yearEnds {
-            let outcome = GameCareer.runYear(state: &s, year: expected.0, config: config, policy: &policy, rng: &rng)
+            let outcome = GameCareer.runYear(state: &s, year: expected.0, config: config, policy: &policy, rng: &rng,
+                                             gpSeeded: prevStage >= 3)
+            prevStage = outcome.roundsPassed
             XCTAssertFalse(outcome.champion, "goldenシードでは3年間優勝しない想定")
             assertState(s, money: expected.1, stamina: expected.2, fame: expected.3,
                         sense: expected.4, idea: expected.5, expr: expected.6, chara: expected.7,

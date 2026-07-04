@@ -175,8 +175,10 @@ def main():
             for y, w, snap in log:
                 print(swift_row(y, w, snap))
         else:
-            print(f"// year {year} end:")
-            print(swift_row(year, 48, snapshot(s)))
+            snap = snapshot(s)
+            vals = ", ".join(f"{v!r}" for v in snap[1:])
+            print(f"// year {year} end（yearEnds形式・そのまま貼る）:")
+            print(f"        ({year}, {snap[0]}, {vals}),")
 
 if __name__ == "__main__":
     main()

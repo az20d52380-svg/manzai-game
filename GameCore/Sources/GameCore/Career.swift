@@ -48,6 +48,7 @@ public enum GameCareer {
         gpSeeded: Bool = false,
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> YearOutcome {
+        precondition(year >= 1, "year は1以上（成長予算の累計計算が前提）")
         s.stamina = config.initStamina   // 体力のみ年初に全回復
         // 成長予算の更新（キャリア累計・正典v2。growthUsed はリセットしない）
         var budget = 0.0

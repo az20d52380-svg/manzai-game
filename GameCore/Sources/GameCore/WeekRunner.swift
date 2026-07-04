@@ -83,6 +83,7 @@ public struct WeekRunner<R: RandomSource> {
         finalLineOverride: Double? = nil,
         gpSeeded: Bool = false   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
     ) {
+        precondition(year >= 1, "year は1以上（成長予算の累計計算が前提）")
         var s = state
         s.stamina = config.initStamina   // 体力のみ年初に全回復（runYear冒頭と同一）
         var budget = 0.0                 // 成長予算の更新（キャリア累計・正典v2）
@@ -116,6 +117,9 @@ public struct WeekRunner<R: RandomSource> {
         section = .tournament
         revivalTried = false
         finalTried = false
+        pendingSpec = nil      // 呼び出し順ミスの残留状態を週頭で必ず掃除（レッドチーム指摘）
+        pendingOffer = nil
+        pendingAuto = nil
         return proceed()
     }
 

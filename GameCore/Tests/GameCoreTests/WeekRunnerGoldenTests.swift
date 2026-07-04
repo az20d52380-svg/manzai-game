@@ -15,9 +15,10 @@ final class WeekRunnerGoldenTests: XCTestCase {
         config: GameConfig,
         policy: inout GoldenPolicy,
         rng: SplitMix64,
+        gpSeeded: Bool = false,
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> (outcome: YearOutcome, state: GameState, rng: SplitMix64) {
-        var runner = WeekRunner(state: state, year: year, config: config, rng: rng)
+        var runner = WeekRunner(state: state, year: year, config: config, rng: rng, gpSeeded: gpSeeded)
         var phase = runner.begin()
         while true {
             switch phase {
@@ -60,9 +61,12 @@ final class WeekRunnerGoldenTests: XCTestCase {
         s = result.state
         rng = result.rng
 
-        // 2〜3年目: 年末スナップショットが一致（乱数列が1消費もずれていない証明）
+        // 2〜3年目: 年末スナップショットが一致（乱数列が1消費もずれていない証明）。シード制も正典と同じく配線
+        var prevStage = result.outcome.roundsPassed
         for expected in CareerGoldenTests.yearEnds {
-            result = driveYear(state: s, year: expected.0, config: config, policy: &policy, rng: rng)
+            result = driveYear(state: s, year: expected.0, config: config, policy: &policy, rng: rng,
+                               gpSeeded: prevStage >= 3)
+            prevStage = result.outcome.roundsPassed
             XCTAssertFalse(result.outcome.champion, "goldenシードでは3年間優勝しない想定")
             s = result.state
             rng = result.rng
