@@ -83,6 +83,11 @@ public struct WeekRunner<R: RandomSource> {
     ) {
         var s = state
         s.stamina = config.initStamina   // 体力のみ年初に全回復（runYear冒頭と同一）
+        var budget = 0.0                 // 成長予算の更新（キャリア累計・正典v2）
+        for k in 1...min(year, config.growthEndYear) {
+            budget += max(config.capCurveFloor, config.capCurveBase - config.capCurveSlope * Double(k - 1))
+        }
+        s.growthBudget = budget
         self.state = s
         self.year = year
         self.config = config
@@ -187,10 +192,28 @@ public struct WeekRunner<R: RandomSource> {
         return proceed()
     }
 
-    /// 自由行動週の回答（.acceptOffer はオファーがある週のみ有効。無ければ完全休養にフォールバック=runYearと同一）
+    /// 自由行動週の回答（.acceptOffer はオファーがある週のみ有効。無ければ完全休養にフォールバック=runYearと同一）。
+    /// 体力ゲート（稽古不可）と体調ダウン判定はここで強制する（UI側のグレーアウトはこの規則の表示）
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
         let offer = pendingOffer
         pendingOffer = nil
+        var action = action
+        if case .train = action, state.stamina < config.staminaGate {
+            action = .rest(.完全休養)                    // 体力ゲート（谷口が止める）
+        }
+        let risky: Bool
+        switch action {
+        case .train: risky = true
+        case .job(let j): risky = (j == .キツい)
+        default: risky = false
+        }
+        if risky, state.stamina < config.injuryThreshold,
+           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint {
+            action = .rest(.完全休養)                    // 体調ダウン発生（「喉をやられた」等）
+            state.recoveryWeeks = config.injuryRestWeeks - 1
+            GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &state, config: config)
+            weekResults.append(StageResult(name: "体調ダウン", passed: false, prize: 0))
+        }
         switch action {
         case .acceptOffer:
             if let o = offer {
@@ -251,13 +274,23 @@ public struct WeekRunner<R: RandomSource> {
             section = .end
             if !acted {
                 let offer = GameEngine.rollOffer(state: state, config: config, rng: &rng)
-                pendingOffer = offer
-                return .freeAction(offer: offer)
+                if state.recoveryWeeks > 0 {
+                    state.recoveryWeeks -= 1                 // 療養中（オファーは受けられない・runYearと同一順序）
+                    GameEngine.applyRest(.完全休養, to: &state, config: config)
+                    weekResults.append(StageResult(name: "療養", passed: false, prize: 0))
+                } else {
+                    pendingOffer = offer
+                    return .freeAction(offer: offer)
+                }
             }
         }
 
-        // 週末処理（生活費）→ 週の結果
-        GameEngine.applyWeekEnd(week: week, to: &state, config: config)
+        // 週末処理（生活費→生活苦→夜逃げ判定）→ 週の結果
+        if GameEngine.applyWeekEnd(week: week, to: &state, config: config) {
+            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true)
+            finished = outcome
+            return .yearDone(outcome)
+        }
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
     }
 }

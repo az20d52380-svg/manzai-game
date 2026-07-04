@@ -83,10 +83,37 @@ public struct GameConfig {
     public var compatCap = 20.0        // 【仮】相性の成長上限
     public var compatGrows = true      // 【TBD】ネタ合わせ/相方と過ごす で+1
 
-    /// 成長逓減【仮】: 能力上昇量 × (1 − 現在値/D)。nil で逓減なし。
-    /// docs/career_report_v1.md・endgame_design_v0.md で正式採用（balance_sim.py GROWTH_DECAY_D と同期）。
-    /// D±1で10年優勝率が約15〜25pt動く鋭いレバー。トロフィー（才能解放）はDを+1ずつ上げる設計。
+    /// 成長逓減【仮】: 能力上昇量 × (1 − 現在値/D)。nil で逓減なし（balance_sim.py GROWTH_DECAY_D と同期）
     public var growthDecayD: Double? = 120
+
+    // --- 成長経済【正典v2 2026-07-05・docs/canonical_v2_spec.md】 ---
+    /// 年間成長上限カーブ: その年の上限 = max(floor, base − slope×(年−1))。予算はキャリア累計（Career.runYear が設定）
+    public var capCurveBase = 6.0
+    public var capCurveSlope = 0.4
+    public var capCurveFloor = 2.0
+    /// 成長が完成する結成年数（王者の特権で解除される・sim_career.GROWTH_END_YEAR と同期）
+    public var growthEndYear = 15
+
+    // --- 生活ルール【正典v2・docs/rule_holes_v0.md】 ---
+    /// 借金中は稽古が半分しか身にならない（nil で無効。balance_sim.DEBT_TRAIN_FACTOR と同期）
+    public var debtTrainFactor: Double? = 0.5
+    /// 生活費支払い時に所持金<0なら課す生活苦（sim_career.DEBT_LIFE_PEN と同期）
+    public var debtLifeStamina = -10.0
+    public var debtLifeMental = -3.0
+    /// 夜逃げライン: 所持金がこれを下回ったらキャリア強制終了（sim_career.BANKRUPT_LINE と同期）
+    public var bankruptLine = -1_000_000
+    /// 体力がこの値未満だと稽古を選べない（谷口が止める・sim_career.STAMINA_GATE と同期）
+    public var staminaGate = 20.0
+    /// 体調ダウン（「ケガ」という語は使わない）: 体力がこの値未満のキツいバイトで抽選（sim_career.INJURY_* と同期）
+    public var injuryThreshold = 20.0
+    public var injuryProbPerPoint = 0.02
+    public var injuryRestWeeks = 3
+    public var injuryMentalHit = -5.0
+
+    // --- 勝負の運【正典v2・A案】 ---
+    /// 「ハマった夜」: 本番ごとに burstP でスコア+burstBonus（balance_sim.BURST_P/BURST_BONUS と同期）
+    public var burstP = 0.10
+    public var burstBonus = 12.0
 
     /// 演技系4能力（センス/発想/表現/華）の上限【仮・固定】。トロフィーで D が 120 を超えた分は
     /// 「上限への到達が速く・確実になる」効果として働く（balance_sim.py ABILITY_CAP と同期）

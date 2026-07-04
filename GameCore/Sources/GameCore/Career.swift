@@ -22,6 +22,14 @@ public struct YearOutcome {
     public let champion: Bool
     public let roundsPassed: Int    // 通過したGP回戦数 0〜5
     public let reachedFinal: Bool   // 決勝の舞台に立ったか（敗者復活経由含む）
+    public let bankrupt: Bool       // 夜逃げ（-100万未満）でキャリア終了したか【正典v2】
+
+    public init(champion: Bool, roundsPassed: Int, reachedFinal: Bool, bankrupt: Bool = false) {
+        self.champion = champion
+        self.roundsPassed = roundsPassed
+        self.reachedFinal = reachedFinal
+        self.bankrupt = bankrupt
+    }
 }
 
 public enum GameCareer {
@@ -39,6 +47,12 @@ public enum GameCareer {
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> YearOutcome {
         s.stamina = config.initStamina   // 体力のみ年初に全回復
+        // 成長予算の更新（キャリア累計・正典v2。growthUsed はリセットしない）
+        var budget = 0.0
+        for k in 1...min(year, config.growthEndYear) {
+            budget += max(config.capCurveFloor, config.capCurveBase - config.capCurveSlope * Double(k - 1))
+        }
+        s.growthBudget = budget
         let cal = config.calendar
         var gpStage = 0
         var gpAlive = !seedFinal
@@ -109,29 +123,52 @@ public enum GameCareer {
                 }
             }
 
-            // 4) 自由行動週（オファー抽選 → 行動）
+            // 4) 自由行動週（オファー抽選 → 療養 → 体力ゲート → 体調ダウン判定 → 行動）
             if !acted {
                 let offer = GameEngine.rollOffer(state: s, config: config, rng: &rng)
-                switch policy.action(week: week, year: year, state: s, offer: offer) {
-                case .acceptOffer:
-                    if let o = offer {
-                        GameEngine.applyOffer(o, to: &s, config: config)
-                    } else {
-                        GameEngine.applyRest(.完全休養, to: &s, config: config)   // 防御的フォールバック
+                if s.recoveryWeeks > 0 {
+                    s.recoveryWeeks -= 1                                          // 療養中（オファーは受けられない）
+                    GameEngine.applyRest(.完全休養, to: &s, config: config)
+                } else {
+                    var action = policy.action(week: week, year: year, state: s, offer: offer)
+                    if case .train = action, s.stamina < config.staminaGate {
+                        action = .rest(.完全休養)                                 // 体力ゲート（谷口が止める）
                     }
-                case .train(let t):
-                    if !GameEngine.applyTraining(t, to: &s, config: config) {
-                        GameEngine.applyRest(.完全休養, to: &s, config: config)   // 払えなければ休む（Python同様）
+                    let risky: Bool
+                    switch action {
+                    case .train: risky = true
+                    case .job(let j): risky = (j == .キツい)
+                    default: risky = false
                     }
-                case .job(let j):
-                    GameEngine.applyJob(j, to: &s, config: config)
-                case .rest(let r):
-                    GameEngine.applyRest(r, to: &s, config: config)
+                    if risky, s.stamina < config.injuryThreshold,
+                       rng.nextUniform() < (config.injuryThreshold - s.stamina) * config.injuryProbPerPoint {
+                        action = .rest(.完全休養)                                 // 体調ダウン発生
+                        s.recoveryWeeks = config.injuryRestWeeks - 1
+                        GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &s, config: config)
+                    }
+                    switch action {
+                    case .acceptOffer:
+                        if let o = offer {
+                            GameEngine.applyOffer(o, to: &s, config: config)
+                        } else {
+                            GameEngine.applyRest(.完全休養, to: &s, config: config)   // 防御的フォールバック
+                        }
+                    case .train(let t):
+                        if !GameEngine.applyTraining(t, to: &s, config: config) {
+                            GameEngine.applyRest(.完全休養, to: &s, config: config)   // 払えなければ休む（Python同様）
+                        }
+                    case .job(let j):
+                        GameEngine.applyJob(j, to: &s, config: config)
+                    case .rest(let r):
+                        GameEngine.applyRest(r, to: &s, config: config)
+                    }
                 }
             }
 
-            // 5) 週末処理
-            GameEngine.applyWeekEnd(week: week, to: &s, config: config)
+            // 5) 週末処理（生活費→生活苦→夜逃げ判定）
+            if GameEngine.applyWeekEnd(week: week, to: &s, config: config) {
+                return YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true)
+            }
             onWeekEnd?(week, s)
         }
         return YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist)
@@ -149,6 +186,9 @@ public enum GameCareer {
             let outcome = runYear(state: &s, year: year, config: config, policy: &policy, rng: &rng)
             if outcome.champion {
                 return year
+            }
+            if outcome.bankrupt {
+                return nil   // 夜逃げ＝キャリア終了（Python: run_career の _bankrupt break と同期）
             }
         }
         return nil

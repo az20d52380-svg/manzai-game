@@ -66,9 +66,9 @@ RESTS = {
 }
 
 # --- 大会（賞金は山分け後の手元額） ---
-OSAKA_WEEK, OSAKA_LINE, OSAKA_PRIZE = 29, 40, 100_000
-GPQ_WEEK,   GPQ_LINE               = 40, 60            # 予選チェック週【仮】(仕様: 夏〜秋)
-GPF_WEEK,   GPF_LINE,  GPF_PRIZE   = 47, 85, 5_000_000 # ライン80〜90の中間【仮】
+OSAKA_WEEK, OSAKA_LINE, OSAKA_PRIZE = 29, 22, 100_000   # ライン【正典v2】旧40×0.55
+GPQ_WEEK,   GPQ_LINE               = 40, 33            # 予選チェック週【正典v2】旧60×0.55
+GPF_WEEK,   GPF_LINE,  GPF_PRIZE   = 47, 47, 5_000_000 # 【正典v2】旧85×0.55（1年目には届かない設計を維持）
 FAME_PASS, FAME_CHAMP = 10, 20                          # 通過+10 / 優勝+20【仮TBD】
 
 BUS   = dict(cost=10_000, stam=-25)   # 東京→大阪 往復・夜行
@@ -135,7 +135,7 @@ def jitsuryoku(s):
 # 行動
 # ============================================================
 
-DEBT_TRAIN_FACTOR = None   # 【実験・既定OFF】所持金<0のとき稽古の能力上昇に掛ける係数（exp_human_fix参照）
+DEBT_TRAIN_FACTOR = 0.5    # 【正典v2】借金中は稽古が半分しか身にならない（生活苦・rule_holes_v0 §2）
 
 def do_training(s, name):
     t = TRAININGS[name]
@@ -174,8 +174,8 @@ def roll_offer(s, rng):
         return dict(rng.choice([OFFER_MONEY, OFFER_EXP]))
     return None
 
-BURST_P     = None   # 【実験・既定OFF】「ハマった夜」の発生率（勝負ごとの独立な運・メンタル非依存）
-BURST_BONUS = 8.0    # ハマった夜のスコア加点【仮】（正典v2・A案: 決勝到達を晩期の特別体験に戻すレバー）
+BURST_P     = 0.10   # 【正典v2】「ハマった夜」の発生率（勝負ごとの独立な運・メンタル非依存）
+BURST_BONUS = 12.0   # 【正典v2】ハマった夜のスコア加点（A案: 決勝到達を特別体験に戻すレバー・exp_v2_anchor）
 
 def perform(s, line, rng):
     b = blur_width(s.mental)

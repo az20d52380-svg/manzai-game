@@ -47,20 +47,20 @@ BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 # 1回戦の実通過率16.6%はアマチュア含む数字であり、プロのコンビには易しい想定でライン30とした。
 # ------------------------------------------------------------
 
-# ラインは docs/endgame_design_v0.md 採用値（能力上限120・逓減D=120前提）。
-# 初回プレイ＝優勝率1%前後（「普通にやったら優勝できちゃうのが1%くらい」）・決勝到達2〜3割、
-# トロフィー(D解放)・相方で優勝が現実化する設計。正典バランスは【イベント層ON】で計測:
-# 準決86・決勝94+人気補正1.5(実効92.5)・復活88 → 初回優勝1.5%・決勝到達25〜35%（2026-07-04改訂）
+# ラインは【正典v2 2026-07-05】docs/canonical_v2_spec.md 採用値（年齢カーブ上限・キャリア累計予算・
+# 2層ブレ「ハマった夜」・生活ルール一式とセット）。イベント層ON計測で:
+# のんびり改=優勝0.3%/決勝到達22%・やり込み=2.1%/43%・トロフィー30ptで21.6%（exp_v2_anchor / exp_v2_meta）
+# 旧正典（準決86・決勝94・D解放）の実測値は docs の履歴注記を参照
 GP_ROUNDS = [
-    # (週, ライン, ラベル)      実在対応: 開催時期 / 通過組数(2025)
-    (30, 30, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
-    (39, 45, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
-    (41, 60, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
-    (43, 72, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
-    (45, 86, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
+    # (週, ライン, ラベル)      実在対応: 開催時期 / 通過組数(2025)。ライン【正典v2 2026-07-05】canonical_v2_spec
+    (30, 18, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
+    (39, 26, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
+    (41, 34, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
+    (43, 45, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
+    (45, 74, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
 ]
-GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 88   # 敗者復活: 12月下旬(決勝と同週) / 約21 → 1 (5%)
-GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 94   # 決勝: 第47週固定。イベント込み正典で優勝1.5%（準決86とセット・2026-07-04改訂）
+GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 76   # 敗者復活: 決勝-4【正典v2】
+GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 80   # 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 
 FAME_FINAL_BONUS = 1.5  # 決勝のみの人気補正【確定・機微】: 実効ライン = ライン − 1.5×(知名度−50)/50。judge_design §10-F
@@ -76,17 +76,17 @@ FAME_CHAMP    = 20   # グランプリ優勝+20【仮】
 
 TOURNAMENTS = {
     # 週: dict(名前, ライン, 手元賞金, 知名度, 大阪遠征, 資格)
-    12: dict(name="春新人賞A",     line=55, prize=500_000, fame=FAME_MID,   osaka=True,
+    12: dict(name="春新人賞A",     line=30, prize=500_000, fame=FAME_MID,   osaka=True,
              ok=lambda year, s: year <= 10),          # 芸歴10年内
-    15: dict(name="春新人賞B",     line=50, prize=250_000, fame=FAME_SMALL, osaka=True,
+    15: dict(name="春新人賞B",     line=28, prize=250_000, fame=FAME_SMALL, osaka=True,
              ok=lambda year, s: year <= 10),          # 結成10年内
-    27: dict(name="夏中堅賞",      line=60, prize=500_000, fame=FAME_MID,   osaka=True,
+    27: dict(name="夏中堅賞",      line=33, prize=500_000, fame=FAME_MID,   osaka=True,
              ok=lambda year, s: year <= 10),          # デビュー10年内
     29: dict(name="大阪戎コンクール", line=B.OSAKA_LINE, prize=B.OSAKA_PRIZE, fame=FAME_SMALL,
-             osaka=True,  ok=lambda year, s: True),   # 既存どおり（ライン40・手元10万）
-    35: dict(name="若手限定賞",    line=50, prize=250_000, fame=FAME_SMALL, osaka=False,
+             osaka=True,  ok=lambda year, s: True),   # ライン22【正典v2】・手元10万
+    35: dict(name="若手限定賞",    line=28, prize=250_000, fame=FAME_SMALL, osaka=False,
              ok=lambda year, s: year <= 5),           # 1〜5年目のみ
-    38: dict(name="推薦制中堅賞",  line=60, prize=500_000, fame=FAME_MID,   osaka=False,
+    38: dict(name="推薦制中堅賞",  line=33, prize=500_000, fame=FAME_MID,   osaka=False,
              ok=lambda year, s: s.fame >= 30),        # 知名度30以上【仮】
 }
 
@@ -107,17 +107,17 @@ EVENTS_ON   = False
 RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（run_careerが管理）
 EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
-DEBT_LIFE_PEN  = None   # 【実験・既定OFF】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦（exp_human_fix参照）
-BANKRUPT_LINE  = None   # 【実験・既定OFF】所持金がこの額を下回ったら破産＝キャリア強制終了（例 -1_000_000。rule_holes_v0）
-INJURY_ON      = False  # 【実験・既定OFF】低体力での稽古・キツいバイトに体調ダウン抽選（rule_holes_v0。ゲーム内表記は「喉をやられた」「腰にきた」等——漫才師にケガという語は使わない）
+DEBT_LIFE_PEN  = (-10, -3)   # 【正典v2】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦
+BANKRUPT_LINE  = -1_000_000   # 【正典v2】夜逃げライン: 下回ったらキャリア強制終了（rule_holes_v0 §2）
+INJURY_ON      = True   # 【正典v2】低体力のキツいバイトに体調ダウン抽選（稽古はゲートで先に止まる）（rule_holes_v0。ゲーム内表記は「喉をやられた」「腰にきた」等——漫才師にケガという語は使わない）
 INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとダウン抽選
 INJURY_P_PER   = 0.02   # 不足1ptあたりのダウン確率（体力0で40%）【仮】
 INJURY_REST    = 3      # ダウン後の療養週数（行動強制）【仮】
 INJURY_MENTAL  = -5.0   # ダウン時のメンタル打撃【仮】
 INJURY_ABILITY = 0.0    # ダウン時のランダム演技能力の低下量（重症変種の比較用）【仮】
-STAMINA_GATE   = None   # 例 20.0: 体力がこの値未満だと稽古を選べない（ハードゲート方式の比較用・選択は休養に差し替え）
-CAP_CURVE      = None   # (基準, 傾き, 下限): その年の年間成長上限 = max(下限, 基準−傾き×(年−1))。正典v2の年齢カーブ（human_calibration §5）
-CAREER_BUDGET  = False  # Trueで成長予算をキャリア累計化（年初リセットせず、CAP_CURVEの累計が上限。初期能力ボーナスは予算の前借り＝canonical_v2_spec §2-B）
+STAMINA_GATE   = 20.0   # 【正典v2】体力がこの値未満だと稽古を選べない（谷口が止める・rule_holes_v0 §3）
+CAP_CURVE      = (6.0, 0.4, 2.0)   # 【正典v2】(基準, 傾き, 下限): その年の年間成長上限 = max(下限, 基準−傾き×(年−1))。正典v2の年齢カーブ（human_calibration §5）
+CAREER_BUDGET  = True   # 【正典v2】成長予算をキャリア累計化（年初リセットせず、CAP_CURVEの累計が上限。初期能力ボーナスは予算の前借り＝canonical_v2_spec §2-B）
 GROWTH_END_YEAR = 15    # 成長が完成する結成年数（GP挑戦資格15年のloreと一致）【仮】
 # (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
 EVENT_TABLE = [

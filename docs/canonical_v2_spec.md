@@ -70,14 +70,15 @@
 
 ## 3. 移行チェックリスト（フリップは一括・順番厳守）
 
-1. ✅ 最終アンカー確定（準決74・決勝80 → `canon_v2.py` 反映済み）
+1. ✅ 最終アンカー確定（準決74・決勝80）
 2. ◐ **メタ報酬の再価格（§2-B）**: ✅累計予算化・✅ティア再価格・✅トロフィーカーブ・✅王者編（王者の特権+STEP2）・☐事務所EVの再スキャンのみ残
-3. ☐ `balance_sim.py` / `sim_career.py` の既定値をv2に固定（実験フラグ→定数化）
-4. ☐ `gen_golden.py` の正典順序を更新（**新規rng消費: ハマった夜抽選・体調ダウン抽選**の挿入位置を docstring に明記）→ golden再生成
-5. ☐ GameCore同期: GameConfig（上限カーブ・借金・ゲート・ダウン・ハマ定数）/ GameEngine（add の上限予算・perform のハマ抽選）/ Calendar（新ライン）/ Career・WeekRunner（年初リセット・療養週・督促・夜逃げ）
-6. ☐ CareerGoldenTests / WeekRunnerGoldenTests のデータ再生成（gen_golden出力の貼り替え）
-7. ☐ 全exp再実行 → master_spec 検証台帳の数値を一括更新（「旧正典」注記の除去）
+3. ✅ 既定値のv2固定【2026-07-05フリップ完了】（balance_sim / sim_career。canon_v2.pyはトロフィーpt注入と計測条件のヘルパに縮小）
+4. ✅ gen_golden正典順序の改訂＋golden再生成（新規rng消費: perform=2draw〈出来ブレ→ハマ〉・体調ダウン判定1draw。docstringに全順序を明記）
+5. ✅ GameCore同期（GameConfig/GameState/GameEngine/Calendar/Career/WeekRunner。夜逃げは YearOutcome.bankrupt）
+6. ✅ CareerGoldenTestsのデータ再生成（WeekRunnerGoldenTestsは同一データ参照で自動追従・12週GoldenTestsは上限非発動域のため不変で有効）。**sim_career.run_year ⇔ gen_golden複製ループの3年ビット一致をクロス検証済み**
+7. ☐ 全exp再実行 → master_spec 検証台帳の数値を一括更新（「旧正典」注記の整理）
 8. ☐ 影響ドキュメントの数値改訂: endgame / trophy_v1 / dynasty / meta_report / gacha_report / agency_fanbase / partner_gacha / event_design（ライン言及箇所）
+9. ☐ **Macで swift test**（フリップ後の最初の1手。CareerGolden＋WeekRunnerGolden＋12週の3本green＝Swift同期の完了証明）
 
 - **MVP実装（Xcode/UI）はフリップを待たずに進めてよい**——UI層はGameCoreのAPIに依存し、バランス定数には依存しない。フリップはUI完成前に1回で済ませる
 - 【設計上の懸念】フリップ後は旧実測値が全て「旧正典」の歴史値になる。中途半端な部分適用（例: ラインだけv2）は全数値の整合が崩れるため禁止

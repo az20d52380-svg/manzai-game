@@ -11,6 +11,7 @@
 import statistics
 import sys
 
+import balance_sim as B
 import sim_career as C
 import canon_v2 as V
 from exp_human import PCasual2
@@ -20,14 +21,14 @@ def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     V.apply()
     print(f"=== 正典v2 最終アンカー | {n}キャリア/設定 | シード{C.BASE_SEED} | "
-          f"カーブ上限{V.CAP_CURVE} ハマ{V.BURST_P:.0%}/+{V.BURST_BONUS:.0f} | 全て【仮】 ===")
+          f"カーブ上限{C.CAP_CURVE} ハマ{B.BURST_P:.0%}/+{B.BURST_BONUS:.0f} | 全て【仮】 ===")
     print()
     try:
         for sf in (74, 75, 76):
             for fin in (80, 81, 82):
-                C.GP_ROUNDS = V.GP_ROUNDS + [(45, sf, "GP準決勝")]
+                C.GP_ROUNDS = C.GP_ROUNDS[:4] + [(45, sf, "GP準決勝")]
                 C.GP_FINAL_LINE = fin
-                C.GP_REVIVAL_LINE = fin + V.GP_REVIVAL_OFFSET
+                C.GP_REVIVAL_LINE = fin - 4
                 print(f"[準決{sf} 決勝{fin}]")
                 for cls in (PSpread, C.CareerBalanced, PCasual2):
                     pol = cls()

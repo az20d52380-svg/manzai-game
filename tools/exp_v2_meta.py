@@ -88,7 +88,7 @@ def dynasty_scan(n):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 500
-    print(f"=== 正典v2 周回メタ | {n}キャリア/設定 | シード{C.BASE_SEED} | 決勝{V.GP_FINAL_LINE} | 全て【仮】 ===")
+    print(f"=== 正典v2 周回メタ | {n}キャリア/設定 | シード{C.BASE_SEED} | 決勝{C.GP_FINAL_LINE} | 全て【仮】 ===")
     print()
     try:
         career_scan(n)

@@ -57,21 +57,22 @@ public struct TournamentSpec {
 public struct CalendarConfig {
     /// 道中の大会（Python: sim_career.TOURNAMENTS）
     public var tournaments: [TournamentSpec] = [
-        TournamentSpec(name: "春新人賞A",       week: 12, line: 55, prize: 500_000, fame: 10, osaka: true,  eligibility: .careerYearAtMost(10)),
-        TournamentSpec(name: "春新人賞B",       week: 15, line: 50, prize: 250_000, fame: 5,  osaka: true,  eligibility: .careerYearAtMost(10)),
-        TournamentSpec(name: "夏中堅賞",         week: 27, line: 60, prize: 500_000, fame: 10, osaka: true,  eligibility: .careerYearAtMost(10)),
-        TournamentSpec(name: "大阪戎コンクール", week: 29, line: 40, prize: 100_000, fame: 5,  osaka: true,  eligibility: .always),
-        TournamentSpec(name: "若手限定賞",       week: 35, line: 50, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(5)),
-        TournamentSpec(name: "推薦制中堅賞",     week: 38, line: 60, prize: 500_000, fame: 10, osaka: false, eligibility: .fameAtLeast(30)),
+        // ライン【正典v2 2026-07-05】旧値×0.55（docs/canonical_v2_spec.md）
+        TournamentSpec(name: "春新人賞A",       week: 12, line: 30, prize: 500_000, fame: 10, osaka: true,  eligibility: .careerYearAtMost(10)),
+        TournamentSpec(name: "春新人賞B",       week: 15, line: 28, prize: 250_000, fame: 5,  osaka: true,  eligibility: .careerYearAtMost(10)),
+        TournamentSpec(name: "夏中堅賞",         week: 27, line: 33, prize: 500_000, fame: 10, osaka: true,  eligibility: .careerYearAtMost(10)),
+        TournamentSpec(name: "大阪戎コンクール", week: 29, line: 22, prize: 100_000, fame: 5,  osaka: true,  eligibility: .always),
+        TournamentSpec(name: "若手限定賞",       week: 35, line: 28, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(5)),
+        TournamentSpec(name: "推薦制中堅賞",     week: 38, line: 33, prize: 500_000, fame: 10, osaka: false, eligibility: .fameAtLeast(30)),
     ]
 
-    /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。実在準拠の週配置・ラインは docs/endgame_design_v0.md）
-    public var gpRounds: [(week: Int, line: Double)] = [(30, 30), (39, 45), (41, 60), (43, 72), (45, 86)]
+    /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。ライン【正典v2 2026-07-05】docs/canonical_v2_spec.md）
+    public var gpRounds: [(week: Int, line: Double)] = [(30, 18), (39, 26), (41, 34), (43, 45), (45, 74)]
     /// 回戦の表示名（Python: GP_ROUNDS のラベルと同一・UI用）
     public var gpRoundNames = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
     public var gpFinalWeek = 47
-    public var gpRevivalLine = 88.0   // 敗者復活（準決勝敗退のみ・決勝と同週）
-    public var gpFinalLine = 94.0     // イベント込み正典・準決86/人気補正1.5とセットで初回優勝1.5%（2026-07-04改訂）
+    public var gpRevivalLine = 76.0   // 敗者復活 = 決勝-4（準決勝敗退のみ・決勝と同週）【正典v2】
+    public var gpFinalLine = 80.0     // 【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
     public var gpRoundFame = 3.0      // 回戦通過の知名度【仮】
     public var fameFinalBonus = 1.5   // 決勝のみの人気補正【機微】: 実効ライン = ライン − 本値×(知名度−50)/50
     public var gpPrize = 5_000_000    // 優勝賞金（表示1,000万の半分・手元）【仮】

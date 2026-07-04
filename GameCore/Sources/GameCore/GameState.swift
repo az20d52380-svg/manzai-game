@@ -12,6 +12,16 @@ public struct GameState {
     public var メンタル: Double
     public var compat: Double
 
+    // --- 正典v2の進行状態（Python: s._yg / s._inj / s._bankrupt と同期） ---
+    /// 成長予算の上限（キャリア累計・Career.runYear が年初に更新。nil なら無制限=エンジン単体テスト用）
+    public var growthBudget: Double? = nil
+    /// 成長予算の使用量（実力値換算・キャリア通算でリセットしない）
+    public var growthUsed = 0.0
+    /// 体調ダウンの残り療養週数
+    public var recoveryWeeks = 0
+    /// 夜逃げ（破産）でキャリアが終了したか
+    public var bankrupt = false
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina
