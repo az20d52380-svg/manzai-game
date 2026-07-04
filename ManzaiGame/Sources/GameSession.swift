@@ -17,12 +17,24 @@ final class GameSession {
     private(set) var log: [String] = []
     private(set) var finished = false
     private(set) var outcome: YearOutcome?
+    /// 大会・GPの結果が出た週。ここに値がある間は S3 結果画面を挟む（テンポの緩急・§3）
+    private(set) var pendingResult: WeekSummary?
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
 
     // MARK: 進行の実体（WeekRunner が週処理と乱数消費の正典を持つ）
     private var runner: WeekRunner<SplitMix64>
+
+    /// 「結果画面を出す価値のある」出来事の名前（大会・GP各回戦・敗者復活・決勝）。
+    /// 体調ダウン/療養はここに入れず、自由週と同じく素通りさせる。
+    @ObservationIgnored private lazy var bigResultNames: Set<String> = {
+        var names = Set(config.calendar.tournaments.map(\.name))
+        names.formUnion(config.calendar.gpRoundNames)
+        names.insert("敗者復活")
+        names.insert("GP決勝")
+        return names
+    }()
 
     init(seed: UInt64 = 424242, config: GameConfig = GameConfig()) {
         self.config = config
@@ -55,9 +67,17 @@ final class GameSession {
         pump()
     }
 
+    /// S3結果画面の「次へ」。結果を閉じて次週へ進める
+    func acknowledgeResult() {
+        pendingResult = nil
+        phase = runner.begin()
+        pump()
+    }
+
     // MARK: 内部
 
-    /// weekDone は自動で次週へ送り（3秒動線・§2）、入力/演出待ち・年終わりで止める
+    /// 自由週の weekDone は自動で次週へ送り（3秒動線・§2）、大会・GPの結果が出た週は止めて
+    /// S3結果画面を挟む。入力/演出待ち・年終わりでも止める。
     private func pump() {
         loop: while true {
             switch phase {
@@ -66,6 +86,13 @@ final class GameSession {
                 week = summary.week
                 if !summary.results.isEmpty {
                     log.append(summarize(summary))
+                }
+                let big = summary.results.filter { bigResultNames.contains($0.name) }
+                if !big.isEmpty {
+                    // 大会・GPの結果 → S3結果画面へ（自動送りしない）
+                    pendingResult = WeekSummary(year: summary.year, week: summary.week,
+                                                results: big, state: summary.state)
+                    break loop
                 }
                 phase = runner.begin()
             case .yearDone(let outcome):
@@ -81,6 +108,23 @@ final class GameSession {
             }
         }
     }
+
+    #if DEBUG
+    /// QA用: 既定行動で自動プレイし、最初の大会/GP結果（S3）が出た時点で止める。
+    /// 画面レイアウトの目視確認を素早く行うための開発フック（リリースには含まれない）。
+    func debugAdvanceToFirstResult(maxSteps: Int = 240) {
+        var steps = 0
+        while pendingResult == nil, !finished, steps < maxSteps {
+            steps += 1
+            switch phase {
+            case .tournamentDecision: decideTournament(.夜行バス)
+            case .freeAction:         choose(.job(.標準))
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: return
+            }
+        }
+    }
+    #endif
 
     private func summarize(_ s: WeekSummary) -> String {
         let parts = s.results.map { r -> String in

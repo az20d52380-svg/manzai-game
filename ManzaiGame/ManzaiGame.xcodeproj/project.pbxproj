@@ -13,6 +13,7 @@
 		74DDE7A5903D2D4934E9536F /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = 27B231D4CDB45E90519F75D6 /* GameCore */; };
 		9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
+		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		5F49ED139642FC2518E962F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		74BDACA803ECB2EFD5DE9293 /* GameCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GameCore; path = ../GameCore; sourceTree = SOURCE_ROOT; };
 		A274A5E67200827BEBFC258E /* YearResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearResultView.swift; sourceTree = "<group>"; };
+		A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TournamentResultView.swift; sourceTree = "<group>"; };
 		B18155352CE011A350B1DEC6 /* WeekMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekMainView.swift; sourceTree = "<group>"; };
 		EC27C4A85A610F060F476DE5 /* ManzaiGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManzaiGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -43,6 +45,7 @@
 				2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */,
 				0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */,
 				5F49ED139642FC2518E962F8 /* RootView.swift */,
+				A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */,
 				B18155352CE011A350B1DEC6 /* WeekMainView.swift */,
 				A274A5E67200827BEBFC258E /* YearResultView.swift */,
 			);
@@ -137,6 +140,7 @@
 				9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */,
 				54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */,
 				2A0C4D15DED110C70394538A /* RootView.swift in Sources */,
+				E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */,
 				11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */,
 				AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */,
 			);
