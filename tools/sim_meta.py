@@ -25,9 +25,42 @@ STEP          = 5     # 王者ライン = 決勝ライン + STEP×連覇数（dy
 MAX_YEARS     = 25
 TROPHY_CAP    = 30    # 才能ポイント総枠（trophy_design_v1.md）
 
-# 相方ティア: (名前, 相性初期値, 相性上限) と解放に必要な累計人脈P【仮】
+# 相方ティア: (名前, 相性初期値, 相性上限)
 TIERS = [("N", 5.0, 20.0), ("R", 10.0, 22.0), ("SR", 15.0, 25.0), ("SSR", 20.0, 30.0)]
-TIER_THRESHOLDS = [0, 60, 140, 260]   # 累計人脈P【仮・v0.1で減速】
+TIER_THRESHOLDS = [0, 60, 140, 260]   # 旧・閾値解放モデル（GACHA_MODE=Falseで再現用に残置）
+
+# 【v0.2】B案確定に伴う名鑑所有モデル（monetization_decision_v0.md §7）
+# 周回の合間に日次無料＋人脈Pチケットでガチャを引き、所有した最高ティアの相方で次周に臨む
+GACHA_MODE   = True
+DAYS_PER_RUN = 7      # 【仮】1周に費やす実日数（ミドル層想定。日次無料=この回数/周）
+TICKET_COST  = 50     # 人脈P→ガチャ1回【仮】
+GACHA_RATES  = [("N", 0.605), ("R", 0.30), ("SR", 0.08), ("SSR", 0.015)]
+GACHA_CATALOG = {"N": 6, "R": 5, "SR": 3, "SSR": 2}
+DUPE_P       = {"N": 5, "R": 10, "SR": 20, "SSR": 40}
+TIER_OF      = {"N": 0, "R": 1, "SR": 2, "SSR": 3}
+
+def gacha_draw(rng, owned):
+    """1回引く（気になるリスト=未所持の最高レア先頭を指名・同レア内重み2倍）。sim_gacha.pyと同型"""
+    r = rng.random()
+    acc = 0.0
+    for rarity, rate in GACHA_RATES:
+        acc += rate
+        if r < acc:
+            break
+    chars = [f"{rarity}{i}" for i in range(GACHA_CATALOG[rarity])]
+    target = None
+    for tr, _ in reversed(GACHA_RATES):
+        missing = [f"{tr}{i}" for i in range(GACHA_CATALOG[tr]) if f"{tr}{i}" not in owned]
+        if missing:
+            target = missing[0]
+            break
+    weights = [2.0 if c == target else 1.0 for c in chars]
+    x = rng.random() * sum(weights)
+    for c, w in zip(chars, weights):
+        x -= w
+        if x <= 0:
+            return rarity, c
+    return rarity, chars[-1]
 DYNASTY_GATE_PT = 18                  # 王者編（優勝後の続行）の解禁に必要な累計pt【仮】。未解禁は初優勝で勇退
 
 def jinmyaku_gain(best_stage, reached_final, titles, fame):
@@ -126,10 +159,24 @@ def run_franchise(pol_cls, fseed):
     pol = pol_cls()
     earned = {}
     meta = dict(bus_total=0, train_total=0, jinmyaku=0)
+    owned = {"N0"}   # 初期相方（谷口）は所持済み
+    grng = random.Random(fseed * 77 + 1)
     log = []
     for run in range(1, RUNS + 1):
         pts = min(TROPHY_CAP, sum(earned.values()))
-        tier_idx = max(i for i, th in enumerate(TIER_THRESHOLDS) if meta["jinmyaku"] >= th)
+        if GACHA_MODE:
+            # 周回の合間: 日次無料(DAYS_PER_RUN回)＋人脈Pチケットを引き、名鑑を更新
+            pulls = DAYS_PER_RUN + int(meta["jinmyaku"] // TICKET_COST)
+            meta["jinmyaku"] -= int(meta["jinmyaku"] // TICKET_COST) * TICKET_COST
+            for _ in range(pulls):
+                rarity, c = gacha_draw(grng, owned)
+                if c in owned:
+                    meta["jinmyaku"] += DUPE_P[rarity]
+                else:
+                    owned.add(c)
+            tier_idx = max(TIER_OF[c[:-1]] for c in owned)
+        else:
+            tier_idx = max(i for i, th in enumerate(TIER_THRESHOLDS) if meta["jinmyaku"] >= th)
         res = run_meta_career(pol, fseed * 1000 + run, 120 + pts, TIERS[tier_idx],
                               allow_dynasty=(pts >= DYNASTY_GATE_PT))
         meta["bus_total"] += res["track"].get("bus", 0)
