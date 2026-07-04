@@ -347,9 +347,10 @@ def enter_tournament(s, pol, t, rng):
             RUN_BOREDOM.clear()   # 飽きられ解除(b): 他大会での優勝＝再評価（dynasty §3-2）
     return True, ok
 
-def run_year(pol, s, year, rng, seed_final=False, final_line=None):
+def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False):
     """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。
-    seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）"""
+    seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）。
+    gp_seed=True で1回戦免除（前年に準々決勝以上へ進出した組・実在準拠のシード制）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
     if CAP_CURVE is not None:
         base, slope, floor = CAP_CURVE
@@ -367,7 +368,8 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
     if RUN_TRACK is not None:
         RUN_TRACK["year_wins"] = []
         RUN_TRACK["year_entered"] = []
-    gp_stage = 0               # 次に挑む GP_ROUNDS のインデックス
+    gp_stage = 1 if gp_seed else 0   # 次に挑む GP_ROUNDS のインデックス（シード組は2回戦から）
+    gp_entry_paid = False      # エントリー費はその年最初に出る回戦で徴収
     gp_alive = not seed_final  # 今年のグランプリ挑戦が続いているか（王者は予選免除）
     finalist = seed_final
     revival = False            # 準決勝敗退→敗者復活に回るか
@@ -392,11 +394,12 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
 
         # --- グランプリ各回戦（東京・遠征不要・毎年1回戦からエントリー【仮】） ---
         if not acted and gp_alive and gp_stage < len(GP_ROUNDS) and week == GP_ROUNDS[gp_stage][0]:
-            if gp_stage == 0 and s.money < GP_ENTRY_FEE:
+            if not gp_entry_paid and s.money < GP_ENTRY_FEE:
                 gp_alive = False                     # エントリー費が払えない＝その年は出られない（夜逃げ寸前だけが踏む）
             else:
-                if gp_stage == 0:
-                    s.money -= GP_ENTRY_FEE          # エントリー費は1回戦週に1回だけ（実在準拠2,000円）
+                if not gp_entry_paid:
+                    s.money -= GP_ENTRY_FEE          # エントリー費はその年最初の回戦週に1回（実在準拠2,000円）
+                    gp_entry_paid = True
                 _, line, _ = GP_ROUNDS[gp_stage]
                 line += upset
                 if BOREDOM_ON and RUN_BOREDOM is not None and RUN_BOREDOM.get(gp_stage, 0) >= 3:
@@ -532,8 +535,10 @@ def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     if BOREDOM_ON:
         RUN_BOREDOM = {}
     best_stage, ever_final = 0, False
+    prev_stage = 0
     for year in range(1, YEARS + 1):
-        won, stage, finalist = run_year(pol, s, year, rng)
+        won, stage, finalist = run_year(pol, s, year, rng, gp_seed=(prev_stage >= 3))
+        prev_stage = stage
         best_stage = max(best_stage, stage)
         ever_final = ever_final or finalist
         if getattr(s, "_bankrupt", False):

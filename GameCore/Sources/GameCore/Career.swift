@@ -35,7 +35,8 @@ public struct YearOutcome {
 public enum GameCareer {
 
     /// 1年を回す。優勝したら即座に返る（勇退/王者編の分岐は呼び出し側）。
-    /// seedFinal=true で王者シード（予選免除・決勝直行）、finalLineOverride で王者ライン（飽きられ）を注入
+    /// seedFinal=true で王者シード（予選免除・決勝直行）、finalLineOverride で王者ライン（飽きられ）を注入。
+    /// gpSeeded=true で1回戦免除（前年に準々決勝以上へ進出=roundsPassed>=3・実在準拠のシード制）
     public static func runYear<P: WeekPolicy, R: RandomSource>(
         state s: inout GameState,
         year: Int,
@@ -44,6 +45,7 @@ public enum GameCareer {
         rng: inout R,
         seedFinal: Bool = false,
         finalLineOverride: Double? = nil,
+        gpSeeded: Bool = false,
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> YearOutcome {
         s.stamina = config.initStamina   // 体力のみ年初に全回復
@@ -54,7 +56,8 @@ public enum GameCareer {
         }
         s.growthBudget = budget
         let cal = config.calendar
-        var gpStage = 0
+        var gpStage = gpSeeded ? 1 : 0   // シード組は2回戦から
+        var gpEntryPaid = false          // エントリー費はその年最初に出る回戦で徴収
         var gpAlive = !seedFinal
         var finalist = seedFinal
         var revival = false
@@ -86,11 +89,12 @@ public enum GameCareer {
 
             // 2) グランプリ各回戦（東京・遠征不要・毎年1回戦から。1回戦週にエントリー費）
             if !acted && gpAlive && gpStage < cal.gpRounds.count && week == cal.gpRounds[gpStage].week {
-                if gpStage == 0 && s.money < cal.entryFee {
+                if !gpEntryPaid && s.money < cal.entryFee {
                     gpAlive = false   // エントリー費が払えない＝その年は出られない（週は自由行動へ）
                 } else {
-                    if gpStage == 0 {
+                    if !gpEntryPaid {
                         s.money -= cal.entryFee
+                        gpEntryPaid = true
                     }
                     let result = GameEngine.perform(s, line: cal.gpRounds[gpStage].line, config: config, rng: &rng)
                     acted = true
@@ -191,8 +195,11 @@ public enum GameCareer {
         policy: inout P,
         rng: inout R
     ) -> Int? {
+        var prevStage = 0
         for year in 1...years {
-            let outcome = runYear(state: &s, year: year, config: config, policy: &policy, rng: &rng)
+            let outcome = runYear(state: &s, year: year, config: config, policy: &policy, rng: &rng,
+                                  gpSeeded: prevStage >= 3)
+            prevStage = outcome.roundsPassed
             if outcome.champion {
                 return year
             }

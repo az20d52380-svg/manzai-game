@@ -55,7 +55,8 @@ public struct WeekRunner<R: RandomSource> {
 
     private let config: GameConfig
     private let finalLine: Double
-    private var gpStage = 0
+    private var gpStage: Int
+    private var gpEntryPaid = false   // エントリー費はその年最初に出る回戦で徴収
     private var gpAlive: Bool
     private var finalist: Bool
     private var revival = false
@@ -79,7 +80,8 @@ public struct WeekRunner<R: RandomSource> {
         config: GameConfig,
         rng: R,
         seedFinal: Bool = false,
-        finalLineOverride: Double? = nil
+        finalLineOverride: Double? = nil,
+        gpSeeded: Bool = false   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
     ) {
         var s = state
         s.stamina = config.initStamina   // 体力のみ年初に全回復（runYear冒頭と同一）
@@ -92,6 +94,7 @@ public struct WeekRunner<R: RandomSource> {
         self.year = year
         self.config = config
         self.rng = rng
+        self.gpStage = gpSeeded ? 1 : 0   // シード組は2回戦から
         self.gpAlive = !seedFinal
         self.finalist = seedFinal
         self.finalLine = finalLineOverride ?? config.calendar.gpFinalLine
@@ -148,8 +151,9 @@ public struct WeekRunner<R: RandomSource> {
         let cal = config.calendar
         switch auto {
         case .round:
-            if gpStage == 0 {
-                state.money -= cal.entryFee   // GPエントリー費（1回戦週に1回・runYearと同一順序）
+            if !gpEntryPaid {
+                state.money -= cal.entryFee   // GPエントリー費（その年最初の回戦週に1回・runYearと同一順序）
+                gpEntryPaid = true
             }
             let round = cal.gpRounds[gpStage]
             let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
@@ -254,7 +258,7 @@ public struct WeekRunner<R: RandomSource> {
         if section == .gp {
             section = .finalWeek
             if !acted && gpAlive && gpStage < cal.gpRounds.count && week == cal.gpRounds[gpStage].week {
-                if gpStage == 0 && state.money < cal.entryFee {
+                if !gpEntryPaid && state.money < cal.entryFee {
                     gpAlive = false   // エントリー費が払えない＝その年は出られない（runYearと同一）
                 } else {
                     pendingAuto = .round

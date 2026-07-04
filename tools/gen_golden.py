@@ -7,7 +7,7 @@ GameCore同期用 golden生成器【正典v2 2026-07-05改訂】
 - ここで定義する「乱数消費と週処理の順序」が正典。GameCore/Sources/GameCore/Career.swift（と WeekRunner.swift）は必ずこれに従う:
    0) 年初: 体力全回復 → 成長予算の更新（キャリア累計 = Σ_{k=1..min(年,15)} max(2.0, 6.0−0.4×(k−1))・乱数消費なし・使用量はリセットしない）
    1) 大会週: 出場判定(資格→エントリー費2,000＋大阪なら交通費の支払可否)→ 支払→ perform(2draw: 出来ブレ→ハマった夜)
-   2) 1)で行動していなければ GP回戦週: 1回戦週はエントリー費2,000(払えなければその年は不出場・週は自由行動へ)→ perform(2draw)
+   2) 1)で行動していなければ GP回戦週: 前年準々決勝以上なら1回戦免除(2回戦から=シード制)。その年最初の回戦週にエントリー費2,000(払えなければその年は不出場・週は自由行動へ)→ perform(2draw)
    3) 第47週: 敗者復活なら perform(2draw)→通過で決勝へ / 決勝進出なら perform(2draw)
    4) ここまで無行動なら: オファー抽選(1draw、当選時さらに1draw)
       → 療養中なら完全休養(残週-1・消費なし・オファーは受けられない)
@@ -56,10 +56,12 @@ def year_budget(year):
     base, slope, floor = C.CAP_CURVE
     return sum(max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
 
-def run_year(s, year, rng, log=None):
+def run_year(s, year, rng, log=None, gp_seed=False):
     s.stamina = 100.0
     B.YEAR_GROWTH_CAP = year_budget(year)   # キャリア累計予算（s._ygはリセットしない）
-    gp_stage, gp_alive, finalist, revival = 0, True, False, False
+    gp_stage = 1 if gp_seed else 0   # シード組（前年準々以上）は2回戦から
+    gp_entry_paid = False
+    gp_alive, finalist, revival = True, False, False
     for week in range(1, B.WEEKS + 1):
         acted = False
 
@@ -78,11 +80,12 @@ def run_year(s, year, rng, log=None):
                 acted = True
 
         if not acted and gp_alive and gp_stage < len(C.GP_ROUNDS) and week == C.GP_ROUNDS[gp_stage][0]:
-            if gp_stage == 0 and s.money < C.GP_ENTRY_FEE:
+            if not gp_entry_paid and s.money < C.GP_ENTRY_FEE:
                 gp_alive = False                   # エントリー費が払えない＝その年は出られない（週は自由行動へ）
             else:
-                if gp_stage == 0:
-                    s.money -= C.GP_ENTRY_FEE      # GPエントリー費（1回戦週に1回）
+                if not gp_entry_paid:
+                    s.money -= C.GP_ENTRY_FEE      # GPエントリー費（その年最初の回戦週に1回）
+                    gp_entry_paid = True
                 ok, _ = B.perform(s, C.GP_ROUNDS[gp_stage][1], rng)
                 acted = True
                 if ok:
@@ -109,7 +112,7 @@ def run_year(s, year, rng, log=None):
                 if ok:
                     s.money += C.GP_PRIZE
                     B.add(s, "fame", C.FAME_CHAMP)
-                    return True
+                    return True, gp_stage
 
         if not acted:
             offer = B.roll_offer(s, rng)
@@ -146,7 +149,7 @@ def run_year(s, year, rng, log=None):
         if log is not None:
             log.append((year, week, s))
             log[-1] = (year, week, snapshot(s))
-    return False
+    return False, gp_stage
 
 def snapshot(s):
     return (s.money, s.stamina, s.fame, s.sense, s.idea, s.expr, s.chara, s.mental, s.compat)
@@ -164,8 +167,9 @@ def main():
           f"/ 上限カーブ{C.CAP_CURVE} ハマ{B.BURST_P}/{B.BURST_BONUS} / D={B.GROWTH_DECAY_D}")
     print("// (year, week, money, stamina, fame, sense, idea, expr, chara, mental, compat)")
     log = []
+    prev_stage = 0
     for year in (1, 2, 3):
-        champion = run_year(s, year, rng, log if year == 1 else None)
+        champion, prev_stage = run_year(s, year, rng, log if year == 1 else None, gp_seed=(prev_stage >= 3))
         assert not champion, f"golden用シードで{year}年目に優勝してしまった。シードを変えること"
         if year == 1:
             for y, w, snap in log:
