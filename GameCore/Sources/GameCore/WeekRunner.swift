@@ -2,8 +2,8 @@
 // runYear（Career.swift）と同一セマンティクスの「ステップ実行機」。UIが週の途中で人の入力を待てる形にする。
 // 正典性: runYear と完全に同じ順序で GameEngine を呼び、乱数消費順を一致させる（正典は tools/gen_golden.py の docstring）。
 // 同値性は WeekRunnerGoldenTests（CareerGoldenTests と同じ3年期待値でのビット一致）で担保する。
-// 【重要・docs/ui_design_v0.md §5】runYear を WeekRunner への委譲に書き換えるのは、
-// Mac で swift test（両goldenのgreen）を確認してから。この段階では追加のみで既存コードには触れない。
+// 【docs/ui_design_v0.md §5・2026-07-05 委譲済み】GameCareer.runYear はこの WeekRunner を policy で
+// 駆動するだけの薄いラッパになった。週処理と乱数消費順の正典実体はこのファイルが唯一持つ。
 
 /// 大会・回戦の結果1件（UIの結果トースト用）
 public struct StageResult {

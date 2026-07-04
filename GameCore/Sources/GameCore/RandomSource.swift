@@ -14,8 +14,9 @@ extension RandomSource {
     }
 }
 
-/// SplitMix64。シード固定で全プラットフォーム同一列を生成する決定的乱数源
-public struct SplitMix64: RandomSource {
+/// SplitMix64。シード固定で全プラットフォーム同一列を生成する決定的乱数源。
+/// Codable準拠は中断セーブの土台（内部stateを保存すれば再開後も乱数列がずれない）。
+public struct SplitMix64: RandomSource, Codable {
     private var state: UInt64
 
     public init(seed: UInt64) {

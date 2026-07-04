@@ -48,144 +48,32 @@ public enum GameCareer {
         gpSeeded: Bool = false,
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> YearOutcome {
-        precondition(year >= 1, "year は1以上（成長予算の累計計算が前提）")
-        s.stamina = config.initStamina   // 体力のみ年初に全回復
-        // 成長予算の更新（キャリア累計・正典v2。growthUsed はリセットしない）
-        var budget = 0.0
-        for k in 1...min(year, config.growthEndYear) {
-            budget += max(config.capCurveFloor, config.capCurveBase - config.capCurveSlope * Double(k - 1))
+        // 週処理の実体は WeekRunner（ステップ実行機）に一本化し、runYear はそれを policy で駆動する薄い委譲にする。
+        // これで「週処理＋乱数消費順」の重複が解消され、正典ロジックは WeekRunner だけが持つ（docs/ui_design_v0.md §5）。
+        // 等価性は WeekRunnerGoldenTests / CareerGoldenTests の3年ビット一致で二重に担保される。
+        var runner = WeekRunner(state: s, year: year, config: config, rng: rng,
+                                seedFinal: seedFinal, finalLineOverride: finalLineOverride,
+                                gpSeeded: gpSeeded)
+        var phase = runner.begin()
+        while true {
+            switch phase {
+            case .tournamentDecision(let spec):
+                let travel = policy.enterTournament(spec, year: year, state: runner.state)
+                phase = runner.resolveTournament(travel: travel)
+            case .freeAction(let offer):
+                let action = policy.action(week: runner.week, year: year, state: runner.state, offer: offer)
+                phase = runner.resolveAction(action)
+            case .gpRound, .gpRevival, .gpFinal:
+                phase = runner.resolveAuto()   // 回戦・敗者復活・決勝は入力不要（runYear では即消化）
+            case .weekDone(let summary):
+                onWeekEnd?(summary.week, summary.state)
+                phase = runner.begin()
+            case .yearDone(let outcome):
+                s = runner.state     // 年末（優勝/夜逃げ含む）の状態と乱数列を呼び出し側へ書き戻す
+                rng = runner.rng
+                return outcome
+            }
         }
-        s.growthBudget = budget
-        let cal = config.calendar
-        var gpStage = gpSeeded ? 1 : 0   // シード組は2回戦から
-        var gpEntryPaid = false          // エントリー費はその年最初に出る回戦で徴収
-        var gpAlive = !seedFinal
-        var finalist = seedFinal
-        var revival = false
-        let finalLine = finalLineOverride ?? cal.gpFinalLine
-
-        for week in 1...config.weeks {
-            var acted = false
-
-            // 1) 道中の大会（資格→出場判断→エントリー費＋大阪なら交通費）
-            if let spec = cal.tournament(inWeek: week), spec.isEligible(year: year, state: s) {
-                if let travel = policy.enterTournament(spec, year: year, state: s) {
-                    let ts = cal.travelSpec(travel)
-                    let need = cal.entryFee + (spec.osaka ? ts.cost : 0)
-                    if s.money >= need {
-                        s.money -= cal.entryFee
-                        if spec.osaka {
-                            s.money -= ts.cost
-                            GameEngine.add(.体力, ts.stamina, to: &s, config: config)
-                        }
-                        let result = GameEngine.perform(s, line: spec.line, config: config, rng: &rng)
-                        if result.passed {
-                            s.money += spec.prize
-                            GameEngine.add(.知名度, spec.fame, to: &s, config: config)
-                        }
-                        acted = true
-                    }
-                }
-            }
-
-            // 2) グランプリ各回戦（東京・遠征不要・毎年1回戦から。1回戦週にエントリー費）
-            if !acted && gpAlive && gpStage < cal.gpRounds.count && week == cal.gpRounds[gpStage].week {
-                if !gpEntryPaid && s.money < cal.entryFee {
-                    gpAlive = false   // エントリー費が払えない＝その年は出られない（週は自由行動へ）
-                } else {
-                    if !gpEntryPaid {
-                        s.money -= cal.entryFee
-                        gpEntryPaid = true
-                    }
-                    let result = GameEngine.perform(s, line: cal.gpRounds[gpStage].line, config: config, rng: &rng)
-                    acted = true
-                    if result.passed {
-                        GameEngine.add(.知名度, cal.gpRoundFame, to: &s, config: config)
-                        gpStage += 1
-                        if gpStage == cal.gpRounds.count {
-                            finalist = true
-                        }
-                    } else {
-                        if gpStage == cal.gpRounds.count - 1 {
-                            revival = true   // 準決勝敗退のみ敗者復活へ
-                        }
-                        gpAlive = false
-                    }
-                }
-            }
-
-            // 3) 決勝週（敗者復活 → 通過なら同週の決勝へ）
-            if week == cal.gpFinalWeek {
-                if revival {
-                    let result = GameEngine.perform(s, line: cal.gpRevivalLine, config: config, rng: &rng)
-                    acted = true
-                    if result.passed {
-                        GameEngine.add(.知名度, cal.gpRoundFame, to: &s, config: config)
-                        finalist = true
-                    }
-                }
-                if finalist {
-                    // 決勝のみの人気補正（機微・judge_design §10-F）。王者防衛のライン上書き時にも適用
-                    let effLine = finalLine - cal.fameFinalBonus * (s.fame - 50) / 50
-                    let result = GameEngine.perform(s, line: effLine, config: config, rng: &rng)
-                    acted = true
-                    if result.passed {
-                        s.money += cal.gpPrize
-                        GameEngine.add(.知名度, cal.champFame, to: &s, config: config)
-                        return YearOutcome(champion: true, roundsPassed: gpStage, reachedFinal: true)
-                    }
-                }
-            }
-
-            // 4) 自由行動週（オファー抽選 → 療養 → 体力ゲート → 体調ダウン判定 → 行動）
-            if !acted {
-                let offer = GameEngine.rollOffer(state: s, config: config, rng: &rng)
-                if s.recoveryWeeks > 0 {
-                    s.recoveryWeeks -= 1                                          // 療養中（オファーは受けられない）
-                    GameEngine.applyRest(.完全休養, to: &s, config: config)
-                } else {
-                    var action = policy.action(week: week, year: year, state: s, offer: offer)
-                    if case .train = action, s.stamina < config.staminaGate {
-                        action = .rest(.完全休養)                                 // 体力ゲート（谷口が止める）
-                    }
-                    let risky: Bool
-                    switch action {
-                    case .train: risky = true
-                    case .job(let j): risky = (j == .キツい)
-                    default: risky = false
-                    }
-                    if risky, s.stamina < config.injuryThreshold,
-                       rng.nextUniform() < (config.injuryThreshold - s.stamina) * config.injuryProbPerPoint {
-                        action = .rest(.完全休養)                                 // 体調ダウン発生
-                        s.recoveryWeeks = config.injuryRestWeeks - 1
-                        GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &s, config: config)
-                    }
-                    switch action {
-                    case .acceptOffer:
-                        if let o = offer {
-                            GameEngine.applyOffer(o, to: &s, config: config)
-                        } else {
-                            GameEngine.applyRest(.完全休養, to: &s, config: config)   // 防御的フォールバック
-                        }
-                    case .train(let t):
-                        if !GameEngine.applyTraining(t, to: &s, config: config) {
-                            GameEngine.applyRest(.完全休養, to: &s, config: config)   // 払えなければ休む（Python同様）
-                        }
-                    case .job(let j):
-                        GameEngine.applyJob(j, to: &s, config: config)
-                    case .rest(let r):
-                        GameEngine.applyRest(r, to: &s, config: config)
-                    }
-                }
-            }
-
-            // 5) 週末処理（生活費→生活苦→夜逃げ判定）
-            if GameEngine.applyWeekEnd(week: week, to: &s, config: config) {
-                return YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true)
-            }
-            onWeekEnd?(week, s)
-        }
-        return YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist)
     }
 
     /// 通常キャリア（最大 years 年・優勝で勇退）。優勝年（なければ nil）を返す

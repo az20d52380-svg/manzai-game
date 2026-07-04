@@ -1,7 +1,7 @@
 // GameState.swift
 // コンビ1組の状態。SwiftUI 非依存の純 Swift（CLAUDE.mdルール1）。
 
-public struct GameState {
+public struct GameState: Codable {
     public var money: Int
     public var stamina: Double
     public var fame: Double
