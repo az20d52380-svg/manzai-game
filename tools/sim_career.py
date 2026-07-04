@@ -106,6 +106,7 @@ RUN_TRACK = None
 EVENTS_ON   = False
 RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（run_careerが管理）
 EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
+EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
 # (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
 EVENT_TABLE = [
     (0,  10, 0, None, 0),          # 廃棄弁当/班長の弁当
@@ -313,9 +314,11 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                 _apply_event(s, SEASONAL[week])
             if not acted and rng.random() < EVENT_RATE:
                 # 同一イベントは同一キャリアで原則1回（event_design_v0 §頻度設計）。全消化後は発生しない
+                # EVENT_FIRE_CAP: プール何種でも効果発火は通算この回数まで（超過分はフレーバー表示のみ想定）
                 idx = int(rng.random() * len(EVENT_TABLE))
                 if RUN_EVENTS_FIRED is not None:
-                    if idx not in RUN_EVENTS_FIRED:
+                    capped = EVENT_FIRE_CAP is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP
+                    if idx not in RUN_EVENTS_FIRED and not capped:
                         RUN_EVENTS_FIRED.add(idx)
                         _apply_event(s, EVENT_TABLE[idx])
                 else:

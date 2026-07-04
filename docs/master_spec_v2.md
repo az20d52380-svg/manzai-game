@@ -99,7 +99,8 @@
 |---|---|---|
 | 初回優勝率1.5〜2%・決勝到達17〜31%・1年目0% | ✅実測 | endgame v0.1 |
 | D=120逓減で初優勝6〜9年帯 / D=100は崖 | ✅実測 | career_report_v1 |
-| 王者編マトリクス（D×ティア×10連覇率） | ✅実測 | dynasty §2 |
+| 王者編マトリクス（D×ティア×10連覇率・決勝94基準） | ✅実測（07-04再計測） | dynasty §2 |
+| 会話増産のイベント総量予算（33種でも優勝1.4〜1.7%） | ✅実測（発火上限15回採用） | dialogue_batch3 §8 / exp_events |
 | 周回カーブ（2周目優勝・殿堂4〜10周目） | ✅実測 | meta_report |
 | 相方ティア効果・成長なし相方の崩壊 | ✅実測 | partner_gacha §2-3 |
 | 事務所EV（第2案） | ✅実測（2社微調整候補） | meta_report §3 |
@@ -116,8 +117,8 @@
 |---|---|
 | バランス実測 | career_report_v0/v1, endgame_design_v0, meta_report_v0 |
 | システム設計 | trophy_design_v1(＋v0称号), dynasty_design_v0, partner_gacha_design_v0, agency_fanbase_design_v0, item_design_v0, neta_system_design_v0 |
-| コンテンツ | judge_design_v0, event_design_v0, dialogue_design_v0, rival_design_v0, finals_direction_v0, onboarding_design_v0 |
-| 横断 | improvement_proposals_v0, genre_research_v0, roadmap_v1, gamecore_design |
+| コンテンツ | judge_design_v0, event_design_v0(＋v1_batch2), dialogue_design_v0(＋batch2/batch3), rival_design_v0(＋scripts), partner_characters_v0, booking_design_v0, finals_direction_v0, onboarding_design_v0 |
+| 横断 | improvement_proposals_v0, genre_research_v0, roadmap_v1, gamecore_design, ui_design_v0 |
 | 検証機 | tools/balance_sim.py（正）, sim_career.py, sim_meta.py, gen_golden.py, exp_*.py |
 
 ## 10. 未決事項（オーナー判断待ち・優先順）

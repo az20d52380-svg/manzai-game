@@ -70,7 +70,7 @@ def main():
     try:
         B.GROWTH_DECAY_D = 140
         for step in STEPS:
-            lines = " / ".join(str(95 + step * k) for k in range(1, 10))
+            lines = " / ".join(f"{C.GP_FINAL_LINE + step * k:.0f}" for k in range(1, 10))
             print(f"== 飽きられSTEP={step}（防衛k回目のライン: {lines}） ==")
             for tier_name, overrides, kwargs in TIERS:
                 for k, v in overrides.items():
@@ -92,7 +92,7 @@ def main():
                     if k != "GROWTH_DECAY_D":
                         setattr(B, k, v)
             print()
-        print("== 返り咲き難度スキャン（STEP=6固定・挑戦年の決勝ライン=95+H×通算優勝数） ==")
+        print(f"== 返り咲き難度スキャン（STEP=6固定・挑戦年の決勝ライン={C.GP_FINAL_LINE:.0f}+H×通算優勝数） ==")
         for heritage in (0, 2, 4):
             print(f"[H={heritage}]")
             for tier_name, overrides, kwargs in TIERS:
