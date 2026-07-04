@@ -29,6 +29,8 @@ COMPAT_GROWS    = True     # 【TBD】ネタ合わせ/相方と過ごす で+1
 
 # --- 成長逓減と能力上限（docs/career_report_v1.md・endgame_design_v0.md・trophy_design_v1.md で採用。GameCoreと同期） ---
 GROWTH_DECAY_D  = 120      # 【仮】能力上昇量×(1−現在値/D)。Noneで無効。D=100まで下げると10年で優勝不能になる崖あり
+GROWTH_DECAY_TOTAL = False # 【実験・既定OFF】逓減を「現在値/D」でなく「実力値(加重合計)/D」で計算（分散稽古の構造優位を消す案・exp_human_fix2参照）
+YEAR_GROWTH_CAP = None     # 【実験・既定OFF】演技系4能力の実力値換算の年間成長上限。sim_careerが年初に s._yg を0リセットする（exp_human_fix2参照）
 ABILITY_CAP     = 120      # 【仮】センス/発想/表現/華の上限（固定）。トロフィーでDが120を超えた分は「上限到達が速く・確実になる」効果
 MENTAL_CAP      = 100      # メンタルはブレ幅式(1−メンタル/100)に直結するため100のまま
 
@@ -116,7 +118,13 @@ def add(s, key, amt):
     else:
         # 能力5種: 成長逓減（正の上昇のみ）を掛けてから上限にクランプ
         if GROWTH_DECAY_D and amt > 0:
-            amt = amt * max(0.0, 1 - getattr(s, key) / GROWTH_DECAY_D)
+            basis = jitsuryoku(s) if (GROWTH_DECAY_TOTAL and key != "mental") else getattr(s, key)
+            amt = amt * max(0.0, 1 - basis / GROWTH_DECAY_D)
+        if YEAR_GROWTH_CAP is not None and amt > 0 and key != "mental":
+            w = dict(sense=W_SENSE, idea=W_IDEA, expr=W_EXPR, chara=W_CHARA)[key]
+            budget = YEAR_GROWTH_CAP - getattr(s, "_yg", 0.0)
+            amt = max(0.0, min(amt, budget / w))
+            s._yg = getattr(s, "_yg", 0.0) + amt * w
         cap = MENTAL_CAP if key == "mental" else ABILITY_CAP
         setattr(s, key, clamp(getattr(s, key) + amt, 0, cap))
 
@@ -127,14 +135,17 @@ def jitsuryoku(s):
 # 行動
 # ============================================================
 
+DEBT_TRAIN_FACTOR = None   # 【実験・既定OFF】所持金<0のとき稽古の能力上昇に掛ける係数（exp_human_fix参照）
+
 def do_training(s, name):
     t = TRAININGS[name]
     if t["cost"] > 0 and s.money < t["cost"]:   # 有料行動のみ所持金必須【仮の実装解釈・仕様未定義】
         return False
+    fac = DEBT_TRAIN_FACTOR if (DEBT_TRAIN_FACTOR is not None and s.money < 0) else None
     s.money -= t["cost"]
-    k, v = t["main"]; add(s, k, v)
+    k, v = t["main"]; add(s, k, v if fac is None else v * fac)
     if t["sub"]:
-        k, v = t["sub"]; add(s, k, v)
+        k, v = t["sub"]; add(s, k, v if fac is None else v * fac)
     add(s, "stamina", t["stam"])
     if t["fame"]:
         add(s, "fame", t["fame"])

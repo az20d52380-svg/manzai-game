@@ -107,6 +107,7 @@ EVENTS_ON   = False
 RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（run_careerが管理）
 EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
+DEBT_LIFE_PEN  = None   # 【実験・既定OFF】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦（exp_human_fix参照）
 # (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
 EVENT_TABLE = [
     (0,  10, 0, None, 0),          # 廃棄弁当/班長の弁当
@@ -331,6 +332,8 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
     """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。
     seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
+    if B.YEAR_GROWTH_CAP is not None:
+        s._yg = 0.0            # 年間成長上限の年初リセット【実験】
     if RUN_TRACK is not None:
         RUN_TRACK["year_wins"] = []
         RUN_TRACK["year_entered"] = []
@@ -457,6 +460,10 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
 
         if week % B.LIVING_INTERVAL == 0:
             s.money -= B.LIVING_COST
+            if DEBT_LIFE_PEN is not None and s.money < 0:
+                dst, dmt = DEBT_LIFE_PEN   # 生活費が払えない月の生活苦【実験・既定OFF】
+                B.add(s, "stamina", dst)
+                B.add(s, "mental", dmt)
         s.min_money = min(s.min_money, s.money)
 
     return False, gp_stage, finalist
