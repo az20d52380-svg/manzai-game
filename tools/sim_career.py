@@ -109,11 +109,14 @@ EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
 DEBT_LIFE_PEN  = None   # 【実験・既定OFF】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦（exp_human_fix参照）
 BANKRUPT_LINE  = None   # 【実験・既定OFF】所持金がこの額を下回ったら破産＝キャリア強制終了（例 -1_000_000。rule_holes_v0）
-INJURY_ON      = False  # 【実験・既定OFF】低体力での稽古・キツいバイトにケガ抽選（rule_holes_v0）
-INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとケガ抽選
-INJURY_P_PER   = 0.02   # 不足1ptあたりのケガ確率（体力0で40%）【仮】
-INJURY_REST    = 3      # ケガ後の療養週数（行動強制）【仮】
-INJURY_MENTAL  = -5.0   # ケガ時のメンタル打撃【仮】
+INJURY_ON      = False  # 【実験・既定OFF】低体力での稽古・キツいバイトに体調ダウン抽選（rule_holes_v0。ゲーム内表記は「喉をやられた」「腰にきた」等——漫才師にケガという語は使わない）
+INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとダウン抽選
+INJURY_P_PER   = 0.02   # 不足1ptあたりのダウン確率（体力0で40%）【仮】
+INJURY_REST    = 3      # ダウン後の療養週数（行動強制）【仮】
+INJURY_MENTAL  = -5.0   # ダウン時のメンタル打撃【仮】
+INJURY_ABILITY = 0.0    # ダウン時のランダム演技能力の低下量（重症変種の比較用）【仮】
+STAMINA_GATE   = None   # 例 20.0: 体力がこの値未満だと稽古を選べない（ハードゲート方式の比較用・選択は休養に差し替え）
+CAP_CURVE      = None   # (基準, 傾き, 下限): その年の年間成長上限 = max(下限, 基準−傾き×(年−1))。正典v2の年齢カーブ（human_calibration §5）
 # (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
 EVENT_TABLE = [
     (0,  10, 0, None, 0),          # 廃棄弁当/班長の弁当
@@ -338,6 +341,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
     """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。
     seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
+    if CAP_CURVE is not None:
+        base, slope, floor = CAP_CURVE
+        B.YEAR_GROWTH_CAP = max(floor, base - slope * (year - 1))   # 年齢カーブ型上限【実験】
     if B.YEAR_GROWTH_CAP is not None:
         s._yg = 0.0            # 年間成長上限の年初リセット【実験】
     if RUN_TRACK is not None:
@@ -438,12 +444,16 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
             acted = True
         if not acted:
             act, arg = pol.choose(s, week, offer, rng)
+            if STAMINA_GATE is not None and act == "train" and s.stamina < STAMINA_GATE:
+                act, arg = "rest", "完全休養"       # ハードゲート: 稽古ボタンが押せない（谷口が止める）
             if INJURY_ON and s.stamina < INJURY_TH and (
                     act == "train" or (act == "job" and arg == "キツい")):
                 if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER:
-                    act, arg = "rest", "完全休養"   # ケガ発生: 今週から療養
+                    act, arg = "rest", "完全休養"   # 体調ダウン発生: 今週から療養
                     s._inj = INJURY_REST - 1
                     B.add(s, "mental", INJURY_MENTAL)
+                    if INJURY_ABILITY:
+                        B.add(s, rng.choice(["sense", "idea", "expr", "chara"]), -INJURY_ABILITY)
                     if RUN_TRACK is not None:
                         RUN_TRACK["injuries"] = RUN_TRACK.get("injuries", 0) + 1
             if act == "train":
