@@ -17,11 +17,19 @@ GameCore/
 │   ├── GameConfig.swift    … 全バランス数値・行動定義（balance_sim.py CONFIG と1対1）
 │   ├── GameState.swift     … コンビ1組の状態（所持金・体力・知名度・能力5種・相性）
 │   ├── RandomSource.swift  … シード固定可能な乱数の注入点（SplitMix64）
-│   └── GameEngine.swift    … 週次行動・本番スコア・生活費（balance_sim.py の関数群と同値）
+│   ├── GameEngine.swift    … 週次行動・本番スコア・生活費（balance_sim.py の関数群と同値）
+│   ├── Calendar.swift      … 大会カレンダー・多段階グランプリ・遠征（sim_career.py の定数群と1対1）
+│   └── Career.swift        … 年間48週の進行エンジン＋王者シード（sim_career.run_year と同値・WeekPolicyで意思決定を注入）
 └── Tests/GameCoreTests/
-    ├── GoldenTests.swift   … Python生成の12週期待値との一致（数式同期の要）
-    └── EngineTests.swift   … 分岐・クランプ・乱数スタブの単体テスト
+    ├── GoldenTests.swift        … 12週の行動期待値（数式同期の基礎）
+    ├── CareerGoldenTests.swift  … 3年間・大会/GP/オファー込みの完全一致（PythonとSwiftで同一のSplitMix64乱数列）
+    ├── CareerLogicTests.swift   … 敗者復活ルート・王者シード・出場資格・遠征費不足の分岐
+    └── EngineTests.swift        … クランプ・逓減・オファー抽選の単体テスト
 ```
+
+### 年間ループの同期方式（v0.2で追加）
+
+`tools/gen_golden.py` がPython側にSwiftと**ビット一致するSplitMix64**を持ち、大会・グランプリ・オファー・生活費込みの3年間を決定的に実行して期待値を吐く。**週処理と乱数消費の順序の正典は gen_golden.py のdocstring**。これにより「乱数を消費する経路は数値一致を求めない」という当初の制約（§乱数の同期方針）を年間ループについては撤廃し、完全一致で検証する。
 
 ## Python ↔ Swift 対応表
 
