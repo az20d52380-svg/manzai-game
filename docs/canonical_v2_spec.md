@@ -82,7 +82,7 @@
 6. ✅ CareerGoldenTestsのデータ再生成（WeekRunnerGoldenTestsは同一データ参照で自動追従・12週GoldenTestsは上限非発動域のため不変で有効）。**sim_career.run_year ⇔ gen_golden複製ループの3年ビット一致をクロス検証済み**
 7. ✅ master_spec の背骨数値をv2化・検証台帳に移行注記（2026-07-05）
 8. ✅ 影響ドキュメント10本に「正典v2移行」バナーを一括挿入（数値は旧正典の履歴として保存・設計結論は有効の明記。個別の数値書き換えはしない方針を採用）
-9. ☐ **Macで swift test**（フリップ後の最初の1手。CareerGolden＋WeekRunnerGolden＋12週の3本green＝Swift同期の完了証明）
+9. ✅ **Macで swift test【2026-07-04 green】**（実機Swift 6.3.3で**17テスト全通過**: CareerGolden 1・CareerLogic 4・Engine 9・Golden 1・WeekRunnerGolden 2。Python⇔Swiftの乱数列ビット一致を実機で証明＝正典v2大改修の検証が完結。※CLT単体にXCTestが無く `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` でXcodeツールチェーン指定が必要だった）
 
 - **MVP実装（Xcode/UI）はフリップを待たずに進めてよい**——UI層はGameCoreのAPIに依存し、バランス定数には依存しない。フリップはUI完成前に1回で済ませる
 - 【設計上の懸念】フリップ後は旧実測値が全て「旧正典」の歴史値になる。中途半端な部分適用（例: ラインだけv2）は全数値の整合が崩れるため禁止
