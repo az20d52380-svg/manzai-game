@@ -119,7 +119,7 @@
 
 | 分類 | ファイル |
 |---|---|
-| バランス実測 | career_report_v0/v1, endgame_design_v0, meta_report_v0 |
+| バランス実測 | career_report_v0/v1, endgame_design_v0, meta_report_v0, human_calibration_v0, rule_holes_v0, **canonical_v2_spec（正典v2の正本）** |
 | システム設計 | trophy_design_v1(＋v0称号), dynasty_design_v0, partner_gacha_design_v0, agency_fanbase_design_v0, item_design_v0, neta_system_design_v0 |
 | コンテンツ | judge_design_v0, event_design_v0(＋v1_batch2), dialogue_design_v0(＋batch2/batch3), rival_design_v0(＋scripts), partner_characters_v0, booking_design_v0, finals_direction_v0, onboarding_design_v0 |
 | 横断 | improvement_proposals_v0, genre_research_v0, roadmap_v1, gamecore_design, ui_design_v0 |

@@ -38,6 +38,15 @@ class PCasual(B.Policy):
     def transport(self, s):
         return B.TRAIN if s.money >= 100_000 else B.BUS
 
+class PCasual2(PCasual):
+    """のんびり改: のんびり型＋「大会バッジを見て前週に休む」だけ覚えた初心者（UIが教える最低限）"""
+    name = "のんびり改"
+
+    def choose(self, s, week, offer, rng):
+        if (week + 1) in C.EVENT_WEEKS and s.stamina < 60:
+            return ("rest", "完全休養")
+        return super().choose(s, week, offer, rng)
+
 HUMAN_BOTS = (B.PRandom, B.PWork, B.PTrain, PCasual)
 
 def main():
