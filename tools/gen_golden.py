@@ -41,9 +41,9 @@ class SplitMix64:
         return seq[min(int(self.random() * len(seq)), len(seq) - 1)]
 
 # 週パターン（10週周期・Swiftテストと同一の並び）
-PATTERN = [("train", "ネタ作り"), ("train", "コンビ練習"), ("job", "標準"),
-           ("rest", "完全休養"), ("train", "営業場数"), ("job", "キツい"),
-           ("rest", "気分転換"), ("train", "舞台稽古"), ("job", "楽"),
+PATTERN = [("train", "ネタ作り"), ("train", "ネタ合わせ"), ("job", "標準"),
+           ("rest", "完全休養"), ("train", "フリーライブ"), ("job", "キツい"),
+           ("rest", "気分転換"), ("train", "ネタ見せ会"), ("job", "楽"),
            ("rest", "相方と過ごす")]
 
 def run_year(s, year, rng, log=None):

@@ -25,7 +25,7 @@ INIT_FAME       = 3        # 初期知名度0〜5【仮】の中間
 INIT_ABILITY    = 10       # 能力5種 一律
 COMPAT_INIT     = 5        # コンビ相性（谷口）
 COMPAT_CAP      = 20       # 【仮】相性の成長上限（成長させるか自体がTBD）
-COMPAT_GROWS    = True     # 【TBD】コンビ練習/相方と過ごす で+1
+COMPAT_GROWS    = True     # 【TBD】ネタ合わせ/相方と過ごす で+1
 
 # --- 成長逓減と能力上限（docs/career_report_v1.md・endgame_design_v0.md・trophy_design_v1.md で採用。GameCoreと同期） ---
 GROWTH_DECAY_D  = 120      # 【仮】能力上昇量×(1−現在値/D)。Noneで無効。D=100まで下げると10年で優勝不能になる崖あり
@@ -38,10 +38,10 @@ LIVING_INTERVAL = 4
 # --- 稽古: 主効果 / 副効果 / 費用 / 体力 / 知名度 ---
 TRAININGS = {
     "ネタ作り":     dict(main=("idea", 3),   sub=("sense", 1),  cost=0,      stam=-20, fame=0),
-    "舞台稽古":     dict(main=("expr", 6),   sub=("mental", 3), cost=80_000, stam=-30, fame=0),
-    "コンビ練習":   dict(main=("sense", 3),  sub=("compat", 1), cost=0,      stam=-20, fame=0),
-    "メンタルトレ": dict(main=("mental", 6), sub=None,          cost=80_000, stam=-10, fame=0),
-    "営業場数":     dict(main=("chara", 3),  sub=("expr", 1),   cost=0,      stam=-30, fame=1),
+    "ネタ見せ会":     dict(main=("expr", 6),   sub=("mental", 3), cost=80_000, stam=-30, fame=0),
+    "ネタ合わせ":   dict(main=("sense", 3),  sub=("compat", 1), cost=0,      stam=-20, fame=0),
+    "ランニング・サウナ": dict(main=("mental", 6), sub=None,          cost=80_000, stam=-10, fame=0),
+    "フリーライブ":     dict(main=("chara", 3),  sub=("expr", 1),   cost=0,      stam=-30, fame=1),
 }
 
 # --- バイト: (収入, 体力) ---
@@ -178,7 +178,7 @@ def perform(s, line, rng):
 # 戦略ボット（全て【仮】の方針。人間の代役）
 # ============================================================
 
-FREE_ROT = ["ネタ作り", "コンビ練習", "営業場数"]
+FREE_ROT = ["ネタ作り", "ネタ合わせ", "フリーライブ"]
 
 class Policy:
     name = "base"
@@ -226,7 +226,7 @@ class PBalanced(Policy):
         if s.stamina < 40:
             return ("rest", "完全休養")
         if s.money >= 500_000:
-            return ("train", "舞台稽古")
+            return ("train", "ネタ見せ会")
         return ("train", FREE_ROT[week % 3])
     def transport(self, s):
         return TRAIN if s.money >= 150_000 else BUS
@@ -244,11 +244,11 @@ class PSmart(Policy):
         if s.stamina < 35:
             return ("rest", "完全休養")
         if s.mental < 45 and s.money >= 300_000:
-            return ("train", "メンタルトレ")
+            return ("train", "ランニング・サウナ")
         if s.money >= 450_000:
-            return ("train", "舞台稽古")
+            return ("train", "ネタ見せ会")
         # 弱点補強: 主効果対象が最も低い無料稽古
-        cands = [("ネタ作り", s.idea), ("コンビ練習", s.sense), ("営業場数", s.chara)]
+        cands = [("ネタ作り", s.idea), ("ネタ合わせ", s.sense), ("フリーライブ", s.chara)]
         cands.sort(key=lambda x: x[1])
         return ("train", cands[0][0])
     def transport(self, s):

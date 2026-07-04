@@ -106,9 +106,9 @@ final class EngineTests: XCTestCase {
     func testPaidTrainingRequiresCash() {
         let config = GameConfig()
         var s = GameState(config: config)
-        s.money = 50_000   // 舞台稽古の8万に足りない
+        s.money = 50_000   // ネタ見せ会の8万に足りない
         let before = s
-        XCTAssertFalse(GameEngine.applyTraining(.舞台稽古, to: &s, config: config))
+        XCTAssertFalse(GameEngine.applyTraining(.ネタ見せ会, to: &s, config: config))
         XCTAssertEqual(s.money, before.money)
         XCTAssertEqual(s.表現, before.表現, accuracy: 1e-12)
 

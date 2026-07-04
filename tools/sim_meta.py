@@ -205,11 +205,11 @@ def agency_section(n):
             if "rate_mult" in mod:
                 B.OFFER_RATES = [(cap, r * mod["rate_mult"]) for cap, r in B.OFFER_RATES]
             if "butai_cost" in mod:
-                B.TRAININGS["舞台稽古"]["cost"] = mod["butai_cost"]
+                B.TRAININGS["ネタ見せ会"]["cost"] = mod["butai_cost"]
             if "butai_stam" in mod:
-                B.TRAININGS["舞台稽古"]["stam"] = mod["butai_stam"]
+                B.TRAININGS["ネタ見せ会"]["stam"] = mod["butai_stam"]
             if "eigyo_fame" in mod:
-                B.TRAININGS["営業場数"]["fame"] = mod["eigyo_fame"]
+                B.TRAININGS["フリーライブ"]["fame"] = mod["eigyo_fame"]
             if "train_bonus" in mod:
                 for t in B.TRAININGS.values():
                     k, v = t["main"]

@@ -30,12 +30,12 @@ final class GoldenTests: XCTestCase {
     // 12週の決定的な行動列（乱数不使用）。生活費は4週ごとに自動で引かれる
     let script: [(act: Act, exp: Expected)] = [
         (.train(.ネタ作り),     Expected(money: 300_000, stamina: 80, fame: 3, sense: 10.916666666666666, idea: 12.75, expr: 10, chara: 10, mental: 10, compat: 5)),
-        (.train(.コンビ練習),   Expected(money: 300_000, stamina: 60, fame: 3, sense: 13.643749999999999, idea: 12.75, expr: 10, chara: 10, mental: 10, compat: 6)),
-        (.train(.営業場数),     Expected(money: 300_000, stamina: 30, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 10.916666666666666, chara: 12.75, mental: 10, compat: 6)),
+        (.train(.ネタ合わせ),   Expected(money: 300_000, stamina: 60, fame: 3, sense: 13.643749999999999, idea: 12.75, expr: 10, chara: 10, mental: 10, compat: 6)),
+        (.train(.フリーライブ),     Expected(money: 300_000, stamina: 30, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 10.916666666666666, chara: 12.75, mental: 10, compat: 6)),
         (.job(.標準),           Expected(money: 280_000, stamina: 10, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 10.916666666666666, chara: 12.75, mental: 10, compat: 6)),
         (.rest(.完全休養),      Expected(money: 280_000, stamina: 70, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 10.916666666666666, chara: 12.75, mental: 11.833333333333334, compat: 6)),
-        (.train(.舞台稽古),     Expected(money: 200_000, stamina: 40, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 16.370833333333334, chara: 12.75, mental: 14.537500000000001, compat: 6)),
-        (.train(.メンタルトレ), Expected(money: 120_000, stamina: 30, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 16.370833333333334, chara: 12.75, mental: 19.810625, compat: 6)),
+        (.train(.ネタ見せ会),     Expected(money: 200_000, stamina: 40, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 16.370833333333334, chara: 12.75, mental: 14.537500000000001, compat: 6)),
+        (.train(.ランニング・サウナ), Expected(money: 120_000, stamina: 30, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 16.370833333333334, chara: 12.75, mental: 19.810625, compat: 6)),
         (.job(.キツい),         Expected(money: 140_000, stamina: 0,  fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 16.370833333333334, chara: 12.75, mental: 19.810625, compat: 6)),
         (.rest(.相方と過ごす),  Expected(money: 140_000, stamina: 20, fame: 4, sense: 13.643749999999999, idea: 12.75, expr: 16.370833333333334, chara: 12.75, mental: 19.810625, compat: 7)),
         (.train(.ネタ作り),     Expected(money: 140_000, stamina: 0,  fame: 4, sense: 14.530052083333333, idea: 15.43125, expr: 16.370833333333334, chara: 12.75, mental: 19.810625, compat: 7)),

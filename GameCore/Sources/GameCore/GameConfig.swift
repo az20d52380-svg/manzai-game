@@ -22,10 +22,10 @@ public enum StatKey {
 
 public enum Training: CaseIterable, Hashable {
     case ネタ作り
-    case 舞台稽古
-    case コンビ練習
-    case メンタルトレ
-    case 営業場数
+    case ネタ見せ会
+    case ネタ合わせ
+    case ランニング・サウナ
+    case フリーライブ
 }
 
 public enum Job: CaseIterable, Hashable {
@@ -81,7 +81,7 @@ public struct GameConfig {
     public var initAbility = 10.0
     public var compatInit = 5.0
     public var compatCap = 20.0        // 【仮】相性の成長上限
-    public var compatGrows = true      // 【TBD】コンビ練習/相方と過ごす で+1
+    public var compatGrows = true      // 【TBD】ネタ合わせ/相方と過ごす で+1
 
     /// 成長逓減【仮】: 能力上昇量 × (1 − 現在値/D)。nil で逓減なし。
     /// docs/career_report_v1.md・endgame_design_v0.md で正式採用（balance_sim.py GROWTH_DECAY_D と同期）。
@@ -101,10 +101,10 @@ public struct GameConfig {
     // --- 稽古（Python: TRAININGS） ---
     public var trainings: [Training: TrainingSpec] = [
         .ネタ作り:     TrainingSpec(main: (.ability(.発想), 3),     sub: (.ability(.センス), 1), cost: 0,      stamina: -20, fame: 0),
-        .舞台稽古:     TrainingSpec(main: (.ability(.表現), 6),     sub: (.ability(.メンタル), 3), cost: 80_000, stamina: -30, fame: 0),
-        .コンビ練習:   TrainingSpec(main: (.ability(.センス), 3),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
-        .メンタルトレ: TrainingSpec(main: (.ability(.メンタル), 6), sub: nil,                     cost: 80_000, stamina: -10, fame: 0),
-        .営業場数:     TrainingSpec(main: (.ability(.華), 3),       sub: (.ability(.表現), 1),    cost: 0,      stamina: -30, fame: 1),
+        .ネタ見せ会:     TrainingSpec(main: (.ability(.表現), 6),     sub: (.ability(.メンタル), 3), cost: 80_000, stamina: -30, fame: 0),
+        .ネタ合わせ:   TrainingSpec(main: (.ability(.センス), 3),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
+        .ランニング・サウナ: TrainingSpec(main: (.ability(.メンタル), 6), sub: nil,                     cost: 80_000, stamina: -10, fame: 0),
+        .フリーライブ:     TrainingSpec(main: (.ability(.華), 3),       sub: (.ability(.表現), 1),    cost: 0,      stamina: -30, fame: 1),
     ]
 
     // --- バイト（Python: JOBS） ---

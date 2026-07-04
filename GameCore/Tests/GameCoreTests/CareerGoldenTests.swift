@@ -9,8 +9,8 @@ import XCTest
 struct GoldenPolicy: WeekPolicy {
     // tools/gen_golden.py の PATTERN と同一（10週周期）
     static let pattern: [WeekAction] = [
-        .train(.ネタ作り), .train(.コンビ練習), .job(.標準), .rest(.完全休養), .train(.営業場数),
-        .job(.キツい), .rest(.気分転換), .train(.舞台稽古), .job(.楽), .rest(.相方と過ごす),
+        .train(.ネタ作り), .train(.ネタ合わせ), .job(.標準), .rest(.完全休養), .train(.フリーライブ),
+        .job(.キツい), .rest(.気分転換), .train(.ネタ見せ会), .job(.楽), .rest(.相方と過ごす),
     ]
 
     mutating func action(week: Int, year: Int, state: GameState, offer: OfferSpec?) -> WeekAction {
