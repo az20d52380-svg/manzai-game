@@ -10,11 +10,15 @@ public struct StageResult {
     public let name: String
     public let passed: Bool
     public let prize: Int      // 通過時のみ賞金額、敗退は0
+    /// 大会・GP各回戦・敗者復活・決勝など「結果画面(S3)を出す本番」か。
+    /// 体調ダウン/療養など週内の付随イベントは false（UIが名前で判別せず型で分岐できるように）。
+    public let isStage: Bool
 
-    public init(name: String, passed: Bool, prize: Int) {
+    public init(name: String, passed: Bool, prize: Int, isStage: Bool = true) {
         self.name = name
         self.passed = passed
         self.prize = prize
+        self.isStage = isStage
     }
 }
 
@@ -225,7 +229,7 @@ public struct WeekRunner<R: RandomSource> {
             action = .rest(.完全休養)                    // 体調ダウン発生（「喉をやられた」等）
             state.recoveryWeeks = config.injuryRestWeeks - 1
             GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &state, config: config)
-            weekResults.append(StageResult(name: "体調ダウン", passed: false, prize: 0))
+            weekResults.append(StageResult(name: "体調ダウン", passed: false, prize: 0, isStage: false))
         }
         switch action {
         case .acceptOffer:
@@ -294,7 +298,7 @@ public struct WeekRunner<R: RandomSource> {
                 if state.recoveryWeeks > 0 {
                     state.recoveryWeeks -= 1                 // 療養中（オファーは受けられない・runYearと同一順序）
                     GameEngine.applyRest(.完全休養, to: &state, config: config)
-                    weekResults.append(StageResult(name: "療養", passed: false, prize: 0))
+                    weekResults.append(StageResult(name: "療養", passed: false, prize: 0, isStage: false))
                 } else {
                     pendingOffer = offer
                     return .freeAction(offer: offer)

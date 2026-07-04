@@ -26,16 +26,6 @@ final class GameSession {
     // MARK: 進行の実体（WeekRunner が週処理と乱数消費の正典を持つ）
     private var runner: WeekRunner<SplitMix64>
 
-    /// 「結果画面を出す価値のある」出来事の名前（大会・GP各回戦・敗者復活・決勝）。
-    /// 体調ダウン/療養はここに入れず、自由週と同じく素通りさせる。
-    @ObservationIgnored private lazy var bigResultNames: Set<String> = {
-        var names = Set(config.calendar.tournaments.map(\.name))
-        names.formUnion(config.calendar.gpRoundNames)
-        names.insert("敗者復活")
-        names.insert("GP決勝")
-        return names
-    }()
-
     init(seed: UInt64 = 424242, config: GameConfig = GameConfig()) {
         self.config = config
         let start = GameState(config: config)
@@ -87,7 +77,7 @@ final class GameSession {
                 if !summary.results.isEmpty {
                     log.append(summarize(summary))
                 }
-                let big = summary.results.filter { bigResultNames.contains($0.name) }
+                let big = summary.results.filter(\.isStage)
                 if !big.isEmpty {
                     // 大会・GPの結果 → S3結果画面へ（自動送りしない）
                     pendingResult = WeekSummary(year: summary.year, week: summary.week,
