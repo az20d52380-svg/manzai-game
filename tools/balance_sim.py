@@ -174,9 +174,14 @@ def roll_offer(s, rng):
         return dict(rng.choice([OFFER_MONEY, OFFER_EXP]))
     return None
 
+BURST_P     = None   # 【実験・既定OFF】「ハマった夜」の発生率（勝負ごとの独立な運・メンタル非依存）
+BURST_BONUS = 8.0    # ハマった夜のスコア加点【仮】（正典v2・A案: 決勝到達を晩期の特別体験に戻すレバー）
+
 def perform(s, line, rng):
     b = blur_width(s.mental)
     roll = rng.uniform(-b, b)
+    if BURST_P is not None and rng.random() < BURST_P:
+        roll += BURST_BONUS
     pen = 0
     for th, p in STAM_PEN:
         if s.stamina < th:
