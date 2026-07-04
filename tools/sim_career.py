@@ -93,6 +93,18 @@ EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
 # 敗者復活の実測用カウンタ（improvement_proposals_v0.md 課題#1）
 REVIVAL_STATS = {"attempts": 0, "passes": 0}
 
+# 周回トロフィー判定用の計測フック（sim_meta.py が dict を差して有効化。None なら計測しない）
+RUN_TRACK = None
+
+def _track_pass(s):
+    """回戦・大会を通過した瞬間の状態記録（満身創痍/どん底トロフィー用）"""
+    if RUN_TRACK is None:
+        return
+    if s.stamina < 30:
+        RUN_TRACK["sub30_pass"] = True
+    if s.money < 0:
+        RUN_TRACK["subzero_pass"] = True
+
 # ============================================================
 # ボット（既存のバランス型・調整型を流用）
 # キャリア用の最小補正を2点だけ加える（1年版のロジック自体は変えない）:
@@ -144,23 +156,29 @@ def new_state(init_ability=None, compat=None):
     return s
 
 def enter_tournament(s, pol, t, rng):
-    """出場資格チェック後の大会1回ぶん。遠征費が払えなければ不参加(False)"""
+    """出場資格チェック後の大会1回ぶん。(出場したか, 優勝したか) を返す"""
     if t["osaka"]:
         tr = pol.transport(s)
         if s.money < tr["cost"]:
-            return False
+            return False, False
         s.money -= tr["cost"]
         B.add(s, "stamina", tr["stam"])
+        if RUN_TRACK is not None and tr is B.BUS:
+            RUN_TRACK["bus"] = RUN_TRACK.get("bus", 0) + 1
     ok, _ = B.perform(s, t["line"], rng)
     if ok:
         s.money += t["prize"]
         B.add(s, "fame", t["fame"])
-    return True
+        _track_pass(s)
+    return True, ok
 
 def run_year(pol, s, year, rng, seed_final=False, final_line=None):
     """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。
     seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
+    if RUN_TRACK is not None:
+        RUN_TRACK["year_wins"] = []
+        RUN_TRACK["year_entered"] = []
     gp_stage = 0               # 次に挑む GP_ROUNDS のインデックス
     gp_alive = not seed_final  # 今年のグランプリ挑戦が続いているか（王者は予選免除）
     finalist = seed_final
@@ -173,7 +191,12 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
         # --- その他の大会（出場資格があり交通費が払えるなら出る） ---
         t = TOURNAMENTS.get(week)
         if t and t["ok"](year, s):
-            acted = enter_tournament(s, pol, t, rng)
+            acted, won_t = enter_tournament(s, pol, t, rng)
+            if RUN_TRACK is not None and acted:
+                RUN_TRACK.setdefault("year_entered", []).append(t["name"])
+                if won_t:
+                    RUN_TRACK.setdefault("wins", set()).add(t["name"])
+                    RUN_TRACK.setdefault("year_wins", []).append(t["name"])
 
         # --- グランプリ各回戦（東京・遠征不要・毎年1回戦からエントリー【仮】） ---
         if not acted and gp_alive and gp_stage < len(GP_ROUNDS) and week == GP_ROUNDS[gp_stage][0]:
@@ -182,6 +205,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
             acted = True
             if ok:
                 B.add(s, "fame", GP_ROUND_FAME)
+                _track_pass(s)
                 gp_stage += 1
                 if gp_stage == len(GP_ROUNDS):
                     finalist = True
@@ -198,6 +222,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                 if ok:
                     REVIVAL_STATS["passes"] += 1
                     B.add(s, "fame", GP_ROUND_FAME)
+                    _track_pass(s)
+                    if RUN_TRACK is not None:
+                        RUN_TRACK["revival_pass"] = True
                     finalist = True
             if finalist:                             # 決勝
                 ok, _ = B.perform(s, line_final, rng)
@@ -205,6 +232,11 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                 if ok:
                     s.money += GP_PRIZE
                     B.add(s, "fame", FAME_CHAMP)
+                    _track_pass(s)
+                    if RUN_TRACK is not None:
+                        entered = RUN_TRACK.get("year_entered", [])
+                        if entered and set(RUN_TRACK.get("year_wins", [])) == set(entered):
+                            RUN_TRACK["grand_slam"] = True   # 六冠の年（出場全大会優勝+GP制覇）
                     return True, gp_stage, True      # 初優勝＝勇退
 
         # --- 通常行動（大会がなかった週） ---
@@ -214,6 +246,8 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
             if act == "train":
                 if not B.do_training(s, arg):
                     B.do_rest(s, "完全休養")
+                elif RUN_TRACK is not None:
+                    RUN_TRACK["trains"] = RUN_TRACK.get("trains", 0) + 1
             elif act == "job":
                 B.do_job(s, arg)
             elif act == "offer" and offer:
