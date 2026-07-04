@@ -108,6 +108,12 @@ RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（
 EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
 DEBT_LIFE_PEN  = None   # 【実験・既定OFF】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦（exp_human_fix参照）
+BANKRUPT_LINE  = None   # 【実験・既定OFF】所持金がこの額を下回ったら破産＝キャリア強制終了（例 -1_000_000。rule_holes_v0）
+INJURY_ON      = False  # 【実験・既定OFF】低体力での稽古・キツいバイトにケガ抽選（rule_holes_v0）
+INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとケガ抽選
+INJURY_P_PER   = 0.02   # 不足1ptあたりのケガ確率（体力0で40%）【仮】
+INJURY_REST    = 3      # ケガ後の療養週数（行動強制）【仮】
+INJURY_MENTAL  = -5.0   # ケガ時のメンタル打撃【仮】
 # (所持金Δ, 体力Δ, 知名度Δ, 能力キーorNone, 能力Δ) — 各ドキュメントの効果つきイベント18種の代表値
 EVENT_TABLE = [
     (0,  10, 0, None, 0),          # 廃棄弁当/班長の弁当
@@ -426,8 +432,20 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                 B.add(s, "stamina", -15)
                 B.add(s, rng.choice(["idea", "chara", "expr"]), 1)
                 acted = True
+        if not acted and INJURY_ON and getattr(s, "_inj", 0) > 0:
+            s._inj -= 1                      # 療養中: 行動選択できず休むだけ
+            B.do_rest(s, "完全休養")
+            acted = True
         if not acted:
             act, arg = pol.choose(s, week, offer, rng)
+            if INJURY_ON and s.stamina < INJURY_TH and (
+                    act == "train" or (act == "job" and arg == "キツい")):
+                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER:
+                    act, arg = "rest", "完全休養"   # ケガ発生: 今週から療養
+                    s._inj = INJURY_REST - 1
+                    B.add(s, "mental", INJURY_MENTAL)
+                    if RUN_TRACK is not None:
+                        RUN_TRACK["injuries"] = RUN_TRACK.get("injuries", 0) + 1
             if act == "train":
                 if not B.do_training(s, arg):
                     B.do_rest(s, "完全休養")
@@ -464,6 +482,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                 dst, dmt = DEBT_LIFE_PEN   # 生活費が払えない月の生活苦【実験・既定OFF】
                 B.add(s, "stamina", dst)
                 B.add(s, "mental", dmt)
+            if BANKRUPT_LINE is not None and s.money < BANKRUPT_LINE:
+                s._bankrupt = True         # 破産: キャリア強制終了【実験・既定OFF】
+                return False, gp_stage, finalist
         s.min_money = min(s.min_money, s.money)
 
     return False, gp_stage, finalist
@@ -482,6 +503,8 @@ def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
         won, stage, finalist = run_year(pol, s, year, rng)
         best_stage = max(best_stage, stage)
         ever_final = ever_final or finalist
+        if getattr(s, "_bankrupt", False):
+            break
         if money_log is not None:
             money_log[year - 1].append(s.money)
         if won:
