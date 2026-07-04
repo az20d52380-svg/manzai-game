@@ -69,8 +69,9 @@ public struct CalendarConfig {
     public var gpRounds: [(week: Int, line: Double)] = [(30, 30), (39, 45), (41, 60), (43, 72), (45, 85)]
     public var gpFinalWeek = 47
     public var gpRevivalLine = 88.0   // 敗者復活（準決勝敗退のみ・決勝と同週）
-    public var gpFinalLine = 91.0     // 初回優勝率1%前後の採用値（2026-07-04改訂）
+    public var gpFinalLine = 93.0     // 人気補正1.5とセットで実効91.5前後・初回優勝率1%強（2026-07-04改訂）
     public var gpRoundFame = 3.0      // 回戦通過の知名度【仮】
+    public var fameFinalBonus = 1.5   // 決勝のみの人気補正【機微】: 実効ライン = ライン − 本値×(知名度−50)/50
     public var gpPrize = 5_000_000    // 優勝賞金（表示1,000万の半分・手元）【仮】
     public var champFame = 20.0
 

@@ -86,7 +86,8 @@ def run_year(s, year, rng, log=None):
                     B.add(s, "fame", C.GP_ROUND_FAME)
                     finalist = True
             if finalist:
-                ok, _ = B.perform(s, C.GP_FINAL_LINE, rng)
+                eff_line = C.GP_FINAL_LINE - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
+                ok, _ = B.perform(s, eff_line, rng)
                 acted = True
                 if ok:
                     s.money += C.GP_PRIZE

@@ -97,7 +97,9 @@ public enum GameCareer {
                     }
                 }
                 if finalist {
-                    let result = GameEngine.perform(s, line: finalLine, config: config, rng: &rng)
+                    // 決勝のみの人気補正（機微・judge_design §10-F）。王者防衛のライン上書き時にも適用
+                    let effLine = finalLine - cal.fameFinalBonus * (s.fame - 50) / 50
+                    let result = GameEngine.perform(s, line: effLine, config: config, rng: &rng)
                     acted = true
                     if result.passed {
                         s.money += cal.gpPrize

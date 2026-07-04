@@ -49,7 +49,7 @@ BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 
 # ラインは docs/endgame_design_v0.md 採用値（能力上限120・逓減D=120前提）。
 # 初回プレイ＝優勝率1%前後（「普通にやったら優勝できちゃうのが1%くらい」）・決勝到達2〜3割、
-# トロフィー(D解放)・相方で優勝が現実化する設計。決勝91・復活88は2026-07-04改訂（旧95/92）
+# トロフィー(D解放)・相方で優勝が現実化する設計。決勝93+人気補正1.5(実効91.5)・復活88（2026-07-04改訂）
 GP_ROUNDS = [
     # (週, ライン, ラベル)      実在対応: 開催時期 / 通過組数(2025)
     (30, 30, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
@@ -59,9 +59,10 @@ GP_ROUNDS = [
     (45, 85, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
 ]
 GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 88   # 敗者復活: 12月下旬(決勝と同週) / 約21 → 1 (5%)
-GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 91   # 決勝: 第47週固定 / 10 → 優勝1 (10%)
+GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 93   # 決勝: 第47週固定。人気補正1.5とセットで実効91.5前後（2026-07-04改訂）
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 
+FAME_FINAL_BONUS = 1.5  # 決勝のみの人気補正【確定・機微】: 実効ライン = ライン − 1.5×(知名度−50)/50。judge_design §10-F
 GP_ROUND_FAME = 3    # GP各回戦通過の知名度上昇【仮】
 FAME_SMALL    = 5    # 小規模大会 通過+5【仮】
 FAME_MID      = 10   # 中規模大会 通過+10【仮】
@@ -226,8 +227,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
                     if RUN_TRACK is not None:
                         RUN_TRACK["revival_pass"] = True
                     finalist = True
-            if finalist:                             # 決勝
-                ok, _ = B.perform(s, line_final, rng)
+            if finalist:                             # 決勝（人気補正＝機微はここだけ効く）
+                eff_line = line_final - FAME_FINAL_BONUS * (s.fame - 50) / 50
+                ok, _ = B.perform(s, eff_line, rng)
                 acted = True
                 if ok:
                     s.money += GP_PRIZE
