@@ -62,6 +62,7 @@ GP_ROUNDS = [
 GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 76   # 敗者復活: 決勝-4【正典v2】
 GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 80   # 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
+GP_ENTRY_FEE = 2_000    # 【正典v2】GPエントリー費（実在の賞レース準拠・1回戦週に徴収。払えなければその年は出場不可）
 
 FAME_FINAL_BONUS = 1.5  # 決勝のみの人気補正【確定・機微】: 実効ライン = ライン − 1.5×(知名度−50)/50。judge_design §10-F
 GP_ROUND_FAME = 3    # GP各回戦通過の知名度上昇【仮】
@@ -322,11 +323,16 @@ def new_state(init_ability=None, compat=None):
     return s
 
 def enter_tournament(s, pol, t, rng):
-    """出場資格チェック後の大会1回ぶん。(出場したか, 優勝したか) を返す"""
-    if t["osaka"]:
-        tr = pol.transport(s)
-        if s.money < tr["cost"]:
-            return False, False
+    """出場資格チェック後の大会1回ぶん。(出場したか, 優勝したか) を返す。
+    エントリー費2,000円は全大会共通【正典v2・H7対策】。大阪はさらに遠征費"""
+    need = GP_ENTRY_FEE
+    tr = pol.transport(s) if t["osaka"] else None
+    if tr is not None:
+        need += tr["cost"]
+    if s.money < need:
+        return False, False
+    s.money -= GP_ENTRY_FEE
+    if tr is not None:
         s.money -= tr["cost"]
         B.add(s, "stamina", tr["stam"])
         if RUN_TRACK is not None and tr is B.BUS:
@@ -386,31 +392,36 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None):
 
         # --- グランプリ各回戦（東京・遠征不要・毎年1回戦からエントリー【仮】） ---
         if not acted and gp_alive and gp_stage < len(GP_ROUNDS) and week == GP_ROUNDS[gp_stage][0]:
-            _, line, _ = GP_ROUNDS[gp_stage]
-            line += upset
-            if BOREDOM_ON and RUN_BOREDOM is not None and RUN_BOREDOM.get(gp_stage, 0) >= 3:
-                line += BOREDOM_PEN                  # 飽きられ: 同じ壁に3年連続で跳ね返された翌年から
-                CHALLENGER_STATS["boredom_applied"] += 1
-            line += _neta_line_adj(s, f"GP{year}", rng)
-            ok, _ = _gp_perform(s, line, rng, final=False)
-            acted = True
-            if ok:
-                if RUN_BOREDOM is not None:
-                    RUN_BOREDOM[gp_stage] = 0        # 壁を越えたら既視感リセット
-                B.add(s, "fame", GP_ROUND_FAME)
-                _track_pass(s)
-                gp_stage += 1
-                if gp_stage == len(GP_ROUNDS):
-                    finalist = True
+            if gp_stage == 0 and s.money < GP_ENTRY_FEE:
+                gp_alive = False                     # エントリー費が払えない＝その年は出られない（夜逃げ寸前だけが踏む）
             else:
-                if RUN_BOREDOM is not None:          # 「同一回戦で連続」のみ数える
-                    for k in list(RUN_BOREDOM):
-                        if k != gp_stage:
-                            RUN_BOREDOM[k] = 0
-                    RUN_BOREDOM[gp_stage] = RUN_BOREDOM.get(gp_stage, 0) + 1
-                if gp_stage == len(GP_ROUNDS) - 1:   # 準決勝敗退のみ敗者復活へ
-                    revival = True
-                gp_alive = False                     # 落ちたら今年の挑戦終了（翌年また1回戦から）
+                if gp_stage == 0:
+                    s.money -= GP_ENTRY_FEE          # エントリー費は1回戦週に1回だけ（実在準拠2,000円）
+                _, line, _ = GP_ROUNDS[gp_stage]
+                line += upset
+                if BOREDOM_ON and RUN_BOREDOM is not None and RUN_BOREDOM.get(gp_stage, 0) >= 3:
+                    line += BOREDOM_PEN              # 飽きられ: 同じ壁に3年連続で跳ね返された翌年から
+                    CHALLENGER_STATS["boredom_applied"] += 1
+                line += _neta_line_adj(s, f"GP{year}", rng)
+                ok, _ = _gp_perform(s, line, rng, final=False)
+                acted = True
+                if ok:
+                    if RUN_BOREDOM is not None:
+                        RUN_BOREDOM[gp_stage] = 0    # 壁を越えたら既視感リセット
+                    B.add(s, "fame", GP_ROUND_FAME)
+                    _track_pass(s)
+                    gp_stage += 1
+                    if gp_stage == len(GP_ROUNDS):
+                        finalist = True
+                else:
+                    if RUN_BOREDOM is not None:      # 「同一回戦で連続」のみ数える
+                        for k in list(RUN_BOREDOM):
+                            if k != gp_stage:
+                                RUN_BOREDOM[k] = 0
+                        RUN_BOREDOM[gp_stage] = RUN_BOREDOM.get(gp_stage, 0) + 1
+                    if gp_stage == len(GP_ROUNDS) - 1:   # 準決勝敗退のみ敗者復活へ
+                        revival = True
+                    gp_alive = False                 # 落ちたら今年の挑戦終了（翌年また1回戦から）
 
         if week == GP_FINAL_WEEK:
             if revival:                              # 敗者復活 → 通過なら同週の決勝へ（客層はお茶の間=視聴者投票想定）

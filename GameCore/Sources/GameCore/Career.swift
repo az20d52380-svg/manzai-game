@@ -63,11 +63,13 @@ public enum GameCareer {
         for week in 1...config.weeks {
             var acted = false
 
-            // 1) 道中の大会（資格→出場判断→大阪なら交通費）
+            // 1) 道中の大会（資格→出場判断→エントリー費＋大阪なら交通費）
             if let spec = cal.tournament(inWeek: week), spec.isEligible(year: year, state: s) {
                 if let travel = policy.enterTournament(spec, year: year, state: s) {
                     let ts = cal.travelSpec(travel)
-                    if !spec.osaka || s.money >= ts.cost {
+                    let need = cal.entryFee + (spec.osaka ? ts.cost : 0)
+                    if s.money >= need {
+                        s.money -= cal.entryFee
                         if spec.osaka {
                             s.money -= ts.cost
                             GameEngine.add(.体力, ts.stamina, to: &s, config: config)
@@ -82,21 +84,28 @@ public enum GameCareer {
                 }
             }
 
-            // 2) グランプリ各回戦（東京・遠征不要・毎年1回戦から）
+            // 2) グランプリ各回戦（東京・遠征不要・毎年1回戦から。1回戦週にエントリー費）
             if !acted && gpAlive && gpStage < cal.gpRounds.count && week == cal.gpRounds[gpStage].week {
-                let result = GameEngine.perform(s, line: cal.gpRounds[gpStage].line, config: config, rng: &rng)
-                acted = true
-                if result.passed {
-                    GameEngine.add(.知名度, cal.gpRoundFame, to: &s, config: config)
-                    gpStage += 1
-                    if gpStage == cal.gpRounds.count {
-                        finalist = true
-                    }
+                if gpStage == 0 && s.money < cal.entryFee {
+                    gpAlive = false   // エントリー費が払えない＝その年は出られない（週は自由行動へ）
                 } else {
-                    if gpStage == cal.gpRounds.count - 1 {
-                        revival = true   // 準決勝敗退のみ敗者復活へ
+                    if gpStage == 0 {
+                        s.money -= cal.entryFee
                     }
-                    gpAlive = false
+                    let result = GameEngine.perform(s, line: cal.gpRounds[gpStage].line, config: config, rng: &rng)
+                    acted = true
+                    if result.passed {
+                        GameEngine.add(.知名度, cal.gpRoundFame, to: &s, config: config)
+                        gpStage += 1
+                        if gpStage == cal.gpRounds.count {
+                            finalist = true
+                        }
+                    } else {
+                        if gpStage == cal.gpRounds.count - 1 {
+                            revival = true   // 準決勝敗退のみ敗者復活へ
+                        }
+                        gpAlive = false
+                    }
                 }
             }
 

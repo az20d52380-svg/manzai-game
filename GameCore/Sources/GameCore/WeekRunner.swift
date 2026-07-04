@@ -121,7 +121,9 @@ public struct WeekRunner<R: RandomSource> {
         defer { pendingSpec = nil }
         if let spec = pendingSpec, let travel = travel {
             let ts = config.calendar.travelSpec(travel)
-            if !spec.osaka || state.money >= ts.cost {
+            let need = config.calendar.entryFee + (spec.osaka ? ts.cost : 0)
+            if state.money >= need {
+                state.money -= config.calendar.entryFee
                 if spec.osaka {
                     state.money -= ts.cost
                     GameEngine.add(.体力, ts.stamina, to: &state, config: config)
@@ -146,6 +148,9 @@ public struct WeekRunner<R: RandomSource> {
         let cal = config.calendar
         switch auto {
         case .round:
+            if gpStage == 0 {
+                state.money -= cal.entryFee   // GPエントリー費（1回戦週に1回・runYearと同一順序）
+            }
             let round = cal.gpRounds[gpStage]
             let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
             let result = GameEngine.perform(state, line: round.line, config: config, rng: &rng)
@@ -249,9 +254,13 @@ public struct WeekRunner<R: RandomSource> {
         if section == .gp {
             section = .finalWeek
             if !acted && gpAlive && gpStage < cal.gpRounds.count && week == cal.gpRounds[gpStage].week {
-                pendingAuto = .round
-                let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
-                return .gpRound(index: gpStage, name: name)
+                if gpStage == 0 && state.money < cal.entryFee {
+                    gpAlive = false   // エントリー費が払えない＝その年は出られない（runYearと同一）
+                } else {
+                    pendingAuto = .round
+                    let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
+                    return .gpRound(index: gpStage, name: name)
+                }
             }
         }
 

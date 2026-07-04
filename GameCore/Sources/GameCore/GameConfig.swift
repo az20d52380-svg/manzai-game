@@ -159,8 +159,8 @@ public struct GameConfig {
     public var weightIdea = 0.30
     public var weightExpr = 0.25
     public var weightChara = 0.15
-    /// (体力がこの値未満, ペナルティ)。先頭から評価し最初に該当したものを適用
-    public var staminaPenalties: [(below: Double, penalty: Double)] = [(30, -10), (50, -5)]
+    /// (体力がこの値未満, ペナルティ)。先頭から評価し最初に該当したものを適用【正典v2: 3段目を追加】
+    public var staminaPenalties: [(below: Double, penalty: Double)] = [(10, -15), (30, -10), (50, -5)]
 
     // --- 大会カレンダー（Python: sim_career.py の定数群） ---
     public var calendar = CalendarConfig()

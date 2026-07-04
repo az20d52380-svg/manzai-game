@@ -78,6 +78,10 @@ public struct CalendarConfig {
     public var gpPrize = 5_000_000    // 優勝賞金（表示1,000万の半分・手元）【仮】
     public var champFame = 20.0
 
+    /// エントリー費（全大会・GP共通。実在の賞レース準拠 2,000円【正典v2】。Python: GP_ENTRY_FEE）
+    /// 大会: 払えなければ不出場。GP: 1回戦週に払えなければその年は出場不可（夜逃げ寸前だけが踏む）
+    public var entryFee = 2_000
+
     public var busTravel = TravelSpec(cost: 10_000, stamina: -25)   // Python: BUS
     public var trainTravel = TravelSpec(cost: 30_000, stamina: 0)   // Python: TRAIN
 

@@ -6,8 +6,8 @@ GameCore同期用 golden生成器【正典v2 2026-07-05改訂】
   週ごとの全状態をSwiftテスト用リテラルとして出力する
 - ここで定義する「乱数消費と週処理の順序」が正典。GameCore/Sources/GameCore/Career.swift（と WeekRunner.swift）は必ずこれに従う:
    0) 年初: 体力全回復 → 成長予算の更新（キャリア累計 = Σ_{k=1..min(年,15)} max(2.0, 6.0−0.4×(k−1))・乱数消費なし・使用量はリセットしない）
-   1) 大会週: 出場判定(資格→大阪なら交通費支払可否)→ perform(2draw: 出来ブレ→ハマった夜)
-   2) 1)で行動していなければ GP回戦週: perform(2draw)
+   1) 大会週: 出場判定(資格→エントリー費2,000＋大阪なら交通費の支払可否)→ 支払→ perform(2draw: 出来ブレ→ハマった夜)
+   2) 1)で行動していなければ GP回戦週: 1回戦週はエントリー費2,000(払えなければその年は不出場・週は自由行動へ)→ perform(2draw)
    3) 第47週: 敗者復活なら perform(2draw)→通過で決勝へ / 決勝進出なら perform(2draw)
    4) ここまで無行動なら: オファー抽選(1draw、当選時さらに1draw)
       → 療養中なら完全休養(残週-1・消費なし・オファーは受けられない)
@@ -65,8 +65,9 @@ def run_year(s, year, rng, log=None):
 
         t = C.TOURNAMENTS.get(week)
         if t and t["ok"](year, s):
-            can_pay = (not t["osaka"]) or s.money >= B.BUS["cost"]
-            if can_pay:
+            need = C.GP_ENTRY_FEE + (B.BUS["cost"] if t["osaka"] else 0)
+            if s.money >= need:
+                s.money -= C.GP_ENTRY_FEE          # エントリー費は全大会共通【正典v2】
                 if t["osaka"]:
                     s.money -= B.BUS["cost"]
                     B.add(s, "stamina", B.BUS["stam"])
@@ -77,17 +78,22 @@ def run_year(s, year, rng, log=None):
                 acted = True
 
         if not acted and gp_alive and gp_stage < len(C.GP_ROUNDS) and week == C.GP_ROUNDS[gp_stage][0]:
-            ok, _ = B.perform(s, C.GP_ROUNDS[gp_stage][1], rng)
-            acted = True
-            if ok:
-                B.add(s, "fame", C.GP_ROUND_FAME)
-                gp_stage += 1
-                if gp_stage == len(C.GP_ROUNDS):
-                    finalist = True
+            if gp_stage == 0 and s.money < C.GP_ENTRY_FEE:
+                gp_alive = False                   # エントリー費が払えない＝その年は出られない（週は自由行動へ）
             else:
-                if gp_stage == len(C.GP_ROUNDS) - 1:
-                    revival = True
-                gp_alive = False
+                if gp_stage == 0:
+                    s.money -= C.GP_ENTRY_FEE      # GPエントリー費（1回戦週に1回）
+                ok, _ = B.perform(s, C.GP_ROUNDS[gp_stage][1], rng)
+                acted = True
+                if ok:
+                    B.add(s, "fame", C.GP_ROUND_FAME)
+                    gp_stage += 1
+                    if gp_stage == len(C.GP_ROUNDS):
+                        finalist = True
+                else:
+                    if gp_stage == len(C.GP_ROUNDS) - 1:
+                        revival = True
+                    gp_alive = False
 
         if week == C.GP_FINAL_WEEK:
             if revival:
