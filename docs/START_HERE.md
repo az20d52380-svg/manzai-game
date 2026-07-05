@@ -47,7 +47,7 @@ cd GameCore && swift test
 
 ## モデルの使い分け
 
-- **Fable（残りわずか）**: 構造的バランス/sim較正の判断だけに温存。**投入計画は `fable_plan_v0.md`**（結論: 今は撃たない。受け皿が揃い＋オーナー判断2件が確定してから1セッション・投げるのは"帯の同時充足"の1問だけ）。
+- **Fable（残りわずか）**: 構造的バランス/sim較正の判断だけに温存。**投入計画は `fable_plan_v0.md`**。**本命の「角の同時成立裁定」は4.8閾値表＋得意A/裏天井の実装待ちでblocked**（2026-07-05棚卸し）。一方 **今すぐ回せるFable向き1問＝「ラストイヤーの奇跡の較正」（red_team §1・§4 P1＝Fable待ち）が生存**——実験台だけで測れ王者編廃止とも独立。**キックオフ即用は `fable_kickoff_prompt_v1.md`**（受け皿=exp_lastyear.py・最終年run_year直前に`s._yg`を−X・合格条件と裏天井合成チェック込み）。
 - **4.8**: 量産・実装・パターン踏襲・UIスキャフォールディング・ドキュメント整備・**閾値スイープ/差分測定（Fableに投げない）**。
 
 ## 主要ドキュメント索引
@@ -60,5 +60,5 @@ cd GameCore && swift test
 - 収益: `monetization_decision_v0.md` / `pricing_proposal_v0.md`
 - オーナー判断材料: `owner_decision_brief_v0.md`（決定記録①〜④含む）/ `concerns_register_v0.md`
 - 検証機: `tools/` の `sim_career.py`（本体）`gen_golden.py`（正典順序）`exp_v2_*.py`（v2実測）
-- Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ **`fable_session_brief_v0.md`（Fableに渡す指示書・期限7日）** ※T4裏天井台・T5 SSR cap24はcloud実装済
+- Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ `fable_session_brief_v0.md`（旧Q1-Q5指示書・Q1裏天井は`pity_calibration_v0.md`で決着済）/ `fable_kickoff_prompt_v0.md`（旧・裏天井用）/ **`fable_kickoff_prompt_v1.md`（現行・ラストイヤーの奇跡・コピペ即用）** ※T4裏天井台・T5 SSR cap24はcloud実装済
 - **Fable裁定（2026-07-05実施済）**: `pity_calibration_v0.md`（裏天井の効果式・実測13セル＋推奨1点）/ `fable_findings_v0.md`（Q3/Q4/Q5と申し送り）
