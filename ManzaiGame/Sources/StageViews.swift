@@ -8,6 +8,9 @@ import GameCore
 // MARK: 笑い波形メーター（mockupのcanvasをCanvasで再現）
 
 struct WaveformView: View {
+    /// 結果連動: 通過=暖色で大きく育ちオチで跳ねる／敗退=寒色でフラット・疎ら（mvp §7）
+    var passed: Bool = true
+
     var body: some View {
         TimelineView(.animation) { timeline in
             let t = timeline.date.timeIntervalSinceReferenceDate
@@ -18,11 +21,14 @@ struct WaveformView: View {
                 base.move(to: CGPoint(x: 0, y: mid)); base.addLine(to: CGPoint(x: W, y: mid))
                 ctx.stroke(base, with: .color(Color(hex: 0x2C2740, alpha: 0.08)), lineWidth: 1)
 
+                let warm = [Theme.gold, Theme.cExpr, Theme.verm]
+                let cold = [Color(hex: 0x9AA0AE), Color(hex: 0x7C8394)]
                 let grad = GraphicsContext.Shading.linearGradient(
-                    Gradient(colors: [Theme.gold, Theme.cExpr, Theme.verm]),
+                    Gradient(colors: passed ? warm : cold),
                     startPoint: .zero, endPoint: CGPoint(x: W, y: 0))
 
                 func env(_ x: Double) -> Double {
+                    if !passed { return 0.10 + 0.06 * sin(x * 8) }   // 敗退: フラットで疎ら
                     let b = 0.16 + 0.5 * x
                     let punch = exp(-pow((x - 0.83) / 0.06, 2)) * 0.95
                     return min(1, b + punch)

@@ -19,8 +19,14 @@ final class GameSession {
     private(set) var outcome: YearOutcome?
     /// 大会・GPの結果が出た週。ここに値がある間は S3 結果画面を挟む（テンポの緩急・§3）
     private(set) var pendingResult: WeekSummary?
-    /// 直前に選んだ行動（谷口の反応フレーバーを出すため。週頭は nil）
+    /// 直前に選んだ行動（心の声の反応・変種IDを出すため。週頭は nil）
     private(set) var lastAction: WeekAction?
+    /// 直前の行動で伸びた能力（バー伸び演出＆「+N」用）
+    private(set) var lastGains: [(ability: Ability, amount: Double)] = []
+    /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
+    private(set) var lossStreak = 0
+    /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
+    private(set) var justPassedStage = false
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
 
@@ -51,9 +57,15 @@ final class GameSession {
 
     /// 自由行動週の回答
     func choose(_ action: WeekAction) {
+        let before = state
         lastAction = action
+        justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         phase = runner.resolveAction(action)
         pump()
+        lastGains = Ability.allCases.compactMap { a in
+            let d = state[a] - before[a]
+            return d > 0.001 ? (a, d) : nil
+        }
     }
 
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
@@ -90,6 +102,11 @@ final class GameSession {
                 }
                 let big = summary.results.filter(\.isStage)
                 if !big.isEmpty {
+                    // 連敗カウント＆直近通過（心の声用）: 通過でリセット・敗退で加算
+                    for r in big {
+                        if r.passed { lossStreak = 0; justPassedStage = true }
+                        else { lossStreak += 1; justPassedStage = false }
+                    }
                     // 大会・GPの結果 → S3結果画面へ（自動送りしない）
                     pendingResult = WeekSummary(year: summary.year, week: summary.week,
                                                 results: big, state: summary.state)

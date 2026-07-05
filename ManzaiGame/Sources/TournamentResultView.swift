@@ -27,8 +27,8 @@ struct TournamentResultView: View {
                 Text(r.name).font(.maru(22))
                 Text("第\(summary.week)週 ・ 本番").font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkDim)
 
-                // 笑い波形
-                WaveformView()
+                // 笑い波形（結果連動）
+                WaveformView(passed: r.passed)
 
                 Text(r.passed ? "——どっと沸いた！" : "——固い空気…")
                     .font(.maru(15)).foregroundStyle(r.passed ? Theme.verm : Theme.inkDim)
@@ -65,7 +65,7 @@ struct TournamentResultView: View {
     }
 
     private func stamp(passed: Bool) -> some View {
-        let c = passed ? Theme.cMental : Theme.verm
+        let c = passed ? Theme.cMental : Color(hex: 0x8A8FA0)   // 敗退は寒色（灰）＝mockup .ng
         return Text(passed ? "通過" : "敗退")
             .font(.maru(30)).foregroundStyle(.white)
             .frame(width: 108, height: 108)
@@ -85,21 +85,22 @@ struct TournamentResultView: View {
                 .font(.system(size: 15, design: .serif))
                 .lineSpacing(7).foregroundStyle(Color(hex: 0x33301F))
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text("審査員　\(judge)").font(.maru(12, weight: .bold)).foregroundStyle(Color(hex: 0xA98B52))
-                .frame(maxWidth: .infinity, alignment: .trailing).padding(.top, 14)
+            // 講評フッタ: 審査員名は左・スタンプは右で被らせない（mvp §8）
+            HStack(alignment: .bottom) {
+                Text("審査員　\(judge)").font(.maru(12.5, weight: .bold)).foregroundStyle(Color(hex: 0xA98B52))
+                Spacer(minLength: 8)
+                Text(passed ? "通過" : "敗退").font(.maru(12)).foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(passed ? Theme.cMental : Color(hex: 0x8A8FA0), in: RoundedRectangle(cornerRadius: 8))
+                    .rotationEffect(.degrees(-6))
+            }
+            .padding(.top, 16)
         }
         .padding(22)
         .background(LinearGradient(colors: [Color(hex: 0xFDFBF4), Color(hex: 0xF6EEDC)],
                                    startPoint: .top, endPoint: .bottom),
                     in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: 0xE6D9BE), lineWidth: 1))
-        .overlay(alignment: .bottomTrailing) {
-            Text(passed ? "通過" : "敗退").font(.maru(12)).foregroundStyle(.white)
-                .frame(width: 46, height: 46)
-                .background(passed ? Theme.cMental : Theme.verm, in: RoundedRectangle(cornerRadius: 8))
-                .rotationEffect(.degrees(-6))
-                .padding(14)
-        }
         .shadow(color: Color(hex: 0x785014, alpha: 0.3), radius: 14, y: 8)
     }
 

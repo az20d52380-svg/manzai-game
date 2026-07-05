@@ -67,7 +67,7 @@ struct RootView: View {
                 .foregroundStyle(.white).padding(.horizontal, 8).padding(.vertical, 5)
                 .background(.black.opacity(0.45), in: Capsule())
         }
-        .padding(.top, 54).padding(.trailing, 10)
+        .padding(.top, 120).padding(.trailing, 10)
     }
 
     private func forceChampion() {

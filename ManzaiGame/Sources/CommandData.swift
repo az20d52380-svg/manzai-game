@@ -1,33 +1,42 @@
 // CommandData.swift
-// 育成メインの練習コマンド・タイル（mockup SCREEN 01）。実アクションは GameCore に配線し、
-// 「どの能力が伸びるか（色ドット）＋おおよその量＋コスト」を GameConfig から算出して表示する。
-// 数値表示は「出す派」＝パワプロ サクセス式（ui_design 数値表示の方針【確定】）。
+// 育成メインの2段階コマンド（mvp_ui_build_prompt_v1 §5・mockup v3）。
+// グループ（けいこ/しごと/休み）を押す→変種パネルがせり上がる→選ぶ→獲得プレビュー→つぎへ。
+// 変種は実 GameCore アクション（5稽古・3バイト・3休み）に配線し【実数値】を表示。
+// 【設計判断】mockup固有の場所別新経済（喫茶-¥500等）は golden/GameConfig に触れるため未採用（規律A・要相談）。
 
 import SwiftUI
 import GameCore
 
-/// 獲得プレビューの1チップ（能力名＋色＋おおよその量）
 struct GainChip: Identifiable {
     let id = UUID()
     let label: String
     let color: Color
-    let amount: String   // "+3" や "+¥8万" 等（成長逓減があるので目安）
+    let amount: String
 }
 
-struct CommandTile: Identifiable {
+struct CommandVariant: Identifiable {
+    let id: String            // DialogueData.reaction のキーと一致（t_… / job_… / rest_… / offer）
+    let name: String
+    let desc: String
+    let glyph: String
+    let action: WeekAction
+    let costText: String
+    let costIsUp: Bool
+    let eff: String
+    let gains: [GainChip]
+    var affordable: Bool = true
+}
+
+struct CommandGroup: Identifiable {
     let id: String
     let title: String
-    let glyph: String          // SF Symbol名
-    let action: WeekAction
-    let dotColors: [Color]     // 伸びる能力の色ドット
-    let costText: String       // 体力/金コスト（タイル下）
-    let costIsUp: Bool         // 回復・収入など＋方向
-    let gains: [GainChip]      // 選択時の獲得プレビュー
+    let glyph: String
+    let dotColors: [Color]
+    let variants: [CommandVariant]
 }
 
 enum CommandCatalog {
 
-    /// StatKey → (表示名, 色)
     static func meta(_ key: StatKey) -> (String, Color) {
         switch key {
         case .ability(let a): return ("\(a)", Theme.abilityColor(a))
@@ -37,84 +46,81 @@ enum CommandCatalog {
         }
     }
 
-    /// GameConfig から当週のタイル一覧を組む（オファーがある週は先頭に「仕事を受ける」）
-    static func tiles(config: GameConfig, offer: OfferSpec?) -> [CommandTile] {
-        var tiles: [CommandTile] = []
+    static func groups(config: GameConfig, offer: OfferSpec?, money: Int) -> [CommandGroup] {
+        var groups: [CommandGroup] = []
 
         if let offer {
-            tiles.append(CommandTile(
-                id: "offer", title: "仕事を受ける", glyph: "briefcase.fill",
-                action: .acceptOffer, dotColors: [Theme.cMoney, Theme.gold],
-                costText: "+¥\(offer.income / 10000)万", costIsUp: true,
-                gains: [GainChip(label: offer.name, color: Theme.gold, amount: "+¥\(offer.income / 10000)万")]))
+            groups.append(CommandGroup(id: "offer", title: "オファー", glyph: "star.circle.fill",
+                dotColors: [Theme.gold], variants: [
+                    CommandVariant(id: "offer", name: offer.name, desc: "仕事を受ける", glyph: "briefcase.fill",
+                        action: .acceptOffer, costText: "+¥\(offer.income / 10000)万", costIsUp: true,
+                        eff: "知名度＋", gains: [GainChip(label: "お金", color: Theme.cMoney, amount: "+¥\(offer.income / 10000)万")])
+                ]))
         }
 
-        // 稽古5種
-        for t in [Training.ネタ作り, .ネタ見せ会, .ネタ合わせ, .ランニング・サウナ, .フリーライブ] {
+        // けいこ（5稽古）
+        var keiko: [CommandVariant] = []
+        let trainOrder: [(Training, String, String, String)] = [
+            (.ネタ作り, "ネタ作り", "机に向かって書く", "pencil"),
+            (.ネタ見せ会, "ネタ見せ会", "人前で試す", "theatermasks.fill"),
+            (.ネタ合わせ, "ネタ合わせ", "二人で合わせる", "arrow.left.arrow.right"),
+            (.ランニング・サウナ, "ランニング", "体と心を整える", "figure.run"),
+            (.フリーライブ, "フリーライブ", "客前で場数を踏む", "mic.fill"),
+        ]
+        for (t, name, desc, glyph) in trainOrder {
             guard let spec = config.trainings[t] else { continue }
-            var dots: [Color] = []
-            var gains: [GainChip] = []
+            var dots: [Color] = []; var gains: [GainChip] = []
             let (mName, mColor) = meta(spec.main.0)
-            dots.append(mColor)
-            gains.append(GainChip(label: mName, color: mColor, amount: "+\(fmt(spec.main.1))"))
+            dots.append(mColor); gains.append(GainChip(label: mName, color: mColor, amount: "+\(fmt(spec.main.1))"))
             if let sub = spec.sub {
                 let (sName, sColor) = meta(sub.0)
-                dots.append(sColor)
-                gains.append(GainChip(label: sName, color: sColor, amount: "+\(fmt(sub.1))"))
+                dots.append(sColor); gains.append(GainChip(label: sName, color: sColor, amount: "+\(fmt(sub.1))"))
             }
-            let cost = spec.cost > 0 ? "-¥\(spec.cost / 10000)万" : "体力 \(Int(spec.stamina))"
-            tiles.append(CommandTile(
-                id: "t_\(t)", title: glyphTitle(t).0, glyph: glyphTitle(t).1,
-                action: .train(t), dotColors: dots,
-                costText: cost, costIsUp: false, gains: gains))
+            let paid = spec.cost > 0
+            keiko.append(CommandVariant(id: "t_\(t)", name: name, desc: desc, glyph: glyph,
+                action: .train(t),
+                costText: paid ? "-¥\(spec.cost / 10000)万" : "体力 \(Int(spec.stamina))",
+                costIsUp: false, eff: "\(mName)中心",
+                gains: gains, affordable: !paid || money >= spec.cost))
         }
+        groups.append(CommandGroup(id: "keiko", title: "けいこ", glyph: "pencil.and.outline",
+                                   dotColors: [Theme.cSense, Theme.cIdea, Theme.cExpr], variants: keiko))
 
-        // バイト（標準）
-        if let job = config.jobs[.標準] {
-            tiles.append(CommandTile(
-                id: "job", title: "バイト", glyph: "yensign.circle.fill",
-                action: .job(.標準), dotColors: [Theme.cMoney],
-                costText: "+¥\(job.income / 10000)万", costIsUp: true,
-                gains: [GainChip(label: "お金", color: Theme.cMoney, amount: "+¥\(job.income / 10000)万"),
-                        GainChip(label: "体力", color: Theme.inkDim, amount: "\(Int(job.stamina))")]))
+        // しごと（3バイト・実収入）
+        let jobOrder: [(Job, String, String)] = [
+            (.キツい, "引越し", "体力-大"), (.標準, "居酒屋", "体力-中"), (.楽, "交通量調査", "体力-小"),
+        ]
+        var shigoto: [CommandVariant] = []
+        for (j, name, eff) in jobOrder {
+            guard let spec = config.jobs[j] else { continue }
+            shigoto.append(CommandVariant(id: "job_\(j)", name: name, desc: eff, glyph: "shippingbox.fill",
+                action: .job(j), costText: "+¥\(spec.income / 10000)万", costIsUp: true, eff: eff,
+                gains: [GainChip(label: "お金", color: Theme.cMoney, amount: "+¥\(spec.income / 10000)万"),
+                        GainChip(label: "体力", color: Theme.inkDim, amount: "\(Int(spec.stamina))")]))
         }
+        groups.append(CommandGroup(id: "shigoto", title: "しごと", glyph: "yensign.circle.fill",
+                                   dotColors: [Theme.cMoney], variants: shigoto))
 
-        // 休む（完全休養）
-        if let rest = config.rests[.完全休養] {
-            let (bName, bColor) = meta(rest.bonus.0)
-            tiles.append(CommandTile(
-                id: "rest", title: "休む", glyph: "moon.zzz.fill",
-                action: .rest(.完全休養), dotColors: [Theme.cMental],
-                costText: "体力回復", costIsUp: true,
-                gains: [GainChip(label: "体力", color: Theme.cMental, amount: "+\(Int(rest.recovery))"),
-                        GainChip(label: bName, color: bColor, amount: "+\(fmt(rest.bonus.1))")]))
+        // 休み（3休み）
+        let restOrder: [(Rest, String, String)] = [
+            (.完全休養, "自宅で休む", "回復 大"), (.気分転換, "気分転換", "回復 中"), (.相方と過ごす, "相方と過ごす", "回復 小・相性"),
+        ]
+        var yasumi: [CommandVariant] = []
+        for (r, name, eff) in restOrder {
+            guard let spec = config.rests[r] else { continue }
+            let (bName, bColor) = meta(spec.bonus.0)
+            yasumi.append(CommandVariant(id: "rest_\(r)", name: name, desc: eff, glyph: "moon.zzz.fill",
+                action: .rest(r), costText: "体力回復", costIsUp: true, eff: eff,
+                gains: [GainChip(label: "体力", color: Theme.cMental, amount: "+\(Int(spec.recovery))"),
+                        GainChip(label: bName, color: bColor, amount: "+\(fmt(spec.bonus.1))")]))
         }
+        groups.append(CommandGroup(id: "yasumi", title: "休み", glyph: "moon.zzz.fill",
+                                   dotColors: [Theme.cMental], variants: yasumi))
 
-        // 相方と過ごす
-        if let rest = config.rests[.相方と過ごす] {
-            let (bName, bColor) = meta(rest.bonus.0)
-            tiles.append(CommandTile(
-                id: "aikata", title: "相方と過ごす", glyph: "person.2.fill",
-                action: .rest(.相方と過ごす), dotColors: [Theme.cCompat],
-                costText: "体力回復", costIsUp: true,
-                gains: [GainChip(label: "体力", color: Theme.cMental, amount: "+\(Int(rest.recovery))"),
-                        GainChip(label: bName, color: bColor, amount: "+\(fmt(rest.bonus.1))")]))
-        }
-
-        return tiles
+        return groups
     }
 
     private static func fmt(_ v: Double) -> String {
         v == v.rounded() ? String(Int(v)) : String(format: "%.0f", v)
-    }
-
-    private static func glyphTitle(_ t: Training) -> (String, String) {
-        switch t {
-        case .ネタ作り: return ("ネタ作り", "pencil")
-        case .ネタ見せ会: return ("ネタ見せ会", "theatermasks.fill")
-        case .ネタ合わせ: return ("ネタ合わせ", "arrow.left.arrow.right")
-        case .ランニング・サウナ: return ("ランニング", "figure.run")
-        case .フリーライブ: return ("フリーライブ", "mic.fill")
-        }
     }
 }
