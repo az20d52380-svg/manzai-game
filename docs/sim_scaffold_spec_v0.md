@@ -38,7 +38,8 @@
 
 ---
 
-## T2: 王者の特権（初優勝で成長期限解除）を run_year へ共通化・CHAMPION_GROWTH_END 実配線〔touches-golden・cli-mac〕
+## T2: ~~王者の特権を run_year へ配線~~ → **不要（2026-07-05・王者編廃止・owner⑥）**〔削除〕
+> 王者編廃止により本タスクは実施しない。canon_v2.CHAMPION_GROWTH_END(dead)・sim_meta の王者編ロジックは将来のコード清掃で除去（4.8・golden非影響部分）。以下は履歴。
 
 **先決**: 解除値25 vs 恒久のオーナーフォーク（`fable_plan §4`）。既定案=25（`sim_meta` MAX_YEARS=25 と一致で現horizon挙動不変）。
 
@@ -59,7 +60,8 @@
 
 ---
 
-## T3: exp_dynasty_matrix/exp_renpa/exp_v2_meta の run_dynasty を特権解除ありへ〔experiment-only・4.8-cloud〕
+## T3: ~~dynasty再測を特権解除ありへ~~ → **不要（2026-07-05・王者編廃止・owner⑥）**〔削除〕
+> 連覇マトリクスは設計対象外に。以下は履歴。
 
 T2をstate方式(`s._champ`)にしたため、3関数は各キャリア先頭で`C.new_state`を作りsを年跨ぎ保持（exp_renpa:33/exp_dynasty_matrix:27/exp_v2_meta:54）→優勝年にrun_yearが`s._champ=True`をセット→翌年以降の予算endが自動でCHAMPION_GROWTH_ENDに伸びる＝**特権が自動継承・コード必須変更なし**。
 

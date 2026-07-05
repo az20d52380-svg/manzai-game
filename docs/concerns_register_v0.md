@@ -11,7 +11,7 @@
 1. **【critical/事業】業態が「B確定 / A維持 / 未決」で3文書矛盾したまま実装分岐に突入** — monetization=B確定、roadmap=A維持、START_HERE/red_team=未決。下流(pricing/partner_gacha)が全部これ依存。まず1回で確定を。(owner-decision)
 2. **【critical/事業】B案の課金トリガーが構造的に不発** — 「無課金で全コンプ保証」＝売り物(早さ)を自分で無料充足。守るほど収益がゼロに漸近する自己矛盾。(owner-decision)
 3. **【critical/整合】master_spec_v2が「正本」を自称しつつ§3/§5/§10の背骨数値が旧正典のまま(準決86/決勝94等)** — 実装者が正本ルールに従うとv2バランスが丸ごと壊れる。(4.8-cloud)
-4. **【critical/バランス】王者編マトリクス(10連覇58.3%等)が現コードで再現しない** — 「王者の特権(成長期限解除)」が未実装。周回の最終到達目標が空洞。✅実測の記載が虚偽。(fable)
+4. ~~【critical】王者編マトリクスが現コードで再現しない~~ → **【解決・moot 2026-07-05】王者編そのものを廃止（オーナー確定）**。王者の特権/連覇/殿堂/dynasty再測は不要になった。周回の到達目標は「一度の優勝＋コレクション」へ。
 5. **【high/バランス+整合】裏天井(初回の保証弁)が2案並存・未統合・実装ゼロ・実測ゼロ** — 初回8割(準決敗退層)の救済という体験の芯がP0で停止。(fable)
 6. **【high/技術】iOSアプリ(ManzaiGame)がCIで一度もビルドされない** — GameCore API変更でUIが壊れてもCIは緑。S1/S4/S5追加時の型エラーを機械が捕まえられない。(cli-mac)
 7. ✅**【解決 2026-07-05・cloud】** canonical看板数値を74/80で再測して上書き（やり込み2.7%/41.5%・のんびり改0.3%/23.1%・バランス0.2%/8.4%＝`exp_v2_anchor.py 1000`シード20260704）。measurement作業ゆえFable不要でcloudが実施。**残**: 定数ドリフトの自動追跡（sim出力にsnapshot）は未着手。
@@ -25,7 +25,7 @@
 | critical | 業態がB確定/A維持/未決で3文書矛盾、実装分岐に突入 | 事業 | monetization L3,L78 / roadmap §2 L57 / red_team §5 / START_HERE | owner-decision | 単一正典で1回だけ確定し他文書に従属バナー。確定までB案専用実装(pricing/partner_gacha)凍結 |
 | critical | B案の課金トリガーが構造的に不発(売り物=早さを無料充足) | 事業 | red_team §2致命1-2 / monetization §7 / pricing §6 | owner-decision | 「無課金全コンプ」と「早さを売る」の非両立を直視。ハイブリッド寄せ or 収益背骨を月額パス+復刻に全振り |
 | critical | master_spec_v2が正本自称も§3/§5/§10背骨数値が旧正典(準決86/決勝94/王者91+5/成長4.5) | 整合 | master_spec L4,L47-48,L73,L139 ⇔ canonical §1/§2-B | 4.8-cloud | 3箇所をcanonical v2値へ実書換 or 行内読替併記。canonicalチェックリスト項7「✅v2化」を「◐部分」へ訂正し数値の正本を1文断定 |
-| critical | 王者編マトリクス(58.3%等)が現コードで再現せず=周回到達目標が未成立 | バランス | canonical §2-B/§4 ⇔ sim_career.py:122 GROWTH_END_YEAR固定・解除なし / exp_v2_meta実測10連覇0.0% | fable | 「王者の特権」をrun_yearに実装しexp_v2_meta再走・再測。実装まで§2-B/§4の「✅解決/実測」を「未実装・未検証」へ格下げ |
+| ✅解決(廃止) | 王者編マトリクスが再現しない → **王者編そのものを廃止(2026-07-05オーナー確定)** | バランス | master_spec §5廃止 / canonical §2-B廃止 | owner済 | 【完了】王者の特権/連覇/殿堂/dynasty再測は全て不要。周回到達目標は「一度の優勝＋コレクション」 |
 | high | 裏天井が2案並存・未統合・実装ゼロ・実測ゼロ(初回体験の本命) | バランス/整合 | canonical §1 L25(3年ハマなし→2倍) ⇔ red_team §1-1(8年目以降+5%/年) / endgame_pity §5-6 / START_HERE L36 | fable | 2案を単一トリガ/効果式に統合しexp_v2_anchorで初回優勝率を帯内較正。sim_careerに決勝初到達年ヒストグラム追加(小改修)→晩年閾値N決定。恒久能力配布は禁止のまま |
 | high | 決勝の優勝/TOP3ライン数値が3文書不一致(canonical80/finals95・91・89/master94)かつfinals内部矛盾 | 整合 | finals L46,L70-73 ⇔ canonical §1 ⇔ master L48 | 4.8-cloud | finals閾値を絶対値でなく「内部スコア vs 該当ライン(v2:74/80)の符号」で記述。出典をcanonical_v2に一本化 |
 | high | finals §4-D優勝例(ミラーボール7年目/静物画9年目)がrival年表と食い違い、champion_selectionが年表準拠で一方的解決 | 整合 | finals L126,L136 ⇔ rival §1 L33,L40 ⇔ champion_selection §2 L75,§9未決2 | owner-decision | (A)finals例示を「決勝表示候補」へ訂正しミラーボール優勝フレーバーを死蔵と明記 or (B)年表を優勝化改訂。採用側で3文書同時更新 |
@@ -46,9 +46,9 @@
 | high | キャラ供給トレッドミル(収益生命線)に対し個人開発の供給計画が未確立(月1体の根拠レス) | 事業 | monetization §6-2 L70,§7懸念#1 / red_team §2 | owner-decision | 1体あたり実制作工数を試作で実測し持続可能ペース(月1/シーズン制)を数字確定。無料コンプ速度と突合し名鑑寿命の下限保証 |
 | ✅解決(cloud) | ハマった夜の到達率が別ライン(76/82)混在で二重掲載 | 整合 | canonical §2/§4上書済(74/80: 41.5%/23.1%/8.4%) ⇔ human_calibration §5-C・master §1 も更新 | cloud済 | 【完了・#7/#33と同件】74/80で一本化・旧76/82値は失効注記。他doc(human_calibration等)もポインタ/更新済 |
 | ✅解決(owner④) | finals点差表示の是非(点差非表示 vs Δ表示の半矛盾) | 整合 | owner④=M-1全表示で確定 → finals §冒頭/§5-2/§4-D・champion_selection §6-5・talent_unlock §で整合済 | owner済 | 【完了】オーナー④「M-1式で全組表示」を裁定。表示点≠内部スコアで逆算回避。旧「点差非表示」は全doc撤回済 |
-| medium | 研究されるデバフ(飽きられ/波乱/客層二層)が旧スコアスケール(86/94)較正のまま未再計測 | バランス | sim_career.py:171-179 / v2圧縮 canonical §1 / exp_challenger旧基準 | fable | AUDIENCE_K/BOREDOM_PEN/UPSET_DELTAをv2ライン(74/80・0.55圧縮)で再走。BOREDOMは王者の特権実装後のdynasty simに組込み連覇率寄与を確認 |
+| medium | 研究されるデバフ(飽きられ/波乱/客層二層)が旧スコアスケール(86/94)較正のまま未再計測 | バランス | sim_career.py:171-179 / v2圧縮 canonical §1 / exp_challenger旧基準 | fable | AUDIENCE_K/BOREDOM_PEN/UPSET_DELTAをv2ライン(74/80・0.55圧縮)で再走。（旧「BOREDOMを王者特権dynastyに組込む」は王者編廃止で不要） |
 | medium | H3(体力<10で-15)が「再計測して判断」の保留ゲートを踏まず無記録で正典化 | バランス | rule_holes §5 / balance_sim.py:79 STAM_PEN / canonical §4に記載なし | fable | H3 -15のON/OFFでexp_v2_anchor差分測定しアンカー感度を数値化。rule_holes §5の決着をcanonical §4検証台帳に明記(看板数値ドリフトの原因切分にも使用) |
-| medium | gen_goldenとsim_careerがrun_yearを二重実装=正典順序ドリフトの恒常リスク、王者年はgolden非カバー | バランス/技術 | gen_golden.py:59-152 / sim_career.py:350-526 / gen_goldenは非優勝3年のみ | 4.8-cloud | gen_goldenをsim_career.run_yearの薄いラッパへ寄せ単一実装化 or 週次スナップショット一致をCIに追加。裏天井/王者特権導入前に解消 |
+| medium | gen_goldenとsim_careerがrun_yearを二重実装=正典順序ドリフトの恒常リスク、王者年はgolden非カバー | バランス/技術 | gen_golden.py:59-152 / sim_career.py:350-526 / gen_goldenは非優勝3年のみ | 4.8-cloud | gen_goldenをsim_career.run_yearの薄いラッパへ寄せ単一実装化 or 週次スナップショット一致をCIに追加。裏天井導入前に解消（王者特権は廃止で不要） |
 | medium | GP決勝優勝時にS3結果画面が丸ごとスキップされ「通過」演出とweekResultsが破棄(夜逃げも同様) | 技術 | WeekRunner.swift:198-207 / GameSession.swift:71-99 | owner-decision | 優勝・夜逃げでも最終StageResultをUIへ届ける経路を用意。優勝の通過スタンプを出すかYearResultViewに集約するかは演出方針裁定 |
 | medium | gpSeeded=true(1回戦免除シード)の実行パスがどのテストでも一度も通っていない | 技術 | WeekRunner.swift:88-102,266-276 / CareerGoldenTests:122-133(非発生自認) | 4.8-cloud | gpSeeded=trueで1回戦(week30)が発生せず2回戦(week39)開始を直接検証する単体テスト追加 |
 | medium | 体調ダウン(injury/療養)ロジックがSwift側で完全に未テスト | 技術 | WeekRunner.swift:227-233,298-301 / Testsに該当なし | 4.8-cloud | SeqRandomで発生drawを固定し①発生時completeRest+メンタル-5+recoveryWeeks=2 ②翌2週強制療養でオファー無効 ③計3週で復帰、を検証。tools側INJURY定数と同値固定 |
