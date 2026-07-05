@@ -59,6 +59,8 @@ cd GameCore && swift test
 - キャラ: `partner_characters_v0.md`（相方・男6/女4＝得意能力6軸を網羅）/ `character_archetypes_v0.md`（22類型×口調×得意能力・後輩/先輩の量産型）/ `partner_finals_reactions_v0.md`（相方別の袖反応）/ `judge_design_v0.md`（審査員7名）
 - 収益: `monetization_decision_v0.md` / `pricing_proposal_v0.md`
 - オーナー判断材料: `owner_decision_brief_v0.md`（決定記録①〜④含む）/ `concerns_register_v0.md`
+- 実態把握（潜りすぎ対策）: `game_reality_check_v0.md`（中立ブリーフィング＝今どんなゲームか・強み弱み・本の要否・次の1手＝実機で遊ぶ）
 - 検証機: `tools/` の `sim_career.py`（本体）`gen_golden.py`（正典順序）`exp_v2_*.py`（v2実測）
 - Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ **`fable_kickoff_prompt_v2.md`（現行・“最後のFable”完全版・ultrathink＋Q1ラストイヤー/Q2角/Q3面白さ俯瞰・コピペ即用）** / **`verdict_draft_v0.md`（4.8がsim反証まで済ませたQ1/Q2候補裁定＝Fableの叩き台）** / `fable_readiness_v0.md`（受け皿3台の検証状況＝地図）/ 旧: `fable_kickoff_prompt_v0/v1.md`・`fable_session_brief_v0.md` ※受け皿台 `tools/exp_lastyear.py`・`exp_corner.py`・`exp_talent_ability.py`・`exp_lastyear_gate.py`・`exp_corner_multiseed.py`・`exp_lastyear_fable.py`(層分解/CI/成分分解) は実装・検証済(golden非干渉)
 - **Fable裁定（2026-07-05実施済）**: `pity_calibration_v0.md`（裏天井の効果式・実測13セル＋推奨1点）/ `fable_findings_v0.md`（Q3/Q4/Q5と申し送り）/ **`lastyear_calibration_v0.md`（Q1ラストイヤー=X=2・ゲート必須）/ `corner_arbitration_v0.md`（Q2角=必勝化せず・二重壁）/ `fun_flow_review_v0.md`（Q3中だるみ/アーク最弱点/演出解）**
+- **Fable裁定の反証検証（2026-07-05・4.8）**: `verdict_verification_v0.md`（Fableが振ってない条件で3裁定を独立反証＝受理可否の回答。載荷主張B/E/F/G後半/Hはconfirmed・Aは"X=2両側一意"がrefuted＝単一シードのナイフエッジ・C/D/F/G前半は数値に但し書き。golden無傷・§3=Mac配線チェックリスト・§4=正典再測待ち）
