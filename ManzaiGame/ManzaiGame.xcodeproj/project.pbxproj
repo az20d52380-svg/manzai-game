@@ -17,6 +17,7 @@
 		9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */; };
 		A5261165B97770A127810577 /* CommandData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
+		DF24415C7E00852BA2F01FC2 /* WinFinaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD51A6CC2B53C8FB77C0B1B6 /* WinFinaleView.swift */; };
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 		E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C2B6670FC11321C4559DCB /* Theme.swift */; };
 /* End PBXBuildFile section */
@@ -29,6 +30,7 @@
 		74BDACA803ECB2EFD5DE9293 /* GameCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GameCore; path = ../GameCore; sourceTree = SOURCE_ROOT; };
 		A274A5E67200827BEBFC258E /* YearResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearResultView.swift; sourceTree = "<group>"; };
 		A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TournamentResultView.swift; sourceTree = "<group>"; };
+		AD51A6CC2B53C8FB77C0B1B6 /* WinFinaleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinFinaleView.swift; sourceTree = "<group>"; };
 		B18155352CE011A350B1DEC6 /* WeekMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekMainView.swift; sourceTree = "<group>"; };
 		CC1F100811789DF64591C427 /* DialogueData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogueData.swift; sourceTree = "<group>"; };
 		DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandData.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 				E7C2B6670FC11321C4559DCB /* Theme.swift */,
 				A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */,
 				B18155352CE011A350B1DEC6 /* WeekMainView.swift */,
+				AD51A6CC2B53C8FB77C0B1B6 /* WinFinaleView.swift */,
 				A274A5E67200827BEBFC258E /* YearResultView.swift */,
 			);
 			path = Sources;
@@ -162,6 +165,7 @@
 				E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */,
 				E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */,
 				11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */,
+				DF24415C7E00852BA2F01FC2 /* WinFinaleView.swift in Sources */,
 				AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

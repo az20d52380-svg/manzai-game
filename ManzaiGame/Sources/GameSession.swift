@@ -21,6 +21,8 @@ final class GameSession {
     private(set) var pendingResult: WeekSummary?
     /// 直前に選んだ行動（谷口の反応フレーバーを出すため。週頭は nil）
     private(set) var lastAction: WeekAction?
+    /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
+    private(set) var winFinale = false
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
@@ -28,9 +30,9 @@ final class GameSession {
     // MARK: 進行の実体（WeekRunner が週処理と乱数消費の正典を持つ）
     private var runner: WeekRunner<SplitMix64>
 
-    init(seed: UInt64 = 424242, config: GameConfig = GameConfig()) {
+    init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil) {
         self.config = config
-        let start = GameState(config: config)
+        let start = startState ?? GameState(config: config)
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: config, rng: SplitMix64(seed: seed))
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
@@ -67,6 +69,12 @@ final class GameSession {
         pump()
     }
 
+    /// 「勝ち版」決勝演出の「次へ」。年末結果（S4）へ
+    func acknowledgeWin() {
+        winFinale = false
+        finished = true
+    }
+
     // MARK: 内部
 
     /// 自由週の weekDone は自動で次週へ送り（3秒動線・§2）、大会・GPの結果が出た週は止めて
@@ -91,7 +99,11 @@ final class GameSession {
             case .yearDone(let outcome):
                 state = runner.state
                 self.outcome = outcome
-                finished = true
+                if outcome.champion {
+                    winFinale = true   // 優勝＝「勝ち版」演出を挟んでから S4 へ
+                } else {
+                    finished = true
+                }
                 break loop
             default:
                 // tournamentDecision / freeAction / gpRound / gpRevival / gpFinal → 入力or演出待ち
@@ -115,6 +127,30 @@ final class GameSession {
                 if stopAtEntry { return }
                 decideTournament(.夜行バス)
             case .freeAction:         choose(.job(.標準))
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: return
+            }
+        }
+    }
+
+    /// DEBUG: 能力を上限近くまで盛った開始状態（数式・乱数は不変・GameStateの初期値だけ変更）。
+    /// これで決勝ラインを突破でき、優勝演出を実機で確認できる。
+    static func debugMaxedState(config: GameConfig = GameConfig()) -> GameState {
+        var s = GameState(config: config)
+        s.センス = 115; s.発想 = 115; s.表現 = 115; s.華 = 115; s.メンタル = 115
+        s.compat = 19
+        return s
+    }
+
+    /// DEBUG: 決勝優勝が確定する（winFinale）まで自動プレイ。自由週はバイトで破産回避。
+    func debugAdvanceToChampionFinale(maxSteps: Int = 500) {
+        var steps = 0
+        while !winFinale, !finished, steps < maxSteps {
+            steps += 1
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .tournamentDecision: decideTournament(.夜行バス)
+            case .freeAction:         choose(.job(.標準))   // 稼いで破産回避（能力は既にマックス）
             case .gpRound, .gpRevival, .gpFinal: advanceAuto()
             default: return
             }

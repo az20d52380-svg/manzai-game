@@ -1,5 +1,5 @@
 // RootView.swift
-// 画面ルーティング（Phase駆動）。育成メイン(S1)⇄大会入口/本番⇄結果(S2/S3)⇄年末(S4)。
+// 画面ルーティング（Phase駆動）。育成メイン(S1)⇄大会入口/本番⇄結果(S2/S3)⇄勝ち版決勝⇄年末(S4)。
 
 import SwiftUI
 import GameCore
@@ -8,41 +8,71 @@ struct RootView: View {
     @State private var session = GameSession()
 
     var body: some View {
-        Group {
-            if session.finished {
-                YearResultView(session: session) {
-                    session = GameSession(seed: UInt64.random(in: .min ... .max))
-                }
-            } else if let result = session.pendingResult {
-                TournamentResultView(session: session, summary: result)   // S2波形→S3講評
-            } else {
-                switch session.phase {
-                case .freeAction(let offer):
-                    WeekMainView(session: session, offer: offer)          // S1 育成メイン
-                case .tournamentDecision(let spec):
-                    TournamentEntryView(session: session, spec: spec)     // 大会入口（遠征選択）
-                case .gpRound(_, let name):
-                    StagePreludeView(session: session, title: name)       // GP本番前
-                case .gpRevival:
-                    StagePreludeView(session: session, title: "敗者復活")
-                case .gpFinal:
-                    StagePreludeView(session: session, title: "頂GP 決勝")
-                default:
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Theme.bgGradient.ignoresSafeArea())
-                }
+        content
+            .overlay(alignment: .topTrailing) {
+                #if DEBUG
+                debugButton
+                #endif
             }
-        }
-        .task {
-            #if DEBUG
-            let smoke = ProcessInfo.processInfo.environment["MZ_SMOKE"]
-            if session.week <= 1 {
-                if smoke == "1" { session.debugAdvanceToFirstResult() }
-                else if smoke == "2" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
-                else if smoke == "3" { session.debugPlayToEnd() }
+            .task {
+                #if DEBUG
+                let smoke = ProcessInfo.processInfo.environment["MZ_SMOKE"]
+                if session.week <= 1 {
+                    if smoke == "1" { session.debugAdvanceToFirstResult() }
+                    else if smoke == "2" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
+                    else if smoke == "3" { session.debugPlayToEnd() }
+                    else if smoke == "4" { forceChampion() }
+                    else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
+                }
+                #endif
             }
-            #endif
+    }
+
+    @ViewBuilder private var content: some View {
+        if session.winFinale {
+            WinFinaleView(session: session)                          // 勝ち版 決勝演出
+        } else if session.finished {
+            YearResultView(session: session) {
+                session = GameSession(seed: UInt64.random(in: .min ... .max))
+            }
+        } else if let result = session.pendingResult {
+            TournamentResultView(session: session, summary: result)   // S2波形→S3講評
+        } else {
+            switch session.phase {
+            case .freeAction(let offer):
+                WeekMainView(session: session, offer: offer)          // S1 育成メイン
+            case .tournamentDecision(let spec):
+                TournamentEntryView(session: session, spec: spec)     // 大会入口（遠征選択）
+            case .gpRound(_, let name):
+                StagePreludeView(session: session, title: name)       // GP本番前
+            case .gpRevival:
+                StagePreludeView(session: session, title: "敗者復活")
+            case .gpFinal:
+                StagePreludeView(session: session, title: "頂GP 決勝")
+            default:
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Theme.bgGradient.ignoresSafeArea())
+            }
         }
     }
+
+    #if DEBUG
+    /// DEBUG限定の導線: 能力マックスで開始し、決勝優勝まで自動で飛ぶ（優勝演出の確認用・本番導線は不変）
+    private var debugButton: some View {
+        Button {
+            forceChampion()
+        } label: {
+            Text("🏆DEBUG").font(.system(size: 11, weight: .heavy))
+                .foregroundStyle(.white).padding(.horizontal, 8).padding(.vertical, 5)
+                .background(.black.opacity(0.45), in: Capsule())
+        }
+        .padding(.top, 54).padding(.trailing, 10)
+    }
+
+    private func forceChampion() {
+        session = GameSession(startState: GameSession.debugMaxedState())
+        session.debugAdvanceToChampionFinale()
+    }
+    #endif
 }
