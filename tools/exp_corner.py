@@ -188,8 +188,8 @@ def main():
             prev_w = w
         print()
 
-    # ---- (d)+(e) 角セル & 加算/乗算判定（単独寄与 vs 合成） ----
-    print("--- (d)(e) 単独寄与 Σ vs 角の合成寄与（加算/乗算の弁別） ---")
+    # ---- (d)+(e) 角セル & 加算/乗算判定（単独寄与 vs 合成 / 飽和） ----
+    print("--- (d)(e) 単独寄与 Σ vs 角の合成寄与（加算/乗算の弁別＋飽和検査） ---")
     for cls in pols:
         name = getattr(cls(), "name", cls.__name__)
         base_w, base_f = scan(cls, n, **SINGLES[0][1])
@@ -197,6 +197,7 @@ def main():
         for label, cfg in SINGLES[1:]:
             w, f = scan(cls, n, **cfg)
             singles_w[label] = w - base_w
+        pair_w, _ = scan(cls, n, **STACK[2][1])       # 30pt+SSR まで（重い2レバー）
         corner_w, corner_f = scan(cls, n, **STACK[-1][1])
         sum_singles = sum(singles_w.values())
         corner_delta = corner_w - base_w
@@ -204,12 +205,18 @@ def main():
         for k, v in singles_w.items():
             print(f"    単独寄与 {k:<10}: 優勝 Δ{v:+6.2f}")
         print(f"    Σ(単独寄与)            = {sum_singles:+6.2f}")
+        print(f"    30pt+SSR まで 優勝     = {pair_w:.2f}%")
         print(f"    角(全部ON) 優勝        = {corner_w:.2f}%  到達={corner_f:.1f}%  (baseからΔ{corner_delta:+.2f})")
         ratio = (corner_delta / sum_singles) if abs(sum_singles) > 1e-9 else float('nan')
-        verdict = ("加算的(合成≒Σ単独)" if corner_delta <= sum_singles * 1.15 + 1.0
-                   else "超加算/乗算疑い(合成>Σ単独)")
+        # 飽和: 重い2レバー(30pt+SSR)から先(裏天井/得意A/絆)の追加寄与
+        tail = corner_w - pair_w
+        pair_shape = ("加算的" if abs(ratio - 1.0) <= 0.25 else
+                      ("弱い超加算(30pt×SSRの対で強化)" if ratio <= 2.5 else
+                       "超加算(絶対値は小/ノイズ支配)"))
+        sat = "飽和(裏天井/得意A/絆≒0)" if abs(tail) <= 3.0 else "非飽和(後段レバーが加算的に寄与)"
         nec = ">90%=必勝化" if corner_w > 90 else "<90%=必勝化せず"
-        print(f"    合成Δ/Σ単独 = {ratio:.2f}  → {verdict}")
+        print(f"    合成Δ/Σ単独 = {ratio:.2f}  → {pair_shape}")
+        print(f"    後段追加(角−30pt+SSR) = {tail:+.2f} → {sat}")
         print(f"    必勝化判定(規範ii): 角優勝 {corner_w:.2f}% → {nec}")
         print()
 

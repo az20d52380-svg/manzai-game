@@ -147,8 +147,11 @@ def scan(pol_cls, n, pity_on, trophy_pt, compat_cap, init_ability, compat_start,
             st_budget=(st_bud_sum / st_bud_cnt if st_bud_cnt else float("nan")),
         )
     finally:
+        # 完全復元（exp_corner と対称化・単体import利用でも汚染しない）
         C._gp_perform = _ORIG_GP
         B.BURST_P = BASE_BURST_P
+        B.COMPAT_CAP = 20
+        V.reset()
 
 
 def main():
