@@ -19,6 +19,8 @@ final class GameSession {
     private(set) var outcome: YearOutcome?
     /// 大会・GPの結果が出た週。ここに値がある間は S3 結果画面を挟む（テンポの緩急・§3）
     private(set) var pendingResult: WeekSummary?
+    /// 直前に選んだ行動（谷口の反応フレーバーを出すため。週頭は nil）
+    private(set) var lastAction: WeekAction?
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
@@ -47,6 +49,7 @@ final class GameSession {
 
     /// 自由行動週の回答
     func choose(_ action: WeekAction) {
+        lastAction = action
         phase = runner.resolveAction(action)
         pump()
     }
@@ -101,14 +104,32 @@ final class GameSession {
 
     #if DEBUG
     /// QA用: 既定行動で自動プレイし、最初の大会/GP結果（S3）が出た時点で止める。
+    /// stopAtEntry=true なら最初の大会入口（tournamentDecision）で止める（入口画面の目視用）。
     /// 画面レイアウトの目視確認を素早く行うための開発フック（リリースには含まれない）。
-    func debugAdvanceToFirstResult(maxSteps: Int = 240) {
+    func debugAdvanceToFirstResult(maxSteps: Int = 240, stopAtEntry: Bool = false) {
         var steps = 0
         while pendingResult == nil, !finished, steps < maxSteps {
             steps += 1
             switch phase {
-            case .tournamentDecision: decideTournament(.夜行バス)
+            case .tournamentDecision:
+                if stopAtEntry { return }
+                decideTournament(.夜行バス)
             case .freeAction:         choose(.job(.標準))
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: return
+            }
+        }
+    }
+
+    /// QA用: 年末（S4）まで一気に自動プレイ（結果は自動で送る）。
+    func debugPlayToEnd(maxSteps: Int = 400) {
+        var steps = 0
+        while !finished, steps < maxSteps {
+            steps += 1
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .tournamentDecision: decideTournament(.夜行バス)
+            case .freeAction:         choose(.rest(.完全休養))   // 体力を保って稽古も混ぜたいが最短確認用
             case .gpRound, .gpRevival, .gpFinal: advanceAuto()
             default: return
             }
