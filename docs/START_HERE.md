@@ -60,5 +60,5 @@ cd GameCore && swift test
 - 収益: `monetization_decision_v0.md` / `pricing_proposal_v0.md`
 - オーナー判断材料: `owner_decision_brief_v0.md`（決定記録①〜④含む）/ `concerns_register_v0.md`
 - 検証機: `tools/` の `sim_career.py`（本体）`gen_golden.py`（正典順序）`exp_v2_*.py`（v2実測）
-- Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ `fable_session_brief_v0.md`（旧Q1-Q5指示書・Q1裏天井は`pity_calibration_v0.md`で決着済）/ `fable_kickoff_prompt_v0.md`（旧・裏天井用）/ **`fable_kickoff_prompt_v1.md`（現行・ラストイヤーの奇跡・コピペ即用）** ※T4裏天井台・T5 SSR cap24はcloud実装済
+- Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ **`fable_kickoff_prompt_v2.md`（現行・“最後のFable”完全版・ultrathink＋Q1ラストイヤー/Q2角/Q3面白さ俯瞰・コピペ即用）** / **`verdict_draft_v0.md`（4.8がsim反証まで済ませたQ1/Q2候補裁定＝Fableの叩き台）** / `fable_readiness_v0.md`（受け皿3台の検証状況＝地図）/ 旧: `fable_kickoff_prompt_v0/v1.md`・`fable_session_brief_v0.md` ※受け皿台 `tools/exp_lastyear.py`・`exp_corner.py`・`exp_talent_ability.py`・`exp_lastyear_gate.py`・`exp_corner_multiseed.py` は実装・検証済(golden非干渉)
 - **Fable裁定（2026-07-05実施済）**: `pity_calibration_v0.md`（裏天井の効果式・実測13セル＋推奨1点）/ `fable_findings_v0.md`（Q3/Q4/Q5と申し送り）
