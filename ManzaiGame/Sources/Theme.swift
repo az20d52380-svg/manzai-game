@@ -78,3 +78,14 @@ extension Font {
         .system(size: size, weight: weight, design: .rounded)
     }
 }
+
+/// 押した瞬間に少し沈む＝タップの手応え（「押しても選ばれた感じにならない」対策）。
+struct PressableStyle: ButtonStyle {
+    var scale: CGFloat = 0.96
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? scale : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}

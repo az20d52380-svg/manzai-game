@@ -202,19 +202,27 @@ struct WeekMainView: View {
 
     private func groupTile(_ g: CommandGroup) -> some View {
         let isOpen = openGroup == g.id
+        let hasSel = g.variants.contains { $0.id == selected?.id }
+        let active = isOpen || hasSel
         return Button {
             openGroup = isOpen ? nil : g.id
         } label: {
             VStack(spacing: 3) {
-                Image(systemName: g.glyph).font(.system(size: 17)).foregroundStyle(Theme.ink)
-                Text(g.title).font(.maru(11))
+                Image(systemName: g.glyph).font(.system(size: 17)).foregroundStyle(active ? Theme.verm : Theme.ink)
+                Text(g.title).font(.maru(11)).foregroundStyle(active ? Theme.verm : Theme.ink)
                 HStack(spacing: 3) { ForEach(Array(g.dotColors.enumerated()), id: \.offset) { _, c in Circle().fill(c).frame(width: 6, height: 6) } }
             }
             .frame(maxWidth: .infinity).padding(.vertical, 8)
-            .background(isOpen ? Color(hex: 0xFFF3EF) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
-            .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOpen ? Theme.verm : Theme.line, lineWidth: 2))
+            .background(active ? Color(hex: 0xFFF3EF) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
+            .overlay(RoundedRectangle(cornerRadius: 13).stroke(active ? Theme.verm : Theme.line, lineWidth: 2))
+            .overlay(alignment: .topTrailing) {
+                if hasSel {
+                    Image(systemName: "checkmark.circle.fill").font(.system(size: 13))
+                        .foregroundStyle(Theme.verm).padding(5)
+                }
+            }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
     }
 
     private func variantPanel(_ g: CommandGroup) -> some View {
@@ -222,14 +230,16 @@ struct WeekMainView: View {
             Text("\(g.title) — どれにする？").font(.maru(11)).foregroundStyle(Theme.verm)
                 .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 4)
             ForEach(g.variants) { v in
+                let isSel = selected?.id == v.id
                 Button {
+                    // パネルは閉じず、選んだ行をハイライト＝「選ばれた」を目で確認→つぎへで確定
                     selected = v
-                    openGroup = nil
                 } label: {
                     HStack(spacing: 9) {
-                        Image(systemName: v.glyph).font(.system(size: 15)).frame(width: 22).foregroundStyle(Theme.ink)
+                        Image(systemName: v.glyph).font(.system(size: 15)).frame(width: 22)
+                            .foregroundStyle(isSel ? Theme.verm : Theme.ink)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(v.name).font(.maru(12.5))
+                            Text(v.name).font(.maru(12.5)).foregroundStyle(isSel ? Theme.verm : Theme.ink)
                             Text(v.desc).font(.system(size: 10)).foregroundStyle(Theme.inkDim)
                         }
                         Spacer()
@@ -238,17 +248,22 @@ struct WeekMainView: View {
                                 .foregroundStyle(!v.affordable ? Theme.verm : (v.costIsUp ? Theme.cMoney : Theme.verm))
                             Text(v.eff).font(.system(size: 9, weight: .bold)).foregroundStyle(Theme.inkFaint)
                         }
+                        Image(systemName: isSel ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 17)).foregroundStyle(isSel ? Theme.verm : Theme.line)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 9)
+                    .background(isSel ? Theme.verm.opacity(0.10) : Color.clear)
+                    .overlay(alignment: .leading) { if isSel { Rectangle().fill(Theme.verm).frame(width: 3) } }
                     .overlay(alignment: .top) { Rectangle().fill(Theme.line).frame(height: 1) }
                     .opacity(v.affordable ? 1 : 0.45)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableStyle())
                 .disabled(!v.affordable)
             }
         }
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 13))
         .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.verm, lineWidth: 2))
+        .animation(.easeOut(duration: 0.15), value: selected?.id)
     }
 
     private var nextBar: some View {
@@ -272,13 +287,14 @@ struct WeekMainView: View {
             Button {
                 guard let sel = selected else { return }
                 selected = nil
+                openGroup = nil          // 確定したらパネルを畳んで次週はスッキリ
                 session.choose(sel.action)
             } label: {
                 Text("つぎへ ▶").font(.maru(15)).foregroundStyle(.white)
                     .padding(.horizontal, 20).padding(.vertical, 10)
                     .background(selected == nil ? Theme.inkFaint : Theme.verm, in: RoundedRectangle(cornerRadius: 13))
             }
-            .buttonStyle(.plain).disabled(selected == nil)
+            .buttonStyle(PressableStyle()).disabled(selected == nil)
         }
         .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 13)
         .background(Color(hex: 0xFFEFDD))
