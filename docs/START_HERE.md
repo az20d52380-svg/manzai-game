@@ -56,7 +56,7 @@ cd GameCore && swift test
 - 検証: `human_calibration_v0.md`（借金バグ発見）/ `rule_holes_v0.md`（生活ルール）/ `red_team_v0.md`
 - UI/演出: `ui_design_v0.md` / `finals_direction_v0.md` / `fan_report_design_v0.md` / `onboarding_script_v0.md`
 - 決勝敗北時の優勝者・ライバル: `champion_selection_v1.md`（正典・選出ロジック）/ `relationship_champions_v0.md`（絆＋優勝時セリフ）/ `name_generator_v0.md`（コンビ名生成）/ `rival_design_v0.md`（4組の役柄テンプレ）/ `partner_finals_reactions_v0.md`（相方別の袖反応・非谷口は関西弁にしない）
-- キャラ: `partner_characters_v0.md`（相方・男4/女3）/ `character_archetypes_v0.md`（22類型×口調×得意能力・後輩/先輩の量産型）/ `judge_design_v0.md`（審査員7名）
+- キャラ: `partner_characters_v0.md`（相方・男6/女4＝得意能力6軸を網羅）/ `character_archetypes_v0.md`（22類型×口調×得意能力・後輩/先輩の量産型）/ `partner_finals_reactions_v0.md`（相方別の袖反応）/ `judge_design_v0.md`（審査員7名）
 - 収益: `monetization_decision_v0.md` / `pricing_proposal_v0.md`
 - オーナー判断材料: `owner_decision_brief_v0.md`（決定記録①〜④含む）/ `concerns_register_v0.md`
 - 検証機: `tools/` の `sim_career.py`（本体）`gen_golden.py`（正典順序）`exp_v2_*.py`（v2実測）
