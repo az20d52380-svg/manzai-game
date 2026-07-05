@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>漫才師育成SLG 育成メイン v7（パワプロ2022式トップメニュー・決定ボタン無し・押したら実行・ブラウザ検証済）</title></head><body>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>漫才師育成SLG 育成メイン v7（パワプロ2022式・決定ボタン無し・伸びは整数表示）</title></head><body>
 <style>
   :root{
     --cream:#F7EACE; --ink:#3A241F; --dim:#9c8468;
@@ -242,12 +242,17 @@
   function drawPills(){
     $('pills').innerHTML=AX.map(a=>`<div class="pill"><span class="pic" style="background:${a.c}">${a.e}</span><span class="pnm">${a.nm}</span><span class="pval">${Math.round(S[a.k])}</span><span class="pplus" id="pl_${a.k}"></span></div>`).join('');
   }
+  // 表示は整数（現在値の整数→実行後の整数の差）＝バーの見た目の変化と必ず一致
+  function idg(after,before,k){return Math.round(after[k])-Math.round(before[k]);}
   function previewHtml(v){
-    if(v.type==='job'){return `<span style="color:var(--money)">+¥${v.spec.income/10000}万</span><span class="cst">体力${v.spec.stam}</span>`;}
-    if(v.type==='rest'){const b=v.spec.bonus,a=AX.find(x=>x.k===b[0]); return `<span style="color:var(--mental)">体力+${v.spec.recovery}</span><span class="cst">${a?a.nm+' +'+b[1]:''}</span>`;}
-    const g=gainsOf(v); const main=Object.keys(g).map(k=>{const a=AX.find(x=>x.k===k);return `<span style="color:${a.c}">${a.nm.slice(0,2)}+${fmtG(g[k])}</span>`;}).join(' ');
-    const cost=v.spec.cost>0?`-¥${v.spec.cost/10000}万 体力${v.spec.stam}`:`体力${v.spec.stam}`;
-    return `${main}<span class="cst">${cost}</span>`;
+    const after=apply(S,v); const parts=[];
+    if(v.type==='job') parts.push(`<span style="color:var(--money)">+¥${v.spec.income/10000}万</span>`);
+    AX.forEach(a=>{const d=idg(after,S,a.k); if(d>0)parts.push(`<span style="color:${a.c}">${a.nm.slice(0,2)}+${d}</span>`);});
+    let ability=parts.join(' ');
+    if(v.type==='train'&&!AX.some(a=>idg(after,S,a.k)>0)) ability='<span style="color:var(--dim)">伸びわずか</span>';
+    const dst=Math.round(after.stamina)-Math.round(S.stamina);
+    const cb=[]; if(v.spec.cost>0)cb.push(`-¥${v.spec.cost/10000}万`); cb.push(`体力${dst>=0?'+':''}${dst}`);
+    return `${ability}<span class="cst">${cb.join(' ')}</span>`;
   }
   function drawVwrap(){
     const w=$('vwrap');
@@ -285,8 +290,7 @@
   function execute(act){
     busy=true; const before=Object.assign({},S), after=apply(S,act); Object.assign(S,after); menu=null;
     $('flash').className='flash go'; setTimeout(()=>$('flash').className='flash',500); render();
-    const gains={}; AX.forEach(a=>{const d=after[a.k]-before[a.k]; if(d>0.05)gains[a.k]=d;});
-    Object.keys(gains).forEach(k=>{const el=$('pl_'+k); if(el){el.textContent='+'+fmtG(gains[k]); el.className='pplus show';}});
+    AX.forEach(a=>{const d=Math.round(after[a.k])-Math.round(before[a.k]); if(d>0){const el=$('pl_'+a.k); if(el){el.textContent='+'+d; el.className='pplus show';}}});
     AX.forEach(a=>{ if(rank(before[a.k])!==rank(after[a.k])) toast(a.nm+' ランクアップ！ '+rank(after[a.k])); });
     setTimeout(()=>{busy=false;nextWeek();},850);
   }
