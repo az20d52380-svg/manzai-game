@@ -14,7 +14,7 @@
 4. **【critical/バランス】王者編マトリクス(10連覇58.3%等)が現コードで再現しない** — 「王者の特権(成長期限解除)」が未実装。周回の最終到達目標が空洞。✅実測の記載が虚偽。(fable)
 5. **【high/バランス+整合】裏天井(初回の保証弁)が2案並存・未統合・実装ゼロ・実測ゼロ** — 初回8割(準決敗退層)の救済という体験の芯がP0で停止。(fable)
 6. **【high/技術】iOSアプリ(ManzaiGame)がCIで一度もビルドされない** — GameCore API変更でUIが壊れてもCIは緑。S1/S4/S5追加時の型エラーを機械が捕まえられない。(cli-mac)
-7. **【high/バランス】「正本」canonicalの看板数値(2.1%/43.5%)が現コードで非再現(実測2.70%/41.5%)** — 検証台帳の信頼性を直接毀損。定数ドリフトの追跡機構なし。(fable)
+7. ✅**【解決 2026-07-05・cloud】** canonical看板数値を74/80で再測して上書き（やり込み2.7%/41.5%・のんびり改0.3%/23.1%・バランス0.2%/8.4%＝`exp_v2_anchor.py 1000`シード20260704）。measurement作業ゆえFable不要でcloudが実施。**残**: 定数ドリフトの自動追跡（sim出力にsnapshot）は未着手。
 
 ---
 
@@ -30,7 +30,7 @@
 | high | 決勝の優勝/TOP3ライン数値が3文書不一致(canonical80/finals95・91・89/master94)かつfinals内部矛盾 | 整合 | finals L46,L70-73 ⇔ canonical §1 ⇔ master L48 | 4.8-cloud | finals閾値を絶対値でなく「内部スコア vs 該当ライン(v2:74/80)の符号」で記述。出典をcanonical_v2に一本化 |
 | high | finals §4-D優勝例(ミラーボール7年目/静物画9年目)がrival年表と食い違い、champion_selectionが年表準拠で一方的解決 | 整合 | finals L126,L136 ⇔ rival §1 L33,L40 ⇔ champion_selection §2 L75,§9未決2 | owner-decision | (A)finals例示を「決勝表示候補」へ訂正しミラーボール優勝フレーバーを死蔵と明記 or (B)年表を優勝化改訂。採用側で3文書同時更新 |
 | high | finals §4-C.5がモブ旧30組のまま・夜行列車をTOP3候補に誤記(champion_selectionで恒久除外済) | 整合 | finals L116 ⇔ champion_selection §5 L215,§1 L46,§6 L245 / content_batch5(50組) | 4.8-cloud | finals L116を「50組(content_batch5 §2)から補充・TOP3他枠は金字塔/ミラーボール兄弟/静物画のみ(夜行列車除外)」へ修正しポインタ統一 |
-| high | 正本canonicalの体験テーブル(2.1%/43.5%)が現コードで非再現(実測2.70%/41.5%) | バランス | canonical §2/§4 ⇔ endgame_pity §1(2.70/41.5/23.1) / exp_v2_anchor実行 | fable | exp_v2_anchorを正本値として再取得しcanonical §2/§4上書。ドリフト検出のsnapshotをsim出力にも設置 |
+| ✅解決(cloud) | 正本canonicalの体験テーブルを74/80で再測・上書済(2.7%/41.5%・のんびり23.1%・バランス8.4%) | バランス | canonical §2/§4上書済 ⇔ exp_v2_anchor.py 1000 シード20260704 | cloud済 | 【完了】exp_v2_anchorを正本値として再取得しcanonical §2/§4上書。残: ドリフト検出snapshotをsim出力に設置(未) |
 | high | SSRティア再価格(相性上限+4)がexp_v2_metaに未反映=「SSR 0pt優勝爆発」未修正が残存 | バランス | canonical §2-B ⇔ exp_v2_meta.py:24-27 TIERS(SSR cap30=+10) / career_scan SSR分散0pt=66.67% | fable | SSRティアをcap24(+4)へ修正しcareer_scan/dynasty再測。COMPAT_CAPを実験横断で一貫化 |
 | high | exp_neta非情報的でネタ資産係数(0.04)が実質未検証 | バランス | sim_career.py:205-216 / exp_neta.py:42-54(弱ボットのみ) | fable | exp_netaを決勝到達30-40%帯ボット(PSpread等)でも回し決勝突破率差で較正 |
 | high | セーブ/中断復帰が実質未実装、CodableテストがGameState+RNGだけで「土台完成」の誤った安心感 | 技術 | WeekRunner.swift:55-79(非Codable進行状態) / CodableTests / GameSession(save/load不在) | 4.8-cloud | WeekRunnerをCodable化 or (seed+アクション列)リプレイ方式を設計決定しsave/restore実装。決定までdoc表現を「部分的」へ訂正 |
