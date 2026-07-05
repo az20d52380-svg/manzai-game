@@ -95,6 +95,20 @@ T2をstate方式(`s._champ`)にしたため、3関数は各キャリア先頭で
 
 ---
 
+## T6: exp_archetype.py 新設（得意能力ボーナス方式Aのsideways測定台）〔touches-golden・cli-mac〕
+
+**目的**: オーナー⑤で確定した方式A（得意能力の稽古効率+%・対象=演技系4能力）が sideways（全アーキタイプが総合力等価）を保つかを実測し、`enabled=on` フリップの合否を出す（`character_archetypes §9-B`）。
+
+**触る所**: `balance_sim.py` do_training(140-152)に per-stat 稽古効率倍率フック（`s._train_mult` dict・既定空=倍率1.0）。`sim_career.py` はフック透過。新規 `tools/exp_archetype.py`。**mental/staminaには倍率を掛けない**（予算プール外＝方式A対象外・§9安全判定）。
+
+**測定セル（§9-B・6つ全部を合格条件に）**: (1)能力別の優勝限界寄与 (2)アーキタイプ別優勝率スプレッド（**メンタル/体力primary型も含む**・canonical §2帯内か） (3)1年MVP予算拘束 (4)トロフィー30pt角 (5)合成最悪ケース（軸整合seed＋大会直前投下・加算合成キャップ下） (6)難度較正（3ポリシー）が動かないか。
+
+**goldenImpact**: `s._train_mult` を既定空（倍率1.0）にすれば do_training の乗算は恒等＝**gen_goldenは倍率を注入しないのでbit不変**。ただしdo_trainingを触るので **規律A（gen_golden before/after diff空＋swift test green）を1コミットで**。倍率を実際に効かせるのは exp_archetype 内のみ（enabled=off維持）。
+
+**検証**: `python3 exp_archetype.py 1000` で6セルを出力。全型がcanonical §2目標帯内・30pt/軸整合最悪ケースで頂部が跳ねない・難度帯不変、を満たせば on 候補。1つでも外れたら対象能力限定/寄与均し/飽和連動/加算キャップの条件を足して再測。
+
+---
+
 ## Fableに渡す生データ（下ごしらえの出口）
 
 上記を強ボット（PSpread/PCasual2）＋十分シード数＋信頼区間で走らせ、**閾値表・連覇マトリクス・決勝初到達年ヒストグラム**に整形。Fableへは「dynasty×SSR×debuff×pityの帯が同時充足する解はあるか」の1構造判断だけを投げる（`fable_plan §2`）。STEP2/3・cap22〜24・K/PEN/DELTAグリッド・H3差分の**閾値探索は4.8**、最終選択はオーナー。
