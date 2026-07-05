@@ -23,7 +23,7 @@ RETIRE_AFTER = 3
 
 TIERS = [
     ("N相方(5→20)",    20, dict(compat_start=5,  init_ability=20)),
-    ("SSR相方(20→30)", 30, dict(compat_start=20, init_ability=20)),
+    ("SSR相方(20→24)", 24, dict(compat_start=20, init_ability=20)),  # 正典v2: SSR=相性上限+4=24(sim_meta.py:34と一致・concerns#34)
 ]
 
 def career_scan(n):
