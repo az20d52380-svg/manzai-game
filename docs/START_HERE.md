@@ -33,7 +33,7 @@ cd GameCore && swift test
 ## 次にやること（red_team_v0.md §4 のトリアージ順）
 
 1. ✅ swift test 緑化（2026-07-04 green）
-2. **裏天井の設計＋sim較正**（初回の保証弁。決勝未到達のまま晩年でハマ率累積。`tools/exp_v2_anchor.py`の枠で帯維持を確認）← **Fable待ちの本命**
+2. ✅ 裏天井の設計＋sim較正（2026-07-05・`pity_calibration_v0.md`・BP0.30オーナー確定②）※run_year本実装＋正典再測はMac/4.8の残タスク
 3. ✅ 決勝敗北時の「優勝者指名」演出＝**設計完了**（`finals_direction_v0.md §4-D`。名鑑接続・判定は絶対ラインのまま表示だけ相対化）※コード実装は後
 4. ✅ 成長上限の可視化＝**設計完了**（`ui_design_v0.md §2-B`。谷口の台詞化＋メンタル/相性/知名度の別出口設計）※コード実装は後
 5. runYear→WeekRunner委譲（ui_design §5。golden緑の確認後）＋ GameStateのCodable化・中断復帰
@@ -47,7 +47,7 @@ cd GameCore && swift test
 
 ## モデルの使い分け
 
-- **Fable（残りわずか）**: 構造的バランス/sim較正の判断だけに温存。**投入計画は `fable_plan_v0.md`**。**本命の「角の同時成立裁定」は4.8閾値表＋得意A/裏天井の実装待ちでblocked**（2026-07-05棚卸し）。一方 **今すぐ回せるFable向き1問＝「ラストイヤーの奇跡の較正」（red_team §1・§4 P1＝Fable待ち）が生存**——実験台だけで測れ王者編廃止とも独立。**キックオフ即用は `fable_kickoff_prompt_v1.md`**（受け皿=exp_lastyear.py・最終年run_year直前に`s._yg`を−X・合格条件と裏天井合成チェック込み）。
+- **Fable（2026-07-05・最終セッション実施済み）**: Q1ラストイヤー＝**X=2・停滞層ゲート必須・G2許容帯化**（`lastyear_calibration_v0.md`）／Q2角＝**60.75%<90%必勝化せず・角補正不要(本実装後再測条件)**（`corner_arbitration_v0.md`）／Q3面白さ俯瞰3点（`fun_flow_review_v0.md`）を裁定済み。残タスクは各docの「Fable後のTODO」（Mac=run_year本実装・4.8=正典再測）へ移管済み。新たなFable向き問いが出たら `fable_plan_v0.md` の基準で判断。
 - **4.8**: 量産・実装・パターン踏襲・UIスキャフォールディング・ドキュメント整備・**閾値スイープ/差分測定（Fableに投げない）**。
 
 ## 主要ドキュメント索引
@@ -60,5 +60,5 @@ cd GameCore && swift test
 - 収益: `monetization_decision_v0.md` / `pricing_proposal_v0.md`
 - オーナー判断材料: `owner_decision_brief_v0.md`（決定記録①〜④含む）/ `concerns_register_v0.md`
 - 検証機: `tools/` の `sim_career.py`（本体）`gen_golden.py`（正典順序）`exp_v2_*.py`（v2実測）
-- Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ **`fable_kickoff_prompt_v2.md`（現行・“最後のFable”完全版・ultrathink＋Q1ラストイヤー/Q2角/Q3面白さ俯瞰・コピペ即用）** / **`verdict_draft_v0.md`（4.8がsim反証まで済ませたQ1/Q2候補裁定＝Fableの叩き台）** / `fable_readiness_v0.md`（受け皿3台の検証状況＝地図）/ 旧: `fable_kickoff_prompt_v0/v1.md`・`fable_session_brief_v0.md` ※受け皿台 `tools/exp_lastyear.py`・`exp_corner.py`・`exp_talent_ability.py`・`exp_lastyear_gate.py`・`exp_corner_multiseed.py` は実装・検証済(golden非干渉)
-- **Fable裁定（2026-07-05実施済）**: `pity_calibration_v0.md`（裏天井の効果式・実測13セル＋推奨1点）/ `fable_findings_v0.md`（Q3/Q4/Q5と申し送り）
+- Fable関連: `fable_plan_v0.md`（いつ・何に使うか）/ `sim_scaffold_spec_v0.md`（受け皿の実装スペックT1-T6）/ **`fable_kickoff_prompt_v2.md`（現行・“最後のFable”完全版・ultrathink＋Q1ラストイヤー/Q2角/Q3面白さ俯瞰・コピペ即用）** / **`verdict_draft_v0.md`（4.8がsim反証まで済ませたQ1/Q2候補裁定＝Fableの叩き台）** / `fable_readiness_v0.md`（受け皿3台の検証状況＝地図）/ 旧: `fable_kickoff_prompt_v0/v1.md`・`fable_session_brief_v0.md` ※受け皿台 `tools/exp_lastyear.py`・`exp_corner.py`・`exp_talent_ability.py`・`exp_lastyear_gate.py`・`exp_corner_multiseed.py`・`exp_lastyear_fable.py`(層分解/CI/成分分解) は実装・検証済(golden非干渉)
+- **Fable裁定（2026-07-05実施済）**: `pity_calibration_v0.md`（裏天井の効果式・実測13セル＋推奨1点）/ `fable_findings_v0.md`（Q3/Q4/Q5と申し送り）/ **`lastyear_calibration_v0.md`（Q1ラストイヤー=X=2・ゲート必須）/ `corner_arbitration_v0.md`（Q2角=必勝化せず・二重壁）/ `fun_flow_review_v0.md`（Q3中だるみ/アーク最弱点/演出解）**
