@@ -1,6 +1,13 @@
 // WeekMainView.swift
-// SCREEN 01 育成メイン（mockup v3）。上部＝年月週(1行)・やる気・体力・所持金／中＝キャラ＋俺の心の声（状態駆動・ボケない）／
-// 能力6バー(伸び演出+「+N」)／下＝2段階コマンド（グループを押す→変種パネル→選ぶ→獲得プレビュー→つぎへ）。
+// SCREEN 01 育成メイン（v8）。上＝立ち絵シーン（左上に6軸ダークピル・実行時オレンジ「+N」／未選択時のみ心の声）／
+// 下＝コマンドゾーン（カテゴリのアイコン列 ⇄ 変種カードの横スクロール列を「同じ場所」で切替。戻るは右上のみ）／
+// 最下部＝帯（1年目N週・大会までN週・体力ゲージ・所持金）。
+// 決定ボタン（つぎへ）は無い：変種カードのタップ＝即 session.choose(action)＝1週進む（phase遷移・RootViewは無改修）。
+// 伸びの数値は GameSession.previewState/previewGains（RNG非消費・golden不変）から「現在値の整数→実行後の整数の差」で表示。
+// 怪我率・稽古Lvは出さない。体力<staminaGate の稽古はグレー＋「谷口：今日は休め」。
+//
+// ⚠️ // MARK: 要Mac実機ビルド — UIは swift test で検証できない。レイアウト/ゲージ色/ピル+N/カード横スクロール/
+//    戻る導線/トーストは simulator でビルド→起動→目視まで確認して初めて「完了」（規律D-10）。
 
 import SwiftUI
 import GameCore
@@ -9,121 +16,144 @@ struct WeekMainView: View {
     @Bindable var session: GameSession
     let offer: OfferSpec?
 
-    @State private var openGroup: String?
-    @State private var selected: CommandVariant?
+    /// 開いているカテゴリ（nil=カテゴリのアイコン列を表示）。カードのタップで即実行→nil に戻す。
+    @State private var openCategory: String?
+    /// 実行直後だけ true。ピルの「+N」を一瞬見せる（既存の lastGains 機構を流用）。
     @State private var gainsVisible = false
+    /// 無効タップ（体力/お金不足）の一時トースト。
+    @State private var toast: String?
 
     private var s: GameState { session.state }
-    private var groups: [CommandGroup] { CommandCatalog.groups(config: session.config, offer: offer, money: s.money) }
+    private var groups: [CommandGroup] {
+        CommandCatalog.groups(config: session.config, offer: offer, money: s.money)
+    }
+    private var openGroup: CommandGroup? {
+        guard let openCategory else { return nil }
+        return groups.first(where: { $0.id == openCategory })
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            topbar
-            goalBanner.padding(.horizontal, 14).padding(.top, 1)
-            charaZone.padding(.horizontal, 14).padding(.top, 9)
-            paramsGrid
-            commandArea
+            sceneZone
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            commandZone
+            botbar
         }
         .background(Theme.bgGradient.ignoresSafeArea())
+        .overlay(alignment: .top) {
+            toastBar.animation(.easeOut(duration: 0.2), value: toast)
+        }
         .task(id: session.week) {
-            // 新しい週に入ったら「+N」を一瞬見せる（バー伸び演出の相棒）
-            if !session.lastGains.isEmpty {
+            // 新しい週に入ったら「+N」を一瞬見せる（ピルのオレンジ）
+            if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
                 gainsVisible = true
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
                 gainsVisible = false
             }
         }
+        .task(id: toast) {
+            if toast != nil {
+                try? await Task.sleep(nanoseconds: 1_400_000_000)
+                toast = nil
+            }
+        }
     }
 
-    // MARK: 上部（年月週1行・やる気・体力・所持金）
+    // MARK: 立ち絵シーン（左上ピル・右上戻る・心の声）
 
-    private var topbar: some View {
-        HStack(spacing: 9) {
-            HStack(spacing: 3) {
-                Text("\(session.year)年目").font(.maru(12)).foregroundStyle(Theme.verm)
-                Text("\(session.week)週").font(.maru(20))
+    private var sceneZone: some View {
+        sceneBackground
+            .overlay(alignment: .topLeading) { pillsColumn.padding(12) }
+            .overlay(alignment: .topTrailing) {
+                if openCategory != nil { backButton.padding(12) }
             }
-            .lineLimit(1).fixedSize()
-            genkiPill
-            Spacer()
-            VStack(alignment: .trailing, spacing: 3) {
-                HStack(spacing: 5) {
-                    Text("体力").font(.maru(9.5)).foregroundStyle(Theme.cMental)
-                    staminaBar
+            .overlay(alignment: .bottomLeading) {
+                if openCategory == nil { monoBox.padding(14) }
+            }
+            .clipped()
+    }
+
+    private var sceneBackground: some View {
+        RadialGradient(colors: [Color(hex: 0xFFE3B0), Color(hex: 0xFFC98A)],
+                       center: .bottom, startRadius: 20, endRadius: 340)
+            .overlay(alignment: .bottomTrailing) {
+                // TODO: 本イラスト差替（現状はシルエット仮＝立ち絵プレースホルダ）
+                HStack(alignment: .bottom, spacing: 4) {
+                    silhouette(color: Color(hex: 0x3B6FE0), w: 74, h: 116)
+                    silhouette(color: Theme.verm, w: 84, h: 130)
                 }
-                Text("¥\(s.money.formatted())").font(.maru(13)).monospacedDigit()
-                    .foregroundStyle(s.money < 0 ? Theme.verm : Theme.cMoney)
+                .padding(.trailing, 20).padding(.bottom, 4)
             }
-        }
-        .padding(.horizontal, 14).padding(.top, 8).padding(.bottom, 8)
-    }
-
-    private var genkiPill: some View {
-        let (face, label) = genki(s.stamina)
-        return HStack(spacing: 5) {
-            Text(face).font(.system(size: 10)).frame(width: 18, height: 18).background(Theme.gold, in: Circle())
-            Text(label).font(.maru(11)).foregroundStyle(Theme.goldD)
-        }
-        .padding(.leading, 6).padding(.trailing, 9).padding(.vertical, 3)
-        .background(Color(hex: 0xFFF6D6), in: Capsule())
-        .overlay(Capsule().stroke(Theme.gold, lineWidth: 1.5))
-    }
-
-    private var staminaBar: some View {
-        ZStack(alignment: .leading) {
-            Capsule().fill(Color(hex: 0xEAF6EF))
-            Capsule().fill(LinearGradient(colors: [Color(hex: 0x3FCE93), Theme.cMental], startPoint: .leading, endPoint: .trailing))
-                .frame(width: 70 * CGFloat(max(0, min(100, s.stamina)) / 100))
-                .animation(.easeOut(duration: 0.4), value: s.stamina)
-        }
-        .frame(width: 70, height: 8)
-        .overlay(Capsule().stroke(Color(hex: 0xCDEBDB), lineWidth: 1.5))
-    }
-
-    // MARK: 目標（1行・あとN週は右）
-
-    private var goalBanner: some View {
-        let g = goal()
-        return HStack(spacing: 7) {
-            Text("🎯").font(.system(size: 13))
-            Text(g.0).font(.maru(12)).lineLimit(1).truncationMode(.tail)
-            Spacer(minLength: 6)
-            Text(g.1).font(.maru(11)).foregroundStyle(Theme.verm).fixedSize()
-        }
-        .padding(.horizontal, 12).padding(.vertical, 6)
-        .background(LinearGradient(colors: [Color(hex: 0xFFEAD2), Color(hex: 0xFFF3E4)], startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: 11))
-        .overlay(RoundedRectangle(cornerRadius: 11).stroke(Color(hex: 0xF3C58A), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
-    }
-
-    // MARK: キャラ＋俺の心の声
-
-    private var charaZone: some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(RadialGradient(colors: [Color(hex: 0xFFE3B0), Color(hex: 0xFFC98A)], center: .bottom, startRadius: 10, endRadius: 220))
-            HStack(alignment: .bottom, spacing: 2) {
-                Spacer()
-                silhouette(color: Color(hex: 0x3B6FE0), w: 42, h: 60)
-                silhouette(color: Theme.verm, w: 48, h: 68)
-            }
-            .padding(10)
-            monoBox.padding(12)
-        }
-        .frame(minHeight: 120)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func silhouette(color: Color, w: CGFloat, h: CGFloat) -> some View {
-        UnevenRoundedRectangle(topLeadingRadius: 24, bottomLeadingRadius: 14, bottomTrailingRadius: 14, topTrailingRadius: 24)
+        UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 14, bottomTrailingRadius: 14, topTrailingRadius: 30)
             .fill(LinearGradient(colors: [color.opacity(0.85), color], startPoint: .top, endPoint: .bottom))
             .frame(width: w, height: h)
-            .overlay(alignment: .top) { Circle().fill(Color(hex: 0xFFE0C4)).frame(width: 24, height: 24).offset(y: 11) }
-            .shadow(color: .black.opacity(0.22), radius: 4, y: 4)
+            .overlay(alignment: .top) { Circle().fill(Color(hex: 0xFFE0C4)).frame(width: w * 0.55, height: w * 0.55).offset(y: 12) }
+            .shadow(color: .black.opacity(0.22), radius: 5, y: 5)
     }
 
+    // MARK: 6軸ダークピル（センス/発想/表現/華/メンタル/相性・data-theme無関係の暗色固定）
+
+    private var pillsColumn: some View {
+        let rows: [(String, Ability?, Double, Color)] = [
+            ("センス", .センス, s.センス, Theme.cSense),
+            ("発想", .発想, s.発想, Theme.cIdea),
+            ("表現", .表現, s.表現, Theme.cExpr),
+            ("華", .華, s.華, Theme.cChara),
+            ("メンタル", .メンタル, s.メンタル, Theme.cMental),
+            ("相性", nil, s.compat, Theme.cCompat),
+        ]
+        return VStack(alignment: .leading, spacing: 4) {
+            ForEach(rows, id: \.0) { r in
+                statPill(name: r.0, ability: r.1, value: r.2, color: r.3)
+            }
+        }
+    }
+
+    private func statPill(name: String, ability: Ability?, value: Double, color: Color) -> some View {
+        // 能力5種は lastGains、相性は lastCompatGain から「実際に伸びた分」を出す（プレビューではなく確定値）。
+        let gain: Double? = {
+            if let a = ability { return session.lastGains.first(where: { $0.ability == a })?.amount }
+            return session.lastCompatGain > 0.001 ? session.lastCompatGain : nil
+        }()
+        return HStack(spacing: 5) {
+            Circle().fill(color).frame(width: 7, height: 7)
+            Text(name).font(.maru(9.5)).foregroundStyle(.white.opacity(0.92))
+            Text("\(Int(value.rounded()))").font(.maru(11)).monospacedDigit().foregroundStyle(.white)
+            if let gain, gainsVisible, Int(gain.rounded()) >= 1 {
+                Text("+\(Int(gain.rounded()))").font(.maru(10)).foregroundStyle(Theme.gainOrange)
+                    .transition(.opacity)
+            }
+        }
+        .padding(.leading, 6).padding(.trailing, 8).padding(.vertical, 3)
+        .background(Theme.pillDark, in: Capsule())
+        .overlay(Capsule().stroke(color.opacity(0.55), lineWidth: 1))
+        .animation(.easeOut(duration: 0.2), value: gainsVisible)
+    }
+
+    private var backButton: some View {
+        Button {
+            openCategory = nil
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "chevron.left").font(.system(size: 11, weight: .heavy))
+                Text("戻る").font(.maru(12))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12).padding(.vertical, 7)
+            .background(Theme.pillDark, in: Capsule())
+        }
+        .buttonStyle(PressableStyle())
+    }
+
+    // MARK: 心の声（カテゴリ未選択時のみ・状態駆動モノローグ）
+
     private var monoBox: some View {
-        let a = mono
+        let a = DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
+                                        justPassed: session.justPassedStage,
+                                        nextMilestone: nextMilestone(), weakAbility: weakAbility())
         return VStack(alignment: .leading, spacing: 2) {
             Text(a.name ?? "俺").font(.maru(9.5)).tracking(1).foregroundStyle(Theme.inkDim)
             Text(a.text).font(.system(size: 13)).italic().foregroundStyle(Color(hex: 0x4A4360))
@@ -138,174 +168,235 @@ struct WeekMainView: View {
         .transition(.opacity)
     }
 
-    // MARK: 能力6バー（伸び演出＋「+N」）
+    // MARK: コマンドゾーン（カテゴリアイコン列 ⇄ 変種カード列・準備中パネル）
 
-    private var paramsGrid: some View {
-        let rows: [(String, Ability?, Double, Color)] = [
-            ("センス", .センス, s.センス, Theme.cSense),
-            ("発想", .発想, s.発想, Theme.cIdea),
-            ("表現", .表現, s.表現, Theme.cExpr),
-            ("華", .華, s.華, Theme.cChara),
-            ("メンタル", .メンタル, s.メンタル, Theme.cMental),
-            ("相性", nil, s.compat, Theme.cCompat),
-        ]
-        return LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 5) {
-            ForEach(rows, id: \.0) { row in
-                abilityRow(name: row.0, ability: row.1, value: row.2, color: row.3)
-            }
-        }
-        .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 4)
-    }
-
-    private func abilityRow(name: String, ability: Ability?, value: Double, color: Color) -> some View {
-        let gain = ability.flatMap { a in session.lastGains.first(where: { $0.ability == a })?.amount }
-        return HStack(spacing: 6) {
-            Text(name).font(.maru(11)).foregroundStyle(color).frame(width: 44, alignment: .leading)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color(hex: 0xF0E9DE))
-                    Capsule().fill(color)
-                        .frame(width: geo.size.width * CGFloat(min(100, value) / 100))
-                        .animation(.easeOut(duration: 0.55), value: value)
+    private var commandZone: some View {
+        VStack(spacing: 0) {
+            if let g = openGroup {
+                if g.kind == .info {
+                    comingSoonPanel(g)
+                } else {
+                    variantRow(g)
                 }
-            }
-            .frame(height: 8)
-            Text("\(Int(value))").font(.maru(12)).monospacedDigit().frame(width: 20, alignment: .trailing)
-        }
-        .overlay(alignment: .topTrailing) {
-            if let gain, gain > 0, gainsVisible {
-                Text("+\(Int(gain.rounded()))").font(.maru(11)).foregroundStyle(color)
-                    .offset(x: -22, y: -9).transition(.opacity)
+            } else {
+                categoryRow
             }
         }
-    }
-
-    // MARK: 2段階コマンド
-
-    private var commandArea: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 6) {
-                ForEach(groups) { g in groupTile(g) }
-            }
-            .padding(.horizontal, 12).padding(.top, 6)
-
-            if let openGroup, let g = groups.first(where: { $0.id == openGroup }) {
-                variantPanel(g)
-                    .padding(.horizontal, 12)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-            nextBar
-        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 8)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
-        .animation(.easeOut(duration: 0.2), value: openGroup)
+        .animation(.easeOut(duration: 0.2), value: openCategory)
     }
 
-    private func groupTile(_ g: CommandGroup) -> some View {
-        let isOpen = openGroup == g.id
-        let hasSel = g.variants.contains { $0.id == selected?.id }
-        let active = isOpen || hasSel
+    private var categoryRow: some View {
+        HStack(spacing: 7) {
+            ForEach(groups) { g in categoryTile(g) }
+        }
+        .frame(height: 118)
+    }
+
+    private func categoryTile(_ g: CommandGroup) -> some View {
+        let isOffer = g.id == "offer"
         return Button {
-            openGroup = isOpen ? nil : g.id
+            openCategory = g.id
         } label: {
-            VStack(spacing: 3) {
-                Image(systemName: g.glyph).font(.system(size: 17)).foregroundStyle(active ? Theme.verm : Theme.ink)
-                Text(g.title).font(.maru(11)).foregroundStyle(active ? Theme.verm : Theme.ink)
-                HStack(spacing: 3) { ForEach(Array(g.dotColors.enumerated()), id: \.offset) { _, c in Circle().fill(c).frame(width: 6, height: 6) } }
-            }
-            .frame(maxWidth: .infinity).padding(.vertical, 8)
-            .background(active ? Color(hex: 0xFFF3EF) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
-            .overlay(RoundedRectangle(cornerRadius: 13).stroke(active ? Theme.verm : Theme.line, lineWidth: 2))
-            .overlay(alignment: .topTrailing) {
-                if hasSel {
-                    Image(systemName: "checkmark.circle.fill").font(.system(size: 13))
-                        .foregroundStyle(Theme.verm).padding(5)
+            VStack(spacing: 5) {
+                Image(systemName: g.glyph).font(.system(size: 19)).foregroundStyle(isOffer ? Theme.goldD : Theme.ink)
+                Text(g.title).font(.maru(10.5)).foregroundStyle(isOffer ? Theme.goldD : Theme.ink).lineLimit(1).minimumScaleFactor(0.8)
+                HStack(spacing: 3) {
+                    ForEach(Array(g.dotColors.enumerated()), id: \.offset) { _, c in
+                        Circle().fill(c).frame(width: 5, height: 5)
+                    }
                 }
             }
+            .frame(maxWidth: .infinity).frame(height: 84)
+            .background(isOffer ? Color(hex: 0xFFF3D6) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
+            .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOffer ? Theme.gold : Theme.line, lineWidth: 2))
         }
         .buttonStyle(PressableStyle())
     }
 
-    private func variantPanel(_ g: CommandGroup) -> some View {
+    private func variantRow(_ g: CommandGroup) -> some View {
         VStack(spacing: 0) {
-            Text("\(g.title) — どれにする？").font(.maru(11)).foregroundStyle(Theme.verm)
-                .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 4)
-            ForEach(g.variants) { v in
-                let isSel = selected?.id == v.id
-                Button {
-                    // パネルは閉じず、選んだ行をハイライト＝「選ばれた」を目で確認→つぎへで確定
-                    selected = v
-                } label: {
-                    HStack(spacing: 9) {
-                        Image(systemName: v.glyph).font(.system(size: 15)).frame(width: 22)
-                            .foregroundStyle(isSel ? Theme.verm : Theme.ink)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(v.name).font(.maru(12.5)).foregroundStyle(isSel ? Theme.verm : Theme.ink)
-                            Text(v.desc).font(.system(size: 10)).foregroundStyle(Theme.inkDim)
-                        }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 1) {
-                            Text(v.affordable ? v.costText : "¥不足").font(.maru(10.5))
-                                .foregroundStyle(!v.affordable ? Theme.verm : (v.costIsUp ? Theme.cMoney : Theme.verm))
-                            Text(v.eff).font(.system(size: 9, weight: .bold)).foregroundStyle(Theme.inkFaint)
-                        }
-                        Image(systemName: isSel ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 17)).foregroundStyle(isSel ? Theme.verm : Theme.line)
-                    }
-                    .padding(.horizontal, 12).padding(.vertical, 9)
-                    .background(isSel ? Theme.verm.opacity(0.10) : Color.clear)
-                    .overlay(alignment: .leading) { if isSel { Rectangle().fill(Theme.verm).frame(width: 3) } }
-                    .overlay(alignment: .top) { Rectangle().fill(Theme.line).frame(height: 1) }
-                    .opacity(v.affordable ? 1 : 0.45)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 9) {
+                    ForEach(g.variants) { v in variantCard(v) }
                 }
-                .buttonStyle(PressableStyle())
-                .disabled(!v.affordable)
+                .padding(.horizontal, 2).padding(.vertical, 2)
             }
         }
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 13))
-        .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.verm, lineWidth: 2))
-        .animation(.easeOut(duration: 0.15), value: selected?.id)
+        .frame(height: 118)
     }
 
-    private var nextBar: some View {
-        HStack(spacing: 9) {
-            Group {
-                if let sel = selected {
-                    HStack(spacing: 5) {
-                        Text("\(sel.name)：").font(.maru(11)).foregroundStyle(Theme.ink)
-                        ForEach(sel.gains) { g in
-                            Text("\(g.label) \(g.amount)").font(.system(size: 10.5, weight: .bold)).foregroundStyle(.white)
-                                .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(g.color, in: RoundedRectangle(cornerRadius: 8))
-                        }
-                    }
-                } else {
-                    Text("▲ コマンドを押して選ぶ").font(.maru(11)).foregroundStyle(Theme.inkFaint)
+    // MARK: 変種カード（タップ＝即実行。ゲート/¥不足は toast で無効化）
+
+    private func variantCard(_ v: CommandVariant) -> some View {
+        let gated = v.isTrain && s.stamina < session.config.staminaGate
+        return Button {
+            if gated { showToast("体力が足りない。今日は休もう。"); return }
+            if !v.affordable { showToast("お金が足りない。"); return }
+            openCategory = nil          // カードを畳んで次週はカテゴリ列から
+            session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
+        } label: {
+            cardLabel(v, gated: gated)
+        }
+        .buttonStyle(PressableStyle())
+    }
+
+    private func cardLabel(_ v: CommandVariant, gated: Bool) -> some View {
+        let after = session.previewState(v.action, offer: offer)
+        let gains = (v.affordable && !gated) ? intGains(v.action) : []
+        let moneyDelta = after.money - s.money
+        let stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: v.glyph).font(.system(size: 15)).foregroundStyle(gated ? Theme.inkFaint : Theme.verm)
+                Text(v.name).font(.maru(12.5)).foregroundStyle(gated ? Theme.inkDim : Theme.ink).lineLimit(1)
+            }
+            // 伸び or ゲート or ¥不足 or 伸びわずか
+            if gated {
+                Text("谷口：今日は休め").font(.maru(10.5)).foregroundStyle(Theme.verm)
+            } else if !v.affordable {
+                Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
+            } else if !gains.isEmpty {
+                gainPills(gains)
+            } else if v.isTrain {
+                Text("伸びわずか").font(.system(size: 10, weight: .bold)).foregroundStyle(Theme.inkFaint)
+            }
+            Spacer(minLength: 0)
+            // コスト行（所持金/体力の増減）
+            HStack(spacing: 5) {
+                if moneyDelta != 0 { costPill(money: moneyDelta) }
+                if stamDelta != 0 { staminaPill(stamDelta) }
+            }
+        }
+        .padding(10)
+        .frame(width: 134, height: 104, alignment: .topLeading)
+        .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(gated ? Theme.line : Theme.verm.opacity(0.5), lineWidth: 2))
+        .opacity(gated ? 0.6 : 1)
+    }
+
+    private func gainPills(_ gains: [(name: String, color: Color, delta: Int)]) -> some View {
+        HStack(spacing: 4) {
+            ForEach(Array(gains.prefix(3).enumerated()), id: \.offset) { _, g in
+                Text("\(g.name) +\(g.delta)")
+                    .font(.system(size: 9.5, weight: .bold)).foregroundStyle(.white)
+                    .padding(.horizontal, 5).padding(.vertical, 2)
+                    .background(g.color, in: Capsule())
+            }
+        }
+    }
+
+    private func costPill(money: Int) -> some View {
+        let up = money > 0
+        let man = Double(abs(money)) / 10000
+        let txt = (man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man))
+        return Text("\(up ? "+" : "-")¥\(txt)万")
+            .font(.system(size: 9.5, weight: .bold)).foregroundStyle(up ? Theme.cMoney : Theme.verm)
+            .padding(.horizontal, 5).padding(.vertical, 2)
+            .background((up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Capsule())
+    }
+
+    private func staminaPill(_ delta: Int) -> some View {
+        let up = delta > 0
+        return Text("体力 \(up ? "+" : "")\(delta)")
+            .font(.system(size: 9.5, weight: .bold)).foregroundStyle(up ? Theme.cMental : Theme.inkDim)
+            .padding(.horizontal, 5).padding(.vertical, 2)
+            .background((up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
+    }
+
+    private func comingSoonPanel(_ g: CommandGroup) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: g.glyph).font(.system(size: 22)).foregroundStyle(Theme.inkFaint)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(g.title).font(.maru(13)).foregroundStyle(Theme.ink)
+                Text("準備中。この機能はまだ使えません。").font(.system(size: 11)).foregroundStyle(Theme.inkDim)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 118)
+        .frame(maxWidth: .infinity)
+        .background(Theme.card2, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2))
+    }
+
+    // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
+
+    private var botbar: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("\(session.year)年目").font(.maru(9)).foregroundStyle(.white.opacity(0.65))
+                Text("\(session.week)週").font(.maru(17)).foregroundStyle(.white)
+            }
+            if let m = nextMilestone() {
+                Rectangle().fill(.white.opacity(0.18)).frame(width: 1, height: 26)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(m.name).font(.maru(9)).foregroundStyle(.white.opacity(0.65)).lineLimit(1)
+                    Text(m.weeksLeft <= 0 ? "今週！" : "大会まで\(m.weeksLeft)週").font(.maru(12)).foregroundStyle(Theme.gold)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Button {
-                guard let sel = selected else { return }
-                selected = nil
-                openGroup = nil          // 確定したらパネルを畳んで次週はスッキリ
-                session.choose(sel.action)
-            } label: {
-                Text("つぎへ ▶").font(.maru(15)).foregroundStyle(.white)
-                    .padding(.horizontal, 20).padding(.vertical, 10)
-                    .background(selected == nil ? Theme.inkFaint : Theme.verm, in: RoundedRectangle(cornerRadius: 13))
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 5) {
+                staminaGauge
+                Text("¥\(s.money.formatted())").font(.maru(12)).monospacedDigit()
+                    .foregroundStyle(s.money < 0 ? Theme.verm : .white)
             }
-            .buttonStyle(PressableStyle()).disabled(selected == nil)
         }
-        .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 13)
-        .background(Color(hex: 0xFFEFDD))
+        .padding(.horizontal, 14).padding(.top, 9).padding(.bottom, 16)
+        .background(Theme.botbarDark.ignoresSafeArea(edges: .bottom))
     }
 
-    // MARK: 導出
+    private var staminaColor: Color {
+        if s.stamina < 20 { return Theme.staminaCrit }      // 危険（赤・staminaGate可視化）
+        if s.stamina < 50 { return Theme.staminaWarn }      // 警告（黄）
+        return Theme.cMental                                // 好調（緑）
+    }
 
-    private var mono: Advice {
-        if let sel = selected { return Advice(name: "俺", text: DialogueData.reaction(variantID: sel.id)) }
-        return DialogueData.innerVoice(state: s, lossStreak: session.lossStreak, justPassed: session.justPassedStage,
-                                       nextMilestone: nextMilestone(), weakAbility: weakAbility())
+    private var staminaGauge: some View {
+        HStack(spacing: 5) {
+            Text("体力").font(.maru(9)).foregroundStyle(.white.opacity(0.7))
+            ZStack(alignment: .leading) {
+                Capsule().fill(.white.opacity(0.16))
+                Capsule().fill(staminaColor)
+                    .frame(width: 78 * CGFloat(max(0, min(100, s.stamina)) / 100))
+                    .animation(.easeOut(duration: 0.4), value: s.stamina)
+            }
+            .frame(width: 78, height: 8)
+            Text("\(Int(s.stamina.rounded()))").font(.maru(10)).monospacedDigit()
+                .foregroundStyle(.white.opacity(0.9)).frame(width: 24, alignment: .trailing)
+        }
+    }
+
+    // MARK: トースト
+
+    @ViewBuilder private var toastBar: some View {
+        if let toast {
+            Text(toast).font(.maru(12)).foregroundStyle(.white)
+                .padding(.horizontal, 16).padding(.vertical, 9)
+                .background(Theme.pillDark, in: Capsule())
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
+        }
+    }
+
+    private func showToast(_ t: String) { toast = t }
+
+    // MARK: 導出（プレビュー整数ゲイン・弱点能力・次のマイルストン）
+
+    /// カード用の整数ゲイン。previewGains（RNG非消費・伸びる能力の判定）＋previewState の after から
+    /// 「round(after)−round(before)」を能力/相性で出す（>0 のみ）。全0（高ステ逓減）は呼び出し側で「伸びわずか」。
+    private func intGains(_ action: WeekAction) -> [(name: String, color: Color, delta: Int)] {
+        let after = session.previewState(action, offer: offer)
+        var out: [(name: String, color: Color, delta: Int)] = []
+        for g in session.previewGains(action, offer: offer) {
+            let d = Int(after[g.ability].rounded()) - Int(s[g.ability].rounded())
+            if d > 0 { out.append((name: "\(g.ability)", color: Theme.abilityColor(g.ability), delta: d)) }
+        }
+        let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
+        if cd > 0 { out.append((name: "相性", color: Theme.cCompat, delta: cd)) }
+        return out
     }
 
     private func weakAbility() -> String {
@@ -321,20 +412,5 @@ struct WeekMainView: View {
         for t in cal.tournaments { ms.append((t.week, t.name)) }
         guard let next = ms.filter({ $0.0 >= session.week }).min(by: { $0.0 < $1.0 }) else { return nil }
         return (next.1, next.0 - session.week)
-    }
-
-    private func goal() -> (String, String) {
-        if let m = nextMilestone() { return ("目標：\(m.name)", m.weeksLeft <= 0 ? "今週！" : "あと\(m.weeksLeft)週") }
-        let d = session.config.weeks - session.week
-        return ("目標：1年目 完走", d <= 0 ? "最終週" : "あと\(d)週")
-    }
-
-    private func genki(_ st: Double) -> (String, String) {
-        switch st {
-        case 80...: return ("◠‿◠", "絶好調")
-        case 50..<80: return ("・‿・", "好調")
-        case 30..<50: return ("・_・", "普通")
-        default: return (">_<", "バテ気味")
-        }
     }
 }

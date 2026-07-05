@@ -23,6 +23,8 @@ final class GameSession {
     private(set) var lastAction: WeekAction?
     /// 直前の行動で伸びた能力（バー伸び演出＆「+N」用）
     private(set) var lastGains: [(ability: Ability, amount: Double)] = []
+    /// 直前の行動で伸びた相性（v8ピルの「+N」用。相性は Ability enum 外なので別枠で保持）
+    private(set) var lastCompatGain: Double = 0
     /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
     private(set) var lossStreak = 0
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
@@ -64,6 +66,47 @@ final class GameSession {
         pump()
         lastGains = Ability.allCases.compactMap { a in
             let d = state[a] - before[a]
+            return d > 0.001 ? (a, d) : nil
+        }
+        lastCompatGain = state.compat - before.compat
+    }
+
+    // MARK: v8育成メイン用プレビュー（RNG非消費の純getter）
+    //
+    // ⚠️ この関数群は RandomSource を一切触らない = 乱数を消費しない = golden不変。
+    //    self.state の「コピー」に GameEngine.apply* を適用して差分を取るだけ。
+    //    runner.resolveAction は絶対に呼ばないこと（injury抽選・rollOffer で乱数を消費し、
+    //    以降の3年ビット一致 golden が壊れるため）。
+    //    なお resolveAction 側の staminaGate 強制remap / 体調ダウン抽選 は反映しない＝
+    //    プレビューは「名目値」。体力ゲートは View 側で state.stamina<staminaGate をグレー表示して実害を消す。
+
+    /// action を今の state に適用した「実行後の状態」を返す（乱数非消費・純関数）。
+    /// offer プレビューは runner が pendingOffer を内部に隠すため、View から OfferSpec を渡す。
+    func previewState(_ action: WeekAction, offer: OfferSpec? = nil) -> GameState {
+        var s = state
+        switch action {
+        case .train(let t):
+            if !GameEngine.applyTraining(t, to: &s, config: config) {
+                GameEngine.applyRest(.完全休養, to: &s, config: config)   // 払えなければ休む（resolveActionと同じフォールバック）
+            }
+        case .job(let j):
+            GameEngine.applyJob(j, to: &s, config: config)
+        case .rest(let r):
+            GameEngine.applyRest(r, to: &s, config: config)
+        case .acceptOffer:
+            if let o = offer {
+                GameEngine.applyOffer(o, to: &s, config: config)
+            }
+        }
+        return s
+    }
+
+    /// action で伸びる能力の差分（名目値・乱数非消費）。カードの「+N」プレビュー用。
+    /// 相性/体力/所持金/知名度は Ability 外なので previewState の after を直接読むこと。
+    func previewGains(_ action: WeekAction, offer: OfferSpec? = nil) -> [(ability: Ability, amount: Double)] {
+        let after = previewState(action, offer: offer)
+        return Ability.allCases.compactMap { a in
+            let d = after[a] - state[a]
             return d > 0.001 ? (a, d) : nil
         }
     }

@@ -46,6 +46,14 @@ enum Theme {
     static let cCompat = Color(hex: 0xE8402C)  // 相性
     static let cMoney = Color(hex: 0x77CC99)   // お金（バイト等）
 
+    // v8育成メイン用パレット（全て【仮】）
+    static let gainOrange = Color(hex: 0xFF8A1E)              // 実行時の「+N」オレンジ
+    static let night = Color(hex: 0x3D5A80)                   // 回復カードのドット地色
+    static let pillDark = Color(hex: 0x241C33, alpha: 0.82)   // 立ち絵上のダークピル/戻る/トースト地色
+    static let botbarDark = Color(hex: 0x2A2440)              // 最下部の帯（年週/大会まで/体力/所持金）
+    static let staminaWarn = Color(hex: 0xF2A93B)             // 体力ゲージ 警告（<50・黄）
+    static let staminaCrit = Color(hex: 0xE8402C)             // 体力ゲージ 危険（<20・赤＝staminaGate可視化）
+
     static let bgGradient = LinearGradient(
         colors: [bgTop, bg2, bgBottom],
         startPoint: .top, endPoint: .bottom)
