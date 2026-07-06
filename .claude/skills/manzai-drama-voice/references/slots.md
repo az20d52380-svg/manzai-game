@@ -68,7 +68,7 @@
 | 桐生 | 標準語・大仰・一人称「我」 | 中二病・素は普通 | 「フッ……愚問だな」 |
 
 未定義相方のフォールバックは八雲版（標準語・中立寄り）。谷口版（関西弁）をデフォルトにしない。
-詳細な声プロファイル: `docs/partner_characters_v0.md`／`docs/partner_finals_reactions_v0.md`。
+**セリフを書くときの正本は `character-voices.md`**（人物別の解釈フレーム・リズム・口癖類型・話者判別ゲート）。原典: `docs/partner_characters_v0.md`／`docs/partner_finals_reactions_v0.md`。
 
 ### 第三者
 
