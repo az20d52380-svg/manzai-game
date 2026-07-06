@@ -1,0 +1,659 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>漫才師育成SLG 育成メイン リデザイン案 v3（パワプロ/ウマ娘調査反映）</title></head><body>
+<style>
+  :root{
+    --bg-top:#FFF7EC; --bg-mid:#FFE6CF; --bg-bot:#FFDDBE;
+    --card:#ffffff; --card2:#FFF9F0; --line:#F1E6D6; --shadow:rgba(180,140,90,.22);
+    --ink:#2C2740; --ink-dim:#8E86A0; --ink-faint:#B9B2C6;
+    --verm:#E8402C; --vermD:#C22E1D; --gold:#F6B301; --goldD:#E09A00;
+    --sense:#3B8BFF; --idea:#8B5CF6; --expr:#FF7A2F; --chara:#FF5C93; --mental:#22B07A; --compat:#E8402C; --money:#4FB07A;
+    --track:#F0E9DE;
+    --maru:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","Rounded Mplus 1c",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--maru);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #FFEFD9, transparent 60%),
+      linear-gradient(160deg,#F6E0C2,#E9C9A0 60%,#D9B487);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100%; padding:22px 12px 40px; gap:14px;
+  }
+  .pitch{max-width:392px; text-align:center; color:#5b4a33}
+  .pitch h1{font-size:19px; font-weight:800; letter-spacing:.3px; color:#3d3020}
+  .pitch p{font-size:12.5px; line-height:1.6; margin-top:5px; color:#6c5940}
+  .pitch .legend{display:flex; flex-wrap:wrap; gap:6px 10px; justify-content:center; margin-top:9px; font-size:11px}
+  .pitch .legend b{display:inline-flex; align-items:center; gap:4px; background:#ffffffcc; border:1px solid #E7CFA8; border-radius:999px; padding:3px 9px; font-weight:600; color:#5b4a33}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+  /* ===== phone ===== */
+  .phone{
+    width:392px; max-width:100%; border-radius:40px; padding:10px;
+    background:linear-gradient(#2a2436,#171320);
+    box-shadow:0 24px 60px rgba(60,40,20,.4), inset 0 0 0 2px #3a3348;
+  }
+  .screen{
+    position:relative; border-radius:31px; overflow:hidden; height:812px;
+    background:linear-gradient(180deg,var(--bg-top),var(--bg-mid) 55%,var(--bg-bot));
+    display:flex; flex-direction:column;
+  }
+  .notch{position:absolute; top:8px; left:50%; transform:translateX(-50%); width:120px; height:26px; background:#171320; border-radius:0 0 16px 16px; z-index:40}
+
+  /* ===== TopHUD ===== */
+  .hud{
+    padding:16px 14px 9px; display:flex; align-items:center; gap:10px;
+    background:linear-gradient(180deg,#ffffffd9,#fff7ecb0); backdrop-filter:blur(4px);
+    border-bottom:1px solid var(--line);
+  }
+  .wk{display:flex; align-items:baseline; gap:4px; white-space:nowrap}
+  .wk .yr{font-size:11px;font-weight:700;color:var(--verm)}
+  .wk .n{font-size:21px;font-weight:800;line-height:1}
+  .wk .u{font-size:11px;color:var(--ink-dim)}
+  .moods{display:flex; gap:3px; margin-left:1px}
+  .mood{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font-size:15px;
+    background:#FFF3D6;border:1.5px solid var(--gold)}
+  .mood.b{background:#FFE7E2;border-color:var(--verm)}
+  .hud-right{margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:5px}
+  .stam{display:flex; align-items:center; gap:6px}
+  .stam .lbl{font-size:9.5px;color:var(--mental);font-weight:700}
+  .gauge{position:relative; width:96px; height:11px; border-radius:999px; background:var(--track); overflow:hidden; border:1.5px solid #E7DBC8}
+  .gauge > i{position:absolute; inset:0; width:100%; transform-origin:left; border-radius:999px;
+    background:linear-gradient(90deg,#3FCE93,var(--mental)); transition:width .5s cubic-bezier(.2,.9,.25,1), background .3s}
+  .gauge > .ghost{position:absolute; inset:0; background:repeating-linear-gradient(45deg,#0000 0 4px,#00000018 4px 8px); opacity:0; transition:opacity .2s}
+  .gauge.warn > i{background:linear-gradient(90deg,#FFC53D,#F6A609)}
+  .gauge.crit > i{background:linear-gradient(90deg,#FF7A5A,#E8402C); animation:pulse 1.1s ease-in-out infinite}
+  @keyframes pulse{50%{filter:brightness(1.18)}}
+  .money{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--goldD)}
+  .money.neg{color:var(--verm)}
+
+  /* ===== 6軸 band + score gauge ===== */
+  .band{display:flex; gap:9px; padding:8px 12px 9px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#fffdf9,#fff7ec00)}
+  .axes{display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; flex:1; min-width:0}
+  .ax{display:flex; align-items:center; gap:5px}
+  .ax .nm{font-size:9.5px; font-weight:700; width:30px; flex:none}
+  .ax .bar{position:relative; flex:1; height:7px; border-radius:999px; background:var(--track); overflow:hidden}
+  .ax .bar > i{position:absolute; inset:0; transform-origin:left; border-radius:999px; transition:width .55s cubic-bezier(.2,.9,.2,1.1)}
+  .ax .bar > .gh{position:absolute; top:0; bottom:0; border-radius:999px; opacity:.42; transition:width .18s, left .18s; mix-blend-mode:multiply}
+  .ax .v{font-size:10px; font-weight:800; width:16px; text-align:right; font-variant-numeric:tabular-nums}
+  .ax .rk{font-size:8.5px; font-weight:800; width:11px; text-align:center; color:#fff; border-radius:4px; line-height:12px}
+  .ax .plus{position:absolute; right:2px; top:-11px; font-size:10px; font-weight:800; opacity:0; pointer-events:none}
+  .ax .plus.show{animation:floatup 1.15s ease-out}
+  @keyframes floatup{0%{opacity:0;transform:translateY(4px)}18%{opacity:1}70%{opacity:1;transform:translateY(-7px)}100%{opacity:0;transform:translateY(-12px)}}
+
+  .score{width:118px; flex:none; background:var(--card); border:1.5px solid #F0D9B8; border-radius:12px; padding:7px 8px 8px}
+  .score .top{display:flex; justify-content:space-between; align-items:baseline}
+  .score .goal{font-size:9px; color:var(--ink-dim); font-weight:700}
+  .score .rem{font-size:10px; font-weight:800; color:var(--verm)}
+  .score .rem.ok{color:var(--goldD)}
+  .scbar{position:relative; height:14px; margin-top:5px; border-radius:7px; background:linear-gradient(90deg,#F3ECE0,#EFE6D6); overflow:hidden}
+  .scbar .band-blur{position:absolute; top:0; bottom:0; background:#3B8BFF2e}
+  .scbar .fill{position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#7FB2FF,#3B8BFF); border-radius:7px; transition:width .5s}
+  .scbar .line{position:absolute; top:-2px; bottom:-2px; width:2.5px; background:var(--verm); border-radius:2px}
+  .scbar .line::after{content:""; position:absolute; top:-3px; left:-2px; border:3.5px solid transparent; border-top-color:var(--verm)}
+  .score .nums{display:flex; justify-content:space-between; margin-top:4px; font-size:8.5px; color:var(--ink-dim); font-weight:700; font-variant-numeric:tabular-nums}
+  .score .nums b{color:var(--sense)}
+
+  /* ===== calendar strip ===== */
+  .cal{padding:7px 0 8px; border-bottom:1px solid var(--line); background:#fffdf9}
+  .cal .hd{display:flex; align-items:center; gap:6px; padding:0 12px 6px}
+  .cal .hd .t{font-size:10px; font-weight:800; color:var(--ink)}
+  .cal .hd .nx{font-size:10px; color:var(--verm); font-weight:700; margin-left:auto}
+  .track2{display:flex; gap:0; padding:0 12px; overflow-x:auto; scrollbar-width:none}
+  .track2::-webkit-scrollbar{display:none}
+  .cell{position:relative; flex:none; width:13px; height:26px; display:flex; align-items:flex-end; justify-content:center}
+  .cell .seg{width:9px; height:7px; border-radius:2px; background:#EbE1d0}
+  .cell.spring .seg{background:#D8ECD5}
+  .cell.summer .seg{background:#FBE6C4}
+  .cell.winter .seg{background:#D9E3F5}
+  .cell.mk .seg{height:16px; background:var(--gold)}
+  .cell.gp .seg{height:16px; background:var(--verm)}
+  .cell.fin .seg{height:22px; background:linear-gradient(var(--gold),var(--verm))}
+  .cell.now::before{content:""; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:6px;height:6px;border-radius:50%; background:var(--ink); box-shadow:0 0 0 2px #fff}
+  .cell .mkl{position:absolute; top:-11px; left:50%; transform:translateX(-50%); font-size:7px; white-space:nowrap; color:var(--ink-dim); display:none}
+
+  /* ===== stage ===== */
+  .stage{position:relative; flex:1; min-height:0; margin:10px 12px; border-radius:20px; overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 50% 118%, #FFD79A, #FFC074 55%, #F2A25a);
+    box-shadow:inset 0 2px 10px #ffffff70, inset 0 -20px 40px #d47f3a55;
+    display:flex; align-items:flex-end; justify-content:center;}
+  .spot{position:absolute; top:-30%; left:50%; transform:translateX(-50%); width:80%; height:150%;
+    background:radial-gradient(closest-side, #FFF6DE88, transparent 70%); pointer-events:none}
+  .duo{display:flex; align-items:flex-end; gap:6px; padding-bottom:8px; z-index:2}
+  .guy{position:relative; width:74px; height:132px; border-radius:38px 38px 20px 20px;
+    box-shadow:0 10px 20px #a85f2a55; animation:breathe 3.4s ease-in-out infinite}
+  .guy.b{width:84px; height:150px; animation-delay:.5s}
+  .guy .head{position:absolute; top:14px; left:50%; transform:translateX(-50%); width:40px; height:40px; border-radius:50%; background:#FFE0C4;
+    display:grid; place-items:center; font-size:17px}
+  .guy.a{background:linear-gradient(#5f8ef0,#3B6FE0)}
+  .guy.b{background:linear-gradient(#F0604a,#E8402C)}
+  @keyframes breathe{50%{transform:translateY(-2px)}}
+  .mono{position:absolute; left:10px; bottom:10px; max-width:230px; z-index:3;
+    background:#fffffff2; border-radius:5px 14px 14px 5px; padding:8px 12px;
+    box-shadow:0 5px 14px #00000022; border-left:3px solid var(--ink-dim)}
+  .mono .who{font-size:9px; letter-spacing:1.5px; color:var(--ink-dim); font-weight:700}
+  .mono .tx{font-size:13px; font-style:italic; color:#4A4360; margin-top:1px; line-height:1.4}
+
+  /* ===== command ===== */
+  .cmd{background:linear-gradient(180deg,#fff6ec00,#FFEBD6); padding:6px 12px 0}
+  .groups{display:flex; gap:7px}
+  .g{flex:1; background:var(--card); border:2px solid var(--line); border-radius:14px; padding:8px 4px 7px; text-align:center; cursor:pointer;
+    transition:transform .12s, border-color .15s, background .15s; position:relative}
+  .g:active{transform:scale(.96)}
+  .g .ic{font-size:17px}
+  .g .t{font-size:11px; font-weight:700; margin-top:1px}
+  .g .dots{display:flex; gap:3px; justify-content:center; margin-top:3px}
+  .g.on{border-color:var(--verm); background:#FFF3EF}
+  .g.on .t,.g.on .ic{color:var(--verm)}
+  .g .rec{position:absolute; top:-6px; right:-4px; font-size:11px; background:var(--gold); color:#fff; border-radius:50%; width:18px;height:18px;display:grid;place-items:center; box-shadow:0 2px 5px #0002; font-weight:800}
+  .g .chk{position:absolute; top:4px; right:5px; color:var(--verm); font-size:13px; display:none}
+  .g.picked .chk{display:block}
+  .g.picked{border-color:var(--verm); background:#FFF3EF}
+
+  .panel{margin-top:6px; background:var(--card); border:2px solid var(--verm); border-radius:14px; overflow:hidden;
+    max-height:0; opacity:0; transition:max-height .22s ease, opacity .2s; }
+  .panel.open{max-height:340px; opacity:1}
+  .panel .ph{font-size:11px; font-weight:800; color:var(--verm); padding:8px 12px 4px}
+  .row{display:flex; align-items:center; gap:9px; padding:9px 12px; border-top:1px solid var(--line); cursor:pointer; transition:background .15s; position:relative}
+  .row:active{background:#FFF6F2}
+  .row .ic{width:22px; text-align:center; font-size:15px; flex:none}
+  .row .m{flex:1; min-width:0}
+  .row .m .n{font-size:12.5px; font-weight:700}
+  .row .m .d{font-size:10px; color:var(--ink-dim)}
+  .row .rt{text-align:right; flex:none}
+  .row .rt .c{font-size:10.5px; font-weight:700}
+  .row .rt .c.up{color:var(--money)} .row .rt .c.dn{color:var(--verm)}
+  .row .rt .e{font-size:9px; font-weight:800; color:var(--ink-faint)}
+  .row .radio{width:17px;height:17px;border-radius:50%;border:2px solid var(--line); flex:none; display:grid; place-items:center}
+  .row.sel{background:#FFF1EE}
+  .row.sel::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--verm)}
+  .row.sel .radio{border-color:var(--verm); background:var(--verm)}
+  .row.sel .radio::after{content:"✓"; color:#fff; font-size:10px; font-weight:800}
+  .row.sel .n{color:var(--verm)}
+  .row .risk{font-size:9px; font-weight:800; color:#fff; background:var(--gold); border-radius:6px; padding:1px 5px; margin-top:2px; display:inline-block}
+  .row .risk.hi{background:var(--verm)}
+  .row.dis{opacity:.5; cursor:not-allowed}
+  .row.dis .gate{font-size:9px; color:var(--verm); font-weight:700}
+
+  /* ===== execute bar ===== */
+  .exec{display:flex; align-items:center; gap:10px; padding:9px 13px 15px}
+  .exec .prev{flex:1; min-width:0}
+  .exec .prev .hint{font-size:11px; color:var(--ink-faint); font-weight:700}
+  .exec .prev .chips{display:flex; gap:4px; flex-wrap:wrap; align-items:center}
+  .exec .prev .lead{font-size:11px; font-weight:800}
+  .chip{font-size:10px; font-weight:800; color:#fff; border-radius:8px; padding:2px 7px}
+  .go{flex:none; border:none; cursor:pointer; font-family:var(--maru); color:#fff; font-weight:800; font-size:15px;
+    padding:13px 22px; border-radius:16px; background:var(--ink-faint);
+    box-shadow:0 5px 0 #0000001a; transition:transform .1s, background .2s, box-shadow .1s; letter-spacing:.5px}
+  .go.on{background:linear-gradient(180deg,#F5543F,var(--verm)); box-shadow:0 5px 0 var(--vermD)}
+  .go.on:active{transform:translateY(3px); box-shadow:0 2px 0 var(--vermD)}
+
+  /* ===== 大会 overlay ===== */
+  .ovl{position:absolute; inset:0; z-index:50; background:linear-gradient(180deg,#2a1f2e,#3b2530); display:none; flex-direction:column; color:#fff}
+  .ovl.show{display:flex}
+  .ovl .ttl{text-align:center; padding:20px 16px 8px}
+  .ovl .ttl .k{font-size:12px; color:#F6D9A0; letter-spacing:2px; font-weight:700}
+  .ovl .ttl .nm{font-size:22px; font-weight:800; margin-top:3px}
+  .wave{margin:10px 16px; height:150px; background:#00000030; border-radius:16px; position:relative; overflow:hidden}
+  .wave canvas{width:100%; height:100%; display:block}
+  .wlab{position:absolute; bottom:6px; width:100%; display:flex; justify-content:space-around; font-size:10px; color:#ffffff8c; font-weight:700}
+  .ovl .say{text-align:center; font-size:13px; color:#FFE7C4; min-height:20px; padding:2px 20px; font-style:italic}
+  .stamp{align-self:center; margin-top:6px; font-size:30px; font-weight:900; padding:5px 26px; border-radius:14px; transform:scale(0); transition:transform .4s cubic-bezier(.3,1.6,.5,1); letter-spacing:4px}
+  .stamp.pass{color:#fff; background:linear-gradient(180deg,#FFC93C,#E8402C); box-shadow:0 6px 20px #e8402c66}
+  .stamp.fail{color:#cbb; background:#ffffff18; border:2px solid #ffffff33}
+  .stamp.show{transform:scale(1) rotate(-4deg)}
+  .washi{margin:12px 16px 0; background:#FBF6EC; color:#3a3226; border-radius:8px; padding:13px 15px; font-family:"Hiragino Mincho ProN",serif; opacity:0; transform:translateY(8px); transition:.4s}
+  .washi.gold{box-shadow:0 0 0 3px #F6B30188, 0 8px 20px #0004}
+  .washi.show{opacity:1; transform:none}
+  .washi .jn{font-size:10px; color:#9a8b6e; letter-spacing:1px}
+  .washi .jt{font-size:14px; line-height:1.7; margin-top:4px; min-height:20px}
+  .washi .stars{margin-top:7px; font-size:14px; letter-spacing:3px; color:var(--gold)}
+  .ovl .oc{margin:auto 16px 18px; display:flex; gap:10px}
+  .ovl .oc button{flex:1; font-family:var(--maru); font-weight:800; font-size:14px; padding:12px; border-radius:14px; border:none; cursor:pointer}
+  .ovl .oc .b1{background:#ffffff1f; color:#fff}
+  .ovl .oc .b2{background:linear-gradient(180deg,#F5543F,#E8402C); color:#fff}
+
+  .toast{position:absolute; top:64px; left:50%; transform:translateX(-50%) translateY(-8px); z-index:45;
+    background:#2c2740ee; color:#fff; font-size:12px; font-weight:700; padding:8px 15px; border-radius:999px; opacity:0; transition:.3s; pointer-events:none}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:44}
+  .flash.go{animation:fl .5s ease-out}
+  @keyframes fl{0%{opacity:.5}100%{opacity:0}}
+</style>
+
+<div class="pitch">
+  <h1>漫才師育成SLG — 育成メイン画面 リデザイン案</h1>
+  <p>パワプロ サクセス／ウマ娘の育成画面を調査して作り直した仮モック。数値は実エンジンの式（成長逓減・地力・通過ライン）で動くので、予告は嘘をつきません。実際にタップして回してみてください。</p>
+  <div class="legend">
+    <b><span class="dot" style="background:var(--verm)"></span>選ぶ→予告→大きな実行ボタン→段階リビール</b>
+    <b><span class="dot" style="background:var(--sense)"></span>地力 vs 通過ライン「あと何点」</b>
+    <b><span class="dot" style="background:var(--gold)"></span>48週カレンダー</b>
+  </div>
+</div>
+
+<div class="phone"><div class="screen" id="screen">
+  <div class="notch"></div>
+  <div class="toast" id="toast"></div>
+  <div class="flash" id="flash"></div>
+
+  <!-- TopHUD -->
+  <div class="hud">
+    <div class="wk"><span class="yr">1年目</span><span class="n" id="wkN">1</span><span class="u">週</span></div>
+    <div class="moods">
+      <div class="mood" id="moodA">🙂</div>
+      <div class="mood b" id="moodB">😎</div>
+    </div>
+    <div class="hud-right">
+      <div class="stam"><span class="lbl">体力</span>
+        <div class="gauge" id="stamG"><i id="stamFill"></i><div class="ghost" id="stamGhost"></div></div>
+      </div>
+      <div class="money" id="money">¥300,000</div>
+    </div>
+  </div>
+
+  <!-- 6軸 band + score -->
+  <div class="band">
+    <div class="axes" id="axes"></div>
+    <div class="score">
+      <div class="top"><span class="goal">地力 / 通過ライン</span><span class="rem" id="scRem">あと—</span></div>
+      <div class="scbar"><div class="band-blur" id="scBlur"></div><div class="fill" id="scFill"></div><div class="line" id="scLine"></div></div>
+      <div class="nums"><span>地力 <b id="scBase">—</b></span><span id="scGoal">通過 —</span></div>
+    </div>
+  </div>
+
+  <!-- calendar -->
+  <div class="cal">
+    <div class="hd"><span class="t">📅 1年の道のり</span><span class="nx" id="calNx">次: 春新人賞A まであと11週</span></div>
+    <div class="track2" id="cal"></div>
+  </div>
+
+  <!-- stage -->
+  <div class="stage">
+    <div class="spot"></div>
+    <div class="duo">
+      <div class="guy a"><div class="head" id="faceA">🙂</div></div>
+      <div class="guy b"><div class="head" id="faceB">😎</div></div>
+    </div>
+    <div class="mono"><div class="who">俺</div><div class="tx" id="mono">さあ、始まりだ。まずは一週間、動いてみよう。</div></div>
+  </div>
+
+  <!-- command -->
+  <div class="cmd">
+    <div class="groups" id="groups"></div>
+    <div class="panel" id="panel"><div class="ph" id="panelH"></div><div id="rows"></div></div>
+    <div class="exec">
+      <div class="prev" id="prev"><span class="hint">▲ コマンドを押して、中から選ぶ</span></div>
+      <button class="go" id="go">つぎへ ▶</button>
+    </div>
+  </div>
+
+  <!-- 大会 overlay -->
+  <div class="ovl" id="ovl">
+    <div class="ttl"><div class="k" id="ovK">頂グランプリ 予選</div><div class="nm" id="ovNm">春新人賞A</div></div>
+    <div class="wave"><canvas id="wave"></canvas><div class="wlab"><span>ツカミ</span><span>畳みかけ</span><span>オチ</span></div></div>
+    <div class="say" id="ovSay"></div>
+    <div class="stamp" id="stamp"></div>
+    <div class="washi" id="washi"><div class="jn" id="jn">審査員</div><div class="jt" id="jt"></div><div class="stars" id="stars"></div></div>
+    <div class="oc" id="ovc"></div>
+  </div>
+
+</div></div>
+
+<div class="pitch" style="margin-top:2px">
+  <p style="font-size:11.5px">※仮素材：立ち絵はシルエット。配色・情報配置・手触りの検証用です。<br>本実装は GameCore／golden を一切触らず、UIと「RNG非消費の純getter」だけで作れます。</p>
+</div>
+
+<script>
+(function(){
+  // ---- 実エンジンの式（GameCore と同値） ----
+  const W={sense:.30,idea:.30,expr:.25,chara:.15,mental:0};
+  const D=120, ABILITY_CAP=120, MENTAL_CAP=100, COMPAT_CAP=20;
+  const AX=[
+    {k:'sense',nm:'センス',c:'var(--sense)'},{k:'idea',nm:'発想',c:'var(--idea)'},
+    {k:'expr',nm:'表現',c:'var(--expr)'},{k:'chara',nm:'華',c:'var(--chara)'},
+    {k:'mental',nm:'メンタル',c:'var(--mental)'},{k:'compat',nm:'相性',c:'var(--compat)'}
+  ];
+  const S={ sense:10,idea:10,expr:10,chara:10,mental:10, compat:5, stamina:100, money:300000, fame:3,
+           week:1, growthUsed:0, growthBudget:6.0 }; // 1年目予算=capCurveBase
+  const rank=v=> v<30?'D':v<45?'C':v<60?'B':v<80?'A':'S';
+  const rankColor=v=> v<30?'#9AA':v<45?'#3B8BFF':v<60?'#22B07A':v<80?'#F6B301':'#E8402C';
+
+  // add() を副作用なしでシミュレート（成長逓減＋成長予算）— 予告に使う正直な予測
+  function simAdd(st,key,raw){
+    const st2=Object.assign({},st);
+    if(key==='compat'){ st2.compat=Math.min(COMPAT_CAP, st.compat+raw); return st2; }
+    if(key==='stamina'){ st2.stamina=Math.max(0,Math.min(100, st.stamina+raw)); return st2; }
+    if(key==='fame'){ st2.fame=Math.max(0,Math.min(100, st.fame+raw)); return st2; }
+    if(key==='money'){ st2.money=st.money+raw; return st2; }
+    // ability
+    let amt=raw;
+    if(raw>0) amt=raw*Math.max(0,1-st[key]/D);
+    if(key!=='mental' && amt>0){
+      const w=W[key], remaining=st.growthBudget-st.growthUsed;
+      amt=Math.max(0,Math.min(amt, remaining/w));
+      st2.growthUsed=st.growthUsed+amt*w;
+    }
+    const cap=key==='mental'?MENTAL_CAP:ABILITY_CAP;
+    st2[key]=Math.max(0,Math.min(cap, st[key]+amt));
+    return st2;
+  }
+  // 借金中は稽古半減
+  const trainFactor=st=> st.money<0?0.5:1;
+
+  // 稽古/バイト/休むを copy に適用（RNGのケガ判定は含めない＝予告は確定分のみ）
+  function apply(st, act){
+    let s=Object.assign({},st);
+    const f=trainFactor(s);
+    if(act.type==='train'){
+      const t=act.spec;
+      if(t.cost>0 && s.money<t.cost){ return apply(st,{type:'rest',spec:REST['完全休養']}); }
+      s.money-=t.cost;
+      s=simAdd(s,t.main[0], t.main[1]*f);
+      if(t.sub) s=simAdd(s,t.sub[0], t.sub[1]*f);
+      s=simAdd(s,'stamina',t.stam);
+      if(t.fame) s=simAdd(s,'fame',t.fame);
+    }else if(act.type==='job'){
+      s.money+=act.spec.income; s=simAdd(s,'stamina',act.spec.stam);
+    }else if(act.type==='rest'){
+      s=simAdd(s,'stamina',act.spec.recovery); s=simAdd(s,act.spec.bonus[0],act.spec.bonus[1]);
+    }
+    return s;
+  }
+
+  function jitsuryoku(st){ return st.sense*W.sense+st.idea*W.idea+st.expr*W.expr+st.chara*W.chara; }
+  function stamPen(st){ return st.stamina<10?-15: st.stamina<30?-10: st.stamina<50?-5:0; }
+  function base(st){ return jitsuryoku(st)+st.compat+stamPen(st); } // 地力（ブレ除く）
+  function blur(st){ return 5+15*(1-st.mental/100); }
+
+  // ---- カレンダー ----
+  const TOURN=[{w:12,nm:'春新人賞A',line:30},{w:15,nm:'春新人賞B',line:28},{w:27,nm:'夏中堅賞',line:33},{w:29,nm:'大阪戎コンクール',line:22},{w:35,nm:'若手限定賞',line:28},{w:38,nm:'推薦制中堅賞',line:33}];
+  const GP=[{w:30,line:18,nm:'GP1回戦'},{w:39,line:26,nm:'GP2回戦'},{w:41,line:34,nm:'GP3回戦'},{w:43,line:45,nm:'GP準々決勝'},{w:45,line:74,nm:'GP準決勝'},{w:47,line:80,nm:'GP決勝'}];
+  const ALLEV=[...TOURN.map(t=>({...t,kind:'mk'})),...GP.map(g=>({...g,kind:g.w===47?'fin':'gp'}))].sort((a,b)=>a.w-b.w);
+  function nextEvent(){ return ALLEV.find(e=>e.w>=S.week) || null; }
+  function nextLine(){ const e=nextEvent(); if(!e) return null;
+    let line=e.line; if(e.w===47){ line=80-1.5*(S.fame-50)/50; } return {nm:e.nm,line,w:e.w}; }
+
+  // ---- コマンド定義（実spec） ----
+  const REST={'完全休養':{recovery:60,bonus:['mental',2]},'気分転換':{recovery:35,bonus:['mental',1]},'相方と過ごす':{recovery:20,bonus:['compat',1]}};
+  const GROUPS=[
+    {id:'keiko',t:'けいこ',ic:'✏️',dots:['var(--sense)','var(--idea)','var(--expr)'],vars:[
+      {id:'t1',nm:'ネタ作り',d:'机に向かって書く',ic:'✏️',type:'train',spec:{main:['idea',3],sub:['sense',1],cost:0,stam:-20,fame:0},eff:'発想中心',cost:'体力 -20',up:false},
+      {id:'t2',nm:'ネタ見せ会',d:'人前で試す',ic:'🎭',type:'train',spec:{main:['expr',6],sub:['mental',3],cost:80000,stam:-30,fame:0},eff:'表現中心',cost:'-¥8万',up:false},
+      {id:'t3',nm:'ネタ合わせ',d:'二人で合わせる',ic:'🔁',type:'train',spec:{main:['sense',3],sub:['compat',1],cost:0,stam:-20,fame:0},eff:'相性かみ合い',cost:'体力 -20',up:false,compat:true},
+      {id:'t4',nm:'ランニング',d:'体と心を整える',ic:'🏃',type:'train',spec:{main:['mental',6],sub:null,cost:80000,stam:-10,fame:0},eff:'メンタル中心',cost:'-¥8万',up:false},
+      {id:'t5',nm:'フリーライブ',d:'客前で場数を踏む',ic:'🎤',type:'train',spec:{main:['chara',3],sub:['expr',1],cost:0,stam:-30,fame:1},eff:'華中心',cost:'体力 -30',up:false},
+    ]},
+    {id:'shigoto',t:'しごと',ic:'💴',dots:['var(--money)'],vars:[
+      {id:'j1',nm:'引越し',d:'体力-大',ic:'📦',type:'job',spec:{income:120000,stam:-30},eff:'体力-大',cost:'+¥12万',up:true,risky:true},
+      {id:'j2',nm:'居酒屋',d:'体力-中',ic:'🍶',type:'job',spec:{income:80000,stam:-20},eff:'体力-中',cost:'+¥8万',up:true},
+      {id:'j3',nm:'交通量調査',d:'体力-小',ic:'🚦',type:'job',spec:{income:40000,stam:-10},eff:'体力-小',cost:'+¥4万',up:true},
+    ]},
+    {id:'yasumi',t:'休み',ic:'🌙',dots:['var(--mental)'],vars:[
+      {id:'r1',nm:'自宅で休む',d:'回復 大',ic:'🛌',type:'rest',spec:REST['完全休養'],eff:'回復 大',cost:'体力回復',up:true},
+      {id:'r2',nm:'気分転換',d:'回復 中',ic:'♨️',type:'rest',spec:REST['気分転換'],eff:'回復 中',cost:'体力回復',up:true},
+      {id:'r3',nm:'相方と過ごす',d:'回復 小・相性',ic:'🍜',type:'rest',spec:REST['相方と過ごす'],eff:'回復 小・相性',cost:'体力回復',up:true,compat:true},
+    ]},
+  ];
+
+  // ---- 状態 ----
+  let openG=null, sel=null;
+  const $=id=>document.getElementById(id);
+
+  function weakAxis(){ // パワプロの「！おすすめ」相当：一番低い演技系
+    const arr=[['sense',S.sense],['idea',S.idea],['expr',S.expr],['chara',S.chara]];
+    arr.sort((a,b)=>a[1]-b[1]); return arr[0][0];
+  }
+  function groupHasWeak(g){ const w=weakAxis(); return g.vars.some(v=>v.type==='train' && (v.spec.main[0]===w||(v.spec.sub&&v.spec.sub[0]===w))); }
+
+  // ---- 描画 ----
+  function drawAxes(ghost){
+    const wrap=$('axes'); wrap.innerHTML='';
+    AX.forEach(a=>{
+      const val=S[a.k]; const cap=a.k==='compat'?COMPAT_CAP:(a.k==='mental'?100:120);
+      const pct=Math.min(100,val/ (a.k==='compat'?COMPAT_CAP:100)*100);
+      const el=document.createElement('div'); el.className='ax';
+      let ghHtml='';
+      if(ghost && ghost[a.k]>0.05){
+        const nv=val+ghost[a.k]; const npct=Math.min(100,nv/(a.k==='compat'?COMPAT_CAP:100)*100);
+        ghHtml=`<div class="gh" style="left:${pct}%;width:${npct-pct}%;background:${a.c}"></div>`;
+      }
+      el.innerHTML=`<span class="nm" style="color:${a.c}">${a.nm}</span>
+        <div class="bar"><i style="width:${pct}%;background:${a.c}"></i>${ghHtml}
+          <span class="plus" id="plus_${a.k}" style="color:${a.c}"></span></div>
+        <span class="v">${Math.round(val)}</span>
+        ${a.k==='compat'?'<span class="rk" style="visibility:hidden">-</span>':`<span class="rk" style="background:${rankColor(val)}">${rank(val)}</span>`}`;
+      wrap.appendChild(el);
+    });
+  }
+  function drawScore(previewState){
+    const st=previewState||S;
+    const b=base(st), nl=nextLine(); const bw=blur(st);
+    const max=90;
+    $('scBase').textContent=Math.round(b);
+    $('scFill').style.width=Math.min(100,b/max*100)+'%';
+    $('scBlur').style.left=Math.max(0,(b-bw)/max*100)+'%';
+    $('scBlur').style.width=(2*bw/max*100)+'%';
+    if(nl){
+      $('scLine').style.left=Math.min(100,nl.line/max*100)+'%';
+      $('scGoal').textContent='通過 '+Math.round(nl.line);
+      const rem=nl.line-b;
+      const r=$('scRem');
+      if(rem<=0){ r.textContent='届いてる'; r.className='rem ok'; }
+      else { r.textContent='あと'+Math.round(rem); r.className='rem'; }
+    }
+  }
+  function drawStamina(ghostTo){
+    const g=$('stamG'), f=$('stamFill'), gh=$('stamGhost');
+    f.style.width=S.stamina+'%';
+    g.className='gauge'+(S.stamina<20?' crit':S.stamina<50?' warn':'');
+    if(ghostTo!=null && ghostTo<S.stamina){
+      gh.style.opacity='1'; gh.style.left=ghostTo+'%'; gh.style.width=(S.stamina-ghostTo)+'%'; gh.style.right='auto';
+    }else{ gh.style.opacity='0'; }
+  }
+  function drawMoney(){ const m=$('money'); m.textContent='¥'+S.money.toLocaleString(); m.className='money'+(S.money<0?' neg':''); }
+  function mood(){ return S.stamina>=80?'😆':S.stamina>=50?'🙂':S.stamina>=30?'😐':'😩'; }
+  function drawMood(){ const m=mood(); $('moodA').textContent=m; $('faceA').textContent=m; }
+
+  function drawCalendar(){
+    const c=$('cal'); c.innerHTML='';
+    for(let w=1;w<=48;w++){
+      const season=w<=17?'spring':w<=34?'summer':'winter';
+      const ev=ALLEV.find(e=>e.w===w);
+      const d=document.createElement('div');
+      d.className='cell '+season+(ev?' '+ev.kind:'')+(w===S.week?' now':'');
+      d.innerHTML='<div class="seg"></div>';
+      c.appendChild(d);
+    }
+    const nl=nextLine();
+    $('calNx').textContent=nl?`次: ${nl.nm} まであと${nl.w-S.week}週`:'ラストスパート';
+    // 現在週を見えるようスクロール
+    const now=c.children[S.week-1]; if(now) c.scrollLeft=Math.max(0,now.offsetLeft-120);
+  }
+
+  function drawGroups(){
+    const g=$('groups'); g.innerHTML='';
+    GROUPS.forEach(grp=>{
+      const picked= sel && grp.vars.some(v=>v.id===sel.id);
+      const rec=groupHasWeak(grp);
+      const el=document.createElement('div');
+      el.className='g'+(openG===grp.id?' on':'')+(picked?' picked':'');
+      el.innerHTML=`${rec?'<div class="rec">!</div>':''}<div class="chk">✓</div>
+        <div class="ic">${grp.ic}</div><div class="t">${grp.t}</div>
+        <div class="dots">${grp.dots.map(c=>`<span class="dot" style="background:${c}"></span>`).join('')}</div>`;
+      el.onclick=()=>{ openG=openG===grp.id?null:grp.id; render(); };
+      g.appendChild(el);
+    });
+  }
+  function drawPanel(){
+    const p=$('panel'), rows=$('rows');
+    const grp=GROUPS.find(x=>x.id===openG);
+    if(!grp){ p.className='panel'; rows.innerHTML=''; return; }
+    p.className='panel open'; $('panelH').textContent=grp.t+' — どれにする？';
+    rows.innerHTML='';
+    grp.vars.forEach(v=>{
+      const isSel=sel&&sel.id===v.id;
+      const gated = v.type==='train' && S.stamina<20;
+      const risk = v.risky && S.stamina<20 ? Math.round((20-S.stamina)*0.02*100) : 0;
+      const el=document.createElement('div');
+      el.className='row'+(isSel?' sel':'')+(gated?' dis':'');
+      let riskHtml = risk>0 ? `<div class="risk ${risk>=25?'hi':''}">失敗 ${risk}%</div>` : '';
+      let gateHtml = gated ? `<div class="gate">谷口:今日は休め</div>` : '';
+      el.innerHTML=`<div class="ic">${v.ic}</div>
+        <div class="m"><div class="n">${v.nm}</div><div class="d">${v.d}</div>${gateHtml}</div>
+        <div class="rt"><div class="c ${v.up?'up':'dn'}">${v.cost}</div><div class="e">${v.eff}</div>${riskHtml}</div>
+        <div class="radio"></div>`;
+      if(!gated) el.onclick=()=>{ sel = isSel?null:v; render(); };
+      rows.appendChild(el);
+    });
+  }
+  function drawPrev(){
+    const p=$('prev'), go=$('go');
+    if(!sel){ p.innerHTML='<span class="hint">▲ コマンドを押して、中から選ぶ</span>'; go.className='go'; drawAxes(null); drawStamina(null); drawScore(null); return; }
+    // 予告：実際の伸び（確定分）を計算
+    const after=apply(S, sel);
+    const gains={};
+    AX.forEach(a=>{ const d=after[a.k]-S[a.k]; if(d>0.05) gains[a.k]=d; });
+    drawAxes(gains); drawStamina(after.stamina); drawScore(after);
+    let chips='';
+    Object.keys(gains).forEach(k=>{ const a=AX.find(x=>x.k===k); chips+=`<span class="chip" style="background:${a.c}">${a.nm} +${gains[k]<1?gains[k].toFixed(1):Math.round(gains[k])}</span>`; });
+    if(sel.type==='job') chips+=`<span class="chip" style="background:var(--money)">お金 ${sel.cost}</span>`;
+    p.innerHTML=`<div class="chips"><span class="lead">${sel.nm}：</span>${chips||'<span class="hint">回復</span>'}</div>`;
+    go.className='go on';
+  }
+  function render(){ drawMood(); drawMoney(); drawCalendar(); drawGroups(); drawPanel(); drawPrev(); }
+
+  // ---- 実行（段階リビール）----
+  function execute(){
+    if(!sel) return;
+    const act=sel;
+    const before=Object.assign({},S);
+    const after=apply(S, act);
+    Object.assign(S, after);
+    // バー確定→段階リビール
+    sel=null; openG=null;
+    drawAxes(null); drawGroups(); drawPanel();
+    drawStamina(null); drawMoney();
+    $('flash').className='flash go'; setTimeout(()=>$('flash').className='flash',500);
+    // +N フロート＋ランク跨ぎフラッシュ
+    let i=0;
+    AX.forEach(a=>{
+      const d=after[a.k]-before[a.k];
+      if(d>0.05){
+        setTimeout(()=>{
+          drawAxes(null);
+          const pl=document.getElementById('plus_'+a.k);
+          if(pl){ pl.textContent='+'+(d<1?d.toFixed(1):Math.round(d)); pl.className='plus show'; setTimeout(()=>pl.className='plus',1150); }
+          if(rank(before[a.k])!==rank(after[a.k])) toast(a.nm+' ランクアップ！ '+rank(after[a.k]));
+        }, i*110);
+        i++;
+      }
+    });
+    drawScore(null);
+    setTimeout(nextWeek, 650);
+  }
+
+  function nextWeek(){
+    S.week++;
+    if(S.week>48){ toast('1年目 完走！'); S.week=48; return; }
+    // 心の声（状態駆動・標準語・ボケない）
+    S.mono = pickMono();
+    $('mono').textContent=S.mono;
+    // 大会週？
+    const ev=ALLEV.find(e=>e.w===S.week);
+    if(ev){ setTimeout(()=>openTournament(ev), 350); }
+    render();
+  }
+  function pickMono(){
+    if(S.stamina<25) return 'さすがに体が重い。無理はきかない。';
+    if(S.money<30000) return '今月はきつい…バイトを挟むか。';
+    const nl=nextLine();
+    if(nl && nl.w-S.week<=2) return `そろそろ${nl.nm}か。あと少し、地力を上げておきたい。`;
+    const pool=['今週も、一歩だけ前に。','焦らず、四分をよくするだけだ。','調子は悪くない。このまま積み上げよう。'];
+    return pool[(S.week)%pool.length];
+  }
+
+  function toast(t){ const el=$('toast'); el.textContent=t; el.className='toast show'; setTimeout(()=>el.className='toast',1600); }
+
+  // ---- 大会 ----
+  function openTournament(ev){
+    const nl = ev.w===47 ? {line:80-1.5*(S.fame-50)/50} : {line:ev.line};
+    $('ovK').textContent = ev.kind==='mk'?'新人賞レース':ev.kind==='fin'?'頂グランプリ 決勝':'頂グランプリ 予選';
+    $('ovNm').textContent=ev.nm;
+    $('ovSay').textContent=''; $('stamp').className='stamp'; $('washi').className='washi';
+    $('jt').textContent=''; $('stars').textContent='';
+    const ovc=$('ovc'); ovc.innerHTML='';
+    const b1=document.createElement('button'); b1.className='b1'; b1.textContent='見送る'; b1.onclick=()=>{$('ovl').className='ovl'; render();};
+    const b2=document.createElement('button'); b2.className='b2'; b2.textContent='出る（夜行バス）'; b2.onclick=()=>runStage(ev,nl.line);
+    ovc.appendChild(b1); ovc.appendChild(b2);
+    $('ovl').className='ovl show';
+    drawWave(0,false,true);
+  }
+  function runStage(ev,line){
+    $('ovc').innerHTML='';
+    const b=base(S), bw=blur(S);
+    const roll=(Math.random()*2-1)*bw + (Math.random()<0.10?12:0);
+    const score=b+roll, passed=score>=line;
+    // 段階描画：波形を左から
+    const says=['客席が、少しずつ前のめりになる。','中盤、畳みかけ——空気が動いた。', passed?'オチ。どっと沸いた。':'オチ。……間に、空気が逃げた。'];
+    let seg=0;
+    const iv=setInterval(()=>{
+      seg++; drawWave(seg/3, passed, false);
+      $('ovSay').textContent=says[seg-1]||'';
+      if(seg>=3){
+        clearInterval(iv);
+        setTimeout(()=>{ // 通過/敗退スタンプ
+          const st=$('stamp'); st.textContent=passed?'通 過':'敗 退'; st.className='stamp '+(passed?'pass':'fail')+' show';
+          setTimeout(()=>revealWashi(ev,passed,score), 550);
+        }, 350);
+      }
+    }, 620);
+  }
+  function revealWashi(ev,passed,score){
+    const w=$('washi'); w.className='washi show'+(passed?' gold':'');
+    $('jn').textContent='審査員 音羽 巴';
+    const line = passed
+      ? '間は良い。ただ2本目、客が笑う前にオチを置きにいったな。次はもう半拍、待てる。'
+      : '技術・構成・熱量、いずれも申し分ない。あとは笑いがあれば、なお良かった。';
+    typeText($('jt'), line);
+    setTimeout(()=>{ $('stars').textContent = passed?'★★★★☆':'★★☆☆☆'; }, 1400);
+    // 賞金＆次へ
+    setTimeout(()=>{
+      const ovc=$('ovc'); ovc.innerHTML='';
+      const btn=document.createElement('button'); btn.className='b2'; btn.style.flex='1';
+      btn.textContent=passed?'賞金 +50万 ▶ つぎへ':'つぎへ ▶';
+      btn.onclick=()=>{ if(passed){S.money+=500000; S.fame+=10;} $('ovl').className='ovl'; render(); };
+      ovc.appendChild(btn);
+    }, 1700);
+  }
+  function typeText(el,txt){ el.textContent=''; let i=0; const iv=setInterval(()=>{ el.textContent+=txt[i++]||''; if(i>=txt.length)clearInterval(iv); },28); }
+
+  // 波形 canvas
+  const cv=$('wave'), cx=cv.getContext('2d');
+  function drawWave(progress, passed, idle){
+    const dpr=window.devicePixelRatio||1; const w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=w*dpr; cv.height=h*dpr; cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,w,h);
+    const peaks=[0.22,0.55,0.83];
+    cx.lineWidth=2.5; cx.strokeStyle=passed?'#FFC93C':'#8fa'; cx.globalAlpha=idle?0.25:1;
+    const grad=cx.createLinearGradient(0,0,w,0);
+    if(passed){grad.addColorStop(0,'#FFE08a');grad.addColorStop(1,'#FF7A2F');} else {grad.addColorStop(0,'#8fb2c9');grad.addColorStop(1,'#6f8fa8');}
+    cx.strokeStyle=grad;
+    cx.beginPath();
+    for(let x=0;x<=w*Math.min(1,idle?1:progress);x+=2){
+      const t=x/w; let amp=0;
+      peaks.forEach((p,i)=>{ const d=Math.abs(t-p); const s=passed?(i===2?0.9:0.6):(0.22); amp+=Math.exp(-(d*d)/0.006)*s*(i===2&&passed?1.25:1); });
+      const y=h*0.72 - amp*h*0.5 - Math.sin(x/7)*3*(idle?0.3:1);
+      x===0?cx.moveTo(x,y):cx.lineTo(x,y);
+    }
+    cx.stroke();
+    // baseline
+    cx.globalAlpha=.3; cx.lineWidth=1; cx.strokeStyle='#fff'; cx.beginPath(); cx.moveTo(0,h*0.72); cx.lineTo(w,h*0.72); cx.stroke(); cx.globalAlpha=1;
+  }
+
+  // init
+  drawStamina(null); render(); drawScore(null);
+})();
+</script>
+</body></html>

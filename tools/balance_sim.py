@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-漫才師育成SLG バランス検証シミュレータ v0.1
+漫才師育成SLG バランス検証シミュレータ v0.2
+- v0.2: 成長逓減(GROWTH_DECAY_D=120)と能力上限120(メンタルのみ100)を正式組み込み
 - MVP仕様書 v1.2 の数式・数値【仮】を忠実に実装
 - 5つの戦略ボットで48週×N回を自動プレイし、§12要調整リストの当たりを付ける
 - 標準ライブラリのみ。使い方: python3 balance_sim.py [試行回数]
@@ -24,7 +25,14 @@ INIT_FAME       = 3        # 初期知名度0〜5【仮】の中間
 INIT_ABILITY    = 10       # 能力5種 一律
 COMPAT_INIT     = 5        # コンビ相性（谷口）
 COMPAT_CAP      = 20       # 【仮】相性の成長上限（成長させるか自体がTBD）
-COMPAT_GROWS    = True     # 【TBD】コンビ練習/相方と過ごす で+1
+COMPAT_GROWS    = True     # 【TBD】ネタ合わせ/相方と過ごす で+1
+
+# --- 成長逓減と能力上限（docs/career_report_v1.md・endgame_design_v0.md・trophy_design_v1.md で採用。GameCoreと同期） ---
+GROWTH_DECAY_D  = 120      # 【仮】能力上昇量×(1−現在値/D)。Noneで無効。D=100まで下げると10年で優勝不能になる崖あり
+GROWTH_DECAY_TOTAL = False # 【実験・既定OFF】逓減を「現在値/D」でなく「実力値(加重合計)/D」で計算（分散稽古の構造優位を消す案・exp_human_fix2参照）
+YEAR_GROWTH_CAP = None     # 【実験・既定OFF】演技系4能力の実力値換算の年間成長上限。sim_careerが年初に s._yg を0リセットする（exp_human_fix2参照）
+ABILITY_CAP     = 120      # 【仮】センス/発想/表現/華の上限（固定）。トロフィーでDが120を超えた分は「上限到達が速く・確実になる」効果
+MENTAL_CAP      = 100      # メンタルはブレ幅式(1−メンタル/100)に直結するため100のまま
 
 LIVING_COST     = 100_000  # 4週ごと（マイナスOK・ペナルティなし＝仕様どおり）
 LIVING_INTERVAL = 4
@@ -32,10 +40,10 @@ LIVING_INTERVAL = 4
 # --- 稽古: 主効果 / 副効果 / 費用 / 体力 / 知名度 ---
 TRAININGS = {
     "ネタ作り":     dict(main=("idea", 3),   sub=("sense", 1),  cost=0,      stam=-20, fame=0),
-    "舞台稽古":     dict(main=("expr", 6),   sub=("mental", 3), cost=80_000, stam=-30, fame=0),
-    "コンビ練習":   dict(main=("sense", 3),  sub=("compat", 1), cost=0,      stam=-20, fame=0),
-    "メンタルトレ": dict(main=("mental", 6), sub=None,          cost=80_000, stam=-10, fame=0),
-    "営業場数":     dict(main=("chara", 3),  sub=("expr", 1),   cost=0,      stam=-30, fame=1),
+    "ネタ見せ会":     dict(main=("expr", 6),   sub=("mental", 3), cost=80_000, stam=-30, fame=0),
+    "ネタ合わせ":   dict(main=("sense", 3),  sub=("compat", 1), cost=0,      stam=-20, fame=0),
+    "ランニング・サウナ": dict(main=("mental", 6), sub=None,          cost=80_000, stam=-10, fame=0),
+    "フリーライブ":     dict(main=("chara", 3),  sub=("expr", 1),   cost=0,      stam=-30, fame=1),
 }
 
 # --- バイト: (収入, 体力) ---
@@ -58,9 +66,9 @@ RESTS = {
 }
 
 # --- 大会（賞金は山分け後の手元額） ---
-OSAKA_WEEK, OSAKA_LINE, OSAKA_PRIZE = 29, 40, 100_000
-GPQ_WEEK,   GPQ_LINE               = 40, 60            # 予選チェック週【仮】(仕様: 夏〜秋)
-GPF_WEEK,   GPF_LINE,  GPF_PRIZE   = 47, 85, 5_000_000 # ライン80〜90の中間【仮】
+OSAKA_WEEK, OSAKA_LINE, OSAKA_PRIZE = 29, 22, 100_000   # ライン【正典v2】旧40×0.55
+GPQ_WEEK,   GPQ_LINE               = 40, 33            # 予選チェック週【正典v2】旧60×0.55
+GPF_WEEK,   GPF_LINE,  GPF_PRIZE   = 47, 47, 5_000_000 # 【正典v2】旧85×0.55（1年目には届かない設計を維持）
 FAME_PASS, FAME_CHAMP = 10, 20                          # 通過+10 / 優勝+20【仮TBD】
 
 BUS   = dict(cost=10_000, stam=-25)   # 東京→大阪 往復・夜行
@@ -68,7 +76,7 @@ TRAIN = dict(cost=30_000, stam=0)     # 新幹線
 
 # --- 本番スコア（§7） ---
 W_SENSE, W_IDEA, W_EXPR, W_CHARA = 0.30, 0.30, 0.25, 0.15
-STAM_PEN = [(30, -10), (50, -5)]      # 体力<30で-10 / <50で-5【仮案】
+STAM_PEN = [(10, -15), (30, -10), (50, -5)]   # 体力<10で-15 / <30で-10 / <50で-5【正典v2・H3対策】
 
 def blur_width(mental):
     """ブレ幅B = 5 + 15×(1−メンタル/100)"""
@@ -108,7 +116,17 @@ def add(s, key, amt):
     elif key == "fame":
         s.fame = clamp(s.fame + amt, 0, 100)
     else:
-        setattr(s, key, clamp(getattr(s, key) + amt, 0, 100))
+        # 能力5種: 成長逓減（正の上昇のみ）を掛けてから上限にクランプ
+        if GROWTH_DECAY_D and amt > 0:
+            basis = jitsuryoku(s) if (GROWTH_DECAY_TOTAL and key != "mental") else getattr(s, key)
+            amt = amt * max(0.0, 1 - basis / GROWTH_DECAY_D)
+        if YEAR_GROWTH_CAP is not None and amt > 0 and key != "mental":
+            w = dict(sense=W_SENSE, idea=W_IDEA, expr=W_EXPR, chara=W_CHARA)[key]
+            budget = YEAR_GROWTH_CAP - getattr(s, "_yg", 0.0)
+            amt = max(0.0, min(amt, budget / w))
+            s._yg = getattr(s, "_yg", 0.0) + amt * w
+        cap = MENTAL_CAP if key == "mental" else ABILITY_CAP
+        setattr(s, key, clamp(getattr(s, key) + amt, 0, cap))
 
 def jitsuryoku(s):
     return s.sense * W_SENSE + s.idea * W_IDEA + s.expr * W_EXPR + s.chara * W_CHARA
@@ -117,14 +135,17 @@ def jitsuryoku(s):
 # 行動
 # ============================================================
 
+DEBT_TRAIN_FACTOR = 0.5    # 【正典v2】借金中は稽古が半分しか身にならない（生活苦・rule_holes_v0 §2）
+
 def do_training(s, name):
     t = TRAININGS[name]
     if t["cost"] > 0 and s.money < t["cost"]:   # 有料行動のみ所持金必須【仮の実装解釈・仕様未定義】
         return False
+    fac = DEBT_TRAIN_FACTOR if (DEBT_TRAIN_FACTOR is not None and s.money < 0) else None
     s.money -= t["cost"]
-    k, v = t["main"]; add(s, k, v)
+    k, v = t["main"]; add(s, k, v if fac is None else v * fac)
     if t["sub"]:
-        k, v = t["sub"]; add(s, k, v)
+        k, v = t["sub"]; add(s, k, v if fac is None else v * fac)
     add(s, "stamina", t["stam"])
     if t["fame"]:
         add(s, "fame", t["fame"])
@@ -153,9 +174,14 @@ def roll_offer(s, rng):
         return dict(rng.choice([OFFER_MONEY, OFFER_EXP]))
     return None
 
+BURST_P     = 0.10   # 【正典v2】「ハマった夜」の発生率（勝負ごとの独立な運・メンタル非依存）
+BURST_BONUS = 12.0   # 【正典v2】ハマった夜のスコア加点（A案: 決勝到達を特別体験に戻すレバー・exp_v2_anchor）
+
 def perform(s, line, rng):
     b = blur_width(s.mental)
     roll = rng.uniform(-b, b)
+    if BURST_P and rng.random() < BURST_P:   # 0/Noneはdraw自体を消費しない（Swift側 burstP>0 と同義・レッドチーム指摘で対称化）
+        roll += BURST_BONUS
     pen = 0
     for th, p in STAM_PEN:
         if s.stamina < th:
@@ -168,7 +194,7 @@ def perform(s, line, rng):
 # 戦略ボット（全て【仮】の方針。人間の代役）
 # ============================================================
 
-FREE_ROT = ["ネタ作り", "コンビ練習", "営業場数"]
+FREE_ROT = ["ネタ作り", "ネタ合わせ", "フリーライブ"]
 
 class Policy:
     name = "base"
@@ -216,7 +242,7 @@ class PBalanced(Policy):
         if s.stamina < 40:
             return ("rest", "完全休養")
         if s.money >= 500_000:
-            return ("train", "舞台稽古")
+            return ("train", "ネタ見せ会")
         return ("train", FREE_ROT[week % 3])
     def transport(self, s):
         return TRAIN if s.money >= 150_000 else BUS
@@ -234,11 +260,11 @@ class PSmart(Policy):
         if s.stamina < 35:
             return ("rest", "完全休養")
         if s.mental < 45 and s.money >= 300_000:
-            return ("train", "メンタルトレ")
+            return ("train", "ランニング・サウナ")
         if s.money >= 450_000:
-            return ("train", "舞台稽古")
+            return ("train", "ネタ見せ会")
         # 弱点補強: 主効果対象が最も低い無料稽古
-        cands = [("ネタ作り", s.idea), ("コンビ練習", s.sense), ("営業場数", s.chara)]
+        cands = [("ネタ作り", s.idea), ("ネタ合わせ", s.sense), ("フリーライブ", s.chara)]
         cands.sort(key=lambda x: x[1])
         return ("train", cands[0][0])
     def transport(self, s):
@@ -321,7 +347,7 @@ def yen(v):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
-    print(f"=== 漫才師育成SLG バランス検証 v0.1 | {WEEKS}週 × {n}回/戦略 | 数値は全て【仮】 ===")
+    print(f"=== 漫才師育成SLG バランス検証 v0.2 | {WEEKS}週 × {n}回/戦略 | 逓減D={GROWTH_DECAY_D} 上限{ABILITY_CAP} | 数値は全て【仮】 ===")
     print(f"通過ライン: 大阪戎{OSAKA_LINE}(第{OSAKA_WEEK}週) / GP予選{GPQ_LINE}(第{GPQ_WEEK}週) / GP決勝{GPF_LINE}(第{GPF_WEEK}週)")
     print()
     hdr = f"{'戦略':　<10}| 戎出場% | 戎通過% | GP予選% | 優勝% | 最終所持金 | 年間最低金 | 実力値 | 知名度"

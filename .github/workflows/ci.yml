@@ -1,0 +1,28 @@
+name: CI
+
+# 正典同期（CLAUDE.md 開発規律A）の自動ゲート。
+# 人の規律に頼らず、push/PRごとに「Swiftがgolden一致」かつ「Python⇄Swift goldenが同期」を機械検証する。
+on:
+  push:
+  pull_request:
+
+jobs:
+  gamecore:
+    name: GameCore parity (swift test + golden sync)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          swift --version
+          python3 --version
+
+      # Swiftゲート: 数式・乱数消費順・週処理が委譲後もgolden(3年ビット一致)に合致するか
+      - name: swift test (GameCore)
+        working-directory: GameCore
+        run: swift test
+
+      # Pythonゲート: Python正典を変えてgolden再生成を忘れたドリフトを検出
+      - name: golden sync (Python正典 ⇄ Swift golden)
+        run: python3 tools/check_golden_sync.py

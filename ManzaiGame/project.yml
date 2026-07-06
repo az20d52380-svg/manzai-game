@@ -1,0 +1,29 @@
+name: ManzaiGame
+options:
+  bundleIdPrefix: com.manzaigame
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+packages:
+  GameCore:
+    path: ../GameCore
+targets:
+  ManzaiGame:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    dependencies:
+      - package: GameCore
+        product: GameCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.manzaigame.mvp
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"          # iPhone のみ（縦持ち固定の方針・ui_design §8）
+        SWIFT_VERSION: "5.0"
+        CODE_SIGNING_ALLOWED: NO             # 検証ビルド用（実機は後で署名）
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
