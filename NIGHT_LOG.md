@@ -119,3 +119,8 @@
 - bible §0/§10・corpusをfew-shotに、**非重複スロット5系統**を鋳込み→§10で1行採点→別エージェント検品：**final.B残5審査員(7行)／default平常心の声(8行)／reaction残6種(8行)／予選講評フックpassChemistryHigh・passStaminaLow・failMentalLow(8行)／弱点写像辞書(能力名→生活語8軸)**。選択肢イベント会話(0011-0023)・大会前後会話は proposals/0010-0034 既出のため対象外。
 - 検品が落とした典型：警句締め(計算屋のキザ)・既存corpus酷似・対句/希少性ミックの再演・音羽ルリ「息が上がって」がjudge_comments #37と逐語一致。全行ドラマ主軸・話者口調ロック順守・ボケゼロ・golden非干渉。
 - **branch分担の注意**：正本bible/corpusはcalibration branch側。本バッチは当branch(proposals専任)に量産の続きとして置いた＝取り込み時に正本corpusへマージが要る（当方はcalibration branchを触っていない）。
+
+### 声の量産バッチ2（山場E軸）→ voice_corpus_casting_batch2_eaxis.md
+- Fable最優先の山場E軸を鋳込み：**finals.loss 決勝敗退(3行)／finals.win 優勝・勇退エンド(7行)／yearEnd 年次独白×4分岐(躍進/停滞/貧乏/9年目 計10行)**。計20行。相方(谷口以外)の決勝反応は partner_finals_reactions_v0.md が正典＝対象外。
+- 検品が厳しく落とした：finals.lossは8→3行（seedの「荷物三題」ビート丸写しのマイク三題・静止モチーフの盛り・第三者称賛による負けの感傷化を没＝seed水準の冷たさ死守）／yearEnd 9年目「小ホール先払い」がseed「年間予約先払い」と機構酷似で没。yearEndは4分岐で構文型を必ず変える（消耗/反復・静止/支出3型/分配・背水）。
+- 全行ドラマ主軸・感情語ゼロ・熱は谷口の所作と支配人へ・警句締めゼロ・golden非干渉。finals.lossは薄い(3行)がseedと合わせ十分＝質優先。
