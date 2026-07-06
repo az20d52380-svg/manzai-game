@@ -130,3 +130,8 @@
 - **final.D 残5審査員(厳しめ 7行)**：花園/卯月/白波/目白、各に「直せる一点」必須。神楽坂の将棋比喩を没（judge_comments #93と芯酷似＋生活比喩でなく戦術ロジック＝声ブレ）＝要リライト。
 - **大会前の心の声 preTournament(固定文3行)**：緊張を名指さず弱点の生活語(出だしの硬さ/声の届き/切り口)へ。双子構文1本を没。
 - 相性帯の書き分けが効いているか(0-7と15-20が同温度化してないか)を検品が明示チェック＝クリア。golden非干渉。
+
+### 量産バッチ1-3を正本corpusへ取り込み（オーナー承認「取り込んで」）
+- calibration branch `claude/manzai-voice-calibration-2i9etz` の `docs/voice_corpus_v0.md` に **§8 量産在庫（バッチ1-3・80行・11スロット）** を追記して統合（別worktreeで作業→pull相当のrebase→push `8b6fc7e..e7f8946`）。§1-7のgold seedは温存＝seed(few-shot基準)とbulk(在庫)を分離。
+- 統合スロット：final.B/final.D全審査員・default平常・preTournament・reaction6種・予選講評フック・山場E軸(finals.loss/win・yearEnd)・週次相方会話(相性帯)・弱点写像辞書。全行§10採点＋検品済・ボケゼロ・golden非干渉。
+- 当branch(foundation)の `proposals/voice_corpus_casting_batch1-3.md` は検品ノート付きの作業記録として残置（正本は§8＝以後はcalibration branch側が権威）。**当branchはこの取り込みでのみcalibration branchに触れた（オーナー明示承認）。**
