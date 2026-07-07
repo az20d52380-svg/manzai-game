@@ -6,30 +6,42 @@ import GameCore
 
 struct RootView: View {
     @State private var session = GameSession()
+    @State private var started = false   // S1初回フロー完了で true（本編開始）
 
     var body: some View {
-        content
-            .overlay(alignment: .topTrailing) {
-                #if DEBUG
-                debugButton
-                #endif
-            }
-            .task {
-                #if DEBUG
-                let smoke = ProcessInfo.processInfo.environment["MZ_SMOKE"]
-                if session.week <= 1 {
-                    if smoke == "1" { session.debugAdvanceToFirstResult() }
-                    else if smoke == "2" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
-                    else if smoke == "3" { session.debugPlayToEnd() }
-                    else if smoke == "4" { forceChampion() }
-                    else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
+        Group {
+            if started {
+                content
+                    .overlay(alignment: .topTrailing) {
+                        #if DEBUG
+                        debugButton
+                        #endif
+                    }
+            } else {
+                IntroFlowView { name in                       // S1: KV→回想→名入力
+                    session = GameSession(combiName: name)
+                    withAnimation(.easeInOut(duration: 0.4)) { started = true }
                 }
-                // UIスモーク: MZ_UI=grown で能力マックス状態のまま週メインに留まる（充填ピル/gold縁の目視用）
-                if ProcessInfo.processInfo.environment["MZ_UI"] == "grown", session.week <= 1 {
-                    session = GameSession(startState: GameSession.debugMaxedState())
-                }
-                #endif
             }
+        }
+        .task {
+            #if DEBUG
+            let smoke = ProcessInfo.processInfo.environment["MZ_SMOKE"]
+            let ui = ProcessInfo.processInfo.environment["MZ_UI"]
+            if smoke != nil || ui != nil { started = true }   // スモーク/UI確認時はS1を飛ばす
+            if session.week <= 1 {
+                if smoke == "1" { session.debugAdvanceToFirstResult() }
+                else if smoke == "2" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
+                else if smoke == "3" { session.debugPlayToEnd() }
+                else if smoke == "4" { forceChampion() }
+                else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
+            }
+            // UIスモーク: MZ_UI=grown で能力マックス状態のまま週メインに留まる（充填ピル/gold縁の目視用）
+            if ui == "grown", session.week <= 1 {
+                session = GameSession(startState: GameSession.debugMaxedState())
+            }
+            #endif
+        }
     }
 
     @ViewBuilder private var content: some View {

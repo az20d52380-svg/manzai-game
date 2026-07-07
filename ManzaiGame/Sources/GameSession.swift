@@ -38,12 +38,15 @@ final class GameSession {
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
+    let combiName: String              // S1で入力（表示専用・golden非対象）
 
     // MARK: 進行の実体（WeekRunner が週処理と乱数消費の正典を持つ）
     private var runner: WeekRunner<SplitMix64>
 
-    init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil) {
+    init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil,
+         combiName: String = "あなたのコンビ") {
         self.config = config
+        self.combiName = combiName
         let start = startState ?? GameState(config: config)
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: config, rng: SplitMix64(seed: seed))

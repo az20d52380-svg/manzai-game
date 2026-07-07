@@ -47,8 +47,10 @@ struct YearResultView: View {
     // MARK: 年目バッジ
 
     private var yearBadge: some View {
-        Text("\(session.year)年目 ・ 年次リザルト")
-            .font(.maru(12)).tracking(2).monospacedDigit().foregroundStyle(Theme.inkDim)
+        VStack(spacing: 2) {
+            Text(session.combiName).font(.maru(14)).foregroundStyle(Theme.ink)
+            Text("\(session.year)年目 ・ 年次リザルト").font(.maru(11)).tracking(2).foregroundStyle(Theme.inkDim)
+        }
     }
 
     // MARK: 到達段階の判
