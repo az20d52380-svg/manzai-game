@@ -9,7 +9,9 @@ struct TournamentResultView: View {
     let session: GameSession
     let summary: WeekSummary
 
-    @State private var revealed = false
+    @State private var revealed = false        // 判（押印）
+    @State private var revealedReview = false  // 講評（判の0.4s後）
+    @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
 
     private var result: StageResult { summary.results.last ?? summary.results.first! }
 
@@ -36,20 +38,27 @@ struct TournamentResultView: View {
 
                 if revealed {
                     stamp(passed: r.passed)
+                }
+                if revealedReview {
                     washi(text: review.text, judge: review.judge, passed: r.passed)
-                    starsRow(stars)
+                        .transition(.opacity)
+                }
+                if revealedRest {
+                    starsRow(stars).transition(.opacity)
                     if r.prize > 0 {
                         Text("賞金 +\(r.prize / 10000)万 ↗").font(.maru(15)).monospacedDigit()
-                            .foregroundStyle(Theme.cMental)
+                            .foregroundStyle(Theme.cMental).transition(.opacity)
                     }
                     Button {
                         session.acknowledgeResult()
                     } label: {
                         Text("次へ ▶").font(.maru(15)).foregroundStyle(.white)
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .background(Theme.verm, in: RoundedRectangle(cornerRadius: 13))
+                            .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
                     }
-                    .buttonStyle(.plain).padding(.horizontal, 40).padding(.top, 4)
+                    .buttonStyle(PressableStyle())
+                    .padding(.horizontal, 40).padding(.top, 4)
+                    .transition(.opacity)
                 }
             }
             .padding(.horizontal, 18).padding(.vertical, 20)
@@ -58,22 +67,31 @@ struct TournamentResultView: View {
         .background(LinearGradient(colors: [Color(hex: 0xFFEAD8), Color(hex: 0xFFF3E4)],
                                    startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .onAppear {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(1.6)) {
-                revealed = true
+            Task {
+                // 波形の余韻＋開示前の静止0.3s（溜め→開示の最小単位・§4-2a）を含む1.6s
+                try? await Task.sleep(nanoseconds: 1_600_000_000)
+                withAnimation(.easeOut(duration: 0.2)) { revealed = true }   // 判の押印（§3-5: 1.3→1.0）
+                Haptics.confirm()                                            // 合否押印=hConfirm
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
             }
         }
     }
 
+    /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=ink——色でなく重さの差（負けにも勝ちと同じ物量）。
     private func stamp(passed: Bool) -> some View {
-        let c = passed ? Theme.cMental : Color(hex: 0x8A8FA0)   // 敗退は寒色（灰）＝mockup .ng
+        let c = passed ? Theme.verm : Theme.ink
         return Text(passed ? "通過" : "敗退")
             .font(.maru(30)).foregroundStyle(.white)
             .frame(width: 108, height: 108)
-            .background(RadialGradient(colors: [c.opacity(0.9), c], center: .topLeading, startRadius: 5, endRadius: 120),
-                       in: Circle())
-            .rotationEffect(.degrees(-8))
-            .shadow(color: c.opacity(0.5), radius: 12, y: 8)
-            .scaleEffect(revealed ? 1 : 1.8)
+            .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 120),
+                       in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(.white.opacity(0.55), lineWidth: 2).padding(5))
+            .rotationEffect(.degrees(-4))
+            .shadow(color: c.opacity(0.4), radius: 12, y: 8)
+            .scaleEffect(revealed ? 1 : 1.3)
             .opacity(revealed ? 1 : 0)
     }
 
@@ -91,8 +109,8 @@ struct TournamentResultView: View {
                 Spacer(minLength: 8)
                 Text(passed ? "通過" : "敗退").font(.maru(12)).foregroundStyle(.white)
                     .frame(width: 44, height: 44)
-                    .background(passed ? Theme.cMental : Color(hex: 0x8A8FA0), in: RoundedRectangle(cornerRadius: 8))
-                    .rotationEffect(.degrees(-6))
+                    .background(passed ? Theme.verm : Theme.ink, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+                    .rotationEffect(.degrees(-4))
             }
             .padding(.top, 16)
         }
