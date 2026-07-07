@@ -15,6 +15,7 @@
 		6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D08F932A4334F422E73881 /* JudgeData.swift */; };
 		74DDE7A5903D2D4934E9536F /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = 27B231D4CDB45E90519F75D6 /* GameCore */; };
 		9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */; };
+		9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = F840A919C087A92A94339899 /* RadarChart.swift */; };
 		A5261165B97770A127810577 /* CommandData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
 		DF24415C7E00852BA2F01FC2 /* WinFinaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD51A6CC2B53C8FB77C0B1B6 /* WinFinaleView.swift */; };
@@ -37,6 +38,7 @@
 		E7C2B6670FC11321C4559DCB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		EC27C4A85A610F060F476DE5 /* ManzaiGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManzaiGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5D08F932A4334F422E73881 /* JudgeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JudgeData.swift; sourceTree = "<group>"; };
+		F840A919C087A92A94339899 /* RadarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChart.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 				2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */,
 				F5D08F932A4334F422E73881 /* JudgeData.swift */,
 				0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */,
+				F840A919C087A92A94339899 /* RadarChart.swift */,
 				5F49ED139642FC2518E962F8 /* RootView.swift */,
 				584B31B6D7B7B692F33CC50E /* StageViews.swift */,
 				E7C2B6670FC11321C4559DCB /* Theme.swift */,
@@ -160,6 +163,7 @@
 				9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */,
 				6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */,
 				54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */,
+				9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */,
 				2A0C4D15DED110C70394538A /* RootView.swift in Sources */,
 				0925CDD9634B4E4FADD702CC /* StageViews.swift in Sources */,
 				E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */,

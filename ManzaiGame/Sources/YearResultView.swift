@@ -1,7 +1,8 @@
 // YearResultView.swift
-// SCREEN 04: 1年目の年末結果。到達段階ボード＋語り＋才能の灯り＋年間サマリ。
-// 1年MVPは決勝到達が稀なので、到達段階に応じて表示（champion/決勝/到達回戦/夜逃げ）。
-// ライバル名・順位は表示フレーバー（架空名・rival_design準拠）。才能解放は【仮・TODO本実装】。
+// S6 年次リザルト（正本: uiux_vision_reply_part2 §S6）。縦1カラムの紙面（年表の1ページ様式・e3）。
+// 上から: 年目バッジ → 到達段階の判 → レーダー重ね(4月線+現在面) → 48週行動内訳色帯 → 出来事3行(大会結果のみ) → 賞金/知名度年計。
+// トランジション: 紙面が下から0.4s・要素は上から0.15s間隔の時間差表示。判押印0.25s+hConfirm。レーダーモーフ0.8s・行動内訳帯左から0.6s。
+// MVPは1年完結なので二択(勇退/続投=S6b/S9)は未実装＝「もう一度」で新周回。才能の灯りは【仮・TODO】。
 
 import SwiftUI
 import GameCore
@@ -13,150 +14,201 @@ struct YearResultView: View {
     private var s: GameState { session.state }
     private var o: YearOutcome? { session.outcome }
 
+    @State private var appear = false
+    @State private var stampIn = false
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                Text("頂 グランプリ ・ 1年目").font(.maru(12)).tracking(2).foregroundStyle(Theme.gold)
-                Text(headline).font(.maru(21)).foregroundStyle(.white)
-
-                board
-                Text(monolog)
-                    .font(.system(size: 13.5, design: .serif)).lineSpacing(6)
-                    .foregroundStyle(Color(hex: 0xD9CDEC))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(13)
-                    .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-
-                unlockRow
-                summaryStrip
-
-                Button(action: onRestart) {
-                    Text("もう一度").font(.maru(16)).foregroundStyle(.white)
-                        .frame(maxWidth: .infinity).padding(.vertical, 13)
-                        .background(Theme.verm, in: RoundedRectangle(cornerRadius: 14))
-                }
-                .buttonStyle(.plain).padding(.horizontal, 30).padding(.top, 4)
+            VStack(spacing: Theme.Sp.s16) {
+                yearBadge.stagger(0, appear)
+                reachStamp.stagger(1, appear)
+                radarBlock.stagger(2, appear)
+                breakdownBlock.stagger(3, appear)
+                eventsBlock.stagger(4, appear)
+                totalsBlock.stagger(5, appear)
+                unlockRow.stagger(6, appear)
+                restartButton.stagger(7, appear)
             }
-            .padding(.horizontal, 18).padding(.vertical, 24)
+            .padding(.horizontal, Theme.Sp.s24).padding(.vertical, Theme.Sp.s32)
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(LinearGradient(colors: [Color(hex: 0x2C2740), Color(hex: 0x3A2F52), Color(hex: 0x4A2F52)],
-                                   startPoint: .top, endPoint: .bottom).ignoresSafeArea())
-    }
-
-    private var headline: String {
-        guard let o else { return "最終結果" }
-        if o.champion { return "🏆 優勝！" }
-        if o.bankrupt { return "💸 夜逃げ" }
-        if o.reachedFinal { return "決勝進出・惜敗" }
-        return "最終結果"
-    }
-
-    // 到達段階ボード（決勝到達時は順位・そうでなければ到達回戦の階段）
-    @ViewBuilder private var board: some View {
-        if let o, o.reachedFinal || o.champion {
-            VStack(spacing: 8) {
-                if o.champion {
-                    boardRow(rank: "1", name: "あなたのコンビ", role: "今年の頂点", score: "96.4", kind: .win)
-                    boardRow(rank: "2", name: "静物画", role: "技巧派の先輩", score: "95.1", kind: .plain)
-                    boardRow(rank: "3", name: "金字塔", role: "先に行く同期", score: "94.8", kind: .plain)
-                } else {
-                    boardRow(rank: "1", name: "静物画", role: "技巧派の先輩", score: "96.4", kind: .win)
-                    boardRow(rank: "2", name: "金字塔", role: "先に行く同期", score: "95.1", kind: .plain)
-                    boardRow(rank: "3", name: "あなたのコンビ", role: "決勝の舞台に立った", score: "94.8", kind: .me)
-                }
+        .background(
+            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+        )
+        .onAppear {
+            withAnimation(.easeOut(duration: Theme.Motion.emph)) { appear = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) { stampIn = true }
+                Haptics.confirm()   // 年1回の重み
             }
-        } else {
-            reachLadder
         }
     }
 
-    // 到達回戦の階段（決勝未到達）
-    private var reachLadder: some View {
-        let reached = o?.roundsPassed ?? 0
-        let steps = ["1回戦", "2回戦", "3回戦", "準々決勝", "準決勝", "決勝"]
+    // MARK: 年目バッジ
+
+    private var yearBadge: some View {
+        Text("\(session.year)年目 ・ 年次リザルト")
+            .font(.maru(12)).tracking(2).monospacedDigit().foregroundStyle(Theme.inkDim)
+    }
+
+    // MARK: 到達段階の判
+
+    private var reachStamp: some View {
+        let (text, passed) = reach()
+        let c = passed ? Theme.verm : Theme.ink
         return VStack(spacing: 6) {
-            ForEach(Array(steps.enumerated().reversed()), id: \.offset) { idx, name in
-                let done = idx < reached
-                let here = idx == reached
-                HStack {
-                    Text(here ? "▶ \(name)" : name)
-                        .font(.maru(here ? 15 : 13))
-                        .foregroundStyle(here ? Theme.gold : (done ? .white : Color(hex: 0x7A7290)))
-                    Spacer()
-                    Text(done ? "通過" : (here ? "ここまで" : "—"))
-                        .font(.maru(11, weight: .bold))
-                        .foregroundStyle(done ? Theme.cMental : (here ? Theme.verm : Color(hex: 0x5A5470)))
+            Text(text)
+                .font(.maru(30)).foregroundStyle(.white)
+                .padding(.horizontal, 22).padding(.vertical, 8)
+                .background(c, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+                .rotationEffect(.degrees(-4))
+                .scaleEffect(stampIn ? 1 : 1.3)
+                .opacity(stampIn ? 1 : 0)
+            Text(reachSub()).font(.maru(11)).foregroundStyle(Theme.inkDim)
+        }
+    }
+
+    // MARK: レーダー重ね
+
+    private var radarBlock: some View {
+        VStack(spacing: 4) {
+            RadarChart(axes: RadarChart.abilityAxes(current: s, base: GameState(config: session.config), config: session.config))
+                .frame(height: 210)
+            HStack(spacing: 12) {
+                legendDot(Theme.inkFaint, "4月", dashed: true)
+                legendDot(Theme.verm, "現在", dashed: false)
+            }
+            .font(.maru(10)).foregroundStyle(Theme.inkDim)
+        }
+        .padding(Theme.Sp.s16)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .e2()
+    }
+
+    // MARK: 48週 行動内訳色帯
+
+    private var breakdownBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("この1年の使い方").font(.maru(11)).foregroundStyle(Theme.inkDim)
+            ActionBreakdownBand(weeks: session.config.weeks, categoryByWeek: session.categoryLog)
+            HStack(spacing: 10) {
+                ForEach([BandCategory.keiko, .baito, .kaifuku, .taikai], id: \.label) { cat in
+                    HStack(spacing: 4) {
+                        Circle().fill(cat.color).frame(width: 7, height: 7)
+                        Text(cat.label).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                    }
                 }
-                .padding(.horizontal, 13).padding(.vertical, 9)
-                .background(here ? Color(hex: 0xE8402C, alpha: 0.18) : Color.white.opacity(done ? 0.10 : 0.03),
-                           in: RoundedRectangle(cornerRadius: 11))
             }
         }
+        .padding(Theme.Sp.s16)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .e2()
     }
 
-    private enum RowKind { case win, me, plain }
-    private func boardRow(rank: String, name: String, role: String, score: String, kind: RowKind) -> some View {
-        HStack(spacing: 11) {
-            Text(rank).font(.maru(17)).frame(width: 22)
-                .foregroundStyle(kind == .win ? Color(hex: 0x7A5A06) : Color(hex: 0xCDBFE0))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(name).font(.maru(14)).foregroundStyle(kind == .me ? Color(hex: 0xFF9C8C) : (kind == .win ? Color(hex: 0x3A2A06) : .white))
-                Text(role).font(.system(size: 10.5)).foregroundStyle(kind == .win ? Color(hex: 0x8A6A1A) : Color(hex: 0xB7A8CF))
+    // MARK: 出来事3行（大会結果のみ）
+
+    private var eventsBlock: some View {
+        let lines = Array(session.log.suffix(3))
+        return VStack(alignment: .leading, spacing: 5) {
+            Text("出来事").font(.maru(11)).foregroundStyle(Theme.inkDim)
+            if lines.isEmpty {
+                Text("——大会は、来年こそ。").font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
+            } else {
+                ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                    Text(line).font(.system(size: 13, design: .serif)).foregroundStyle(Theme.ink)
+                }
             }
-            Spacer()
-            Text(score).font(.maru(15)).monospacedDigit()
-                .foregroundStyle(kind == .win ? Color(hex: 0x7A5A06) : Color(hex: 0xCDBFE0))
         }
-        .padding(.horizontal, 13).padding(.vertical, 11)
-        .background(rowBG(kind), in: RoundedRectangle(cornerRadius: 13))
-        .overlay(RoundedRectangle(cornerRadius: 13).stroke(kind == .me ? Theme.verm.opacity(0.6) : .clear, lineWidth: 1.5))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Theme.Sp.s16)
+        .background(Theme.card2, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .e1()
     }
 
-    private func rowBG(_ kind: RowKind) -> some ShapeStyle {
-        switch kind {
-        case .win: return AnyShapeStyle(LinearGradient(colors: [Theme.gold, Theme.gold.opacity(0.5)], startPoint: .leading, endPoint: .trailing))
-        case .me: return AnyShapeStyle(Theme.verm.opacity(0.18))
-        case .plain: return AnyShapeStyle(Color.white.opacity(0.08))
-        }
-    }
+    // MARK: 賞金/知名度 年計
 
-    private var monolog: String {
-        guard let o else { return "" }
-        if o.champion { return "今年の頂点は——あなたたち。\n谷口が、はじめて言葉に詰まった。「……やったな」それだけ。" }
-        if o.bankrupt { return "所持金が底をついた。\n谷口は笑って言った。「まあ、なんとかなるやろ」——今回は、ならなかった。" }
-        if o.reachedFinal { return "今年の頂点は——静物画。0.3の差。\n谷口は、何も言わなかった。帰りの自販機の前で「来年な」と、それだけ。" }
-        return "今年も、ここまで。\n谷口「来年の、いっちばん面白いネタの話、していい？」"
-    }
-
-    // 才能の灯り（【仮・TODO: 才能解放システム本実装】）
-    private var unlockRow: some View {
-        HStack(spacing: 9) {
-            Text("✦").foregroundStyle(Theme.gold)
-            Text("才能がひとつ灯った 〈来年の景色〉").font(.maru(13)).foregroundStyle(Theme.gold)
-        }
-        .frame(maxWidth: .infinity).padding(12)
-        .background(LinearGradient(colors: [Theme.gold.opacity(0.22), Theme.gold.opacity(0.1)], startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: 13))
-        .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.gold.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
-    }
-
-    private var summaryStrip: some View {
+    private var totalsBlock: some View {
         HStack(spacing: 0) {
-            stat("所持金", "\(s.money / 10000)万")
-            stat("知名度", "\(Int(s.fame))")
-            stat("相性", "\(Int(s.compat))")
-            stat("メンタル", "\(Int(s.メンタル))")
+            total("賞金 年計", "¥\(session.totalPrize.formatted())")
+            Divider().frame(height: 30)
+            total("知名度", "\(Int(s.fame))")
+            Divider().frame(height: 30)
+            total("最終所持金", "¥\(s.money.formatted())")
         }
-        .padding(.vertical, 10)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.vertical, Theme.Sp.s12)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .e1()
     }
 
-    private func stat(_ k: String, _ v: String) -> some View {
-        VStack(spacing: 2) {
-            Text(v).font(.maru(15)).monospacedDigit().foregroundStyle(.white)
-            Text(k).font(.system(size: 10)).foregroundStyle(Color(hex: 0xB7A8CF))
+    private func total(_ k: String, _ v: String) -> some View {
+        VStack(spacing: 3) {
+            Text(v).font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
+            Text(k).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // MARK: 才能の灯り＋もう一度
+
+    private var unlockRow: some View {
+        HStack(spacing: 9) {
+            Text("✦").foregroundStyle(Theme.goldD)
+            Text("才能がひとつ灯った 〈来年の景色〉").font(.maru(12.5)).foregroundStyle(Theme.goldD)
+        }
+        .frame(maxWidth: .infinity).padding(Theme.Sp.s12)
+        .background(LinearGradient(colors: [Theme.gold.opacity(0.22), Theme.gold.opacity(0.10)], startPoint: .leading, endPoint: .trailing),
+                    in: RoundedRectangle(cornerRadius: Theme.Rad.board))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.board).stroke(Theme.gold.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
+    }
+
+    private var restartButton: some View {
+        Button(action: onRestart) {
+            Text("もう一度").font(.maru(16)).foregroundStyle(.white)
+                .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s12)
+                .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+        }
+        .buttonStyle(PressableStyle()).padding(.horizontal, Theme.Sp.s24).padding(.top, Theme.Sp.s4)
+    }
+
+    private func legendDot(_ c: Color, _ label: String, dashed: Bool) -> some View {
+        HStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 1).fill(c).frame(width: 12, height: 2)
+            Text(label)
+        }
+    }
+
+    // MARK: 導出
+
+    /// 到達段階（判の文字, 通過系か）
+    private func reach() -> (String, Bool) {
+        guard let o else { return ("——", false) }
+        if o.champion { return ("優勝", true) }
+        if o.bankrupt { return ("夜逃げ", false) }
+        if o.reachedFinal { return ("決勝", true) }
+        let names = session.config.calendar.gpRoundNames
+        switch o.roundsPassed {
+        case 0: return ("予選敗退", false)
+        case let n where n - 1 < names.count: return (names[n - 1].replacingOccurrences(of: "GP", with: ""), true)
+        default: return ("\(o.roundsPassed)回戦", true)
+        }
+    }
+
+    private func reachSub() -> String {
+        guard let o else { return "" }
+        if o.champion { return "頂グランプリ制覇" }
+        if o.bankrupt { return "所持金が尽きてキャリア終了" }
+        if o.reachedFinal { return "決勝の舞台に立った" }
+        return "頂グランプリ 到達段階"
+    }
+}
+
+// MARK: 時間差表示（上から 0.15s 間隔）
+
+private extension View {
+    func stagger(_ index: Int, _ appear: Bool) -> some View {
+        self
+            .opacity(appear ? 1 : 0)
+            .offset(y: appear ? 0 : 10)
+            .animation(.easeOut(duration: Theme.Motion.std).delay(0.1 + Double(index) * 0.15), value: appear)
     }
 }

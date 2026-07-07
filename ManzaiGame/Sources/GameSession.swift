@@ -31,6 +31,10 @@ final class GameSession {
     private(set) var justPassedStage = false
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
+    /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
+    private(set) var categoryLog: [Int: BandCategory] = [:]
+    /// S6 年計用: その年の獲得賞金合計（UI層の記録のみ・golden非対象）
+    private(set) var totalPrize = 0
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
@@ -61,6 +65,7 @@ final class GameSession {
     func choose(_ action: WeekAction) {
         let before = state
         lastAction = action
+        categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         phase = runner.resolveAction(action)
         pump()
@@ -149,7 +154,9 @@ final class GameSession {
                     for r in big {
                         if r.passed { lossStreak = 0; justPassedStage = true }
                         else { lossStreak += 1; justPassedStage = false }
+                        totalPrize += r.prize   // S6 賞金年計
                     }
+                    categoryLog[summary.week] = .taikai   // S6 行動内訳帯（大会週）
                     // 大会・GPの結果 → S3結果画面へ（自動送りしない）
                     pendingResult = WeekSummary(year: summary.year, week: summary.week,
                                                 results: big, state: summary.state)
