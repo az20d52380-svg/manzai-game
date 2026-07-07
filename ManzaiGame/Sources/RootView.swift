@@ -11,9 +11,11 @@ struct RootView: View {
     var body: some View {
         Group {
             #if DEBUG
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "notebook" {
-                NotebookView(session: session, onClose: {})   // S5目視スモーク（能力は.taskでgrown）
-            } else { mainFlow }
+            switch ProcessInfo.processInfo.environment["MZ_UI"] {
+            case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
+            case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
+            default: mainFlow
+            }
             #else
             mainFlow
             #endif
@@ -33,6 +35,9 @@ struct RootView: View {
             // UIスモーク: MZ_UI=grown/notebook で能力マックス状態（充填ピル/gold縁/レーダー満ちの目視用）
             if (ui == "grown" || ui == "notebook"), session.week <= 1 {
                 session = GameSession(startState: GameSession.debugMaxedState())
+            }
+            if ui == "calendar", session.week <= 1 {
+                session.debugAdvanceToFirstResult()   // 数週バイトで進める（過去週の色ドット＋大会週の目視）
             }
             #endif
         }

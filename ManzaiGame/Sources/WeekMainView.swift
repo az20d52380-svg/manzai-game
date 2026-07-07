@@ -30,6 +30,8 @@ struct WeekMainView: View {
     @State private var gaugeFlash = false
     /// S5ネタ帳（データ入口）を全画面表示。
     @State private var showNotebook = false
+    /// S4カレンダー（最下帯のカレンダーアイコン）を全画面表示。
+    @State private var showCalendar = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -50,6 +52,9 @@ struct WeekMainView: View {
         .background(Theme.bgGradient.ignoresSafeArea())
         .fullScreenCover(isPresented: $showNotebook) {
             NotebookView(session: session) { showNotebook = false }   // S5 ネタ帳
+        }
+        .fullScreenCover(isPresented: $showCalendar) {
+            CalendarView(session: session) { showCalendar = false }   // S4 年間カレンダー
         }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
@@ -394,6 +399,9 @@ struct WeekMainView: View {
                     Text(m.weeksLeft <= 0 ? "今週！" : "大会まで\(m.weeksLeft)週").font(.maru(12)).foregroundStyle(Theme.gold)
                 }
             }
+            Button { showCalendar = true } label: {   // S4 カレンダーを開く
+                Image(systemName: "calendar").font(.system(size: 15)).foregroundStyle(.white.opacity(0.8))
+            }.buttonStyle(PressableStyle())
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 5) {
                 staminaGauge
