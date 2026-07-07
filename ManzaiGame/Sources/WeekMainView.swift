@@ -131,6 +131,11 @@ struct WeekMainView: View {
             if let a = ability { return session.lastGains.first(where: { $0.ability == a })?.amount }
             return session.lastCompatGain > 0.001 ? session.lastCompatGain : nil
         }()
+        // 演技系4種のみ「器の充填」＝成長予算(abilityCap)に対する薄い満ち（§3-3・数値は出さない）。
+        // メンタル・相性は器なし＝上限の系統が違うことを形で言う。上限到達で縁がgoldに変わる。
+        let isPerf = ability != nil && ability != .メンタル
+        let fill = isPerf ? min(1, max(0, value / session.config.abilityCap)) : 0
+        let capped = isPerf && value >= session.config.abilityCap
         return HStack(spacing: 5) {
             Circle().fill(color).frame(width: 7, height: 7)
             Text(name).font(.maru(9.5)).foregroundStyle(.white.opacity(0.92))
@@ -141,8 +146,20 @@ struct WeekMainView: View {
             }
         }
         .padding(.leading, 6).padding(.trailing, 8).padding(.vertical, 3)
-        .background(Theme.pillDark, in: Capsule())
-        .overlay(Capsule().stroke(color.opacity(0.55), lineWidth: 1))
+        .background {
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.pillDark)
+                if isPerf {
+                    GeometryReader { geo in
+                        Rectangle().fill(color.opacity(0.32))
+                            .frame(width: geo.size.width * fill)
+                            .animation(.easeOut(duration: 0.4), value: fill)
+                    }
+                }
+            }
+            .clipShape(Capsule())
+        }
+        .overlay(Capsule().stroke(capped ? Theme.gold : color.opacity(0.55), lineWidth: capped ? 1.5 : 1))
         .animation(.easeOut(duration: 0.2), value: gainsVisible)
     }
 

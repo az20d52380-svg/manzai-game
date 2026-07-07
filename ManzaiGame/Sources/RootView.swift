@@ -24,6 +24,10 @@ struct RootView: View {
                     else if smoke == "4" { forceChampion() }
                     else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
                 }
+                // UIスモーク: MZ_UI=grown で能力マックス状態のまま週メインに留まる（充填ピル/gold縁の目視用）
+                if ProcessInfo.processInfo.environment["MZ_UI"] == "grown", session.week <= 1 {
+                    session = GameSession(startState: GameSession.debugMaxedState())
+                }
                 #endif
             }
     }
