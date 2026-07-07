@@ -142,7 +142,10 @@ struct WeekMainView: View {
             Text("\(Int(value.rounded()))").font(.maru(11)).monospacedDigit().foregroundStyle(.white)
             if let gain, gainsVisible, Int(gain.rounded()) >= 1 {
                 Text("+\(Int(gain.rounded()))").font(.maru(10)).foregroundStyle(Theme.gainOrange)
-                    .transition(.opacity)
+                    // +N規格（§3-3）: 出現0.2s=+8ptから浮き上がる／滞留（taskの1.2sから逆算0.6s）／退場0.4s=上昇フェード
+                    .transition(.asymmetric(
+                        insertion: .offset(y: 8).combined(with: .opacity),
+                        removal: .offset(y: -8).combined(with: .opacity)))
             }
         }
         .padding(.leading, 6).padding(.trailing, 8).padding(.vertical, 3)
@@ -160,7 +163,7 @@ struct WeekMainView: View {
             .clipShape(Capsule())
         }
         .overlay(Capsule().stroke(capped ? Theme.gold : color.opacity(0.55), lineWidth: capped ? 1.5 : 1))
-        .animation(.easeOut(duration: 0.2), value: gainsVisible)
+        .animation(.easeOut(duration: gainsVisible ? 0.2 : 0.4), value: gainsVisible)
     }
 
     private var backButton: some View {
