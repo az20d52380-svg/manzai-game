@@ -5,6 +5,7 @@
 // ReminiscencePlayer は §依頼6 の共用部品①（S6b年表・優勝エピローグでも使う）。KV/立ち絵は【仮】プレースホルダ。
 
 import SwiftUI
+import UserNotifications
 
 // MARK: 回想紙芝居プレイヤー（共用部品・静止画+字幕+クロスフェード0.18s）
 
@@ -210,10 +211,68 @@ struct NameEntryView: View {
 
 // MARK: フロー統合（title → reminiscence → nameEntry → onComplete(name)）
 
+// MARK: S1c 通知許諾プリプロンプト（白面カード・イラスト無し・「消えます」/残り時間は出さない）
+
+struct NotificationPromptView: View {
+    var onDecide: () -> Void
+    @AppStorage("notif_asked") private var asked = false
+    @AppStorage("notif_snooze_until") private var snoozeUntil: Double = 0
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            VStack(spacing: Theme.Sp.s24) {
+                Spacer()
+                VStack(spacing: Theme.Sp.s16) {
+                    Text("大会の開演前に、\nお知らせします。")
+                        .font(.maru(17)).lineSpacing(6).multilineTextAlignment(.center).foregroundStyle(Theme.ink)
+                    Text("また続きをやりに来られるように。")
+                        .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
+                }
+                .padding(Theme.Sp.s24).frame(maxWidth: .infinity)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()
+                .padding(.horizontal, Theme.Sp.s24)
+
+                VStack(spacing: Theme.Sp.s12) {
+                    Button(action: allow) {
+                        Text("知らせてもらう").font(.maru(16)).foregroundStyle(.white)
+                            .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s16)
+                            .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                    }.buttonStyle(PressableStyle())
+                    Button(action: later) {
+                        Text("あとで").font(.maru(14)).foregroundStyle(Theme.inkDim)
+                    }.buttonStyle(PressableStyle())
+                }
+                .padding(.horizontal, Theme.Sp.s32)
+                Spacer()
+            }
+        }
+    }
+
+    /// 再表示すべきか（未回答 かつ スヌーズ期限切れ）。IntroFlow から使う。
+    static func shouldShow() -> Bool {
+        let d = UserDefaults.standard
+        if d.bool(forKey: "notif_asked") { return false }
+        let until = d.double(forKey: "notif_snooze_until")
+        return until == 0 || Date().timeIntervalSince1970 >= until
+    }
+
+    private func allow() {
+        asked = true
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        onDecide()
+    }
+    private func later() {
+        snoozeUntil = Date().timeIntervalSince1970 + 7 * 24 * 3600   // 7日後に1回だけ再表示（裁定②）
+        onDecide()
+    }
+}
+
 struct IntroFlowView: View {
     var onComplete: (String) -> Void
     @State private var stage: Stage = .title
-    private enum Stage { case title, reminiscence, nameEntry }
+    @State private var name = "あなたのコンビ"
+    private enum Stage { case title, reminiscence, nameEntry, notif }
 
     private let cards = [
         ReminiscenceCard(caption: "高校の教室。窓際で、谷口が一人で喋っていた。\n誰も聞いていなかった。俺だけが、笑った。"),
@@ -231,7 +290,14 @@ struct IntroFlowView: View {
                 ReminiscencePlayer(cards: cards) { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } }
                     .transition(.opacity)
             case .nameEntry:
-                NameEntryView { onComplete($0) }
+                NameEntryView { n in
+                    name = n.isEmpty ? "あなたのコンビ" : n
+                    if NotificationPromptView.shouldShow() { withAnimation(.easeInOut(duration: 0.4)) { stage = .notif } }
+                    else { onComplete(name) }
+                }
+                .transition(.opacity)
+            case .notif:
+                NotificationPromptView { onComplete(name) }   // S1c 通知許諾
                     .transition(.opacity)
             }
         }

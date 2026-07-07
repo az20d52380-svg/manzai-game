@@ -15,6 +15,7 @@ struct RootView: View {
             case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
             case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
             case "settings": SettingsView(onClose: {})                     // S1b目視
+            case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             default: mainFlow
             }
             #else
