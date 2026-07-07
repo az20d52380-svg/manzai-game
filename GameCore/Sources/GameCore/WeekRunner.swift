@@ -314,4 +314,11 @@ public struct WeekRunner<R: RandomSource> {
         }
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
     }
+
+    /// 選択肢イベントの確定効果を runner の権威 state に適用する（proposals/0024 ピース1）。
+    /// RandomSource を一切呼ばない＝乱数消費順は1ビットも動かない＝3年 golden 不変。
+    /// golden 生成器（gen_golden.py / このrunner）はイベントを走らせないので期待値も不変。
+    public mutating func applyEventEffects(_ effects: [EventEffect]) {
+        for e in effects { state.applyEventEffect(e, config: config) }
+    }
 }
