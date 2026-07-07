@@ -146,3 +146,8 @@
 ## 2026-07-06（Fable・Skillセッション内の追加調査）
 
 - **0037 キャラの声の書き分け**：オーナー裁定「セリフはレア在庫でなくキャラの識別子」を受け、役割語（金水敏）/脚本術cover the names/口癖三類型（日常・決め台詞・切り札）/本作人物別識別子カタログをWeb＋正典から調査。反映先＝`.claude/skills/manzai-drama-voice/references/character-voices.md`（人物別ボイス仕様シート＋V表=名前隠しテスト）・voice-bible §8差し替え。
+
+## 2026-07-06（Sonnet切替後）— 心の声プールの相方名是正＋実機引き継ぎ文
+
+- **相方名の焼き込み是正**：別セッションの新裁定（`slots.md`「心の声プール＝innerVoice系はコード上相方非依存につき相方名の焼き込み禁止」）に照らしcalibrationブランチの`voice_corpus_v0.md`をGrep点検。`default`/`passedLines`/`preTournament`/`reaction:*`に「谷口」名指し違反9行（うち4行は自分がSonnet切替前に追加した分）を発見し「相方」へ置換（コミット`0be8a11`）。物・技法タグ・展開は無変更、表記統一のみ。会話/イベントスロットの谷口名は両建て前提のため対象外。
+- **実機への引き継ぎ文** `proposals/HANDOFF_voice-to-real-device.md`：CLIへの引き渡し用。`DialogueData.swift`/`JudgeData.swift`を実機確認した結果、**書いた声(voice_corpus 500行超)はまだ1行もSwiftに転記されていない**（現行は7/5時点の旧ウィット寄り内容）と判明。加えて重大な食い違いを発見：`YearResultView.monolog`の実装分岐は`champion/bankrupt/reachedFinal/else`の4分岐・各1本固定文（プールでない）だが、corpus`yearEnd.*`は`躍進年/停滞年/貧乏年/9年目未優勝`(proposals/0008設計)前提＝**単純な貼り替え不可**、`9年目`はMVP(`year=1`固定)では到達不可能と明記。配線を安い順(A-1心の声→A-2予選講評→A-3会話→A-4決勝コメント→A-5山場→A-6選択肢イベントは最後・0024ブリーフ参照)に整理し、Part B(実機での状態到達手順＋人間向け8項目チェックリスト)・Part C(フィードバックの書式・examples.md悪い例への追記ルート)を付記。正典所在の注意（mainは`a5badcc`止まりで停滞・最新はcalibrationブランチ`0be8a11`）も明記。
