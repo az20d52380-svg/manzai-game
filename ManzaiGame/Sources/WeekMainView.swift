@@ -28,6 +28,8 @@ struct WeekMainView: View {
     @State private var pulledID: String?
     /// 体力ゲージの閾値跨ぎ明滅（黄=1回/赤=2回）。
     @State private var gaugeFlash = false
+    /// S5ネタ帳（データ入口）を全画面表示。
+    @State private var showNotebook = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -46,6 +48,9 @@ struct WeekMainView: View {
             botbar
         }
         .background(Theme.bgGradient.ignoresSafeArea())
+        .fullScreenCover(isPresented: $showNotebook) {
+            NotebookView(session: session) { showNotebook = false }   // S5 ネタ帳
+        }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
@@ -231,6 +236,7 @@ struct WeekMainView: View {
     private func categoryTile(_ g: CommandGroup) -> some View {
         let isOffer = g.id == "offer"
         return Button {
+            if g.id == "data" { showNotebook = true; return }   // データ→S5ネタ帳（全画面）
             openCategory = g.id
         } label: {
             VStack(spacing: 5) {

@@ -10,19 +10,13 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if started {
-                content
-                    .overlay(alignment: .topTrailing) {
-                        #if DEBUG
-                        debugButton
-                        #endif
-                    }
-            } else {
-                IntroFlowView { name in                       // S1: KV→回想→名入力
-                    session = GameSession(combiName: name)
-                    withAnimation(.easeInOut(duration: 0.4)) { started = true }
-                }
-            }
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["MZ_UI"] == "notebook" {
+                NotebookView(session: session, onClose: {})   // S5目視スモーク（能力は.taskでgrown）
+            } else { mainFlow }
+            #else
+            mainFlow
+            #endif
         }
         .task {
             #if DEBUG
@@ -36,11 +30,27 @@ struct RootView: View {
                 else if smoke == "4" { forceChampion() }
                 else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
             }
-            // UIスモーク: MZ_UI=grown で能力マックス状態のまま週メインに留まる（充填ピル/gold縁の目視用）
-            if ui == "grown", session.week <= 1 {
+            // UIスモーク: MZ_UI=grown/notebook で能力マックス状態（充填ピル/gold縁/レーダー満ちの目視用）
+            if (ui == "grown" || ui == "notebook"), session.week <= 1 {
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
             #endif
+        }
+    }
+
+    @ViewBuilder private var mainFlow: some View {
+        if started {
+            content
+                .overlay(alignment: .topTrailing) {
+                    #if DEBUG
+                    debugButton
+                    #endif
+                }
+        } else {
+            IntroFlowView { name in                       // S1: KV→回想→名入力
+                session = GameSession(combiName: name)
+                withAnimation(.easeInOut(duration: 0.4)) { started = true }
+            }
         }
     }
 
