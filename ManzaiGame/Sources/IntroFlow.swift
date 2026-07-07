@@ -77,6 +77,7 @@ struct ReminiscencePlayer: View {
 struct S1TitleView: View {
     var onStart: () -> Void
     @State private var lit = false     // 照明輪→ロゴの順で灯る
+    @State private var showSettings = false
 
     var body: some View {
         ZStack {
@@ -106,6 +107,13 @@ struct S1TitleView: View {
                 .opacity(lit ? 1 : 0).animation(.easeOut(duration: 0.5).delay(0.9), value: lit)
             }
         }
+        .overlay(alignment: .topTrailing) {
+            Button { showSettings = true } label: {   // Quietの歯車 → S1b設定
+                Image(systemName: "gearshape.fill").font(.system(size: 18)).foregroundStyle(.white.opacity(0.6))
+            }
+            .buttonStyle(PressableStyle()).padding(.top, 54).padding(.trailing, 20)
+        }
+        .sheet(isPresented: $showSettings) { SettingsView { showSettings = false } }
         .onAppear { lit = true }
     }
 
