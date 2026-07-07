@@ -22,6 +22,12 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
+    @State private var shakeSeed: [String: CGFloat] = [:]
+    /// 「引き抜き」実行中のカードid（(B)版: フェード0.12s→実行。多重タップ防止を兼ねる）。
+    @State private var pulledID: String?
+    /// 体力ゲージの閾値跨ぎ明滅（黄=1回/赤=2回）。
+    @State private var gaugeFlash = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -40,8 +46,15 @@ struct WeekMainView: View {
             botbar
         }
         .background(Theme.bgGradient.ignoresSafeArea())
-        .overlay(alignment: .top) {
+        .overlay(alignment: .bottom) {
+            // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
+        }
+        .task {
+            #if DEBUG
+            // UIスモーク（MZ_SMOKE と同じ慣習）: MZ_UI=cards で稽古カテゴリを開いた状態で起動＝カード列の目視用
+            if ProcessInfo.processInfo.environment["MZ_UI"] == "cards" { openCategory = "keiko" }
+            #endif
         }
         .task(id: session.week) {
             // 新しい週に入ったら「+N」を一瞬見せる（ピルのオレンジ）
@@ -91,7 +104,7 @@ struct WeekMainView: View {
             .fill(LinearGradient(colors: [color.opacity(0.85), color], startPoint: .top, endPoint: .bottom))
             .frame(width: w, height: h)
             .overlay(alignment: .top) { Circle().fill(Color(hex: 0xFFE0C4)).frame(width: w * 0.55, height: w * 0.55).offset(y: 12) }
-            .shadow(color: .black.opacity(0.22), radius: 5, y: 5)
+            .shadow(color: Theme.ink.opacity(0.22), radius: 5, y: 5)   // 影はink系（純黒禁止・§1-0）
     }
 
     // MARK: 6軸ダークピル（センス/発想/表現/華/メンタル/相性・data-theme無関係の暗色固定）
@@ -163,7 +176,7 @@ struct WeekMainView: View {
         .background(Color.white.opacity(0.92), in: UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 4, bottomTrailingRadius: 12, topTrailingRadius: 12))
         .overlay(alignment: .leading) { Rectangle().fill(Theme.inkDim).frame(width: 3) }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 4, bottomTrailingRadius: 12, topTrailingRadius: 12))
-        .shadow(color: .black.opacity(0.12), radius: 5, y: 4)
+        .shadow(color: Theme.ink.opacity(0.12), radius: 5, y: 4)   // 影はink系（純黒禁止・§1-0）
         .id(a.text)
         .transition(.opacity)
     }
@@ -185,7 +198,7 @@ struct WeekMainView: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 8)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
-        .animation(.easeOut(duration: 0.2), value: openCategory)
+        .animation(Theme.Motion.appearQuick, value: openCategory)   // カテゴリ⇄変種は同位置0.18s（(B)版）
     }
 
     private var categoryRow: some View {
@@ -232,15 +245,30 @@ struct WeekMainView: View {
 
     private func variantCard(_ v: CommandVariant) -> some View {
         let gated = v.isTrain && s.stamina < session.config.staminaGate
+        let blocked = gated || !v.affordable
         return Button {
-            if gated { showToast("体力が足りない。今日は休もう。"); return }
-            if !v.affordable { showToast("お金が足りない。"); return }
-            openCategory = nil          // カードを畳んで次週はカテゴリ列から
-            session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
+            guard pulledID == nil else { return }   // 引き抜き中の多重タップは無視
+            if blocked {
+                // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
+                withAnimation(.linear(duration: 0.15)) { shakeSeed[v.id, default: 0] += 1 }
+                showToast(gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
+                return
+            }
+            // 「引き抜き」(B)版: フェード0.12s→実行（押下0.08+引き抜き0.12で次入力≤0.35s予算内）
+            withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }
+            Task {
+                try? await Task.sleep(nanoseconds: 120_000_000)
+                Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
+                openCategory = nil          // カードを畳んで次週はカテゴリ列から
+                session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
+                pulledID = nil
+            }
         } label: {
             cardLabel(v, gated: gated)
+                .opacity(pulledID == v.id ? 0 : 1)
         }
-        .buttonStyle(PressableStyle())
+        .buttonStyle(PressableStyle(enabled: !blocked))
+        .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
     }
 
     private func cardLabel(_ v: CommandVariant, gated: Bool) -> some View {
@@ -264,16 +292,17 @@ struct WeekMainView: View {
                 Text("伸びわずか").font(.system(size: 10, weight: .bold)).foregroundStyle(Theme.inkFaint)
             }
             Spacer(minLength: 0)
-            // コスト行（所持金/体力の増減）
+            // コスト行（所持金/体力の増減）。不足している項目だけ staminaCrit で塗る（§3-2: 何が足りないか一目で）
             HStack(spacing: 5) {
-                if moneyDelta != 0 { costPill(money: moneyDelta) }
-                if stamDelta != 0 { staminaPill(stamDelta) }
+                if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
+                if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
             }
         }
         .padding(10)
         .frame(width: 134, height: 104, alignment: .topLeading)
-        .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(gated ? Theme.line : Theme.verm.opacity(0.5), lineWidth: 2))
+        .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : Theme.verm.opacity(0.5), lineWidth: 2))
+        .e2()
         .opacity(gated ? 0.6 : 1)
     }
 
@@ -288,22 +317,24 @@ struct WeekMainView: View {
         }
     }
 
-    private func costPill(money: Int) -> some View {
+    private func costPill(money: Int, insufficient: Bool = false) -> some View {
         let up = money > 0
         let man = Double(abs(money)) / 10000
         let txt = (man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man))
         return Text("\(up ? "+" : "-")¥\(txt)万")
-            .font(.system(size: 9.5, weight: .bold)).foregroundStyle(up ? Theme.cMoney : Theme.verm)
+            .font(.system(size: 9.5, weight: .bold))
+            .foregroundStyle(insufficient ? .white : (up ? Theme.cMoney : Theme.verm))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background((up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Capsule())
+            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Capsule())
     }
 
-    private func staminaPill(_ delta: Int) -> some View {
+    private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
         let up = delta > 0
         return Text("体力 \(up ? "+" : "")\(delta)")
-            .font(.system(size: 9.5, weight: .bold)).foregroundStyle(up ? Theme.cMental : Theme.inkDim)
+            .font(.system(size: 9.5, weight: .bold))
+            .foregroundStyle(insufficient ? .white : (up ? Theme.cMental : Theme.inkDim))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background((up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
+            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
     }
 
     private func comingSoonPanel(_ g: CommandGroup) -> some View {
@@ -354,6 +385,13 @@ struct WeekMainView: View {
         return Theme.cMental                                // 好調（緑）
     }
 
+    /// 体力の3段ゾーン（2=緑/1=黄/0=赤）。閾値は黄50未満・赤20未満（第1便§0裁定①）。
+    private var staminaZone: Int {
+        if s.stamina < 20 { return 0 }
+        if s.stamina < 50 { return 1 }
+        return 2
+    }
+
     private var staminaGauge: some View {
         HStack(spacing: 5) {
             Text("体力").font(.maru(9)).foregroundStyle(.white.opacity(0.7))
@@ -362,8 +400,21 @@ struct WeekMainView: View {
                 Capsule().fill(staminaColor)
                     .frame(width: 78 * CGFloat(max(0, min(100, s.stamina)) / 100))
                     .animation(.easeOut(duration: 0.4), value: s.stamina)
+                    .animation(.easeInOut(duration: 0.15), value: staminaZone)  // 閾値跨ぎの色クロスフェード（§3-4）
             }
             .frame(width: 78, height: 8)
+            .opacity(gaugeFlash ? 0.25 : 1)
+            .onChange(of: staminaZone) { old, new in
+                guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
+                Task {
+                    for _ in 0..<(new == 0 ? 2 : 1) {
+                        withAnimation(.easeIn(duration: 0.15)) { gaugeFlash = true }
+                        try? await Task.sleep(nanoseconds: 150_000_000)
+                        withAnimation(.easeOut(duration: 0.15)) { gaugeFlash = false }
+                        try? await Task.sleep(nanoseconds: 150_000_000)
+                    }
+                }
+            }
             Text("\(Int(s.stamina.rounded()))").font(.maru(10)).monospacedDigit()
                 .foregroundStyle(.white.opacity(0.9)).frame(width: 24, alignment: .trailing)
         }
@@ -376,8 +427,9 @@ struct WeekMainView: View {
             Text(toast).font(.maru(12)).foregroundStyle(.white)
                 .padding(.horizontal, 16).padding(.vertical, 9)
                 .background(Theme.pillDark, in: Capsule())
-                .padding(.top, 60)
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .e1()
+                .padding(.bottom, 78)   // 最下帯の上+16pt（§3-5）
+                .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
 
