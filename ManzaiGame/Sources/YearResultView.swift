@@ -10,6 +10,7 @@ import GameCore
 struct YearResultView: View {
     let session: GameSession
     var onRestart: () -> Void
+    var onEnding: (() -> Void)? = nil   // 優勝時のみ: 勇退エンディング(S6b)へ
 
     private var s: GameState { session.state }
     private var o: YearOutcome? { session.outcome }
@@ -164,8 +165,8 @@ struct YearResultView: View {
     }
 
     private var restartButton: some View {
-        Button(action: onRestart) {
-            Text("もう一度").font(.maru(16)).foregroundStyle(.white)
+        Button(action: onEnding ?? onRestart) {
+            Text(onEnding != nil ? "勇退エンディングへ ▶" : "もう一度").font(.maru(16)).foregroundStyle(.white)
                 .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s12)
                 .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
         }

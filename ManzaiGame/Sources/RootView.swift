@@ -7,6 +7,7 @@ import GameCore
 struct RootView: View {
     @State private var session = GameSession()
     @State private var started = false   // S1初回フロー完了で true（本編開始）
+    @State private var showEnding = false // 優勝→S6b勇退エンディング
 
     var body: some View {
         Group {
@@ -16,6 +17,7 @@ struct RootView: View {
             case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
             case "settings": SettingsView(onClose: {})                     // S1b目視
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
+            case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             default: mainFlow
             }
             #else
@@ -41,6 +43,9 @@ struct RootView: View {
             if ui == "calendar", session.week <= 1 {
                 session.debugAdvanceToFirstResult()   // 数週バイトで進める（過去週の色ドット＋大会週の目視）
             }
+            if ui == "ending", session.week <= 1 {
+                forceChampion()   // S6b目視: 優勝データ（outcome.champion＋高残金）を用意
+            }
             #endif
         }
     }
@@ -65,8 +70,14 @@ struct RootView: View {
         if session.winFinale {
             WinFinaleView(session: session)                          // 勝ち版 決勝演出
         } else if session.finished {
-            YearResultView(session: session) {
-                session = GameSession(seed: UInt64.random(in: .min ... .max))
+            if showEnding {
+                S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
+                    session = GameSession(seed: UInt64.random(in: .min ... .max)); showEnding = false
+                }
+            } else {
+                YearResultView(session: session,
+                               onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max)) },
+                               onEnding: session.outcome?.champion == true ? { showEnding = true } : nil)
             }
         } else if let result = session.pendingResult {
             TournamentResultView(session: session, summary: result)   // S2波形→S3講評
