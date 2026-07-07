@@ -135,3 +135,10 @@
 - calibration branch `claude/manzai-voice-calibration-2i9etz` の `docs/voice_corpus_v0.md` に **§8 量産在庫（バッチ1-3・80行・11スロット）** を追記して統合（別worktreeで作業→pull相当のrebase→push `8b6fc7e..e7f8946`）。§1-7のgold seedは温存＝seed(few-shot基準)とbulk(在庫)を分離。
 - 統合スロット：final.B/final.D全審査員・default平常・preTournament・reaction6種・予選講評フック・山場E軸(finals.loss/win・yearEnd)・週次相方会話(相性帯)・弱点写像辞書。全行§10採点＋検品済・ボケゼロ・golden非干渉。
 - 当branch(foundation)の `proposals/voice_corpus_casting_batch1-3.md` は検品ノート付きの作業記録として残置（正本は§8＝以後はcalibration branch側が権威）。**当branchはこの取り込みでのみcalibration branchに触れた（オーナー明示承認）。**
+
+### 金型更新後の再監査(Task0)＋選択肢イベント会話の鋳込み(Task5)→ calibration branch §8更新(39ec299)
+- 新引き継ぎ＝金型更新（優勝独白「十年割り勘」没・§3-1「報告と帰還」・#14「初見一読」・三段天丼「予約」）がmain(a5badcc)反映済。更新後14項でTask0(§8再監査)＋Task5(選択肢イベント会話→corpus行)をultracode実行(レート制限で中断→自動再開で完走)。
+- **Task0再監査で3行没**：default「木曜で三週ぶん固定」(予約モチーフ乱用)／final.D花園row2(final.Bと警句締め同型)／**finals.win予約行(三段天丼3段目=最後の一本と衝突)**。週次11行・弱点辞書8行は14/14存続。＝金型更新が実際に効いた（前は通った行が新ルールで落ちる）。
+- **Task5**：選択肢イベント0011-0023の会話を event:NNNN.setup/.A/.B/.C のcorpus行に鋳込み(12本)。旧提案(金型更新前)の会話を更新後14項で是正：#14圧縮過多・ボケ/オチ本文化(0021の略字「落」等)・擬人化(0022白い四角「言うてる」)・俺の警句締め・予約モチーフ流入 を撤去。
+- calibration branch §8を再監査版＋イベント会話で置換しpush(6075235..39ec299)。当branchはこの更新でのみcalibrationに触れた。
+- **未了/オーナー確認待ち**：Task6(大会前後会話の書き直し=採用前にオーナーに見せる指定)は未着手。最終OKは実機目視。
