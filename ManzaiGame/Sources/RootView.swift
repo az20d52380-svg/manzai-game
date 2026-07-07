@@ -102,21 +102,30 @@ struct RootView: View {
     }
 
     #if DEBUG
-    /// DEBUG限定の導線: 能力マックスで開始し、決勝優勝まで自動で飛ぶ（優勝演出の確認用・本番導線は不変）
+    /// DEBUG限定の導線（本番導線は不変）。🏆=優勝まで自動／💪=能力マックスで第1週から手動プレイ（無双体験の実験用）。
     private var debugButton: some View {
-        Button {
-            forceChampion()
-        } label: {
-            Text("🏆DEBUG").font(.system(size: 11, weight: .heavy))
-                .foregroundStyle(.white).padding(.horizontal, 8).padding(.vertical, 5)
-                .background(.black.opacity(0.45), in: Capsule())
+        VStack(spacing: 6) {
+            Button { forceChampion() } label: { debugChip("🏆優勝") }
+            Button { forceMaxedPlay() } label: { debugChip("💪無双") }
         }
         .padding(.top, 120).padding(.trailing, 10)
+    }
+
+    private func debugChip(_ label: String) -> some View {
+        Text(label).font(.system(size: 11, weight: .heavy))
+            .foregroundStyle(.white).padding(.horizontal, 8).padding(.vertical, 5)
+            .background(.black.opacity(0.45), in: Capsule())
     }
 
     private func forceChampion() {
         session = GameSession(startState: GameSession.debugMaxedState())
         session.debugAdvanceToChampionFinale()
+    }
+
+    /// 能力マックスの新規ゲームを第1週から始める（自動プレイしない＝手で無双して遊ぶ）。
+    private func forceMaxedPlay() {
+        session = GameSession(startState: GameSession.debugMaxedState())
+        started = true
     }
     #endif
 }
