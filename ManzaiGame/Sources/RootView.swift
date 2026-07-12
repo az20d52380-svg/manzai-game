@@ -18,6 +18,7 @@ struct RootView: View {
             case "settings": SettingsView(onClose: {})                     // S1b目視
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
+            case "allocate": AllocationView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             default: mainFlow
             }
             #else
@@ -45,6 +46,10 @@ struct RootView: View {
             }
             if ui == "ending", session.week <= 1 {
                 forceChampion()   // S6b目視: 優勝データ（outcome.champion＋高残金）を用意
+            }
+            if ui == "allocate", session.week <= 1 {
+                // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
+                session = GameSession(startState: GameSession.debugAllocationState())
             }
             #endif
         }

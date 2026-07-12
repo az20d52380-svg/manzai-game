@@ -94,6 +94,14 @@ public struct GameConfig {
     /// 成長が完成する結成年数（王者の特権で解除される・sim_career.GROWTH_END_YEAR と同期）
     public var growthEndYear = 15
 
+    // --- 経験点割り振り【docs/exp_abilityup_impl_reply_v0.md・二区画中間。全て【仮】】 ---
+    /// 割り振り1段（+1タップ）で注ぐ経験点量。UIの逐次見積もり・確定・sim/goldenボットが
+    /// 全てこの刻みで pourStep を回す（単位を跨いだ一括評価を許さない＝貯め込みの1点評価上振れを構造で断つ）
+    public var allocationStep = 1.0
+    /// 稽古発行のうち共通枠（ネタ/舞台）へ入る割合ρ。0で同色1:1に完全縮退（ロールバック先）。
+    /// 発行側の配線はMac側の会計移設（balance_sim.py と同期）——注ぐ側とUIはこの値を読まない
+    public var expFreeShare = 0.25
+
     // --- 生活ルール【正典v2・docs/rule_holes_v0.md】 ---
     /// 借金中は稽古が半分しか身にならない（nil で無効。balance_sim.DEBT_TRAIN_FACTOR と同期）
     public var debtTrainFactor: Double? = 0.5

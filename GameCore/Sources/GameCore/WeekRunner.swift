@@ -321,4 +321,12 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func applyEventEffects(_ effects: [EventEffect]) {
         for e in effects { state.applyEventEffect(e, config: config) }
     }
+
+    /// 経験点の割り振り（粒→能力）を runner の権威 state に適用する（applyEventEffects と同じ規律・
+    /// docs/exp_abilityup_impl_reply_v0.md）。RandomSource を一切呼ばない＝乱数消費順は1ビットも動かない。
+    /// 発行側（稽古→粒）が未配線の間は残高が常に0＝この関数は何もできない＝挙動・golden完全不変。
+    /// taps は AllocationView のタップ順（プレビューと同一列を同一順で再生＝表示と確定が食い違わない）。
+    public mutating func applyAllocation(_ taps: [Ability]) {
+        for a in taps { GameEngine.pourStep(a, to: &state, config: config) }
+    }
 }

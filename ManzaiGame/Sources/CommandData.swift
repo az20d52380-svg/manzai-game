@@ -97,6 +97,10 @@ enum CommandCatalog {
         groups.append(CommandGroup(id: "baito", title: "バイト", glyph: "yensign.circle.fill", kind: .act,
                                    dotColors: [Theme.cMoney], variants: baito))
 
+        // のばす（割り振り入口・週は進まない）: "data"と同型で WeekMainView 側が AllocationView を全画面表示する。
+        // 残粒バッジは state を読むため WeekMainView.categoryTile 側で重ねる（このカタログは state を持たない）。
+        groups.append(CommandGroup(id: "allocate", title: "のばす", glyph: "arrow.up.circle.fill", kind: .info,
+                                   dotColors: [Theme.cSense, Theme.cExpr, Theme.cMental], variants: []))
         // データ（器のみ・準備中）: 押しても session.choose を呼ばない＝週は進まない。
         groups.append(CommandGroup(id: "data", title: "データ", glyph: "chart.bar.fill", kind: .info,
                                    dotColors: [Theme.inkFaint], variants: []))

@@ -85,11 +85,14 @@ struct NotebookView: View {
         }
     }
 
-    // 成長の伸びしろ（器の空き＝成長予算の残り・数値なし）
+    // 成長の伸びしろ（器の空き＝成長予算の残り・数値なし）＋未割り振りの経験点残高
+    // （正典: docs/exp_abilityup_impl_reply_v0.md §B。塗りドット＝同色ロック粒／輪郭ドット＝共通粒、
+    //  AllocationView と同じ粒の文法。ここは読む場所＝注ぐ操作は「のばす」に置く）
     private var growthRoom: some View {
         let budget = s.growthBudget ?? 0
         let used = min(budget, s.growthUsed)
         let frac = budget > 0 ? used / budget : 0
+        let hasGrain = s.expTotal >= 1
         return VStack(alignment: .leading, spacing: 8) {
             Text("成長の器").font(.maru(11)).foregroundStyle(Theme.inkDim)
             HStack(spacing: Theme.Sp.s16) {
@@ -102,6 +105,33 @@ struct NotebookView: View {
                 Text(frac < 0.98 ? "まだ、伸びしろがある。" : "この年の器は、満ちた。")
                     .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.ink)
                 Spacer()
+            }
+            if hasGrain {
+                Divider().padding(.vertical, 2)
+                Text("のこりの粒").font(.maru(11)).foregroundStyle(Theme.inkDim)
+                HStack(spacing: Theme.Sp.s8) {
+                    ForEach(Ability.allCases, id: \.self) { a in
+                        if s[bank: a] >= 1 {
+                            HStack(spacing: 3) {
+                                Circle().fill(Theme.abilityColor(a)).frame(width: 7, height: 7)
+                                Text("\(Int(s[bank: a]))").font(.maru(11)).monospacedDigit()
+                                    .foregroundStyle(Theme.ink)
+                            }
+                        }
+                    }
+                    ForEach(ExpGroup.allCases, id: \.self) { g in
+                        if s[free: g] >= 1 {
+                            HStack(spacing: 3) {
+                                Circle().stroke(Theme.inkDim, lineWidth: 1.2).frame(width: 7, height: 7)
+                                Text("\(g.rawValue) \(Int(s[free: g]))").font(.maru(11)).monospacedDigit()
+                                    .foregroundStyle(Theme.ink)
+                            }
+                        }
+                    }
+                    Spacer()
+                }
+                Text("注いでいない粒がある。「のばす」から注ぐ。")
+                    .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
             }
         }
         .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e1()

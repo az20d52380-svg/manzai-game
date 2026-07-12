@@ -119,6 +119,39 @@ final class GameSession {
         }
     }
 
+    // MARK: 割り振り（経験点残高→能力。docs/exp_abilityup_impl_reply_v0.md）
+    //
+    // ⚠️ previewState/previewGains と同じ規律: RandomSource を一切触らない＝乱数を消費しない＝golden不変。
+    //    確定は runner.applyAllocation（applyEventEffects と同じ「権威stateへの適用」経路）——
+    //    session.state だけを書き換えると次の pump() で runner.state に上書きされて消えるため。
+
+    /// AllocationView のプレビュー: タップ列を今の state のコピーに再生した後の状態（純関数・乱数非消費）。
+    /// 確定（allocate）と同じ GameEngine.pourStep を同じ順で回す＝見積もりと結果が構造的に一致する
+    func previewAllocation(_ taps: [Ability]) -> GameState {
+        var copy = state
+        for a in taps { GameEngine.pourStep(a, to: &copy, config: config) }
+        return copy
+    }
+
+    /// 割り振りの確定（RNG非消費・golden不変）。taps は AllocationView のタップ順。
+    /// 戻り値=能力ごとの実効伸び（リビール確認・デバッグ用。表示は View 側が before/after から丸め差分で出す）
+    @discardableResult
+    func allocate(_ taps: [Ability]) -> [(ability: Ability, amount: Double)] {
+        let before = state
+        runner.applyAllocation(taps)
+        state = runner.state
+        return Ability.allCases.compactMap { a in
+            let d = state[a] - before[a]
+            return d > 0.001 ? (a, d) : nil
+        }
+    }
+
+    /// おすすめ注ぎ＝GameCore正典の単一台本（golden台本・simボットと同じ recommendedPlan）を返す。
+    /// View はこれを「仮置き」に展開するだけで、確定はプレイヤーの「注ぐ」タップ
+    func recommendedAllocation() -> [Ability] {
+        GameEngine.recommendedPlan(state: state, config: config)
+    }
+
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
     func advanceAuto() {
         phase = runner.resolveAuto()
@@ -209,6 +242,18 @@ final class GameSession {
         var s = GameState(config: config)
         s.センス = 115; s.発想 = 115; s.表現 = 115; s.華 = 115; s.メンタル = 115
         s.compat = 19
+        return s
+    }
+
+    /// DEBUG: 割り振り画面（MZ_UI=allocate）の目視用に経験点残高を積んだ開始状態。
+    /// 数値は全て【仮】＝目視の都合だけで置いた値（水準の確定はMac側のsim較正）。
+    /// 器（growthBudget）は WeekRunner が年初に year1 の値へ上書きするので、
+    /// 「注げる→器が満ちて弾かれる（横ブレ）」までひと続きで目視できる残高にしてある。
+    static func debugAllocationState(config: GameConfig = GameConfig()) -> GameState {
+        var s = GameState(config: config)
+        s.センス = 30; s.発想 = 24; s.表現 = 41; s.華 = 18; s.メンタル = 35
+        s.expセンス = 6; s.exp発想 = 3; s.exp表現 = 12; s.exp華 = 0; s.expメンタル = 9
+        s.expネタ = 8; s.exp舞台 = 5
         return s
     }
 

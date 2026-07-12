@@ -22,6 +22,21 @@ public struct GameState: Codable {
     /// 夜逃げ（破産）でキャリアが終了したか
     public var bankrupt = false
 
+    // --- 経験点残高（正典: docs/exp_abilityup_impl_reply_v0.md・割り振り時予算＋二区画中間） ---
+    // 会計の二層: 稼ぐ時は成長予算を消費せずここに貯まり、能力へ注ぐ瞬間だけ GameEngine.add()
+    // （①逓減→②割り振り時予算→③clamp・位置不変）を通る。注ぐ側は Allocation.swift（pourStep）。
+    // 発行側の配線（稽古→ここへの積み上げ・ρ分割）はMac側の会計移設（規律A第1段）＝それまで常に0で挙動不変。
+    /// 同色ロック粒: その色の能力にしか注げない（色変換ηは存在しない・0040追補で廃止確定）
+    public var expセンス = 0.0
+    public var exp発想 = 0.0
+    public var exp表現 = 0.0
+    public var exp華 = 0.0
+    public var expメンタル = 0.0
+    /// 共通枠粒: 枠内のどの能力にも注げる（ネタ=センス/発想・舞台=表現/華。ExpGroup 参照）。
+    /// メンタルへの共通経路は無い＝予算外の能力へ新しい供給路を作らない（安全条件）
+    public var expネタ = 0.0
+    public var exp舞台 = 0.0
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina

@@ -32,6 +32,8 @@ struct WeekMainView: View {
     @State private var showNotebook = false
     /// S4カレンダー（最下帯のカレンダーアイコン）を全画面表示。
     @State private var showCalendar = false
+    /// 割り振り（「のばす」タイル）を全画面表示。RNG非消費・週は進まない（正典: exp_abilityup_impl_reply）。
+    @State private var showAllocate = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -55,6 +57,9 @@ struct WeekMainView: View {
         }
         .fullScreenCover(isPresented: $showCalendar) {
             CalendarView(session: session) { showCalendar = false }   // S4 年間カレンダー
+        }
+        .fullScreenCover(isPresented: $showAllocate) {
+            AllocationView(session: session) { showAllocate = false }   // 割り振り（経験点→能力）
         }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
@@ -242,6 +247,7 @@ struct WeekMainView: View {
         let isOffer = g.id == "offer"
         return Button {
             if g.id == "data" { showNotebook = true; return }   // データ→S5ネタ帳（全画面）
+            if g.id == "allocate" { showAllocate = true; return }   // のばす→割り振り（全画面）
             openCategory = g.id
         } label: {
             VStack(spacing: 5) {
@@ -256,6 +262,16 @@ struct WeekMainView: View {
             .frame(maxWidth: .infinity).frame(height: 84)
             .background(isOffer ? Color(hex: 0xFFF3D6) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
             .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOffer ? Theme.gold : Theme.line, lineWidth: 2))
+            .overlay(alignment: .topTrailing) {
+                // 「のばす」タイルだけ: 未割り振りの残粒バッジ（gainOrange＝伸びの色。0なら出さない）
+                if g.id == "allocate", Int(s.expTotal + 1e-9) >= 1 {
+                    Text("\(Int(s.expTotal + 1e-9))")
+                        .font(.maru(10)).monospacedDigit().foregroundStyle(.white)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(Theme.gainOrange, in: Capsule())
+                        .offset(x: 5, y: -5)
+                }
+            }
         }
         .buttonStyle(PressableStyle())
     }
