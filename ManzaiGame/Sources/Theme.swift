@@ -152,16 +152,17 @@ extension Font {
     }
 }
 
-/// 押下共通の沈み（§3-1）: scale 0.97+明度−6%・押下tPress easeOut／復帰spring(0.25, 0.6)。
+/// 押下共通の沈み（§3-1）: scale 0.95+明度−10%・押下tPress easeOut／復帰spring(0.25, 0.6)。
+/// ⑮: 実機で「押した瞬間が弱い」の報告を受け 0.97/−6% → 0.95/−10% に強化【仮・実機で微調整可】。
 /// enabled=false は「沈まない」＝押せないことを触感で言う（グレー表示＋横ブレは呼び出し側）。
 struct PressableStyle: ButtonStyle {
-    var scale: CGFloat = 0.97
+    var scale: CGFloat = 0.95
     var enabled: Bool = true
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed && enabled
         configuration.label
             .scaleEffect(pressed ? scale : 1)
-            .brightness(pressed ? -0.06 : 0)
+            .brightness(pressed ? -0.10 : 0)
             .animation(pressed ? .easeOut(duration: Theme.Motion.press)
                                : .spring(response: 0.25, dampingFraction: 0.6),
                        value: pressed)
