@@ -14,6 +14,13 @@ struct TournamentResultView: View {
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
 
     private var result: StageResult { summary.results.last ?? summary.results.first! }
+    /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
+    private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
+    /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
+    private func stampLabel(passed: Bool) -> String {
+        if isMidTournament { return passed ? "入賞" : "敗退" }
+        return passed ? "通過" : "敗退"
+    }
 
     var body: some View {
         let r = result
@@ -22,10 +29,12 @@ struct TournamentResultView: View {
 
         ScrollView {
             VStack(spacing: 14) {
-                // ヘッダ
-                Text("頂 グランプリ").font(.maru(12)).foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 3)
-                    .background(Theme.verm, in: Capsule())
+                // ヘッダ（道中大会は「頂グランプリ」帯を出さない＝大会名 r.name が主題。GP系のみ帯を出す＝⑫）
+                if !isMidTournament {
+                    Text("頂 グランプリ").font(.maru(12)).foregroundStyle(.white)
+                        .padding(.horizontal, 14).padding(.vertical, 3)
+                        .background(Theme.verm, in: Capsule())
+                }
                 Text(r.name).font(.maru(22))
                 Text("第\(summary.week)週 ・ 本番").font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkDim)
 
@@ -83,7 +92,7 @@ struct TournamentResultView: View {
     /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=ink——色でなく重さの差（負けにも勝ちと同じ物量）。
     private func stamp(passed: Bool) -> some View {
         let c = passed ? Theme.verm : Theme.ink
-        return Text(passed ? "通過" : "敗退")
+        return Text(stampLabel(passed: passed))
             .font(.maru(30)).foregroundStyle(.white)
             .frame(width: 108, height: 108)
             .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 120),
@@ -107,7 +116,7 @@ struct TournamentResultView: View {
             HStack(alignment: .bottom) {
                 Text("審査員　\(judge)").font(.maru(12.5, weight: .bold)).foregroundStyle(Color(hex: 0xA98B52))
                 Spacer(minLength: 8)
-                Text(passed ? "通過" : "敗退").font(.maru(12)).foregroundStyle(.white)
+                Text(stampLabel(passed: passed)).font(.maru(12)).foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(passed ? Theme.verm : Theme.ink, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
                     .rotationEffect(.degrees(-4))
