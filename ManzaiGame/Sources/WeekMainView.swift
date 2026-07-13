@@ -373,6 +373,7 @@ struct WeekMainView: View {
             }
         } label: {
             cardLabel(v, gated: gated)
+                .scaleEffect(pulledID == v.id ? 1.06 : 1)   // ⑤: 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
         }
         .buttonStyle(PressableStyle(enabled: !blocked))
