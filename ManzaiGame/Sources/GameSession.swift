@@ -25,6 +25,9 @@ final class GameSession {
     private(set) var lastGains: [(ability: Ability, amount: Double)] = []
     /// 直前の行動で伸びた相性（v8ピルの「+N」用。相性は Ability enum 外なので別枠で保持）
     private(set) var lastCompatGain: Double = 0
+    /// 直前の行動で稼いだ粒（同色ロック粒の増分。§1-3 受け取りの一拍＝週メインの獲得チップ行用）。
+    /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。状態差分駆動で消費順・golden非対象。
+    private(set) var lastGrainGains: [(ability: Ability, amount: Double)] = []
     /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
     private(set) var lossStreak = 0
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
@@ -81,6 +84,11 @@ final class GameSession {
             return d > 0.001 ? (a, d) : nil
         }
         lastCompatGain = state.compat - before.compat
+        // 会計移設で稽古は能力を直接伸ばさず粒を稼ぐ＝この週に入った同色ロック粒の増分（§1-3 受け取りの一拍）。
+        lastGrainGains = Ability.allCases.compactMap { a in
+            let d = state[bank: a] - before[bank: a]
+            return d > 0.001 ? (a, d) : nil
+        }
     }
 
     // MARK: v8育成メイン用プレビュー（RNG非消費の純getter）
@@ -119,6 +127,18 @@ final class GameSession {
         let after = previewState(action, offer: offer)
         return Ability.allCases.compactMap { a in
             let d = after[a] - state[a]
+            return d > 0.001 ? (a, d) : nil
+        }
+    }
+
+    /// action で稼ぐ「粒」の差分（同色ロック粒の増分・乱数非消費・純関数）。稽古カードの「+N粒」プレビュー用。
+    /// previewState と同型で state のコピーに applyTraining を適用し state[bank: a] の before/after 差分を返す。
+    /// 会計移設で稽古は能力を直接伸ばさず粒を稼ぐ＝現行の previewGains（能力差分）は0になるため、稼ぎの手応えはこちらで出す。
+    /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。RNG非消費＝golden不変。
+    func previewGrainGains(_ action: WeekAction, offer: OfferSpec? = nil) -> [(ability: Ability, amount: Double)] {
+        let after = previewState(action, offer: offer)
+        return Ability.allCases.compactMap { a in
+            let d = after[bank: a] - state[bank: a]
             return d > 0.001 ? (a, d) : nil
         }
     }

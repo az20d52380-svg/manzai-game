@@ -34,6 +34,14 @@ struct WeekMainView: View {
     @State private var showCalendar = false
     /// 割り振り（「のばす」タイル）を全画面表示。RNG非消費・週は進まない（正典: exp_abilityup_impl_reply）。
     @State private var showAllocate = false
+    /// §1-3 受け取りの一拍: 今週稼いだ粒チップ行を「のばす」タイル直上に一瞬出す。表示中の粒（消えても値は残す）。
+    @State private var receiptGrains: [(name: String, color: Color, delta: Int)] = []
+    /// 受け取りチップ行の表示フラグ（下から浮き上がり→約1.3s後に消える・入力遮断なし・状態差分駆動）。
+    @State private var receiptVisible = false
+    /// 「のばす」タイルの一拍（バッジ繰り上がりに合わせて scale 1.0→1.05→1.0）。
+    @State private var badgeBeat = false
+    /// 満了成立後の週メイン初回トースト（この年1回だけ）用フラグ。
+    @State private var vesselFullToastShown = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -72,18 +80,40 @@ struct WeekMainView: View {
             #endif
         }
         .task(id: session.week) {
-            // 新しい週に入ったら「+N」を一瞬見せる（ピルのオレンジ）
+            // 新しい週に入ったら「+N」を一瞬見せる（ピルのオレンジ）。相性/オファー能力は今も直接効くのでこのまま。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
                 gainsVisible = true
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
                 gainsVisible = false
             }
         }
+        .task(id: session.week) {
+            // §1-3 受け取りの一拍: 今週稼いだ粒があれば、のばすタイル直上に粒チップ行を一瞬出す（状態差分駆動・入力遮断なし）。
+            // 大会/イベント画面が挟まっても週メインに戻った時に成立する（演出の振り付けに依存しない）。
+            let grains = intGrains(from: session.lastGrainGains)
+            guard !grains.isEmpty else { return }
+            receiptGrains = grains
+            withAnimation(Theme.Motion.appear) { receiptVisible = true }   // 下から浮き上がり出現（easeOut 0.25s）
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            withAnimation(Theme.Motion.emphSpring) { badgeBeat = true }     // +0.10s バッジ繰り上がり＋タイル一拍
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            withAnimation(Theme.Motion.appear) { badgeBeat = false }
+            try? await Task.sleep(nanoseconds: 1_050_000_000)              // 合計+1.30sで退場（〜1.7s・新規ハプティクスなし）
+            withAnimation(Theme.Motion.exit) { receiptVisible = false }
+        }
         .task(id: toast) {
             if toast != nil {
                 try? await Task.sleep(nanoseconds: 1_400_000_000)
                 toast = nil
             }
+        }
+        .onChange(of: vesselIsFull) { _, full in
+            // §4 満了成立時の週メイン初回だけトースト（この年1回・器カード/Notebook/トーストの三面が同じ一文）。
+            maybeShowVesselFullToast(full)
+        }
+        .onChange(of: showAllocate) { _, showing in
+            // 割り振り画面から戻った初回にも満了を拾う（満了は「注ぐ」瞬間＝AllocationView 内で成立するため）。
+            if !showing { maybeShowVesselFullToast(vesselIsFull) }
         }
     }
 
@@ -234,6 +264,35 @@ struct WeekMainView: View {
         .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 8)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
         .animation(Theme.Motion.appearQuick, value: openCategory)   // カテゴリ⇄変種は同位置0.18s（(B)版）
+        .overlay(alignment: .topTrailing) {
+            // §1-3 受け取りの一拍: 今週入った粒チップ行を「のばす」タイル（右寄り・topTrailingにバッジ）直上に一瞬出す。
+            // カテゴリ列表示中のみ（タイルが在る時）。次タップで即消え（タイルを開けば openCategory 変化で消える）。
+            if receiptVisible, openCategory == nil, !receiptGrains.isEmpty {
+                receiptRow
+                    .padding(.trailing, 12).offset(y: -6)
+                    .transition(.asymmetric(
+                        insertion: .offset(y: 8).combined(with: .opacity),   // 下から8pt浮き上がり
+                        removal: .offset(y: -8).combined(with: .opacity)))
+                    .allowsHitTesting(false)   // 入力遮断ゼロ（触れない・下のタイルに素通し）
+            }
+        }
+    }
+
+    /// 受け取りチップ行（今週稼いだ粒。card2地の浮き紙＝グレインチップと同じ塗りドット文法）。
+    private var receiptRow: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(receiptGrains.prefix(3).enumerated()), id: \.offset) { _, g in
+                HStack(spacing: 3) {
+                    Circle().fill(g.color).frame(width: 6, height: 6)
+                    Text("\(g.name) +\(g.delta)").font(.system(size: 9.5, weight: .bold)).foregroundStyle(Theme.ink)
+                }
+                .padding(.horizontal, 5).padding(.vertical, 2)
+                .background(Theme.card2, in: Capsule())
+            }
+        }
+        .padding(.horizontal, 8).padding(.vertical, 5)
+        .background(Theme.card, in: Capsule())
+        .e1()
     }
 
     private var categoryRow: some View {
@@ -263,12 +322,16 @@ struct WeekMainView: View {
             .background(isOffer ? Color(hex: 0xFFF3D6) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
             .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOffer ? Theme.gold : Theme.line, lineWidth: 2))
             .overlay(alignment: .topTrailing) {
-                // 「のばす」タイルだけ: 未割り振りの残粒バッジ（gainOrange＝伸びの色。0なら出さない）
-                if g.id == "allocate", Int(s.expTotal + 1e-9) >= 1 {
-                    Text("\(Int(s.expTotal + 1e-9))")
+                // 「のばす」タイルだけ: バッジ＝いま注げば伸びる段数（recommendedPlan.count・§2）。
+                // 見た目は現行の gainOrange カプセルのまま、意味だけ「粒総数」→「注げば伸びる段数」へ。
+                // 器満了・上限・逓減死では 0 になり自動消灯＝「開いたのに何もできない」空振りがゼロ。
+                if g.id == "allocate", pourableSteps >= 1 {
+                    Text("\(pourableSteps)")
                         .font(.maru(10)).monospacedDigit().foregroundStyle(.white)
+                        .contentTransition(.numericText())   // §1-3 数字が繰り上がる
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(Theme.gainOrange, in: Capsule())
+                        .scaleEffect(badgeBeat ? 1.05 : 1)   // §1-3 受け取りに合わせた一拍
                         .offset(x: 5, y: -5)
                 }
             }
@@ -320,7 +383,12 @@ struct WeekMainView: View {
 
     private func cardLabel(_ v: CommandVariant, gated: Bool) -> some View {
         let after = session.previewState(v.action, offer: offer)
-        let gains = (v.affordable && !gated) ? intGains(v.action) : []
+        // 会計移設: 稽古は能力でなく粒を稼ぐ＝稽古カードの伸び行は「+N粒」（同色塗りドット）。
+        // 稽古以外（バイト/休む/オファー）は従来どおり能力/相性の直接効果ピル。
+        let grains = (v.isTrain && v.affordable && !gated) ? intGrainGains(v.action) : []
+        let gains = (!v.isTrain && v.affordable && !gated) ? intGains(v.action) : []
+        // §4 満了: 器が満ちている間、稽古カードの伸び行位置は金縁の「満」判（稼ぎは無駄にならないが今年は注げない）。
+        let vesselFull = v.isTrain && vesselIsFull
         let moneyDelta = after.money - s.money
         let stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
         return VStack(alignment: .leading, spacing: 6) {
@@ -328,15 +396,20 @@ struct WeekMainView: View {
                 Image(systemName: v.glyph).font(.system(size: 15)).foregroundStyle(gated ? Theme.inkFaint : Theme.verm)
                 Text(v.name).font(.maru(12.5)).foregroundStyle(gated ? Theme.inkDim : Theme.ink).lineLimit(1)
             }
-            // 伸び or ゲート or ¥不足 or 伸びわずか
+            // 伸び or ゲート or ¥不足 or 満 or 粒わずか/伸びわずか
             if gated {
                 Text("谷口：今日は休め").font(.maru(10.5)).foregroundStyle(Theme.verm)
             } else if !v.affordable {
                 Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
+            } else if vesselFull {
+                fullStamp
+            } else if !grains.isEmpty {
+                grainPills(grains)
             } else if !gains.isEmpty {
                 gainPills(gains)
             } else if v.isTrain {
-                Text("伸びわずか").font(.system(size: 10, weight: .bold)).foregroundStyle(Theme.inkFaint)
+                // 全粒差分0の稀な稽古（副収穫の端数のみ等）は「粒わずか」（伸びわずかの型流用・§1-2）。
+                Text("粒わずか").font(.system(size: 10, weight: .bold)).foregroundStyle(Theme.inkFaint)
             }
             Spacer(minLength: 0)
             // コスト行（所持金/体力の増減）。不足している項目だけ staminaCrit で塗る（§3-2: 何が足りないか一目で）
@@ -362,6 +435,30 @@ struct WeekMainView: View {
                     .background(g.color, in: Capsule())
             }
         }
+    }
+
+    /// 稽古の「+N粒」チップ（塗りドット＝能力色＝行き先が決まっている粒／AllocationView・NotebookView と同じ粒の文法）。
+    /// ρ=0なので同色ロック粒のみ（共通粒は発行されない＝チップは全て塗りドット）。地=card2カプセル（貯まる粒＝即効の塗りピルと形で分ける・§1-2）。
+    private func grainPills(_ grains: [(name: String, color: Color, delta: Int)]) -> some View {
+        HStack(spacing: 4) {
+            ForEach(Array(grains.prefix(3).enumerated()), id: \.offset) { _, g in
+                HStack(spacing: 3) {
+                    Circle().fill(g.color).frame(width: 6, height: 6)
+                    Text("\(g.name) +\(g.delta)").font(.system(size: 9.5, weight: .bold)).foregroundStyle(Theme.ink)
+                }
+                .padding(.horizontal, 5).padding(.vertical, 2)
+                .background(Theme.card2, in: Capsule())
+            }
+        }
+    }
+
+    /// §4 満了の抑制表示: 器が満ちた後、稽古カードの粒チップ位置に金縁の「満」判（TournamentResultView の押印の語彙）。
+    private var fullStamp: some View {
+        Text("満")
+            .font(.system(size: 10.5, weight: .heavy)).foregroundStyle(Theme.goldD)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(Color(hex: 0xFFF3D6), in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(Theme.gold, lineWidth: 1.5))
     }
 
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
@@ -485,6 +582,13 @@ struct WeekMainView: View {
 
     private func showToast(_ t: String) { toast = t }
 
+    /// §4 満了トーストを「この年1回だけ」出す（onChange の二経路から呼ばれても多重発火しない）。
+    private func maybeShowVesselFullToast(_ full: Bool) {
+        guard full, !vesselFullToastShown else { return }
+        vesselFullToastShown = true
+        showToast("この年の器は、満ちた。")
+    }
+
     // MARK: 導出（プレビュー整数ゲイン・弱点能力・次のマイルストン）
 
     /// カード用の整数ゲイン。previewGains（RNG非消費・伸びる能力の判定）＋previewState の after から
@@ -499,6 +603,37 @@ struct WeekMainView: View {
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append((name: "相性", color: Theme.cCompat, delta: cd)) }
         return out
+    }
+
+    /// 稽古カードの「+N粒」用の整数粒ゲイン。previewGrainGains（RNG非消費・同色ロック粒の増分）を
+    /// intGains と同じ丸め差分規約（Int(after)−Int(before)＝ここは 0 が before なので Int(amount)）で >0 のみ返す。
+    /// 差分0の粒はチップを出さない（+0を印字しない・§1-1）。全粒0の稀な稽古は呼び出し側で「粒わずか」。
+    private func intGrainGains(_ action: WeekAction) -> [(name: String, color: Color, delta: Int)] {
+        intGrains(from: session.previewGrainGains(action, offer: offer))
+    }
+
+    /// 粒差分（[(ability, amount)]）→表示タプル。Int(amount.rounded()) で丸め・>0 のみ（+0を印字しない）。
+    /// カード予告（previewGrainGains）と受け取り（lastGrainGains）が同じ丸めを通る＝予告と着地が一致する。
+    private func intGrains(from grains: [(ability: Ability, amount: Double)]) -> [(name: String, color: Color, delta: Int)] {
+        var out: [(name: String, color: Color, delta: Int)] = []
+        for g in grains {
+            let d = Int(g.amount.rounded())
+            if d > 0 { out.append((name: "\(g.ability)", color: Theme.abilityColor(g.ability), delta: d)) }
+        }
+        return out
+    }
+
+    /// §2 「のばす」バッジ値＝いま注げば伸びる段数（recommendedPlan.count・RNG非消費・表示専用でgolden非干渉）。
+    /// AllocationView の＋ボタン押せる判定・§3誘導文と同じ recommendedPlan 由来＝構造的に食い違わない。
+    private var pourableSteps: Int {
+        session.recommendedAllocation().count
+    }
+
+    /// §4 器満了: 成長予算を使い切ったか（AllocationView の器バー満ちと同一判定＝三面で食い違わない）。
+    /// 満了成立は「注ぐ」瞬間だけなので growthUsed≥growthBudget で判定（budget未設定=無制限は満了なし）。
+    private var vesselIsFull: Bool {
+        guard let budget = s.growthBudget, budget > 0 else { return false }
+        return s.growthUsed >= budget - GameEngine.pourEpsilon
     }
 
     private func weakAbility() -> String {

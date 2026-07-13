@@ -93,6 +93,8 @@ struct NotebookView: View {
         let used = min(budget, s.growthUsed)
         let frac = budget > 0 ? used / budget : 0
         let hasGrain = s.expTotal >= 1
+        // §3 誘導文は「注げる段があること」も条件に足す（器満了中は「注ぐ」が嘘の導きになる＝バッジと同じ recommendedPlan 由来で食い違いを消す）。
+        let canPour = !session.recommendedAllocation().isEmpty
         return VStack(alignment: .leading, spacing: 8) {
             Text("成長の器").font(.maru(11)).foregroundStyle(Theme.inkDim)
             HStack(spacing: Theme.Sp.s16) {
@@ -130,8 +132,11 @@ struct NotebookView: View {
                     }
                     Spacer()
                 }
-                Text("注いでいない粒がある。「のばす」から注ぐ。")
-                    .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
+                // 満了中は器の一文（すぐ上）だけが立つ＝この誘導は「注げる段がある時」だけ（§3）。
+                if canPour {
+                    Text("注いでいない粒がある。「のばす」から注ぐ。")
+                        .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
+                }
             }
         }
         .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e1()
