@@ -93,8 +93,8 @@ struct TournamentEntryView: View {
             Spacer()
             VStack(spacing: 10) {
                 if spec.osaka {
-                    entryButton("🚌 夜行バスで出場", sub: "安い・体力を使う") { session.decideTournament(.夜行バス) }
-                    entryButton("🚄 新幹線で出場", sub: "高い・体力温存") { session.decideTournament(.新幹線) }
+                    entryButton("🚌 夜行バスで出場", sub: "¥\(session.config.calendar.busTravel.cost.formatted())・体力を使う") { session.decideTournament(.夜行バス) }
+                    entryButton("🚄 新幹線で出場", sub: "¥\(session.config.calendar.trainTravel.cost.formatted())・体力温存") { session.decideTournament(.新幹線) }
                 } else {
                     entryButton("出場する", sub: "東京開催") { session.decideTournament(.夜行バス) }
                 }
