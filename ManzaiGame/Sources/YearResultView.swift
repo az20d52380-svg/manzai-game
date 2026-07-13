@@ -2,7 +2,7 @@
 // S6 年次リザルト（正本: uiux_vision_reply_part2 §S6）。縦1カラムの紙面（年表の1ページ様式・e3）。
 // 上から: 年目バッジ → 到達段階の判 → レーダー重ね(4月線+現在面) → 48週行動内訳色帯 → 出来事3行(大会結果のみ) → 賞金/知名度年計。
 // トランジション: 紙面が下から0.4s・要素は上から0.15s間隔の時間差表示。判押印0.25s+hConfirm。レーダーモーフ0.8s・行動内訳帯左から0.6s。
-// MVPは1年完結なので二択(勇退/続投=S6b/S9)は未実装＝「もう一度」で新周回。才能の灯りは【仮・TODO】。
+// MVPは1年完結なので二択(勇退/続投=S6b/S9)は未実装＝「もう一度」で新周回。締めは年次独白(voice_corpus yearEnd.*)。
 
 import SwiftUI
 import GameCore
@@ -27,7 +27,7 @@ struct YearResultView: View {
                 breakdownBlock.stagger(3, appear)
                 eventsBlock.stagger(4, appear)
                 totalsBlock.stagger(5, appear)
-                unlockRow.stagger(6, appear)
+                yearEndMonolog.stagger(6, appear)
                 restartButton.stagger(7, appear)
             }
             .padding(.horizontal, Theme.Sp.s24).padding(.vertical, Theme.Sp.s32)
@@ -151,18 +151,60 @@ struct YearResultView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: 才能の灯り＋もう一度
+    // MARK: 年の締めの独白（voice_corpus yearEnd.* を復元）
 
-    private var unlockRow: some View {
-        HStack(spacing: 9) {
-            Text("✦").foregroundStyle(Theme.goldD)
-            Text("才能がひとつ灯った 〈来年の景色〉").font(.maru(12.5)).foregroundStyle(Theme.goldD)
+    /// 全ランが負けで着地する1年版デモの「年の締め」。書き上げた独白を最後の画面に載せる。
+    /// 旧「才能がひとつ灯った」は実体ゼロの常時表示だったため除去（監査 §1-4-①）。
+    private var yearEndMonolog: some View {
+        Group {
+            if let line = yearEndLine() {
+                VStack(alignment: .leading, spacing: Theme.Sp.s12) {
+                    Rectangle().fill(Theme.inkFaint.opacity(0.5)).frame(width: 40, height: 1)
+                    Text(line)
+                        .font(.system(size: 14.5, design: .serif))
+                        .foregroundStyle(Theme.ink)
+                        .lineSpacing(7)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, Theme.Sp.s16)
+                .padding(.top, Theme.Sp.s4)
+            }
         }
-        .frame(maxWidth: .infinity).padding(Theme.Sp.s12)
-        .background(LinearGradient(colors: [Theme.gold.opacity(0.22), Theme.gold.opacity(0.10)], startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: Theme.Rad.board))
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.board).stroke(Theme.gold.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
     }
+
+    /// 年の締めの独白を1行返す。到達結果で 躍進/停滞/貧乏 に決定的分岐（RNG非消費＝golden不変）。
+    /// オーナー決定 2026-07-06：else（決勝未到達・非破産）を fame/roundsPassed で二分。閾値は【仮】——sim到達分布で後日確定。
+    private func yearEndLine() -> String? {
+        guard let o else { return nil }
+        let pool: [String]
+        if o.bankrupt {
+            pool = Self.yeBankrupt                                               // 貧乏年
+        } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
+            pool = Self.yeLeap                                                    // 躍進年
+        } else {
+            pool = Self.yeStall                                                  // 停滞年
+        }
+        guard !pool.isEmpty else { return nil }
+        let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
+        return pool[((salt % pool.count) + pool.count) % pool.count]
+    }
+
+    // yearEnd.* 逐語（voice_corpus_v0 §4-3＋§8・calibration 0be8a11）。独白(俺)・標準語。相方固有名を含む行は除外。
+    private static let yeLeap = [   // 躍進年
+        "今年の手帳は、十二月まで字がある。去年までは、夏から白かった。",
+        "来年の予定は、もう春まで埋まっている。空けておく週を、こっちから頼んで作ってもらった。",
+        "今年から、楽屋で若手が道を空けてくれる。ぶつかりそうになって、こっちが先に謝った回もある。",
+    ]
+    private static let yeStall = [  // 停滞年
+        "合わせの録音で、電話の容量が今年も一杯になった。順位は、去年のままだ。",
+        "今年は、同じ準決勝の会場に三度立った。三度とも、決勝の会場を見ずに帰った。",
+        "順位が貼り出される紙の、俺たちの名前の上と下は、今年も同じ二組だった。",
+    ]
+    private static let yeBankrupt = [  // 貧乏年
+        "十二月の最後の週まで、二人とも、稽古場代の缶には入れ続けた。",
+        "宣材写真を、今年、撮り直した。金は、バイトを一週分足して作った。",
+        "エントリー用紙は、今年も一枚も出し惜しまなかった。振り込んだ参加費のうち、半分は捨てた金になった。",
+    ]
 
     private var restartButton: some View {
         Button(action: onEnding ?? onRestart) {
