@@ -464,7 +464,7 @@ struct WeekMainView: View {
         let man = Double(abs(money)) / 10000
         let txt = (man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man))
         return Text("\(up ? "+" : "-")¥\(txt)万")
-            .font(.system(size: 9.5, weight: .bold))
+            .font(.system(size: 12, weight: .heavy))
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMoney : Theme.verm))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Capsule())
@@ -473,7 +473,7 @@ struct WeekMainView: View {
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
         let up = delta > 0
         return Text("体力 \(up ? "+" : "")\(delta)")
-            .font(.system(size: 9.5, weight: .bold))
+            .font(.system(size: 12, weight: .heavy))
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMental : Theme.inkDim))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
@@ -539,15 +539,17 @@ struct WeekMainView: View {
 
     private var staminaGauge: some View {
         HStack(spacing: 5) {
-            Text("体力").font(.maru(9)).foregroundStyle(.white.opacity(0.7))
+            Text("体力").font(.maru(10)).foregroundStyle(.white.opacity(0.8))
             ZStack(alignment: .leading) {
                 Capsule().fill(.white.opacity(0.16))
-                Capsule().fill(staminaColor)
+                Capsule()
+                    .fill(LinearGradient(colors: [staminaColor.opacity(0.82), staminaColor], startPoint: .top, endPoint: .bottom))
                     .frame(width: 78 * CGFloat(max(0, min(100, s.stamina)) / 100))
+                    .shadow(color: staminaColor.opacity(0.6), radius: 3)
                     .animation(.easeOut(duration: 0.4), value: s.stamina)
                     .animation(.easeInOut(duration: 0.15), value: staminaZone)  // 閾値跨ぎの色クロスフェード（§3-4）
             }
-            .frame(width: 78, height: 8)
+            .frame(width: 78, height: 10)
             .opacity(gaugeFlash ? 0.25 : 1)
             .onChange(of: staminaZone) { old, new in
                 guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
@@ -560,8 +562,8 @@ struct WeekMainView: View {
                     }
                 }
             }
-            Text("\(Int(s.stamina.rounded()))").font(.maru(10)).monospacedDigit()
-                .foregroundStyle(.white.opacity(0.9)).frame(width: 24, alignment: .trailing)
+            Text("\(Int(s.stamina.rounded()))").font(.maru(13)).monospacedDigit()
+                .foregroundStyle(staminaColor).frame(width: 26, alignment: .trailing)
         }
     }
 
