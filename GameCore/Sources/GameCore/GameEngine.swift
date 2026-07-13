@@ -58,8 +58,24 @@ public enum GameEngine {
         5 + 15 * (1 - mental / 100)
     }
 
+    /// 会計移設（規律A第1段・docs/exp_abilityup_impl_reply_v0.md）: 稽古発行の能力への正の上昇 v を
+    /// 二区画クレジットへ置換（add 直結の代わり）。ロック側 += v×(1−ρ)／所属枠 += v×ρ。メンタルは枠なし＝100%ロック。
+    /// balance_sim.credit_training の鏡像。負・ゼロは経済外＝直add（実運用では稽古の main/sub は常に正）。
+    static func creditTraining(_ a: Ability, _ v: Double, to s: inout GameState, config: GameConfig) {
+        guard v > 0 else { add(.ability(a), v, to: &s, config: config); return }
+        let g0 = v * config.expSupplyScale   // 供給スケール（§4-2ゲート3・帯順序の復元ツマミ）
+        if let g = ExpGroup.of(a) {
+            s[bank: a] += g0 * (1 - config.expFreeShare)
+            s[free: g] += g0 * config.expFreeShare
+        } else {
+            s[bank: a] += g0   // メンタル: 100%ロック
+        }
+    }
+
     /// Python: do_training。有料稽古は所持金必須【仮】。払えなければ false（呼び出し側でフォールバック）。
-    /// 借金中は能力上昇に debtTrainFactor（正典v2・生活苦）
+    /// 借金中は能力上昇に debtTrainFactor（正典v2・生活苦）——倍率は粒の量に掛ける（能力でなく粒に）。
+    /// 会計移設: 能力の正加算は creditTraining（二区画クレジット）へ。cost/stamina/fame/相性は従来どおり add 直結。
+    /// 稼いだ粒は行動直後に WeekRunner.applyAllocation（recommendedPlan）で注ぐ（sim_career / gen_golden と同一順序）。
     @discardableResult
     public static func applyTraining(_ t: Training, to s: inout GameState, config: GameConfig) -> Bool {
         guard let spec = config.trainings[t] else { return false }
@@ -68,15 +84,25 @@ public enum GameEngine {
         }
         let factor: Double? = (s.money < 0) ? config.debtTrainFactor : nil
         s.money -= spec.cost
-        add(spec.main.0, factor.map { spec.main.1 * $0 } ?? spec.main.1, to: &s, config: config)
+        applyGrowth(spec.main.0, factor.map { spec.main.1 * $0 } ?? spec.main.1, to: &s, config: config)
         if let sub = spec.sub {
-            add(sub.0, factor.map { sub.1 * $0 } ?? sub.1, to: &s, config: config)
+            applyGrowth(sub.0, factor.map { sub.1 * $0 } ?? sub.1, to: &s, config: config)
         }
         add(.体力, spec.stamina, to: &s, config: config)
         if spec.fame != 0 {
             add(.知名度, spec.fame, to: &s, config: config)
         }
         return true
+    }
+
+    /// 稽古の main/sub 効果の適用先分岐: 能力＝二区画クレジット（経済へ）／相性など＝add 直結（経済外）。
+    /// balance_sim.do_training の _grow クロージャの鏡像。
+    private static func applyGrowth(_ key: StatKey, _ amt: Double, to s: inout GameState, config: GameConfig) {
+        if case .ability(let a) = key {
+            creditTraining(a, amt, to: &s, config: config)
+        } else {
+            add(key, amt, to: &s, config: config)
+        }
     }
 
     /// Python: do_job

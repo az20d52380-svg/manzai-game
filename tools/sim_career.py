@@ -497,6 +497,10 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
             elif act == "rest":
                 B.do_rest(s, arg)
 
+        # 会計移設: 行動直後に稼いだ粒を recommended_plan で全量注ぐ（即時が既定・銀行は中立バッファ）。
+        # 稽古以外の週は粒が無い＝空注ぎ（no-op）。人ボット・simボット・golden が同じ pour_all を使う。
+        B.pour_all(s)
+
         if EVENTS_ON:
             if week in SEASONAL:
                 _apply_event(s, SEASONAL[week])

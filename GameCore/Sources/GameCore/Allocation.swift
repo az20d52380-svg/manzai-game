@@ -160,4 +160,13 @@ extension GameEngine {
         }
         return plan
     }
+
+    /// 行動直後の即時全量注ぎ（golden台本）: recommendedPlan を作って本状態に適用する。
+    /// balance_sim.pour_all の鏡像。人ボット・simボット・golden・（UIのおすすめ）が全てこの1経路を通る
+    /// ＝3系統の台本分裂（golden毒源）を作らない。RandomSource 非消費。
+    public static func pourRecommended(to s: inout GameState, config: GameConfig) {
+        for a in recommendedPlan(state: s, config: config) {
+            pourStep(a, to: &s, config: config)
+        }
+    }
 }
