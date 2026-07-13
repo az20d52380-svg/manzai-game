@@ -339,16 +339,14 @@ struct WeekMainView: View {
         .buttonStyle(PressableStyle())
     }
 
+    /// パワプロ（参考画像）同様「スクロールせず全変種が見える・タップできる」ため、横スクロール1行をやめ
+    /// 3列グリッドへ折り返す。TV版パワプロほど横幅が無い縦画面のため、1行に詰め込んで小さくするより
+    /// 2段に畳んで可読性・タップしやすさを保つ（最大5変種=稽古で2段・3変種以下は1段）。
     private func variantRow(_ g: CommandGroup) -> some View {
-        VStack(spacing: 0) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 9) {
-                    ForEach(g.variants) { v in variantCard(v) }
-                }
-                .padding(.horizontal, 2).padding(.vertical, 2)
-            }
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 3), spacing: 9) {
+            ForEach(g.variants) { v in variantCard(v) }
         }
-        .frame(height: 118)
+        .padding(.horizontal, 2).padding(.vertical, 2)
     }
 
     // MARK: 変種カード（タップ＝即実行。ゲート/¥不足は toast で無効化）
@@ -419,7 +417,7 @@ struct WeekMainView: View {
             }
         }
         .padding(10)
-        .frame(width: 134, height: 104, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 104, alignment: .topLeading)
         .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : Theme.verm.opacity(0.5), lineWidth: 2))
         .e2()
