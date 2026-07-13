@@ -119,10 +119,13 @@ struct AllocationView: View {
     }
 
     /// 二区画の一行説明（枠のかたちが本体・これは補助線）
-    private var explainer: some View {
-        Text("色の粒は、その色の項へ。共通の粒は、同じ枠のどちらへも。")
-            .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    @ViewBuilder private var explainer: some View {
+        // ①整理: ρ(expFreeShare)=0 の間は共通枠が休眠＝プレイヤーが体験しない機構を一等地で説明しない（監査§2）。
+        if config.expFreeShare != 0 {
+            Text("色の粒は、その色の項へ。共通の粒は、同じ枠のどちらへも。")
+                .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     // MARK: つぎの本番（要求ラインへの照準・生数値）
@@ -155,18 +158,16 @@ struct AllocationView: View {
                     }
                 }
                 .frame(height: 14)
-                HStack(spacing: 6) {
-                    Text("じぶん \(Int(now.rounded()))").font(.maru(11)).monospacedDigit()
-                        .foregroundStyle(Theme.inkDim)
-                    if gain >= 1 {
+                // ②: 通過ライン数値（要求/じぶん）は出さない（ui_redesign v4/v8＝ネタバレ回避）。
+                // 朱の要求ライン（視覚・上のバー）は残す。仮置きの伸び「+N」だけ手応えとして残す（監査§3-1-3）。
+                if gain >= 1 {
+                    HStack(spacing: 6) {
                         Text("+\(gain)").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.gainOrange)
                             .transition(.asymmetric(
                                 insertion: .offset(y: 8).combined(with: .opacity),
                                 removal: .offset(y: -8).combined(with: .opacity)))
+                        Spacer()
                     }
-                    Spacer()
-                    Text("要求 \(Int(stage.line))").font(.maru(11)).monospacedDigit()
-                        .foregroundStyle(Theme.verm)
                 }
             }
             .padding(Theme.Sp.s16)
@@ -218,8 +219,10 @@ struct AllocationView: View {
         .e2()
     }
 
-    /// 共通粒チップ（輪郭ドット＝色がまだ決まっていない粒）。枠ヘッダに1つ＝枠内2行で共有
-    private func freeChip(_ g: ExpGroup, _ pv: GameState) -> some View {
+    /// 共通粒チップ（輪郭ドット＝色がまだ決まっていない粒）。枠ヘッダに1つ＝枠内2行で共有。
+    /// ①整理: ρ(expFreeShare)=0 の間は休眠＝常時「共通 0」を出さない（監査§2・機構は残置・表示条件1つ）。
+    @ViewBuilder private func freeChip(_ g: ExpGroup, _ pv: GameState) -> some View {
+        if config.expFreeShare != 0 {
         HStack(spacing: 4) {
             Circle().stroke(Theme.inkDim, lineWidth: 1.5).frame(width: 7, height: 7)
             Text("共通").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
@@ -229,6 +232,7 @@ struct AllocationView: View {
         .padding(.horizontal, 8).padding(.vertical, 3)
         .background(Theme.card, in: Capsule())
         .overlay(Capsule().stroke(Theme.line, lineWidth: 1.5))
+        }
     }
 
     /// 同色ロック粒チップ（塗りドット＝行き先が固定の粒）
