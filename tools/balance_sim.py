@@ -97,6 +97,16 @@ class S:
     chara: float = INIT_ABILITY
     mental: float = INIT_ABILITY
     compat: float = COMPAT_INIT
+    # --- 経験点残高（正典: docs/exp_abilityup_impl_reply_v0.md・二区画中間・GameState.exp* の鏡像） ---
+    # 稼ぐ時は成長予算を消費せずここに貯まり、能力へ注ぐ瞬間だけ add()（①逓減→②予算→③clamp）を通る。
+    # 同色ロック粒（色Cは能力Cにしか注げない）＋共通枠粒（ネタ=sense/idea・舞台=expr/chara。mentalは枠なし）
+    bank_sense: float = 0.0
+    bank_idea: float = 0.0
+    bank_expr: float = 0.0
+    bank_chara: float = 0.0
+    bank_mental: float = 0.0
+    free_neta: float = 0.0     # 共通枠: sense/idea へ注げる
+    free_butai: float = 0.0    # 共通枠: expr/chara へ注げる
     # 記録
     osaka_in: bool = False
     osaka_win: bool = False
@@ -132,6 +142,115 @@ def jitsuryoku(s):
     return s.sense * W_SENSE + s.idea * W_IDEA + s.expr * W_EXPR + s.chara * W_CHARA
 
 # ============================================================
+# 経験点の割り振り（注ぐ側）—— GameCore/Allocation.swift の厳密な鏡像（ルール5）
+# projected_gain / pour_step / recommended_plan の3関数は Swift と同値（同一式・同一順序）。
+# RandomSource を一切呼ばない＝乱数消費順は不変。数値は全て【仮】。
+# ============================================================
+
+ALLOCATION_STEP  = 1.0     # 割り振り1段で注ぐ経験点量（GameConfig.allocationStep と同期）
+EXP_FREE_SHARE   = 0.0     # 【仮】稽古発行のうち共通枠へ入る割合ρ（GameConfig.expFreeShare と同期）。§4-2ゲート4で0に縮退（追いつき注ぎが素朴帯を上振れ）
+EXP_SUPPLY_SCALE = 0.48    # 【仮】稽古発行の粒の供給スケール（GameConfig.expSupplyScale と同期・§4-2ゲート3）。[74/80]やり込み44.5/のんびり23.1/バランス9.1
+POUR_EPS         = 1e-9    # 浮動小数の塵で粒を空費しない下限（GameEngine.pourEpsilon と同期）
+
+# 能力→所属枠（メンタルは None）。枠→メンバー。ExpGroup.of / .members の鏡像
+GROUP_OF = {"sense": "neta", "idea": "neta", "expr": "butai", "chara": "butai", "mental": None}
+GROUP_MEMBERS = {"neta": ["sense", "idea"], "butai": ["expr", "chara"]}
+BANK_ATTR = {"sense": "bank_sense", "idea": "bank_idea", "expr": "bank_expr",
+             "chara": "bank_chara", "mental": "bank_mental"}
+FREE_ATTR = {"neta": "free_neta", "butai": "free_butai"}
+# add() の予算②で使う実力値換算重み（mental は 0＝予算を通らない）
+_W = {"sense": W_SENSE, "idea": W_IDEA, "expr": W_EXPR, "chara": W_CHARA, "mental": 0.0}
+
+def projected_gain(s, key, amount):
+    """add() の①逓減→②予算キャップ→③clamp と同一式で「見える伸び」を副作用なしで返す純関数。
+    GameEngine.projectedGain の鏡像。s._yg（=growthUsed）と YEAR_GROWTH_CAP（=growthBudget）を参照"""
+    if amount <= 0:
+        return 0.0
+    amt = amount
+    if GROWTH_DECAY_D:
+        basis = jitsuryoku(s) if (GROWTH_DECAY_TOTAL and key != "mental") else getattr(s, key)
+        amt = amount * max(0.0, 1 - basis / GROWTH_DECAY_D)
+    if YEAR_GROWTH_CAP is not None and amt > 0 and key != "mental":
+        w = _W[key]
+        remaining = YEAR_GROWTH_CAP - getattr(s, "_yg", 0.0)
+        amt = max(0.0, min(amt, remaining / w))
+    cap = MENTAL_CAP if key == "mental" else ABILITY_CAP
+    return clamp(getattr(s, key) + amt, 0, cap) - getattr(s, key)
+
+def pour_step(s, key):
+    """1段（ALLOCATION_STEP・端数はあるだけ）を key に注ぐ。GameEngine.pourStep の鏡像。
+    支払い=同色ロック→共通枠の固定順。見える伸びが無い段は粒を消費しない。戻り値=実効伸び"""
+    bank_attr = BANK_ATTR[key]
+    locked_pay = min(getattr(s, bank_attr), ALLOCATION_STEP)
+    group = GROUP_OF[key]
+    free_attr = FREE_ATTR[group] if group else None
+    free_pay = min(getattr(s, free_attr), ALLOCATION_STEP - locked_pay) if free_attr else 0.0
+    amount = locked_pay + free_pay
+    if amount <= POUR_EPS:
+        return 0.0
+    gain = projected_gain(s, key, amount)
+    if gain <= POUR_EPS:
+        return 0.0
+    setattr(s, bank_attr, getattr(s, bank_attr) - locked_pay)
+    if free_attr:
+        setattr(s, free_attr, getattr(s, free_attr) - free_pay)
+    add(s, key, amount)   # ①逓減→②予算（s._yg 更新）→③clamp
+    return gain
+
+ALL_ABILITIES = ["sense", "idea", "expr", "chara", "mental"]   # Ability.allCases と同順
+
+def recommended_plan(s):
+    """おすすめ注ぎ（決定論・golden台本の単一純関数）。GameEngine.recommendedPlan の鏡像。
+    (1) 同色ロックを allCases 順に注ぎ切る (2) 共通枠は各枠の「現在値が低い方」へ（追いつき既定）。
+    scratch のコピーで計画を作る（呼び出し側が本適用する＝表示と確定が食い違わない）"""
+    import copy
+    scratch = copy.copy(s)
+    plan = []
+    guard = 0
+    for a in ALL_ABILITIES:
+        while getattr(scratch, BANK_ATTR[a]) > POUR_EPS and guard < 10_000 and pour_step(scratch, a) > 0:
+            plan.append(a)
+            guard += 1
+    for g in ("neta", "butai"):
+        while getattr(scratch, FREE_ATTR[g]) > POUR_EPS and guard < 10_000:
+            ordered = sorted(GROUP_MEMBERS[g], key=lambda t: getattr(scratch, t))
+            poured = False
+            for t in ordered:
+                if pour_step(scratch, t) > 0:
+                    plan.append(t)
+                    poured = True
+                    guard += 1
+                    break
+            if not poured:
+                break
+    return plan
+
+def apply_allocation(s, taps):
+    """タップ列（recommended_plan の戻り値）を本状態に適用。WeekRunner.applyAllocation の鏡像"""
+    for a in taps:
+        pour_step(s, a)
+
+def pour_all(s):
+    """行動直後の即時全量注ぎ（golden台本）: recommended_plan を作って本適用する。
+    人ボット・simボット・golden の3系統が全てこの1経路を使う（台本分裂＝golden毒源を作らない）"""
+    apply_allocation(s, recommended_plan(s))
+
+def credit_training(s, key, v):
+    """稽古発行: 能力への正の上昇 v を二区画クレジットに置換（add 直結の代わり）。
+    ロック側 += v×(1−ρ)／所属枠 += v×ρ。メンタルは枠なし＝100%ロック。GameEngine.applyTraining の鏡像。
+    負の加算・cost/stamina/fame は経済外＝従来どおり add 直結（呼び出し側の責務）"""
+    if v <= 0:
+        add(s, key, v)   # 負・ゼロは経済外＝直add（実運用では稽古の main/sub は常に正）
+        return
+    g0 = v * EXP_SUPPLY_SCALE   # 供給スケール（§4-2ゲート3・帯順序の復元ツマミ）
+    group = GROUP_OF[key]
+    if group is None:
+        setattr(s, BANK_ATTR[key], getattr(s, BANK_ATTR[key]) + g0)   # メンタル: 100%ロック
+    else:
+        setattr(s, BANK_ATTR[key], getattr(s, BANK_ATTR[key]) + g0 * (1 - EXP_FREE_SHARE))
+        setattr(s, FREE_ATTR[group], getattr(s, FREE_ATTR[group]) + g0 * EXP_FREE_SHARE)
+
+# ============================================================
 # 行動
 # ============================================================
 
@@ -143,9 +262,17 @@ def do_training(s, name):
         return False
     fac = DEBT_TRAIN_FACTOR if (DEBT_TRAIN_FACTOR is not None and s.money < 0) else None
     s.money -= t["cost"]
-    k, v = t["main"]; add(s, k, v if fac is None else v * fac)
+    # 会計移設（規律A第1段）: 能力の正加算は二区画クレジットへ。借金倍率は粒の量に掛ける（能力でなく粒に）。
+    # compat（ネタ合わせ sub）は能力でない＝経済外＝add 直結のまま。cost/stamina/fame も従来どおり。
+    def _grow(k, v):
+        amt = v if fac is None else v * fac
+        if k in BANK_ATTR:      # 演技系4＋メンタル＝経済へ
+            credit_training(s, k, amt)
+        else:                   # compat など＝経済外
+            add(s, k, amt)
+    k, v = t["main"]; _grow(k, v)
     if t["sub"]:
-        k, v = t["sub"]; add(s, k, v if fac is None else v * fac)
+        k, v = t["sub"]; _grow(k, v)
     add(s, "stamina", t["stam"])
     if t["fame"]:
         add(s, "fame", t["fame"])
@@ -318,6 +445,8 @@ def run_one(pol, seed):
                 do_offer(s, offer)
             elif act == "rest":
                 do_rest(s, arg)
+
+        pour_all(s)   # 会計移設: 行動直後に粒を全量注ぐ（稽古以外の週は空注ぎ）
 
         if week % LIVING_INTERVAL == 0:
             s.money -= LIVING_COST

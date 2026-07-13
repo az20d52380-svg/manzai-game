@@ -138,6 +138,10 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 else:
                     B.do_rest(s, arg)
 
+        # 会計移設（golden台本・即時全量注ぎ）: 稽古で稼いだ粒を recommended_plan で注ぐ。
+        # sim_career.run_year / WeekRunner と同一順序（行動直後・週末生活費の前）。RNG非消費。
+        B.pour_all(s)
+
         if week % B.LIVING_INTERVAL == 0:
             s.money -= B.LIVING_COST
             if C.DEBT_LIFE_PEN is not None and s.money < 0:
