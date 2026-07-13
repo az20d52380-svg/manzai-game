@@ -45,11 +45,15 @@ final class GameSession {
 
     init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil,
          combiName: String = "あなたのコンビ") {
-        self.config = config
+        // 実ゲームは自動注ぎを切る＝稽古で稼いだ粒がプレイヤーの手元に貯まり、AllocationView で手動割り振り（パワプロ式）。
+        // golden/sim は既定 true（決定論的おすすめ台本）のまま＝この分離で golden 不変・実ゲームだけ手動化。
+        var cfg = config
+        cfg.autoPourAllocation = false
+        self.config = cfg
         self.combiName = combiName
-        let start = startState ?? GameState(config: config)
+        let start = startState ?? GameState(config: cfg)
         self.state = start
-        var r = WeekRunner(state: start, year: 1, config: config, rng: SplitMix64(seed: seed))
+        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed))
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
         self.phase = firstPhase

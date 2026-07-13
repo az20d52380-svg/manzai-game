@@ -308,9 +308,12 @@ public struct WeekRunner<R: RandomSource> {
 
         // 会計移設（golden台本・即時全量注ぎ）: 行動直後に稼いだ粒を recommendedPlan で全量注ぐ。
         // sim_career.run_year / gen_golden.run_year と同一順序（行動直後・週末生活費の前）。RNG非消費＝乱数消費順不変。
-        // 稽古以外の週は粒が無い＝空注ぎ（no-op）。UIの人手注ぎ（applyAllocation）はこの自動注ぎの上に重ならない
-        // （既に注ぎ切っているため残高0＝二重注入なし）。
-        GameEngine.pourRecommended(to: &state, config: config)
+        // 稽古以外の週は粒が無い＝空注ぎ（no-op）。
+        // ★ autoPourAllocation で分離: true（既定）= sim/golden/ボットの決定論的おすすめ台本＝golden期待値の前提。
+        //   実ゲーム（GameSession）は false ＝ここでは注がず粒を貯め、プレイヤーが AllocationView で手動割り振り（applyAllocation）。
+        if config.autoPourAllocation {
+            GameEngine.pourRecommended(to: &state, config: config)
+        }
 
         // 週末処理（生活費→生活苦→夜逃げ判定）→ 週の結果
         if GameEngine.applyWeekEnd(week: week, to: &state, config: config) {

@@ -109,6 +109,11 @@ public struct GameConfig {
     /// 「上手い＝分散」と「素朴」の帯順序・水準を復元する主ツマミ（§4-2ゲート3の供給再照準）。
     /// [74/80] 到達率 やり込み44.5/のんびり23.1/バランス9.1（目標41.5/23.1/8.4）。balance_sim.EXP_SUPPLY_SCALE と同期。
     public var expSupplyScale = 0.48
+    /// 行動直後に WeekRunner が recommendedPlan で粒を自動全量注ぎするか【正典分離】。
+    /// true（既定）= sim/golden/ボットの決定論的「おすすめ台本」＝ここが golden の期待値の前提（既定を変えると golden 再生成が要る）。
+    /// **実ゲーム（GameSession）は false に設定する** ＝ 粒がプレイヤーの手元に貯まり、AllocationView で手動割り振りする（パワプロ式の本体）。
+    /// この分離により golden/sim は不変のまま、実ゲームだけプレイヤーが割り振れる。UI/注ぐ側はこの値を読まない。
+    public var autoPourAllocation = true
 
     // --- 生活ルール【正典v2・docs/rule_holes_v0.md】 ---
     /// 借金中は稽古が半分しか身にならない（nil で無効。balance_sim.DEBT_TRAIN_FACTOR と同期）
