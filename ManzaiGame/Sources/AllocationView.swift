@@ -93,7 +93,7 @@ struct AllocationView: View {
             HStack {
                 Text("成長の器").font(.maru(11)).foregroundStyle(Theme.inkDim)
                 Spacer()
-                Text("粒 のこり \(grains(pv.expTotal))").font(.maru(11)).monospacedDigit()
+                Text("経験点 のこり \(grains(pv.expTotal))").font(.maru(11)).monospacedDigit()
                     .foregroundStyle(Theme.inkDim)
                     .contentTransition(.numericText())
             }
@@ -360,7 +360,7 @@ struct AllocationView: View {
     }
 
     private func blockReason(_ a: Ability, _ pv: GameState) -> String {
-        if pv.pourable(a) <= GameEngine.pourEpsilon { return "注げる粒がない。" }
+        if pv.pourable(a) <= GameEngine.pourEpsilon { return "注げる経験点がない。" }
         if a != .メンタル, let b = pv.growthBudget, b - pv.growthUsed <= GameEngine.pourEpsilon {
             return "この年の器は、満ちた。"
         }
@@ -392,13 +392,13 @@ struct AllocationView: View {
                 }
                 Spacer()
                 if !taps.isEmpty {
-                    Text("仮置き \(taps.count)粒").font(.maru(11)).monospacedDigit()
+                    Text("仮置き \(taps.count)").font(.maru(11)).monospacedDigit()
                         .foregroundStyle(Theme.inkDim)
                         .transition(.opacity)
                 }
             }
             Button { commit(pv) } label: {
-                Text(taps.isEmpty ? "注ぐ" : "注ぐ（\(taps.count)粒）")
+                Text(taps.isEmpty ? "注ぐ" : "注ぐ（\(taps.count)）")
                     .font(.maru(15)).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
                     .background(taps.isEmpty || committing ? Theme.inkFaint : Theme.verm,
@@ -418,7 +418,7 @@ struct AllocationView: View {
         let plan = session.recommendedAllocation()
         if plan.isEmpty {
             withAnimation(.linear(duration: 0.15)) { shakeSeed["suggest", default: 0] += 1 }
-            toast = "いま注げる粒がない。"
+            toast = "いま注げる経験点がない。"
         } else {
             withAnimation(Theme.Motion.appear) { taps = plan }
         }
@@ -430,7 +430,7 @@ struct AllocationView: View {
         guard !committing else { return }
         guard !taps.isEmpty else {
             withAnimation(.linear(duration: 0.15)) { shakeSeed["commit", default: 0] += 1 }
-            toast = "まだ、粒を選んでいない。"
+            toast = "まだ、経験点を選んでいない。"
             return
         }
         Haptics.confirm()   // 割り振り確定＝hConfirm（Haptics 3段）

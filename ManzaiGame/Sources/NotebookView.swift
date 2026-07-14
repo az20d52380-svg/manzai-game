@@ -110,7 +110,7 @@ struct NotebookView: View {
             }
             if hasGrain {
                 Divider().padding(.vertical, 2)
-                Text("のこりの粒").font(.maru(11)).foregroundStyle(Theme.inkDim)
+                Text("のこりの経験点").font(.maru(11)).foregroundStyle(Theme.inkDim)
                 HStack(spacing: Theme.Sp.s8) {
                     ForEach(Ability.allCases, id: \.self) { a in
                         if s[bank: a] >= 1 {
@@ -134,7 +134,7 @@ struct NotebookView: View {
                 }
                 // 満了中は器の一文（すぐ上）だけが立つ＝この誘導は「注げる段がある時」だけ（§3）。
                 if canPour {
-                    Text("注いでいない粒がある。「のばす」から注ぐ。")
+                    Text("注いでいない経験点がある。「のばす」から注ぐ。")
                         .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
                 }
             }

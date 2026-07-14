@@ -408,7 +408,7 @@ struct WeekMainView: View {
                 gainPills(gains)
             } else if v.isTrain {
                 // 全粒差分0の稀な稽古（副収穫の端数のみ等）は「粒わずか」（伸びわずかの型流用・§1-2）。
-                Text("粒わずか").font(.system(size: 10, weight: .bold)).foregroundStyle(Theme.inkFaint)
+                Text("わずか").font(.system(size: 10, weight: .bold)).foregroundStyle(Theme.inkFaint)
             }
             Spacer(minLength: 0)
             // コスト行（所持金/体力の増減）。不足している項目だけ staminaCrit で塗る（§3-2: 何が足りないか一目で）
