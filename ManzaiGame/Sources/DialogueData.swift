@@ -20,6 +20,9 @@ enum DialogueData {
     /// 優先度: 低体力 > 金欠 > 連敗 > 直近通過 > 大会前 > 平常
     static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
                            nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String) -> Advice {
+        if state.recoveryWeeks > 0 {   // 療養中は全てに優先（体の異常＝Fable13§2）
+            return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks))
+        }
         if state.stamina < 25 {
             return Advice(name: "俺", text: pick(lowStamina, salt: Int(state.stamina)))
         }
@@ -45,6 +48,9 @@ enum DialogueData {
     // 主人公「俺」は標準語（方言なし）。ツッコミ体質・心配性・計算屋の色は残す。
     // 本文は voice_corpus_v0（calibration 0be8a11）の◯行を逐語転記（§1 seed＋§8 底上げ・補充）。
     // 相方固有名は焼き込まない（innerVoice はコード上相方非依存）。数値・最終確定は実機目視。
+    private static let recovering = [   // 療養中（recoveryWeeks>0）・Fable13§2・Skill採点済。発生週専用の一発告知は別途
+        "今週も、声は出さない。ネタ帳の直しだけ、膝の上で進める。",
+    ]
     private static let lowStamina = [
         "稽古場の三階まで、今日は二回、踊り場で止まった。",
         "昨日の合わせ、三分目から声が薄くなった。",
