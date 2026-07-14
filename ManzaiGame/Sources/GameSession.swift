@@ -32,6 +32,8 @@ final class GameSession {
     private(set) var lossStreak = 0
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
     private(set) var justPassedStage = false
+    /// 直近の大会で敗退したか（負けた翌週の一言＝温度事故の停止。justPassedと対称・行動すると失効）
+    private(set) var justLostStage = false
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
     /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
@@ -77,6 +79,7 @@ final class GameSession {
         lastAction = action
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
+        justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         phase = runner.resolveAction(action)
         pump()
         lastGains = Ability.allCases.compactMap { a in
@@ -212,8 +215,8 @@ final class GameSession {
                 if !big.isEmpty {
                     // 連敗カウント＆直近通過（心の声用）: 通過でリセット・敗退で加算
                     for r in big {
-                        if r.passed { lossStreak = 0; justPassedStage = true }
-                        else { lossStreak += 1; justPassedStage = false }
+                        if r.passed { lossStreak = 0; justPassedStage = true; justLostStage = false }
+                        else { lossStreak += 1; justPassedStage = false; justLostStage = true }
                         totalPrize += r.prize   // S6 賞金年計
                     }
                     categoryLog[summary.week] = .taikai   // S6 行動内訳帯（大会週）

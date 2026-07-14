@@ -230,7 +230,7 @@ struct WeekMainView: View {
 
     private var monoBox: some View {
         let a = DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
-                                        justPassed: session.justPassedStage,
+                                        justPassed: session.justPassedStage, justLost: session.justLostStage,
                                         nextMilestone: nextMilestone(), weakAbility: weakAbility())
         return VStack(alignment: .leading, spacing: 2) {
             Text(a.name ?? "俺").font(.maru(9.5)).tracking(1).foregroundStyle(Theme.inkDim)

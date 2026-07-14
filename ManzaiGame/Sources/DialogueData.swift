@@ -18,13 +18,17 @@ enum DialogueData {
     /// 週頭（行動選択前）の一般セリフ。状態・状況・先週の結果だけに紐づける。
     /// 未選択の行動や、その週いない場所（楽屋等）の話はしない。
     /// 優先度: 低体力 > 金欠 > 連敗 > 直近通過 > 大会前 > 平常
-    static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool,
+    static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
                            nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String) -> Advice {
         if state.stamina < 25 {
             return Advice(name: "俺", text: pick(lowStamina, salt: Int(state.stamina)))
         }
         if state.money < 30_000 {
             return Advice(name: "俺", text: pick(lowMoney, salt: state.money))
+        }
+        // 負けた翌週の一言（温度事故の停止）＝連敗プールより先。lossStreakで単発/反復を分ける（0003・Fable13便）。
+        if justLost {
+            return Advice(name: "俺", text: pick(lossStreak >= 2 ? justLostRepeat : justLostSingle, salt: Int(state.fame) &+ lossStreak))
         }
         if lossStreak >= 2 {
             return Advice(name: "俺", text: pick(losing, salt: lossStreak))
@@ -64,6 +68,14 @@ enum DialogueData {
         "詰める場所は、今年も一つに絞れた。四分の後半、その一点だけだ。前も、そこだった。",
         "負けた回の録音を、続けて聞いた。声が細る場所が、どれも同じだった。",
         "先に名前を呼ばれた組を、何組か続けて客席から見た。ネタの出来より先に、板に出た一秒の掴みが違う。",
+    ]
+    private static let justLostSingle = [   // 負けた翌週（lossStreak==1）・谷に一滴を置かない（Fable13便・Skill採点済）
+        "洗濯物が、二日ぶんまとまっていた。先にそれを片づけてから、今週を始めた。",
+        "負けた週の次の週も、起きる時間は変えなかった。",
+    ]
+    private static let justLostRepeat = [   // 連敗中にまた負けた翌週（lossStreak≥2）
+        "また同じ段で終わった。今年の残りの大会を、指で数えた。",
+        "直すべき場所の見当は、先週と同じところについた。当たっているかどうかは、今週の通しで確かめる。",
     ]
     private static let passedLines = [   // 先週の大会を通過した余韻
         "名簿に残った。次の会場は、客席が少し多い。",
