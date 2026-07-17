@@ -12,8 +12,11 @@ struct TournamentResultView: View {
     @State private var revealed = false        // 判（押印）
     @State private var revealedReview = false  // 講評（判の0.4s後）
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
+    @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
 
     private var result: StageResult { summary.results.last ?? summary.results.first! }
+    /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
+    private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
     private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
@@ -59,7 +62,8 @@ struct TournamentResultView: View {
                             .foregroundStyle(Theme.cMental).transition(.opacity)
                     }
                     Button {
-                        session.acknowledgeResult()
+                        if climaxPages.isEmpty { session.acknowledgeResult() }
+                        else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
                     } label: {
                         Text("次へ ▶").font(.maru(15)).foregroundStyle(.white)
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
@@ -86,6 +90,9 @@ struct TournamentResultView: View {
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
             }
+        }
+        .overlay {
+            if let i = climaxIndex { climaxOverlay(i) }   // ⑪ 山場のタップ送り
         }
     }
 
@@ -147,5 +154,65 @@ struct TournamentResultView: View {
 
     private func starString(_ n: Int) -> String {
         String(repeating: "★", count: n) + String(repeating: "☆", count: max(0, 5 - n))
+    }
+
+    // MARK: ⑪ 山場（敗者復活で散る）のタップ送りオーバーレイ（Fable doc02）
+    private func climaxOverlay(_ i: Int) -> some View {
+        let page = climaxPages[min(i, climaxPages.count - 1)]
+        let isLast = i >= climaxPages.count - 1
+        return ZStack {
+            Color(hex: 0x14121C).opacity(0.98).ignoresSafeArea()   // 暖色の結果画面から静かな夜へ転調
+            VStack(alignment: .leading, spacing: 16) {
+                if let sp = page.speaker {
+                    Text(sp).font(.maru(12)).tracking(2).foregroundStyle(Theme.gold.opacity(0.85))
+                }
+                Text(page.text)
+                    .font(.system(size: 17, design: .serif)).lineSpacing(10)
+                    .foregroundStyle(.white.opacity(0.92))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentTransition(.opacity)
+                Text(isLast ? "タップして終える" : "タップ")
+                    .font(.maru(10)).foregroundStyle(.white.opacity(0.38))
+                    .frame(maxWidth: .infinity, alignment: .trailing).padding(.top, 6)
+            }
+            .padding(.horizontal, 34).frame(maxWidth: 430)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isLast { session.acknowledgeResult() }
+            else { withAnimation(.easeInOut(duration: 0.45)) { climaxIndex = i + 1 } }
+        }
+        .transition(.opacity)
+    }
+}
+
+// MARK: ⑪ 実質最終戦の語り（Fable doc02・敗者復活で散る＝その年の終幕・静的タップ送り・golden非干渉）
+
+struct ClimaxPage {
+    let speaker: String?   // nil=地の文/独白（俺のPOV）・非nil=会話の話者（谷口/俺/相方）
+    let text: String
+}
+
+enum ClimaxData {
+    /// 準決敗退（週45）の前段。敗者復活の枠が残る＝ここでは泣かせず軽く受ける。
+    static let semifinalLoss: [ClimaxPage] = [
+        ClimaxPage(speaker: nil, text: "準決勝で落ちた。敗者復活の枠には、残った。\n次の舞台は、決勝の日の昼にある。稽古の組み直しは、その夜のうちに決めた。"),
+    ]
+    /// 敗者復活の敗北（週47・決勝と同日の昼）＝1年版デモの実質最終戦。話者ごと1ページ（本文はFable doc02・Skill採点済）。
+    static let revivalLoss: [ClimaxPage] = [
+        ClimaxPage(speaker: nil, text: "敗者復活で、終わった。\n会場を出ると、外はまだ明るかった。"),
+        ClimaxPage(speaker: "谷口", text: "……なあ。夜まで、おるか。"),
+        ClimaxPage(speaker: "俺", text: "見て帰る。立ち見なら、まだ入れる。"),
+        ClimaxPage(speaker: nil, text: "決勝は、立ち見の柵の前で見た。\n優勝が決まった瞬間、立ち見の列はひとつ前へ詰めて、俺たちはそのままでいた。"),
+        ClimaxPage(speaker: nil, text: "会場を出るとき、裏口へ、優勝したコンビ宛の花が運び込まれていくのが見えた。\n\n谷口とは、駅の手前で別れた。決めたのは、次の合わせの時間だけだった。"),
+    ]
+    /// 本番結果から山場ページを選ぶ（発火A=準決敗退／発火B=敗者復活敗退）。該当なし=空＝通常の「次へ」。
+    static func pages(for r: StageResult) -> [ClimaxPage] {
+        guard !r.passed else { return [] }
+        switch r.name {
+        case "GP準決勝": return semifinalLoss
+        case "敗者復活": return revivalLoss
+        default: return []
+        }
     }
 }
