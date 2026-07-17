@@ -179,6 +179,8 @@ struct YearResultView: View {
         let pool: [String]
         if o.bankrupt {
             pool = Self.yeBankrupt                                               // 貧乏年
+        } else if !o.champion && !o.reachedFinal && s.compat < 10 {
+            pool = Self.yeDissolution                                            // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】）
         } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
             pool = Self.yeLeap                                                    // 躍進年
         } else {
@@ -204,6 +206,9 @@ struct YearResultView: View {
         "十二月の最後の週まで、二人とも、稽古場代の缶には入れ続けた。",
         "宣材写真を、今年、撮り直した。金は、バイトを一週分足して作った。",
         "エントリー用紙は、今年も一枚も出し惜しまなかった。振り込んだ参加費のうち、半分は捨てた金になった。",
+    ]
+    private static let yeDissolution = [  // 解散年（相性が最後まで低い＝袂を分かつ）＝終わり方の語彙（統合設計§1-2・drama-voice採点済A○/B3○）
+        "その月のライブの香盤表に、二人の名前が並んでいた。並ぶのは、それが最後だった。\n次の月の分には、下の方に、俺の名だけがあった。",
     ]
 
     private var restartButton: some View {
