@@ -73,7 +73,7 @@ struct RootView: View {
 
     @ViewBuilder private var content: some View {
         if session.winFinale {
-            WinFinaleView(session: session)                          // 勝ち版 決勝演出
+            FinalsPresentationView(session: session)                 // M-1本家型 決勝演出（籤→7審査員→ボード→めくり→優勝）
         } else if session.finished {
             if showEnding {
                 S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
