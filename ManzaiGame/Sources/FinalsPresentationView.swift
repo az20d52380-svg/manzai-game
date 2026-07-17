@@ -228,17 +228,18 @@ struct FinalsData {
         let base = Double(total) / 7.0
         let perfAvg = (Double(s.発想) + Double(s.センス) + Double(s.表現) + Double(s.華)) / 4.0
         func tilt(_ v: Double) -> Double { max(-3, min(3, (v - perfAvg) / 10.0)) }
-        struct Spec { let name: String; let bias: Double; let axis: Double; let color: Color }
+        struct Spec { let name: String; let bias: Double; let axis: Double; let color: Color; let noise: Int }
+        // 固定嗜好: 振れ幅は審査員ごとに固定（神楽坂=変わり者好き±3・天堂寺=辛口で最小±1・他±2）＝統合設計 §2-5
         let specs: [Spec] = [
-            Spec(name: "音羽 ルリ",      bias: 1,  axis: Double(s.華),            color: Theme.cChara),
-            Spec(name: "白波 剛",        bias: 2,  axis: Double(s.表現),          color: Theme.cExpr),
-            Spec(name: "卯月 走太",      bias: 0,  axis: Double(s.発想),          color: Theme.cIdea),
-            Spec(name: "花園 千代",      bias: 1,  axis: Double(s.compat) * 6,     color: Theme.verm),
-            Spec(name: "目白 慧",        bias: -1, axis: Double(s.発想),          color: Theme.cIdea),
-            Spec(name: "神楽坂 とんぼ",  bias: 0,  axis: Double(s.メンタル),      color: Theme.cMental),
-            Spec(name: "天堂寺 銀郎",    bias: -2, axis: Double(s.センス),        color: Theme.cSense),
+            Spec(name: "音羽 ルリ",      bias: 1,  axis: Double(s.華),            color: Theme.cChara,  noise: 2),
+            Spec(name: "白波 剛",        bias: 2,  axis: Double(s.表現),          color: Theme.cExpr,   noise: 2),
+            Spec(name: "卯月 走太",      bias: 0,  axis: Double(s.発想),          color: Theme.cIdea,   noise: 2),
+            Spec(name: "花園 千代",      bias: 1,  axis: Double(s.compat) * 6,     color: Theme.verm,    noise: 2),
+            Spec(name: "目白 慧",        bias: -1, axis: Double(s.発想),          color: Theme.cIdea,   noise: 2),
+            Spec(name: "神楽坂 とんぼ",  bias: 0,  axis: Double(s.メンタル),      color: Theme.cMental, noise: 3),
+            Spec(name: "天堂寺 銀郎",    bias: -2, axis: Double(s.センス),        color: Theme.cSense,  noise: 1),
         ]
-        var raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-2...2)) }
+        var raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-$0.noise...$0.noise)) }
         // Σ=S へ丸め補正
         var ints = raw.map { Int($0.rounded()) }
         var diff = total - ints.reduce(0, +)
