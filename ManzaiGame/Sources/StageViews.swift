@@ -92,11 +92,15 @@ struct TournamentEntryView: View {
 
             Spacer()
             VStack(spacing: 10) {
+                let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める
                 if spec.osaka {
-                    entryButton("🚌 夜行バスで出場", sub: "¥\(session.config.calendar.busTravel.cost.formatted())・体力を使う") { session.decideTournament(.夜行バス) }
-                    entryButton("🚄 新幹線で出場", sub: "¥\(session.config.calendar.trainTravel.cost.formatted())・体力温存") { session.decideTournament(.新幹線) }
+                    let busTotal = session.config.calendar.busTravel.cost + fee
+                    let trainTotal = session.config.calendar.trainTravel.cost + fee
+                    entryButton("🚌 夜行バスで出場", sub: "¥\(session.config.calendar.busTravel.cost.formatted())・体力を使う", enabled: session.state.money >= busTotal) { session.decideTournament(.夜行バス) }
+                    entryButton("🚄 新幹線で出場", sub: "¥\(session.config.calendar.trainTravel.cost.formatted())・体力温存", enabled: session.state.money >= trainTotal) { session.decideTournament(.新幹線) }
                 } else {
-                    entryButton("出場する", sub: "東京開催") { session.decideTournament(.夜行バス) }
+                    let cost = session.config.calendar.busTravel.cost + fee   // 東京開催もバス扱い（decideTournament(.夜行バス)）
+                    entryButton("出場する", sub: "東京開催", enabled: session.state.money >= cost) { session.decideTournament(.夜行バス) }
                 }
                 Button("見送る") { session.decideTournament(nil) }
                     .font(.maru(13)).foregroundStyle(Theme.inkDim).padding(.top, 2)
@@ -109,17 +113,18 @@ struct TournamentEntryView: View {
                                    startPoint: .top, endPoint: .bottom).ignoresSafeArea())
     }
 
-    private func entryButton(_ title: String, sub: String, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    private func entryButton(_ title: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
+        Button(action: { if enabled { action() } }) {
             VStack(spacing: 2) {
-                Text(title).font(.maru(15)).foregroundStyle(.white)
-                Text(sub).font(.system(size: 10, weight: .bold)).foregroundStyle(.white.opacity(0.85))
+                Text(title).font(.maru(15)).foregroundStyle(.white.opacity(enabled ? 1 : 0.7))
+                Text(enabled ? sub : "残高不足で出られない").font(.system(size: 10, weight: .bold)).foregroundStyle(.white.opacity(0.85))
             }
             .frame(maxWidth: .infinity).padding(.vertical, 12)
-            .background(Theme.verm, in: RoundedRectangle(cornerRadius: 14))
-            .shadow(color: Theme.vermD.opacity(0.5), radius: 0, y: 4)
+            .background(enabled ? Theme.verm : Theme.inkFaint, in: RoundedRectangle(cornerRadius: 14))
+            .shadow(color: (enabled ? Theme.vermD : .clear).opacity(0.5), radius: 0, y: 4)
         }
         .buttonStyle(.plain)
+        .disabled(!enabled)
     }
 }
 
