@@ -11,7 +11,7 @@ struct FinalsPresentationView: View {
     let session: GameSession
 
     @State private var beat = 0            // 0籤 1一斉オープン 2ボード 3最終決戦 4結果
-    @State private var flipped = false     // 一斉オープンの7札
+    @State private var revealedJudges = 0  // 見せ札を1人ずつ開示（M-1式・0..7）
     @State private var revealVotes = 0     // 最終決戦のめくり票数
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
 
@@ -39,7 +39,7 @@ struct FinalsPresentationView: View {
                 .frame(maxWidth: .infinity)
 
                 if beat < 4 {
-                    Text(beat == 1 && !flipped ? "" : "タップで進む")
+                    Text(beat == 1 && revealedJudges < 7 ? "タップで1人ずつ発表" : "タップで進む")
                         .font(.maru(10)).foregroundStyle(.white.opacity(0.4))
                 }
             }
@@ -51,8 +51,8 @@ struct FinalsPresentationView: View {
 
     private func advance() {
         switch beat {
-        case 1 where !flipped:
-            withAnimation(.easeOut(duration: 0.35)) { flipped = true }   // 一斉オープン
+        case 1 where revealedJudges < 7:
+            withAnimation(.easeOut(duration: 0.3)) { revealedJudges += 1 }   // 1人ずつ開示（M-1式・天堂寺がトリ）
             Haptics.confirm()
         case 3 where revealVotes < 7:
             withAnimation(.easeInOut(duration: 0.3)) { revealVotes += 1 } // めくり1枚
@@ -83,27 +83,29 @@ struct FinalsPresentationView: View {
 
     // MARK: Beat 1 — 7審査員 一斉オープン（見せ札）
     private var openBeat: some View {
-        VStack(spacing: 14) {
-            Text(flipped ? "採点" : "採点中…").font(.maru(12)).foregroundStyle(.white.opacity(0.7))
+        let running = d.judges.prefix(revealedJudges).reduce(0) { $0 + $1.score }
+        let allShown = revealedJudges >= 7
+        return VStack(spacing: 14) {
+            Text(allShown ? "採点" : revealedJudges == 0 ? "採点発表" : "\(revealedJudges) / 7 人")
+                .font(.maru(12)).foregroundStyle(.white.opacity(0.7))
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                 ForEach(Array(d.judges.enumerated()), id: \.offset) { i, j in
-                    judgeCard(j, index: i)
+                    judgeCard(j, shown: i < revealedJudges)
                 }
             }
-            if flipped {
-                VStack(spacing: 2) {
-                    Text("\(d.total)").font(.maru(40)).monospacedDigit().foregroundStyle(Theme.gold)
-                        .contentTransition(.numericText())
-                    Text("/ 700").font(.maru(12)).foregroundStyle(.white.opacity(0.5))
-                }
-                .padding(.top, 4).transition(.opacity)
+            VStack(spacing: 2) {
+                Text("\(running)").font(.maru(40)).monospacedDigit()
+                    .foregroundStyle(allShown ? Theme.gold : .white.opacity(0.9))
+                    .contentTransition(.numericText())
+                Text(allShown ? "/ 700" : "……").font(.maru(12)).foregroundStyle(.white.opacity(0.5))
             }
+            .padding(.top, 4)
         }
     }
 
-    private func judgeCard(_ j: JudgeScore, index: Int) -> some View {
+    private func judgeCard(_ j: JudgeScore, shown: Bool) -> some View {
         VStack(spacing: 3) {
-            if flipped {
+            if shown {
                 Text("\(j.score)").font(.maru(22)).monospacedDigit().foregroundStyle(.white)
                 Circle().fill(j.axisColor).frame(width: 6, height: 6)
                 Text(j.name).font(.maru(8.5)).foregroundStyle(.white.opacity(0.7)).lineLimit(1).minimumScaleFactor(0.7)
@@ -112,10 +114,10 @@ struct FinalsPresentationView: View {
             }
         }
         .frame(maxWidth: .infinity).frame(height: 70)
-        .background((flipped ? Color.white.opacity(0.10) : Color.white.opacity(0.05)), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(flipped ? j.axisColor.opacity(0.6) : .white.opacity(0.12), lineWidth: 1))
-        .rotation3DEffect(.degrees(flipped ? 0 : 180), axis: (x: 0, y: 1, z: 0))
-        .animation(.easeOut(duration: 0.35).delay(Double(index) * 0.03), value: flipped)
+        .background((shown ? Color.white.opacity(0.10) : Color.white.opacity(0.05)), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(shown ? j.axisColor.opacity(0.6) : .white.opacity(0.12), lineWidth: 1))
+        .rotation3DEffect(.degrees(shown ? 0 : 180), axis: (x: 0, y: 1, z: 0))
+        .animation(.easeOut(duration: 0.3), value: shown)
     }
 
     // MARK: Beat 2 — 暫定ボード（全10組順位）
