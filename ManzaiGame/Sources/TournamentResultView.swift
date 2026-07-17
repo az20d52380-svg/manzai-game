@@ -21,7 +21,7 @@ struct TournamentResultView: View {
     private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
     private func stampLabel(passed: Bool) -> String {
-        if isMidTournament { return passed ? "入賞" : "敗退" }
+        if isMidTournament { return passed ? "優勝" : "敗退" }   // 道中の単発大会を勝ち抜く＝その大会で優勝（入賞とは意味が違う）
         return passed ? "通過" : "敗退"
     }
 
