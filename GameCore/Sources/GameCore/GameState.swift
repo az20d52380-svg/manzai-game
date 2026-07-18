@@ -37,6 +37,20 @@ public struct GameState: Codable {
     public var expネタ = 0.0
     public var exp舞台 = 0.0
 
+    // --- 持ちネタ（正典: docs/neta_system_redesign_v2.md・Phase 0＝非スコアの器） ---
+    // ★golden不変: perform（GameEngine.swift:145-158）はこれらを一切読まない＝合否スコア・乱数消費順に非干渉。
+    //   exp* 追加（上 30-38）と完全に同型の「セーブに乗る器」。init では代入しない＝既定値に委ねる（exp* と同様）。
+    /// アクティブな持ちネタ（少数・磨き対象＝鉄板枠。v2 §2-2）
+    public var netas: [Neta] = []
+    /// 保管庫（多数・年跨ぎ資産＝倉庫。いつでも大会に呼び戻せる。古いネタは玉突きで消えない。v2 §2-2）
+    public var archivedNetas: [Neta] = []
+    /// 生成連番の採番（決定論・乱数非依存）
+    public var nextNetaID = 0
+    /// 大会に「今かける」ネタ（自由週にデフォルト=前回踏襲・v2 §4）
+    public var selectedNetaID: Int? = nil
+    /// 決勝の2本目（v2 §4-2）
+    public var selectedNetaID2: Int? = nil
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina

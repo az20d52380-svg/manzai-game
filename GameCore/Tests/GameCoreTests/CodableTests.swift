@@ -20,6 +20,22 @@ final class CodableTests: XCTestCase {
         s.growthUsed = 1.25
         s.bankrupt = false
 
+        // 持ちネタ（Phase 0・neta_system_redesign_v2.md §6-1補）: 追加フィールドが往復で保存され、
+        // lengthFit（正準ソート配列）・record・selectedNetaID までバイト等価で復元されることを担保。
+        var neta = Neta(id: 0, name: "商店街の福引", kata: .伏線回収,
+                        lengthFit: [.長尺, .中尺], bornYear: 2)   // init が正準順に並べ替える
+        neta.polish = 62.5
+        neta.buzz = 40.0
+        neta.stageCount = 7
+        neta.isDown = true
+        neta.exposure = 15.0
+        neta.record = [NetaStamp(year: 2, stage: "GP3回戦", passed: true)]
+        neta.lastUsedTaikaiYear = 2
+        s.netas = [neta]
+        s.archivedNetas = [Neta(id: 1, name: "終電の二人", kata: .関係性, lengthFit: [.短尺], bornYear: 1)]
+        s.nextNetaID = 2
+        s.selectedNetaID = 0
+
         let enc = JSONEncoder()
         enc.outputFormatting = .sortedKeys
         let data = try enc.encode(s)
