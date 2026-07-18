@@ -179,6 +179,23 @@ final class GameSession {
         GameEngine.recommendedPlan(state: state, config: config)
     }
 
+    /// AllocationView の「つぎの+1 ●n」: probe 状態から表示整数（Int(v.rounded())）を1つ上げるのに要する
+    /// allocationStep 段の回数 n。**既存 pourStep を回して数えるだけ**＝式の複製ゼロ・「見積もり=確定の単一化」
+    /// の家風を維持（§3-2）。RandomSource 非消費＝golden不変（View/Session層の表示専用純関数・tools鏡像不要）。
+    /// nil＝この+1に届かない（粒切れ/器切れ/上限/逓減で端数死）。probe には previewAllocation(taps) を渡す。
+    func costOfNextStep(_ a: Ability, in probe: GameState) -> Int? {
+        var s = probe
+        let base = Int(s[a].rounded())
+        var n = 0
+        while n < 60 {   // 暴走ガード【仮】。1年の粒総量では十数段が上限の見込み
+            let gain = GameEngine.pourStep(a, to: &s, config: config)
+            if gain <= GameEngine.pourEpsilon { return nil }   // 届かない（残高/器/上限）
+            n += 1
+            if Int(s[a].rounded()) >= base + 1 { return n }     // 表示整数が+1に到達
+        }
+        return nil
+    }
+
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
     func advanceAuto() {
         phase = runner.resolveAuto()
@@ -278,10 +295,12 @@ final class GameSession {
     /// 「注げる→器が満ちて弾かれる（横ブレ）」までひと続きで目視できる残高にしてある。
     static func debugAllocationState(config: GameConfig = GameConfig()) -> GameState {
         var s = GameState(config: config)
-        s.センス = 30; s.発想 = 24; s.表現 = 41; s.華 = 18; s.メンタル = 35
-        s.expセンス = 6; s.exp発想 = 3; s.exp表現 = 12; s.exp華 = 0; s.expメンタル = 9
-        s.expネタ = 8; s.exp舞台 = 5
-        return s
+        // 参照系UI再設計の目視用（§6チェックリスト①〜⑦を一画面で踏む）。数値は全て【仮】・ρ=0-honest。
+        // 粒総量は年初器(6.0)を超える貯め込み＝「注ぐ→器が満ちて弾かれる」＋器の食い合い⑤まで一続きで目視できる残高。
+        s.センス = 43; s.発想 = 24; s.表現 = 78; s.華 = 18; s.メンタル = 35   // センス43→45でC→B跨ぎ④／表現78=高値
+        s.expセンス = 12; s.exp発想 = 14; s.exp表現 = 1; s.exp華 = 14; s.expメンタル = 9  // 表現は+1に2粒要るが1粒＝端数③
+        s.expネタ = 0; s.exp舞台 = 0   // ρ=0（共通枠は休眠）に忠実＝のこり(bank)と▲活性が食い違わない
+        return s   // growthBudget は WeekRunner が年初 year1 値(6.0)へ設定＝上の粒総量がそれを上回る＝食い合いが立つ
     }
 
     /// DEBUG: 決勝優勝が確定する（winFinale）まで自動プレイ。自由週はバイトで破産回避。

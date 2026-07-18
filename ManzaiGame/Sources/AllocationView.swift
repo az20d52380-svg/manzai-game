@@ -1,13 +1,17 @@
 // AllocationView.swift
 // 割り振り画面（経験点残高→能力へ注ぐ）。正典: docs/exp_abilityup_impl_reply_v0.md（二区画中間・割り振り時予算）。
-// 判読性の文法: 色付き粒（塗りドット）＝その色の能力にだけ入る／共通粒（輪郭ドット）＝グループ枠のヘッダに置かれ、
-// 枠内の2行だけがそれを引ける（「どの粒がどこへ行けるか」を説明でなく枠のかたちで言う）。
-// 操作は本作の「タップで即」文法: ＋で1段仮置き（バーに薄いゴースト・チップの数字が減る）→「注ぐ」で確定→
-// 段階リビール（TournamentResultView のローカルTask模倣）。確定は session.allocate()＝RNG非消費・golden不変。
-// プレビューと確定は同じ GameEngine.pourStep をタップ順に再生する＝表示と結果が構造的に食い違わない。
+// UI再設計: Fable 01_能力アップUI再設計_参照忠実（2026-07-18・[golden影響=無]）＝参照系「能力アップ画面」の
+// 情報構造・操作を既存二区画機構の"上に"忠実翻案。借りるのは①現在→アップ後の2値＋グレード ②▲1タップ=+1段の
+// 一括仮置き ③「つぎの+1 ●n」逓増コストの常時表示 ④まとめ確定＝の情報構造だけ。機構・逓減カーブ・注ぐ量・golden
+// には1ビットも触れない——コストの n は既存 pourStep の"再生回数の集計表示"（GameSession.costOfNextStep）であり、
+// 支払いは従来どおり pourStep が1粒ずつ行う。実力ヘッダ/グレード/実力の絶対値表示はオーナー承認（2026-07-18・推奨線）。
 //
-// ⚠️ // MARK: 要Mac実機ビルド — UIは swift test で検証できない。レイアウト/チップ減算/ゴースト/リビール/
-//    シェイク/トーストは simulator でビルド→起動→目視まで確認して初めて「完了」（規律D-10）。
+// 判読性の文法: 色付き粒（塗りドット）＝その色の能力にだけ入る／共通粒（輪郭ドット）＝グループ枠ヘッダ（ρ>0で復活）。
+// 操作は本作の「タップで即」文法: ▲で1段仮置き（バーに薄ゴースト・「のこり」が n 減る・アップ後値が+1）→「注ぐ」で確定→
+// 段階リビール。確定は session.allocate()＝RNG非消費・golden不変。プレビューと確定は同じ pourStep をタップ順に再生する。
+//
+// ⚠️ // MARK: 要Mac実機ビルド — UIは swift test で検証できない。レイアウト/コスト表示/ブロック仮置き/ゴースト/
+//    リビール/グレードpunch/器3枚目/端数トーストは simulator でビルド→起動→目視まで確認して初めて「完了」（規律D-10）。
 //    目視フック: MZ_UI=allocate（RootView・粒を積んだ【仮】開始状態）。数値は全て【仮】。
 
 import SwiftUI
@@ -17,8 +21,9 @@ struct AllocationView: View {
     @Bindable var session: GameSession
     var onClose: () -> Void
 
-    /// 仮置き＝タップ順の能力列。プレビューも確定もこの列を同じ順で再生する（リプレイ決定論）
-    @State private var taps: [Ability] = []
+    /// 仮置き＝「+1段ブロック」のタップ順スタック（§3-3）。1ブロック=表示整数を1つ上げるのに要した n 粒。
+    /// 確定・プレビューへは flatten した `taps` を渡す＝session.allocate/previewAllocation のシグネチャ・意味は不変。
+    @State private var blocks: [(ability: Ability, steps: Int)] = []
     /// 実行不可タップの横ブレ（±3pt×2往復0.15s・振動なし＝閲覧扱い）
     @State private var shakeSeed: [String: CGFloat] = [:]
     /// 無効タップの一時トースト（WeekMainView と同じ1.4s自動消滅）
@@ -29,6 +34,13 @@ struct AllocationView: View {
     @State private var revealedRows: Set<Ability> = []
     @State private var beforeVals: [Ability: Double] = [:]
     @State private var afterVals: [Ability: Double] = [:]
+    /// リビール中の実力ヘッダ ロールアップ用（確定直前state）
+    @State private var beforeState: GameState?
+
+    /// flatten した粒列（確定・プレビューの唯一の入力・リプレイ決定論）
+    private var taps: [Ability] {
+        blocks.flatMap { Array(repeating: $0.ability, count: $0.steps) }
+    }
 
     private var s: GameState { session.state }
     private var config: GameConfig { session.config }
@@ -41,13 +53,14 @@ struct AllocationView: View {
             VStack(spacing: Theme.Sp.s16) {
                 header
                 ScrollView {
+                    // 情報階層（§3）: 判断材料（実力ヘッダ）→ 操作（能力群）→ 会計（成長の器）
                     VStack(spacing: Theme.Sp.s16) {
-                        vesselCard(pv)
+                        jitsuryokuHeader(pv)
                         explainer
-                        nextStageCard(pv)
                         groupCard(.ネタ, pv)
                         groupCard(.舞台, pv)
                         mentalCard(pv)
+                        vesselCard(pv)
                     }
                     .padding(.horizontal, Theme.Sp.s16)
                     .padding(.bottom, Theme.Sp.s24)
@@ -82,61 +95,56 @@ struct AllocationView: View {
         .padding(.horizontal, Theme.Sp.s16)
     }
 
-    // MARK: 器（成長予算の残り・数値なし＝growthRoomの文法）＋残粒総数
+    // MARK: 実力ヘッダカード（§3-5・参照系の「総合値 現在→アップ後」＋つぎの本番を1枚に統合）
 
-    private func vesselCard(_ pv: GameState) -> some View {
-        let budget = s.growthBudget ?? 0
-        let used = budget > 0 ? min(budget, s.growthUsed) : 0
-        let staged = budget > 0 ? min(budget, pv.growthUsed) : 0
-        let frac = budget > 0 ? staged / budget : 0
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("成長の器").font(.maru(11)).foregroundStyle(Theme.inkDim)
-                Spacer()
-                Text("経験点 のこり \(grains(pv.expTotal))").font(.maru(11)).monospacedDigit()
-                    .foregroundStyle(Theme.inkDim)
+    private func jitsuryokuHeader(_ pv: GameState) -> some View {
+        let now = jitsuryokuNow()
+        let after = GameEngine.jitsuryoku(pv, config: config) + pv.compat
+        let staged = !blocks.isEmpty
+        let gain = Int(after.rounded()) - Int(now.rounded())
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Text("いまの実力").font(.maru(11)).foregroundStyle(Theme.inkDim)
+                Text("\(Int(now.rounded()))").font(.maru(21)).monospacedDigit().foregroundStyle(Theme.ink)
                     .contentTransition(.numericText())
-            }
-            if budget > 0 {
-                // 金の満ち＝使った器。薄い金＝仮置きぶんの先食い（ゴースト）
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Theme.card2)
-                        Capsule().fill(Theme.gold.opacity(0.38))
-                            .frame(width: geo.size.width * CGFloat(min(1, staged / budget)))
-                        Capsule().fill(Theme.gold)
-                            .frame(width: geo.size.width * CGFloat(min(1, used / budget)))
+                if staged {
+                    Text("→").font(.maru(15)).foregroundStyle(Theme.inkDim)
+                    Text("\(Int(after.rounded()))").font(.maru(21)).monospacedDigit().foregroundStyle(Theme.ink)
+                        .contentTransition(.numericText())
+                    if gain >= 1 {
+                        Text("+\(gain)").font(.maru(12)).monospacedDigit().foregroundStyle(Theme.gainOrange)
+                            .transition(.asymmetric(
+                                insertion: .offset(y: 8).combined(with: .opacity),
+                                removal: .offset(y: -8).combined(with: .opacity)))
                     }
                 }
-                .frame(height: 10)
+                Spacer()
             }
-            Text(frac < 0.98 ? "まだ、伸びしろがある。" : "この年の器は、満ちた。")
-                .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.ink)
+            nextStageBar(pv)
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
         .e1()
     }
 
-    /// 二区画の一行説明（枠のかたちが本体・これは補助線）
-    @ViewBuilder private var explainer: some View {
-        // ①整理: ρ(expFreeShare)=0 の間は共通枠が休眠＝プレイヤーが体験しない機構を一等地で説明しない（監査§2）。
-        if config.expFreeShare != 0 {
-            Text("色の粒は、その色の項へ。共通の粒は、同じ枠のどちらへも。")
-                .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
-                .frame(maxWidth: .infinity, alignment: .leading)
+    /// リビール中は revealedRows までを反映した実力（段階ロールアップ・§4）。平時は確定stateの実力。
+    private func jitsuryokuNow() -> Double {
+        if committing {
+            let grown = Ability.allCases.filter { (afterVals[$0] ?? 0) - (beforeVals[$0] ?? 0) > 0.0005 }
+            let done = grown.allSatisfy { revealedRows.contains($0) }
+            let st = done ? s : (beforeState ?? s)
+            return GameEngine.jitsuryoku(st, config: config) + st.compat
         }
+        return GameEngine.jitsuryoku(s, config: config) + s.compat
     }
 
-    // MARK: つぎの本番（要求ラインへの照準・生数値）
-
-    @ViewBuilder private func nextStageCard(_ pv: GameState) -> some View {
+    /// つぎの本番バー（旧 nextStageCard の中身・朱線=要求ライン・数値は出さない＝v8確定）
+    @ViewBuilder private func nextStageBar(_ pv: GameState) -> some View {
         if let stage = nextStage() {
-            let now = GameEngine.jitsuryoku(s, config: config) + s.compat
-            let after = GameEngine.jitsuryoku(pv, config: config) + pv.compat
+            let now = jitsuryokuNow()
+            let after = committing ? now : (GameEngine.jitsuryoku(pv, config: config) + pv.compat)
             let scale = max(stage.line, after, now) * 1.2
-            let gain = Int(after.rounded()) - Int(now.rounded())
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     Text("つぎの本番").font(.maru(11)).foregroundStyle(Theme.inkDim)
                     Text(stage.name).font(.maru(12)).foregroundStyle(Theme.ink).lineLimit(1)
@@ -144,7 +152,7 @@ struct AllocationView: View {
                     Text(stage.week <= session.week ? "今週" : "\(stage.week - session.week)週後")
                         .font(.maru(11)).monospacedDigit().foregroundStyle(Theme.goldD)
                 }
-                // 地力（実力値＋相性）の現在＝濃い ink／仮置き後＝薄い ink。朱の縦線＝要求ライン
+                // 地力（実力値＋相性）の現在＝濃い ink／仮置き後＝薄い ink。朱の縦線＝要求ライン（数値なし）
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule().fill(Theme.card2)
@@ -158,21 +166,7 @@ struct AllocationView: View {
                     }
                 }
                 .frame(height: 14)
-                // ②: 通過ライン数値（要求/じぶん）は出さない（ui_redesign v4/v8＝ネタバレ回避）。
-                // 朱の要求ライン（視覚・上のバー）は残す。仮置きの伸び「+N」だけ手応えとして残す（監査§3-1-3）。
-                if gain >= 1 {
-                    HStack(spacing: 6) {
-                        Text("+\(gain)").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.gainOrange)
-                            .transition(.asymmetric(
-                                insertion: .offset(y: 8).combined(with: .opacity),
-                                removal: .offset(y: -8).combined(with: .opacity)))
-                        Spacer()
-                    }
-                }
             }
-            .padding(Theme.Sp.s16)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-            .e1()
         }
     }
 
@@ -189,6 +183,15 @@ struct AllocationView: View {
         }
         return ms.filter { $0.week >= session.week }.min { $0.week < $1.week }
             .map { ($0.name, $0.week, $0.line) }
+    }
+
+    /// 二区画の一行説明（枠のかたちが本体・これは補助線）。ρ=0 の間は休眠＝出さない（監査§2）
+    @ViewBuilder private var explainer: some View {
+        if config.expFreeShare != 0 {
+            Text("色の粒は、その色の項へ。共通の粒は、同じ枠のどちらへも。")
+                .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     // MARK: グループ枠（二区画の判読性はこの「枠のかたち」が言う）
@@ -219,49 +222,62 @@ struct AllocationView: View {
         .e2()
     }
 
-    /// 共通粒チップ（輪郭ドット＝色がまだ決まっていない粒）。枠ヘッダに1つ＝枠内2行で共有。
-    /// ①整理: ρ(expFreeShare)=0 の間は休眠＝常時「共通 0」を出さない（監査§2・機構は残置・表示条件1つ）。
+    /// 共通粒チップ（輪郭ドット＝色がまだ決まっていない粒）。ρ(expFreeShare)=0 の間は休眠＝出さない（監査§2）
     @ViewBuilder private func freeChip(_ g: ExpGroup, _ pv: GameState) -> some View {
         if config.expFreeShare != 0 {
-        HStack(spacing: 4) {
-            Circle().stroke(Theme.inkDim, lineWidth: 1.5).frame(width: 7, height: 7)
-            Text("共通").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
-            Text("\(grains(pv[free: g]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
-                .contentTransition(.numericText())
-        }
-        .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(Theme.card, in: Capsule())
-        .overlay(Capsule().stroke(Theme.line, lineWidth: 1.5))
+            HStack(spacing: 4) {
+                Circle().stroke(Theme.inkDim, lineWidth: 1.5).frame(width: 7, height: 7)
+                Text("共通").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                Text("\(grains(pv[free: g]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
+                    .contentTransition(.numericText())
+            }
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(Theme.card, in: Capsule())
+            .overlay(Capsule().stroke(Theme.line, lineWidth: 1.5))
         }
     }
 
-    /// 同色ロック粒チップ（塗りドット＝行き先が固定の粒）
-    private func lockedChip(_ a: Ability, _ pv: GameState) -> some View {
-        HStack(spacing: 4) {
-            Circle().fill(Theme.abilityColor(a)).frame(width: 7, height: 7)
-            Text("\(grains(pv[bank: a]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
-                .contentTransition(.numericText())
-        }
-        .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(Theme.card2, in: Capsule())
-    }
-
-    // MARK: 能力1行（名前・値・+N・残粒チップ・±・バー）
+    // MARK: 能力1行（§3-1）— 名前行[グレード＋現在→アップ後＋N]／バー／資源行[のこり・つぎの+1・▼▲]
 
     private func abilityRow(_ a: Ability, _ pv: GameState) -> some View {
-        VStack(spacing: 7) {
+        let cap = a == .メンタル ? config.mentalCap : config.abilityCap
+        let cost = committing ? nil : session.costOfNextStep(a, in: pv)
+        let cur = displayedValue(a)
+        let after = pv[a]
+        let showArrow = !committing && Int(after.rounded()) > Int(cur.rounded())
+        let punchNow = committing && revealedRows.contains(a) && gradeCrossed(a)
+        return VStack(spacing: 7) {
             HStack(spacing: 6) {
                 Circle().fill(Theme.abilityColor(a)).frame(width: 8, height: 8)
                 Text("\(a)").font(.maru(12.5)).foregroundStyle(Theme.ink)
-                Text("\(Int(displayedValue(a).rounded()))").font(.maru(15)).monospacedDigit()
-                    .foregroundStyle(Theme.ink)
-                    .contentTransition(.numericText())
+                valSlot(cur, cap: cap, color: Theme.abilityColor(a), accent: false, punch: punchNow)
+                if showArrow {
+                    Text("→").font(.maru(13)).foregroundStyle(Theme.inkDim)
+                    valSlot(after, cap: cap, color: Theme.abilityColor(a), accent: true)
+                }
                 gainLabel(a, pv)
                 Spacer(minLength: 4)
-                lockedChip(a, pv)
-                stepper(a, pv)
             }
             abilityBar(a, pv)
+            resourceRow(a, pv, cost: cost)
+        }
+    }
+
+    /// グレード＋数値の1スロット（上限は数値の代わりに「極」金・§3-1）。accent=アップ後（能力色）／punch=昇格演出
+    @ViewBuilder private func valSlot(_ v: Double, cap: Double, color: Color, accent: Bool, punch: Bool = false) -> some View {
+        if v >= cap - GameEngine.pourEpsilon {
+            Text("極").font(.maru(16)).foregroundStyle(Theme.gold)
+                .scaleEffect(punch ? 1.18 : 1)
+        } else {
+            HStack(spacing: 3) {
+                // グレードは表示整数（丸め値）から引く＝「C 45」のような境界の食い違いを防ぐ（v8: 整数表示）
+                Text(Theme.rank(v.rounded())).font(.maru(11, weight: .bold))
+                    .foregroundStyle(punch ? Theme.gold : (accent ? color : Theme.inkDim))
+                    .scaleEffect(punch ? 1.18 : 1)
+                Text("\(Int(v.rounded()))").font(.maru(15)).monospacedDigit()
+                    .foregroundStyle(accent ? color : Theme.ink)
+                    .contentTransition(.numericText())
+            }
         }
     }
 
@@ -283,7 +299,42 @@ struct AllocationView: View {
         .frame(height: 10)
     }
 
-    /// +N（丸め差分≥1）／「伸びわずか」（実伸びはあるが丸めで0）。WeekMainView の整数ゲイン規約と同じ
+    /// 資源行（§3-1）: のこり ●n（同色ロック残高）・つぎの+1 ●m（次段コスト）・▼▲
+    private func resourceRow(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
+        HStack(spacing: 10) {
+            HStack(spacing: 4) {
+                Text("のこり").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                Circle().fill(Theme.abilityColor(a)).frame(width: 6, height: 6)
+                Text("\(grains(pv[bank: a]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
+                    .contentTransition(.numericText())
+            }
+            costChip(a, pv, cost: cost)
+            Spacer()
+            stepper(a, pv, cost: cost)
+        }
+    }
+
+    /// 「つぎの+1 ●n」＝参照系コストグリッドの本作版（§3-2）。逓減ぶん n が増えていく様が「上げるほど高い」を言う。
+    /// nil の内訳: 上限→値側「極」が言う（ここは空）／器切れ→「器が足りない」／粒切れ・端数→「つぎ —」
+    @ViewBuilder private func costChip(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
+        let cap = a == .メンタル ? config.mentalCap : config.abilityCap
+        if pv[a] >= cap - GameEngine.pourEpsilon {
+            EmptyView()
+        } else if let n = cost {
+            HStack(spacing: 4) {
+                Text("つぎの+1").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                Circle().fill(Theme.abilityColor(a)).frame(width: 6, height: 6)
+                Text("\(n)").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
+                    .contentTransition(.numericText())
+            }
+        } else if a != .メンタル, let b = pv.growthBudget, b - pv.growthUsed <= GameEngine.pourEpsilon {
+            Text("器が足りない").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
+        } else {
+            Text("つぎ —").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
+        }
+    }
+
+    /// +N（丸め差分≥1）／「伸びわずか」（実伸びはあるが丸めで0＝おすすめの端数のみ）。WeekMainView の整数ゲイン規約と同じ
     @ViewBuilder private func gainLabel(_ a: Ability, _ pv: GameState) -> some View {
         let from = committing ? (beforeVals[a] ?? s[a]) : s[a]
         let to = committing
@@ -309,17 +360,24 @@ struct AllocationView: View {
         return s[a]
     }
 
-    // MARK: ±（タップで1段仮置き。押せない時は沈まず横ブレ＋トースト・振動なし）
+    /// グレードが仮置き/リビールで跨いだか（punch判定・グレードは表示写像のみ＝判定に無関係を崩さない）。
+    /// 表示整数（丸め値）で判定＝valSlot のグレード表示と一致させる
+    private func gradeCrossed(_ a: Ability) -> Bool {
+        guard let b = beforeVals[a], let af = afterVals[a] else { return false }
+        return Theme.rank(b.rounded()) != Theme.rank(af.rounded())
+    }
 
-    private func stepper(_ a: Ability, _ pv: GameState) -> some View {
+    // MARK: ▼▲（§3-3・仮置きの単位を「+1段ブロック」へ。押せない時は沈まず横ブレ＋トースト・振動なし）
+
+    private func stepper(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
         HStack(spacing: 6) {
-            if stagedCount(a) > 0 {
+            if stagedBlocks(a) > 0 {
                 Button { unstage(a) } label: { stepGlyph("minus", active: true) }
                     .buttonStyle(PressableStyle())
                     .transition(.opacity)
             }
-            let ok = canStage(a, pv)
-            Button { stage(a, pv) } label: { stepGlyph("plus", active: ok) }
+            let ok = cost != nil && !committing
+            Button { stage(a, pv, cost: cost) } label: { stepGlyph("plus", active: ok) }
                 .buttonStyle(PressableStyle(enabled: ok))
                 .modifier(ShakeEffect(animatableData: shakeSeed["plus\(a)"] ?? 0))
         }
@@ -334,37 +392,36 @@ struct AllocationView: View {
             .overlay(Circle().stroke(Theme.line, lineWidth: 2))
     }
 
-    private func stagedCount(_ a: Ability) -> Int {
-        taps.filter { $0 == a }.count
+    /// この能力に仮置き済みの+1段ブロック数（＝手振りの+N・▼の有無）
+    private func stagedBlocks(_ a: Ability) -> Int {
+        blocks.reduce(0) { $0 + ($1.ability == a ? 1 : 0) }
     }
 
-    /// もう1段注げるか＝プレビュー状態に pourStep を1回試す（確定と同じ関数・同じ判定）
-    private func canStage(_ a: Ability, _ pv: GameState) -> Bool {
-        var probe = pv
-        return GameEngine.pourStep(a, to: &probe, config: config) > GameEngine.pourEpsilon
-    }
-
-    private func stage(_ a: Ability, _ pv: GameState) {
+    /// ▲=「+1到達に要する n 粒ぶん」を一括仮置き。cost は body 描画時に costOfNextStep で確定済み（同一pv）
+    private func stage(_ a: Ability, _ pv: GameState, cost: Int?) {
         guard !committing else { return }
-        if canStage(a, pv) {
-            withAnimation(Theme.Motion.appearQuick) { taps.append(a) }
+        if let n = cost {
+            withAnimation(Theme.Motion.appearQuick) { blocks.append((ability: a, steps: n)) }
         } else {
             withAnimation(.linear(duration: 0.15)) { shakeSeed["plus\(a)", default: 0] += 1 }
             toast = blockReason(a, pv)
         }
     }
 
+    /// ▼=その能力の最後のブロックを1つ戻す（表示上「+1ずつ戻る」）
     private func unstage(_ a: Ability) {
-        guard !committing, let i = taps.lastIndex(of: a) else { return }
-        withAnimation(Theme.Motion.appearQuick) { _ = taps.remove(at: i) }
+        guard !committing, let i = blocks.lastIndex(where: { $0.ability == a }) else { return }
+        withAnimation(Theme.Motion.appearQuick) { _ = blocks.remove(at: i) }
     }
 
     private func blockReason(_ a: Ability, _ pv: GameState) -> String {
         if pv.pourable(a) <= GameEngine.pourEpsilon { return "注げる経験点がない。" }
+        let cap = a == .メンタル ? config.mentalCap : config.abilityCap
+        if pv[a] >= cap - GameEngine.pourEpsilon { return "ここは、上限まで来ている。" }
         if a != .メンタル, let b = pv.growthBudget, b - pv.growthUsed <= GameEngine.pourEpsilon {
             return "この年の器は、満ちた。"
         }
-        return "ここは、上限まで来ている。"
+        return "一段には、あと少し足りない。"   // 粒はあるが+1段に届かない（端数）＝出口はおすすめ（§3-4）
     }
 
     // MARK: フッタ（おすすめ・もどす・注ぐ）
@@ -380,8 +437,8 @@ struct AllocationView: View {
                 }
                 .buttonStyle(PressableStyle())
                 .modifier(ShakeEffect(animatableData: shakeSeed["suggest"] ?? 0))
-                if !taps.isEmpty {
-                    Button { withAnimation(Theme.Motion.exit) { taps = [] } } label: {
+                if !blocks.isEmpty {
+                    Button { withAnimation(Theme.Motion.exit) { blocks = [] } } label: {
                         Text("もどす").font(.maru(12)).foregroundStyle(Theme.inkDim)
                             .padding(.horizontal, 14).padding(.vertical, 8)
                             .background(Theme.card, in: Capsule())
@@ -391,20 +448,20 @@ struct AllocationView: View {
                     .transition(.opacity)
                 }
                 Spacer()
-                if !taps.isEmpty {
-                    Text("仮置き \(taps.count)").font(.maru(11)).monospacedDigit()
+                if !blocks.isEmpty {
+                    Text("仮置き \(blocks.count)").font(.maru(11)).monospacedDigit()
                         .foregroundStyle(Theme.inkDim)
                         .transition(.opacity)
                 }
             }
             Button { commit(pv) } label: {
-                Text(taps.isEmpty ? "注ぐ" : "注ぐ（\(taps.count)）")
+                Text(blocks.isEmpty ? "注ぐ" : "注ぐ（\(blocks.count)）")
                     .font(.maru(15)).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
-                    .background(taps.isEmpty || committing ? Theme.inkFaint : Theme.verm,
+                    .background(blocks.isEmpty || committing ? Theme.inkFaint : Theme.verm,
                                 in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
             }
-            .buttonStyle(PressableStyle(enabled: !taps.isEmpty && !committing))
+            .buttonStyle(PressableStyle(enabled: !blocks.isEmpty && !committing))
             .modifier(ShakeEffect(animatableData: shakeSeed["commit"] ?? 0))
         }
         .padding(.horizontal, Theme.Sp.s16).padding(.top, Theme.Sp.s12).padding(.bottom, Theme.Sp.s8)
@@ -412,28 +469,51 @@ struct AllocationView: View {
                                    startPoint: .top, endPoint: .center))
     }
 
-    /// おすすめ注ぎ＝GameCore正典 recommendedPlan（golden台本と同じ1関数）を仮置きに展開（確定はしない）
+    /// おすすめ注ぎ＝GameCore正典 recommendedPlan（golden台本と同じ1関数）を「能力ごと+1段ブロック」に畳んで仮置き（§3-4）。
+    /// 平坦な粒列を順に再生し、表示整数が+1する境界でブロックを閉じる＝flatten すれば元の plan と1:1（確定は不変）。
+    /// 端数（+1未満）は最後のブロックに残る＝確定後「伸びわずか」で正直に見える（手振りからは端数が消え、出口はここだけ）。
     private func suggest() {
         guard !committing else { return }
         let plan = session.recommendedAllocation()
         if plan.isEmpty {
             withAnimation(.linear(duration: 0.15)) { shakeSeed["suggest", default: 0] += 1 }
             toast = "いま注げる経験点がない。"
-        } else {
-            withAnimation(Theme.Motion.appear) { taps = plan }
+            return
         }
+        var probe = s
+        var newBlocks: [(ability: Ability, steps: Int)] = []
+        var runAbility: Ability?
+        var runSteps = 0
+        var runBase = 0
+        func closeRun() {
+            if let ra = runAbility, runSteps > 0 { newBlocks.append((ability: ra, steps: runSteps)) }
+            runSteps = 0
+        }
+        for a in plan {
+            if runAbility != a { closeRun(); runAbility = a; runBase = Int(probe[a].rounded()) }
+            GameEngine.pourStep(a, to: &probe, config: config)
+            runSteps += 1
+            if Int(probe[a].rounded()) >= runBase + 1 {
+                newBlocks.append((ability: a, steps: runSteps))
+                runSteps = 0
+                runBase = Int(probe[a].rounded())
+            }
+        }
+        closeRun()
+        withAnimation(Theme.Motion.appear) { blocks = newBlocks }
     }
 
     // MARK: 確定（先に権威stateへ確定→リビールは後追い表示。途中で閉じても状態は正しい）
 
     private func commit(_ pv: GameState) {
         guard !committing else { return }
-        guard !taps.isEmpty else {
+        guard !blocks.isEmpty else {
             withAnimation(.linear(duration: 0.15)) { shakeSeed["commit", default: 0] += 1 }
             toast = "まだ、経験点を選んでいない。"
             return
         }
         Haptics.confirm()   // 割り振り確定＝hConfirm（Haptics 3段）
+        let currentTaps = taps
         var before: [Ability: Double] = [:]
         var after: [Ability: Double] = [:]
         for a in Ability.allCases {
@@ -442,12 +522,13 @@ struct AllocationView: View {
         }
         beforeVals = before
         afterVals = after
+        beforeState = s
         revealedRows = []
         committing = true
-        session.allocate(taps)
-        taps = []
+        session.allocate(currentTaps)
+        blocks = []
         Task {
-            // 溜め0.25s→1行ずつ emphSpring で立ち上げ0.34s間隔→余韻0.5s（§3-5のローカルTask模倣）
+            // 溜め0.25s→1行ずつ emphSpring で立ち上げ0.34s間隔→余韻0.5s（グレード昇格行は punch＋金・§4）
             try? await Task.sleep(nanoseconds: 250_000_000)
             for a in Ability.allCases where (afterVals[a] ?? 0) - (beforeVals[a] ?? 0) > 0.0005 {
                 withAnimation(Theme.Motion.emphSpring) { _ = revealedRows.insert(a) }
@@ -457,8 +538,61 @@ struct AllocationView: View {
             withAnimation(Theme.Motion.appear) {
                 committing = false
                 revealedRows = []
+                beforeState = nil
             }
         }
+    }
+
+    // MARK: 成長の器（会計の残量＝操作の下・§3。数値なし＝growthRoom文法。3枚目=器の食い合い・§5-1）
+
+    private func vesselCard(_ pv: GameState) -> some View {
+        let budget = s.growthBudget ?? 0
+        let used = budget > 0 ? min(budget, s.growthUsed) : 0
+        let staged = budget > 0 ? min(budget, pv.growthUsed) : 0
+        let frac = budget > 0 ? staged / budget : 0
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("成長の器").font(.maru(11)).foregroundStyle(Theme.inkDim)
+                Spacer()
+                Text("経験点 のこり \(grains(pv.expTotal))").font(.maru(11)).monospacedDigit()
+                    .foregroundStyle(Theme.inkDim)
+                    .contentTransition(.numericText())
+            }
+            if budget > 0 {
+                // 金の満ち＝使った器。薄い金＝仮置きぶんの先食い（ゴースト）
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Theme.card2)
+                        Capsule().fill(Theme.gold.opacity(0.38))
+                            .frame(width: geo.size.width * CGFloat(min(1, staged / budget)))
+                        Capsule().fill(Theme.gold)
+                            .frame(width: geo.size.width * CGFloat(min(1, used / budget)))
+                    }
+                }
+                .frame(height: 10)
+            }
+            Text(vesselLine(frac: frac))
+                .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.ink)
+        }
+        .padding(Theme.Sp.s16)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .e1()
+    }
+
+    /// 器の状態一文（3枚・排他）。満了＞食い合い＞平常。食い合い=手持ち粒を全部注ぐと器が先に尽きる（§5-1）
+    private func vesselLine(frac: Double) -> String {
+        if frac >= 0.98 { return "この年の器は、満ちた。" }
+        if overflowingGrains() { return "のこりの器より、粒が多い。" }
+        return "まだ、伸びしろがある。"
+    }
+
+    /// 手持ち粒を全量おすすめ注ぎしたら器が先に満ちて粒が余るか（純関数・RNG非消費・golden台本 pourRecommended の再生）
+    private func overflowingGrains() -> Bool {
+        guard let budget = s.growthBudget, budget > 0 else { return false }
+        var probe = s
+        GameEngine.pourRecommended(to: &probe, config: config)
+        let filled = probe.growthUsed >= budget - 1e-6
+        return filled && probe.expTotal > 1e-9
     }
 
     // MARK: トースト（WeekMainView と同型）
