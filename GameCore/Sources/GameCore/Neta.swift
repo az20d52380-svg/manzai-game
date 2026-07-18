@@ -67,4 +67,27 @@ public struct Neta: Codable, Identifiable, Equatable {
 
     /// この尺に映えるか（純関数・表示専用）
     public func fits(_ length: NetaLength) -> Bool { lengthFit.contains(length) }
+
+    // MARK: 派生状態（純関数・表示専用・非スコア）— ネタ帳のバッジに使う
+
+    /// 鉄板＝高完成度×場数×安定した手応え（v2 §1-E「鉄板3本あれば一流」）。数値は全て【仮】。
+    public func isTeppan(config: GameConfig) -> Bool {
+        polish >= config.netaTeppanPolish && stageCount >= config.netaTeppanStage && buzz >= config.netaTeppanBuzz
+    }
+
+    /// 数年寝かせたネタの再演（v2 §1-D「20年前のネタを今やる」）。表示・講評分岐に使う。
+    public func isRevival(currentYear: Int, config: GameConfig) -> Bool {
+        currentYear - bornYear >= config.netaRevivalYears
+    }
+
+    // MARK: ライブの手応え（純関数・RandomSource を一切呼ばない＝golden非干渉）
+
+    /// ライブ1回の手応え。実在: 今の実力×ネタの完成度で沸きが決まる（v2 §3-2）。数値は全て【仮】。
+    /// ★Phase 0 は決定論（客層の当たり外れ＝乱数は入れない）＝"低反応という情報"は生まれない（限界は v2 §3-2補・§9決点6）。
+    /// 真に"反応で磨く"には客層依存の乱数＝Phase 1（規律A）。ここで乱数を引くと消費順が動き golden が壊れる。
+    public static func liveBuzz(state s: GameState, neta: Neta, config: GameConfig) -> Double {
+        let power = GameEngine.jitsuryoku(s, config: config)   // 参照のみ・perform の乱数には触れない（GameEngine.swift:51）
+        let raw = power * config.netaBuzzPowerW + neta.polish * config.netaBuzzPolishW
+        return GameEngine.clamp(raw, 0, 100)
+    }
 }

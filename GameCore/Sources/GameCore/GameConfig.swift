@@ -186,5 +186,26 @@ public struct GameConfig {
     // --- 大会カレンダー（Python: sim_career.py の定数群） ---
     public var calendar = CalendarConfig()
 
+    // --- ネタ（正典: docs/neta_system_redesign_v2.md・Phase 0＝非スコア。全て【仮】・perform は参照しない＝golden不変） ---
+    /// アクティブな持ちネタ枠数（磨き対象＝鉄板枠。超過分は保管庫へ退避・v2 §9決点2）
+    public var netaActiveSlots = 4
+    /// `ネタ作り` 改稿の完成度上昇
+    public var netaReviseGain = 8.0
+    /// `ネタ見せ会`（有料稽古）のライブ完成度上昇
+    public var netaLivePolishShow = 12.0
+    /// `フリーライブ`（無料・営業）のライブ完成度上昇
+    public var netaLivePolishFree = 6.0
+    /// liveBuzz の実力重み・完成度重み（手応え=power×W+polish×W をclamp。決定論・非乱数）
+    public var netaBuzzPowerW = 0.7
+    public var netaBuzzPolishW = 0.5
+    /// buzz 移動平均の直近寄与（neta.buzz = buzz*(1-α)+liveBuzz*α）
+    public var netaBuzzAlpha = 0.4
+    /// 鉄板バッジの閾値（完成度・場数・手応え）
+    public var netaTeppanPolish = 80.0
+    public var netaTeppanStage = 8
+    public var netaTeppanBuzz = 60.0
+    /// 再演バッジ＝作成からこの年数以上寝かせた
+    public var netaRevivalYears = 3
+
     public init() {}
 }

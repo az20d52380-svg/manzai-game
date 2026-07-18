@@ -338,4 +338,59 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func applyAllocation(_ taps: [Ability]) {
         for a in taps { GameEngine.pourStep(a, to: &state, config: config) }
     }
+
+    // MARK: 持ちネタの純適用（正典: docs/neta_system_redesign_v2.md Phase 0-b）
+    // ★applyAllocation/applyEventEffects と同じ規律: RandomSource を一切呼ばない＝乱数消費順は1ビットも動かない＝
+    //   3年 golden 不変。golden 生成器（gen_golden.py / runYear）はこれらを呼ばない＝期待値も不変。
+    //   perform（GameEngine.swift:158）はネタを読まない＝合否スコアにも一切効かない（Phase 0＝非スコアの器）。
+    //   「反応で磨く（当たり外れ）」「選択が勝敗に効く」はスコア/乱数を要する＝Phase 1（規律A・別便）。
+
+    /// 新ネタ生成（`ネタ作り`・新規時）。連番採番→アクティブ枠に追加→id を返す。乱数非依存。
+    @discardableResult
+    public mutating func applyNetaCreate(kata: NetaKata, lengthFit: [NetaLength], name: String) -> Int {
+        let id = state.nextNetaID
+        state.nextNetaID += 1
+        state.netas.append(Neta(id: id, name: name, kata: kata, lengthFit: lengthFit, bornYear: year))
+        return id
+    }
+
+    /// 改稿（`ネタ作り`・既存ネタ選択時）。完成度を上げる（0..100 clamp）。
+    public mutating func applyNetaRevise(id: Int) {
+        guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
+        state.netas[i].polish = GameEngine.clamp(state.netas[i].polish + config.netaReviseGain, 0, 100)
+    }
+
+    /// 客前でかける（`ネタ見せ会`＝hard/`フリーライブ`＝!hard）。手応え算出→buzz移動平均→完成度↑・場数↑・おろし。乱数非依存。
+    public mutating func applyNetaLive(id: Int, hard: Bool) {
+        guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
+        let lb = Neta.liveBuzz(state: state, neta: state.netas[i], config: config)   // 演じた時点の手応え（乱数なし）
+        state.netas[i].buzz = state.netas[i].buzz * (1 - config.netaBuzzAlpha) + lb * config.netaBuzzAlpha
+        let gain = hard ? config.netaLivePolishShow : config.netaLivePolishFree
+        state.netas[i].polish = GameEngine.clamp(state.netas[i].polish + gain, 0, 100)
+        state.netas[i].stageCount += 1
+        state.netas[i].isDown = true   // 初回＝ネタおろし（一回性の節目・v2 §3-2補2）
+    }
+
+    /// 型の組み替え（大改稿で1度・v2 §3-1補）。アクティブ/保管庫どちらのネタも対象。
+    public mutating func applyNetaChangeKata(id: Int, to kata: NetaKata) {
+        if let i = state.netas.firstIndex(where: { $0.id == id }) { state.netas[i].kata = kata }
+        else if let j = state.archivedNetas.firstIndex(where: { $0.id == id }) { state.archivedNetas[j].kata = kata }
+    }
+
+    /// アクティブ枠→保管庫へ退避（削除でも封印でもない・いつでも呼び戻せる・v2 §2-2）。
+    public mutating func applyNetaRetire(id: Int) {
+        guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
+        state.archivedNetas.append(state.netas.remove(at: i))
+        if state.selectedNetaID == id { state.selectedNetaID = nil }
+    }
+
+    /// 保管庫→アクティブ枠へ呼び戻す（古いネタの再演・v2 §2-2/§4-2）。
+    public mutating func applyNetaRecall(id: Int) {
+        guard let i = state.archivedNetas.firstIndex(where: { $0.id == id }) else { return }
+        state.netas.append(state.archivedNetas.remove(at: i))
+    }
+
+    /// 「今かけるネタ」の選択（大会/自由週・v2 §4）。1本目/2本目（決勝）。乱数非依存・非スコア。
+    public mutating func applyNetaSelect(id: Int?) { state.selectedNetaID = id }
+    public mutating func applyNetaSelect2(id: Int?) { state.selectedNetaID2 = id }
 }
