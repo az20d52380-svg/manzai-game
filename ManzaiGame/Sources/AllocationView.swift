@@ -255,7 +255,7 @@ struct AllocationView: View {
         return VStack(spacing: 7) {
             HStack(spacing: 6) {
                 Circle().fill(Theme.abilityColor(a)).frame(width: 8, height: 8)
-                Text("\(a)").font(.maru(12.5)).foregroundStyle(Theme.ink)
+                Text(String(describing: a)).font(.maru(12.5)).foregroundStyle(Theme.ink)
                 valSlot(cur, cap: cap, color: Theme.abilityColor(a), accent: false, punch: punchNow)
                 if showArrow {
                     Text("→").font(.maru(13)).foregroundStyle(Theme.inkDim)

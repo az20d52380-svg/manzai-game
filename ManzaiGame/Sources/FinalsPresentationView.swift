@@ -252,7 +252,7 @@ struct FinalsData {
             Spec(name: "神楽坂 とんぼ",  bias: 0,  axis: Double(s.メンタル),      color: Theme.cMental, noise: 3),
             Spec(name: "天堂寺 銀郎",    bias: -2, axis: Double(s.センス),        color: Theme.cSense,  noise: 1),
         ]
-        var raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-$0.noise...$0.noise)) }
+        let raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-$0.noise...$0.noise)) }
         // Σ=S へ丸め補正
         var ints = raw.map { Int($0.rounded()) }
         var diff = total - ints.reduce(0, +)
@@ -264,7 +264,7 @@ struct FinalsData {
         // 暫定ボード: 自組totalを基準にNPC9組を後方生成（champion=1位／それ以外は帯内）
         var npc: [Int] = []
         let spread = champion ? -1 : 0
-        for i in 0..<9 { npc.append(total + spread * rng.int(1...30) - rng.int(2...45) + (champion ? 0 : rng.int(-8...12))) }
+        for _ in 0..<9 { npc.append(total + spread * rng.int(1...30) - rng.int(2...45) + (champion ? 0 : rng.int(-8...12))) }
         var rows = npc.enumerated().map { BoardRow(name: FinalsData.npcNames[$0.offset % FinalsData.npcNames.count], total: max(520, min(695, $0.element)), isSelf: false) }
         rows.append(BoardRow(name: "あなたたち", total: total, isSelf: true))
         rows.sort { $0.total > $1.total }
