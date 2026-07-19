@@ -1,5 +1,5 @@
 // ChoiceEventData.swift
-// 選択肢イベントの本文（正典: proposals/0010・0017・0018・0019。各docでレッドチーム済み確定テキストの転記）。
+// 選択肢イベントの本文（正典: proposals/0010・0017・0018・0019・0021。各docでレッドチーム済み確定テキストの転記）。
 // 谷口版のみ（相方ガチャ/周回は本編未実装＝MVP1年完結のスコープ外）。manzai-choice-events + manzai-drama-voice
 // 採点済（E1〜E7・A表・B表）。地の文は name=nil（ナレーション扱い）、セリフは話者名を持つ。
 
@@ -19,6 +19,7 @@ enum ChoiceEventData {
         case .styleTalk: return styleTalk
         case .justPassedFork: return justPassedFork
         case .preTournamentEve: return preTournamentEve
+        case .tsuukaBreak: return tsuukaBreak
         }
     }
 
@@ -131,6 +132,32 @@ enum ChoiceEventData {
             "B": [
                 Advice(name: "俺", text: "今夜はここまで。半拍は、明日の勘に預ける。"),
                 Advice(name: "谷口", text: "珍しいな、お前が寝る方選ぶの。……ええ判断やと思うで。"),
+            ],
+        ]
+    )
+
+    // MARK: 0021 慣れの外し方
+
+    private static let tsuukaBreak = ChoiceEventText(
+        title: "慣れの外し方",
+        setup: [
+            Advice(name: nil, text: "稽古場のホワイトボードに、三本目の段取りが消されずに残っている。\nいつからか、二人にしか読めない略字になった。「A→タ→落」。\n書いた俺と、読める谷口。それで足りている。\n今日も、目配せだけで一本通した。オチの場所を、客より先に二人が知っている。"),
+            Advice(name: "谷口", text: "最近、俺ら目ぇ合わすだけで一本終わるな"),
+            Advice(name: "俺", text: "終わる。"),
+            Advice(name: "谷口", text: "気持ちええけど、こわいやつやな、それ"),
+        ],
+        choiceLabels: [
+            "A": "あえて崩す実験に出る",
+            "B": "完成した呼吸を固める",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "一回、崩す。二人にだけ通じる呼吸は、劇場の後ろまで届かない。"),
+                Advice(name: "谷口", text: "……やろな。お前がそのボード消すの、そろそろやと思とった"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今は固める。崩すのは、固まってからでいい。"),
+                Advice(name: "谷口", text: "ええよ。……この略字、もうちょい二人で使い倒そか"),
             ],
         ]
     )

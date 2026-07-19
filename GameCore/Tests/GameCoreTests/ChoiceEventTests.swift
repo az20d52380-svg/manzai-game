@@ -88,6 +88,29 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertEqual(s.compat, min(config.compatCap, config.compatInit + 1))
     }
 
+    // MARK: 0021 慣れの外し方（相性初到達15・一発化）
+
+    func test0021_A_tradesCompatAndStaminaForSense() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.compat = 15
+        let beforeStamina = s.stamina
+        apply(ChoiceEventTable.choices(for: .tsuukaBreak, config: config)[0].effects, to: &s, config: config)
+        XCTAssertEqual(s.センス, config.initAbility + 2)
+        XCTAssertEqual(s.compat, 14)
+        XCTAssertEqual(s.stamina, max(0, beforeStamina - 10))
+    }
+
+    func test0021_B_raisesExpressionAndCompatOnly() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.compat = 15
+        apply(ChoiceEventTable.choices(for: .tsuukaBreak, config: config)[1].effects, to: &s, config: config)
+        XCTAssertEqual(s.表現, config.initAbility + 2)
+        XCTAssertEqual(s.compat, min(config.compatCap, 16))
+        XCTAssertEqual(s.発想, config.initAbility)   // 伸びしろ(発想)は不動
+    }
+
     // MARK: 0010 前夜の一本（A確定効果のみ・0024でMVP降格済）
 
     func test0010_A_isFlatExpressionOnly() {

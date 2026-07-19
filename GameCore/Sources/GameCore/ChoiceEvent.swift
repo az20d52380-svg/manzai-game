@@ -1,6 +1,6 @@
 // ChoiceEvent.swift
 // 選択肢イベントの純データ（発火種別・選択肢の効果・選択可否ゲート）。正典: proposals/0024（実装ブリーフ）
-// ＋ 0010/0017/0018/0019（各イベントの本文・効果確定）。テキスト（地の文・会話）はUI層（ManzaiGame/Sources）。
+// ＋ 0010/0017/0018/0019/0021（各イベントの本文・効果確定）。テキストはUI層（ManzaiGame/Sources）。
 // 効果は EventEffect（ChoiceEventEffect.swift）のみ＝RandomSource を一切呼ばない＝golden不変。
 // ★MVPスコープ（0024確定）: 確定発火＋確定効果のみ。抽選・効果内ロールは入れない（0010のA内部判定は本編送り）。
 
@@ -9,6 +9,7 @@ public enum ChoiceEventKind: String, CaseIterable {
     case styleTalk           // 0019: 型を捨てる相談（発火=lossStreak>=3・一発化フラグで反復制御）
     case justPassedFork      // 0018: 通った日の分かれ道（発火=justPassedStage・weeksLeft>=3・低体力ガード）
     case preTournamentEve    // 0010: 前夜の一本（発火=weeksLeft==1・格の高い大会のみ）
+    case tsuukaBreak         // 0021: 慣れの外し方（発火=相性が初めて15に到達した週・一発化）
 }
 
 /// 選択肢1件（純データ）。gate は選択可否（0017C の所持金ゲート等）。デフォルトは常に選択可。
@@ -69,6 +70,16 @@ public enum ChoiceEventTable {
                 ]),
                 ChoiceEventChoice(id: "B", effects: [
                     .stamina(10), .ability(.メンタル, 1),
+                ]),
+            ]
+        case .tsuukaBreak:
+            // 0021 慣れの外し方: A=センス+2/相性-1/体力-10（崩す）　B=表現+2/相性+1（固める・伸びしろ不動）
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.センス, 2), .compat(-1), .stamina(-10),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .ability(.表現, 2), .compat(1),
                 ]),
             ]
         }
