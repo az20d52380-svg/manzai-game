@@ -36,6 +36,11 @@ final class GameSession {
     private(set) var justLostStage = false
     /// 直近の行動でおろした（isDown:false→true）ネタのID。ネタ帳で一言を出す・次の行動で失効（justPassedと同型）
     private(set) var justOroshiNeta: (id: Int, text: String)?
+    /// 選択肢イベント（正典: proposals/0024・0010/0017/0018/0019）。確定発火・確定効果のみ＝golden不変。
+    /// 0019「型を捨てる相談」の一発化フラグ。lossStreak=0（通過）と同一トランザクションでリセット。
+    private(set) var styleTalkDone = false
+    /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
+    private(set) var pendingChoiceEvent: ChoiceEventKind?
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
     /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
@@ -200,6 +205,63 @@ final class GameSession {
         return nil
     }
 
+    // MARK: 選択肢イベント（正典: proposals/0024実装ブリーフ・0010/0017/0018/0019）
+    //
+    // ⚠️ 確定発火（フラグを見て点火・抽選しない）＋確定効果（runner.applyEventEffects＝RNG非消費）のみ。
+    //    抽選プール化・効果内の乱数ロールは入れない（0024確定・0010のA内部判定は本編送り＝MVP対象外）。
+
+    /// 週頭（.freeAction 確定直後）に確定発火を判定。優先順位: justLost > 連敗の底(一発) >
+    /// 通過の分かれ道(余白+体力ガード) > 前夜(格の高い大会のみ)。複数回呼ばれても保留が有れば再評価しない。
+    private func evaluateChoiceEventFire() {
+        guard pendingChoiceEvent == nil else { return }
+        if justLostStage {
+            pendingChoiceEvent = .justLostRehearsal
+        } else if lossStreak >= 3, !styleTalkDone {
+            pendingChoiceEvent = .styleTalk
+        } else if justPassedStage, let m = nextMilestoneForEvent(), m.week - week >= 3, state.stamina >= 15 {
+            pendingChoiceEvent = .justPassedFork
+        } else if let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
+            pendingChoiceEvent = .preTournamentEve
+        }
+    }
+
+    /// 次に来る本番の週と「格が高いか」（0010: 新人賞級・準決・GP決勝＝高格／GP1-3回戦・準々決勝＝低格）。
+    /// AllocationView.nextStage() と同型の走査（View層の既存実装には触れず、GameSession側にも1つ持つ）。
+    private func nextMilestoneForEvent() -> (week: Int, highStakes: Bool)? {
+        let cal = config.calendar
+        var ms: [(week: Int, highStakes: Bool)] = []
+        for (i, r) in cal.gpRounds.enumerated() {
+            ms.append((r.week, i == cal.gpRounds.count - 1))   // 最後の回戦（準決勝）だけ高格
+        }
+        ms.append((cal.gpFinalWeek, true))   // GP決勝
+        for t in cal.tournaments where t.isEligible(year: year, state: state) {
+            ms.append((t.week, true))        // 道中大会（新人賞等）は全て高格
+        }
+        return ms.filter { $0.week >= week }.min { $0.week < $1.week }
+    }
+
+    /// 選択肢イベントの選択を確定（RNG非消費・golden不変）。発火元フラグを対称に失効させる。
+    func applyEventChoice(_ choiceID: String) {
+        guard let kind = pendingChoiceEvent else { return }
+        let choices = ChoiceEventTable.choices(for: kind, config: config)
+        guard let choice = choices.first(where: { $0.id == choiceID }), choice.gate(state) else { return }
+        runner.applyEventEffects(choice.effects)
+        state = runner.state
+        switch kind {
+        case .justLostRehearsal: justLostStage = false
+        case .styleTalk: styleTalkDone = true
+        case .justPassedFork: justPassedStage = false
+        case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
+        }
+        pendingChoiceEvent = nil
+    }
+
+    /// 現在保留中のイベントで選択可能な選択肢（gate通過分のみ・UI用）
+    func availableEventChoices() -> [ChoiceEventChoice] {
+        guard let kind = pendingChoiceEvent else { return [] }
+        return ChoiceEventTable.choices(for: kind, config: config).filter { $0.gate(state) }
+    }
+
     // MARK: 持ちネタ（正典: docs/neta_system_redesign_v2.md Phase 0）
     //
     // ⚠️ このセクションは runner.applyNeta*（RandomSource 非依存の純適用・WeekRunner.swift）だけを呼ぶ＝
@@ -327,8 +389,12 @@ final class GameSession {
                 if !big.isEmpty {
                     // 連敗カウント＆直近通過（心の声用）: 通過でリセット・敗退で加算
                     for r in big {
-                        if r.passed { lossStreak = 0; justPassedStage = true; justLostStage = false }
-                        else { lossStreak += 1; justPassedStage = false; justLostStage = true }
+                        if r.passed {
+                            lossStreak = 0; justPassedStage = true; justLostStage = false
+                            styleTalkDone = false   // 0019一発化フラグ: 通過(lossStreak=0)と同一トランザクションでリセット
+                        } else {
+                            lossStreak += 1; justPassedStage = false; justLostStage = true
+                        }
                         totalPrize += r.prize   // S6 賞金年計
                     }
                     categoryLog[summary.week] = .taikai   // S6 行動内訳帯（大会週）
@@ -351,6 +417,7 @@ final class GameSession {
                 // tournamentDecision / freeAction / gpRound / gpRevival / gpFinal → 入力or演出待ち
                 week = runner.week
                 state = runner.state
+                if case .freeAction = phase { evaluateChoiceEventFire() }
                 break loop
             }
         }
