@@ -99,12 +99,19 @@ func applyEventChoice(_ choice: ChoiceEvent.Choice) {
 
 ## 実装チェックリスト（MVP側CLI向け）
 
-1. [ ] ピース1 `applyEventPatch` を GameCore に追加 → `swift test` 緑（golden不変を確認）＋新規ユニットテスト。
-2. [ ] ピース2 `justLost` / `pendingEvent` / `applyEventChoice` を GameSession に追加（UI層・golden非対象）。
-3. [ ] `ChoiceEvent` 純データ＋発火表（0018→0019→0017→0010 の優先順）を定義。テキスト/効果は 0010/0017/0018/0019 から転記。
-4. [ ] ピース3 `ChoiceEventOverlay` 新規ビュー → `xcodegen generate` → simulator で各トリガ目視。
-5. [ ] `sim_career.py` EVENTS_ON で再計測 → 【仮】値を確定。
-6. [ ] **禁止**: 抽選プール化・効果の乱数ロールは入れない（入れるなら golden 正典同期を1コミットで揃える＝別タスク・要相談）。
+> **[実装完了バナー・2026-07-18・4.8]** 1〜4は実装済み（`ChoiceEvent.swift`/`ChoiceEventOverlay.swift`/
+> `ChoiceEventData.swift`・GameSession配線）。当初4本に加え 0020/0021 も同型で追加し**計6本**が実プレイに
+> 配線済み。swift test 55件green（golden完全不変を実測）。5（sim較正）は未実施＝数値は全て【仮】のまま。
+> 0022（撮られる仕事）は見送り＝既存`rollOffer`がRNGを2回消費する正典関数（Python鏡像あり）と判明し、
+> 変更に規律A手順が要るため。0011-0016/0023は週次ランダム抽選が前提で新規RNG消費＝未着手。
+> 詳細は `docs/START_HERE.md` の「選択肢イベント MVP実装完了」エントリ参照。
+
+1. [x] ピース1 `applyEventPatch` を GameCore に追加 → `swift test` 緑（golden不変を確認）＋新規ユニットテスト。（既存 `WeekRunner.applyEventEffects` が同等品として実装済みと確認）
+2. [x] ピース2 `justLost` / `pendingEvent` / `applyEventChoice` を GameSession に追加（UI層・golden非対象）。（`justLostStage`は既存・`styleTalkDone`/`didFireTsuukaChoice`/`didFireEarlyFormality`を追加）
+3. [x] `ChoiceEvent` 純データ＋発火表（0018→0019→0017→0010 の優先順）を定義。テキスト/効果は 0010/0017/0018/0019 から転記。（0020/0021も追加）
+4. [x] ピース3 `ChoiceEventOverlay` 新規ビュー → `xcodegen generate` → simulator で各トリガ目視。（6本全てsimulator目視済み）
+5. [ ] `sim_career.py` EVENTS_ON で再計測 → 【仮】値を確定。（未実施・バランス数値は全て仮のまま）
+6. [x] **禁止**: 抽選プール化・効果の乱数ロールは入れない（入れるなら golden 正典同期を1コミットで揃える＝別タスク・要相談）。（遵守。0010のA内部ロールも確定効果のみに留めて実装）
 
 ## リスク・注意
 
