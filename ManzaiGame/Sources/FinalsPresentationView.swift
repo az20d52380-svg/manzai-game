@@ -85,12 +85,15 @@ struct FinalsPresentationView: View {
     private var openBeat: some View {
         let running = d.judges.prefix(revealedJudges).reduce(0) { $0 + $1.score }
         let allShown = revealedJudges >= 7
+        // 見せ札の型ラベル（v2 §4-3補2）: FinalsData（Σ=S補正・rng.int等）の計算には一切関与しない、
+        // 既に確定済みの点数・出順の上に、選択中ネタの型を審査員の固定嗜好表で引いて添えるだけの純表示。
+        let kata = session.selectedNeta?.kata
         return VStack(spacing: 14) {
             Text(allShown ? "採点" : revealedJudges == 0 ? "採点発表" : "\(revealedJudges) / 7 人")
                 .font(.maru(12)).foregroundStyle(.white.opacity(0.7))
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                 ForEach(Array(d.judges.enumerated()), id: \.offset) { i, j in
-                    judgeCard(j, shown: i < revealedJudges)
+                    judgeCard(j, shown: i < revealedJudges, kata: kata)
                 }
             }
             VStack(spacing: 2) {
@@ -100,20 +103,28 @@ struct FinalsPresentationView: View {
                 Text(allShown ? "/ 700" : "……").font(.maru(12)).foregroundStyle(.white.opacity(0.5))
             }
             .padding(.top, 4)
+            if let kata, allShown {
+                Text("\(NetaCatalog.displayName(kata))で挑んだ一本。")
+                    .font(.system(size: 11.5, design: .serif)).foregroundStyle(.white.opacity(0.55))
+            }
         }
     }
 
-    private func judgeCard(_ j: JudgeScore, shown: Bool) -> some View {
+    private func judgeCard(_ j: JudgeScore, shown: Bool, kata: NetaKata?) -> some View {
         VStack(spacing: 3) {
             if shown {
                 Text("\(j.score)").font(.maru(22)).monospacedDigit().foregroundStyle(.white)
                 Circle().fill(j.axisColor).frame(width: 6, height: 6)
                 Text(j.name).font(.maru(8.5)).foregroundStyle(.white.opacity(0.7)).lineLimit(1).minimumScaleFactor(0.7)
+                if let kata {
+                    Text(NetaCatalog.affinity(kata, judge: j.name))
+                        .font(.maru(9, weight: .bold)).foregroundStyle(Theme.gold.opacity(0.9))
+                }
             } else {
                 Text("？").font(.maru(22)).foregroundStyle(.white.opacity(0.3))
             }
         }
-        .frame(maxWidth: .infinity).frame(height: 70)
+        .frame(maxWidth: .infinity).frame(height: kata != nil ? 82 : 70)
         .background((shown ? Color.white.opacity(0.10) : Color.white.opacity(0.05)), in: RoundedRectangle(cornerRadius: 10))
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(shown ? j.axisColor.opacity(0.6) : .white.opacity(0.12), lineWidth: 1))
         .rotation3DEffect(.degrees(shown ? 0 : 180), axis: (x: 0, y: 1, z: 0))
