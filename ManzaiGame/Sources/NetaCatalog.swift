@@ -56,6 +56,20 @@ enum NetaCatalog {
         return names[i]
     }
 
+    /// 本番ごとの目安の尺（v2 §4-1補・表示専用ヒューリスティック。合否には一切効かせない）。
+    /// GP回戦は前半=短尺・中盤=中尺・準決勝以降=長尺（実在の「1回戦2分/準々〜決勝4分」の性質を写した区分）。
+    static func lengthForGPRound(index: Int) -> NetaLength {
+        switch index {
+        case 0, 1: return .短尺
+        case 2, 3: return .中尺
+        default: return .長尺
+        }
+    }
+    /// 道中大会・敗者復活・決勝の目安尺（【仮】・道中大会は一律中尺で単純化）
+    static let lengthForTournament = NetaLength.中尺
+    static let lengthForGPRevival = NetaLength.長尺
+    static let lengthForGPFinal = NetaLength.長尺
+
     private static let names: [String] = [
         "商店街の福引", "終電の二人", "引っ越しの日", "同窓会の名簿", "コンビニの夜勤",
         "健康診断の結果", "忘れ物の傘", "分譲マンションの内見", "婚活パーティー", "家庭教師の初回",

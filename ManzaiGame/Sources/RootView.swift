@@ -97,12 +97,15 @@ struct RootView: View {
                 WeekMainView(session: session, offer: offer)          // S1 育成メイン
             case .tournamentDecision(let spec):
                 TournamentEntryView(session: session, spec: spec)     // 大会入口（遠征選択）
-            case .gpRound(_, let name):
-                StagePreludeView(session: session, title: name)       // GP本番前
+            case .gpRound(let index, let name):
+                StagePreludeView(session: session, title: name,
+                                  requiredLength: NetaCatalog.lengthForGPRound(index: index))   // GP本番前
             case .gpRevival:
-                StagePreludeView(session: session, title: "敗者復活")
+                StagePreludeView(session: session, title: "敗者復活",
+                                  requiredLength: NetaCatalog.lengthForGPRevival)
             case .gpFinal:
-                StagePreludeView(session: session, title: "頂GP 決勝")
+                StagePreludeView(session: session, title: "頂GP 決勝",
+                                  isFinal: true, requiredLength: NetaCatalog.lengthForGPFinal)
             default:
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

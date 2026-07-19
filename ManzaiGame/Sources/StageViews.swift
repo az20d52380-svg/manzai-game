@@ -90,6 +90,11 @@ struct TournamentEntryView: View {
             Text("第\(spec.week)週 ・ 通過ライン \(Int(spec.line)) ・ 賞金 \(spec.prize / 10000)万")
                 .font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkDim)
 
+            // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）
+            NetaPickRow(session: session, title: "今夜かけるネタ", requiredLength: NetaCatalog.lengthForTournament,
+                        selected: session.selectedNeta, onSelect: { session.selectNeta($0) })
+                .padding(.horizontal, 28)
+
             Spacer()
             VStack(spacing: 10) {
                 let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める
@@ -133,6 +138,10 @@ struct TournamentEntryView: View {
 struct StagePreludeView: View {
     @Bindable var session: GameSession
     let title: String
+    /// 決勝のみ2本目の枠も出す（v2 §4-2「決勝2本制」・表示/戦績のみ・Phase 0ではスコア非干渉）
+    var isFinal: Bool = false
+    /// この舞台の目安尺（v2 §4-1補・表示のみ）。nil なら尺の言及をしない
+    var requiredLength: NetaLength? = nil
 
     var body: some View {
         VStack(spacing: 16) {
@@ -142,6 +151,20 @@ struct StagePreludeView: View {
                 .background(Theme.verm, in: Capsule())
             Text(title).font(.maru(26))
             Text("本番").font(.maru(13, weight: .bold)).foregroundStyle(Theme.inkDim)
+
+            // 今夜かけるネタ（v2 §4-1補/§4-2・golden非干渉）
+            VStack(spacing: 8) {
+                NetaPickRow(session: session, title: isFinal ? "決勝・1本目" : "今夜かけるネタ",
+                            requiredLength: requiredLength, selected: session.selectedNeta,
+                            onSelect: { session.selectNeta($0) })
+                if isFinal {
+                    NetaPickRow(session: session, title: "決勝・2本目（温存の一手）",
+                                requiredLength: requiredLength, selected: session.selectedNeta2,
+                                onSelect: { session.selectNeta2($0) })
+                }
+            }
+            .padding(.horizontal, 28)
+
             Spacer()
             Button {
                 session.advanceAuto()

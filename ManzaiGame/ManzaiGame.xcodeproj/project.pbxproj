@@ -29,6 +29,7 @@
 		DF24415C7E00852BA2F01FC2 /* WinFinaleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD51A6CC2B53C8FB77C0B1B6 /* WinFinaleView.swift */; };
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 		E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C2B6670FC11321C4559DCB /* Theme.swift */; };
+		EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		584B31B6D7B7B692F33CC50E /* StageViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageViews.swift; sourceTree = "<group>"; };
 		599065030751D5F2DB350459 /* FinalsPresentationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalsPresentationView.swift; sourceTree = "<group>"; };
 		5F49ED139642FC2518E962F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaSelectionView.swift; sourceTree = "<group>"; };
 		74BDACA803ECB2EFD5DE9293 /* GameCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GameCore; path = ../GameCore; sourceTree = SOURCE_ROOT; };
 		915FB4D3357203506A4F5A67 /* IntroFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroFlow.swift; sourceTree = "<group>"; };
 		A274A5E67200827BEBFC258E /* YearResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearResultView.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 				F5D08F932A4334F422E73881 /* JudgeData.swift */,
 				0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */,
 				03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */,
+				66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */,
 				DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */,
 				F840A919C087A92A94339899 /* RadarChart.swift */,
 				5F49ED139642FC2518E962F8 /* RootView.swift */,
@@ -192,6 +195,7 @@
 				6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */,
 				54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */,
 				20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */,
+				EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */,
 				DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */,
 				9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */,
 				2A0C4D15DED110C70394538A /* RootView.swift in Sources */,
