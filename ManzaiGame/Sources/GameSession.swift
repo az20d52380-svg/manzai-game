@@ -81,6 +81,7 @@ final class GameSession {
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         phase = runner.resolveAction(action)
+        applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
         pump()
         lastGains = Ability.allCases.compactMap { a in
             let d = state[a] - before[a]
@@ -196,6 +197,90 @@ final class GameSession {
         return nil
     }
 
+    // MARK: 持ちネタ（正典: docs/neta_system_redesign_v2.md Phase 0）
+    //
+    // ⚠️ このセクションは runner.applyNeta*（RandomSource 非依存の純適用・WeekRunner.swift）だけを呼ぶ＝
+    //    golden不変。「反応で磨く（当たり外れ）」「選択が勝敗に効く」はスコア/乱数を要する＝Phase 1（規律A・別便）。
+    //    ここは「作る・貯める・選ぶ器」まで（v2 §0-補）。
+
+    /// アクティブな持ちネタ（少数・磨き対象＝鉄板枠）
+    var activeNetas: [Neta] { state.netas }
+    /// 保管庫（多数・年跨ぎ資産・いつでも呼び戻せる）
+    var archivedNetas: [Neta] { state.archivedNetas }
+    /// 大会に「今かける」ネタ（1本目）
+    var selectedNeta: Neta? { state.netas.first { $0.id == state.selectedNetaID } }
+    /// 決勝の2本目
+    var selectedNeta2: Neta? { state.netas.first { $0.id == state.selectedNetaID2 } }
+
+    /// `ネタ作り`/`ネタ見せ会`/`フリーライブ` の後段フック。resolveAction の直後に呼ぶ（choose() 内）。
+    /// 3秒動線を壊さない（v2 §3-1）＝ここではシートを挟まず自動で「今作業中のネタ」を決める:
+    ///  - ネタ作り: 選択中ネタがアクティブにあれば改稿。無ければ枠が空いていれば自動生成して選択。
+    ///    枠が満杯なら直近のアクティブネタ（末尾）を改稿（誤操作より手応え優先の既定・【仮】）。
+    ///  - ネタ見せ会/フリーライブ: 選択中ネタがあればそれを、無ければ直近のアクティブネタを客前にかける。
+    ///    アクティブネタが1本も無ければ何もしない（まだ書いた ネタが無い＝最初の ネタ作り が先）。
+    private func applyNetaWork(for action: WeekAction) {
+        guard case .train(let t) = action, t == .ネタ作り || t == .ネタ見せ会 || t == .フリーライブ else { return }
+        switch t {
+        case .ネタ作り:
+            if let id = state.selectedNetaID, state.netas.contains(where: { $0.id == id }) {
+                runner.applyNetaRevise(id: id)
+            } else if state.netas.count < config.netaActiveSlots {
+                let kata = NetaCatalog.autoKata(forID: state.nextNetaID)
+                let id = runner.applyNetaCreate(kata: kata, lengthFit: NetaCatalog.defaultLengthFit(for: kata),
+                                                 name: NetaCatalog.autoName(forID: state.nextNetaID))
+                runner.applyNetaSelect(id: id)
+            } else if let last = state.netas.last {
+                runner.applyNetaRevise(id: last.id)
+            }
+        case .ネタ見せ会, .フリーライブ:
+            let targetID = (state.selectedNetaID.flatMap { id in state.netas.contains { $0.id == id } ? id : nil })
+                ?? state.netas.last?.id
+            if let id = targetID { runner.applyNetaLive(id: id, hard: t == .ネタ見せ会) }
+        default: break
+        }
+        state = runner.state
+    }
+
+    /// 「今かけるネタ」を選ぶ（大会入口・持ちネタ帳から。保管庫のネタでも可＝自動でアクティブへ呼び戻さない・
+    /// 呼び戻しは recallNeta を先に呼ぶ設計。ここはアクティブ枠内のIDのみ有効）。
+    func selectNeta(_ id: Int?) {
+        runner.applyNetaSelect(id: id)
+        state = runner.state
+    }
+
+    /// 決勝の2本目を選ぶ（v2 §4-2）
+    func selectNeta2(_ id: Int?) {
+        runner.applyNetaSelect2(id: id)
+        state = runner.state
+    }
+
+    /// 型の組み替え（大改稿で1度・v2 §3-1補）
+    func changeNetaKata(_ id: Int, to kata: NetaKata) {
+        runner.applyNetaChangeKata(id: id, to: kata)
+        state = runner.state
+    }
+
+    /// 改名（自動命名の上書き・v2 §9決点3）
+    func renameNeta(_ id: Int, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        runner.applyNetaRename(id: id, to: trimmed)
+        state = runner.state
+    }
+
+    /// アクティブ枠→保管庫（削除でも封印でもない・いつでも呼び戻せる・v2 §2-2）
+    func retireNeta(_ id: Int) {
+        runner.applyNetaRetire(id: id)
+        state = runner.state
+    }
+
+    /// 保管庫→アクティブ枠（古いネタの再演・v2 §2-2/§4-2）。枠が満杯なら何もしない（先に retireNeta で空ける）。
+    func recallNeta(_ id: Int) {
+        guard state.netas.count < config.netaActiveSlots else { return }
+        runner.applyNetaRecall(id: id)
+        state = runner.state
+    }
+
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
     func advanceAuto() {
         phase = runner.resolveAuto()
@@ -278,6 +363,30 @@ final class GameSession {
             default: return
             }
         }
+    }
+
+    /// DEBUG: ネタ帳（MZ_UI=neta）の目視用に持ちネタを積んだ開始状態。全状態（鉄板/おろし前/擦り切れ/保管庫）を
+    /// 一画面で踏めるよう組む。数値は全て【仮】＝目視の都合だけ（水準確定はPhase 1・sim較正）。
+    static func debugNetaState(config: GameConfig = GameConfig()) -> GameState {
+        var s = GameState(config: config)
+        var teppan = Neta(id: 0, name: "商店街の福引", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1)
+        teppan.polish = 88; teppan.buzz = 70; teppan.stageCount = 12; teppan.isDown = true; teppan.exposure = 40
+        teppan.record = [NetaStamp(year: 1, stage: "GP2回戦", passed: true), NetaStamp(year: 1, stage: "GP3回戦", passed: true)]
+
+        var fresh = Neta(id: 1, name: "満員電車", kata: .瞬発, lengthFit: [.短尺, .中尺], bornYear: 1)
+        fresh.polish = 34   // 未おろし（isDown=false のまま）
+
+        var midway = Neta(id: 2, name: "婚活パーティー", kata: .華先行, lengthFit: [.短尺], bornYear: 1)
+        midway.polish = 55; midway.buzz = 42; midway.stageCount = 3; midway.isDown = true
+
+        s.netas = [teppan, fresh, midway]
+        s.nextNetaID = 3
+        s.selectedNetaID = 0
+
+        var old = Neta(id: 3, name: "終電の二人", kata: .関係性, lengthFit: [.中尺, .長尺], bornYear: -2)   // 3年以上前＝再演対象
+        old.polish = 72; old.buzz = 50; old.stageCount = 9; old.isDown = true
+        s.archivedNetas = [old]
+        return s
     }
 
     /// DEBUG: 能力を上限近くまで盛った開始状態（数式・乱数は不変・GameStateの初期値だけ変更）。

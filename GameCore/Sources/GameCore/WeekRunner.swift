@@ -371,6 +371,12 @@ public struct WeekRunner<R: RandomSource> {
         state.netas[i].isDown = true   // 初回＝ネタおろし（一回性の節目・v2 §3-2補2）
     }
 
+    /// 改名（v2 §9決点3・自動命名の上書き）。アクティブ/保管庫どちらのネタも対象。純データ変更・非スコア。
+    public mutating func applyNetaRename(id: Int, to name: String) {
+        if let i = state.netas.firstIndex(where: { $0.id == id }) { state.netas[i].name = name }
+        else if let j = state.archivedNetas.firstIndex(where: { $0.id == id }) { state.archivedNetas[j].name = name }
+    }
+
     /// 型の組み替え（大改稿で1度・v2 §3-1補）。アクティブ/保管庫どちらのネタも対象。
     public mutating func applyNetaChangeKata(id: Int, to kata: NetaKata) {
         if let i = state.netas.firstIndex(where: { $0.id == id }) { state.netas[i].kata = kata }

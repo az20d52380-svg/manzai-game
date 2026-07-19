@@ -19,6 +19,7 @@ struct RootView: View {
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "allocate": AllocationView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
+            case "neta": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
             default: mainFlow
             }
             #else
@@ -50,6 +51,10 @@ struct RootView: View {
             if ui == "allocate", session.week <= 1 {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
                 session = GameSession(startState: GameSession.debugAllocationState())
+            }
+            if ui == "neta", session.week <= 1 {
+                // ネタ帳目視: 持ちネタ（鉄板/おろし前/擦り切れ/保管庫）を積んだ開始状態（数値は全て【仮】）
+                session = GameSession(startState: GameSession.debugNetaState())
             }
             #endif
         }

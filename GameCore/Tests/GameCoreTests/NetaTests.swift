@@ -95,6 +95,16 @@ final class NetaTests: XCTestCase {
         XCTAssertEqual(r.state.archivedNetas[0].kata, .伏線回収)
     }
 
+    func testRenameOnActiveAndArchived() {
+        var r = makeRunner()
+        let id = r.applyNetaCreate(kata: .華先行, lengthFit: [.短尺], name: "旧名")
+        r.applyNetaRename(id: id, to: "新名")
+        XCTAssertEqual(r.state.netas[0].name, "新名")
+        r.applyNetaRetire(id: id)
+        r.applyNetaRename(id: id, to: "倉庫名")
+        XCTAssertEqual(r.state.archivedNetas[0].name, "倉庫名")
+    }
+
     // MARK: 純関数（決定論・非スコア表示）
 
     func testLiveBuzzIsDeterministic() {

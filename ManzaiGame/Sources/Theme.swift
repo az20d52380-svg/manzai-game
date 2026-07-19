@@ -79,6 +79,19 @@ enum Theme {
         default: return "S"
         }
     }
+
+    /// ネタの型→色（v2 §2-1・7型を視覚的に書き分けるだけの表示専用トークン。判定には無関係）
+    static func kataColor(_ k: NetaKata) -> Color {
+        switch k {
+        case .王道しゃべくり: return cSense
+        case .関係性: return cChara
+        case .伏線回収: return cIdea
+        case .リターン: return cMental
+        case .非定型: return verm
+        case .瞬発: return gainOrange
+        case .華先行: return goldD
+        }
+    }
 }
 
 // MARK: §3-0 追加デザイントークン（正典: docs/uiux_vision_reply_part1_v0.md §3-0。全て【仮】）
