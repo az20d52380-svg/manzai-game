@@ -207,5 +207,11 @@ public struct GameConfig {
     /// 再演バッジ＝作成からこの年数以上寝かせた
     public var netaRevivalYears = 3
 
+    // --- S6b 勇退エンディングの会場ランク（表示専用・golden非対象。全て【仮】） ---
+    /// 残金帯4段階の閾値（0=町の劇場／1=ホール／2=アリーナ／3=ドーム）
+    public var venueTier1Money = 0
+    public var venueTier2Money = 3_000_000
+    public var venueTier3Money = 8_000_000
+
     public init() {}
 }

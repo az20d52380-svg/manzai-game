@@ -67,12 +67,13 @@ struct S6bView: View {
         }
     }
 
-    private var venueTier: Int {   // 残金帯4段階【仮・config化はTODO】
+    private var venueTier: Int {   // 残金帯4段階（GameConfig集約・数値は全て【仮】）
+        let c = session.config
         switch s.money {
-        case ..<0: return 0            // 町の劇場
-        case ..<3_000_000: return 1    // ホール
-        case ..<8_000_000: return 2    // アリーナ
-        default: return 3              // ドーム
+        case ..<c.venueTier1Money: return 0    // 町の劇場
+        case ..<c.venueTier2Money: return 1    // ホール
+        case ..<c.venueTier3Money: return 2    // アリーナ
+        default: return 3                      // ドーム
         }
     }
     private var venueName: String { ["町の劇場", "ホール", "アリーナ", "ドーム"][venueTier] }
