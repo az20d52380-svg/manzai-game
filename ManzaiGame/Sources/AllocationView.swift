@@ -50,25 +50,31 @@ struct AllocationView: View {
         ZStack {
             LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
-            VStack(spacing: Theme.Sp.s16) {
-                header
-                ScrollView {
-                    // 情報階層（§3）: 判断材料（実力ヘッダ）→ 操作（能力群）→ 会計（成長の器）
-                    VStack(spacing: Theme.Sp.s16) {
-                        jitsuryokuHeader(pv)
-                        explainer
-                        groupCard(.ネタ, pv)
-                        groupCard(.舞台, pv)
-                        mentalCard(pv)
-                        vesselCard(pv)
+            // フッタは safeAreaInset でなく通常の VStack 兄弟にする（診断済み・コミット参照）: コンテンツが
+            // 画面に収まる（スクロール不要）とき、safeAreaInset は ScrollView のビューポート自体の高さを
+            // フッタぶん縮めてくれず、最終カードがフッタの裏に食い込んでいた。VStack内でScrollViewを可変
+            // （他が固定高のため自動でmaxHeightを埋める）にし、フッタを実兄弟にすれば構造的に重ならない。
+            VStack(spacing: 0) {
+                VStack(spacing: Theme.Sp.s16) {
+                    header
+                    ScrollView {
+                        VStack(spacing: Theme.Sp.s16) {
+                            jitsuryokuHeader(pv)
+                            explainer
+                            groupCard(.ネタ, pv)
+                            groupCard(.舞台, pv)
+                            mentalCard(pv)
+                            vesselCard(pv)
+                        }
+                        .padding(.horizontal, Theme.Sp.s16)
+                        .padding(.bottom, Theme.Sp.s24)
                     }
-                    .padding(.horizontal, Theme.Sp.s16)
-                    .padding(.bottom, Theme.Sp.s24)
+                    .clipped()
                 }
+                .padding(.top, Theme.Sp.s12)
+                footer(pv)
             }
-            .padding(.top, Theme.Sp.s12)
         }
-        .safeAreaInset(edge: .bottom) { footer(pv) }
         .overlay(alignment: .bottom) {
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
         }
@@ -465,8 +471,10 @@ struct AllocationView: View {
             .modifier(ShakeEffect(animatableData: shakeSeed["commit"] ?? 0))
         }
         .padding(.horizontal, Theme.Sp.s16).padding(.top, Theme.Sp.s12).padding(.bottom, Theme.Sp.s8)
-        .background(LinearGradient(colors: [Theme.bg2.opacity(0), Theme.bg2],
-                                   startPoint: .top, endPoint: .center))
+        // 不透明な地色（診断済み・コミット参照）: 上端が透明なグラデーションだと、ScrollView側の
+        // クリップ境界とフッタの表示領域がズレた時（このView階層で実測済み）にカードの端が薄く透けて見える。
+        // 不透明にして確実に覆うことで、レイアウトの微妙なズレに対しても症状（重なって見える）を出さない。
+        .background(Theme.bg2)
     }
 
     /// おすすめ注ぎ＝GameCore正典 recommendedPlan（golden台本と同じ1関数）を「能力ごと+1段ブロック」に畳んで仮置き（§3-4）。
