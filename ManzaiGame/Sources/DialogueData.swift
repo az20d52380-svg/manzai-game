@@ -129,4 +129,17 @@ enum DialogueData {
     private static func pick(_ pool: [String], salt: Int) -> String {
         pool.isEmpty ? "" : pool[((salt % pool.count) + pool.count) % pool.count]
     }
+
+    // MARK: ネタおろし（初披露＝Neta.isDown:false→true の瞬間・正典 docs/neta_system_redesign_v2.md §3-2補2）
+    // 話者=俺（標準語・心の声）。manzai-drama-voice Skill 採点済（A表16項目・B表7項目・全○）。
+
+    static func netaOroshi(salt: Int) -> String {
+        pick(netaOroshiPool, salt: salt)
+    }
+    private static let netaOroshiPool = [
+        "稽古場では、台本を横に置いていた。今夜は、それを持たずに立つ。",
+        "このネタを、俺たちは何十回も読んだ。今夜の客には、初耳だ。",
+        "板の上に立つ位置は、テープの印で決まっている。それを自分の足で踏むのは、これが最初だ。",
+        "客は八人。全員、このネタを聞くのは今夜が初めてだった。俺たちだけが、先に結末を知っていた。",
+    ]
 }

@@ -240,6 +240,7 @@ struct NotebookView: View {
             }
             netaBar(label: "完成度", value: neta.polish, color: Theme.kataColor(neta.kata))
             netaBar(label: "手応え", value: neta.buzz, color: Theme.gold)
+            oroshiLine(neta)
             HStack(spacing: 8) {
                 Text("\(neta.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkFaint)
                 ForEach(neta.lengthFit, id: \.self) { l in
@@ -268,6 +269,14 @@ struct NotebookView: View {
         .background(Theme.card2, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.btn)
             .stroke(isSelected ? Theme.verm.opacity(0.55) : .clear, lineWidth: 1.5))
+    }
+
+    /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
+    @ViewBuilder private func oroshiLine(_ neta: Neta) -> some View {
+        if session.justOroshiNeta?.id == neta.id, let text = session.justOroshiNeta?.text {
+            Text(text).font(.system(size: 11.5, design: .serif)).foregroundStyle(Theme.inkDim)
+                .transition(.opacity)
+        }
     }
 
     /// 名前（タップで改名フィールドへ）

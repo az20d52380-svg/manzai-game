@@ -34,6 +34,8 @@ final class GameSession {
     private(set) var justPassedStage = false
     /// 直近の大会で敗退したか（負けた翌週の一言＝温度事故の停止。justPassedと対称・行動すると失効）
     private(set) var justLostStage = false
+    /// 直近の行動でおろした（isDown:false→true）ネタのID。ネタ帳で一言を出す・次の行動で失効（justPassedと同型）
+    private(set) var justOroshiNeta: (id: Int, text: String)?
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
     /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
@@ -80,6 +82,7 @@ final class GameSession {
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
+        justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
         phase = runner.resolveAction(action)
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
         pump()
@@ -235,7 +238,14 @@ final class GameSession {
         case .ネタ見せ会, .フリーライブ:
             let targetID = (state.selectedNetaID.flatMap { id in state.netas.contains { $0.id == id } ? id : nil })
                 ?? state.netas.last?.id
-            if let id = targetID { runner.applyNetaLive(id: id, hard: t == .ネタ見せ会) }
+            if let id = targetID {
+                let wasDown = state.netas.first { $0.id == id }?.isDown ?? true
+                runner.applyNetaLive(id: id, hard: t == .ネタ見せ会)
+                let nowDown = runner.state.netas.first { $0.id == id }?.isDown ?? false
+                if !wasDown, nowDown {   // おろし（初披露）の瞬間だけ一言（v2 §3-2補2）
+                    justOroshiNeta = (id, DialogueData.netaOroshi(salt: id &+ week))
+                }
+            }
         default: break
         }
         state = runner.state
