@@ -241,6 +241,8 @@ final class GameSession {
     }
 
     /// 選択肢イベントの選択を確定（RNG非消費・golden不変）。発火元フラグを対称に失効させる。
+    /// pendingChoiceEvent はここでは落とさない＝選択後の会話をオーバーレイに見せ切ってから
+    /// dismissChoiceEvent() で閉じる（先に落とすと .fullScreenCover(item:) が即座に閉じてしまう）。
     func applyEventChoice(_ choiceID: String) {
         guard let kind = pendingChoiceEvent else { return }
         let choices = ChoiceEventTable.choices(for: kind, config: config)
@@ -253,6 +255,10 @@ final class GameSession {
         case .justPassedFork: justPassedStage = false
         case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
         }
+    }
+
+    /// 選択後の会話を見終えてオーバーレイを閉じる（UI側の「閉じる」タップから呼ぶ）
+    func dismissChoiceEvent() {
         pendingChoiceEvent = nil
     }
 

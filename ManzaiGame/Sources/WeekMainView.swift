@@ -69,6 +69,16 @@ struct WeekMainView: View {
         .fullScreenCover(isPresented: $showAllocate) {
             AllocationView(session: session) { showAllocate = false }   // 割り振り（経験点→能力）
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { session.pendingChoiceEvent != nil },
+            set: { if !$0 { session.dismissChoiceEvent() } }
+        )) {
+            // 選択肢イベント（0024ピース3・確定発火）。pendingChoiceEvent は private(set) なので
+            // Bool の合成 Binding 経由（既存 showNotebook 等と同じ isPresented パターン）。
+            if let kind = session.pendingChoiceEvent {
+                ChoiceEventOverlay(session: session, kind: kind) {}
+            }
+        }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
