@@ -36,11 +36,13 @@ final class GameSession {
     private(set) var justLostStage = false
     /// 直近の行動でおろした（isDown:false→true）ネタのID。ネタ帳で一言を出す・次の行動で失効（justPassedと同型）
     private(set) var justOroshiNeta: (id: Int, text: String)?
-    /// 選択肢イベント（正典: proposals/0024・0010/0017/0018/0019/0021）。確定発火・確定効果のみ＝golden不変。
+    /// 選択肢イベント（正典: proposals/0024・0010/0017/0018/0019/0020/0021）。確定発火・確定効果のみ＝golden不変。
     /// 0019「型を捨てる相談」の一発化フラグ。lossStreak=0（通過）と同一トランザクションでリセット。
     private(set) var styleTalkDone = false
     /// 0021「慣れの外し方」の一発化フラグ。相性が初めて15に到達した週に一度だけ発火（キャリア1回・再発なし）。
     private(set) var didFireTsuukaChoice = false
+    /// 0020「まだ敬語の残る間」の一発化フラグ。結成初期(week<15)×他人行儀帯(compat 0-7)で一度だけ発火。
+    private(set) var didFireEarlyFormality = false
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
@@ -213,8 +215,8 @@ final class GameSession {
     //    抽選プール化・効果内の乱数ロールは入れない（0024確定・0010のA内部判定は本編送り＝MVP対象外）。
 
     /// 週頭（.freeAction 確定直後）に確定発火を判定。優先順位: justLost > 連敗の底(一発) >
-    /// 通過の分かれ道(余白+体力ガード) > 前夜(格の高い大会のみ) > ツーカー帯初到達(一発・キャリア1回)。
-    /// 複数回呼ばれても保留が有れば再評価しない。
+    /// 通過の分かれ道(余白+体力ガード) > 前夜(格の高い大会のみ) > 結成初期の他人行儀(一発) >
+    /// ツーカー帯初到達(一発・キャリア1回)。複数回呼ばれても保留が有れば再評価しない。
     private func evaluateChoiceEventFire() {
         guard pendingChoiceEvent == nil else { return }
         if justLostStage {
@@ -225,6 +227,8 @@ final class GameSession {
             pendingChoiceEvent = .justPassedFork
         } else if let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
             pendingChoiceEvent = .preTournamentEve
+        } else if !didFireEarlyFormality, week < 15, state.compat <= 7 {
+            pendingChoiceEvent = .earlyFormality
         } else if !didFireTsuukaChoice, state.compat >= 15 {
             pendingChoiceEvent = .tsuukaBreak
         }
@@ -260,6 +264,7 @@ final class GameSession {
         case .justPassedFork: justPassedStage = false
         case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
         case .tsuukaBreak: didFireTsuukaChoice = true
+        case .earlyFormality: didFireEarlyFormality = true
         }
     }
 

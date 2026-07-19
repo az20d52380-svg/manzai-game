@@ -20,6 +20,7 @@ enum ChoiceEventData {
         case .justPassedFork: return justPassedFork
         case .preTournamentEve: return preTournamentEve
         case .tsuukaBreak: return tsuukaBreak
+        case .earlyFormality: return earlyFormality
         }
     }
 
@@ -158,6 +159,31 @@ enum ChoiceEventData {
             "B": [
                 Advice(name: "俺", text: "今は固める。崩すのは、固まってからでいい。"),
                 Advice(name: "谷口", text: "ええよ。……この略字、もうちょい二人で使い倒そか"),
+            ],
+        ]
+    )
+
+    // MARK: 0020 まだ敬語の残る間
+
+    private static let earlyFormality = ChoiceEventText(
+        title: "まだ敬語の残る間",
+        setup: [
+            Advice(name: nil, text: "コンビを組んで、まだ月が浅い。稽古場のパイプ椅子は、二脚とも壁際に畳んだままだ。\n谷口はネタ帳を、いつも両手で返してくる。俺が片手で受け取ると、\n受け渡しのあいだに、拳ひとつ分の隙間が空く。\n稽古の帰りぎわ、俺のツッコミについて谷口が何か言いかけて、やめた。\n俺の方も、一個、言いかけて、飲み込んでいる。"),
+        ],
+        choiceLabels: [
+            "A": "踏み込んで言う",
+            "B": "間合いを保つ",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "一個、言っていいか。お前のボケ、俺はまだ半分しか信じてない。"),
+                Advice(name: "谷口", text: "……はっきり言うやん。ええよ、残りの半分、稽古で埋めさしたるわ。"),
+                Advice(name: "俺", text: "今、初めて片手でネタ帳を寄越したな。"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "……いや、なんでもない。今日はここまでにしよう。"),
+                Advice(name: "谷口", text: "せやな。ほな、また明日。"),
+                Advice(name: "俺", text: "ネタ帳は、今日は俺が仕舞っておく。"),
             ],
         ]
     )

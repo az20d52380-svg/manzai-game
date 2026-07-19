@@ -10,6 +10,7 @@ public enum ChoiceEventKind: String, CaseIterable {
     case justPassedFork      // 0018: 通った日の分かれ道（発火=justPassedStage・weeksLeft>=3・低体力ガード）
     case preTournamentEve    // 0010: 前夜の一本（発火=weeksLeft==1・格の高い大会のみ）
     case tsuukaBreak         // 0021: 慣れの外し方（発火=相性が初めて15に到達した週・一発化）
+    case earlyFormality      // 0020: まだ敬語の残る間（発火=結成初期(week<15)かつ他人行儀帯・一発化）
 }
 
 /// 選択肢1件（純データ）。gate は選択可否（0017C の所持金ゲート等）。デフォルトは常に選択可。
@@ -80,6 +81,16 @@ public enum ChoiceEventTable {
                 ]),
                 ChoiceEventChoice(id: "B", effects: [
                     .ability(.表現, 2), .compat(1),
+                ]),
+            ]
+        case .earlyFormality:
+            // 0020 まだ敬語の残る間: A=相性+2/体力-15（踏み込む・実弾で買う）　B=体力+10/メンタル+1（間合いを保つ）
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .compat(2), .stamina(-15),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .stamina(10), .ability(.メンタル, 1),
                 ]),
             ]
         }

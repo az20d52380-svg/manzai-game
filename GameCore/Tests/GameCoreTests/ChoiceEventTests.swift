@@ -111,6 +111,28 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertEqual(s.発想, config.initAbility)   // 伸びしろ(発想)は不動
     }
 
+    // MARK: 0020 まだ敬語の残る間（結成初期・他人行儀帯・一発化）
+
+    func test0020_A_buysCompatWithStamina() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        let beforeStamina = s.stamina
+        apply(ChoiceEventTable.choices(for: .earlyFormality, config: config)[0].effects, to: &s, config: config)
+        XCTAssertEqual(s.compat, min(config.compatCap, config.compatInit + 2))
+        XCTAssertEqual(s.stamina, max(0, beforeStamina - 15))
+    }
+
+    func test0020_B_restoresStaminaAndMentalCompatUnchanged() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        let beforeStamina = s.stamina
+        let beforeCompat = s.compat
+        apply(ChoiceEventTable.choices(for: .earlyFormality, config: config)[1].effects, to: &s, config: config)
+        XCTAssertEqual(s.stamina, min(100, beforeStamina + 10))
+        XCTAssertEqual(s.メンタル, config.initAbility + 1)
+        XCTAssertEqual(s.compat, beforeCompat)   // 距離は動かさない
+    }
+
     // MARK: 0010 前夜の一本（A確定効果のみ・0024でMVP降格済）
 
     func test0010_A_isFlatExpressionOnly() {
