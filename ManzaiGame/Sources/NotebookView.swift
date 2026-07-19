@@ -374,7 +374,7 @@ struct NotebookView: View {
     @ViewBuilder private func archivedRow(_ neta: Neta) -> some View {
         let revival = neta.isRevival(currentYear: session.year, config: session.config)
         let slotsFull = session.activeNetas.count >= session.config.netaActiveSlots
-        return HStack(spacing: 8) {
+        HStack(spacing: 8) {
             Circle().fill(Theme.kataColor(neta.kata)).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 2) {
                 Text(neta.name).font(.maru(12)).foregroundStyle(Theme.ink)
