@@ -17,12 +17,16 @@ public enum ChoiceEventKind: String, CaseIterable {
     case brokeDrinkingInvite // 0011: 行けない飲み会（発火帯=所持金<5万・相性<上限）
     case senpaiMeishi        // 0013: 先輩の名刺（発火帯=所持金<20万・知名度<50）
     case peerFoldedChair     // 0015: 畳んだコンビの椅子（発火帯=week>=20）
+    case lineupTop           // 0025: 香盤表の一番上（前座帯 知名度<20・選択肢なしフレーバー）
+    case greenroomSilentTen  // 0027: 楽屋で無言の十分（噛み合い帯 相性8-14・選択肢なしフレーバー）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
-        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair: return true
-        default: return false
+        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen:
+            return true
+        default:
+            return false
         }
     }
 }
@@ -137,8 +141,8 @@ public enum ChoiceEventTable {
                     .ability(.メンタル, 1), .compat(1),
                 ]),
             ]
-        case .namelessReservationSlip:
-            return []   // 0028: 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
+        case .namelessReservationSlip, .lineupTop, .greenroomSilentTen:
+            return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
     }
 
@@ -155,6 +159,12 @@ public enum ChoiceEventTable {
         case .peerFoldedChair:
             // 0015: 芸歴が進んだ帯（week>=20）。同期の解散＝プレイの巧拙と無関係の"世界の彩り"
             return week >= 20
+        case .lineupTop:
+            // 0025: 前座が"一番上"になる皮肉が最も映える低知名度帯（<20）。フリーライブ直後は状態帯に緩めた
+            return state.fame < 20
+        case .greenroomSilentTen:
+            // 0027: 噛み合い始めの帯（8-14）のみ。低評価判定は現状無いので compat 帯だけで絞る（proposal 安全側）
+            return (8...14).contains(Int(state.compat))
         default:
             return false
         }

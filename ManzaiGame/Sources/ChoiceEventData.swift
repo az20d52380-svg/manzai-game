@@ -25,6 +25,8 @@ enum ChoiceEventData {
         case .senpaiMeishi: return senpaiMeishi
         case .peerFoldedChair: return peerFoldedChair
         case .namelessReservationSlip: return namelessReservationSlip
+        case .lineupTop: return lineupTop
+        case .greenroomSilentTen: return greenroomSilentTen
         }
     }
 
@@ -282,6 +284,36 @@ enum ChoiceEventData {
             Advice(name: "谷口", text: "あー、それな。あの日、たまたま場所空いとったから、ちょっと横になってただけや"),
             Advice(name: "俺", text: "そうか。来週は、いつもの土曜で押さえとく。"),
             Advice(name: nil, text: "予約票を閉じた。\n朝いちの枠は、半額になる時間だ。横になるだけなら、もっと安い場所がいくらでもある。\n来週の土曜の欄に、二人分の名前を、上から順に書いた。"),
+        ],
+        choiceLabels: [:],
+        afterChoice: [:]
+    )
+
+    // MARK: 0025 香盤表の一番上（週次・前座帯フレーバー。proposals/0025 レッドチーム済み確定テキストを転記）
+
+    private static let lineupTop = ChoiceEventText(
+        title: "香盤表の一番上",
+        setup: [
+            Advice(name: nil, text: "対バンがはねて、楽屋に戻る。前座は入りが早い。朝から動いて、体はもう夜の分まで使い終えている。\n壁に、香盤表が貼ってある。主催が手で書いたやつだ。上から出番順に名前が並んでいて、一番上が俺たちだ。下へ下がるほど、どこかで見た名前になる。一番下の組は、先週テレビでネタをやっていた。\n谷口は香盤表のほうを見ない。しゃがんで、足元のケーブルをもう巻いている。"),
+            Advice(name: "谷口", text: "俺ら先やからな。機材、先に積んどこ。掃けたらすぐ出られるように"),
+            Advice(name: "俺", text: "一番上だ。俺たちが終わってから、客席は埋まっていく"),
+        ],
+        choiceLabels: [:],
+        afterChoice: [:]
+    )
+
+    // MARK: 0027 楽屋で無言の十分（週次・噛み合い帯フレーバー。proposals/0027 レッドチーム済み確定テキストを転記）
+
+    private static let greenroomSilentTen = ChoiceEventText(
+        title: "楽屋で無言の十分",
+        setup: [
+            Advice(name: nil, text: "ライブがはねて、楽屋に戻った。四分の出番で、客席が動いたのは頭の三十秒だけだった。\n共有のドーランが、机の上で蓋を開けたまま転がっている。俺の指が当たる側だけ角が深く凹んで、次に買い足すのがいつになるかは、決めていない。\n十分、どちらも喋らなかった。先に段取りの話をしたのが、どちらだったかは覚えていない。"),
+            Advice(name: "谷口", text: "幕、そっち持つわ。俺、平台たたむ"),
+            Advice(name: "俺", text: "頼む。楽屋、二十分で開けてくれって"),
+            Advice(name: "谷口", text: "次の現場、二十時入りやったな"),
+            Advice(name: "俺", text: "電車、一本早めるか。乗り換えで詰まる"),
+            Advice(name: "谷口", text: "ほな、先出るわ"),
+            Advice(name: "俺", text: "ドーラン、閉めとく"),
         ],
         choiceLabels: [:],
         afterChoice: [:]
