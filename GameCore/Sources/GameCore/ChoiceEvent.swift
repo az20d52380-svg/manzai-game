@@ -12,6 +12,7 @@ public enum ChoiceEventKind: String, CaseIterable {
     case preTournamentEve    // 0010: 前夜の一本（発火=weeksLeft==1・格の高い大会のみ）
     case tsuukaBreak         // 0021: 慣れの外し方（発火=相性が初めて15に到達した週・一発化）
     case earlyFormality      // 0020: まだ敬語の残る間（発火=結成初期(week<15)かつ他人行儀帯・一発化）
+    case namelessReservationSlip  // 0028: 名前の無い予約票（確定発火=compat>=8・大会2-5週前・一発化。選択肢なしフレーバー）
     // --- 週次ランダム抽選プール（UI層RNGで発火＝golden非対象。効果は決定的delta＝golden不変） ---
     case brokeDrinkingInvite // 0011: 行けない飲み会（発火帯=所持金<5万・相性<上限）
     case senpaiMeishi        // 0013: 先輩の名刺（発火帯=所持金<20万・知名度<50）
@@ -136,6 +137,8 @@ public enum ChoiceEventTable {
                     .ability(.メンタル, 1), .compat(1),
                 ]),
             ]
+        case .namelessReservationSlip:
+            return []   // 0028: 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
     }
 

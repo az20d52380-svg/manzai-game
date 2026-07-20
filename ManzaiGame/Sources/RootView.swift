@@ -64,6 +64,7 @@ struct RootView: View {
                 switch ProcessInfo.processInfo.environment["MZ_EV"] {
                 case "0013": kind = .senpaiMeishi
                 case "0015": kind = .peerFoldedChair
+                case "0028": kind = .namelessReservationSlip
                 default:     kind = .brokeDrinkingInvite
                 }
                 session.debugForceEvent(kind)

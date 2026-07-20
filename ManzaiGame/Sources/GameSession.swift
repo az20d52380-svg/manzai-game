@@ -43,6 +43,8 @@ final class GameSession {
     private(set) var didFireTsuukaChoice = false
     /// 0020「まだ敬語の残る間」の一発化フラグ。結成初期(week<15)×他人行儀帯(compat 0-7)で一度だけ発火。
     private(set) var didFireEarlyFormality = false
+    /// 0028「名前の無い予約票」の一発化フラグ。確定発火＝選択がないので発火時に立てる（キャリア1回）。
+    private(set) var didFireNamelessSlip = false
     // --- 週次ランダムイベント（UI層抽選・golden非干渉。runner.rng とは別インスタンスの独立乱数列） ---
     /// 発火抽選に使う UI 専用乱数。runner が消費する乱数列には一切食い込まない＝3年 golden 不変。
     private var uiEventRng = SplitMix64(seed: 424242)   // init で seed 由来値に上書き
@@ -242,6 +244,11 @@ final class GameSession {
             pendingChoiceEvent = .earlyFormality
         } else if !didFireTsuukaChoice, state.compat >= 15 {
             pendingChoiceEvent = .tsuukaBreak
+        } else if !didFireNamelessSlip, state.compat >= 8,
+                  let m = nextMilestoneForEvent(), (2...5).contains(m.week - week) {
+            // 0028: 相性8以上・大会2-5週前（詰め期・前夜ではない）。選択がないので発火時にフラグを立てる。
+            pendingChoiceEvent = .namelessReservationSlip
+            didFireNamelessSlip = true
         } else {
             // 確定発火なし → 週次ランダム抽選（UI乱数・golden非干渉）。1週1回だけ引く。
             rollWeeklyRandomEvent()
@@ -302,6 +309,8 @@ final class GameSession {
         case .earlyFormality: didFireEarlyFormality = true
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
+        case .namelessReservationSlip:
+            break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）
         }
     }
 

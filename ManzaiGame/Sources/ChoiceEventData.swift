@@ -24,6 +24,7 @@ enum ChoiceEventData {
         case .brokeDrinkingInvite: return brokeDrinkingInvite
         case .senpaiMeishi: return senpaiMeishi
         case .peerFoldedChair: return peerFoldedChair
+        case .namelessReservationSlip: return namelessReservationSlip
         }
     }
 
@@ -269,5 +270,20 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "ほな、見送りだけ行こか。あいつ、俺らが来たら椅子の話しかせえへんやろけど"),
             ],
         ]
+    )
+
+    // MARK: 0028 名前の無い予約票（確定発火・選択肢なしフレーバー。proposals/0028 レッドチーム済み確定テキストを転記）
+    //   俺（標準語・地の文）／谷口（関西弁）の2話者。効果なし＝会話（セットアップ→締め）を送り切って閉じる。
+
+    private static let namelessReservationSlip = ChoiceEventText(
+        title: "名前の無い予約票",
+        setup: [
+            Advice(name: nil, text: "来週の稽古場を押さえに、受付の予約票をめくった。\nうちの枠は、決まって二段で書く。上に俺、下に谷口。二人で一枠。\n前の週の欄に、平日の朝いちが埋まっていた。上の段に、谷口の名前だけ。下の段は空いている。時刻の「9」の、丸の閉じ方が甘い。あいつの字だ。"),
+            Advice(name: "谷口", text: "あー、それな。あの日、たまたま場所空いとったから、ちょっと横になってただけや"),
+            Advice(name: "俺", text: "そうか。来週は、いつもの土曜で押さえとく。"),
+            Advice(name: nil, text: "予約票を閉じた。\n朝いちの枠は、半額になる時間だ。横になるだけなら、もっと安い場所がいくらでもある。\n来週の土曜の欄に、二人分の名前を、上から順に書いた。"),
+        ],
+        choiceLabels: [:],
+        afterChoice: [:]
     )
 }

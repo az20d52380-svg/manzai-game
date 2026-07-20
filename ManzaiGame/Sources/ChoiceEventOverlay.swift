@@ -46,18 +46,15 @@ struct ChoiceEventOverlay: View {
                     .padding(.horizontal, 20)
                 }
                 if chosenID == nil, setupShown >= text.setup.count {
-                    choiceButtons
+                    // 選択肢なしフレーバー（0028等）は会話を送り切ったら「閉じる」、選択肢ありは選択肢ボタン
+                    if session.availableEventChoices().isEmpty {
+                        closeButton
+                    } else {
+                        choiceButtons
+                    }
                 }
                 if let chosenID, afterShown >= (text.afterChoice[chosenID]?.count ?? 0) {
-                    Button {
-                        session.dismissChoiceEvent()
-                        onClose()
-                    } label: {
-                        Text("閉じる").font(.maru(14)).foregroundStyle(Color(hex: 0x5A3A06))
-                            .frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .background(Theme.gold, in: RoundedRectangle(cornerRadius: 12))
-                    }
-                    .buttonStyle(.plain).padding(.horizontal, 30)
+                    closeButton
                 } else if setupShown < text.setup.count || (chosenID != nil && afterShown < (text.afterChoice[chosenID!]?.count ?? 0)) {
                     Text("タップで進む").font(.maru(10)).foregroundStyle(.white.opacity(0.4))
                 }
@@ -85,6 +82,18 @@ struct ChoiceEventOverlay: View {
         } else if let id = chosenID, afterShown < (text.afterChoice[id]?.count ?? 0) {
             afterShown += 1
         }
+    }
+
+    private var closeButton: some View {
+        Button {
+            session.dismissChoiceEvent()
+            onClose()
+        } label: {
+            Text("閉じる").font(.maru(14)).foregroundStyle(Color(hex: 0x5A3A06))
+                .frame(maxWidth: .infinity).padding(.vertical, 12)
+                .background(Theme.gold, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain).padding(.horizontal, 30)
     }
 
     private var choiceButtons: some View {
