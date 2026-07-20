@@ -326,7 +326,7 @@ final class GameSession {
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .regularEmployment:
+             .lastTrainReview, .luckyThirdLine, .regularEmployment, .wroteOneTonight:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）

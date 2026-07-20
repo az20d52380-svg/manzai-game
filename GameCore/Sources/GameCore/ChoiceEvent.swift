@@ -22,12 +22,13 @@ public enum ChoiceEventKind: String, CaseIterable {
     case lastTrainReview     // 0014: 終電までの反省会（前座帯 知名度<20・選択肢あり）
     case luckyThirdLine      // 0029: 三行目を一度で（好調帯 体力80+・連敗なし・大会前・選択肢なしフレーバー）
     case regularEmployment   // 0023: 正社員の話（バイト多数×金欠<10万・選択肢あり・段階1のみ）
+    case wroteOneTonight     // 0016: 書けた一本（持ちネタあり＝一本まとまった夜・選択肢あり・翌週バフはPhase2）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .regularEmployment:
+             .lastTrainReview, .luckyThirdLine, .regularEmployment, .wroteOneTonight:
             return true
         default:
             return false
@@ -165,6 +166,17 @@ public enum ChoiceEventTable {
                     .ability(.メンタル, 2), .compat(1),
                 ]),
             ]
+        case .wroteOneTonight:
+            // 0016 書けた一本: A=今夜詰める(発想+2/表現+1/体力-15)　B=寝かせる(体力+5/メンタル+1)
+            //   ※B の「翌週のネタ合わせ効果アップ」は翌週バフ機構が要る＝Phase2。MVPは即時回復のみ（0010/0018型トレード）
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.発想, 2), .ability(.表現, 1), .stamina(-15),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .stamina(5), .ability(.メンタル, 1),
+                ]),
+            ]
         case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
@@ -198,6 +210,9 @@ public enum ChoiceEventTable {
         case .regularEmployment:
             // 0023: 金欠帯（<10万）。バイトを重ねた条件は GameSession 側の jobCount ゲート（UI層カウンタ）
             return state.money < 100_000
+        case .wroteOneTonight:
+            // 0016: 持ちネタが1本でもある＝「一本まとまった夜」の文脈が立つ。ネタ作り直後は状態帯に緩めた
+            return !state.netas.isEmpty
         default:
             return false
         }

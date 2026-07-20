@@ -30,6 +30,7 @@ enum ChoiceEventData {
         case .lastTrainReview: return lastTrainReview
         case .luckyThirdLine: return luckyThirdLine
         case .regularEmployment: return regularEmployment
+        case .wroteOneTonight: return wroteOneTonight
         }
     }
 
@@ -303,6 +304,33 @@ enum ChoiceEventData {
         ],
         choiceLabels: [:],
         afterChoice: [:]
+    )
+
+    // MARK: 0016 書けた一本（週次・持ちネタあり・選択肢あり。proposals/0016 レッドチーム済み確定テキストを転記）
+    //   B の「翌週のネタ合わせ効果アップ」は翌週バフ機構が要る＝Phase2。本文は"寝かせる"の手触りを保つ。
+
+    private static let wroteOneTonight = ChoiceEventText(
+        title: "書けた一本",
+        setup: [
+            Advice(name: nil, text: "深夜二時。この稽古場の机は脚が一本だけ短くて、前に使っていたコンビが折り畳んだ大会のフライヤーを噛ませてある。谷口が書く手に力が入るたび、そのフライヤーが一ミリずつ迫り出してくる。\n一本、まとまった。谷口が最後の一行を、誰もいない客席に向かって小さく声に出して読んだ。読み終えて、ペンを置いた。谷口が声に出して読むのは、できたと思ったときだけだ。"),
+            Advice(name: "谷口", text: "……できたな、これ。久しぶりに、腹の底が動いた"),
+            Advice(name: "俺", text: "今からもう一周するか。それとも、寝かせるか"),
+            Advice(name: "谷口", text: "寝かせて腐るネタは、もともと腐っとる。——って先輩が言うてた。俺は今すぐやりたい派やけどな"),
+        ],
+        choiceLabels: [
+            "A": "今夜のうちに詰める",
+            "B": "寝かせて、明日の目で見る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "じゃあ、もう一周だ。フライヤーが机から迫り出しきる前に終わる、で計っておく"),
+                Advice(name: "谷口", text: "時間で区切るなや。……まあ、ええわ。朝まで付き合う"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "わかった。明かりだけ消す。ノートは、開いたままにしておこう"),
+                Advice(name: "谷口", text: "開いたままかい。……朝いちばんに、目が合うようにか"),
+            ],
+        ]
     )
 
     // MARK: 0023 正社員の話（週次・金欠帯・選択肢あり。proposals/0023 レッドチーム済み確定テキストを転記）
