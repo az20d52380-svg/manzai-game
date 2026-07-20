@@ -57,10 +57,16 @@ struct RootView: View {
                 session = GameSession(startState: GameSession.debugNetaState())
             }
             if ui == "event", session.week <= 1 {
-                // 選択肢イベント目視: 金欠帯の開始状態で 0011「行けない飲み会」を強制発火（オーバーレイ表示の確認）
+                // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）
                 var s = GameState(config: GameConfig()); s.money = 3000
                 session = GameSession(startState: s)
-                session.debugForceEvent(.brokeDrinkingInvite)
+                let kind: ChoiceEventKind
+                switch ProcessInfo.processInfo.environment["MZ_EV"] {
+                case "0013": kind = .senpaiMeishi
+                case "0015": kind = .peerFoldedChair
+                default:     kind = .brokeDrinkingInvite
+                }
+                session.debugForceEvent(kind)
             }
             #endif
         }

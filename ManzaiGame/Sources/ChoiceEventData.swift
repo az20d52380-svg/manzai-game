@@ -22,6 +22,8 @@ enum ChoiceEventData {
         case .tsuukaBreak: return tsuukaBreak
         case .earlyFormality: return earlyFormality
         case .brokeDrinkingInvite: return brokeDrinkingInvite
+        case .senpaiMeishi: return senpaiMeishi
+        case .peerFoldedChair: return peerFoldedChair
         }
     }
 
@@ -210,6 +212,61 @@ enum ChoiceEventData {
             "B": [
                 Advice(name: "谷口", text: "……なら、俺も残るわ"),
                 Advice(name: "俺", text: "払わずに済んだ会費が、二人で八千円。箱の照明なら、八十時間ぶんだ"),
+            ],
+        ]
+    )
+
+    // MARK: 0013 先輩の名刺（週次抽選・奢られる帯。proposals/0013 レッドチーム済み確定テキストを転記）
+    //   第三者「先輩」は関西弁の漫才の先輩＝proposal 確定テキストに準拠（谷口以外の相方は標準語だが本第三者は例外）。
+
+    private static let senpaiMeishi = ChoiceEventText(
+        title: "先輩の名刺",
+        setup: [
+            Advice(name: nil, text: "先輩が肉を焼き終えるより先に、伝票を裏返した。番組の名前が入った名刺を一枚、焼き網の縁に置く。角が、熱で少しずつ反っていく。"),
+            Advice(name: "先輩", text: "ここは俺が持つ。……で、一個、顔繋いどこか？"),
+            Advice(name: "俺", text: "ありがとうございます。……その話、少し考えさせてください。"),
+            Advice(name: "谷口", text: "先輩、こいつ、肉より先に伝票見る男なんですわ。"),
+        ],
+        choiceLabels: [
+            "A": "紹介を受ける",
+            "B": "飯だけ頂き、紹介は辞退する",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "先輩", text: "ええ度胸や。番号、今日中に鳴らせ。"),
+                Advice(name: "俺", text: "はい。……この名刺、反ってますね。伸ばして持っときます。"),
+                Advice(name: "谷口", text: "反ったやつ伸ばして使うの、こいつの得意技なんですわ。"),
+            ],
+            "B": [
+                Advice(name: "先輩", text: "そうか。……まあ、飯は残さず食え。"),
+                Advice(name: "俺", text: "はい。いただきます。……この一本は、また今度で。"),
+                Advice(name: "谷口", text: "すんません、うちのが。……先輩、この反った名刺、もらといてええですか。"),
+            ],
+        ]
+    )
+
+    // MARK: 0015 畳んだコンビの椅子（週次抽選・芸歴帯。proposals/0015 レッドチーム済み確定テキストを転記）
+    //   相性帯差し替え（0-7/8-14/15-20）は本編で足す枠＝MVPは基本プール（谷口）。
+
+    private static let peerFoldedChair = ChoiceEventText(
+        title: "畳んだコンビの椅子",
+        setup: [
+            Advice(name: nil, text: "同期のコンビが、今日で畳む。片方が辞める。もう一方は、一人でどうするかまだ決めていないらしい。\n谷口が倉庫から折り畳みのパイプ椅子を一脚提げてきた。あいつがいつも座っていた椅子だ。座面は片側だけ沈んでいて、座り方の癖がそのまま型になって残っている。背もたれには、コンビ名を書いたガムテを剥がした跡が、粘って光っている。\n枠はひとつ。座れるのは、ひとりずつだ。当たり前のことを、わざわざ確かめた。"),
+            Advice(name: "谷口", text: "あいつら、今日で解散やって。倉庫のこれ、俺らにくれるって"),
+            Advice(name: "俺", text: "あいつの出番枠、来月から空くらしい"),
+        ],
+        choiceLabels: [
+            "A": "空き枠を引き継ぐ",
+            "B": "枠は取らず、送り出しだけする",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "枠は、取る。場数がいる"),
+                Advice(name: "谷口", text: "取ろか。……座り心地は、あんま良ないやろけどな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "枠はいい。今取る枠じゃない"),
+                Advice(name: "谷口", text: "ほな、見送りだけ行こか。あいつ、俺らが来たら椅子の話しかせえへんやろけど"),
             ],
         ]
     )

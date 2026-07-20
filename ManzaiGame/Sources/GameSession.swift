@@ -300,7 +300,8 @@ final class GameSession {
         case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
-        case .brokeDrinkingInvite: break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
+        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair:
+            break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         }
     }
 

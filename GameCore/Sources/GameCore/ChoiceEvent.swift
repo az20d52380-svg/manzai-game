@@ -14,11 +14,13 @@ public enum ChoiceEventKind: String, CaseIterable {
     case earlyFormality      // 0020: まだ敬語の残る間（発火=結成初期(week<15)かつ他人行儀帯・一発化）
     // --- 週次ランダム抽選プール（UI層RNGで発火＝golden非対象。効果は決定的delta＝golden不変） ---
     case brokeDrinkingInvite // 0011: 行けない飲み会（発火帯=所持金<5万・相性<上限）
+    case senpaiMeishi        // 0013: 先輩の名刺（発火帯=所持金<20万・知名度<50）
+    case peerFoldedChair     // 0015: 畳んだコンビの椅子（発火帯=week>=20）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
-        case .brokeDrinkingInvite: return true
+        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair: return true
         default: return false
         }
     }
@@ -114,6 +116,26 @@ public enum ChoiceEventTable {
                     .ability(.発想, 1), .ability(.メンタル, -1),
                 ]),
             ]
+        case .senpaiMeishi:
+            // 0013 先輩の名刺: A=紹介を受ける(華+1/知名度+2/メンタル-1)　B=飯だけ(体力+15/メンタル+1/相性+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.華, 1), .fame(2), .ability(.メンタル, -1),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .stamina(15), .ability(.メンタル, 1), .compat(1),
+                ]),
+            ]
+        case .peerFoldedChair:
+            // 0015 畳んだコンビの椅子: A=空き枠を引き継ぐ(知名度+2/体力-10/メンタル-1)　B=送り出しだけ(メンタル+1/相性+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .fame(2), .stamina(-10), .ability(.メンタル, -1),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .ability(.メンタル, 1), .compat(1),
+                ]),
+            ]
         }
     }
 
@@ -124,6 +146,12 @@ public enum ChoiceEventTable {
         case .brokeDrinkingInvite:
             // 0011: 低所持金帯（<5万）＋相性が上限未満（上限だと A の相性+1 が死んで B 上位互換化＝proposal リスク節）
             return state.money < 50_000 && state.compat < config.compatCap
+        case .senpaiMeishi:
+            // 0013: 奢られる帯（所持金<20万）＋まだ繋がれる側（知名度<50）
+            return state.money < 200_000 && state.fame < 50
+        case .peerFoldedChair:
+            // 0015: 芸歴が進んだ帯（week>=20）。同期の解散＝プレイの巧拙と無関係の"世界の彩り"
+            return week >= 20
         default:
             return false
         }
