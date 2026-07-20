@@ -252,6 +252,41 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertEqual(r.state.netas[0].polish, 30 + config.netaReviseGain, accuracy: 1e-9, "ブースト0では素の上昇")
     }
 
+    // MARK: 0023 成長天井減算（growthCeiling）— budget を縮める／nil no-op／0下限／実成長が縛られる
+
+    func test0023_growthCeilingReducesBudgetClampsAtZeroAndNilIsNoOp() {
+        let config = GameConfig()
+        var s = GameState(config: config); s.growthBudget = 6.0
+        s.applyEventEffect(.growthCeiling(-1.5), config: config)
+        XCTAssertEqual(s.growthBudget!, 4.5, accuracy: 1e-9, "天井が縮む")
+        s.applyEventEffect(.growthCeiling(-10), config: config)
+        XCTAssertEqual(s.growthBudget!, 0, "0 で下げ止まる")
+        // nil（＝無制限・エンジン単体テスト）は対象外＝no-op
+        var u = GameState(config: config); u.growthBudget = nil
+        u.applyEventEffect(.growthCeiling(-1.5), config: config)
+        XCTAssertNil(u.growthBudget, "nil は無制限のまま no-op")
+    }
+
+    func test0023_A_reducesCeilingByConfigCost() {
+        let config = GameConfig()
+        var s = GameState(config: config); s.growthBudget = 6.0
+        for e in ChoiceEventTable.choices(for: .regularEmployment, config: config)[0].effects {
+            s.applyEventEffect(e, config: config)
+        }
+        XCTAssertEqual(s.growthBudget!, 6.0 - config.regularJobCeilingCost, accuracy: 1e-9)
+        XCTAssertEqual(s.money, config.initMoney + 30000)
+    }
+
+    func test0023_lowerCeilingTightensSubsequentGrowth() {
+        // 天井を縮めると、以後の能力上昇が残予算で頭打ちになる（機会費用が実挙動に効く）。
+        let config = GameConfig()
+        var tight = GameState(config: config); tight.growthBudget = 2.0; tight.growthUsed = 0
+        var loose = tight; loose.growthBudget = 6.0
+        GameEngine.add(.ability(.センス), 100, to: &tight, config: config)   // 大きく入れて天井で頭打ちさせる
+        GameEngine.add(.ability(.センス), 100, to: &loose, config: config)
+        XCTAssertLessThan(tight.センス, loose.センス, "低い天井ほど伸びが止まる")
+    }
+
     // MARK: Codable — 新規 inert フィールドがセーブ往復で保存される
     func testNetaBoostWeeksSurvivesCodableRoundTrip() throws {
         var s = GameState(config: GameConfig()); s.netaBoostWeeks = 2; s.compatFreezeWeeks = 3

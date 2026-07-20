@@ -195,6 +195,9 @@ public struct GameConfig {
     /// 数値は【仮】（sim較正で確定）。golden 非対象（applyNetaRevise は gen_golden 非経路）。
     public var netaBoostMult = 1.6
     public var netaBoostWeeks = 2
+    /// 0023 正社員の話（受ける）＝その年の成長天井（growthBudget）を縮める量（実力値換算）。芸に注げる時間が減る
+    /// 機会費用。年初 budget は capCurveBase≈6.0（year1）＝1.5 は約1/4。数値は【仮】（sim較正）。golden 非対象。
+    public var regularJobCeilingCost = 1.5
     /// `ネタ見せ会`（有料稽古）のライブ完成度上昇
     public var netaLivePolishShow = 12.0
     /// `フリーライブ`（無料・営業）のライブ完成度上昇

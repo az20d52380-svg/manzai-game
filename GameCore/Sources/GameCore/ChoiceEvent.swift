@@ -159,10 +159,13 @@ public enum ChoiceEventTable {
                 ]),
             ]
         case .regularEmployment:
-            // 0023 正社員の話（段階1のみ・段階2 growthBudget減算は規律Aで後日）: A=受ける(所持金+3万/体力-10/メンタル-1)　B=断る(メンタル+2/相性+1)
+            // 0023 正社員の話: A=受ける(所持金+3万/体力-10/メンタル-1＋その年の成長天井が縮む＝芸に注げる時間の機会費用)
+            //                B=断る(メンタル+2/相性+1)
+            //   段階2＝growthBudget減算（.growthCeiling）を実装。golden-inert（applyEventEffect は gen_golden 非経路）。
             return [
                 ChoiceEventChoice(id: "A", effects: [
                     .money(30000), .stamina(-10), .ability(.メンタル, -1),
+                    .growthCeiling(-config.regularJobCeilingCost),
                 ]),
                 ChoiceEventChoice(id: "B", effects: [
                     .ability(.メンタル, 2), .compat(1),
