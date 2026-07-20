@@ -104,6 +104,10 @@ final class GameSession {
     /// 自由行動週の回答
     func choose(_ action: WeekAction) {
         let before = state
+        var action = action
+        // 0022 稽古拘束（撮られる仕事）: その週は撮影で稽古枠が埋まる＝稽古を選んでも自動休養化（UI層・golden非経路）。
+        // WeekMainView が稽古カードをグレーにするので通常ここには来ないが、二重の安全網（谷口の体力ゲートと同型）。
+        if state.preoccupiedWeeks > 0, case .train = action { action = .rest(.完全休養) }
         lastAction = action
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
         if case .job = action { jobCount += 1 }     // 0023 発火条件用のバイト実行回数（UI層・golden非対象）
@@ -128,6 +132,9 @@ final class GameSession {
         // 0016 ネタ合わせブーストの週送り減算（UI層・golden非対象・freeze と同型）。この週の revise はブースト有効で
         // 処理され、週が明けて1減る＝設定週を含む向こう config.netaBoostWeeks 週だけ乗る。
         if state.netaBoostWeeks > 0 { runner.tickNetaBoost(); state = runner.state }
+        // 0022 稽古拘束の週送り減算（UI層・golden非対象・freeze と同型）。撮影を受けた週は稽古がロックされ、
+        // 週が明けて1減る＝設定週（＝撮影を受けたその週）だけ稽古不可。
+        if state.preoccupiedWeeks > 0 { runner.tickPreoccupied(); state = runner.state }
     }
 
     // MARK: v8育成メイン用プレビュー（RNG非消費の純getter）

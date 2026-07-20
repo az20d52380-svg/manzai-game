@@ -14,6 +14,7 @@ public enum EventEffect {
     case compatFreeze(Int)            // 相性成長を指定週だけ凍結（0012A・UI層で週送り減算・golden非対象）
     case netaBoostNextWeek(Int)       // ネタ合わせ効果ブーストを指定週だけ付与（0016B・UI層で週送り減算・golden非対象）
     case growthCeiling(Double)        // その年の成長天井（growthBudget）を増減（0023A・負で縮む＝定職の機会費用）
+    case preoccupyNextWeek(Int)       // 指定週だけ稽古を拘束（0022A・UI層で稽古ロック＆週送り減算・golden非対象）
 }
 
 extension GameState {
@@ -43,6 +44,8 @@ extension GameState {
             // 成長天井（growthBudget）を増減。nil＝無制限（エンジン単体テスト）は対象外＝no-op。
             // 下限0（負に振り切っても既に使った分＝growthUsed は不動＝以後の伸びが止まるだけ）。
             if let b = growthBudget { growthBudget = max(0, b + d) }
+        case .preoccupyNextWeek(let w):
+            preoccupiedWeeks = max(preoccupiedWeeks, w)     // 既に拘束中ならより長い方を残す
         }
     }
 }

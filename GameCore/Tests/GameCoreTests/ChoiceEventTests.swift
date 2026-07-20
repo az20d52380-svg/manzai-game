@@ -287,12 +287,48 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertLessThan(tight.センス, loose.センス, "低い天井ほど伸びが止まる")
     }
 
+    // MARK: 0022 稽古拘束（preoccupy）— 点火／週送りで減る／0022A が拘束＋小体力コストを積む
+
+    func test0022_preoccupySetByEffectAndKeepsLonger() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.applyEventEffect(.preoccupyNextWeek(1), config: config)
+        XCTAssertEqual(s.preoccupiedWeeks, 1)
+        s.applyEventEffect(.preoccupyNextWeek(2), config: config)
+        XCTAssertEqual(s.preoccupiedWeeks, 2, "より長い方を残す")
+        s.applyEventEffect(.preoccupyNextWeek(1), config: config)
+        XCTAssertEqual(s.preoccupiedWeeks, 2, "短い方では上書きしない")
+    }
+
+    func test0022_preoccupyDecrementsAndClears() {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 1))
+        r.applyEventEffects([.preoccupyNextWeek(1)])
+        XCTAssertEqual(r.state.preoccupiedWeeks, 1)
+        r.tickPreoccupied(); XCTAssertEqual(r.state.preoccupiedWeeks, 0)
+        r.tickPreoccupied(); XCTAssertEqual(r.state.preoccupiedWeeks, 0)   // 0 で頭打ち
+    }
+
+    func test0022_A_setsPreoccupyAndSmallStaminaCost() {
+        let config = GameConfig()
+        var s = GameState(config: config); s.stamina = 80
+        for e in ChoiceEventTable.choices(for: .photoShootOffer, config: config)[0].effects {
+            s.applyEventEffect(e, config: config)
+        }
+        XCTAssertEqual(s.preoccupiedWeeks, config.photoShootPreoccupyWeeks, "撮影を受けた週は稽古拘束")
+        XCTAssertEqual(s.stamina, 75, "撮影疲れ -5（体力-15 近似は撤去）")
+        XCTAssertEqual(s.華, config.initAbility + 2)
+        XCTAssertEqual(s.money, config.initMoney + 10_000)
+    }
+
     // MARK: Codable — 新規 inert フィールドがセーブ往復で保存される
-    func testNetaBoostWeeksSurvivesCodableRoundTrip() throws {
-        var s = GameState(config: GameConfig()); s.netaBoostWeeks = 2; s.compatFreezeWeeks = 3
+    func testInertFieldsSurviveCodableRoundTrip() throws {
+        var s = GameState(config: GameConfig())
+        s.netaBoostWeeks = 2; s.compatFreezeWeeks = 3; s.preoccupiedWeeks = 1
         let data = try JSONEncoder().encode(s)
         let back = try JSONDecoder().decode(GameState.self, from: data)
         XCTAssertEqual(back.netaBoostWeeks, 2)
         XCTAssertEqual(back.compatFreezeWeeks, 3)
+        XCTAssertEqual(back.preoccupiedWeeks, 1)
     }
 }

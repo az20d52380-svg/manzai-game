@@ -362,14 +362,15 @@ struct WeekMainView: View {
     // MARK: 変種カード（タップ＝即実行。ゲート/¥不足は toast で無効化）
 
     private func variantCard(_ v: CommandVariant) -> some View {
-        let gated = v.isTrain && s.stamina < session.config.staminaGate
+        let preoccupied = v.isTrain && s.preoccupiedWeeks > 0                       // 0022 撮影で稽古枠が埋まった週
+        let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
         return Button {
             guard pulledID == nil else { return }   // 引き抜き中の多重タップは無視
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
                 withAnimation(.linear(duration: 0.15)) { shakeSeed[v.id, default: 0] += 1 }
-                showToast(gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
+                showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
             // 「引き抜き」(B)版: フェード0.12s→実行（押下0.08+引き抜き0.12で次入力≤0.35s予算内）
@@ -382,7 +383,7 @@ struct WeekMainView: View {
                 pulledID = nil
             }
         } label: {
-            cardLabel(v, gated: gated)
+            cardLabel(v, gated: gated, preoccupied: preoccupied)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // ⑤: 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
         }
@@ -390,7 +391,7 @@ struct WeekMainView: View {
         .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
     }
 
-    private func cardLabel(_ v: CommandVariant, gated: Bool) -> some View {
+    private func cardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool = false) -> some View {
         let after = session.previewState(v.action, offer: offer)
         // 会計移設: 稽古は能力でなく粒を稼ぐ＝稽古カードの伸び行は「+N粒」（同色塗りドット）。
         // 稽古以外（バイト/休む/オファー）は従来どおり能力/相性の直接効果ピル。
@@ -407,7 +408,7 @@ struct WeekMainView: View {
             }
             // 伸び or ゲート or ¥不足 or 満 or 粒わずか/伸びわずか
             if gated {
-                Text("谷口：今日は休め").font(.maru(10.5)).foregroundStyle(Theme.verm)
+                Text(preoccupied ? "撮影で埋まる" : "谷口：今日は休め").font(.maru(10.5)).foregroundStyle(Theme.verm)
             } else if !v.affordable {
                 Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
             } else if vesselFull {

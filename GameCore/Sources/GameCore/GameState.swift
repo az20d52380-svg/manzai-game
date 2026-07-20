@@ -62,6 +62,12 @@ public struct GameState: Codable {
     /// gen_golden はイベント非発火＝常に0＝乗算ゲートは恒等 no-op（compatFreezeWeeks と同型の inert フィールド）。
     public var netaBoostWeeks = 0
 
+    /// 稽古拘束週（0022 撮られる仕事＝撮影がその週の稽古枠を奪う）。>0 の間は稽古を選べない（UI層で自動休養化）。
+    /// UI層イベント（GameSession）が設定し、週送りで1ずつ減る。★golden不変: enforcement は GameSession.choose
+    /// （UI層・golden非経路）で行い WeekRunner.resolveAction には触れない＝gen_golden はイベント非発火＝常に0
+    /// ＝稽古ロックは一度も効かない（compatFreezeWeeks/netaBoostWeeks と同型の inert フィールド）。
+    public var preoccupiedWeeks = 0
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina

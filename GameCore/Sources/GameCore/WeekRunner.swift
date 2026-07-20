@@ -421,4 +421,10 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func tickNetaBoost() {
         if state.netaBoostWeeks > 0 { state.netaBoostWeeks -= 1 }
     }
+
+    /// 稽古拘束（0022）の残り週数を1減らす。★tickCompatFreeze と同型: UI層（GameSession）が週送りで呼ぶ＝
+    /// gen_golden は呼ばない＝golden 経路では preoccupiedWeeks が常に0＝稽古ロックは一度も効かない（golden不変）。
+    public mutating func tickPreoccupied() {
+        if state.preoccupiedWeeks > 0 { state.preoccupiedWeeks -= 1 }
+    }
 }

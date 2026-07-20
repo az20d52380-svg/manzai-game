@@ -194,11 +194,13 @@ public enum ChoiceEventTable {
                 ]),
             ]
         case .photoShootOffer:
-            // 0022 撮られる仕事: A=受ける(華+2/知名度+1/所持金+1万/体力-15＝撮影拘束の機会費用)　B=断って稽古(センス発想の低い方+1)
-            //   ※proposal の「その週稽古打てない」機会費用は体力-15 で近似（週奪い機構は Phase2）。全て確定加算＝rollOffer 非依存＝golden不変
+            // 0022 撮られる仕事: A=受ける(華+2/知名度+1/所持金+1万/体力-5＋その週の稽古を撮影に奪われる)　B=断って稽古(センス発想の低い方+1)
+            //   ※proposal の「その週稽古打てない」機会費用＝週奪い機構（乙・.preoccupyNextWeek）で実装＝その週は稽古不可（UI層で自動休養化）。
+            //     体力-15 の近似は撤去し撮影疲れの -5 に。全て確定加算＋UI層ロック＝rollOffer 非依存＝golden不変（規律C-8 オーナー確定=乙）。
             return [
                 ChoiceEventChoice(id: "A", effects: [
-                    .ability(.華, 2), .fame(1), .money(10_000), .stamina(-15),
+                    .ability(.華, 2), .fame(1), .money(10_000), .stamina(-5),
+                    .preoccupyNextWeek(config.photoShootPreoccupyWeeks),
                 ]),
                 ChoiceEventChoice(id: "B", effects: [
                     .weakerSenseIdeaPlus(1),
