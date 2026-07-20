@@ -54,6 +54,8 @@ final class GameSession {
     private var weeklyEventFiredCount = 0
     /// その週に既に抽選したか（1週1回・pump 複数回呼びでの二重抽選＝UI乱数の余分消費を防ぐ）
     private var lastEventRollWeek = -1
+    /// バイト実行回数（UI層カウンタ・0023 正社員の話の発火条件。golden非対象）
+    private var jobCount = 0
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
@@ -102,6 +104,7 @@ final class GameSession {
         let before = state
         lastAction = action
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
+        if case .job = action { jobCount += 1 }     // 0023 発火条件用のバイト実行回数（UI層・golden非対象）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
@@ -284,6 +287,8 @@ final class GameSession {
             // 0029: 連敗していない＋大会が視界（2-4週前）＝好調が"負けの反動"に読まれない帯（lossStreak/次マイルストンを要する）
             guard lossStreak == 0, let m = nextMilestoneForEvent() else { return false }
             return (2...4).contains(m.week - week)
+        case .regularEmployment:
+            return jobCount >= 8   // 0023: バイトを重ねた金欠中盤【仮】。UI層カウンタ
         default:
             return true
         }
@@ -321,7 +326,7 @@ final class GameSession {
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine:
+             .lastTrainReview, .luckyThirdLine, .regularEmployment:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）

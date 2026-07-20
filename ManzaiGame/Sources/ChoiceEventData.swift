@@ -29,6 +29,7 @@ enum ChoiceEventData {
         case .greenroomSilentTen: return greenroomSilentTen
         case .lastTrainReview: return lastTrainReview
         case .luckyThirdLine: return luckyThirdLine
+        case .regularEmployment: return regularEmployment
         }
     }
 
@@ -302,6 +303,33 @@ enum ChoiceEventData {
         ],
         choiceLabels: [:],
         afterChoice: [:]
+    )
+
+    // MARK: 0023 正社員の話（週次・金欠帯・選択肢あり。proposals/0023 レッドチーム済み確定テキストを転記）
+    //   第三者「店長」＝標準語。段階2（growthBudget減算＝天井）は規律Aで後日・本文は段階1に対応。
+
+    private static let regularEmployment = ChoiceEventText(
+        title: "正社員の話",
+        setup: [
+            Advice(name: nil, text: "バックヤードのシフト表は、店長の手書きだ。正社員の名前は黒ペン、バイトの名前は鉛筆で書いてある。鉛筆の名前は消しても跡が残る。\n俺の名前の下に、先月辞めた誰かの名前が、薄く残ったままだ。"),
+            Advice(name: "店長", text: "悪い話じゃない。……いつまでも、若い体力に甘えてらんないよ。黒で、書き直してやる。"),
+            Advice(name: "俺", text: "ありがとうございます。少し、考えさせてください。"),
+            Advice(name: "谷口", text: "店長、こいつ今、シフト表の自分の名前見てますわ。……見てるうちは、まだ決めてへん。"),
+        ],
+        choiceLabels: [
+            "A": "受ける",
+            "B": "断る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "黒で、って言った。鉛筆より、たぶん長持ちする。"),
+                Advice(name: "谷口", text: "……そうか。ほな俺、お前のシフト表、覚えとくわ。空いてる日から、合わせる。"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "鉛筆のままで、って言った。店長、黒のペンは出さなかった。"),
+                Advice(name: "谷口", text: "ちゃんと見てから決めたやんけ。……それやったら、俺は文句ないわ。"),
+            ],
+        ]
     )
 
     // MARK: 0014 終電までの反省会（週次・前座帯・選択肢あり。proposals/0014 レッドチーム済み確定テキストを転記）

@@ -21,12 +21,13 @@ public enum ChoiceEventKind: String, CaseIterable {
     case greenroomSilentTen  // 0027: 楽屋で無言の十分（噛み合い帯 相性8-14・選択肢なしフレーバー）
     case lastTrainReview     // 0014: 終電までの反省会（前座帯 知名度<20・選択肢あり）
     case luckyThirdLine      // 0029: 三行目を一度で（好調帯 体力80+・連敗なし・大会前・選択肢なしフレーバー）
+    case regularEmployment   // 0023: 正社員の話（バイト多数×金欠<10万・選択肢あり・段階1のみ）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine:
+             .lastTrainReview, .luckyThirdLine, .regularEmployment:
             return true
         default:
             return false
@@ -154,6 +155,16 @@ public enum ChoiceEventTable {
                     .stamina(5), .ability(.メンタル, 1), .compat(1), .money(-800),
                 ]),
             ]
+        case .regularEmployment:
+            // 0023 正社員の話（段階1のみ・段階2 growthBudget減算は規律Aで後日）: A=受ける(所持金+3万/体力-10/メンタル-1)　B=断る(メンタル+2/相性+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .money(30000), .stamina(-10), .ability(.メンタル, -1),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .ability(.メンタル, 2), .compat(1),
+                ]),
+            ]
         case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
@@ -184,6 +195,9 @@ public enum ChoiceEventTable {
         case .luckyThirdLine:
             // 0029: 好調帯（体力80+）。連敗なし・大会2-4週前の追加ゲートは GameSession 側（lossStreak/weeksLeft を要する）
             return state.stamina >= 80
+        case .regularEmployment:
+            // 0023: 金欠帯（<10万）。バイトを重ねた条件は GameSession 側の jobCount ゲート（UI層カウンタ）
+            return state.money < 100_000
         default:
             return false
         }
