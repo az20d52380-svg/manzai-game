@@ -32,6 +32,7 @@ enum ChoiceEventData {
         case .regularEmployment: return regularEmployment
         case .wroteOneTonight: return wroteOneTonight
         case .taniguchiShortJob: return taniguchiShortJob
+        case .photoShootOffer: return photoShootOffer
         }
     }
 
@@ -305,6 +306,30 @@ enum ChoiceEventData {
         ],
         choiceLabels: [:],
         afterChoice: [:]
+    )
+
+    // MARK: 0022 撮られる仕事（週次・知名度20-50・選択肢あり。proposals/0022 レッドチーム済み確定テキストを転記）
+    //   popup2択イベント（機構実装済み）＝rollOffer 非依存＝golden不変。A の機会費用は体力-15 で近似（週奪いはPhase2）。
+
+    private static let photoShootOffer = ChoiceEventText(
+        title: "撮られる仕事",
+        setup: [
+            Advice(name: nil, text: "オファーの紙が一枚、机に置いてある。若手特集の撮影、丸一日拘束、ネタは一切やらない。\n顔と佇まいだけでいい、と書いてある。芸人の仕事に、芸をしない一日が混じっている。\n稽古場の壁には、前に使っていたコンビが貼っていたスチール写真の跡が、四角く白く残っている。\n日に焼けなかったその四角だけが、この壁で一番きれいだ。\n谷口が紙を一度裏返して、また表に戻した。"),
+        ],
+        choiceLabels: [
+            "A": "受ける",
+            "B": "断って稽古に充てる",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "一日、稽古が飛ぶ。顔で呼ばれた仕事は、初めてだ。"),
+                Advice(name: "谷口", text: "顔で呼ばれるうちに行っとき。あの白い四角も、そう言うてるやろ。"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今日は稽古に回す。撮られてる時間で、二本目の入りを詰めたい。"),
+                Advice(name: "谷口", text: "顔売る話やのに、お前は台本の話しかせえへんな。……ええよ、二本目やろ。"),
+            ],
+        ]
     )
 
     // MARK: 0012 谷口の耳寄りな話（確定発火・金欠帯・選択肢あり。proposals/0012 レッドチーム済み確定テキストを転記）

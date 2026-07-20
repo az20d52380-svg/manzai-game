@@ -24,12 +24,13 @@ public enum ChoiceEventKind: String, CaseIterable {
     case luckyThirdLine      // 0029: 三行目を一度で（好調帯 体力80+・連敗なし・大会前・選択肢なしフレーバー）
     case regularEmployment   // 0023: 正社員の話（バイト多数×金欠<10万・選択肢あり・段階1のみ）
     case wroteOneTonight     // 0016: 書けた一本（持ちネタあり＝一本まとまった夜・選択肢あり・翌週バフはPhase2）
+    case photoShootOffer     // 0022: 撮られる仕事（知名度20-50・選択肢あり。popup2択化で rollOffer 非依存＝golden不変）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .regularEmployment, .wroteOneTonight:
+             .lastTrainReview, .luckyThirdLine, .regularEmployment, .wroteOneTonight, .photoShootOffer:
             return true
         default:
             return false
@@ -188,6 +189,17 @@ public enum ChoiceEventTable {
                     .stamina(5), .ability(.メンタル, 1),
                 ]),
             ]
+        case .photoShootOffer:
+            // 0022 撮られる仕事: A=受ける(華+2/知名度+1/所持金+1万/体力-15＝撮影拘束の機会費用)　B=断って稽古(センス発想の低い方+1)
+            //   ※proposal の「その週稽古打てない」機会費用は体力-15 で近似（週奪い機構は Phase2）。全て確定加算＝rollOffer 非依存＝golden不変
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.華, 2), .fame(1), .money(10_000), .stamina(-15),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .weakerSenseIdeaPlus(1),
+                ]),
+            ]
         case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
@@ -224,6 +236,9 @@ public enum ChoiceEventTable {
         case .wroteOneTonight:
             // 0016: 持ちネタが1本でもある＝「一本まとまった夜」の文脈が立つ。ネタ作り直後は状態帯に緩めた
             return !state.netas.isEmpty
+        case .photoShootOffer:
+            // 0022: 顔で呼ばれ始める帯（知名度20-50）。下限は新人賞通過等で1年内到達しうる／上限は主に2年目以降
+            return state.fame >= 20 && state.fame <= 50
         default:
             return false
         }
