@@ -179,14 +179,15 @@ public enum ChoiceEventTable {
                 ]),
             ]
         case .wroteOneTonight:
-            // 0016 書けた一本: A=今夜詰める(発想+2/表現+1/体力-15)　B=寝かせる(体力+5/メンタル+1)
-            //   ※B の「翌週のネタ合わせ効果アップ」は翌週バフ機構が要る＝Phase2。MVPは即時回復のみ（0010/0018型トレード）
+            // 0016 書けた一本: A=今夜詰める(発想+2/表現+1/体力-15)　B=寝かせる(体力+5/メンタル+1＋向こう数週ネタ合わせ効果UP)
+            //   ※B の「翌週のネタ合わせ効果アップ」＝翌週バフ機構（.netaBoostNextWeek）で実装（golden-inert）。
+            //     netaBoostWeeks を config.netaBoostWeeks 週分点火＝以後 applyNetaRevise が netaBoostMult 倍で乗る。
             return [
                 ChoiceEventChoice(id: "A", effects: [
                     .ability(.発想, 2), .ability(.表現, 1), .stamina(-15),
                 ]),
                 ChoiceEventChoice(id: "B", effects: [
-                    .stamina(5), .ability(.メンタル, 1),
+                    .stamina(5), .ability(.メンタル, 1), .netaBoostNextWeek(config.netaBoostWeeks),
                 ]),
             ]
         case .photoShootOffer:

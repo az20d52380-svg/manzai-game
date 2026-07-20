@@ -191,6 +191,10 @@ public struct GameConfig {
     public var netaActiveSlots = 4
     /// `ネタ作り` 改稿の完成度上昇
     public var netaReviseGain = 8.0
+    /// 0016 書けた一本（寝かせる）＝ネタ合わせ効果ブースト。netaBoostWeeks>0 の間 revise 上昇に掛ける倍率と持続週。
+    /// 数値は【仮】（sim較正で確定）。golden 非対象（applyNetaRevise は gen_golden 非経路）。
+    public var netaBoostMult = 1.6
+    public var netaBoostWeeks = 2
     /// `ネタ見せ会`（有料稽古）のライブ完成度上昇
     public var netaLivePolishShow = 12.0
     /// `フリーライブ`（無料・営業）のライブ完成度上昇

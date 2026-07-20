@@ -212,4 +212,52 @@ final class ChoiceEventTests: XCTestCase {
         plain.compat = min(config.compatCap, plain.compat + 1)   // ゲートが無い場合の期待挙動
         XCTAssertEqual(frozen.compat, plain.compat)
     }
+
+    // MARK: 0016 ネタ合わせブースト（netaBoost）— revise を乗算／週送りで減る／golden経路は恒等no-op
+
+    func test0016_netaBoostSetByEffect() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.applyEventEffect(.netaBoostNextWeek(config.netaBoostWeeks), config: config)
+        XCTAssertEqual(s.netaBoostWeeks, config.netaBoostWeeks)
+        // 既にブースト中ならより長い方を残す（compatFreeze と同型）
+        s.applyEventEffect(.netaBoostNextWeek(1), config: config)
+        XCTAssertEqual(s.netaBoostWeeks, config.netaBoostWeeks, "短い方では上書きしない")
+    }
+
+    func test0016_netaBoostMultipliesReviseThenTicks() {
+        let config = GameConfig()   // netaReviseGain=8, netaBoostMult=1.6, netaBoostWeeks=2
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 1))
+        let id = r.applyNetaCreate(kata: .王道しゃべくり, lengthFit: [.中尺], name: "x")   // polish=30
+        r.applyEventEffects([.netaBoostNextWeek(2)])
+        XCTAssertEqual(r.state.netaBoostWeeks, 2)
+        // ブースト中: 8×1.6=12.8 乗る（30→42.8）
+        r.applyNetaRevise(id: id)
+        XCTAssertEqual(r.state.netas[0].polish, 30 + config.netaReviseGain * config.netaBoostMult, accuracy: 1e-9)
+        r.tickNetaBoost(); XCTAssertEqual(r.state.netaBoostWeeks, 1)
+        r.tickNetaBoost(); XCTAssertEqual(r.state.netaBoostWeeks, 0)
+        r.tickNetaBoost(); XCTAssertEqual(r.state.netaBoostWeeks, 0)   // 0 で頭打ち
+        // 失効後: 素の 8 だけ乗る（42.8→50.8）
+        let before = r.state.netas[0].polish
+        r.applyNetaRevise(id: id)
+        XCTAssertEqual(r.state.netas[0].polish, before + config.netaReviseGain, accuracy: 1e-9)
+    }
+
+    func test0016_noBoostIsIdentityOnGoldenPath() {
+        // golden 経路＝netaBoostWeeks が常に0。このとき revise 乗算は ×1.0＝従来と同一（byte一致の根拠）。
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 1))
+        let id = r.applyNetaCreate(kata: .王道しゃべくり, lengthFit: [.中尺], name: "x")   // boost=0（既定）
+        r.applyNetaRevise(id: id)
+        XCTAssertEqual(r.state.netas[0].polish, 30 + config.netaReviseGain, accuracy: 1e-9, "ブースト0では素の上昇")
+    }
+
+    // MARK: Codable — 新規 inert フィールドがセーブ往復で保存される
+    func testNetaBoostWeeksSurvivesCodableRoundTrip() throws {
+        var s = GameState(config: GameConfig()); s.netaBoostWeeks = 2; s.compatFreezeWeeks = 3
+        let data = try JSONEncoder().encode(s)
+        let back = try JSONDecoder().decode(GameState.self, from: data)
+        XCTAssertEqual(back.netaBoostWeeks, 2)
+        XCTAssertEqual(back.compatFreezeWeeks, 3)
+    }
 }

@@ -125,6 +125,9 @@ final class GameSession {
         }
         // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
         if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }
+        // 0016 ネタ合わせブーストの週送り減算（UI層・golden非対象・freeze と同型）。この週の revise はブースト有効で
+        // 処理され、週が明けて1減る＝設定週を含む向こう config.netaBoostWeeks 週だけ乗る。
+        if state.netaBoostWeeks > 0 { runner.tickNetaBoost(); state = runner.state }
     }
 
     // MARK: v8育成メイン用プレビュー（RNG非消費の純getter）

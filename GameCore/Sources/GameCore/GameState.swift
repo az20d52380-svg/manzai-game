@@ -56,6 +56,12 @@ public struct GameState: Codable {
     /// 常に0＝ゲートは恒等 no-op（GameEngine.add / balance_sim.add の inert ゲートで golden 期待値バイト一致を実証）。
     public var compatFreezeWeeks = 0
 
+    /// ネタ合わせ（磨き）の効果ブースト週（0016 書けた一本＝寝かせた効果）。>0 の間は applyNetaRevise の
+    /// polish 上昇に config.netaBoostMult を掛ける。UI層イベント（GameSession）が設定し、週送りで1ずつ減る。
+    /// ★golden不変: applyNetaRevise は golden 非経路（gen_golden はネタ個体を持たない＝revise 自体を呼ばない）。
+    /// gen_golden はイベント非発火＝常に0＝乗算ゲートは恒等 no-op（compatFreezeWeeks と同型の inert フィールド）。
+    public var netaBoostWeeks = 0
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina

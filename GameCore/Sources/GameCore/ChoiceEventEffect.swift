@@ -12,6 +12,7 @@ public enum EventEffect {
     case weakestSkillPlus(Double)     // センス/発想/表現/華 の最小に加算（メンタル除外・0017A の効果バグ回避版）
     case weakerSenseIdeaPlus(Double)  // センス/発想 の低い方に加算（0018B）
     case compatFreeze(Int)            // 相性成長を指定週だけ凍結（0012A・UI層で週送り減算・golden非対象）
+    case netaBoostNextWeek(Int)       // ネタ合わせ効果ブーストを指定週だけ付与（0016B・UI層で週送り減算・golden非対象）
 }
 
 extension GameState {
@@ -35,6 +36,8 @@ extension GameState {
             bumpAbility(self[.センス] <= self[.発想] ? .センス : .発想, d)
         case .compatFreeze(let w):
             compatFreezeWeeks = max(compatFreezeWeeks, w)   // 既に凍結中ならより長い方を残す
+        case .netaBoostNextWeek(let w):
+            netaBoostWeeks = max(netaBoostWeeks, w)         // 既にブースト中ならより長い方を残す
         }
     }
 }

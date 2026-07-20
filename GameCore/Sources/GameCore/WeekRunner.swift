@@ -361,9 +361,12 @@ public struct WeekRunner<R: RandomSource> {
     }
 
     /// 改稿（`ネタ作り`・既存ネタ選択時）。完成度を上げる（0..100 clamp）。
+    /// 0016 書けた一本（寝かせる）: netaBoostWeeks>0 の間は netaBoostMult 倍で乗る。★golden不変: gen_golden は
+    /// ネタ個体を持たない＝この関数を呼ばない＋イベント非発火で netaBoostWeeks は常に0＝乗算は恒等（×1.0）。
     public mutating func applyNetaRevise(id: Int) {
         guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
-        state.netas[i].polish = GameEngine.clamp(state.netas[i].polish + config.netaReviseGain, 0, 100)
+        let mult = state.netaBoostWeeks > 0 ? config.netaBoostMult : 1.0
+        state.netas[i].polish = GameEngine.clamp(state.netas[i].polish + config.netaReviseGain * mult, 0, 100)
     }
 
     /// 客前でかける（`ネタ見せ会`＝hard/`フリーライブ`＝!hard）。手応え算出→buzz移動平均→完成度↑・場数↑・おろし。乱数非依存。
@@ -411,5 +414,11 @@ public struct WeekRunner<R: RandomSource> {
     /// golden 経路では compatFreezeWeeks が常に0のまま＝この減算も add の凍結ゲートも恒等 no-op＝golden不変。
     public mutating func tickCompatFreeze() {
         if state.compatFreezeWeeks > 0 { state.compatFreezeWeeks -= 1 }
+    }
+
+    /// ネタ合わせブースト（0016）の残り週数を1減らす。★tickCompatFreeze と同型: UI層（GameSession）が週送りで
+    /// 呼ぶ＝gen_golden は呼ばない＝golden 経路では netaBoostWeeks が常に0＝この減算も revise 乗算も恒等 no-op。
+    public mutating func tickNetaBoost() {
+        if state.netaBoostWeeks > 0 { state.netaBoostWeeks -= 1 }
     }
 }
