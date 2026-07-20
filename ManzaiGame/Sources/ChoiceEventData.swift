@@ -21,6 +21,7 @@ enum ChoiceEventData {
         case .preTournamentEve: return preTournamentEve
         case .tsuukaBreak: return tsuukaBreak
         case .earlyFormality: return earlyFormality
+        case .brokeDrinkingInvite: return brokeDrinkingInvite
         }
     }
 
@@ -184,6 +185,31 @@ enum ChoiceEventData {
                 Advice(name: "俺", text: "……いや、なんでもない。今日はここまでにしよう。"),
                 Advice(name: "谷口", text: "せやな。ほな、また明日。"),
                 Advice(name: "俺", text: "ネタ帳は、今日は俺が仕舞っておく。"),
+            ],
+        ]
+    )
+
+    // MARK: 0011 行けない飲み会（週次抽選・低所持金帯。proposals/0011 レッドチーム済み確定テキストを転記）
+
+    private static let brokeDrinkingInvite = ChoiceEventText(
+        title: "行けない飲み会",
+        setup: [
+            Advice(name: nil, text: "谷口の携帯が、鳴って、切れて、また鳴った。\n稽古場の照明は、壁の箱に百円玉を入れると一時間だけつく。今夜の残りは、その百円玉で数えられる程度だ。"),
+            Advice(name: "谷口", text: "今日、同期が集まるらしいわ。会費、ひとり四千円やて"),
+            Advice(name: "俺", text: "今月の稽古場代、残りがちょうど四千円なんだよな"),
+        ],
+        choiceLabels: [
+            "A": "行く",
+            "B": "断って稽古場に残る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "谷口", text: "久しぶりに、みんなの顔見たわ"),
+                Advice(name: "俺", text: "その分、来週は箱に入れる百円玉を、一枚ずつ数えることになる"),
+            ],
+            "B": [
+                Advice(name: "谷口", text: "……なら、俺も残るわ"),
+                Advice(name: "俺", text: "払わずに済んだ会費が、二人で八千円。箱の照明なら、八十時間ぶんだ"),
             ],
         ]
     )

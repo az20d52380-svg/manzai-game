@@ -226,5 +226,11 @@ public struct GameConfig {
     public var venueTier2Money = 3_000_000
     public var venueTier3Money = 8_000_000
 
+    // --- 週次ランダムイベント（UI層で抽選＝golden非対象。効果は決定的delta・数値は全て【仮】） ---
+    /// 非大会週にイベント抽選が当たる確率（sim EVENT_RATE=0.12 と対応）
+    public var weeklyEventRate = 0.12
+    /// キャリア通算のイベント発火上限（sim EVENT_FIRE_CAP＝連発による希釈を防ぐ総量予算）
+    public var weeklyEventCap = 15
+
     public init() {}
 }

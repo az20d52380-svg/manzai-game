@@ -56,6 +56,12 @@ struct RootView: View {
                 // ネタ帳目視: 持ちネタ（鉄板/おろし前/擦り切れ/保管庫）を積んだ開始状態（数値は全て【仮】）
                 session = GameSession(startState: GameSession.debugNetaState())
             }
+            if ui == "event", session.week <= 1 {
+                // 選択肢イベント目視: 金欠帯の開始状態で 0011「行けない飲み会」を強制発火（オーバーレイ表示の確認）
+                var s = GameState(config: GameConfig()); s.money = 3000
+                session = GameSession(startState: s)
+                session.debugForceEvent(.brokeDrinkingInvite)
+            }
             #endif
         }
     }

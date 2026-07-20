@@ -43,6 +43,15 @@ final class GameSession {
     private(set) var didFireTsuukaChoice = false
     /// 0020「まだ敬語の残る間」の一発化フラグ。結成初期(week<15)×他人行儀帯(compat 0-7)で一度だけ発火。
     private(set) var didFireEarlyFormality = false
+    // --- 週次ランダムイベント（UI層抽選・golden非干渉。runner.rng とは別インスタンスの独立乱数列） ---
+    /// 発火抽選に使う UI 専用乱数。runner が消費する乱数列には一切食い込まない＝3年 golden 不変。
+    private var uiEventRng = SplitMix64(seed: 424242)   // init で seed 由来値に上書き
+    /// 週次イベントの1回制（発火済みの kind は再抽選しない）
+    private var firedWeeklyEvents: Set<ChoiceEventKind> = []
+    /// キャリア通算のイベント発火数（config.weeklyEventCap の総量予算）
+    private var weeklyEventFiredCount = 0
+    /// その週に既に抽選したか（1週1回・pump 複数回呼びでの二重抽選＝UI乱数の余分消費を防ぐ）
+    private var lastEventRollWeek = -1
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
@@ -67,6 +76,8 @@ final class GameSession {
         cfg.autoPourAllocation = false
         self.config = cfg
         self.combiName = combiName
+        // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
+        self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
         let start = startState ?? GameState(config: cfg)
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed))
@@ -231,7 +242,31 @@ final class GameSession {
             pendingChoiceEvent = .earlyFormality
         } else if !didFireTsuukaChoice, state.compat >= 15 {
             pendingChoiceEvent = .tsuukaBreak
+        } else {
+            // 確定発火なし → 週次ランダム抽選（UI乱数・golden非干渉）。1週1回だけ引く。
+            rollWeeklyRandomEvent()
         }
+    }
+
+    /// 週次ランダムイベントの抽選（UI専用乱数＝runner の乱数列に非干渉＝golden不変）。
+    /// 確定発火が無い自由週にのみ来る。1週1回・総量予算(weeklyEventCap)・1回制(firedWeeklyEvents)で希釈を防ぐ。
+    private func rollWeeklyRandomEvent() {
+        guard week != lastEventRollWeek else { return }   // 同一週の pump 複数回呼びで二重に引かない
+        lastEventRollWeek = week
+        guard weeklyEventFiredCount < config.weeklyEventCap else { return }
+        guard uiEventRng.nextUniform() < config.weeklyEventRate else { return }   // 12%【仮】で抽選成立
+        // 発火帯に入っていて未発火の候補（proposals 各票のゲート）を集める
+        let candidates = ChoiceEventKind.allCases.filter {
+            $0.isWeeklyRandom
+                && !firedWeeklyEvents.contains($0)
+                && ChoiceEventTable.weeklyFireable($0, state: state, week: week, config: config)
+        }
+        guard !candidates.isEmpty else { return }
+        let idx = min(Int(uiEventRng.nextUniform() * Double(candidates.count)), candidates.count - 1)
+        let kind = candidates[idx]
+        pendingChoiceEvent = kind
+        firedWeeklyEvents.insert(kind)
+        weeklyEventFiredCount += 1
     }
 
     /// 次に来る本番の週と「格が高いか」（0010: 新人賞級・準決・GP決勝＝高格／GP1-3回戦・準々決勝＝低格）。
@@ -265,6 +300,7 @@ final class GameSession {
         case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
+        case .brokeDrinkingInvite: break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         }
     }
 
@@ -441,6 +477,9 @@ final class GameSession {
     }
 
     #if DEBUG
+    /// QA用: 選択肢イベントのオーバーレイを強制表示（発火抽選を経ず kind を直接立てる・目視専用）。
+    func debugForceEvent(_ kind: ChoiceEventKind) { pendingChoiceEvent = kind }
+
     /// QA用: 既定行動で自動プレイし、最初の大会/GP結果（S3）が出た時点で止める。
     /// stopAtEntry=true なら最初の大会入口（tournamentDecision）で止める（入口画面の目視用）。
     /// 画面レイアウトの目視確認を素早く行うための開発フック（リリースには含まれない）。

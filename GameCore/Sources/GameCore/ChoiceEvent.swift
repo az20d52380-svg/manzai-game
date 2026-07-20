@@ -5,12 +5,23 @@
 // ★MVPスコープ（0024確定）: 確定発火＋確定効果のみ。抽選・効果内ロールは入れない（0010のA内部判定は本編送り）。
 
 public enum ChoiceEventKind: String, CaseIterable {
+    // --- 確定発火（既存フラグを見て点火・抽選しない） ---
     case justLostRehearsal   // 0017: 負けた日の稽古場（発火=justLost）
     case styleTalk           // 0019: 型を捨てる相談（発火=lossStreak>=3・一発化フラグで反復制御）
     case justPassedFork      // 0018: 通った日の分かれ道（発火=justPassedStage・weeksLeft>=3・低体力ガード）
     case preTournamentEve    // 0010: 前夜の一本（発火=weeksLeft==1・格の高い大会のみ）
     case tsuukaBreak         // 0021: 慣れの外し方（発火=相性が初めて15に到達した週・一発化）
     case earlyFormality      // 0020: まだ敬語の残る間（発火=結成初期(week<15)かつ他人行儀帯・一発化）
+    // --- 週次ランダム抽選プール（UI層RNGで発火＝golden非対象。効果は決定的delta＝golden不変） ---
+    case brokeDrinkingInvite // 0011: 行けない飲み会（発火帯=所持金<5万・相性<上限）
+
+    /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
+    public var isWeeklyRandom: Bool {
+        switch self {
+        case .brokeDrinkingInvite: return true
+        default: return false
+        }
+    }
 }
 
 /// 選択肢1件（純データ）。gate は選択可否（0017C の所持金ゲート等）。デフォルトは常に選択可。
@@ -93,6 +104,28 @@ public enum ChoiceEventTable {
                     .stamina(10), .ability(.メンタル, 1),
                 ]),
             ]
+        case .brokeDrinkingInvite:
+            // 0011 行けない飲み会: A=行く(所持金-4000/相性+1/メンタル+1)　B=残る(発想+1/メンタル-1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .money(-4000), .compat(1), .ability(.メンタル, 1),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .ability(.発想, 1), .ability(.メンタル, -1),
+                ]),
+            ]
+        }
+    }
+
+    /// 週次抽選イベントの発火ゲート（純関数・RNG非消費）。確定発火の kind は常に false（抽選プール外）。
+    /// GameSession の週次抽選が「発火帯に入っている候補」だけを対象にする（proposals 各票の発火条件）。
+    public static func weeklyFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig) -> Bool {
+        switch kind {
+        case .brokeDrinkingInvite:
+            // 0011: 低所持金帯（<5万）＋相性が上限未満（上限だと A の相性+1 が死んで B 上位互換化＝proposal リスク節）
+            return state.money < 50_000 && state.compat < config.compatCap
+        default:
+            return false
         }
     }
 }
