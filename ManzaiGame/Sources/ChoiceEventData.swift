@@ -27,6 +27,8 @@ enum ChoiceEventData {
         case .namelessReservationSlip: return namelessReservationSlip
         case .lineupTop: return lineupTop
         case .greenroomSilentTen: return greenroomSilentTen
+        case .lastTrainReview: return lastTrainReview
+        case .luckyThirdLine: return luckyThirdLine
         }
     }
 
@@ -297,6 +299,45 @@ enum ChoiceEventData {
             Advice(name: nil, text: "対バンがはねて、楽屋に戻る。前座は入りが早い。朝から動いて、体はもう夜の分まで使い終えている。\n壁に、香盤表が貼ってある。主催が手で書いたやつだ。上から出番順に名前が並んでいて、一番上が俺たちだ。下へ下がるほど、どこかで見た名前になる。一番下の組は、先週テレビでネタをやっていた。\n谷口は香盤表のほうを見ない。しゃがんで、足元のケーブルをもう巻いている。"),
             Advice(name: "谷口", text: "俺ら先やからな。機材、先に積んどこ。掃けたらすぐ出られるように"),
             Advice(name: "俺", text: "一番上だ。俺たちが終わってから、客席は埋まっていく"),
+        ],
+        choiceLabels: [:],
+        afterChoice: [:]
+    )
+
+    // MARK: 0014 終電までの反省会（週次・前座帯・選択肢あり。proposals/0014 レッドチーム済み確定テキストを転記）
+    //   A の「センスまたは発想+2＝プレイヤーが1軸選ぶ」は MVP では weakerSenseIdeaPlus（低い方に決定的加算）に簡略。
+
+    private static let lastTrainReview = ChoiceEventText(
+        title: "終電までの反省会",
+        setup: [
+            Advice(name: nil, text: "フリーライブが終わった。客席は八人。数え直しても八人で、そのうち一人は、開演前にうちのチラシを配っていたスタッフだった。\n谷口のリュックからは、配りきれなかったチラシの束がまだはみ出している。三十枚は残っている。\n駅のホームに二人。終電まで、二十分ある。"),
+            Advice(name: "谷口", text: "実質七人やな。……七人ぶん、どこがあかんかったか、今やっとくか？"),
+        ],
+        choiceLabels: [
+            "A": "その場で敗因を洗う",
+            "B": "今日は畳んで二人で立て直す",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "二十分ある。その二十分で、洗えるだけ洗う。"),
+                Advice(name: "谷口", text: "ええな。……立ったまま行こ。座ったら、明日になる。"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今日は畳む。反省は、腹が減ってると精度が落ちる。"),
+                Advice(name: "谷口", text: "せやな。……その七人の話は、明日、湯気の立っとる方でやろ。"),
+            ],
+        ]
+    )
+
+    // MARK: 0029 三行目を一度で（週次・好調帯フレーバー。proposals/0029 レッドチーム済み確定テキストを転記）
+
+    private static let luckyThirdLine = ChoiceEventText(
+        title: "三行目を一度で",
+        setup: [
+            Advice(name: nil, text: "ネタ帳を開いて、いつもの三行目で手が止まるのを待った。あそこはいつも通らない。消しゴムの跡が濃くて、紙が薄くなって、光にかざすと三行目だけ向こうが透ける。\n今日は、消さなかった。一度書いて、そのまま次の行へ進んでいた。\n何が変わったのか、勘定してみる。体は軽い。声も出る。客の入りは先週と同じだ。足しても引いても、余りが合わない。"),
+            Advice(name: "俺", text: "三行目、一度で通ったな"),
+            Advice(name: "谷口", text: "こういう日は、たいてい次でこけるねん"),
+            Advice(name: nil, text: "谷口はそれだけ言って、台本に目を戻した。俺は、なぜ通ったのかをまだ数えていた。数えきれる気は、しなかった。"),
         ],
         choiceLabels: [:],
         afterChoice: [:]

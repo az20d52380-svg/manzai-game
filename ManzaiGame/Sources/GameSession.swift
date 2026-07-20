@@ -267,6 +267,7 @@ final class GameSession {
             $0.isWeeklyRandom
                 && !firedWeeklyEvents.contains($0)
                 && ChoiceEventTable.weeklyFireable($0, state: state, week: week, config: config)
+                && weeklyExtraGate($0)
         }
         guard !candidates.isEmpty else { return }
         let idx = min(Int(uiEventRng.nextUniform() * Double(candidates.count)), candidates.count - 1)
@@ -274,6 +275,18 @@ final class GameSession {
         pendingChoiceEvent = kind
         firedWeeklyEvents.insert(kind)
         weeklyEventFiredCount += 1
+    }
+
+    /// weeklyFireable（GameState+week の純関数）で判定できない、GameSession 固有の状態を要する追加ゲート。
+    private func weeklyExtraGate(_ kind: ChoiceEventKind) -> Bool {
+        switch kind {
+        case .luckyThirdLine:
+            // 0029: 連敗していない＋大会が視界（2-4週前）＝好調が"負けの反動"に読まれない帯（lossStreak/次マイルストンを要する）
+            guard lossStreak == 0, let m = nextMilestoneForEvent() else { return false }
+            return (2...4).contains(m.week - week)
+        default:
+            return true
+        }
     }
 
     /// 次に来る本番の週と「格が高いか」（0010: 新人賞級・準決・GP決勝＝高格／GP1-3回戦・準々決勝＝低格）。
@@ -307,7 +320,8 @@ final class GameSession {
         case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
-        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen:
+        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
+             .lastTrainReview, .luckyThirdLine:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）

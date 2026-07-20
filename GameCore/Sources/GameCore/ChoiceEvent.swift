@@ -19,11 +19,14 @@ public enum ChoiceEventKind: String, CaseIterable {
     case peerFoldedChair     // 0015: 畳んだコンビの椅子（発火帯=week>=20）
     case lineupTop           // 0025: 香盤表の一番上（前座帯 知名度<20・選択肢なしフレーバー）
     case greenroomSilentTen  // 0027: 楽屋で無言の十分（噛み合い帯 相性8-14・選択肢なしフレーバー）
+    case lastTrainReview     // 0014: 終電までの反省会（前座帯 知名度<20・選択肢あり）
+    case luckyThirdLine      // 0029: 三行目を一度で（好調帯 体力80+・連敗なし・大会前・選択肢なしフレーバー）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
-        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen:
+        case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
+             .lastTrainReview, .luckyThirdLine:
             return true
         default:
             return false
@@ -141,7 +144,17 @@ public enum ChoiceEventTable {
                     .ability(.メンタル, 1), .compat(1),
                 ]),
             ]
-        case .namelessReservationSlip, .lineupTop, .greenroomSilentTen:
+        case .lastTrainReview:
+            // 0014 終電までの反省会: A=その場で洗う(メンタル-2/体力-5/センス発想の低い方+2)　B=畳んで立て直す(体力+5/メンタル+1/相性+1/所持金-800)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.メンタル, -2), .stamina(-5), .weakerSenseIdeaPlus(2),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .stamina(5), .ability(.メンタル, 1), .compat(1), .money(-800),
+                ]),
+            ]
+        case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
     }
@@ -165,6 +178,12 @@ public enum ChoiceEventTable {
         case .greenroomSilentTen:
             // 0027: 噛み合い始めの帯（8-14）のみ。低評価判定は現状無いので compat 帯だけで絞る（proposal 安全側）
             return (8...14).contains(Int(state.compat))
+        case .lastTrainReview:
+            // 0014: 客の薄い帯（知名度<20）。フリーライブ直後は状態帯に緩めた
+            return state.fame < 20
+        case .luckyThirdLine:
+            // 0029: 好調帯（体力80+）。連敗なし・大会2-4週前の追加ゲートは GameSession 側（lossStreak/weeksLeft を要する）
+            return state.stamina >= 80
         default:
             return false
         }
