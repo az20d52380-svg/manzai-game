@@ -37,7 +37,7 @@ public struct GameState: Codable {
     public var expネタ = 0.0
     public var exp舞台 = 0.0
 
-    // --- 持ちネタ（正典: docs/neta_system_redesign_v2.md・Phase 0＝非スコアの器） ---
+    // --- 持ちネタ（正典: docs/neta_system_redesign_v2.md）。selectedNetaID は Phase 1-a で本番スコアに効く ---
     // ★golden不変: perform（GameEngine.swift:145-158）はこれらを一切読まない＝合否スコア・乱数消費順に非干渉。
     //   exp* 追加（上 30-38）と完全に同型の「セーブに乗る器」。init では代入しない＝既定値に委ねる（exp* と同様）。
     /// アクティブな持ちネタ（少数・磨き対象＝鉄板枠。v2 §2-2）

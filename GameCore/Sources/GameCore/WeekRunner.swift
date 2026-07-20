@@ -139,7 +139,8 @@ public struct WeekRunner<R: RandomSource> {
                     state.money -= ts.cost
                     GameEngine.add(.体力, ts.stamina, to: &state, config: config)
                 }
-                let result = GameEngine.perform(state, line: spec.line, config: config, rng: &rng)
+                let netaLine = spec.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
+                let result = GameEngine.perform(state, line: netaLine, config: config, rng: &rng)
                 if result.passed {
                     state.money += spec.prize
                     GameEngine.add(.知名度, spec.fame, to: &state, config: config)
@@ -165,7 +166,8 @@ public struct WeekRunner<R: RandomSource> {
             }
             let round = cal.gpRounds[gpStage]
             let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
-            let result = GameEngine.perform(state, line: round.line, config: config, rng: &rng)
+            let roundLine = round.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
+            let result = GameEngine.perform(state, line: roundLine, config: config, rng: &rng)
             acted = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
@@ -182,7 +184,8 @@ public struct WeekRunner<R: RandomSource> {
             weekResults.append(StageResult(name: name, passed: result.passed, prize: 0))
         case .revival:
             revivalTried = true
-            let result = GameEngine.perform(state, line: cal.gpRevivalLine, config: config, rng: &rng)
+            let revivalLine = cal.gpRevivalLine - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
+            let result = GameEngine.perform(state, line: revivalLine, config: config, rng: &rng)
             acted = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
@@ -192,7 +195,9 @@ public struct WeekRunner<R: RandomSource> {
         case .final:
             finalTried = true
             // 決勝のみの人気補正（機微・judge_design §10-F）。王者防衛のライン上書き時にも適用
+            // ＋ネタ Phase 1-a: 決勝は2本制（isFinal: true）＝2本目の完成度も実効ラインに効く
             let effLine = finalLine - cal.fameFinalBonus * (state.fame - 50) / 50
+                        - GameEngine.netaScoreBonus(state, isFinal: true, config: config)
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
             acted = true
             weekResults.append(StageResult(name: "GP決勝", passed: result.passed,
@@ -339,11 +344,12 @@ public struct WeekRunner<R: RandomSource> {
         for a in taps { GameEngine.pourStep(a, to: &state, config: config) }
     }
 
-    // MARK: 持ちネタの純適用（正典: docs/neta_system_redesign_v2.md Phase 0-b）
-    // ★applyAllocation/applyEventEffects と同じ規律: RandomSource を一切呼ばない＝乱数消費順は1ビットも動かない＝
-    //   3年 golden 不変。golden 生成器（gen_golden.py / runYear）はこれらを呼ばない＝期待値も不変。
-    //   perform（GameEngine.swift:158）はネタを読まない＝合否スコアにも一切効かない（Phase 0＝非スコアの器）。
-    //   「反応で磨く（当たり外れ）」「選択が勝敗に効く」はスコア/乱数を要する＝Phase 1（規律A・別便）。
+    // MARK: 持ちネタの純適用（正典: docs/neta_system_redesign_v2.md Phase 0-b / スコア寄与=Phase 1-a）
+    // ★applyAllocation/applyEventEffects と同じ規律: これら apply* は RandomSource を一切呼ばない＝乱数消費順は
+    //   1ビットも動かない。golden 生成器（gen_golden.py / runYear）はネタ個体を持たない＝selectedNetaID==nil。
+    //   ▸Phase 1-a（実装済み）: perform の実効ラインが `GameEngine.netaScoreBonus` で下がる＝選択が勝敗に効く。
+    //     ただし selectedNetaID==nil では恒等0＝golden 経路は不変（swift test/gen_golden で実証済み）。
+    //   ▸未実装（見送り・オーナー2026-07-19）: 型×審査員相性スコア(1-b)・buzz の客層依存乱数(1-c)。
 
     /// 新ネタ生成（`ネタ作り`・新規時）。連番採番→アクティブ枠に追加→id を返す。乱数非依存。
     @discardableResult
@@ -396,7 +402,8 @@ public struct WeekRunner<R: RandomSource> {
         state.netas.append(state.archivedNetas.remove(at: i))
     }
 
-    /// 「今かけるネタ」の選択（大会/自由週・v2 §4）。1本目/2本目（決勝）。乱数非依存・非スコア。
+    /// 「今かけるネタ」の選択（大会/自由週・v2 §4）。1本目/2本目（決勝）。乱数非依存。
+    /// ★選択自体は乱数を引かないが、Phase 1-a で本番の実効ラインに効く（netaScoreBonus）＝勝敗に効く選択。
     public mutating func applyNetaSelect(id: Int?) { state.selectedNetaID = id }
     public mutating func applyNetaSelect2(id: Int?) { state.selectedNetaID2 = id }
 }

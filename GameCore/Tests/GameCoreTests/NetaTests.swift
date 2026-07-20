@@ -128,4 +128,57 @@ final class NetaTests: XCTestCase {
         XCTAssertFalse(neta.isRevival(currentYear: 4, config: config))  // 4-2=2 < 3
         XCTAssertTrue(neta.isRevival(currentYear: 5, config: config))   // 5-2=3 >= 3
     }
+
+    // MARK: Phase 1-a スコア寄与（netaScoreBonus・Python: sim_career._neta_bonus＋決勝2本制）
+
+    private func stateWithSelected(polish: Double, buzz: Double, config: GameConfig) -> GameState {
+        var s = GameState(config: config)
+        var n = Neta(id: 0, name: "A", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1)
+        n.polish = polish; n.buzz = buzz
+        s.netas = [n]; s.selectedNetaID = 0
+        return s
+    }
+
+    func testNetaScoreBonusZeroWhenUnselected() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        var n = Neta(id: 0, name: "A", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1)
+        n.polish = 100; n.buzz = 100
+        s.netas = [n]   // selectedNetaID = nil（未選択）
+        // ★golden 経路と同じ「ネタ未選択」＝恒等0（本番/決勝どちらも）
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: false, config: config), 0)
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: true, config: config), 0)
+    }
+
+    func testNetaScoreBonusPolishAndBuzz() {
+        let config = GameConfig()   // coefComp=0.04 / coefBuzz=0.02
+        let s = stateWithSelected(polish: 100, buzz: 50, config: config)
+        // (100-50)*0.04 + (50-50)*0.02 = 2.0
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: false, config: config), 2.0, accuracy: 1e-9)
+        let s2 = stateWithSelected(polish: 50, buzz: 100, config: config)
+        // 0 + (100-50)*0.02 = 1.0
+        XCTAssertEqual(GameEngine.netaScoreBonus(s2, isFinal: false, config: config), 1.0, accuracy: 1e-9)
+    }
+
+    func testNetaScoreBonusClamps() {
+        var config = GameConfig(); config.netaScoreCoefComp = 0.2   // (100-50)*0.2=10 → ±5でクランプ
+        let hi = stateWithSelected(polish: 100, buzz: 50, config: config)
+        XCTAssertEqual(GameEngine.netaScoreBonus(hi, isFinal: false, config: config), 5.0, accuracy: 1e-9)
+        let lo = stateWithSelected(polish: 0, buzz: 50, config: config)   // (0-50)*0.2=-10 → -5
+        XCTAssertEqual(GameEngine.netaScoreBonus(lo, isFinal: false, config: config), -5.0, accuracy: 1e-9)
+    }
+
+    func testNetaFinalSecondPenalty() {
+        let config = GameConfig()   // secondPenalty=3 / secondMinPolish=60
+        var s = stateWithSelected(polish: 100, buzz: 50, config: config)   // base bonus 2.0
+        // 決勝で2本目なし → 2.0 - 3.0 = -1.0
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: true, config: config), -1.0, accuracy: 1e-9)
+        // 強い2本目（polish>=60）→ ペナルティ無し＝2.0
+        var strong = Neta(id: 1, name: "B", kata: .関係性, lengthFit: [.短尺], bornYear: 1); strong.polish = 70
+        s.netas.append(strong); s.selectedNetaID2 = 1
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: true, config: config), 2.0, accuracy: 1e-9)
+        // 弱い2本目（polish<60）→ ペナルティ復活
+        s.netas[1].polish = 50
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: true, config: config), -1.0, accuracy: 1e-9)
+    }
 }

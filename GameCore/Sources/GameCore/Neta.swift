@@ -2,7 +2,8 @@
 // 持ちネタ（レパートリー）の個体。正典: docs/neta_system_redesign_v2.md（作る→ライブで磨く→持ちネタに貯まる→大会で選ぶ）。
 // ★golden非干渉（Phase 0）: このファイルのどの型・関数も RandomSource を一切呼ばない・GameEngine.perform の式に触れない。
 //   ネタは perform の入力（jitsuryoku + compat + roll + penalty＝GameEngine.swift:158）に一切入らない＝合否スコア不変。
-//   「反応で磨く（当たり外れ）」「選択が勝敗に効く」はスコア/乱数を要する＝Phase 1（規律A・別便）。本ファイルは非スコアの器。
+//   「選択が勝敗に効く」は Phase 1-a で実装済み（GameEngine.netaScoreBonus・selectedNetaID ゲートで golden 不変）。
+//   「反応で磨く（客層の当たり外れ乱数）」= Phase 1-c は見送り（オーナー2026-07-19）。本ファイルは純データ＝スコア計算は GameEngine。
 // 数値は全て【仮】。型は「ネタが持つ1属性」＝年単位の選択ではない（旧Fable案の年始型選択は却下・v2 §1-G）。
 
 /// ネタの型＝1本のネタが持つ属性（judge_preference_research_v0.md §5／multiyear §2-3 の7型と1対1）。

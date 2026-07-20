@@ -186,7 +186,7 @@ public struct GameConfig {
     // --- 大会カレンダー（Python: sim_career.py の定数群） ---
     public var calendar = CalendarConfig()
 
-    // --- ネタ（正典: docs/neta_system_redesign_v2.md・Phase 0＝非スコア。全て【仮】・perform は参照しない＝golden不変） ---
+    // --- ネタ 作る/磨く/貯める（Phase 0・全て【仮】。これら自体は非スコア＝スコア寄与は下の Phase 1-a 係数のみ） ---
     /// アクティブな持ちネタ枠数（磨き対象＝鉄板枠。超過分は保管庫へ退避・v2 §9決点2）
     public var netaActiveSlots = 4
     /// `ネタ作り` 改稿の完成度上昇
@@ -206,6 +206,19 @@ public struct GameConfig {
     public var netaTeppanBuzz = 60.0
     /// 再演バッジ＝作成からこの年数以上寝かせた
     public var netaRevivalYears = 3
+
+    // --- ネタ Phase 1-a: スコア寄与（規律A・正典=sim_career.py の NETA_* 係数。数値は全て【仮】） ---
+    // 選択中ネタが本番の実効ラインを下げる（＝スコアに足す）。selectedNetaID が無ければ恒等0＝従来の合否。
+    /// 完成度係数（(polish-50)×これ）。sim NETA_COEF_COMP=0.04【採用値・優勝率±0年で較正済み】
+    public var netaScoreCoefComp = 0.04
+    /// 手応え係数（(buzz-50)×これ）。sim の fresh 項(0.02)を GameCore の buzz に対応させる（"反応"に忠実）
+    public var netaScoreCoefBuzz = 0.02
+    /// スコア補正の絶対クランプ（±）。sim NETA_CLAMP=5
+    public var netaScoreClamp = 5.0
+    /// 決勝2本制: 2本目が無い or 完成度不足なら実効ラインに上乗せ（＝不利）。sim NETA_SECOND_PEN=3
+    public var netaSecondPenalty = 3.0
+    /// 決勝2本目に求める最低完成度（これ未満は「2本目が弱い」扱い）
+    public var netaSecondMinPolish = 60.0
 
     // --- S6b 勇退エンディングの会場ランク（表示専用・golden非対象。全て【仮】） ---
     /// 残金帯4段階の閾値（0=町の劇場／1=ホール／2=アリーナ／3=ドーム）

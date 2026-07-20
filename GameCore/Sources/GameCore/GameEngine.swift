@@ -159,6 +159,26 @@ public enum GameEngine {
         return (score >= line, score)
     }
 
+    /// ネタのスコア寄与（Phase 1-a・Python: sim_career._neta_bonus ＋ 決勝2本制）。
+    /// 戻り値は「本番スコアに足す量」＝呼び出し側で `line` から引く（ラインを下げる＝有利。sim と同じライン調整）。
+    /// ★選択中ネタ（`selectedNetaID`）が無ければ **恒等的に 0** を返す＝ネタ未使用は従来の合否のまま。
+    ///  golden 生成器（gen_golden.py）はネタ個体を持たない＝`selectedNetaID==nil`＝この項は常に 0＝3年ビット一致は不変。
+    ///  perform の乱数消費（2draw）には一切触れない（この関数は RandomSource を受け取らない）。
+    public static func netaScoreBonus(_ s: GameState, isFinal: Bool, config: GameConfig) -> Double {
+        guard let id = s.selectedNetaID,
+              let neta = s.netas.first(where: { $0.id == id }) else { return 0 }
+        var bonus = (neta.polish - 50) * config.netaScoreCoefComp
+                  + (neta.buzz - 50) * config.netaScoreCoefBuzz
+        bonus = max(-config.netaScoreClamp, min(config.netaScoreClamp, bonus))
+        if isFinal {
+            let second = s.selectedNetaID2.flatMap { sid in s.netas.first(where: { $0.id == sid }) }
+            if second == nil || second!.polish < config.netaSecondMinPolish {
+                bonus -= config.netaSecondPenalty   // 「2本目が無かった／弱かった」敗因
+            }
+        }
+        return bonus
+    }
+
     /// 週末処理（Python: run_year 末尾）。生活費は livingInterval 週ごと。
     /// 正典v2: 所持金<0なら生活苦（体力・メンタル減）、夜逃げライン未満で true（キャリア終了）を返す
     @discardableResult
