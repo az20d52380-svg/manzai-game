@@ -406,4 +406,10 @@ public struct WeekRunner<R: RandomSource> {
     /// ★選択自体は乱数を引かないが、Phase 1-a で本番の実効ラインに効く（netaScoreBonus）＝勝敗に効く選択。
     public mutating func applyNetaSelect(id: Int?) { state.selectedNetaID = id }
     public mutating func applyNetaSelect2(id: Int?) { state.selectedNetaID2 = id }
+
+    /// 相性凍結（0012）の残り週数を1減らす。★UI層（GameSession）が週送りごとに呼ぶ＝gen_golden は呼ばない＝
+    /// golden 経路では compatFreezeWeeks が常に0のまま＝この減算も add の凍結ゲートも恒等 no-op＝golden不変。
+    public mutating func tickCompatFreeze() {
+        if state.compatFreezeWeeks > 0 { state.compatFreezeWeeks -= 1 }
+    }
 }

@@ -71,6 +71,7 @@ struct RootView: View {
                 case "0029": kind = .luckyThirdLine
                 case "0023": kind = .regularEmployment
                 case "0016": kind = .wroteOneTonight
+                case "0012": kind = .taniguchiShortJob
                 default:     kind = .brokeDrinkingInvite
                 }
                 session.debugForceEvent(kind)

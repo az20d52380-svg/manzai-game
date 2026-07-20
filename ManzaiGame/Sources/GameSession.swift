@@ -45,6 +45,8 @@ final class GameSession {
     private(set) var didFireEarlyFormality = false
     /// 0028「名前の無い予約票」の一発化フラグ。確定発火＝選択がないので発火時に立てる（キャリア1回）。
     private(set) var didFireNamelessSlip = false
+    /// 0012「谷口の耳寄りな話」の一発化フラグ。確定発火（金欠×相性8+×大会3週以内なし）・キャリア1回。
+    private(set) var didFireTaniguchiJob = false
     // --- 週次ランダムイベント（UI層抽選・golden非干渉。runner.rng とは別インスタンスの独立乱数列） ---
     /// 発火抽選に使う UI 専用乱数。runner が消費する乱数列には一切食い込まない＝3年 golden 不変。
     private var uiEventRng = SplitMix64(seed: 424242)   // init で seed 由来値に上書き
@@ -121,6 +123,8 @@ final class GameSession {
             let d = state[bank: a] - before[bank: a]
             return d > 0.001 ? (a, d) : nil
         }
+        // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
+        if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }
     }
 
     // MARK: v8育成メイン用プレビュー（RNG非消費の純getter）
@@ -252,6 +256,10 @@ final class GameSession {
             // 0028: 相性8以上・大会2-5週前（詰め期・前夜ではない）。選択がないので発火時にフラグを立てる。
             pendingChoiceEvent = .namelessReservationSlip
             didFireNamelessSlip = true
+        } else if !didFireTaniguchiJob, state.money < 100_000, state.compat >= 8, noTournamentWithin3Weeks() {
+            // 0012: 金欠×相性8+×今後3週に大会なし（3週凍結が直近大会の追い込みを食い潰さない・proposalレッドA-1）。
+            pendingChoiceEvent = .taniguchiShortJob
+            didFireTaniguchiJob = true
         } else {
             // 確定発火なし → 週次ランダム抽選（UI乱数・golden非干渉）。1週1回だけ引く。
             rollWeeklyRandomEvent()
@@ -309,6 +317,12 @@ final class GameSession {
         return ms.filter { $0.week >= week }.min { $0.week < $1.week }
     }
 
+    /// 今後3週以内に本番（大会/GP/決勝）が無いか（0012の発火ゲート＝3週凍結が追い込みを食い潰さない条件）。
+    private func noTournamentWithin3Weeks() -> Bool {
+        guard let m = nextMilestoneForEvent() else { return true }
+        return m.week - week > 3
+    }
+
     /// 選択肢イベントの選択を確定（RNG非消費・golden不変）。発火元フラグを対称に失効させる。
     /// pendingChoiceEvent はここでは落とさない＝選択後の会話をオーバーレイに見せ切ってから
     /// dismissChoiceEvent() で閉じる（先に落とすと .fullScreenCover(item:) が即座に閉じてしまう）。
@@ -330,6 +344,8 @@ final class GameSession {
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）
+        case .taniguchiShortJob:
+            break   // 確定発火＝発火時に didFireTaniguchiJob 済み（A の compatFreeze は EventEffect が適用）
         }
     }
 

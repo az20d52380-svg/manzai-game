@@ -38,6 +38,11 @@ public enum GameEngine {
             s[a] = clamp(s[a] + amt, 0, cap)
         case .コンビ相性:
             if config.compatGrows {
+                // 0012 相性凍結: freeze 中は"増える方向"だけ止める（減算=負は通す＝0019A等の相性-は効く）。
+                // ★golden不変: gen_golden はイベント非発火＝compatFreezeWeeks は常に0＝この分岐は恒等 no-op。
+                if s.compatFreezeWeeks > 0, amount > 0 {
+                    break
+                }
                 s.compat = clamp(s.compat + amount, 0, config.compatCap)
             }
         case .体力:

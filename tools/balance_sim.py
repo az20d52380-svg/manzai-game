@@ -120,7 +120,12 @@ def clamp(v, lo, hi):
 def add(s, key, amt):
     if key == "compat":
         if COMPAT_GROWS:
-            s.compat = clamp(s.compat + amt, 0, COMPAT_CAP)
+            # 0012 相性凍結（golden-inert・GameEngine.add と鏡像）: freeze中は増加だけ止める（減算は通す）。
+            # gen_golden はイベント非発火＝compat_freeze は常に0（getattr既定）＝この分岐は恒等 no-op＝golden不変。
+            if getattr(s, "compat_freeze", 0) > 0 and amt > 0:
+                pass
+            else:
+                s.compat = clamp(s.compat + amt, 0, COMPAT_CAP)
     elif key == "stamina":
         s.stamina = clamp(s.stamina + amt, 0, 100)
     elif key == "fame":

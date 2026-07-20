@@ -173,4 +173,43 @@ final class ChoiceEventTests: XCTestCase {
             }
         }
     }
+
+    // MARK: 0012 相性凍結（compatFreeze）— 増加だけ止める／減算は通す／週送りで減る／golden経路は恒等no-op
+
+    func test0012_compatFreezeBlocksGrowthNotDecrement() {
+        let config = GameConfig()   // compatGrows=true
+        var s = GameState(config: config); s.compat = 10
+        s.applyEventEffect(.compatFreeze(3), config: config)
+        XCTAssertEqual(s.compatFreezeWeeks, 3)
+        // 凍結中: 増加（ネタ合わせ相性+1相当）は乗らない
+        GameEngine.add(.コンビ相性, 1, to: &s, config: config)
+        XCTAssertEqual(s.compat, 10, "凍結中は相性の増加が止まる")
+        // 凍結中でも減算（0019A の相性-2 等）は通す
+        GameEngine.add(.コンビ相性, -2, to: &s, config: config)
+        XCTAssertEqual(s.compat, 8, "凍結中でも減算は効く")
+    }
+
+    func test0012_compatFreezeDecrementsAndThaws() {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 1))
+        r.applyEventEffects([.compatFreeze(2)])
+        XCTAssertEqual(r.state.compatFreezeWeeks, 2)
+        r.tickCompatFreeze(); XCTAssertEqual(r.state.compatFreezeWeeks, 1)
+        r.tickCompatFreeze(); XCTAssertEqual(r.state.compatFreezeWeeks, 0)
+        r.tickCompatFreeze(); XCTAssertEqual(r.state.compatFreezeWeeks, 0)   // 0 で頭打ち
+        // 解凍後は相性が再び伸びる
+        var s = r.state; s.compat = 10
+        GameEngine.add(.コンビ相性, 1, to: &s, config: config)
+        XCTAssertEqual(s.compat, 11, "解凍後は相性成長が戻る")
+    }
+
+    func test0012_noFreezeIsIdentityOnGoldenPath() {
+        // golden 経路＝compatFreezeWeeks が常に0。このときゲートは一切効かず従来と同一（byte一致の根拠）。
+        let config = GameConfig()
+        var frozen = GameState(config: config); frozen.compat = 10   // freeze=0（既定）
+        var plain = frozen
+        GameEngine.add(.コンビ相性, 1, to: &frozen, config: config)
+        plain.compat = min(config.compatCap, plain.compat + 1)   // ゲートが無い場合の期待挙動
+        XCTAssertEqual(frozen.compat, plain.compat)
+    }
 }

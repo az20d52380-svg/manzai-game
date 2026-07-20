@@ -51,6 +51,11 @@ public struct GameState: Codable {
     /// 決勝の2本目（v2 §4-2）
     public var selectedNetaID2: Int? = nil
 
+    /// 相性成長の凍結週（0012 谷口の耳寄りな話）。>0 の間は add(.コンビ相性) の"増加"だけ止まる（減算は通す）。
+    /// UI層イベント（GameSession）が設定し、週送りで1ずつ減る。★golden不変: gen_golden はイベント非発火＝
+    /// 常に0＝ゲートは恒等 no-op（GameEngine.add / balance_sim.add の inert ゲートで golden 期待値バイト一致を実証）。
+    public var compatFreezeWeeks = 0
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina

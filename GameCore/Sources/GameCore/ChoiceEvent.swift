@@ -13,6 +13,7 @@ public enum ChoiceEventKind: String, CaseIterable {
     case tsuukaBreak         // 0021: 慣れの外し方（発火=相性が初めて15に到達した週・一発化）
     case earlyFormality      // 0020: まだ敬語の残る間（発火=結成初期(week<15)かつ他人行儀帯・一発化）
     case namelessReservationSlip  // 0028: 名前の無い予約票（確定発火=compat>=8・大会2-5週前・一発化。選択肢なしフレーバー）
+    case taniguchiShortJob        // 0012: 谷口の耳寄りな話（確定発火=金欠<10万・相性8+・大会3週以内なし・選択肢あり・相性凍結3週）
     // --- 週次ランダム抽選プール（UI層RNGで発火＝golden非対象。効果は決定的delta＝golden不変） ---
     case brokeDrinkingInvite // 0011: 行けない飲み会（発火帯=所持金<5万・相性<上限）
     case senpaiMeishi        // 0013: 先輩の名刺（発火帯=所持金<20万・知名度<50）
@@ -164,6 +165,16 @@ public enum ChoiceEventTable {
                 ]),
                 ChoiceEventChoice(id: "B", effects: [
                     .ability(.メンタル, 2), .compat(1),
+                ]),
+            ]
+        case .taniguchiShortJob:
+            // 0012 谷口の耳寄りな話: A=二人で受ける(所持金+15万/体力-15/相性-1/相性成長3週凍結)　B=断る(メンタル-1/相性+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .money(150_000), .stamina(-15), .compat(-1), .compatFreeze(3),
+                ]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .ability(.メンタル, -1), .compat(1),
                 ]),
             ]
         case .wroteOneTonight:

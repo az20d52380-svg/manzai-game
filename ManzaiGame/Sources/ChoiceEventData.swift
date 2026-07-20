@@ -31,6 +31,7 @@ enum ChoiceEventData {
         case .luckyThirdLine: return luckyThirdLine
         case .regularEmployment: return regularEmployment
         case .wroteOneTonight: return wroteOneTonight
+        case .taniguchiShortJob: return taniguchiShortJob
         }
     }
 
@@ -304,6 +305,36 @@ enum ChoiceEventData {
         ],
         choiceLabels: [:],
         afterChoice: [:]
+    )
+
+    // MARK: 0012 谷口の耳寄りな話（確定発火・金欠帯・選択肢あり。proposals/0012 レッドチーム済み確定テキストを転記）
+    //   A の「相性成長3週停止」は compatFreeze(3)＝GameEngine.add(.コンビ相性) の inert ゲートで golden 不変。
+
+    private static let taniguchiShortJob = ChoiceEventText(
+        title: "耳寄りな話",
+        setup: [
+            Advice(name: nil, text: "稽古場に谷口が先に来ていた。求人票を四つ折りにして持っている。折り目が、給料の桁をちょうど横切っている。"),
+            Advice(name: "谷口", text: "割のええ短期の仕事、二人分おさえてきた。三週間、まとまるで"),
+            Advice(name: "俺", text: "三週間、ネタ合わせが飛ぶな"),
+            Advice(name: "谷口", text: "飛ぶな。……お前が今、そろばん弾いた顔したん、見えてたで"),
+            Advice(name: nil, text: "ホワイトボードには、先週二人で書いたネタの順番がまだ消えずに残っている。三週間、たぶんこのままだ。"),
+        ],
+        choiceLabels: [
+            "A": "二人で受ける",
+            "B": "断って、稽古を選ぶ",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "谷口", text: "ほな、三週間な。……ホワイトボード、消さんといたるわ"),
+                Advice(name: "俺", text: "合わせは戻ってから、まとめて取り返す。段取りは組んである"),
+                Advice(name: "谷口", text: "お前のその段取り、たまに好きやで。……たまにな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "金は、バイトで少しずつ詰める。三週間まとめて抜けたら、順番が崩れる"),
+                Advice(name: "谷口", text: "そっちか。……ええよ、そっちで。求人票は、鞄の底で腐らせとくわ"),
+                Advice(name: "俺", text: "腐らせとけ。順番が崩れるよりは、安い"),
+            ],
+        ]
     )
 
     // MARK: 0016 書けた一本（週次・持ちネタあり・選択肢あり。proposals/0016 レッドチーム済み確定テキストを転記）
