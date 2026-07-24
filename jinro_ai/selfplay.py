@@ -11,7 +11,7 @@ from collections import Counter
 
 from .roles import Role, Camp, spec
 from .game import WerewolfGame
-from .agents import RandomAgent, HeuristicAgent
+from .agents import RandomAgent, HeuristicAgent, BeliefAgent
 
 # MVP標準村（9人）: 占1・霊1・狩1・村3・狼2・狂1
 STANDARD_9 = [
@@ -52,8 +52,16 @@ def main() -> None:
     _report("村=heuristic 狼=random",    run_matches(n, STANDARD_9, camp_factory(HeuristicAgent, RandomAgent)), n)
     _report("村=random   狼=heuristic", run_matches(n, STANDARD_9, camp_factory(RandomAgent, HeuristicAgent)), n)
     _report("村=heuristic 狼=heuristic", run_matches(n, STANDARD_9, camp_factory(HeuristicAgent, HeuristicAgent)), n)
-    print("\n読み方: 狼を固定して村を random→heuristic に上げると村勝率が上がる、")
-    print("        村を固定して狼を上げると狼勝率が上がる。両側で頭脳が効く＝土台OK。")
+    print("--- 信念エンジン投入（村側のみ強化。狼は固定で比較）---")
+    _report("村=belief    狼=random",    run_matches(n, STANDARD_9, camp_factory(BeliefAgent, RandomAgent)), n)
+    _report("村=belief    狼=heuristic", run_matches(n, STANDARD_9, camp_factory(BeliefAgent, HeuristicAgent)), n)
+    agg = lambda: BeliefAgent(aggressive=True)  # noqa: E731
+    _report("村=belief攻め 狼=random",    run_matches(n, STANDARD_9, camp_factory(agg, RandomAgent)), n)
+    _report("村=belief攻め 狼=heuristic", run_matches(n, STANDARD_9, camp_factory(agg, HeuristicAgent)), n)
+    print("\n読み方:")
+    print("- 狼固定で村を random→heuristic→belief と上げると村勝率が上がる＝信念が“強さ”に効く。")
+    print("- belief(既定) は定石に対し無劣化〜改善。belief攻めは騙り狼に大きく勝つが正直狼に落ちる。")
+    print("  この閾値の最適点は self-play 学習で詰める（次フェーズ）。self-play が評価関数。")
 
 
 if __name__ == "__main__":

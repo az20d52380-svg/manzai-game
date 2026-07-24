@@ -1,27 +1,32 @@
 """エージェント（頭脳）。エンジンから View を受け取り合法手を返す“口”。
 
-差し替え可能にしてあるのが肝:
-- RandomAgent   … 合法ランダム。強さ測定のベースライン（弱い村の基準線）。
-- HeuristicAgent … 定石ベース。占い師の黒を吊る／狩人は占い師護衛／人狼は騙り＆
-                    占い先を襲撃…など“最低限の強さ”。self-play で村勝率が
-                    ランダムより明確に上がることを確認するための土台。
+昼は2フェーズ:
+  statement(view) … CO・占い/霊媒の申告（発言）。dict を返す。
+  vote(view)      … 投票先 pid。全員の発言が出そろった View で呼ばれる。
+夜:
+  divine/guard/attack … 各役職の夜行動。
 
-将来: ここに ①確率エンジン参照の強ポリシー か ②Claude ブレイン を足す。
-インターフェイス（day/divine/guard/attack）は変えない。
+差し替え可能:
+- RandomAgent   … 合法ランダム。ベースライン。
+- HeuristicAgent … 定石ベース（占いの黒を吊る／占い師護衛／狼は騙り＆占い噛み）。
+- BeliefAgent   … 村側の投票を信念エンジン（人狼確率）で選ぶ。狼側は定石のまま。
 """
 from __future__ import annotations
 
 from .roles import Role
 from .game import View
+from .belief import wolf_probabilities
 
 
 class Agent:
     """既定は合法ランダム。各フックを override して頭脳を実装する。"""
 
-    def day(self, view: View) -> dict:
+    def statement(self, view: View) -> dict:
+        return {}
+
+    def vote(self, view: View) -> int:
         cand = [q for q in view.alive if q != view.self_id]
-        vote = view.rng.choice(cand) if cand else view.self_id
-        return {"vote": vote}
+        return view.rng.choice(cand) if cand else view.self_id
 
     def divine(self, view: View) -> int:
         cand = [q for q in view.alive if q != view.self_id]
@@ -47,7 +52,6 @@ class HeuristicAgent(Agent):
     # --- 公開情報の読み取り補助 ---------------------------------------------
     @staticmethod
     def _public_blacks(view: View) -> list[int]:
-        """公開占い/霊媒で『黒』と申告され、まだ生存している者。"""
         blacks = set()
         for r in view.seer_reports + view.medium_reports:
             if r.wolf and r.target in view.alive:
@@ -70,66 +74,62 @@ class HeuristicAgent(Agent):
         cand = [q for q in view.alive if q != me and q not in avoid]
         return view.rng.choice(cand) if cand else me
 
-    # --- 昼 ------------------------------------------------------------------
-    def day(self, view: View) -> dict:
+    # --- 発言（CO・占霊申告）-------------------------------------------------
+    def statement(self, view: View) -> dict:
         role = view.self_role
         me = view.self_id
+        fellows = set(view.fellow_wolves) | {me}
 
         if role == Role.SEER:
-            # 占い師: CO して最新の真結果を申告、黒がいれば吊る
             report = None
             if view.my_divinations:
                 d = view.my_divinations[-1]
                 report = (d.target, d.wolf)
-            return {"co": Role.SEER, "seer_report": report, "vote": self._pick_vote(view, avoid=set())}
+            return {"co": Role.SEER, "seer_report": report}
 
         if role == Role.MEDIUM:
-            report = None
-            co = None
-            if view.executions:                       # 処刑が起きてからCO
-                co = Role.MEDIUM
+            if view.executions:  # 処刑が起きてからCO
+                report = None
                 if view.my_medium:
                     m = view.my_medium[-1]
                     report = (m.target, m.wolf)
-            return {"co": co, "medium_report": report, "vote": self._pick_vote(view, avoid=set())}
+                return {"co": Role.MEDIUM, "medium_report": report}
+            return {}
 
         if role == Role.WEREWOLF:
-            fellows = set(view.fellow_wolves) | {me}
-            # 対抗占い師がいなければ 40% で占い騙り（仲間を白、対抗/村を黒）
-            act: dict = {}
-            if self._claimed_seers(view) and view.rng.random() < 0.5 and view.claims.get(me) != Role.SEER:
-                # 既に本物っぽい占い師がいる→黒を打って対抗、ヘイトを逸らす
+            # 対抗占いがいる時 50% で占い騙り（仲間以外を黒に出しヘイトを逸らす）
+            if (view.claims.get(me) != Role.SEER and self._claimed_seers(view)
+                    and view.rng.random() < 0.5):
                 targets = [q for q in view.alive if q not in fellows]
                 if targets:
-                    act = {"co": Role.SEER, "seer_report": (view.rng.choice(targets), True)}
-            elif view.claims.get(me) == Role.SEER:
-                targets = [q for q in view.alive if q not in fellows]
-                if targets:
-                    act = {"co": Role.SEER, "seer_report": (view.rng.choice(targets), True)}
-            # 投票: 本物の占い師（＝自分たちを黒に出しうる者）や黒指定された仲間を避け、村を吊る
-            seers = [s for s in self._claimed_seers(view) if s not in fellows]
-            if seers:
-                act["vote"] = view.rng.choice(seers)
-            else:
-                act["vote"] = self._pick_vote(view, avoid=fellows)
-            return act
+                    return {"co": Role.SEER, "seer_report": (view.rng.choice(targets), True)}
+            return {}
 
         if role == Role.MADMAN:
-            # 狂人: 混乱要員。対抗占いに乗って偽COし、村の視線を散らす
-            act = {}
-            if view.rng.random() < 0.5 and view.claims.get(me) != Role.SEER:
+            # 混乱要員: 占い騙りで村の視線を散らす
+            if view.claims.get(me) != Role.SEER and view.rng.random() < 0.5:
                 targets = [q for q in view.alive if q != me]
                 if targets:
-                    act = {"co": Role.SEER, "seer_report": (view.rng.choice(targets), True)}
-            act["vote"] = self._pick_vote(view, avoid=set())
-            return act
+                    return {"co": Role.SEER, "seer_report": (view.rng.choice(targets), True)}
+            return {}
 
-        # 村人・狩人: 潜伏して占い師の指示に乗る
-        return {"vote": self._pick_vote(view, avoid=set())}
+        return {}  # 村人・狩人は潜伏
+
+    # --- 投票 ----------------------------------------------------------------
+    def vote(self, view: View) -> int:
+        role = view.self_role
+        me = view.self_id
+        if role == Role.WEREWOLF:
+            fellows = set(view.fellow_wolves) | {me}
+            seers = [s for s in self._claimed_seers(view) if s not in fellows]
+            if seers:  # 村の情報源（占い師CO者）を吊りにいく
+                return view.rng.choice(seers)
+            return self._pick_vote(view, avoid=fellows)
+        # 村人陣営・狂人: 黒を追う（狂人も村っぽく振る舞う）
+        return self._pick_vote(view, avoid=set())
 
     # --- 夜 ------------------------------------------------------------------
     def divine(self, view: View) -> int:
-        # まだ占っていない生存者を優先（白確定を増やす）。既知は除外。
         known = {r.target for r in view.my_divinations}
         cand = [q for q in view.alive if q != view.self_id and q not in known]
         if not cand:
@@ -137,19 +137,66 @@ class HeuristicAgent(Agent):
         return view.rng.choice(cand) if cand else view.self_id
 
     def guard(self, view: View) -> int:
-        # 狩人: 一番襲われそうな“占い師CO者”を護衛
-        seers = self._claimed_seers(view)
-        seers = [s for s in seers if s != view.self_id]
-        if seers:
+        seers = [s for s in self._claimed_seers(view) if s != view.self_id]
+        if seers:  # 一番噛まれそうな占い師CO者を護衛
             return view.rng.choice(seers)
         cand = [q for q in view.alive if q != view.self_id]
         return view.rng.choice(cand) if cand else view.self_id
 
     def attack(self, view: View) -> int:
-        # 人狼: 占い師CO者（村の情報源）を最優先で噛む
         fellows = set(view.fellow_wolves) | {view.self_id}
         seers = [s for s in self._claimed_seers(view) if s not in fellows]
-        if seers:
+        if seers:  # 村の情報源を最優先で噛む
             return view.rng.choice(seers)
         cand = [q for q in view.alive if q not in fellows]
         return view.rng.choice(cand) if cand else view.self_id
+
+
+class BeliefAgent(HeuristicAgent):
+    """村側の投票を信念エンジン（人狼確率）で強化する。狼・狂人側は定石のまま。
+
+    設計判断（self-play実測にもとづく・数値は【仮】）:
+    - 信念エンジンの価値は「占い騙りを裁く」局面に集中する。反証（対抗占い）が無い局面で
+      確率を積極利用すると、弱い読みで確定村人を差し出し逆に弱くなる（対random狼で実測）。
+    - よって既定は **CO割れ時のみ信念で裁く** 保守ゲート。これは定石に対し「対random狼で無劣化・
+      対騙り狼で改善」の厳密に劣化しない改善（62.4% / 34.6→40.2%）。
+    - なお `aggressive=True`（常に確率で投票）は騙り狼相手に大きく勝つ（58.9%）が正直狼相手に
+      落ちる（35.4%）。このトレードオフの最適点を手で当てるのは不毛で、**self-play学習で
+      チューニングすべき対象**（次フェーズ）。既定は安全側に置く。
+    """
+
+    BLACK_PRIOR = 0.5  # 黒指定された生存者へ上乗せする疑い
+
+    def __init__(self, aggressive: bool = False):
+        self.aggressive = aggressive
+
+    def _belief_vote(self, view: View, cand: list[int]) -> int:
+        probs = wolf_probabilities(view)
+        blacks = {r.target for r in (view.seer_reports + view.medium_reports)
+                  if r.wolf and r.target in view.alive}
+
+        def score(p: int) -> float:
+            s = probs.get(p, 0.0)
+            if p in blacks:
+                s += self.BLACK_PRIOR
+            return s
+
+        return max(cand, key=lambda p: (score(p), view.rng.random()))
+
+    def vote(self, view: View) -> int:
+        role = view.self_role
+        if role in (Role.WEREWOLF, Role.MADMAN):
+            return super().vote(view)  # 狼陣営は定石のまま
+
+        me = view.self_id
+        cand = [p for p in view.alive if p != me]
+        if not cand:
+            return me
+
+        # 反証（対抗占い）が無い＝真偽を裁く必要がない局面では実績ある定石に任せる。
+        seer_cos = self._claimed_seers(view)
+        if not self.aggressive and len(seer_cos) <= 1:
+            return super().vote(view)
+
+        # CO割れ（または aggressive）: あり得る配役の数え上げで最尤の人狼を吊る。
+        return self._belief_vote(view, cand)

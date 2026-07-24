@@ -16,10 +16,11 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from collections import Counter
+from dataclasses import dataclass
 from typing import Optional
 
-from .roles import Camp, Role, NightAction, spec
+from .roles import Camp, Role, spec
 
 
 @dataclass
@@ -51,6 +52,7 @@ class View:
     self_camp: Camp
     alive: list[int]
     players: list[tuple[int, str, bool]]      # (pid, name, alive) 役職は含めない
+    composition: dict[Role, int]               # 開始時の役職構成（公開情報・部屋設定）
     claims: dict[int, Role]                    # 誰が何をCOしているか（最新）
     seer_reports: list[Report]
     medium_reports: list[Report]
@@ -86,6 +88,7 @@ class WerewolfGame:
         self.agents = agents
         self.day = 0
         self.log: list[str] = []
+        self.composition: dict[Role, int] = dict(Counter(roles))  # 公開情報（部屋の役職構成）
 
         # 公開状態
         self.claims: dict[int, Role] = {}
@@ -129,6 +132,7 @@ class WerewolfGame:
             self_camp=sp.camp,
             alive=self.alive_pids(),
             players=[(q.pid, q.name, q.alive) for q in self.players],
+            composition=dict(self.composition),
             claims=dict(self.claims),
             seer_reports=list(self.seer_reports),
             medium_reports=list(self.medium_reports),
@@ -191,11 +195,9 @@ class WerewolfGame:
     def _day(self) -> None:
         alive = self.alive_pids()
 
-        # 議論フェーズ: 各生存者が {CO, 申告, 投票} を提出
-        actions: dict[int, dict] = {}
+        # ①発言フェーズ: 各生存者が CO・占い/霊媒申告を出す（全員ぶん先に記録）
         for pid in alive:
-            a = self.agents[pid].day(self._view(pid)) or {}
-            actions[pid] = a
+            a = self.agents[pid].statement(self._view(pid)) or {}
             co = a.get("co")
             if co is not None:
                 self.claims[pid] = co
@@ -206,10 +208,10 @@ class WerewolfGame:
             if mr is not None:
                 self.medium_reports.append(Report(self.day, pid, mr[0], mr[1]))
 
-        # 投票→処刑
+        # ②投票フェーズ: 全発言が出そろった View で投票→処刑
         tally: dict[int, int] = {}
         for pid in alive:
-            v = actions[pid].get("vote")
+            v = self.agents[pid].vote(self._view(pid))
             if v is None or v == pid or v not in alive:
                 cand = [q for q in alive if q != pid]
                 v = self.rng.choice(cand) if cand else pid
