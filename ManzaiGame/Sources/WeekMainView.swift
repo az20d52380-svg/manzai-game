@@ -51,6 +51,10 @@ struct WeekMainView: View {
     @State private var burstGen = 0
     /// 満了成立後の週メイン初回トースト（この年1回だけ）用フラグ。
     @State private var vesselFullToastShown = false
+    /// 週送りスタンプ「第N週」（週が明けた瞬間に中央で0.7sフラッシュ・触れない）。
+    @State private var weekStampVisible = false
+    /// 谷口評（5能力平均のランク）がランクアップした瞬間の punch（AllocationView のグレード昇格と同じ文法）。
+    @State private var rankPunch = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -145,6 +149,23 @@ struct WeekMainView: View {
             burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
             try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
         }
+        .task(id: session.week) {
+            // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
+            withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
+            try? await Task.sleep(nanoseconds: 700_000_000)
+            withAnimation(Theme.Motion.exit) { weekStampVisible = false }
+        }
+        .onChange(of: partnerRank) { old, new in
+            // 谷口評のランクが上がった瞬間だけ punch（下がりは黙る）。AllocationView のグレード昇格と同じ文法。
+            let order = ["D", "C", "B", "A", "S"]
+            guard let o = order.firstIndex(of: old), let n = order.firstIndex(of: new), n > o else { return }
+            Haptics.confirm()
+            Task {
+                withAnimation(Theme.Motion.emphSpring) { rankPunch = true }
+                try? await Task.sleep(nanoseconds: 650_000_000)
+                withAnimation(Theme.Motion.appear) { rankPunch = false }
+            }
+        }
         .task(id: toast) {
             if toast != nil {
                 try? await Task.sleep(nanoseconds: 1_400_000_000)
@@ -183,7 +204,52 @@ struct WeekMainView: View {
                     .padding(.trailing, 18).padding(.bottom, 148)
                     .allowsHitTesting(false)
             }
+            .overlay(alignment: .top) {
+                // 常時目標バナー（パワプロの「ドラフトまであとN週」の席）。タップでカレンダー。
+                goalBanner.padding(.top, 10)
+            }
+            .overlay {
+                // 週送りスタンプ: 週が明けた瞬間に「第N週」が一拍だけ立つ（Beat2 の前座・触れない）。
+                if weekStampVisible {
+                    Text("第\(session.week)週")
+                        .font(.maru(21)).tracking(6).foregroundStyle(Theme.ink.opacity(0.88))
+                        .padding(.horizontal, 18).padding(.vertical, 8)
+                        .background(.white.opacity(0.88), in: Capsule())
+                        .e1()
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.82).combined(with: .opacity),
+                            removal: .opacity))
+                        .allowsHitTesting(false)
+                }
+            }
             .clipped()
+    }
+
+    /// 常時目標バナー: 次の本番と残り週（残3週以下は「追い込み」の朱）。次が遠い週は仕込みの副目標を添える。
+    @ViewBuilder private var goalBanner: some View {
+        if let m = nextMilestone() {
+            Button { showCalendar = true } label: {
+                VStack(spacing: 1) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "flag.fill").font(.system(size: 8.5))
+                            .foregroundStyle(m.weeksLeft <= 3 ? Theme.verm : Theme.gold)
+                        Text(m.name).font(.maru(10.5)).foregroundStyle(.white.opacity(0.92)).lineLimit(1)
+                        Text(m.weeksLeft <= 0 ? "今週！" : "あと\(m.weeksLeft)週")
+                            .font(.maru(12)).monospacedDigit()
+                            .foregroundStyle(m.weeksLeft <= 3 ? Theme.verm : Theme.gold)
+                            .contentTransition(.numericText())
+                    }
+                    if m.weeksLeft >= 6 {
+                        Text("仕込みどき ・ 弱点は\(weakAbility())")
+                            .font(.maru(9)).foregroundStyle(.white.opacity(0.65))
+                    }
+                }
+                .padding(.horizontal, 12).padding(.vertical, 5)
+                .background(Theme.pillDark, in: Capsule())
+                .overlay(Capsule().stroke((m.weeksLeft <= 3 ? Theme.verm : Theme.gold).opacity(0.55), lineWidth: 1))
+            }
+            .buttonStyle(PressableStyle())
+        }
     }
 
     private var sceneBackground: some View {
@@ -222,7 +288,27 @@ struct WeekMainView: View {
             ForEach(rows, id: \.0) { r in
                 statPill(name: r.0, ability: r.1, value: r.2, color: r.3)
             }
+            rankChip
         }
+    }
+
+    /// 谷口評: 5能力平均のランク（Theme.rank）。数字を並べず一字で「いまどの辺か」を言う常設メーター。
+    /// ランクアップの瞬間は punch（scale1.18+金・Haptics.confirm）＝パワプロの評価アップの一拍。
+    private var partnerRank: String {
+        Theme.rank((s.センス + s.発想 + s.表現 + s.華 + s.メンタル) / 5)
+    }
+
+    private var rankChip: some View {
+        HStack(spacing: 5) {
+            Text("谷口評").font(.maru(9.5)).foregroundStyle(.white.opacity(0.92))
+            Text(partnerRank).font(.maru(13))
+                .foregroundStyle(rankPunch ? Theme.gold : .white)
+                .scaleEffect(rankPunch ? 1.18 : 1)
+        }
+        .padding(.horizontal, 8).padding(.vertical, 3)
+        .background(Theme.pillDark, in: Capsule())
+        .overlay(Capsule().stroke(rankPunch ? Theme.gold : Color.white.opacity(0.35), lineWidth: rankPunch ? 1.5 : 1))
+        .padding(.top, 2)
     }
 
     private func statPill(name: String, ability: Ability?, value: Double, color: Color) -> some View {
@@ -589,7 +675,9 @@ struct WeekMainView: View {
                 Rectangle().fill(.white.opacity(0.18)).frame(width: 1, height: 26)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(m.name).font(.maru(9)).foregroundStyle(.white.opacity(0.65)).lineLimit(1)
-                    Text(m.weeksLeft <= 0 ? "今週！" : "大会まで\(m.weeksLeft)週").font(.maru(12)).foregroundStyle(Theme.gold)
+                    Text(m.weeksLeft <= 0 ? "今週！" : "大会まで\(m.weeksLeft)週").font(.maru(12))
+                        .foregroundStyle(m.weeksLeft <= 3 ? Theme.verm : Theme.gold)   // 残3週から追い込みの朱
+                        .contentTransition(.numericText())   // 週送りで数字が繰り下がる
                 }
             }
             Button { showCalendar = true } label: {   // S4 カレンダーを開く
@@ -728,7 +816,9 @@ struct WeekMainView: View {
         var ms: [(Int, String)] = []
         for (i, r) in cal.gpRounds.enumerated() { ms.append((r.week, i < cal.gpRoundNames.count ? cal.gpRoundNames[i] : "頂GP\(i + 1)回戦")) }
         ms.append((cal.gpFinalWeek, "頂GP 決勝"))
-        for t in cal.tournaments { ms.append((t.week, t.name)) }
+        // 出場資格で絞る（AllocationView.nextStage と同じ走査）。絞らないと知名度不足でも
+        // 「推薦制中堅賞」が次目標に出る＝出られない大会へ逆算させる誤誘導になる。
+        for t in cal.tournaments where t.isEligible(year: session.year, state: s) { ms.append((t.week, t.name)) }
         guard let next = ms.filter({ $0.0 >= session.week }).min(by: { $0.0 < $1.0 }) else { return nil }
         return (next.1, next.0 - session.week)
     }
