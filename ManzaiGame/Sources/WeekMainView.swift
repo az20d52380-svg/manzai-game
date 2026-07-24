@@ -55,6 +55,8 @@ struct WeekMainView: View {
     @State private var weekStampVisible = false
     /// 谷口評（5能力平均のランク）がランクアップした瞬間の punch（AllocationView のグレード昇格と同じ文法）。
     @State private var rankPunch = false
+    /// 週頭の掛け合いのタップ送り位置（週が明けたら0に戻す）。
+    @State private var banterIndex = 0
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -155,6 +157,7 @@ struct WeekMainView: View {
             try? await Task.sleep(nanoseconds: 700_000_000)
             withAnimation(Theme.Motion.exit) { weekStampVisible = false }
         }
+        .onChange(of: session.week) { _, _ in banterIndex = 0 }   // 掛け合いの読み位置は週頭でリセット
         .onChange(of: partnerRank) { old, new in
             // 谷口評のランクが上がった瞬間だけ punch（下がりは黙る）。AllocationView のグレード昇格と同じ文法。
             let order = ["D", "C", "B", "A", "S"]
@@ -191,11 +194,15 @@ struct WeekMainView: View {
                 if openCategory != nil { backButton.padding(12) }
             }
             .overlay(alignment: .bottomLeading) {
-                // Beat1 の発話バブルはモノローグと同じ席（表示中は独白を隠す＝一度に一つの声）。
+                // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
                 if let b = beatAdvice {
                     adviceBox(b).padding(14)
                 } else if openCategory == nil {
-                    monoBox.padding(14)
+                    if let lines = session.weekBanter, !lines.isEmpty {
+                        banterBox(lines).padding(14)
+                    } else {
+                        monoBox.padding(14)
+                    }
                 }
             }
             .overlay(alignment: .bottomTrailing) {
@@ -373,6 +380,23 @@ struct WeekMainView: View {
         adviceBox(DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
                                           justPassed: session.justPassedStage, justLost: session.justLostStage,
                                           nextMilestone: nextMilestone(), weakAbility: weakAbility()))
+    }
+
+    /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
+    private func banterBox(_ lines: [Advice]) -> some View {
+        let i = min(banterIndex, lines.count - 1)
+        return adviceBox(lines[i])
+            .overlay(alignment: .bottomTrailing) {
+                if i < lines.count - 1 {
+                    Image(systemName: "arrowtriangle.down.fill")
+                        .font(.system(size: 8)).foregroundStyle(Theme.inkFaint)
+                        .padding(6)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if i < lines.count - 1 { withAnimation(.easeOut(duration: 0.18)) { banterIndex += 1 } }
+            }
     }
 
     private func adviceBox(_ a: Advice) -> some View {

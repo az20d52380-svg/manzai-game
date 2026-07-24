@@ -11,6 +11,9 @@ struct Advice {
     let text: String
 }
 
+/// 週頭の掛け合いの帯（GameSession.banterBand が状態から決める。innerVoice の優先順位と同じ並び）
+enum BanterBand { case plain, lull, eve, streak, broke, afterPass }
+
 enum DialogueData {
 
     // MARK: 週頭（行動前）の状態駆動モノローグ
@@ -41,6 +44,9 @@ enum DialogueData {
         }
         if let m = nextMilestone, m.weeksLeft <= 2 {
             return Advice(name: "俺", text: "そろそろ\(m.name)か。\(weakAbility)、あと少し上げておきたい。")
+        }
+        if let m = nextMilestone, m.weeksLeft >= 6 {   // 本番が遠い週（週16-26の空白帯等）は仕込みの声
+            return Advice(name: "俺", text: pick(midseason, salt: Int(state.fame) &+ m.weeksLeft))
         }
         return Advice(name: "俺", text: pick(平常, salt: Int(state.fame) + Int(state.compat) + Int(state.stamina)))
     }
@@ -106,6 +112,78 @@ enum DialogueData {
         "来週の合わせまでに、俺のぶんの直しを二箇所、終わらせておく。",
     ]
 
+    private static let midseason = [   // 本番まで≥6週の空白帯（中だるみ対策・仕込みの声）・Skill採点済（A表/B表全○）
+        "次の本番まで、まだ間がある。大きい直しは、今のうちだ。",
+        "白い週が続く。稽古場の鍵当番だけが、週の区切りになっている。",
+        "客前の予定がない週は、朝の発声から崩れやすい。時間だけは変えない。",
+        "急ぎの用がない週は、やることを先に三つ決める。",
+        "本番が遠い週の通しは、客がいない分、粗が全部こっちに聞こえる。",
+        "急がずに一本作れるのは、年のうちでこの辺りだけだ。",
+    ]
+
+    // MARK: 週頭の掛け合い（俺⇄谷口・タップ送り。発火は GameSession.rollWeekBanter＝UI乱数）
+    //
+    // 帯×プール×salt=週番号の決定的回転。1本=2〜3行（話者交互）。本文は manzai-drama-voice Skill を通す。
+    // 返り値 nil=その帯の在庫なし（View は独白へフォールバック）。
+
+    static func banter(band: BanterBand, salt: Int) -> [Advice]? {
+        guard let pools = banterPools[band], !pools.isEmpty else { return nil }
+        return pools[((salt % pools.count) + pools.count) % pools.count]
+    }
+    // 相方は谷口固定（MVP・関西弁）。2周目ガチャ相方の実装時は相方分岐に差し替える（ChoiceEventData と同じ扱い）。
+    // Skill採点済（A表16項目・B表7項目・V表5項目・全○）。谷口に切り札型口癖（腹減ったな等）は置かない（感情最大点に温存）。
+    private static let banterPools: [BanterBand: [[Advice]]] = [
+        .plain: [
+            [Advice(name: "谷口", text: "稽古場、火曜に変えといたで。金曜は取られとった"),
+             Advice(name: "俺", text: "なら火曜までに、直しを二つ終わらせる")],
+            [Advice(name: "俺", text: "今週の通し、何本いける"),
+             Advice(name: "谷口", text: "三本やな。二本は頭から、一本は後半だけでええやろ")],
+            [Advice(name: "俺", text: "昨日の通し、後半どうだった"),
+             Advice(name: "谷口", text: "三分すぎ、足元見とったやろ"),
+             Advice(name: "俺", text: "今日はそこを詰める")],
+        ],
+        .lull: [
+            [Advice(name: "谷口", text: "来月まで本番なしか。長いな"),
+             Advice(name: "俺", text: "長いと思って組む。前半は作る、後半は詰める")],
+            [Advice(name: "谷口", text: "新しいの、一本書かへんか。時間あるうちに"),
+             Advice(name: "俺", text: "書きかけを先に片す。新しいのはその後だ")],
+            [Advice(name: "谷口", text: "静かな週やな"),
+             Advice(name: "俺", text: "通しを二本入れてある。静かなうちに回す")],
+        ],
+        .eve: [
+            [Advice(name: "谷口", text: "もうすぐやな。ネタ、どっちでいく"),
+             Advice(name: "俺", text: "今のところ一本目だ。今週の通しで決める")],
+            [Advice(name: "俺", text: "本番までに、後半の直しを終わらせる"),
+             Advice(name: "谷口", text: "ほな今日は後半だけ、二回通そか")],
+            [Advice(name: "谷口", text: "前の日、バイト入れんなよ"),
+             Advice(name: "俺", text: "入れてない。組んである")],
+        ],
+        .streak: [
+            [Advice(name: "谷口", text: "講評、もっぺん読んだで"),
+             Advice(name: "俺", text: "俺もだ。線を引いた行が、二人とも同じだった")],
+            [Advice(name: "谷口", text: "稽古場、来週から一枠増やせるで。俺のバイト、水曜空いたし"),
+             Advice(name: "俺", text: "なら水曜は通しに使う")],
+            [Advice(name: "谷口", text: "今日は何時までやる"),
+             Advice(name: "俺", text: "九時までだ。それより先は、明日に回す")],
+        ],
+        .broke: [
+            [Advice(name: "谷口", text: "今月、稽古場代どうすんの"),
+             Advice(name: "俺", text: "先に半分入れてある。残りはバイトの後だ")],
+            [Advice(name: "谷口", text: "まかない付きのバイト、まだ枠あるらしいで"),
+             Advice(name: "俺", text: "入れておいてくれ。合わせは、その後でやる")],
+            [Advice(name: "谷口", text: "遠征の積立、今月は無しでええか"),
+             Advice(name: "俺", text: "無しだ。来月、倍にする")],
+        ],
+        .afterPass: [
+            [Advice(name: "谷口", text: "次の会場、下見行っとくか"),
+             Advice(name: "俺", text: "行こう。板の広さだけ、先に見ておきたい")],
+            [Advice(name: "谷口", text: "こないだの客、ようウケとったな"),
+             Advice(name: "俺", text: "どこでウケたかは、控えてある")],
+            [Advice(name: "谷口", text: "祝いや。今日は俺が出したる"),
+             Advice(name: "俺", text: "なら安い方の店にしよう。遠征代が要る")],
+        ],
+    ]
+
     // MARK: 選んだ変種への一言反応（Beat1 発話バブル・週送りの直前に一言）
     //
     // salt=週番号で決定的に回す（乱数不使用＝uiEventRng も消費しない＝golden不変）。
@@ -116,19 +194,68 @@ enum DialogueData {
         let pool = reactionPools[variantID] ?? [Advice(name: "俺", text: "よし、いくか。")]
         return pool[((salt % pool.count) + pool.count) % pool.count]
     }
+    // 新規行はSkill採点済（全○）。相方名は焼き込まない（「谷口と、ネタ抜きで飯でも。」は既存・既知として残置）。
     private static let reactionPools: [String: [Advice]] = [
-        "t_ネタ作り": [Advice(name: "俺", text: "家で書くか。集中がもつかどうか。")],
-        "t_ネタ見せ会": [Advice(name: "俺", text: "人前で試すのが一番効く。")],
-        "t_ネタ合わせ": [Advice(name: "俺", text: "合わせは、声を出してこそだ。")],
-        "t_ランニング・サウナ": [Advice(name: "俺", text: "整える。心と体からだ。")],
-        "t_フリーライブ": [Advice(name: "俺", text: "客は少ないけど、場数だ。")],
-        "job_キツい": [Advice(name: "俺", text: "引越しはキツいけど、背に腹は代えられない。")],
-        "job_標準": [Advice(name: "俺", text: "居酒屋、まあ無難だ。")],
-        "job_楽": [Advice(name: "俺", text: "今日は楽して稼ぐか。")],
-        "rest_完全休養": [Advice(name: "俺", text: "今日はちゃんと寝よう。")],
-        "rest_気分転換": [Advice(name: "俺", text: "少し気晴らしを。")],
-        "rest_相方と過ごす": [Advice(name: "俺", text: "谷口と、ネタ抜きで飯でも。")],
-        "offer": [Advice(name: "俺", text: "受けておくか。金は要る。")],
+        "t_ネタ作り": [
+            Advice(name: "俺", text: "家で書くか。集中がもつかどうか。"),
+            Advice(name: "俺", text: "書く日は、朝のうちに机を片づける。"),
+            Advice(name: "俺", text: "昨日までの分を読み返してから、続きにかかる。"),
+        ],
+        "t_ネタ見せ会": [
+            Advice(name: "俺", text: "人前で試すのが一番効く。"),
+            Advice(name: "俺", text: "客前で崩れる場所を、先に知っておく。"),
+            Advice(name: "俺", text: "今日は序盤を試す。うしろは次でいい。"),
+        ],
+        "t_ネタ合わせ": [
+            Advice(name: "俺", text: "合わせは、声を出してこそだ。"),
+            Advice(name: "俺", text: "止める場所を決めてから、頭から通す。"),
+            Advice(name: "俺", text: "昨日ずれた間を、今日のうちに戻す。"),
+        ],
+        "t_ランニング・サウナ": [
+            Advice(name: "俺", text: "整える。心と体からだ。"),
+            Advice(name: "俺", text: "走る日は、ネタのことは考えない。"),
+            Advice(name: "俺", text: "汗をかいて、今日は早く寝る。"),
+        ],
+        "t_フリーライブ": [
+            Advice(name: "俺", text: "客は少ないけど、場数だ。"),
+            Advice(name: "俺", text: "出番は短い。その分、頭から飛ばす。"),
+            Advice(name: "俺", text: "終わったら、客の入りだけ数えておく。"),
+        ],
+        "job_キツい": [
+            Advice(name: "俺", text: "引越しはキツいけど、背に腹は代えられない。"),
+            Advice(name: "俺", text: "体で稼ぐ日だ。声は使わない。"),
+            Advice(name: "俺", text: "終わりの時間だけ確かめて、引き受けた。"),
+        ],
+        "job_標準": [
+            Advice(name: "俺", text: "居酒屋、まあ無難だ。"),
+            Advice(name: "俺", text: "運びながら、頭の中でネタを回せる。"),
+            Advice(name: "俺", text: "店は忙しい方が、時間が早い。"),
+        ],
+        "job_楽": [
+            Advice(name: "俺", text: "今日は楽して稼ぐか。"),
+            Advice(name: "俺", text: "座って数える仕事だ。頭は空けておける。"),
+            Advice(name: "俺", text: "夕方には終わる。夜は直しに使える。"),
+        ],
+        "rest_完全休養": [
+            Advice(name: "俺", text: "今日はちゃんと寝よう。"),
+            Advice(name: "俺", text: "携帯を伏せて、昼まで寝る。"),
+            Advice(name: "俺", text: "布団を干してから、寝直す。"),
+        ],
+        "rest_気分転換": [
+            Advice(name: "俺", text: "少し気晴らしを。"),
+            Advice(name: "俺", text: "一駅ぶん、歩いて帰る。"),
+            Advice(name: "俺", text: "ネタ帳は持たずに出る。"),
+        ],
+        "rest_相方と過ごす": [
+            Advice(name: "俺", text: "谷口と、ネタ抜きで飯でも。"),
+            Advice(name: "俺", text: "ネタの話はなしで行く。たぶん、途中までだが。"),
+            Advice(name: "俺", text: "夕方から会う。店は、向こうが決める。"),
+        ],
+        "offer": [
+            Advice(name: "俺", text: "受けておくか。金は要る。"),
+            Advice(name: "俺", text: "名前を覚えてもらう仕事だ。断る理由が薄い。"),
+            Advice(name: "俺", text: "日取りだけ確かめて、受けた。"),
+        ],
     ]
 
     private static func pick(_ pool: [String], salt: Int) -> String {

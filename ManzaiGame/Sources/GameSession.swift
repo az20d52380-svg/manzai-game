@@ -66,6 +66,11 @@ final class GameSession {
     private var jobCount = 0
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
+    /// 週頭の掛け合い（俺⇄谷口の短い会話・タップ送り）。nil=この週は独白。行動すると失効。
+    /// 発火はUI専用乱数（uiEventRng）＝runnerの乱数列に非干渉＝golden不変。イベント発火週は譲る。
+    private(set) var weekBanter: [Advice]?
+    /// 掛け合いの1週1回抽選ガード（pump 複数回呼びでの二重抽選＝UI乱数の余分消費を防ぐ・イベント抽選と同型）
+    private var lastBanterRollWeek = -1
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
     /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
@@ -120,6 +125,7 @@ final class GameSession {
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
+        weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
         pump()
@@ -306,6 +312,31 @@ final class GameSession {
         pendingChoiceEvent = kind
         firedWeeklyEvents.insert(kind)
         weeklyEventFiredCount += 1
+    }
+
+    /// 週頭の掛け合い抽選（UI専用乱数・golden非干渉）。イベントが立った週は譲る（一度に一つの声）。
+    /// 頻度はUI定数【仮】: 基礎30%／本番が6週以上先の空白帯（週16-26の中だるみ等）は55%に上げる
+    /// ＝§7-B の正規レバー「会話・イベントの差し込み頻度UP」（バランス数値ではない・判定に非干渉）。
+    private func rollWeekBanter() {
+        guard week != lastBanterRollWeek else { return }
+        lastBanterRollWeek = week
+        weekBanter = nil
+        guard pendingChoiceEvent == nil else { return }
+        let farFromStage = nextMilestoneForEvent().map { $0.week - week >= 6 } ?? true
+        let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
+        guard uiEventRng.nextUniform() < rate else { return }
+        // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
+        weekBanter = DialogueData.banter(band: banterBand(), salt: week)
+    }
+
+    /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。
+    private func banterBand() -> BanterBand {
+        if lossStreak >= 2 { return .streak }
+        if state.money < 50_000 { return .broke }
+        if justPassedStage { return .afterPass }
+        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week) { return .eve }
+        if let m = nextMilestoneForEvent(), m.week - week >= 6 { return .lull }
+        return .plain
     }
 
     /// weeklyFireable（GameState+week の純関数）で判定できない、GameSession 固有の状態を要する追加ゲート。
@@ -535,7 +566,12 @@ final class GameSession {
                 // tournamentDecision / freeAction / gpRound / gpRevival / gpFinal → 入力or演出待ち
                 week = runner.week
                 state = runner.state
-                if case .freeAction = phase { evaluateChoiceEventFire() }
+                if case .freeAction = phase {
+                    evaluateChoiceEventFire()
+                    // 掛け合いはイベント抽選の「後」に引く＝イベント出現週のUI乱数再現列を崩さない
+                    // （以後の列は banter の消費分だけずれるが UI 層のみ＝golden非対象）。
+                    rollWeekBanter()
+                }
                 break loop
             }
         }
