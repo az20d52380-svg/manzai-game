@@ -3,10 +3,12 @@ from .roles import Role, Camp, NightAction, spec
 from .game import WerewolfGame, GameResult, View, Player, Report
 from .belief import wolf_probabilities
 from .agents import Agent, RandomAgent, HeuristicAgent, BeliefAgent
+from .llm_agent import LLMAgent, build_context
 
 __all__ = [
     "Role", "Camp", "NightAction", "spec",
     "WerewolfGame", "GameResult", "View", "Player", "Report",
     "wolf_probabilities",
     "Agent", "RandomAgent", "HeuristicAgent", "BeliefAgent",
+    "LLMAgent", "build_context",
 ]

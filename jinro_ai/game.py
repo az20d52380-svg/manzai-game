@@ -58,6 +58,7 @@ class View:
     medium_reports: list[Report]
     executions: list[int]                      # 処刑された pid（順）
     night_deaths: list[int]                    # 襲撃死した pid（順）
+    speeches: list[dict]                        # 公開された自然言語の発言 [{day, pid, text}]
     my_divinations: list[Report]               # 本物の占い師だけ: 自分の占い結果（真）
     my_medium: list[Report]                    # 本物の霊媒師だけ: 自分の霊媒結果（真）
     fellow_wolves: list[int]                    # 人狼だけ: 生存中の仲間
@@ -96,6 +97,7 @@ class WerewolfGame:
         self.medium_reports: list[Report] = []
         self.executions: list[int] = []
         self.night_deaths: list[int] = []
+        self.speeches: list[dict] = []  # 自然言語の発言ログ（LLMブレイン用）
 
         # 私的状態（役職本人のみ参照）
         self.divinations: dict[int, list[Report]] = {}   # 本物の占い師 pid -> 真の占い結果
@@ -138,6 +140,7 @@ class WerewolfGame:
             medium_reports=list(self.medium_reports),
             executions=list(self.executions),
             night_deaths=list(self.night_deaths),
+            speeches=list(self.speeches),
             my_divinations=list(self.divinations.get(pid, [])) if p.role == Role.SEER else [],
             my_medium=list(self.medium_known.get(pid, [])) if p.role == Role.MEDIUM else [],
             fellow_wolves=[w for w in self.wolves if w != pid and self.players[w].alive] if sp.is_werewolf else [],
@@ -207,6 +210,10 @@ class WerewolfGame:
             mr = a.get("medium_report")
             if mr is not None:
                 self.medium_reports.append(Report(self.day, pid, mr[0], mr[1]))
+            talk = a.get("talk")
+            if talk:  # 自然言語の発言（LLMブレイン）。相手も投票時に読める。
+                self.speeches.append({"day": self.day, "pid": pid, "text": str(talk)})
+                self.log.append(f"[発言{self.day}] {self.players[pid].name}: {talk}")
 
         # ②投票フェーズ: 全発言が出そろった View で投票→処刑
         tally: dict[int, int] = {}
