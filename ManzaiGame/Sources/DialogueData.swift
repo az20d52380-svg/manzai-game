@@ -106,24 +106,29 @@ enum DialogueData {
         "来週の合わせまでに、俺のぶんの直しを二箇所、終わらせておく。",
     ]
 
-    // MARK: 選んだ変種への一言反応（mockup準拠・ボケない内心）
+    // MARK: 選んだ変種への一言反応（Beat1 発話バブル・週送りの直前に一言）
+    //
+    // salt=週番号で決定的に回す（乱数不使用＝uiEventRng も消費しない＝golden不変）。
+    // 話者は俺（独白）を基本に、相方が絡む行動（ネタ合わせ/相方と過ごす等）は谷口の生声を混ぜる。
+    // プールの拡充は manzai-drama-voice Skill を通す（ここの本文を勝手に増やさない）。
 
-    static func reaction(variantID: String) -> String {
-        reactions[variantID] ?? "よし、いくか。"
+    static func reaction(variantID: String, salt: Int) -> Advice {
+        let pool = reactionPools[variantID] ?? [Advice(name: "俺", text: "よし、いくか。")]
+        return pool[((salt % pool.count) + pool.count) % pool.count]
     }
-    private static let reactions: [String: String] = [
-        "t_ネタ作り": "家で書くか。集中がもつかどうか。",
-        "t_ネタ見せ会": "人前で試すのが一番効く。",
-        "t_ネタ合わせ": "合わせは、声を出してこそだ。",
-        "t_ランニング・サウナ": "整える。心と体からだ。",
-        "t_フリーライブ": "客は少ないけど、場数だ。",
-        "job_キツい": "引越しはキツいけど、背に腹は代えられない。",
-        "job_標準": "居酒屋、まあ無難だ。",
-        "job_楽": "今日は楽して稼ぐか。",
-        "rest_完全休養": "今日はちゃんと寝よう。",
-        "rest_気分転換": "少し気晴らしを。",
-        "rest_相方と過ごす": "谷口と、ネタ抜きで飯でも。",
-        "offer": "受けておくか。金は要る。",
+    private static let reactionPools: [String: [Advice]] = [
+        "t_ネタ作り": [Advice(name: "俺", text: "家で書くか。集中がもつかどうか。")],
+        "t_ネタ見せ会": [Advice(name: "俺", text: "人前で試すのが一番効く。")],
+        "t_ネタ合わせ": [Advice(name: "俺", text: "合わせは、声を出してこそだ。")],
+        "t_ランニング・サウナ": [Advice(name: "俺", text: "整える。心と体からだ。")],
+        "t_フリーライブ": [Advice(name: "俺", text: "客は少ないけど、場数だ。")],
+        "job_キツい": [Advice(name: "俺", text: "引越しはキツいけど、背に腹は代えられない。")],
+        "job_標準": [Advice(name: "俺", text: "居酒屋、まあ無難だ。")],
+        "job_楽": [Advice(name: "俺", text: "今日は楽して稼ぐか。")],
+        "rest_完全休養": [Advice(name: "俺", text: "今日はちゃんと寝よう。")],
+        "rest_気分転換": [Advice(name: "俺", text: "少し気晴らしを。")],
+        "rest_相方と過ごす": [Advice(name: "俺", text: "谷口と、ネタ抜きで飯でも。")],
+        "offer": [Advice(name: "俺", text: "受けておくか。金は要る。")],
     ]
 
     private static func pick(_ pool: [String], salt: Int) -> String {

@@ -2,7 +2,8 @@
 // SCREEN 01 育成メイン（v8）。上＝立ち絵シーン（左上に6軸ダークピル・実行時オレンジ「+N」／未選択時のみ心の声）／
 // 下＝コマンドゾーン（カテゴリのアイコン列 ⇄ 変種カードの横スクロール列を「同じ場所」で切替。戻るは右上のみ）／
 // 最下部＝帯（1年目N週・大会までN週・体力ゲージ・所持金）。
-// 決定ボタン（つぎへ）は無い：変種カードのタップ＝即 session.choose(action)＝1週進む（phase遷移・RootViewは無改修）。
+// 決定ボタン（つぎへ）は無い：変種カードのタップ＝二拍（Beat1 発話0.7s→choose＝1週進む→Beat2 獲得バースト）。
+// ビート中の画面タップは即スキップ（＝早送り）＝3秒動線のテンポは保つ（phase遷移・RootViewは無改修）。
 // 伸びの数値は GameSession.previewState/previewGains（RNG非消費・golden不変）から「現在値の整数→実行後の整数の差」で表示。
 // 怪我率・稽古Lvは出さない。体力<staminaGate の稽古はグレー＋「谷口：今日は休め」。
 //
@@ -34,12 +35,20 @@ struct WeekMainView: View {
     @State private var showCalendar = false
     /// 割り振り（「のばす」タイル）を全画面表示。RNG非消費・週は進まない（正典: exp_abilityup_impl_reply）。
     @State private var showAllocate = false
-    /// §1-3 受け取りの一拍: 今週稼いだ粒チップ行を「のばす」タイル直上に一瞬出す。表示中の粒（消えても値は残す）。
-    @State private var receiptGrains: [(name: String, color: Color, delta: Int)] = []
-    /// 受け取りチップ行の表示フラグ（下から浮き上がり→約1.3s後に消える・入力遮断なし・状態差分駆動）。
-    @State private var receiptVisible = false
     /// 「のばす」タイルの一拍（バッジ繰り上がりに合わせて scale 1.0→1.05→1.0）。
     @State private var badgeBeat = false
+    // --- 行動の二拍（パワプロ核）: タップ→Beat1 発話→週送り→Beat2 獲得バースト ---
+    /// Beat1 発話バブル（表示中はモノローグを隠す）。行動タップ→一言→週送り、の一拍目。
+    @State private var beatAdvice: Advice?
+    /// Beat1 の進行タスク。ビート中の画面タップで cancel()→残りの間が即スキップ＝テンポは殺さない。
+    @State private var beatTask: Task<Void, Never>?
+    /// Beat2 獲得バースト（粒/能力/相性/体力/収支のチップ列・立ち絵の上に立ち上る）。
+    @State private var burstChips: [BurstChip] = []
+    @State private var burstVisible = false
+    /// バースト表示中は選択肢イベントの fullScreenCover を待たせる（choose 直前に立て、退場後に必ず下ろす）。
+    /// 世代トークン burstGen で「古いバーストタスクの後始末が新しい保留を下ろす」競合を防ぐ。
+    @State private var burstHold = false
+    @State private var burstGen = 0
     /// 満了成立後の週メイン初回トースト（この年1回だけ）用フラグ。
     @State private var vesselFullToastShown = false
 
@@ -70,7 +79,9 @@ struct WeekMainView: View {
             AllocationView(session: session) { showAllocate = false }   // 割り振り（経験点→能力）
         }
         .fullScreenCover(isPresented: Binding(
-            get: { session.pendingChoiceEvent != nil },
+            // Beat2 バースト表示中は提示を待たせる（burstHold）＝獲得の一拍がcoverに隠れない。
+            // burstHold は choose 直前に立ち、バースト退場（または対象なし）で必ず下りる。
+            get: { session.pendingChoiceEvent != nil && !burstHold },
             set: { if !$0 { session.dismissChoiceEvent() } }
         )) {
             // 選択肢イベント（0024ピース3・確定発火）。pendingChoiceEvent は private(set) なので
@@ -82,6 +93,14 @@ struct WeekMainView: View {
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
+        }
+        .overlay {
+            // Beat1 中は全面でタップを受けて即スキップ（＝早送り）。ビート中の誤タップで
+            // 別カードが暴発しない安全網を兼ねる。週送り後（Beat2 中）は即座に外れて入力自由。
+            if pulledID != nil {
+                Color.clear.contentShape(Rectangle())
+                    .onTapGesture { beatTask?.cancel() }
+            }
         }
         .task {
             #if DEBUG
@@ -98,18 +117,33 @@ struct WeekMainView: View {
             }
         }
         .task(id: session.week) {
-            // §1-3 受け取りの一拍: 今週稼いだ粒があれば、のばすタイル直上に粒チップ行を一瞬出す（状態差分駆動・入力遮断なし）。
-            // 大会/イベント画面が挟まっても週メインに戻った時に成立する（演出の振り付けに依存しない）。
-            let grains = intGrains(from: session.lastGrainGains)
-            guard !grains.isEmpty else { return }
-            receiptGrains = grains
-            withAnimation(Theme.Motion.appear) { receiptVisible = true }   // 下から浮き上がり出現（easeOut 0.25s）
-            try? await Task.sleep(nanoseconds: 100_000_000)
-            withAnimation(Theme.Motion.emphSpring) { badgeBeat = true }     // +0.10s バッジ繰り上がり＋タイル一拍
-            try? await Task.sleep(nanoseconds: 150_000_000)
-            withAnimation(Theme.Motion.appear) { badgeBeat = false }
-            try? await Task.sleep(nanoseconds: 1_050_000_000)              // 合計+1.30sで退場（〜1.7s・新規ハプティクスなし）
-            withAnimation(Theme.Motion.exit) { receiptVisible = false }
+            // Beat2 獲得の一拍: この週の行動で入った粒/能力/相性/体力/収支をチップ列で立ち上げる
+            // （状態差分駆動・入力遮断なし・RNG非消費）。lastDeltaWeek ゲートで、大会画面を挟んで
+            // 戻った時に古い増減が再生される事故を防ぐ。終端で burstHold を必ず下ろす（世代一致時のみ＝
+            // 週送り直後に旧タスクの後始末が新しい保留を下ろす競合を防ぐ）。
+            let gen = burstGen
+            defer { if gen == burstGen { burstHold = false } }
+            guard session.lastDeltaWeek == session.week else {
+                withAnimation(Theme.Motion.exit) { beatAdvice = nil }
+                return
+            }
+            let chips = makeBurstChips()
+            guard !chips.isEmpty else {
+                withAnimation(Theme.Motion.exit) { beatAdvice = nil }
+                return
+            }
+            burstChips = chips
+            burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
+            if !session.lastGrainGains.isEmpty {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+                withAnimation(Theme.Motion.emphSpring) { badgeBeat = true }   // 粒→「のばす」バッジ繰り上がりの一拍
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                withAnimation(Theme.Motion.appear) { badgeBeat = false }
+            }
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            withAnimation(Theme.Motion.exit) { beatAdvice = nil }
+            burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
+            try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
         }
         .task(id: toast) {
             if toast != nil {
@@ -136,7 +170,18 @@ struct WeekMainView: View {
                 if openCategory != nil { backButton.padding(12) }
             }
             .overlay(alignment: .bottomLeading) {
-                if openCategory == nil { monoBox.padding(14) }
+                // Beat1 の発話バブルはモノローグと同じ席（表示中は独白を隠す＝一度に一つの声）。
+                if let b = beatAdvice {
+                    adviceBox(b).padding(14)
+                } else if openCategory == nil {
+                    monoBox.padding(14)
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                // Beat2 獲得バースト: 立ち絵の頭上に獲得チップが立ち上る（触れない・入力遮断なし）。
+                burstOverlay
+                    .padding(.trailing, 18).padding(.bottom, 148)
+                    .allowsHitTesting(false)
             }
             .clipped()
     }
@@ -236,13 +281,16 @@ struct WeekMainView: View {
         .buttonStyle(PressableStyle())
     }
 
-    // MARK: 心の声（カテゴリ未選択時のみ・状態駆動モノローグ）
+    // MARK: 心の声（カテゴリ未選択時のみ・状態駆動モノローグ）／Beat1 発話バブル（同じ器を共用）
 
     private var monoBox: some View {
-        let a = DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
-                                        justPassed: session.justPassedStage, justLost: session.justLostStage,
-                                        nextMilestone: nextMilestone(), weakAbility: weakAbility())
-        return VStack(alignment: .leading, spacing: 2) {
+        adviceBox(DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
+                                          justPassed: session.justPassedStage, justLost: session.justLostStage,
+                                          nextMilestone: nextMilestone(), weakAbility: weakAbility()))
+    }
+
+    private func adviceBox(_ a: Advice) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
             Text(a.name ?? "俺").font(.maru(9.5)).tracking(1).foregroundStyle(Theme.inkDim)
             Text(a.text).font(.system(size: 13)).italic().foregroundStyle(Color(hex: 0x4A4360))
         }
@@ -270,35 +318,6 @@ struct WeekMainView: View {
         .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 8)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
         .animation(Theme.Motion.appearQuick, value: openCategory)   // カテゴリ⇄変種は同位置0.18s（(B)版）
-        .overlay(alignment: .topTrailing) {
-            // §1-3 受け取りの一拍: 今週入った粒チップ行を「のばす」タイル（右寄り・topTrailingにバッジ）直上に一瞬出す。
-            // カテゴリ列表示中のみ（タイルが在る時）。次タップで即消え（タイルを開けば openCategory 変化で消える）。
-            if receiptVisible, openCategory == nil, !receiptGrains.isEmpty {
-                receiptRow
-                    .padding(.trailing, 12).offset(y: -6)
-                    .transition(.asymmetric(
-                        insertion: .offset(y: 8).combined(with: .opacity),   // 下から8pt浮き上がり
-                        removal: .offset(y: -8).combined(with: .opacity)))
-                    .allowsHitTesting(false)   // 入力遮断ゼロ（触れない・下のタイルに素通し）
-            }
-        }
-    }
-
-    /// 受け取りチップ行（今週稼いだ粒。card2地の浮き紙＝グレインチップと同じ塗りドット文法）。
-    private var receiptRow: some View {
-        HStack(spacing: 4) {
-            ForEach(Array(receiptGrains.prefix(3).enumerated()), id: \.offset) { _, g in
-                HStack(spacing: 3) {
-                    Circle().fill(g.color).frame(width: 6, height: 6)
-                    Text("\(g.name) +\(g.delta)").font(.system(size: 9.5, weight: .bold)).foregroundStyle(Theme.ink)
-                }
-                .padding(.horizontal, 5).padding(.vertical, 2)
-                .background(Theme.card2, in: Capsule())
-            }
-        }
-        .padding(.horizontal, 8).padding(.vertical, 5)
-        .background(Theme.card, in: Capsule())
-        .e1()
     }
 
     private var categoryRow: some View {
@@ -369,12 +388,19 @@ struct WeekMainView: View {
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
-            // 「引き抜き」(B)版: フェード0.12s→実行（押下0.08+引き抜き0.12で次入力≤0.35s予算内）
+            // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
+            // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
+            withAnimation(.easeOut(duration: 0.18)) {
+                beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week)
+            }
             withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }
-            Task {
+            beatTask = Task {
                 try? await Task.sleep(nanoseconds: 120_000_000)
-                Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
                 openCategory = nil          // カードを畳んで次週はカテゴリ列から
+                try? await Task.sleep(nanoseconds: 700_000_000)   // 発話の一拍
+                burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
+                burstHold = true
+                Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
                 session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
                 pulledID = nil
             }
@@ -456,6 +482,70 @@ struct WeekMainView: View {
                 .background(Theme.card2, in: Capsule())
             }
         }
+    }
+
+    // MARK: Beat2 獲得バースト（この週の行動で入ったものが立ち絵の頭上に立ち上る）
+
+    /// 出現は下から stagger（0.07s刻み・emphSpring）、退場は逆再生。チップの文法はカードの
+    /// 粒チップ（dot+card2）と効果ピル（色地+白字）をそのまま流用＝予告と着地が同じ顔。
+    private var burstOverlay: some View {
+        VStack(alignment: .trailing, spacing: 5) {
+            ForEach(Array(burstChips.enumerated()), id: \.element.id) { i, chip in
+                burstChipView(chip)
+                    .opacity(burstVisible ? 1 : 0)
+                    .offset(y: burstVisible ? 0 : 16)
+                    .scaleEffect(burstVisible ? 1 : 0.7, anchor: .bottomTrailing)
+                    .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.07), value: burstVisible)
+            }
+        }
+    }
+
+    private func burstChipView(_ chip: BurstChip) -> some View {
+        HStack(spacing: 4) {
+            if let dot = chip.dot {
+                Circle().fill(dot).frame(width: 7, height: 7)
+            }
+            Text(chip.text).font(.system(size: 12, weight: .heavy)).foregroundStyle(chip.fg)
+        }
+        .padding(.horizontal, 8).padding(.vertical, 4)
+        .background(chip.bg, in: Capsule())
+        .e1()
+    }
+
+    /// この週の獲得チップ列を組む（表示専用・RNG非消費）。順序: 粒（稽古の主収穫）→能力/相性（直接効果）→
+    /// 体力→収支。差分0は出さない（+0を印字しない・§1-1）。
+    private func makeBurstChips() -> [BurstChip] {
+        var chips: [BurstChip] = []
+        var id = 0
+        for g in intGrains(from: session.lastGrainGains) {
+            chips.append(BurstChip(id: id, dot: g.color, text: "\(g.name) +\(g.delta)",
+                                   fg: Theme.ink, bg: Theme.card2)); id += 1
+        }
+        for g in session.lastGains {
+            let d = Int(g.amount.rounded())
+            guard d > 0 else { continue }
+            chips.append(BurstChip(id: id, dot: nil, text: "\(g.ability) +\(d)",
+                                   fg: .white, bg: Theme.abilityColor(g.ability))); id += 1
+        }
+        let cd = Int(session.lastCompatGain.rounded())
+        if cd > 0 {
+            chips.append(BurstChip(id: id, dot: nil, text: "相性 +\(cd)", fg: .white, bg: Theme.cCompat)); id += 1
+        }
+        let sd = session.lastStaminaDelta
+        if sd != 0 {
+            chips.append(BurstChip(id: id, dot: nil, text: "体力 \(sd > 0 ? "+" : "")\(sd)",
+                                   fg: sd > 0 ? .white : Theme.inkDim,
+                                   bg: sd > 0 ? Theme.cMental : Theme.card2)); id += 1
+        }
+        let md = session.lastMoneyDelta
+        if md != 0 {
+            let man = Double(abs(md)) / 10000
+            let txt = man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man)
+            chips.append(BurstChip(id: id, dot: nil, text: "\(md > 0 ? "+" : "-")¥\(txt)万",
+                                   fg: md > 0 ? .white : Theme.verm,
+                                   bg: md > 0 ? Theme.cMoney : Theme.verm.opacity(0.14))); id += 1
+        }
+        return chips
     }
 
     /// §4 満了の抑制表示: 器が満ちた後、稽古カードの粒チップ位置に金縁の「満」判（TournamentResultView の押印の語彙）。
@@ -642,4 +732,13 @@ struct WeekMainView: View {
         guard let next = ms.filter({ $0.0 >= session.week }).min(by: { $0.0 < $1.0 }) else { return nil }
         return (next.1, next.0 - session.week)
     }
+}
+
+/// Beat2 獲得バーストの1チップ。dot!=nil は「貯まる粒」（card2地・塗りドット）、nil は即効の効果ピル（色地・白字）。
+private struct BurstChip: Identifiable {
+    let id: Int
+    let dot: Color?
+    let text: String
+    let fg: Color
+    let bg: Color
 }

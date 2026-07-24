@@ -28,6 +28,12 @@ final class GameSession {
     /// 直前の行動で稼いだ粒（同色ロック粒の増分。§1-3 受け取りの一拍＝週メインの獲得チップ行用）。
     /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。状態差分駆動で消費順・golden非対象。
     private(set) var lastGrainGains: [(ability: Ability, amount: Double)] = []
+    /// 直前の行動での所持金/体力の増減（Beat2 獲得バースト用・表示専用）。週末の生活費も含む「この週の収支」。
+    private(set) var lastMoneyDelta = 0
+    private(set) var lastStaminaDelta = 0
+    /// 上記の増減が属する週。View は lastDeltaWeek == week の時だけバーストを出す＝大会画面を
+    /// 挟んで戻った時に古い増減が再生される事故を防ぐ（表示ゲートのみ・golden非対象）。
+    private(set) var lastDeltaWeek = -1
     /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
     private(set) var lossStreak = 0
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
@@ -127,6 +133,10 @@ final class GameSession {
             let d = state[bank: a] - before[bank: a]
             return d > 0.001 ? (a, d) : nil
         }
+        // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
+        lastMoneyDelta = state.money - before.money
+        lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
+        lastDeltaWeek = week
         // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
         if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }
         // 0016 ネタ合わせブーストの週送り減算（UI層・golden非対象・freeze と同型）。この週の revise はブースト有効で
