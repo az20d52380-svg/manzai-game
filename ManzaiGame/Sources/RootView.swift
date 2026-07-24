@@ -97,7 +97,9 @@ struct RootView: View {
                 }
         } else {
             IntroFlowView { name in                       // S1: KV→回想→名入力
-                session = GameSession(combiName: name)
+                // 初回もランダムシード（「もう一度」と同じ）。固定424242だと全プレイヤーの初年が同一乱数になる。
+                // DEBUGの MZ_SMOKE/MZ_UI 経路は上の .task が固定シードの session をそのまま使う＝決定的なまま。
+                session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name)
                 withAnimation(.easeInOut(duration: 0.4)) { started = true }
             }
         }

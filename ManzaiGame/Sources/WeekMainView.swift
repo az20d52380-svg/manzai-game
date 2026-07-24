@@ -256,16 +256,12 @@ struct WeekMainView: View {
         .transition(.opacity)
     }
 
-    // MARK: コマンドゾーン（カテゴリアイコン列 ⇄ 変種カード列・準備中パネル）
+    // MARK: コマンドゾーン（カテゴリアイコン列 ⇄ 変種カード列）
 
     private var commandZone: some View {
         VStack(spacing: 0) {
             if let g = openGroup {
-                if g.kind == .info {
-                    comingSoonPanel(g)
-                } else {
-                    variantRow(g)
-                }
+                variantRow(g)   // .info（のばす/データ）は categoryTile 側で全画面を出すためここへ来ない
             } else {
                 categoryRow
             }
@@ -489,22 +485,6 @@ struct WeekMainView: View {
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMental : Theme.inkDim))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
-    }
-
-    private func comingSoonPanel(_ g: CommandGroup) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: g.glyph).font(.system(size: 22)).foregroundStyle(Theme.inkFaint)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(g.title).font(.maru(13)).foregroundStyle(Theme.ink)
-                Text("準備中。この機能はまだ使えません。").font(.system(size: 11)).foregroundStyle(Theme.inkDim)
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 14)
-        .frame(height: 118)
-        .frame(maxWidth: .infinity)
-        .background(Theme.card2, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2))
     }
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）

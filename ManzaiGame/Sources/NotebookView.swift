@@ -164,12 +164,15 @@ struct NotebookView: View {
                     .padding(.vertical, Theme.Sp.s8)
             } else {
                 ForEach(Array(session.log.enumerated()), id: \.offset) { _, line in
+                    // 判ミニチュア（通過=verm/敗退=ink/休=inkDim）。療養週（summarize の mark="休"）は
+                    // 合否ではないので「敗退」に混ぜない（監査§1-4-5・summarize と同じ三値）。
+                    let mark = line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")
                     HStack(spacing: 10) {
-                        // 判ミニチュア（通過=verm/敗退=ink）
-                        Text(line.contains("通過") ? "通過" : "敗退")
+                        Text(mark)
                             .font(.maru(10)).foregroundStyle(.white)
                             .frame(width: 40, height: 24)
-                            .background(line.contains("通過") ? Theme.verm : Theme.ink, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+                            .background(mark == "通過" ? Theme.verm : (mark == "敗退" ? Theme.ink : Theme.inkDim),
+                                        in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
                         Text(line).font(.system(size: 12.5, design: .serif)).foregroundStyle(Theme.ink)
                         Spacer()
                     }
