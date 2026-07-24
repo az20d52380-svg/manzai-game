@@ -293,7 +293,7 @@ private struct SeededRng {
     }
 }
 
-/// 決勝の紙吹雪（WinFinaleView と同型・決定的な位置）
+/// 決勝の紙吹雪（決定的な位置）
 private struct ConfettiView: View {
     private let pieces = 30
     private let palette: [Color] = [Theme.gold, Theme.verm, Theme.cSense, Theme.cChara, Theme.cMental, Theme.cIdea]
