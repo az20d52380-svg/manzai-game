@@ -3,7 +3,8 @@
 // 週処理と乱数消費の順序は tools/gen_golden.py が正典。変更時は必ず両方を更新し、
 // CareerGoldenTests（同一乱数列での3年ビット一致）を再生成すること（CLAUDE.mdルール5）。
 
-public enum WeekAction {
+/// Codable は中断セーブ用（proposals-0039）＝挙動・golden不変
+public enum WeekAction: Codable {
     case train(Training)
     case job(Job)
     case rest(Rest)
@@ -18,7 +19,7 @@ public protocol WeekPolicy {
     mutating func enterTournament(_ spec: TournamentSpec, year: Int, state: GameState) -> Travel?
 }
 
-public struct YearOutcome {
+public struct YearOutcome: Codable {
     public let champion: Bool
     public let roundsPassed: Int    // 通過したGP回戦数 0〜5
     public let reachedFinal: Bool   // 決勝の舞台に立ったか（敗者復活経由含む）

@@ -12,13 +12,14 @@ public struct TravelSpec {
     }
 }
 
-public enum Travel {
+/// Codable は中断セーブ用（WeekRunnerSnapshot・proposals-0039）＝挙動・golden不変
+public enum Travel: Codable {
     case 夜行バス
     case 新幹線
 }
 
-public struct TournamentSpec {
-    public enum Eligibility {
+public struct TournamentSpec: Codable {
+    public enum Eligibility: Codable {
         case always
         case careerYearAtMost(Int)   // 芸歴・結成n年以内
         case fameAtLeast(Double)     // 推薦制（知名度条件）【仮】

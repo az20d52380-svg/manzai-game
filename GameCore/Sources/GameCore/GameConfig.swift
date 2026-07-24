@@ -4,7 +4,8 @@
 // 対応表は docs/gamecore_design.md を参照。
 
 /// 能力5種（Python: sense / idea / expr / chara / mental）
-public enum Ability: CaseIterable, Hashable {
+/// Codable は中断セーブ（WeekRunnerSnapshot/proposals-0039）用＝挙動・golden不変
+public enum Ability: CaseIterable, Hashable, Codable {
     case センス
     case 発想
     case 表現
@@ -20,7 +21,7 @@ public enum StatKey {
     case 知名度
 }
 
-public enum Training: CaseIterable, Hashable {
+public enum Training: CaseIterable, Hashable, Codable {
     case ネタ作り
     case ネタ見せ会
     case ネタ合わせ
@@ -28,13 +29,13 @@ public enum Training: CaseIterable, Hashable {
     case フリーライブ
 }
 
-public enum Job: CaseIterable, Hashable {
+public enum Job: CaseIterable, Hashable, Codable {
     case キツい
     case 標準
     case 楽
 }
 
-public enum Rest: CaseIterable, Hashable {
+public enum Rest: CaseIterable, Hashable, Codable {
     case 完全休養
     case 気分転換
     case 相方と過ごす
@@ -56,18 +57,27 @@ public struct TrainingSpec {
     }
 }
 
-public struct OfferSpec {
+/// Codable は中断セーブ用（pendingOffer の永続化・proposals-0039）。タプルは Codable 非対応のため
+/// 内部表現を2フィールドに分け、`.ability` は計算プロパティで従来と完全に同じ型を返す＝公開API不変。
+public struct OfferSpec: Codable {
     public let name: String
     public let income: Int
     public let fame: Double
-    public let ability: (Ability, Double)?
+    private let abilityKind: Ability?
+    private let abilityAmount: Double?
     public let stamina: Double
+
+    public var ability: (Ability, Double)? {
+        guard let k = abilityKind, let a = abilityAmount else { return nil }
+        return (k, a)
+    }
 
     public init(name: String, income: Int, fame: Double, ability: (Ability, Double)?, stamina: Double) {
         self.name = name
         self.income = income
         self.fame = fame
-        self.ability = ability
+        self.abilityKind = ability?.0
+        self.abilityAmount = ability?.1
         self.stamina = stamina
     }
 }

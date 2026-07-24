@@ -5,8 +5,8 @@
 // 【docs/ui_design_v0.md §5・2026-07-05 委譲済み】GameCareer.runYear はこの WeekRunner を policy で
 // 駆動するだけの薄いラッパになった。週処理と乱数消費順の正典実体はこのファイルが唯一持つ。
 
-/// 大会・回戦の結果1件（UIの結果トースト用）
-public struct StageResult {
+/// 大会・回戦の結果1件（UIの結果トースト用）。Codable は中断セーブ用（proposals-0039）＝挙動不変。
+public struct StageResult: Codable {
     public let name: String
     public let passed: Bool
     public let prize: Int      // 通過時のみ賞金額、敗退は0
@@ -22,8 +22,8 @@ public struct StageResult {
     }
 }
 
-/// 週の結果（UIの差分ポップは前週スナップショットとの比較で出す）
-public struct WeekSummary {
+/// 週の結果（UIの差分ポップは前週スナップショットとの比較で出す）。Codable は中断セーブ用。
+public struct WeekSummary: Codable {
     public let year: Int
     public let week: Int
     public let results: [StageResult]   // この週に起きた大会・回戦の結果（0〜複数件）
@@ -41,7 +41,8 @@ public struct WeekSummary {
 /// 使い方: begin() → Phaseに応じて resolveTournament / resolveAction / resolveAuto → weekDone → 再び begin()
 public struct WeekRunner<R: RandomSource> {
 
-    public enum Phase {
+    /// Codable は中断セーブ用（GameSession.SaveData が「UIがいま待っている位相」ごと保存する）＝挙動不変。
+    public enum Phase: Codable {
         case tournamentDecision(TournamentSpec)   // 大会週: 出るか・移動手段は? → resolveTournament(travel:)
         case freeAction(offer: OfferSpec?)        // 自由週: オファー抽選済み → resolveAction(_:)
         case gpRound(index: Int, name: String)    // GP回戦: 入力不要。演出後 resolveAuto()
@@ -65,14 +66,15 @@ public struct WeekRunner<R: RandomSource> {
     private var finalist: Bool
     private var revival = false
 
-    // 週内の進行位置（runYear のブロック1〜5に対応）
-    private enum Section { case tournament, gp, finalWeek, free, end }
+    // 週内の進行位置（runYear のブロック1〜5に対応）。
+    // Section/AutoStage の public 化と Codable は中断セーブ（WeekRunnerSnapshot）用＝可視性のみの変更・挙動不変。
+    public enum Section: Codable { case tournament, gp, finalWeek, free, end }
     private var section = Section.tournament
     private var acted = false
     private var weekResults: [StageResult] = []
     private var pendingSpec: TournamentSpec?
     private var pendingOffer: OfferSpec?
-    private enum AutoStage { case round, revival, final }
+    public enum AutoStage: Codable { case round, revival, final }
     private var pendingAuto: AutoStage?
     private var revivalTried = false
     private var finalTried = false
@@ -426,5 +428,70 @@ public struct WeekRunner<R: RandomSource> {
     /// gen_golden は呼ばない＝golden 経路では preoccupiedWeeks が常に0＝稽古ロックは一度も効かない（golden不変）。
     public mutating func tickPreoccupied() {
         if state.preoccupiedWeeks > 0 { state.preoccupiedWeeks -= 1 }
+    }
+}
+
+// MARK: 中断セーブ（proposals/0039）。「今の内部状態を読み出す／書き戻す」だけの非破壊API＝
+// RNG消費順・数式は一切変更なし＝golden不変（tools/*.py 同期不要）。
+// private フィールドへのアクセスに同一ファイル内特権が要るため、この extension は WeekRunner.swift に置く。
+
+/// 中断セーブ用のスナップショット。GameConfig は含まない（固定バランス値＝永続化しない。
+/// 将来バランス値を更新したとき、古いセーブに古い値が固定化されるのを防ぐ＝復元時に外から注入する）。
+public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
+    public var state: GameState
+    public var rng: R
+    public var year: Int
+    public var week: Int
+    public var finalLine: Double
+    public var gpStage: Int
+    public var gpEntryPaid: Bool
+    public var gpAlive: Bool
+    public var finalist: Bool
+    public var revival: Bool
+    public var section: WeekRunner<R>.Section
+    public var acted: Bool
+    public var weekResults: [StageResult]
+    public var pendingSpec: TournamentSpec?
+    public var pendingOffer: OfferSpec?
+    public var pendingAuto: WeekRunner<R>.AutoStage?
+    public var revivalTried: Bool
+    public var finalTried: Bool
+    public var finished: YearOutcome?
+}
+
+extension WeekRunner where R: Codable {
+    /// 現在の内部状態を取り出す（セーブ用・非破壊・RNG非消費）
+    public func snapshot() -> WeekRunnerSnapshot<R> {
+        WeekRunnerSnapshot(state: state, rng: rng, year: year, week: week, finalLine: finalLine,
+                           gpStage: gpStage, gpEntryPaid: gpEntryPaid, gpAlive: gpAlive,
+                           finalist: finalist, revival: revival, section: section, acted: acted,
+                           weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
+                           pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
+                           finished: finished)
+    }
+
+    /// スナップショットからの復元（ロード用）。年初処理（体力全回復・成長予算の再計算）は走らせず、
+    /// 保存時点の値をそのまま書き戻す。config はアプリ起動時に生成した固定値を渡す。
+    public init(restoring snap: WeekRunnerSnapshot<R>, config: GameConfig) {
+        self.state = snap.state
+        self.rng = snap.rng
+        self.year = snap.year
+        self.config = config
+        self.finalLine = snap.finalLine
+        self.gpStage = snap.gpStage
+        self.gpAlive = snap.gpAlive
+        self.finalist = snap.finalist
+        self.week = snap.week
+        self.gpEntryPaid = snap.gpEntryPaid
+        self.revival = snap.revival
+        self.section = snap.section
+        self.acted = snap.acted
+        self.weekResults = snap.weekResults
+        self.pendingSpec = snap.pendingSpec
+        self.pendingOffer = snap.pendingOffer
+        self.pendingAuto = snap.pendingAuto
+        self.revivalTried = snap.revivalTried
+        self.finalTried = snap.finalTried
+        self.finished = snap.finished
     }
 }

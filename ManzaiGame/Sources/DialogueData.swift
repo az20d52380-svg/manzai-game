@@ -6,7 +6,7 @@
 import Foundation
 import GameCore
 
-struct Advice {
+struct Advice: Codable {   // Codable=中断セーブ（週頭の掛け合いの復元）用
     let name: String?     // "俺"（独白）。将来のレアイベントで谷口等に切替
     let text: String
 }

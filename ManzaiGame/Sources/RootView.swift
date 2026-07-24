@@ -5,9 +5,27 @@ import SwiftUI
 import GameCore
 
 struct RootView: View {
-    @State private var session = GameSession()
-    @State private var started = false   // S1初回フロー完了で true（本編開始）
+    @State private var session: GameSession
+    @State private var started: Bool     // S1初回フロー完了で true（本編開始）
     @State private var showEnding = false // 優勝→S6b勇退エンディング
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        #if DEBUG
+        // QAスモーク（MZ_SMOKE/MZ_UI）はセーブを読まず従来どおり固定シードの新規から＝決定的なまま。
+        // saveNow 側も同条件でガード済み＝QA走行が実プレイのセーブを潰さない。
+        let env = ProcessInfo.processInfo.environment
+        if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil {
+            _session = State(initialValue: GameSession())
+            _started = State(initialValue: false)   // .task が true にする
+            return
+        }
+        #endif
+        // 中断セーブがあればその週から再開（IntroFlow はスキップ）。無ければ従来どおり S1 から。
+        let loaded = GameSession.loadedOrNew()
+        _session = State(initialValue: loaded)
+        _started = State(initialValue: loaded.isRestored)
+    }
 
     var body: some View {
         Group {
@@ -85,6 +103,10 @@ struct RootView: View {
             }
             #endif
         }
+        .onChange(of: scenePhase) { _, phase in
+            // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）
+            if phase == .background, started { session.saveNow() }
+        }
     }
 
     @ViewBuilder private var mainFlow: some View {
@@ -111,11 +133,13 @@ struct RootView: View {
         } else if session.finished {
             if showEnding {
                 S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
-                    session = GameSession(seed: UInt64.random(in: .min ... .max)); showEnding = false
+                    session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName)
+                    showEnding = false
                 }
             } else {
                 YearResultView(session: session,
-                               onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max)) },
+                               onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max),
+                                                                  combiName: session.combiName) },
                                onEnding: session.outcome?.champion == true ? { showEnding = true } : nil)
             }
         } else if let result = session.pendingResult {
