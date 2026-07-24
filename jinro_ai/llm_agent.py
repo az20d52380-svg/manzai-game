@@ -117,7 +117,7 @@ class LLMAgent(BeliefAgent):
     """Claude ブレイン。use_api=False なら BeliefAgent の手＋テンプレ発言で動く。"""
 
     def __init__(self, use_api: bool = False, model: str = MODEL,
-                 effort: str = "medium", max_tokens: int = 1024):
+                 effort: str = "medium", max_tokens: int = 2048):
         super().__init__()
         self.use_api = use_api
         self.model = model
