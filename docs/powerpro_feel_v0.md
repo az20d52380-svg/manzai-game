@@ -1,4 +1,8 @@
-# パワプロ・サクセス化 第1弾 — 週の手触り改善＋中断セーブ（2026-07-24・実装済み）
+# パワプロ・サクセス化 第1弾＋第2弾 — 週の手触り・中断セーブ・称号（実装済み）
+
+> 第1弾（§0〜4）は PR #2 でマージ済み（2026-07-29）。第2弾は §5 に追記。
+
+# 第1弾 — 週の手触り改善＋中断セーブ（2026-07-24・実装済み）
 
 > これは実装記録＋設計判断のdoc。数値は全て【仮】。ブランチ: `claude/game-review-improvements-56r5ss`
 
@@ -49,3 +53,28 @@
    - 目標バナー（資格外の大会が出ない）・週送りスタンプ・谷口評ランクアップpunch
    - **強制終了→再起動→同じ画面に復帰**（自由週/大会入口/結果画面/イベント表示中の4パターン）
    - 年末（finished）後に再起動→IntroFlow から新規で始まる（セーブが消えている）
+
+---
+
+# §5 第2弾 — 称号・実入り・はじめから・イベントカットイン（2026-07-29・実装済み）
+
+第1弾マージ後、同ブランチを最新ベース（見た目基盤①〜⑥込み）から仕切り直して実装。
+**全て ManzaiGame（View/Session層）のみ＝GameCore は1ファイルも触らない＝golden構造的不変**。
+
+| # | 内容 | 主ファイル |
+|---|---|---|
+| A | **称号システム**: `TitleData.swift` 新規（18種【仮】・tone=gold/verm/ink・傷跡系inkはポップさせない）。pump の大会週/年末フックで `earnedTitles` に記録。SaveData へ**オプショナルで**追加（旧セーブ後方互換）。解散年判定は `TitleData.isDissolutionYear` に一本化（YearResultView と単一ソース） | TitleData.swift / GameSession / NotebookView / YearResultView |
+| B | **大会結果の実入り**: 通過時に賞金/知名度/称号チップが星の下に立つ（知名度は `lastStageFameGain`＝状態差分＝逓減後の実増分）。BurstChip は `BurstChipView.swift` へ共有化（.slam/.compact＋金縁outline・見た目基盤②の「ドン」文法を維持） | BurstChipView.swift / TournamentResultView / GameSession |
+| C | **はじめから導線**: 最下帯の歯車→SettingsView（sheet）→「はじめから」confirmationDialog(destructive)→ `GameSession.deleteSave()`→IntroFlow の既存経路で新規。sheet を閉じ切ってから session 差し替え（0.4s） | WeekMainView / SettingsView / RootView / GameSession |
+| D | **イベントカットイン**: 暗転→タイトル判の叩きつけ（朱帯・screenShake）→会話。タップで即スキップ。選択結果は before/after 差分の効果チップ（持続効果4種は「方向」の言葉チップ【仮】: 相性は、しばらく動かない／次の合わせが効く／今週は撮影で埋まる／今年の器が縮む・広がる） | ChoiceEventOverlay |
+
+## 第2弾の Mac 検証チェックリスト
+
+1. `cd ManzaiGame && xcodegen generate`（新規: TitleData.swift / BurstChipView.swift）
+2. `cd GameCore && swift test`（GameCore 無改修＝既存 green の確認のみ。CI「GameCore parity」も同じ）
+3. simulator 目視:
+   - 道中大会に勝つ→賞金/知名度/称号チップ＋Haptics／きろくタブに称号が並ぶ／年次リザルトに「この1年の称号」
+   - **第1弾の旧セーブ（称号なし）を読み込んで落ちない**（オプショナル復元）
+   - 歯車→はじめから→確認→IntroFlow→新規（旧セーブが戻らない・MZ_UI=settings は従来表示のまま）
+   - イベントの暗転→判→会話のテンポとタップスキップ／選択後の効果チップ折り返し
+   - 敗退週・敗者復活週に金チップ/称号ポップが出ない（ink系は きろく にだけ刻まれる）
