@@ -13,6 +13,8 @@ struct TournamentResultView: View {
     @State private var revealedReview = false  // 講評（判の0.4s後）
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
+    @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
+    @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
 
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
@@ -40,14 +42,14 @@ struct TournamentResultView: View {
                         .padding(.horizontal, 14).padding(.vertical, 3)
                         .background(Theme.verm, in: Capsule())
                 }
-                Text(r.name).font(.maru(22))
-                Text("第\(summary.week)週 ・ 本番").font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkDim)
+                Text(r.name).font(.maru(22)).foregroundStyle(.white)
+                Text("第\(summary.week)週 ・ 本番").font(.maru(12, weight: .bold)).foregroundStyle(.white.opacity(0.55))
 
                 // 笑い波形（結果連動）
                 WaveformView(passed: r.passed)
 
                 Text(r.passed ? "——どっと沸いた！" : "——固い空気…")
-                    .font(.maru(15)).foregroundStyle(r.passed ? Theme.verm : Theme.inkDim)
+                    .font(.maru(15)).foregroundStyle(r.passed ? Theme.gold : .white.opacity(0.45))
                     .frame(minHeight: 20)
 
                 if revealed {
@@ -79,14 +81,35 @@ struct TournamentResultView: View {
             .padding(.horizontal, 18).padding(.vertical, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(LinearGradient(colors: [Color(hex: 0xFFEAD8), Color(hex: 0xFFF3E4)],
-                                   startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        // 暗転した客席＝結果は舞台の闇の中で言い渡される（紙の講評が闇に浮かぶ）
+        .background {
+            ZStack {
+                LinearGradient(colors: [Color(hex: 0x120D22), Color(hex: 0x241633), Color(hex: 0x1A1128)],
+                               startPoint: .top, endPoint: .bottom)
+                // 判の席に落ちるスポットライト
+                RadialGradient(colors: [Color(hex: 0xFFE9C4).opacity(0.14), .clear],
+                               center: UnitPoint(x: 0.5, y: 0.30), startRadius: 20, endRadius: 320)
+            }
+            .ignoresSafeArea()
+        }
+        .overlay {
+            // 通過の紙吹雪（判と同時に舞う・敗退は降らない＝静けさが重さ）
+            ParticleBurst(trigger: confettiFire,
+                          colors: [Theme.gold, Theme.verm, .white, Theme.cExpr],
+                          style: .confetti, count: 44,
+                          origin: UnitPoint(x: 0.5, y: 0.30))
+        }
+        .screenShake(trigger: slamFire, intensity: r.passed ? 10 : 7)     // 判の衝撃（勝敗とも）
+        .screenFlash(trigger: r.passed ? slamFire : 0,                    // 白むのは通過だけ
+                     color: Color(hex: 0xFFEDCB), strength: 0.4)
         .onAppear {
             Task {
                 // 波形の余韻＋開示前の静止0.3s（溜め→開示の最小単位・§4-2a）を含む1.6s
                 try? await Task.sleep(nanoseconds: 1_600_000_000)
-                withAnimation(.easeOut(duration: 0.2)) { revealed = true }   // 判の押印（§3-5: 1.3→1.0）
-                Haptics.confirm()                                            // 合否押印=hConfirm
+                withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
+                slamFire += 1                                                // シェイク＋（通過なら）フラッシュ
+                if r.passed { confettiFire += 1; Haptics.rare() }            // 紙吹雪は勝ちの専有
+                else { Haptics.confirm() }
                 try? await Task.sleep(nanoseconds: 400_000_000)
                 withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
                 try? await Task.sleep(nanoseconds: 600_000_000)
@@ -98,9 +121,10 @@ struct TournamentResultView: View {
         }
     }
 
-    /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=ink——色でなく重さの差（負けにも勝ちと同じ物量）。
+    /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=鈍色——色でなく重さの差（負けにも勝ちと同じ物量）。
+    /// 敗退の地は暗転背景に溶けない鈍色（inkは闇と同化するため明度だけ上げる）。
     private func stamp(passed: Bool) -> some View {
-        let c = passed ? Theme.verm : Theme.ink
+        let c = passed ? Theme.verm : Color(hex: 0x5A5470)
         return Text(stampLabel(passed: passed))
             .font(.maru(30)).foregroundStyle(.white)
             .frame(width: 108, height: 108)
@@ -108,8 +132,8 @@ struct TournamentResultView: View {
                        in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
             .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(.white.opacity(0.55), lineWidth: 2).padding(5))
             .rotationEffect(.degrees(-4))
-            .shadow(color: c.opacity(0.4), radius: 12, y: 8)
-            .scaleEffect(revealed ? 1 : 1.3)
+            .shadow(color: c.opacity(0.55), radius: 16, y: 8)
+            .scaleEffect(revealed ? 1 : 2.3)      // 高くから叩きつける（slamFire のシェイクと同時に着地）
             .opacity(revealed ? 1 : 0)
     }
 

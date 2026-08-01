@@ -80,6 +80,11 @@ struct RootView: View {
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
                 session.choose(.train(.ネタ作り))
             }
+            if ui == "pass", session.week <= 1 {
+                // 合否演出（通過側）目視: 能力マックスで初回大会へ＝「通過」判＋紙吹雪＋フラッシュを拾う
+                session = GameSession(startState: GameSession.debugMaxedState())
+                session.debugAdvanceToFirstResult()
+            }
             if ui == "cards", session.week <= 1 {
                 // 0022 稽古ロック目視: preoccupiedWeeks>0 の開始状態＝WeekMainView(MZ_UI=cards)で稽古がグレー＋「撮影で埋まる」。
                 // compat 10（8-14帯＝0020[0-7]/0021[>=15]の確定発火を回避）＋高所持金（0012回避）で稽古グリッドが被らず見える。

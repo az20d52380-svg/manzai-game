@@ -19,10 +19,10 @@ struct WaveformView: View {
                 // 中心線
                 var base = Path()
                 base.move(to: CGPoint(x: 0, y: mid)); base.addLine(to: CGPoint(x: W, y: mid))
-                ctx.stroke(base, with: .color(Color(hex: 0x2C2740, alpha: 0.08)), lineWidth: 1)
+                ctx.stroke(base, with: .color(.white.opacity(0.10)), lineWidth: 1)
 
                 let warm = [Theme.gold, Theme.cExpr, Theme.verm]
-                let cold = [Color(hex: 0x9AA0AE), Color(hex: 0x7C8394)]
+                let cold = [Color(hex: 0xAEB4C4), Color(hex: 0x8890A4)]
                 let grad = GraphicsContext.Shading.linearGradient(
                     Gradient(colors: passed ? warm : cold),
                     startPoint: .zero, endPoint: CGPoint(x: W, y: 0))
@@ -65,12 +65,13 @@ struct WaveformView: View {
             HStack {
                 Text("ツカミ"); Spacer(); Text("中盤"); Spacer(); Text("オチ")
             }
-            .font(.maru(10)).foregroundStyle(Theme.inkFaint).offset(y: 14)
+            .font(.maru(10)).foregroundStyle(.white.opacity(0.45)).offset(y: 14)
         }
         .padding(12)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.line, lineWidth: 2))
-        .shadow(color: .black.opacity(0.12), radius: 10, y: 8)
+        // 暗転結果画面の中の「客席モニタ」＝ダークガラス（白紙カードは闇で浮きすぎる）
+        .background(Color(hex: 0x1D1730).opacity(0.85), in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.14), lineWidth: 1.5))
+        .shadow(color: .black.opacity(0.35), radius: 12, y: 8)
     }
 }
 
