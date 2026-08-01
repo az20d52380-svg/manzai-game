@@ -74,7 +74,15 @@ struct WeekMainView: View {
             commandZone
             botbar
         }
-        .background(Theme.bgGradient.ignoresSafeArea())
+        // 上半分＝客席の闇（ステータスバー裏まで）／下半分＝手元の紙色。sceneZone は自前で塗るので
+        // 実際に見えるのはステータスバー帯とコマンド帯の透け部分だけ＝劇場の没入が上端で切れない。
+        .background(
+            LinearGradient(stops: [
+                .init(color: Color(hex: 0x120D22), location: 0),
+                .init(color: Color(hex: 0x120D22), location: 0.52),
+                .init(color: Theme.bg2, location: 0.62),
+                .init(color: Theme.bgBottom, location: 1),
+            ], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .fullScreenCover(isPresented: $showNotebook) {
             NotebookView(session: session) { showNotebook = false }   // S5 ネタ帳
         }
@@ -189,6 +197,7 @@ struct WeekMainView: View {
 
     private var sceneZone: some View {
         sceneBackground
+            .background(Color(hex: 0x120D22).ignoresSafeArea(edges: .top))   // ステータスバー裏も客席の闇
             .overlay(alignment: .topLeading) { pillsColumn.padding(12) }
             .overlay(alignment: .topTrailing) {
                 if openCategory != nil { backButton.padding(12) }
@@ -260,24 +269,10 @@ struct WeekMainView: View {
     }
 
     private var sceneBackground: some View {
-        RadialGradient(colors: [Color(hex: 0xFFE3B0), Color(hex: 0xFFC98A)],
-                       center: .bottom, startRadius: 20, endRadius: 340)
-            .overlay(alignment: .bottomTrailing) {
-                // TODO: 本イラスト差替（現状はシルエット仮＝立ち絵プレースホルダ）
-                HStack(alignment: .bottom, spacing: 4) {
-                    silhouette(color: Color(hex: 0x3B6FE0), w: 74, h: 116)
-                    silhouette(color: Theme.verm, w: 84, h: 130)
-                }
-                .padding(.trailing, 20).padding(.bottom, 4)
-            }
-    }
-
-    private func silhouette(color: Color, w: CGFloat, h: CGFloat) -> some View {
-        UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 14, bottomTrailingRadius: 14, topTrailingRadius: 30)
-            .fill(LinearGradient(colors: [color.opacity(0.85), color], startPoint: .top, endPoint: .bottom))
-            .frame(width: w, height: h)
-            .overlay(alignment: .top) { Circle().fill(Color(hex: 0xFFE0C4)).frame(width: w * 0.55, height: w * 0.55).offset(y: 12) }
-            .shadow(color: Theme.ink.opacity(0.22), radius: 5, y: 5)   // 影はink系（純黒禁止・§1-0）
+        // 「舞台」シーン（StageScene.swift）: 劇場の闇＋緞帳＋板張り＋スポットライト＋センターマイク＋
+        // 漫才師2人の逆光シルエット＋舞う塵。立ち絵イラスト導入までの見た目の到達点（TODO: 本イラスト差替）。
+        // 客席の闇はステータスバー裏まで届かせる（上端に台所色が残ると劇場の没入が切れる）。
+        StageScene().ignoresSafeArea(edges: .top)
     }
 
     // MARK: 6軸ダークピル（センス/発想/表現/華/メンタル/相性・data-theme無関係の暗色固定）

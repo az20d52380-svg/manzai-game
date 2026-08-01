@@ -70,6 +70,11 @@ struct RootView: View {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
                 session = GameSession(startState: GameSession.debugAllocationState())
             }
+            if ui == "stage", session.week <= 1 {
+                // 舞台シーン目視: 週頭イベント帯（0020[compat0-7]/0021[>=15]/0012[金欠]）を全て外した素の育成メイン
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
+                session = GameSession(startState: st)
+            }
             if ui == "cards", session.week <= 1 {
                 // 0022 稽古ロック目視: preoccupiedWeeks>0 の開始状態＝WeekMainView(MZ_UI=cards)で稽古がグレー＋「撮影で埋まる」。
                 // compat 10（8-14帯＝0020[0-7]/0021[>=15]の確定発火を回避）＋高所持金（0012回避）で稽古グリッドが被らず見える。
