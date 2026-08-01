@@ -14,6 +14,7 @@
 		21E800CFC18797B54C85B120 /* StageScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1F087A453470E4CF970A6B /* StageScene.swift */; };
 		2A0C4D15DED110C70394538A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F49ED139642FC2518E962F8 /* RootView.swift */; };
 		420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799C1CDD04C665A5DE37ABB /* SettingsView.swift */; };
+		4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A618381798F759B9F5580F /* Juice.swift */; };
 		503ABBC496CD986CDC932884 /* DialogueData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1F100811789DF64591C427 /* DialogueData.swift */; };
 		54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */; };
 		5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915FB4D3357203506A4F5A67 /* IntroFlow.swift */; };
@@ -60,6 +61,7 @@
 		E7C2B6670FC11321C4559DCB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		EC27C4A85A610F060F476DE5 /* ManzaiGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManzaiGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5D08F932A4334F422E73881 /* JudgeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JudgeData.swift; sourceTree = "<group>"; };
+		F6A618381798F759B9F5580F /* Juice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Juice.swift; sourceTree = "<group>"; };
 		F840A919C087A92A94339899 /* RadarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChart.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -88,6 +90,7 @@
 				2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */,
 				915FB4D3357203506A4F5A67 /* IntroFlow.swift */,
 				F5D08F932A4334F422E73881 /* JudgeData.swift */,
+				F6A618381798F759B9F5580F /* Juice.swift */,
 				0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */,
 				03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */,
 				66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */,
@@ -201,6 +204,7 @@
 				9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */,
 				5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */,
 				6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */,
+				4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */,
 				54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */,
 				20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */,
 				EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */,

@@ -53,6 +53,8 @@ struct WeekMainView: View {
     @State private var vesselFullToastShown = false
     /// 週送りスタンプ「第N週」（週が明けた瞬間に中央で0.7sフラッシュ・触れない）。
     @State private var weekStampVisible = false
+    /// Beat2 と同時に爆ぜる獲得パーティクル（+1で一回・Juice.swift）。
+    @State private var particleFire = 0
     /// 谷口評（5能力平均のランク）がランクアップした瞬間の punch（AllocationView のグレード昇格と同じ文法）。
     @State private var rankPunch = false
     /// 週頭の掛け合いのタップ送り位置（週が明けたら0に戻す）。
@@ -148,6 +150,7 @@ struct WeekMainView: View {
             }
             burstChips = chips
             burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
+            particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
             if !session.lastGrainGains.isEmpty {
                 try? await Task.sleep(nanoseconds: 100_000_000)
                 withAnimation(Theme.Motion.emphSpring) { badgeBeat = true }   // 粒→「のばす」バッジ繰り上がりの一拍
@@ -213,6 +216,13 @@ struct WeekMainView: View {
                         monoBox.padding(14)
                     }
                 }
+            }
+            .overlay {
+                // Beat2 と同時の獲得パーティクル: 二人の頭上あたりから火花が爆ぜる（チップと同色）。
+                ParticleBurst(trigger: particleFire,
+                              colors: burstChips.map { $0.dot ?? ($0.bg == Theme.card2 ? Theme.gainOrange : $0.bg) },
+                              style: .spark, count: 26,
+                              origin: UnitPoint(x: 0.62, y: 0.60))
             }
             .overlay(alignment: .bottomTrailing) {
                 // Beat2 獲得バースト: 立ち絵の頭上に獲得チップが立ち上る（触れない・入力遮断なし）。
@@ -328,6 +338,9 @@ struct WeekMainView: View {
             Circle().fill(color).frame(width: 7, height: 7)
             Text(name).font(.maru(9.5)).foregroundStyle(.white.opacity(0.92))
             Text("\(Int(value.rounded()))").font(.maru(11)).monospacedDigit().foregroundStyle(.white)
+                .contentTransition(.numericText())
+                .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
+                .punch(on: Int(value.rounded()), peak: 1.35)   // 値が動いた瞬間だけ跳ねる（ジュース核）
             if let gain, gainsVisible, Int(gain.rounded()) >= 1 {
                 Text("+\(Int(gain.rounded()))").font(.maru(10)).foregroundStyle(Theme.gainOrange)
                     // +N規格（§3-3）: 出現0.2s=+8ptから浮き上がる／滞留（taskの1.2sから逆算0.6s）／退場0.4s=上昇フェード
@@ -707,6 +720,9 @@ struct WeekMainView: View {
                 staminaGauge
                 Text("¥\(s.money.formatted())").font(.maru(12)).monospacedDigit()
                     .foregroundStyle(s.money < 0 ? Theme.verm : .white)
+                    .contentTransition(.numericText())            // 収支が動くと数字が繰る
+                    .punch(on: s.money, peak: 1.18)               // ＋跳ねる（ジュース核）
+                    .animation(.easeOut(duration: 0.4), value: s.money)
             }
         }
         .padding(.horizontal, 14).padding(.top, 9).padding(.bottom, 16)
