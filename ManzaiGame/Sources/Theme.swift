@@ -80,6 +80,17 @@ enum Theme {
         }
     }
 
+    /// 等級バッジの色（パワプロの G..S 配色に寄せた5段【仮】: D鈍/C緑/B青/A赤/S金）
+    static func gradeColor(_ g: String) -> Color {
+        switch g {
+        case "S": return gold
+        case "A": return verm
+        case "B": return cSense
+        case "C": return cMental
+        default: return Color(hex: 0x9AA0AE)
+        }
+    }
+
     /// ネタの型→色（v2 §2-1・7型を視覚的に書き分けるだけの表示専用トークン。判定には無関係）
     static func kataColor(_ k: NetaKata) -> Color {
         switch k {

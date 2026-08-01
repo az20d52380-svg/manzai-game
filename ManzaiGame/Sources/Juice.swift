@@ -107,6 +107,59 @@ struct ParticleBurst: View {
     }
 }
 
+// MARK: 集中線（漫画の「ドン！」・獲得や決定的瞬間の一拍）
+
+/// trigger を +1 すると 0.32s だけ放射状の集中線が走る。中心は UnitPoint 指定。
+/// 線の角度・長さは決定論ハッシュ＝毎回同じ見え方（乱数不使用）。
+struct SpeedLinesBurst: View {
+    var trigger: Int
+    var color: Color = Color(hex: 0x2C2740)
+    var center: UnitPoint = .center
+
+    @State private var start: Date?
+    @State private var seq = 0
+    private let life = 0.32
+
+    var body: some View {
+        GeometryReader { geo in
+            if let s = start {
+                TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { tl in
+                    Canvas { ctx, size in
+                        let t = tl.date.timeIntervalSince(s)
+                        guard t >= 0, t < life else { return }
+                        let p = t / life
+                        let alpha = (1 - p) * 0.5
+                        let cx = size.width * center.x
+                        let cy = size.height * center.y
+                        let rMax = sqrt(size.width * size.width + size.height * size.height) * 0.62
+                        for i in 0..<24 {
+                            let fi = Double(i)
+                            let a = fi / 24 * 2 * .pi + jhash(fi + 3.7) * 0.24
+                            let r1 = rMax * (0.52 + 0.34 * jhash(fi + 0.5)) + p * 60   // 外側から内へ走り込む
+                            let len = rMax * (0.10 + 0.10 * jhash(fi + 1.5)) * (1 - p)
+                            var path = Path()
+                            path.move(to: CGPoint(x: cx + cos(a) * r1, y: cy + sin(a) * r1))
+                            path.addLine(to: CGPoint(x: cx + cos(a) * (r1 - len), y: cy + sin(a) * (r1 - len)))
+                            ctx.stroke(path, with: .color(color.opacity(alpha)),
+                                       style: StrokeStyle(lineWidth: (2.6 * (1 - p)) + 0.6, lineCap: .round))
+                        }
+                    }
+                }
+            }
+        }
+        .allowsHitTesting(false)
+        .onChange(of: trigger) { _, _ in
+            seq += 1
+            start = Date()
+            let s = seq
+            Task {
+                try? await Task.sleep(nanoseconds: UInt64((life + 0.05) * 1_000_000_000))
+                if seq == s { start = nil }
+            }
+        }
+    }
+}
+
 // MARK: 値が変わった瞬間の跳ね（パンチ）
 
 /// 監視値が変わった瞬間、scale 1→peak→1 のバネ。数字ピル・ゲージ・バッジの「効いた」の一拍。

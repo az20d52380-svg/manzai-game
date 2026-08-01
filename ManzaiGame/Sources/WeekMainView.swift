@@ -76,15 +76,8 @@ struct WeekMainView: View {
             commandZone
             botbar
         }
-        // 上半分＝客席の闇（ステータスバー裏まで）／下半分＝手元の紙色。sceneZone は自前で塗るので
-        // 実際に見えるのはステータスバー帯とコマンド帯の透け部分だけ＝劇場の没入が上端で切れない。
-        .background(
-            LinearGradient(stops: [
-                .init(color: Color(hex: 0x120D22), location: 0),
-                .init(color: Color(hex: 0x120D22), location: 0.52),
-                .init(color: Theme.bg2, location: 0.62),
-                .init(color: Theme.bgBottom, location: 1),
-            ], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        // パワプロ・サクセスの文法＝日常パートは明るくポップ（暗転は本番系画面の語彙）。
+        .background(Theme.bgGradient.ignoresSafeArea())
         .fullScreenCover(isPresented: $showNotebook) {
             NotebookView(session: session) { showNotebook = false }   // S5 ネタ帳
         }
@@ -200,7 +193,7 @@ struct WeekMainView: View {
 
     private var sceneZone: some View {
         sceneBackground
-            .background(Color(hex: 0x120D22).ignoresSafeArea(edges: .top))   // ステータスバー裏も客席の闇
+            .background(Color(hex: 0xFFFBF0).ignoresSafeArea(edges: .top))   // ステータスバー裏も稽古場の白
             .overlay(alignment: .topLeading) { pillsColumn.padding(12) }
             .overlay(alignment: .topTrailing) {
                 if openCategory != nil { backButton.padding(12) }
@@ -218,7 +211,8 @@ struct WeekMainView: View {
                 }
             }
             .overlay {
-                // Beat2 と同時の獲得パーティクル: 二人の頭上あたりから火花が爆ぜる（チップと同色）。
+                // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
+                SpeedLinesBurst(trigger: particleFire, center: UnitPoint(x: 0.62, y: 0.55))
                 ParticleBurst(trigger: particleFire,
                               colors: burstChips.map { $0.dot ?? ($0.bg == Theme.card2 ? Theme.gainOrange : $0.bg) },
                               style: .spark, count: 26,
@@ -226,8 +220,9 @@ struct WeekMainView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 // Beat2 獲得バースト: 立ち絵の頭上に獲得チップが立ち上る（触れない・入力遮断なし）。
+                // 人形の大型化に合わせ頭上へ逃がす（頭に被ると谷口が首なしに見える）。
                 burstOverlay
-                    .padding(.trailing, 18).padding(.bottom, 148)
+                    .padding(.trailing, 16).padding(.bottom, 262)
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .top) {
@@ -312,14 +307,15 @@ struct WeekMainView: View {
 
     private var rankChip: some View {
         HStack(spacing: 5) {
-            Text("谷口評").font(.maru(9.5)).foregroundStyle(.white.opacity(0.92))
-            Text(partnerRank).font(.maru(13))
-                .foregroundStyle(rankPunch ? Theme.gold : .white)
-                .scaleEffect(rankPunch ? 1.18 : 1)
+            Text("谷口評").font(.maru(9.5)).foregroundStyle(Theme.ink.opacity(0.85))
+            Text(partnerRank).font(.maru(14))
+                .foregroundStyle(rankPunch ? Theme.gold : Theme.gradeColor(partnerRank))
+                .scaleEffect(rankPunch ? 1.25 : 1)
         }
-        .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(Theme.pillDark, in: Capsule())
-        .overlay(Capsule().stroke(rankPunch ? Theme.gold : Color.white.opacity(0.35), lineWidth: rankPunch ? 1.5 : 1))
+        .padding(.horizontal, 9).padding(.vertical, 3)
+        .background(.white, in: Capsule())
+        .overlay(Capsule().stroke(rankPunch ? Theme.gold : Theme.gradeColor(partnerRank), lineWidth: 2))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 2)
         .padding(.top, 2)
     }
 
@@ -329,33 +325,40 @@ struct WeekMainView: View {
             if let a = ability { return session.lastGains.first(where: { $0.ability == a })?.amount }
             return session.lastCompatGain > 0.001 ? session.lastCompatGain : nil
         }()
-        // 演技系4種のみ「器の充填」＝成長予算(abilityCap)に対する薄い満ち（§3-3・数値は出さない）。
-        // メンタル・相性は器なし＝上限の系統が違うことを形で言う。上限到達で縁がgoldに変わる。
+        // パワプロ式: 白地チャンキーピル＋等級バッジ（D→S）。等級が「いまどの辺か」を一字で言う。
+        // 相性は 0..compatCap を 0..100 に写像して同じ等級尺で読む。上限到達で縁がgold。
         let isPerf = ability != nil && ability != .メンタル
         let fill = isPerf ? min(1, max(0, value / session.config.abilityCap)) : 0
         let capped = isPerf && value >= session.config.abilityCap
+        let gradeBase = ability != nil ? value : value / session.config.compatCap * 100
+        let grade = Theme.rank(gradeBase)
         return HStack(spacing: 5) {
-            Circle().fill(color).frame(width: 7, height: 7)
-            Text(name).font(.maru(9.5)).foregroundStyle(.white.opacity(0.92))
-            Text("\(Int(value.rounded()))").font(.maru(11)).monospacedDigit().foregroundStyle(.white)
+            // 等級バッジ（パワプロの G..S 相当・色は等級固有）
+            Text(grade).font(.maru(10)).foregroundStyle(.white)
+                .frame(width: 19, height: 19)
+                .background(Circle().fill(Theme.gradeColor(grade)))
+                .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                .punch(on: grade, peak: 1.4)
+            Text(name).font(.maru(9.5)).foregroundStyle(Theme.ink.opacity(0.85))
+            Text("\(Int(value.rounded()))").font(.maru(12)).monospacedDigit().foregroundStyle(Theme.ink)
                 .contentTransition(.numericText())
                 .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
                 .punch(on: Int(value.rounded()), peak: 1.35)   // 値が動いた瞬間だけ跳ねる（ジュース核）
             if let gain, gainsVisible, Int(gain.rounded()) >= 1 {
-                Text("+\(Int(gain.rounded()))").font(.maru(10)).foregroundStyle(Theme.gainOrange)
+                Text("+\(Int(gain.rounded()))").font(.maru(11)).foregroundStyle(Theme.gainOrange)
                     // +N規格（§3-3）: 出現0.2s=+8ptから浮き上がる／滞留（taskの1.2sから逆算0.6s）／退場0.4s=上昇フェード
                     .transition(.asymmetric(
                         insertion: .offset(y: 8).combined(with: .opacity),
                         removal: .offset(y: -8).combined(with: .opacity)))
             }
         }
-        .padding(.leading, 6).padding(.trailing, 8).padding(.vertical, 3)
+        .padding(.leading, 4).padding(.trailing, 8).padding(.vertical, 3)
         .background {
             ZStack(alignment: .leading) {
-                Capsule().fill(Theme.pillDark)
+                Capsule().fill(.white)
                 if isPerf {
                     GeometryReader { geo in
-                        Rectangle().fill(color.opacity(0.32))
+                        Rectangle().fill(color.opacity(0.20))
                             .frame(width: geo.size.width * fill)
                             .animation(.easeOut(duration: 0.4), value: fill)
                     }
@@ -363,7 +366,8 @@ struct WeekMainView: View {
             }
             .clipShape(Capsule())
         }
-        .overlay(Capsule().stroke(capped ? Theme.gold : color.opacity(0.55), lineWidth: capped ? 1.5 : 1))
+        .overlay(Capsule().stroke(capped ? Theme.gold : color, lineWidth: 2))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 2)   // ハード影＝チャンキー
         .animation(.easeOut(duration: gainsVisible ? 0.2 : 0.4), value: gainsVisible)
     }
 
@@ -463,7 +467,8 @@ struct WeekMainView: View {
             }
             .frame(maxWidth: .infinity).frame(height: 84)
             .background(isOffer ? Color(hex: 0xFFF3D6) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
-            .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOffer ? Theme.gold : Theme.line, lineWidth: 2))
+            .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOffer ? Theme.gold : Theme.line, lineWidth: 3))
+            .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝パワプロのチャンキーUI
             .overlay(alignment: .topTrailing) {
                 // 「のばす」タイルだけ: バッジ＝いま注げば伸びる段数（recommendedPlan.count・§2）。
                 // 見た目は現行の gainOrange カプセルのまま、意味だけ「粒総数」→「注げば伸びる段数」へ。
@@ -571,8 +576,8 @@ struct WeekMainView: View {
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 104, alignment: .topLeading)
         .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : Theme.verm.opacity(0.5), lineWidth: 2))
-        .e2()
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : Theme.verm.opacity(0.55), lineWidth: 3))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
         .opacity(gated ? 0.6 : 1)
     }
 
@@ -619,15 +624,17 @@ struct WeekMainView: View {
     }
 
     private func burstChipView(_ chip: BurstChip) -> some View {
-        HStack(spacing: 4) {
+        // パワプロの「＋経験点ドン」＝でかく・白縁・ハード影（小さくつつましい獲得表示は手応えが死ぬ）。
+        HStack(spacing: 5) {
             if let dot = chip.dot {
-                Circle().fill(dot).frame(width: 7, height: 7)
+                Circle().fill(dot).frame(width: 9, height: 9)
             }
-            Text(chip.text).font(.system(size: 12, weight: .heavy)).foregroundStyle(chip.fg)
+            Text(chip.text).font(.system(size: 16, weight: .black)).foregroundStyle(chip.fg)
         }
-        .padding(.horizontal, 8).padding(.vertical, 4)
+        .padding(.horizontal, 12).padding(.vertical, 6)
         .background(chip.bg, in: Capsule())
-        .e1()
+        .overlay(Capsule().stroke(.white, lineWidth: 2))
+        .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
     }
 
     /// この週の獲得チップ列を組む（表示専用・RNG非消費）。順序: 粒（稽古の主収穫）→能力/相性（直接効果）→
