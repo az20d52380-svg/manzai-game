@@ -8,7 +8,7 @@ import GameCore
 
 // MARK: 行動内訳帯のカテゴリ（GameSession が記録・plain enum＝SwiftUI非依存）
 
-enum BandCategory {
+enum BandCategory: String, Codable {   // Codable=中断セーブ（categoryLog の永続化）用
     case keiko, baito, kaifuku, offer, taikai
 
     init(_ action: WeekAction) {

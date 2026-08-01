@@ -28,6 +28,12 @@ final class GameSession {
     /// 直前の行動で稼いだ粒（同色ロック粒の増分。§1-3 受け取りの一拍＝週メインの獲得チップ行用）。
     /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。状態差分駆動で消費順・golden非対象。
     private(set) var lastGrainGains: [(ability: Ability, amount: Double)] = []
+    /// 直前の行動での所持金/体力の増減（Beat2 獲得バースト用・表示専用）。週末の生活費も含む「この週の収支」。
+    private(set) var lastMoneyDelta = 0
+    private(set) var lastStaminaDelta = 0
+    /// 上記の増減が属する週。View は lastDeltaWeek == week の時だけバーストを出す＝大会画面を
+    /// 挟んで戻った時に古い増減が再生される事故を防ぐ（表示ゲートのみ・golden非対象）。
+    private(set) var lastDeltaWeek = -1
     /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
     private(set) var lossStreak = 0
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
@@ -60,6 +66,11 @@ final class GameSession {
     private var jobCount = 0
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
+    /// 週頭の掛け合い（俺⇄谷口の短い会話・タップ送り）。nil=この週は独白。行動すると失効。
+    /// 発火はUI専用乱数（uiEventRng）＝runnerの乱数列に非干渉＝golden不変。イベント発火週は譲る。
+    private(set) var weekBanter: [Advice]?
+    /// 掛け合いの1週1回抽選ガード（pump 複数回呼びでの二重抽選＝UI乱数の余分消費を防ぐ・イベント抽選と同型）
+    private var lastBanterRollWeek = -1
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
     private(set) var winFinale = false
     /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
@@ -70,6 +81,8 @@ final class GameSession {
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
     let combiName: String              // S1で入力（表示専用・golden非対象）
+    /// 中断セーブから復元されたセッションか（RootView が IntroFlow をスキップする判定に使う）
+    let isRestored: Bool
 
     // MARK: 進行の実体（WeekRunner が週処理と乱数消費の正典を持つ）
     private var runner: WeekRunner<SplitMix64>
@@ -82,6 +95,7 @@ final class GameSession {
         cfg.autoPourAllocation = false
         self.config = cfg
         self.combiName = combiName
+        self.isRestored = false
         // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
         let start = startState ?? GameState(config: cfg)
@@ -93,12 +107,48 @@ final class GameSession {
         pump()
     }
 
+    /// 中断セーブからの復元（0039）。年初処理は走らせず、保存時点の位相・UI層フラグをそのまま書き戻す。
+    /// config は毎回新規生成して注入（バランス値は永続化しない＝更新後の値で続きが進む）。
+    init(restoring save: SaveData, config: GameConfig = GameConfig()) {
+        var cfg = config
+        cfg.autoPourAllocation = false
+        self.config = cfg
+        self.combiName = save.combiName
+        self.isRestored = true
+        self.uiEventRng = save.uiEventRng
+        self.runner = WeekRunner(restoring: save.runner, config: cfg)
+        self.state = save.runner.state
+        self.phase = save.phase
+        self.week = save.runner.week
+        self.pendingResult = save.pendingResult
+        self.log = save.log
+        self.lossStreak = save.lossStreak
+        self.justPassedStage = save.justPassedStage
+        self.justLostStage = save.justLostStage
+        self.styleTalkDone = save.styleTalkDone
+        self.didFireTsuukaChoice = save.didFireTsuukaChoice
+        self.didFireEarlyFormality = save.didFireEarlyFormality
+        self.didFireNamelessSlip = save.didFireNamelessSlip
+        self.didFireTaniguchiJob = save.didFireTaniguchiJob
+        self.firedWeeklyEvents = save.firedWeeklyEvents
+        self.weeklyEventFiredCount = save.weeklyEventFiredCount
+        self.lastEventRollWeek = save.lastEventRollWeek
+        self.jobCount = save.jobCount
+        self.pendingChoiceEvent = save.pendingChoiceEvent
+        self.weekBanter = save.weekBanter
+        self.lastBanterRollWeek = save.lastBanterRollWeek
+        self.categoryLog = save.categoryLog
+        self.totalPrize = save.totalPrize
+        // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
+    }
+
     // MARK: UI からの入力（Phase 別）
 
     /// 大会週の回答（travel=nil は見送り）
     func decideTournament(_ travel: Travel?) {
         phase = runner.resolveTournament(travel: travel)
         pump()
+        saveNow()
     }
 
     /// 自由行動週の回答
@@ -114,6 +164,7 @@ final class GameSession {
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
+        weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
         pump()
@@ -127,6 +178,10 @@ final class GameSession {
             let d = state[bank: a] - before[bank: a]
             return d > 0.001 ? (a, d) : nil
         }
+        // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
+        lastMoneyDelta = state.money - before.money
+        lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
+        lastDeltaWeek = week
         // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
         if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }
         // 0016 ネタ合わせブーストの週送り減算（UI層・golden非対象・freeze と同型）。この週の revise はブースト有効で
@@ -135,6 +190,7 @@ final class GameSession {
         // 0022 稽古拘束の週送り減算（UI層・golden非対象・freeze と同型）。撮影を受けた週は稽古がロックされ、
         // 週が明けて1減る＝設定週（＝撮影を受けたその週）だけ稽古不可。
         if state.preoccupiedWeeks > 0 { runner.tickPreoccupied(); state = runner.state }
+        saveNow()
     }
 
     // MARK: v8育成メイン用プレビュー（RNG非消費の純getter）
@@ -210,6 +266,7 @@ final class GameSession {
         let before = state
         runner.applyAllocation(taps)
         state = runner.state
+        saveNow()
         return Ability.allCases.compactMap { a in
             let d = state[a] - before[a]
             return d > 0.001 ? (a, d) : nil
@@ -298,6 +355,31 @@ final class GameSession {
         weeklyEventFiredCount += 1
     }
 
+    /// 週頭の掛け合い抽選（UI専用乱数・golden非干渉）。イベントが立った週は譲る（一度に一つの声）。
+    /// 頻度はUI定数【仮】: 基礎30%／本番が6週以上先の空白帯（週16-26の中だるみ等）は55%に上げる
+    /// ＝§7-B の正規レバー「会話・イベントの差し込み頻度UP」（バランス数値ではない・判定に非干渉）。
+    private func rollWeekBanter() {
+        guard week != lastBanterRollWeek else { return }
+        lastBanterRollWeek = week
+        weekBanter = nil
+        guard pendingChoiceEvent == nil else { return }
+        let farFromStage = nextMilestoneForEvent().map { $0.week - week >= 6 } ?? true
+        let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
+        guard uiEventRng.nextUniform() < rate else { return }
+        // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
+        weekBanter = DialogueData.banter(band: banterBand(), salt: week)
+    }
+
+    /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。
+    private func banterBand() -> BanterBand {
+        if lossStreak >= 2 { return .streak }
+        if state.money < 50_000 { return .broke }
+        if justPassedStage { return .afterPass }
+        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week) { return .eve }
+        if let m = nextMilestoneForEvent(), m.week - week >= 6 { return .lull }
+        return .plain
+    }
+
     /// weeklyFireable（GameState+week の純関数）で判定できない、GameSession 固有の状態を要する追加ゲート。
     private func weeklyExtraGate(_ kind: ChoiceEventKind) -> Bool {
         switch kind {
@@ -357,11 +439,13 @@ final class GameSession {
         case .taniguchiShortJob:
             break   // 確定発火＝発火時に didFireTaniguchiJob 済み（A の compatFreeze は EventEffect が適用）
         }
+        saveNow()
     }
 
     /// 選択後の会話を見終えてオーバーレイを閉じる（UI側の「閉じる」タップから呼ぶ）
     func dismissChoiceEvent() {
         pendingChoiceEvent = nil
+        saveNow()   // 閉じた状態を保存（復帰時に選択済みイベントが再表示されないように）
     }
 
     /// 現在保留中のイベントで選択可能な選択肢（gate通過分のみ・UI用）
@@ -426,18 +510,21 @@ final class GameSession {
     func selectNeta(_ id: Int?) {
         runner.applyNetaSelect(id: id)
         state = runner.state
+        saveNow()
     }
 
     /// 決勝の2本目を選ぶ（v2 §4-2）
     func selectNeta2(_ id: Int?) {
         runner.applyNetaSelect2(id: id)
         state = runner.state
+        saveNow()
     }
 
     /// 型の組み替え（大改稿で1度・v2 §3-1補）
     func changeNetaKata(_ id: Int, to kata: NetaKata) {
         runner.applyNetaChangeKata(id: id, to: kata)
         state = runner.state
+        saveNow()
     }
 
     /// 改名（自動命名の上書き・v2 §9決点3）
@@ -446,12 +533,14 @@ final class GameSession {
         guard !trimmed.isEmpty else { return }
         runner.applyNetaRename(id: id, to: trimmed)
         state = runner.state
+        saveNow()
     }
 
     /// アクティブ枠→保管庫（削除でも封印でもない・いつでも呼び戻せる・v2 §2-2）
     func retireNeta(_ id: Int) {
         runner.applyNetaRetire(id: id)
         state = runner.state
+        saveNow()
     }
 
     /// 保管庫→アクティブ枠（古いネタの再演・v2 §2-2/§4-2）。枠が満杯なら何もしない（先に retireNeta で空ける）。
@@ -459,12 +548,14 @@ final class GameSession {
         guard state.netas.count < config.netaActiveSlots else { return }
         runner.applyNetaRecall(id: id)
         state = runner.state
+        saveNow()
     }
 
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
     func advanceAuto() {
         phase = runner.resolveAuto()
         pump()
+        saveNow()
     }
 
     /// S3結果画面の「次へ」。結果を閉じて次週へ進める
@@ -472,12 +563,87 @@ final class GameSession {
         pendingResult = nil
         phase = runner.begin()
         pump()
+        saveNow()
     }
 
     /// 「勝ち版」決勝演出の「次へ」。年末結果（S4）へ
     func acknowledgeWin() {
         winFinale = false
         finished = true
+        saveNow()   // finished=true なのでセーブは消える（周回は持ち越さない）
+    }
+
+    // MARK: 中断セーブ（proposals/0039＋UI層フラグ拡張）
+    //
+    // ⚠️ RNG非消費・golden不変（snapshot は読み出しのみ）。保存は UserDefaults 単一キー・1スロット。
+    //    GameConfig は保存しない（復元時に毎回新規生成＝バランス値更新が古いセーブに固定化されない）。
+
+    /// 中断セーブの全内容。runner のスナップショットに加え、UI層のイベント進行フラグを持たないと
+    /// 復帰後に一発化イベントが再発火する（didFire系/fired集合/uiEventRng が本体）。
+    struct SaveData: Codable {
+        var runner: WeekRunnerSnapshot<SplitMix64>
+        var phase: WeekRunner<SplitMix64>.Phase
+        var pendingResult: WeekSummary?
+        var log: [String]
+        var lossStreak: Int
+        var justPassedStage: Bool
+        var justLostStage: Bool
+        var styleTalkDone: Bool
+        var didFireTsuukaChoice: Bool
+        var didFireEarlyFormality: Bool
+        var didFireNamelessSlip: Bool
+        var didFireTaniguchiJob: Bool
+        var uiEventRng: SplitMix64
+        var firedWeeklyEvents: Set<ChoiceEventKind>
+        var weeklyEventFiredCount: Int
+        var lastEventRollWeek: Int
+        var jobCount: Int
+        var pendingChoiceEvent: ChoiceEventKind?
+        var weekBanter: [Advice]?
+        var lastBanterRollWeek: Int
+        var categoryLog: [Int: BandCategory]
+        var totalPrize: Int
+        var combiName: String
+    }
+
+    private static let saveKey = "manzai.save.v1"
+
+    /// 中断セーブを書く。年が終わっていれば逆にセーブを消す（周回は持ち越さない）。
+    /// 呼び出しはプレイヤー入力の各確定点（choose/decideTournament/advanceAuto/acknowledge*/allocate/
+    /// applyEventChoice/ネタ操作）＋RootView の scenePhase(.background) 保険。init からは呼ばない
+    /// （IntroFlow 前のプレースホルダ・セッションがセーブを作らないように）。
+    func saveNow() {
+        #if DEBUG
+        let env = ProcessInfo.processInfo.environment
+        if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil { return }   // QA自動走行で実プレイのセーブを潰さない
+        #endif
+        guard !finished, !winFinale else {
+            UserDefaults.standard.removeObject(forKey: Self.saveKey)
+            return
+        }
+        let save = SaveData(runner: runner.snapshot(), phase: phase, pendingResult: pendingResult,
+                            log: log, lossStreak: lossStreak,
+                            justPassedStage: justPassedStage, justLostStage: justLostStage,
+                            styleTalkDone: styleTalkDone, didFireTsuukaChoice: didFireTsuukaChoice,
+                            didFireEarlyFormality: didFireEarlyFormality, didFireNamelessSlip: didFireNamelessSlip,
+                            didFireTaniguchiJob: didFireTaniguchiJob, uiEventRng: uiEventRng,
+                            firedWeeklyEvents: firedWeeklyEvents, weeklyEventFiredCount: weeklyEventFiredCount,
+                            lastEventRollWeek: lastEventRollWeek, jobCount: jobCount,
+                            pendingChoiceEvent: pendingChoiceEvent, weekBanter: weekBanter,
+                            lastBanterRollWeek: lastBanterRollWeek, categoryLog: categoryLog,
+                            totalPrize: totalPrize, combiName: combiName)
+        if let data = try? JSONEncoder().encode(save) {
+            UserDefaults.standard.set(data, forKey: Self.saveKey)
+        }
+    }
+
+    /// 起動時のエントリポイント: セーブがあれば復元、無ければ新規（IntroFlow 前のプレースホルダ）。
+    static func loadedOrNew(config: GameConfig = GameConfig()) -> GameSession {
+        if let data = UserDefaults.standard.data(forKey: saveKey),
+           let save = try? JSONDecoder().decode(SaveData.self, from: data) {
+            return GameSession(restoring: save, config: config)
+        }
+        return GameSession()
     }
 
     // MARK: 内部
@@ -525,7 +691,12 @@ final class GameSession {
                 // tournamentDecision / freeAction / gpRound / gpRevival / gpFinal → 入力or演出待ち
                 week = runner.week
                 state = runner.state
-                if case .freeAction = phase { evaluateChoiceEventFire() }
+                if case .freeAction = phase {
+                    evaluateChoiceEventFire()
+                    // 掛け合いはイベント抽選の「後」に引く＝イベント出現週のUI乱数再現列を崩さない
+                    // （以後の列は banter の消費分だけずれるが UI 層のみ＝golden非対象）。
+                    rollWeekBanter()
+                }
                 break loop
             }
         }

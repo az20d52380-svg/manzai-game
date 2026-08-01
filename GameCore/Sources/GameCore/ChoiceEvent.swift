@@ -4,7 +4,7 @@
 // 効果は EventEffect（ChoiceEventEffect.swift）のみ＝RandomSource を一切呼ばない＝golden不変。
 // ★MVPスコープ（0024確定）: 確定発火＋確定効果のみ。抽選・効果内ロールは入れない（0010のA内部判定は本編送り）。
 
-public enum ChoiceEventKind: String, CaseIterable {
+public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断セーブ用（発火済み集合の永続化）
     // --- 確定発火（既存フラグを見て点火・抽選しない） ---
     case justLostRehearsal   // 0017: 負けた日の稽古場（発火=justLost）
     case styleTalk           // 0019: 型を捨てる相談（発火=lossStreak>=3・一発化フラグで反復制御）

@@ -1,9 +1,9 @@
 // CommandData.swift
-// v8育成メインのコマンドカタログ。カテゴリ（稽古/回復/バイト/データ/アイテム[＋オファー]）を押す→
+// v8育成メインのコマンドカタログ。カテゴリ（稽古/回復/バイト/のばす/データ[＋オファー]）を押す→
 // 変種カードの横スクロール列がせり上がる→カードのタップ＝即実行（session.choose）。決定ボタンは無い。
 // 変種は実 GameCore アクション（5稽古・3バイト・3休み・オファー）に配線し、伸びの数値は View 側で
 // GameSession.previewState（RNG非消費）から「現在値の整数→実行後の整数の差」で出す（怪我率・稽古Lvは出さない）。
-// データ/アイテムは kind=.info の「器だけ」（variants空・押すと準備中パネル・WeekActionを持たない＝週を進めない）。
+// のばす/データは kind=.info の「入口だけ」（variants空・WeekMainView 側が全画面を出す＝週を進めない）。
 // 【設計判断】mockup固有の場所別新経済（喫茶-¥500等）は golden/GameConfig に触れるため未採用（規律A・要相談）。
 
 import SwiftUI
@@ -101,12 +101,11 @@ enum CommandCatalog {
         // 残粒バッジは state を読むため WeekMainView.categoryTile 側で重ねる（このカタログは state を持たない）。
         groups.append(CommandGroup(id: "allocate", title: "のばす", glyph: "arrow.up.circle.fill", kind: .info,
                                    dotColors: [Theme.cSense, Theme.cExpr, Theme.cMental], variants: []))
-        // データ（器のみ・準備中）: 押しても session.choose を呼ばない＝週は進まない。
+        // データ（ネタ帳入口）: 押しても session.choose を呼ばない＝週は進まない。
         groups.append(CommandGroup(id: "data", title: "データ", glyph: "chart.bar.fill", kind: .info,
                                    dotColors: [Theme.inkFaint], variants: []))
-        // アイテム（器のみ・準備中）
-        groups.append(CommandGroup(id: "item", title: "アイテム", glyph: "shippingbox", kind: .info,
-                                   dotColors: [Theme.inkFaint], variants: []))
+        // アイテム枠は撤去（「準備中。この機能はまだ使えません。」の看板だけが立っていた）。
+        // アイテム機構が実装される時に kind=.act のカテゴリとして復帰させる。
 
         return groups
     }

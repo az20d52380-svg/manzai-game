@@ -5,9 +5,27 @@ import SwiftUI
 import GameCore
 
 struct RootView: View {
-    @State private var session = GameSession()
-    @State private var started = false   // S1初回フロー完了で true（本編開始）
+    @State private var session: GameSession
+    @State private var started: Bool     // S1初回フロー完了で true（本編開始）
     @State private var showEnding = false // 優勝→S6b勇退エンディング
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        #if DEBUG
+        // QAスモーク（MZ_SMOKE/MZ_UI）はセーブを読まず従来どおり固定シードの新規から＝決定的なまま。
+        // saveNow 側も同条件でガード済み＝QA走行が実プレイのセーブを潰さない。
+        let env = ProcessInfo.processInfo.environment
+        if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil {
+            _session = State(initialValue: GameSession())
+            _started = State(initialValue: false)   // .task が true にする
+            return
+        }
+        #endif
+        // 中断セーブがあればその週から再開（IntroFlow はスキップ）。無ければ従来どおり S1 から。
+        let loaded = GameSession.loadedOrNew()
+        _session = State(initialValue: loaded)
+        _started = State(initialValue: loaded.isRestored)
+    }
 
     var body: some View {
         Group {
@@ -52,6 +70,21 @@ struct RootView: View {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
                 session = GameSession(startState: GameSession.debugAllocationState())
             }
+            if ui == "stage" || ui == "juice", session.week <= 1 {
+                // 舞台シーン目視: 週頭イベント帯（0020[compat0-7]/0021[>=15]/0012[金欠]）を全て外した素の育成メイン
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
+                session = GameSession(startState: st)
+            }
+            if ui == "juice" {
+                // ジュース目視: 2秒後にネタ作りを自動実行＝Beat2バースト＋パーティクル＋ピル跳ねをスクショで拾う
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                session.choose(.train(.ネタ作り))
+            }
+            if ui == "pass", session.week <= 1 {
+                // 合否演出（通過側）目視: 能力マックスで初回大会へ＝「通過」判＋紙吹雪＋フラッシュを拾う
+                session = GameSession(startState: GameSession.debugMaxedState())
+                session.debugAdvanceToFirstResult()
+            }
             if ui == "cards", session.week <= 1 {
                 // 0022 稽古ロック目視: preoccupiedWeeks>0 の開始状態＝WeekMainView(MZ_UI=cards)で稽古がグレー＋「撮影で埋まる」。
                 // compat 10（8-14帯＝0020[0-7]/0021[>=15]の確定発火を回避）＋高所持金（0012回避）で稽古グリッドが被らず見える。
@@ -85,6 +118,10 @@ struct RootView: View {
             }
             #endif
         }
+        .onChange(of: scenePhase) { _, phase in
+            // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）
+            if phase == .background, started { session.saveNow() }
+        }
     }
 
     @ViewBuilder private var mainFlow: some View {
@@ -97,7 +134,9 @@ struct RootView: View {
                 }
         } else {
             IntroFlowView { name in                       // S1: KV→回想→名入力
-                session = GameSession(combiName: name)
+                // 初回もランダムシード（「もう一度」と同じ）。固定424242だと全プレイヤーの初年が同一乱数になる。
+                // DEBUGの MZ_SMOKE/MZ_UI 経路は上の .task が固定シードの session をそのまま使う＝決定的なまま。
+                session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name)
                 withAnimation(.easeInOut(duration: 0.4)) { started = true }
             }
         }
@@ -109,11 +148,13 @@ struct RootView: View {
         } else if session.finished {
             if showEnding {
                 S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
-                    session = GameSession(seed: UInt64.random(in: .min ... .max)); showEnding = false
+                    session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName)
+                    showEnding = false
                 }
             } else {
                 YearResultView(session: session,
-                               onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max)) },
+                               onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max),
+                                                                  combiName: session.combiName) },
                                onEnding: session.outcome?.champion == true ? { showEnding = true } : nil)
             }
         } else if let result = session.pendingResult {

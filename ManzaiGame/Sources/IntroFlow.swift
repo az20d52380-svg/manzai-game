@@ -292,12 +292,13 @@ struct IntroFlowView: View {
             case .nameEntry:
                 NameEntryView { n in
                     name = n.isEmpty ? "あなたのコンビ" : n
-                    if NotificationPromptView.shouldShow() { withAnimation(.easeInOut(duration: 0.4)) { stage = .notif } }
-                    else { onComplete(name) }
+                    onComplete(name)
                 }
                 .transition(.opacity)
             case .notif:
-                NotificationPromptView { onComplete(name) }   // S1c 通知許諾
+                // 通知機能が1本も実装されていない間は許諾を求めない（初週前の摩擦だけが残るため導線から外す）。
+                // NotificationPromptView 本体と MZ_UI=notif は通知実装時に復帰させる（休眠温存）。
+                NotificationPromptView { onComplete(name) }
                     .transition(.opacity)
             }
         }
