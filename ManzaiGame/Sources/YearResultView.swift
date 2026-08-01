@@ -27,8 +27,9 @@ struct YearResultView: View {
                 breakdownBlock.stagger(3, appear)
                 eventsBlock.stagger(4, appear)
                 totalsBlock.stagger(5, appear)
-                yearEndMonolog.stagger(6, appear)
-                restartButton.stagger(7, appear)
+                titlesBlock.stagger(6, appear)
+                yearEndMonolog.stagger(7, appear)
+                restartButton.stagger(8, appear)
             }
             .padding(.horizontal, Theme.Sp.s24).padding(.vertical, Theme.Sp.s32)
             .frame(maxWidth: .infinity)
@@ -151,6 +152,33 @@ struct YearResultView: View {
         .frame(maxWidth: .infinity)
     }
 
+    // MARK: この1年の称号（TitleData・獲得順）
+
+    @ViewBuilder private var titlesBlock: some View {
+        if !session.earnedTitles.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("この1年の称号").font(.maru(11)).foregroundStyle(Theme.inkDim)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 6)], alignment: .leading, spacing: 6) {
+                    ForEach(session.earnedTitles) { t in
+                        let spec = TitleData.spec(t.id)
+                        HStack(spacing: 5) {
+                            Circle().fill(spec.tone.color).frame(width: 7, height: 7)
+                            Text(spec.name).font(.maru(10.5)).lineLimit(1).minimumScaleFactor(0.7)
+                                .foregroundStyle(spec.tone == .gold ? Theme.goldD : Theme.ink)
+                        }
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Theme.card2, in: Capsule())
+                        .overlay(Capsule().stroke(spec.tone == .gold ? Theme.gold : Theme.line, lineWidth: 1))
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Theme.Sp.s16)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+            .e1()
+        }
+    }
+
     // MARK: 年の締めの独白（voice_corpus yearEnd.* を復元）
 
     /// 全ランが負けで着地する1年版デモの「年の締め」。書き上げた独白を最後の画面に載せる。
@@ -179,8 +207,8 @@ struct YearResultView: View {
         let pool: [String]
         if o.bankrupt {
             pool = Self.yeBankrupt                                               // 貧乏年
-        } else if !o.champion && !o.reachedFinal && s.compat < 10 {
-            pool = Self.yeDissolution                                            // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】）
+        } else if TitleData.isDissolutionYear(outcome: o, state: s) {
+            pool = Self.yeDissolution                                            // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】・判定は TitleData と単一ソース）
         } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
             pool = Self.yeLeap                                                    // 躍進年
         } else {

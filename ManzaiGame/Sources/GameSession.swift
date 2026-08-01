@@ -77,6 +77,10 @@ final class GameSession {
     private(set) var categoryLog: [Int: BandCategory] = [:]
     /// S6 年計用: その年の獲得賞金合計（UI層の記録のみ・golden非対象）
     private(set) var totalPrize = 0
+    /// 獲得称号（きろくタブ・年次リザルト・大会結果の報酬チップ用。表示層の記録のみ・golden非対象）
+    private(set) var earnedTitles: [EarnedTitle] = []
+    /// 直近の大会週で上がった知名度（結果画面の報酬チップ用）。状態差分＝逓減後の実増分＝表示が嘘をつかない。
+    private(set) var lastStageFameGain: Double = 0
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
@@ -139,6 +143,8 @@ final class GameSession {
         self.lastBanterRollWeek = save.lastBanterRollWeek
         self.categoryLog = save.categoryLog
         self.totalPrize = save.totalPrize
+        self.earnedTitles = save.earnedTitles ?? []          // 旧セーブ（v1初期）は空から（後方互換）
+        self.lastStageFameGain = save.lastStageFameGain ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
     }
 
@@ -604,6 +610,10 @@ final class GameSession {
         var categoryLog: [Int: BandCategory]
         var totalPrize: Int
         var combiName: String
+        // --- v1に後から足したフィールドは必ずオプショナル（合成Codableは decodeIfPresent で読む＝
+        //     旧セーブが欠損キーでも decode 成功。非オプショナルにすると旧セーブが黙って新規化する事故） ---
+        var earnedTitles: [EarnedTitle]?
+        var lastStageFameGain: Double?
     }
 
     private static let saveKey = "manzai.save.v1"
@@ -631,10 +641,17 @@ final class GameSession {
                             lastEventRollWeek: lastEventRollWeek, jobCount: jobCount,
                             pendingChoiceEvent: pendingChoiceEvent, weekBanter: weekBanter,
                             lastBanterRollWeek: lastBanterRollWeek, categoryLog: categoryLog,
-                            totalPrize: totalPrize, combiName: combiName)
+                            totalPrize: totalPrize, combiName: combiName,
+                            earnedTitles: earnedTitles, lastStageFameGain: lastStageFameGain)
         if let data = try? JSONEncoder().encode(save) {
             UserDefaults.standard.set(data, forKey: Self.saveKey)
         }
+    }
+
+    /// セーブを消す（「はじめから」導線・SettingsView から）。セッション自体には触れない＝
+    /// 呼び出し側（RootView）が新しい GameSession に差し替えて IntroFlow へ戻す。
+    static func deleteSave() {
+        UserDefaults.standard.removeObject(forKey: saveKey)
     }
 
     /// 起動時のエントリポイント: セーブがあれば復元、無ければ新規（IntroFlow 前のプレースホルダ）。
@@ -654,6 +671,7 @@ final class GameSession {
         loop: while true {
             switch phase {
             case .weekDone(let summary):
+                let prevFame = state.fame   // 大会週の知名度差分（報酬チップ用・週処理前との差＝逓減後の実増分）
                 state = summary.state
                 week = summary.week
                 if !summary.results.isEmpty {
@@ -671,6 +689,15 @@ final class GameSession {
                         }
                         totalPrize += r.prize   // S6 賞金年計
                     }
+                    lastStageFameGain = summary.state.fame - prevFame
+                    // 称号判定（表示層・RNG非消費）。この週の獲得分は結果画面が week 一致で報酬チップに拾う
+                    // ＝一時状態を持たない＝中断復帰しても再現される。
+                    let isMid = config.calendar.tournament(inWeek: summary.week) != nil
+                    for r in big {
+                        let new = TitleData.stageAwards(result: r, isMidTournament: isMid,
+                                                        earned: Set(earnedTitles.map(\.id)), totalPrize: totalPrize)
+                        earnedTitles.append(contentsOf: new.map { EarnedTitle(id: $0, week: summary.week) })
+                    }
                     categoryLog[summary.week] = .taikai   // S6 行動内訳帯（大会週）
                     // 大会・GPの結果 → S3結果画面へ（自動送りしない）
                     pendingResult = WeekSummary(year: summary.year, week: summary.week,
@@ -681,6 +708,10 @@ final class GameSession {
             case .yearDone(let outcome):
                 state = runner.state
                 self.outcome = outcome
+                // 年末の称号（優勝/一年完走/解散/夜逃げ・表示層のみ）
+                let newTitles = TitleData.yearEndAwards(outcome: outcome, state: state,
+                                                        earned: Set(earnedTitles.map(\.id)))
+                earnedTitles.append(contentsOf: newTitles.map { EarnedTitle(id: $0, week: week) })
                 if outcome.champion {
                     winFinale = true   // 優勝＝「勝ち版」演出を挟んでから S4 へ
                 } else {

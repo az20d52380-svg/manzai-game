@@ -181,7 +181,21 @@ struct NotebookView: View {
                 }
             }
             Text("称号").font(.maru(12)).foregroundStyle(Theme.inkDim).padding(.top, Theme.Sp.s8)
-            Text("〈まだ無い〉【仮】").font(.maru(12)).foregroundStyle(Theme.inkFaint)
+            if session.earnedTitles.isEmpty {
+                Text("——まだ、刻まれていない。").font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
+            } else {
+                ForEach(session.earnedTitles) { t in
+                    let spec = TitleData.spec(t.id)
+                    HStack(spacing: 10) {
+                        RoundedRectangle(cornerRadius: 2).fill(spec.tone.color).frame(width: 8, height: 8)
+                        Text(spec.name).font(.system(size: 12.5, design: .serif))
+                            .foregroundStyle(spec.tone == .gold ? Theme.goldD : Theme.ink)
+                        Spacer()
+                        Text("第\(t.week)週").font(.maru(10)).monospacedDigit().foregroundStyle(Theme.inkFaint)
+                    }
+                    .padding(.vertical, 3)
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()

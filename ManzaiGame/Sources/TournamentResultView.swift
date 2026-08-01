@@ -61,10 +61,7 @@ struct TournamentResultView: View {
                 }
                 if revealedRest {
                     starsRow(stars).transition(.opacity)
-                    if r.prize > 0 {
-                        Text("賞金 +\(r.prize / 10000)万 ↗").font(.maru(15)).monospacedDigit()
-                            .foregroundStyle(Theme.cMental).transition(.opacity)
-                    }
+                    rewardBlock(r).transition(.opacity)   // 実入りの後味: 賞金/知名度/称号のチップ（通過時のみ）
                     Button {
                         if climaxPages.isEmpty { session.acknowledgeResult() }
                         else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
@@ -114,6 +111,7 @@ struct TournamentResultView: View {
                 withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
                 try? await Task.sleep(nanoseconds: 600_000_000)
                 withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
+                if !titleChips.isEmpty { Haptics.confirm() }   // 称号獲得の一拍（通過演出の hRare とは別の軽い一発）
             }
         }
         .overlay {
@@ -162,6 +160,50 @@ struct TournamentResultView: View {
                     in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: 0xE6D9BE), lineWidth: 1))
         .shadow(color: Color(hex: 0x785014, alpha: 0.3), radius: 14, y: 8)
+    }
+
+    // MARK: 実入りの後味（賞金/知名度/称号のチップ・通過時のみ。敗退週に金を立てない）
+
+    @ViewBuilder private func rewardBlock(_ r: StageResult) -> some View {
+        let money = moneyFameChips(r)
+        let titles = titleChips
+        if r.passed, !money.isEmpty || !titles.isEmpty {
+            VStack(spacing: 6) {
+                if !money.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(money) { BurstChipView(chip: $0, style: .slam) }
+                    }
+                }
+                // 称号は1行1枚（金縁・その週の獲得分のみ。傷跡系 tone=.ink は出さず、きろくに静かに刻むだけ）
+                ForEach(titles) { BurstChipView(chip: $0, style: .slam) }
+            }
+            .padding(.top, 2)
+        }
+    }
+
+    private func moneyFameChips(_ r: StageResult) -> [BurstChip] {
+        guard r.passed else { return [] }
+        var chips: [BurstChip] = []
+        if r.prize > 0 {
+            chips.append(BurstChip(id: 0, text: "賞金 +\(r.prize / 10000)万", fg: .white, bg: Theme.cMoney))
+        }
+        let f = Int(session.lastStageFameGain.rounded())
+        if f > 0 {
+            chips.append(BurstChip(id: 1, text: "知名度 +\(f)", fg: .white, bg: Theme.cChara))
+        }
+        return chips
+    }
+
+    /// この週に獲得した称号のチップ（金縁＝fullStamp の文法）。旧セーブ復帰などで空なら出さない。
+    private var titleChips: [BurstChip] {
+        var chips: [BurstChip] = []
+        for (i, t) in session.earnedTitles.enumerated() where t.week == summary.week {
+            let spec = TitleData.spec(t.id)
+            guard spec.tone != .ink else { continue }
+            chips.append(BurstChip(id: 100 + i, text: "称号「\(spec.name)」",
+                                   fg: Theme.goldD, bg: Color(hex: 0xFFF3D6), outline: Theme.gold))
+        }
+        return chips
     }
 
     private func starsRow(_ stars: [(String, Int)]) -> some View {

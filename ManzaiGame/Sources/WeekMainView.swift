@@ -624,27 +624,13 @@ struct WeekMainView: View {
     private var burstOverlay: some View {
         VStack(alignment: .trailing, spacing: 5) {
             ForEach(Array(burstChips.enumerated()), id: \.element.id) { i, chip in
-                burstChipView(chip)
+                BurstChipView(chip: chip, style: .slam)   // 「＋経験点ドン」の文法は共有部品（BurstChipView.swift）へ昇格
                     .opacity(burstVisible ? 1 : 0)
                     .offset(y: burstVisible ? 0 : 16)
                     .scaleEffect(burstVisible ? 1 : 0.7, anchor: .bottomTrailing)
                     .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.07), value: burstVisible)
             }
         }
-    }
-
-    private func burstChipView(_ chip: BurstChip) -> some View {
-        // パワプロの「＋経験点ドン」＝でかく・白縁・ハード影（小さくつつましい獲得表示は手応えが死ぬ）。
-        HStack(spacing: 5) {
-            if let dot = chip.dot {
-                Circle().fill(dot).frame(width: 9, height: 9)
-            }
-            Text(chip.text).font(.system(size: 16, weight: .black)).foregroundStyle(chip.fg)
-        }
-        .padding(.horizontal, 12).padding(.vertical, 6)
-        .background(chip.bg, in: Capsule())
-        .overlay(Capsule().stroke(.white, lineWidth: 2))
-        .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
     }
 
     /// この週の獲得チップ列を組む（表示専用・RNG非消費）。順序: 粒（稽古の主収穫）→能力/相性（直接効果）→
@@ -874,13 +860,4 @@ struct WeekMainView: View {
         guard let next = ms.filter({ $0.0 >= session.week }).min(by: { $0.0 < $1.0 }) else { return nil }
         return (next.1, next.0 - session.week)
     }
-}
-
-/// Beat2 獲得バーストの1チップ。dot!=nil は「貯まる粒」（card2地・塗りドット）、nil は即効の効果ピル（色地・白字）。
-private struct BurstChip: Identifiable {
-    let id: Int
-    let dot: Color?
-    let text: String
-    let fg: Color
-    let bg: Color
 }
