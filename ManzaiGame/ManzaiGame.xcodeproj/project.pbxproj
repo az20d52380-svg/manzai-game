@@ -15,6 +15,7 @@
 		2A0C4D15DED110C70394538A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F49ED139642FC2518E962F8 /* RootView.swift */; };
 		420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799C1CDD04C665A5DE37ABB /* SettingsView.swift */; };
 		4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A618381798F759B9F5580F /* Juice.swift */; };
+		4671A140B09142E5B42D60D7 /* CharacterAvatars.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */; };
 		503ABBC496CD986CDC932884 /* DialogueData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1F100811789DF64591C427 /* DialogueData.swift */; };
 		54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */; };
 		5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915FB4D3357203506A4F5A67 /* IntroFlow.swift */; };
@@ -54,6 +55,7 @@
 		ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventData.swift; sourceTree = "<group>"; };
 		B18155352CE011A350B1DEC6 /* WeekMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekMainView.swift; sourceTree = "<group>"; };
 		CC1F100811789DF64591C427 /* DialogueData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogueData.swift; sourceTree = "<group>"; };
+		D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterAvatars.swift; sourceTree = "<group>"; };
 		D7D79CA9152E376CA2D55F1C /* AllocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationView.swift; sourceTree = "<group>"; };
 		DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandData.swift; sourceTree = "<group>"; };
 		DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookView.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 			children = (
 				D7D79CA9152E376CA2D55F1C /* AllocationView.swift */,
 				0B56CF2CC9552602E05AC67B /* CalendarView.swift */,
+				D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */,
 				ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */,
 				E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */,
 				DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */,
@@ -196,6 +199,7 @@
 			files = (
 				208D21CE23C46C5EA1538078 /* AllocationView.swift in Sources */,
 				9C0D027CDCFED1A3CCE43054 /* CalendarView.swift in Sources */,
+				4671A140B09142E5B42D60D7 /* CharacterAvatars.swift in Sources */,
 				8A594478EA03EF55A5AEACB6 /* ChoiceEventData.swift in Sources */,
 				F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */,
 				A5261165B97770A127810577 /* CommandData.swift in Sources */,

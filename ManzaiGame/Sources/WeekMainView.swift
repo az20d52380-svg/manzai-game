@@ -412,16 +412,26 @@ struct WeekMainView: View {
     }
 
     private func adviceBox(_ a: Advice) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(a.name ?? "俺").font(.maru(9.5)).tracking(1).foregroundStyle(Theme.inkDim)
-            Text(a.text).font(.system(size: 13)).italic().foregroundStyle(Color(hex: 0x4A4360))
+        // パワプロ・サクセス式の会話: 顔グラ＋名前タブ＋白地チャンキーの台詞ボックス。
+        let name = a.name ?? "俺"
+        return HStack(alignment: .bottom, spacing: 8) {
+            VStack(spacing: 3) {
+                CharacterFace(spec: FaceCatalog.speaker(name), size: 52)
+                    .overlay(Circle().stroke(.white, lineWidth: 2.5))
+                    .shadow(color: Theme.ink.opacity(0.2), radius: 0, y: 2)
+                Text(name).font(.maru(9.5)).foregroundStyle(.white)
+                    .padding(.horizontal, 7).padding(.vertical, 2)
+                    .background(name == "谷口" ? Theme.verm : Color(hex: 0x4A7BE8), in: Capsule())
+            }
+            Text(a.text)
+                .font(.system(size: 13.5, weight: .medium)).lineSpacing(3)
+                .foregroundStyle(Theme.ink)
+                .padding(.horizontal, 12).padding(.vertical, 10)
+                .frame(maxWidth: 250, alignment: .leading)
+                .background(.white, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line, lineWidth: 2.5))
+                .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
         }
-        .padding(.horizontal, 12).padding(.vertical, 9)
-        .frame(maxWidth: 250, alignment: .leading)
-        .background(Color.white.opacity(0.92), in: UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 4, bottomTrailingRadius: 12, topTrailingRadius: 12))
-        .overlay(alignment: .leading) { Rectangle().fill(Theme.inkDim).frame(width: 3) }
-        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 4, bottomTrailingRadius: 12, topTrailingRadius: 12))
-        .shadow(color: Theme.ink.opacity(0.12), radius: 5, y: 4)   // 影はink系（純黒禁止・§1-0）
         .id(a.text)
         .transition(.opacity)
     }

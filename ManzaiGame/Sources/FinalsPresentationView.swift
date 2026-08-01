@@ -67,6 +67,17 @@ struct FinalsPresentationView: View {
         .screenFlash(trigger: slamFire, color: Color(hex: 0xFFE9C4), strength: 0.30)
         .contentShape(Rectangle())
         .onTapGesture { advance() }
+        .onAppear {
+            #if DEBUG
+            // 目視用: MZ_FIN=open/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
+            switch ProcessInfo.processInfo.environment["MZ_FIN"] {
+            case "open": beat = 1; revealedJudges = 5
+            case "duel": beat = 3; revealVotes = 5
+            case "win": beat = 4
+            default: break
+            }
+            #endif
+        }
     }
 
     /// 番組タイトル（黒×金の中継グラフィック）
@@ -109,13 +120,14 @@ struct FinalsPresentationView: View {
         case 3 where revealVotes < 7:
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
             slamFire += 1
-            if revealVotes == d.finalVotes && d.finalVotes >= 4 {     // 過半数到達＝その瞬間に決着
+            let usCount = d.voteOrder.prefix(revealVotes).filter { $0 == 0 }.count
+            if usCount == 4 {                                          // 過半数到達＝その瞬間に決着
                 Haptics.rare(); burstFire += 1
             } else {
                 Haptics.confirm()
             }
         default:
-            if beat == 3 && d.finalVotes >= 4 && !celebrate {
+            if beat == 3 && d.champion && !celebrate {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { celebrate = true }
                 Haptics.rare(); burstFire += 1
             }
@@ -189,24 +201,27 @@ struct FinalsPresentationView: View {
     }
 
     private func judgeCard(_ j: JudgeScore, shown: Bool, kata: NetaKata?) -> some View {
-        VStack(spacing: 3) {
+        // M-1の採点開示＝審査員の「顔」の上に点数が出る（番組の画）。
+        VStack(spacing: 2) {
             if shown {
                 Text("\(j.score)")
-                    .font(.system(size: 26, weight: .black, design: .rounded)).monospacedDigit()
+                    .font(.system(size: 24, weight: .black, design: .rounded)).monospacedDigit()
                     .foregroundStyle(LinearGradient(colors: [.white, Color(hex: 0xFFEDC0)],
                                                     startPoint: .top, endPoint: .bottom))
                     .shadow(color: j.axisColor.opacity(0.7), radius: 6)
-                Circle().fill(j.axisColor).frame(width: 6, height: 6)
-                Text(j.name).font(.maru(8.5)).foregroundStyle(.white.opacity(0.75)).lineLimit(1).minimumScaleFactor(0.7)
-                if let kata {
-                    Text(NetaCatalog.affinity(kata, judge: j.name))
-                        .font(.maru(9, weight: .bold)).foregroundStyle(Theme.gold.opacity(0.9))
-                }
             } else {
-                Text("？").font(.maru(22)).foregroundStyle(.white.opacity(0.3))
+                Text("？").font(.maru(20)).foregroundStyle(.white.opacity(0.3)).frame(height: 29)
+            }
+            CharacterFace(spec: FaceCatalog.judge(j.name), size: 34)
+                .overlay(Circle().stroke(shown ? j.axisColor : .white.opacity(0.2), lineWidth: 1.5))
+                .saturation(shown ? 1 : 0.3)
+            Text(j.name).font(.maru(8.5)).foregroundStyle(.white.opacity(0.75)).lineLimit(1).minimumScaleFactor(0.7)
+            if shown, let kata {
+                Text(NetaCatalog.affinity(kata, judge: j.name))
+                    .font(.maru(9, weight: .bold)).foregroundStyle(Theme.gold.opacity(0.9))
             }
         }
-        .frame(maxWidth: .infinity).frame(height: kata != nil ? 84 : 72)
+        .frame(maxWidth: .infinity).frame(height: kata != nil ? 104 : 92)
         .background(LinearGradient(colors: shown ? [Color(hex: 0x2A2040), Color(hex: 0x171126)]
                                                  : [Color(hex: 0x171126), Color(hex: 0x100B1B)],
                                    startPoint: .top, endPoint: .bottom),
@@ -245,84 +260,110 @@ struct FinalsPresentationView: View {
         }
     }
 
-    // MARK: Beat 3 — 最終決戦（票札のめくり合い・7票）
+    // MARK: Beat 3 — 最終決戦（M-1式＝3組・審査員7人が顔の上に組名札を掲げる）
     private var finalDuelBeat: some View {
-        let rivalName = d.board.first(where: { !$0.isSelf })?.name ?? "相手"
-        let usCount = d.voteOrder.prefix(revealVotes).filter { $0 }.count
-        let oppCount = revealVotes - usCount
-        let decided = revealVotes >= 7 || usCount >= 4 || oppCount >= 4
-        return VStack(spacing: 16) {
+        let names = [session.combiName] + d.rivalNames
+        let counts = (0..<3).map { k in d.voteOrder.prefix(revealVotes).filter { $0 == k }.count }
+        return VStack(spacing: 14) {
             Text("最 終 決 戦").font(.maru(15)).tracking(6)
                 .foregroundStyle(LinearGradient(colors: [Color(hex: 0xFFE9A8), Theme.gold],
                                                 startPoint: .top, endPoint: .bottom))
                 .shadow(color: Theme.gold.opacity(0.5), radius: 8)
-            Text("「もう一本。」").font(.system(size: 14, design: .serif)).foregroundStyle(.white.opacity(0.85))
+            Text("勝ち残った3組。審査員は、面白かった方の名を書く。")
+                .font(.system(size: 12, design: .serif)).foregroundStyle(.white.opacity(0.75))
 
-            // 両陣営の得票カウンタ（番組のスコア表示）
-            HStack(spacing: 12) {
-                duelCounter(name: session.combiName, count: usCount, mine: true)
-                Text("vs").font(.maru(11)).foregroundStyle(.white.opacity(0.4))
-                duelCounter(name: rivalName, count: oppCount, mine: false)
-            }
-
-            // 票札（審査員7人が1枚ずつ掲げる）
+            // 3組の得票カウンタ（番組のスコア表示・自組は金）
             HStack(spacing: 8) {
-                ForEach(0..<7, id: \.self) { i in
-                    votePlate(shown: i < revealVotes, forUs: d.voteOrder[i])
+                ForEach(0..<3, id: \.self) { k in
+                    trioCounter(name: names.count > k ? names[k] : "—", count: counts[k], mine: k == 0)
                 }
             }
-            Text(revealVotes < 7 && !decided ? "タップで札をめくる（\(revealVotes)/7）"
-                 : d.finalVotes >= 4 ? "——\(d.finalVotes)票。決着。" : "——及ばず。")
-                .font(.maru(12)).foregroundStyle(decided ? Theme.gold : .white.opacity(0.6))
+
+            // 審査員7人: 顔の上に票札（組名）が掲がる（M-1の票開示）
+            HStack(spacing: 5) {
+                ForEach(0..<7, id: \.self) { i in
+                    let shown = i < revealVotes
+                    let vote = d.voteOrder[i]
+                    VStack(spacing: 3) {
+                        votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: vote == 0)
+                        CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 38)
+                            .overlay(Circle().stroke(shown ? (vote == 0 ? Theme.gold : .white.opacity(0.4))
+                                                           : .white.opacity(0.18), lineWidth: 1.5))
+                        Text(String(d.judges[i].name.prefix(2)))
+                            .font(.maru(8)).foregroundStyle(.white.opacity(0.6))
+                    }
+                }
+            }
+            Text(revealVotes < 7 ? "タップで札をめくる（\(revealVotes)/7）" : "——開票、出揃った。")
+                .font(.maru(12)).foregroundStyle(revealVotes < 7 ? .white.opacity(0.6) : Theme.gold)
         }
     }
 
-    private func duelCounter(name: String, count: Int, mine: Bool) -> some View {
-        VStack(spacing: 2) {
-            Text(name).font(.maru(10.5)).lineLimit(1).minimumScaleFactor(0.7)
+    private func trioCounter(name: String, count: Int, mine: Bool) -> some View {
+        VStack(spacing: 1) {
+            Text(name).font(.maru(10)).lineLimit(1).minimumScaleFactor(0.6)
                 .foregroundStyle(mine ? .white : .white.opacity(0.65))
             Text("\(count)")
-                .font(.system(size: 34, weight: .black, design: .rounded)).monospacedDigit()
+                .font(.system(size: 30, weight: .black, design: .rounded)).monospacedDigit()
                 .foregroundStyle(mine ? AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xFFF3C8), Theme.gold],
                                                                      startPoint: .top, endPoint: .bottom))
                                       : AnyShapeStyle(Color.white.opacity(0.8)))
                 .contentTransition(.numericText())
                 .punch(on: count, peak: 1.3)
         }
-        .frame(width: 120)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(mine ? 0.08 : 0.04), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(Color.white.opacity(mine ? 0.08 : 0.04), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10)
             .stroke(mine ? Theme.gold.opacity(0.6) : .white.opacity(0.15), lineWidth: mine ? 1.5 : 1))
     }
 
-    /// 票札1枚: 自組＝朱地に金◯／相手＝鈍色地に✕。めくりは3D回転＋バネ着地。
-    private func votePlate(shown: Bool, forUs: Bool) -> some View {
+    /// 票札1枚: 組名が書かれた札が審査員の頭上に掲がる。自組＝朱地に金縁。めくりは3D回転＋バネ着地。
+    private func votePlate(shown: Bool, voteName: String, forUs: Bool) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(shown ? (forUs ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD],
                                                                     startPoint: .top, endPoint: .bottom))
-                                     : AnyShapeStyle(Color(hex: 0x3A3448)))
+                                     : AnyShapeStyle(Color(hex: 0xF2EDE0)))
                             : AnyShapeStyle(Color(hex: 0x1B1526)))
             if shown {
-                Text(forUs ? "◯" : "✕")
-                    .font(.system(size: 21, weight: .black))
-                    .foregroundStyle(forUs ? Color(hex: 0xFFE9A8) : .white.opacity(0.5))
+                Text(voteName)
+                    .font(.system(size: 8.5, weight: .black))
+                    .foregroundStyle(forUs ? Color(hex: 0xFFF3C8) : Color(hex: 0x2C2740))
+                    .lineLimit(2).minimumScaleFactor(0.5)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 2)
             } else {
-                Text("？").font(.maru(16)).foregroundStyle(.white.opacity(0.25))
+                Text("？").font(.maru(13)).foregroundStyle(.white.opacity(0.25))
             }
         }
-        .frame(width: 40, height: 56)
-        .overlay(RoundedRectangle(cornerRadius: 8)
-            .stroke(shown && forUs ? Theme.gold.opacity(0.9) : .white.opacity(0.14), lineWidth: shown && forUs ? 1.6 : 1))
-        .shadow(color: shown && forUs ? Theme.verm.opacity(0.5) : .clear, radius: 7, y: 3)
+        .frame(width: 46, height: 34)
+        .overlay(RoundedRectangle(cornerRadius: 6)
+            .stroke(shown ? (forUs ? Theme.gold : Color(hex: 0xC8C0A8)) : .white.opacity(0.15),
+                    lineWidth: shown && forUs ? 1.8 : 1))
+        .shadow(color: shown && forUs ? Theme.verm.opacity(0.5) : .clear, radius: 6, y: 2)
         .rotation3DEffect(.degrees(shown ? 0 : 180), axis: (x: 0, y: 1, z: 0))
         .animation(.spring(response: 0.3, dampingFraction: 0.65), value: shown)
     }
 
-    // MARK: Beat 4 — 結果（優勝）
+    // MARK: Beat 4 — 優勝発表（3組から名前をコール）
     private var resultBeat: some View {
-        VStack(spacing: 16) {
+        let names = [session.combiName] + d.rivalNames
+        let winnerName = names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
+        return VStack(spacing: 16) {
+            Text("優 勝 は ——").font(.maru(13)).tracking(4).foregroundStyle(.white.opacity(0.8))
+            Text(winnerName)
+                .font(.system(size: 30, weight: .black)).lineLimit(1).minimumScaleFactor(0.6)
+                .foregroundStyle(d.champion
+                    ? AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xFFF3C8), Theme.gold],
+                                                   startPoint: .top, endPoint: .bottom))
+                    : AnyShapeStyle(Color.white.opacity(0.9)))
+                .shadow(color: d.champion ? Theme.gold.opacity(0.6) : .clear, radius: 12)
+                .padding(.horizontal, 22).padding(.vertical, 10)
+                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12)
+                    .stroke(d.champion ? Theme.gold.opacity(0.8) : .white.opacity(0.2), lineWidth: 1.5))
+                .scaleEffect(celebrate || !d.champion ? 1 : 1.8)
             if d.champion {
                 Text("優勝").font(.system(size: 44, weight: .black)).foregroundStyle(Color(hex: 0x5A3A06))
                     .frame(width: 160, height: 160)
@@ -366,8 +407,12 @@ struct FinalsData {
     let boardRank: Int
     let finalVotes: Int
     let champion: Bool
-    /// 票札のめくり順（true=自組票）。自組票が固まって出る単調さを避けるシャッフル（表示専用）。
-    var voteOrder: [Bool] = []
+    /// 最終決戦に残るライバル2組（暫定ボード上位のNPC・M-1式＝3組で争う）
+    var rivalNames: [String] = []
+    /// 票札のめくり順（0=自組/1=ライバルA/2=ライバルB）。表示専用のシャッフル。
+    var voteOrder: [Int] = []
+    /// 優勝コンビ（0=自組/1=A/2=B）
+    var winnerIndex: Int = 0
 
     init(state s: GameState, champion: Bool) {
         self.champion = champion
@@ -415,13 +460,23 @@ struct FinalsData {
         self.board = rows
         self.boardRank = (rows.firstIndex { $0.isSelf } ?? 0) + 1
 
-        // 最終決戦の得票（TOP3のみ・7票中）: 圧勝6〜7/接戦4/敗北1〜3
+        // 最終決戦（M-1式＝3組で争う・7票中）: 圧勝6〜7/接戦4〜5/敗北1〜3
         let votes = champion ? rng.int(5...7) : rng.int(1...3)
         self.finalVotes = votes
 
+        // ライバル2組＝暫定ボード上位のNPC（自分を除く上から2組）
+        let rivals = rows.filter { !$0.isSelf }.prefix(2).map { $0.name }
+        self.rivalNames = Array(rivals)
+
+        // 残票をライバル2組へ配分（A>=B・非優勝時はAが必ず自組を上回る＝Aが優勝）
+        let remaining = 7 - votes
+        let aLow = champion ? (remaining + 1) / 2 : max((remaining + 1) / 2, votes + 1)
+        let a = remaining == 0 ? 0 : rng.int(min(aLow, remaining)...remaining)
+        let b = remaining - a
+        self.winnerIndex = champion ? 0 : 1
+
         // めくり順のシャッフル（表示専用・既存drawの後に追加＝これまでの数値は不変）。
-        // Fisher-Yates。決着の一票が最後に近づくよう「最後の自組票」を後半に寄せる補正は入れず素朴に。
-        var order = (0..<7).map { $0 < votes }
+        var order = Array(repeating: 0, count: votes) + Array(repeating: 1, count: a) + Array(repeating: 2, count: b)
         for i in stride(from: 6, through: 1, by: -1) {
             let j = rng.int(0...i)
             order.swapAt(i, j)
