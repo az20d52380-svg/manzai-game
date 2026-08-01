@@ -793,7 +793,8 @@ struct WeekMainView: View {
                 }
             }
             Text("\(Int(s.stamina.rounded()))").font(.maru(13)).monospacedDigit()
-                .foregroundStyle(staminaColor).frame(width: 26, alignment: .trailing)
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .foregroundStyle(staminaColor).frame(width: 30, alignment: .trailing)
         }
     }
 

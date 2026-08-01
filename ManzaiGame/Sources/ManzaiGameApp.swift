@@ -5,6 +5,9 @@ import SwiftUI
 
 @main
 struct ManzaiGameApp: App {
+    init() {
+        FontLoader.registerAll()   // ゲームフォント（M PLUS Rounded 1c）をプロセス登録
+    }
     var body: some Scene {
         WindowGroup {
             RootView()

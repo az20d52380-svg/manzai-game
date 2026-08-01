@@ -169,10 +169,21 @@ enum Haptics {
     static func rare() { UIImpactFeedbackGenerator(style: .heavy).impactOccurred() }
 }
 
-/// 丸ゴシック（見出し・数字）。無ければsystem丸フォールバック。
+/// 丸ゴシック（見出し・数字）＝ゲームフォント M PLUS Rounded 1c（OFL・FontLoader が起動時登録）。
+/// 未登録/失敗時は system 丸ゴにフォールバック（見た目が劣化するだけで壊れない）。
 extension Font {
     static func maru(_ size: CGFloat, weight: Font.Weight = .heavy) -> Font {
-        .system(size: size, weight: weight, design: .rounded)
+        guard FontLoader.isAvailable else {
+            return .system(size: size, weight: weight, design: .rounded)
+        }
+        let name: String
+        switch weight {
+        case .black: name = "MPLUSRounded1c-Black"
+        case .heavy: name = "MPLUSRounded1c-ExtraBold"
+        case .bold, .semibold: name = "MPLUSRounded1c-Bold"
+        default: name = "MPLUSRounded1c-Medium"
+        }
+        return .custom(name, size: size)
     }
 }
 
