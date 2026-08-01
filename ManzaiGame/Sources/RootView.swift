@@ -162,7 +162,14 @@ struct RootView: View {
         } else {
             switch session.phase {
             case .freeAction(let offer):
-                WeekMainView(session: session, offer: offer)          // S1 育成メイン
+                WeekMainView(session: session, offer: offer,          // S1 育成メイン
+                             onRestart: {
+                                 // 「はじめから」: セーブを消し、IntroFlow（名入力→ランダムシード新規）へ戻る。
+                                 // プレースホルダ session は入力確定点まで saveNow を呼ばない＝消したセーブを書き戻さない。
+                                 GameSession.deleteSave()
+                                 session = GameSession()
+                                 withAnimation(.easeInOut(duration: 0.4)) { started = false }
+                             })
             case .tournamentDecision(let spec):
                 TournamentEntryView(session: session, spec: spec)     // 大会入口（遠征選択）
             case .gpRound(let index, let name):

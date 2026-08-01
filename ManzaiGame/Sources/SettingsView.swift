@@ -8,10 +8,13 @@ import SwiftUI
 
 struct SettingsView: View {
     var onClose: () -> Void
+    /// 「はじめから」（セーブを消して新規＝IntroFlowへ戻る）。nil=導線なし（MZ_UI=settings の目視等）。
+    var onRestart: (() -> Void)? = nil
     @AppStorage("vol_bgm") private var bgm: Double = 0.7
     @AppStorage("vol_se") private var se: Double = 0.8
     @AppStorage("notif_on") private var notif: Bool = false
     @State private var toast: String?
+    @State private var showRestartConfirm = false
 
     var body: some View {
         ZStack {
@@ -38,7 +41,11 @@ struct SettingsView: View {
                         section("その他") {
                             tapRow("購入を復元") { toastShow("購入情報を確認しました。") }
                             Divider()
-                            tapRow("データ管理", trailing: "準備中") { }
+                            if onRestart != nil {
+                                tapRow("はじめから", trailing: "セーブを消して新規") { showRestartConfirm = true }
+                            } else {
+                                tapRow("データ管理", trailing: "準備中") { }
+                            }
                         }
                         Text("四分の夜【仮】 v0 ・ 数値/文言は全て仮").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
                             .padding(.top, Theme.Sp.s8)
@@ -51,6 +58,11 @@ struct SettingsView: View {
                     .padding(.horizontal, 14).padding(.vertical, 8).background(Theme.pillDark, in: Capsule())
                     .frame(maxHeight: .infinity, alignment: .bottom).padding(.bottom, 40).transition(.opacity)
             }
+        }
+        .confirmationDialog("この一年を置いて、最初からやり直す。", isPresented: $showRestartConfirm,
+                            titleVisibility: .visible) {
+            Button("はじめから", role: .destructive) { onRestart?() }
+            Button("やめておく", role: .cancel) {}
         }
     }
 

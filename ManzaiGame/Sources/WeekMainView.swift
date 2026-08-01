@@ -16,6 +16,8 @@ import GameCore
 struct WeekMainView: View {
     @Bindable var session: GameSession
     let offer: OfferSpec?
+    /// 「はじめから」（設定シートから・セーブを消して IntroFlow へ戻る）。RootView が供給。
+    var onRestart: () -> Void = {}
 
     /// 開いているカテゴリ（nil=カテゴリのアイコン列を表示）。カードのタップで即実行→nil に戻す。
     @State private var openCategory: String?
@@ -33,6 +35,8 @@ struct WeekMainView: View {
     @State private var showNotebook = false
     /// S4カレンダー（最下帯のカレンダーアイコン）を全画面表示。
     @State private var showCalendar = false
+    /// S1b 設定（最下帯の歯車）。sheet 様式（grabber 付き＝SettingsView の既存意匠）。
+    @State private var showSettings = false
     /// 割り振り（「のばす」タイル）を全画面表示。RNG非消費・週は進まない（正典: exp_abilityup_impl_reply）。
     @State private var showAllocate = false
     /// 「のばす」タイルの一拍（バッジ繰り上がりに合わせて scale 1.0→1.05→1.0）。
@@ -83,6 +87,15 @@ struct WeekMainView: View {
         }
         .fullScreenCover(isPresented: $showCalendar) {
             CalendarView(session: session) { showCalendar = false }   // S4 年間カレンダー
+        }
+        .sheet(isPresented: $showSettings) {
+            // 「はじめから」はシートを閉じ切ってから実行（RootView が session を差し替えると
+            // このビューごと破棄される＝提示中の sheet を巻き込む遷移事故を避ける）。
+            SettingsView(onClose: { showSettings = false },
+                         onRestart: {
+                             showSettings = false
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { onRestart() }
+                         })
         }
         .fullScreenCover(isPresented: $showAllocate) {
             AllocationView(session: session) { showAllocate = false }   // 割り振り（経験点→能力）
@@ -717,6 +730,9 @@ struct WeekMainView: View {
             }
             Button { showCalendar = true } label: {   // S4 カレンダーを開く
                 Image(systemName: "calendar").font(.system(size: 15)).foregroundStyle(.white.opacity(0.8))
+            }.buttonStyle(PressableStyle())
+            Button { showSettings = true } label: {   // S1b 設定（「はじめから」導線を含む）
+                Image(systemName: "gearshape").font(.system(size: 15)).foregroundStyle(.white.opacity(0.8))
             }.buttonStyle(PressableStyle())
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 5) {
