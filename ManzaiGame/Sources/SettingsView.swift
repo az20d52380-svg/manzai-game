@@ -23,8 +23,10 @@ struct SettingsView: View {
                     VStack(spacing: Theme.Sp.s12) {
                         section("音量") {
                             sliderRow("BGM", value: $bgm)
+                                .onChange(of: bgm) { _, _ in Sound.shared.refreshBGMVolume() }   // 即時反映
                             Divider()
                             sliderRow("SE", value: $se)
+                                .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
                         }
                         section("通知") {
                             Toggle(isOn: $notif) { Text("開演前に知らせる").font(.maru(13)).foregroundStyle(Theme.ink) }
@@ -40,8 +42,11 @@ struct SettingsView: View {
                             Divider()
                             tapRow("データ管理", trailing: "準備中") { }
                         }
-                        Text("四分の夜【仮】 v0 ・ 数値/文言は全て仮").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
+                        // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
+                        Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
+                            .font(.maru(9.5)).foregroundStyle(Theme.inkDim)
                             .padding(.top, Theme.Sp.s8)
+                        Text("四分の夜【仮】 v0 ・ 数値/文言は全て仮").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
                     }
                     .padding(Theme.Sp.s16)
                 }

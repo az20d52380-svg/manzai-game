@@ -68,6 +68,7 @@ struct FinalsPresentationView: View {
         .contentShape(Rectangle())
         .onTapGesture { advance() }
         .onAppear {
+            Sound.bgm(.finals)   // 番組のBGM（決勝の格）
             #if DEBUG
             // 目視用: MZ_FIN=open/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
@@ -117,20 +118,25 @@ struct FinalsPresentationView: View {
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealedJudges += 1 }   // 1人ずつ開示（M-1式・天堂寺がトリ）
             slamFire += 1                                             // 開示のたび衝撃（テレビのドン）
             Haptics.confirm()
+            Sound.play(revealedJudges >= 7 ? .tada : .don)            // 1人ずつドン・全員出たらジャジャーン
+            if revealedJudges >= 7 { Sound.play(.applauseHall) }
         case 3 where revealVotes < 7:
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
             slamFire += 1
             let usCount = d.voteOrder.prefix(revealVotes).filter { $0 == 0 }.count
             if usCount == 4 {                                          // 過半数到達＝その瞬間に決着
                 Haptics.rare(); burstFire += 1
+                Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
             } else {
                 Haptics.confirm()
+                Sound.play(.don)                                       // 札1枚＝ドン
             }
         default:
             if beat == 3 && d.champion && !celebrate {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { celebrate = true }
                 Haptics.rare(); burstFire += 1
             }
+            Sound.play(.transition)
             withAnimation(.easeInOut(duration: 0.4)) { beat = min(beat + 1, 4) }
         }
     }
@@ -390,7 +396,10 @@ struct FinalsPresentationView: View {
             }
             .buttonStyle(.plain).padding(.horizontal, 30).padding(.top, 4)
         }
-        .onAppear { withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.2)) { celebrate = true } }
+        .onAppear {
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.2)) { celebrate = true }
+            if d.champion { Sound.play(.fanfare); Sound.play(.cheerBig) }   // 優勝＝ファンファーレ＋大歓声
+        }
     }
 }
 

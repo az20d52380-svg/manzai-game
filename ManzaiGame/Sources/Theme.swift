@@ -182,6 +182,7 @@ extension Font {
 struct PressableStyle: ButtonStyle {
     var scale: CGFloat = 0.95
     var enabled: Bool = true
+    var silent: Bool = false   // 個別に大きいSEを鳴らすボタンは true（二重鳴り防止）
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed && enabled
         configuration.label
@@ -190,6 +191,10 @@ struct PressableStyle: ButtonStyle {
             .animation(pressed ? .easeOut(duration: Theme.Motion.press)
                                : .spring(response: 0.25, dampingFraction: 0.6),
                        value: pressed)
+            .onChange(of: pressed) { _, now in
+                // 商用最低ライン「全タップに音」（sellable_basics_research §4）。押下の瞬間に軽いクリック。
+                if now && !silent { Sound.play(.cursor) }
+            }
     }
 }
 

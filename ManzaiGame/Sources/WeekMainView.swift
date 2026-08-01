@@ -144,6 +144,9 @@ struct WeekMainView: View {
             burstChips = chips
             burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
             particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
+            // 獲得の音: 粒（キラキラ）＞汎用ポップ。収支が動いた週はお金の音も重ねる。
+            Sound.play(session.lastGrainGains.isEmpty ? .pop : .grain)
+            if session.lastMoneyDelta > 0 { Sound.play(.money) }
             if !session.lastGrainGains.isEmpty {
                 try? await Task.sleep(nanoseconds: 100_000_000)
                 withAnimation(Theme.Motion.emphSpring) { badgeBeat = true }   // 粒→「のばす」バッジ繰り上がりの一拍
@@ -157,16 +160,19 @@ struct WeekMainView: View {
         }
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
+            if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
             withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
             try? await Task.sleep(nanoseconds: 700_000_000)
             withAnimation(Theme.Motion.exit) { weekStampVisible = false }
         }
+        .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
         .onChange(of: session.week) { _, _ in banterIndex = 0 }   // 掛け合いの読み位置は週頭でリセット
         .onChange(of: partnerRank) { old, new in
             // 谷口評のランクが上がった瞬間だけ punch（下がりは黙る）。AllocationView のグレード昇格と同じ文法。
             let order = ["D", "C", "B", "A", "S"]
             guard let o = order.firstIndex(of: old), let n = order.firstIndex(of: new), n > o else { return }
             Haptics.confirm()
+            Sound.play(.rankup)   // 谷口評ランクアップ（パワプロの評価アップの音）
             Task {
                 withAnimation(Theme.Motion.emphSpring) { rankPunch = true }
                 try? await Task.sleep(nanoseconds: 650_000_000)
@@ -517,10 +523,12 @@ struct WeekMainView: View {
             guard pulledID == nil else { return }   // 引き抜き中の多重タップは無視
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
+                Sound.play(.deny)
                 withAnimation(.linear(duration: 0.15)) { shakeSeed[v.id, default: 0] += 1 }
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
+            Sound.play(.tap)   // 実行の決定音（週送りの一拍目）
             // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
             // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
             withAnimation(.easeOut(duration: 0.18)) {

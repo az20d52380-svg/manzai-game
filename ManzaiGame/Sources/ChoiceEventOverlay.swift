@@ -29,6 +29,7 @@ struct ChoiceEventOverlay: View {
         ZStack {
             LinearGradient(colors: [Color(hex: 0x241C33), Color(hex: 0x2F2540)],
                            startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+                .onAppear { Sound.play(.event) }   // イベント発生の一音
             VStack(spacing: 18) {
                 Text(text.title).font(.maru(12)).tracking(2).foregroundStyle(Theme.gold)
                 ScrollView {

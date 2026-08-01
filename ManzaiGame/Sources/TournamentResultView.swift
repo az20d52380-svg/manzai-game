@@ -103,13 +103,22 @@ struct TournamentResultView: View {
         .screenFlash(trigger: r.passed ? slamFire : 0,                    // 白むのは通過だけ
                      color: Color(hex: 0xFFEDCB), strength: 0.4)
         .onAppear {
+            Sound.bgm(.tension)                                              // 本番の緊張（日常BGMからクロスフェード）
             Task {
                 // 波形の余韻＋開示前の静止0.3s（溜め→開示の最小単位・§4-2a）を含む1.6s
-                try? await Task.sleep(nanoseconds: 1_600_000_000)
+                if r.passed { Sound.play(.cheerMid) }                        // 客席の「どっ」（波形と同時）
+                try? await Task.sleep(nanoseconds: 900_000_000)
+                Sound.play(.drumroll)                                        // 開示前のタメ
+                try? await Task.sleep(nanoseconds: 700_000_000)
                 withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
                 slamFire += 1                                                // シェイク＋（通過なら）フラッシュ
-                if r.passed { confettiFire += 1; Haptics.rare() }            // 紙吹雪は勝ちの専有
-                else { Haptics.confirm() }
+                if r.passed {
+                    confettiFire += 1; Haptics.rare()
+                    Sound.play(.taiko); Sound.play(.applauseHall)            // 通過＝太鼓ドン＋会場拍手
+                } else {
+                    Haptics.confirm()
+                    Sound.play(.taiko2)                                      // 敗退＝重いドドン（拍手なし＝静けさ）
+                }
                 try? await Task.sleep(nanoseconds: 400_000_000)
                 withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
                 try? await Task.sleep(nanoseconds: 600_000_000)

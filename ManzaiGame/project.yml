@@ -13,6 +13,10 @@ targets:
     platform: iOS
     sources:
       - Sources
+      - path: Resources
+        buildPhase: resources
+        excludes:
+          - "**/*.md"        # CREDITS.md はバンドルに含めない（repo内の記録用）
     dependencies:
       - package: GameCore
         product: GameCore
