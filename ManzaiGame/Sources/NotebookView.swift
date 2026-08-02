@@ -98,8 +98,8 @@ struct NotebookView: View {
     }
 
     // 成長の伸びしろ（器の空き＝成長予算の残り・数値なし）＋未割り振りの経験点残高
-    // （正典: docs/exp_abilityup_impl_reply_v0.md §B。塗りドット＝同色ロック粒／輪郭ドット＝共通粒、
-    //  AllocationView と同じ粒の文法。ここは読む場所＝注ぐ操作は「のばす」に置く）
+    // （正典v3: docs/exp_currency_redesign_v0.md。5通貨バッジ＝AllocationView と同じ通貨の文法。
+    //  ここは読む場所＝注ぐ操作は「のばす」に置く）
     private var growthRoom: some View {
         let budget = s.growthBudget ?? 0
         let used = min(budget, s.growthUsed)
@@ -124,20 +124,11 @@ struct NotebookView: View {
                 Divider().padding(.vertical, 2)
                 Text("のこりの経験点").font(.maru(11)).foregroundStyle(Theme.inkDim)
                 HStack(spacing: Theme.Sp.s8) {
-                    ForEach(Ability.allCases, id: \.self) { a in
-                        if s[bank: a] >= 1 {
+                    ForEach(ExpCurrency.allCases, id: \.self) { c in
+                        if s[currency: c] >= 1 {
                             HStack(spacing: 3) {
-                                AbilityBadge(ability: a, size: 14)
-                                Text("\(Int(s[bank: a]))").font(.maru(11)).monospacedDigit()
-                                    .foregroundStyle(Theme.ink)
-                            }
-                        }
-                    }
-                    ForEach(ExpGroup.allCases, id: \.self) { g in
-                        if s[free: g] >= 1 {
-                            HStack(spacing: 3) {
-                                Circle().stroke(Theme.inkDim, lineWidth: 1.2).frame(width: 7, height: 7)
-                                Text("\(g.rawValue) \(Int(s[free: g]))").font(.maru(11)).monospacedDigit()
+                                CurrencyBadge(currency: c, size: 14)
+                                Text("\(Int(s[currency: c]))").font(.maru(11)).monospacedDigit()
                                     .foregroundStyle(Theme.ink)
                             }
                         }

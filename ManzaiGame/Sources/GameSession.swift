@@ -27,7 +27,7 @@ final class GameSession {
     private(set) var lastCompatGain: Double = 0
     /// 直前の行動で稼いだ粒（同色ロック粒の増分。§1-3 受け取りの一拍＝週メインの獲得チップ行用）。
     /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。状態差分駆動で消費順・golden非対象。
-    private(set) var lastGrainGains: [(ability: Ability, amount: Double)] = []
+    private(set) var lastGrainGains: [(currency: ExpCurrency, amount: Double)] = []
     /// 直前の行動での所持金/体力の増減（Beat2 獲得バースト用・表示専用）。週末の生活費も含む「この週の収支」。
     private(set) var lastMoneyDelta = 0
     private(set) var lastStaminaDelta = 0
@@ -173,10 +173,10 @@ final class GameSession {
             return d > 0.001 ? (a, d) : nil
         }
         lastCompatGain = state.compat - before.compat
-        // 会計移設で稽古は能力を直接伸ばさず粒を稼ぐ＝この週に入った同色ロック粒の増分（§1-3 受け取りの一拍）。
-        lastGrainGains = Ability.allCases.compactMap { a in
-            let d = state[bank: a] - before[bank: a]
-            return d > 0.001 ? (a, d) : nil
+        // 正典v3: 稽古は能力を直接伸ばさず経験点通貨を稼ぐ＝この週に入った通貨の増分（§1-3 受け取りの一拍）。
+        lastGrainGains = ExpCurrency.allCases.compactMap { c in
+            let d = state[currency: c] - before[currency: c]
+            return d > 0.001 ? (c, d) : nil
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         lastMoneyDelta = state.money - before.money
@@ -233,15 +233,15 @@ final class GameSession {
         }
     }
 
-    /// action で稼ぐ「粒」の差分（同色ロック粒の増分・乱数非消費・純関数）。稽古カードの「+N粒」プレビュー用。
-    /// previewState と同型で state のコピーに applyTraining を適用し state[bank: a] の before/after 差分を返す。
-    /// 会計移設で稽古は能力を直接伸ばさず粒を稼ぐ＝現行の previewGains（能力差分）は0になるため、稼ぎの手応えはこちらで出す。
-    /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。RNG非消費＝golden不変。
-    func previewGrainGains(_ action: WeekAction, offer: OfferSpec? = nil) -> [(ability: Ability, amount: Double)] {
+    /// action で稼ぐ経験点通貨の差分（乱数非消費・純関数）。稽古カードの「+N粒」プレビュー用。
+    /// previewState と同型で state のコピーに applyTraining を適用し state[currency: c] の before/after 差分を返す。
+    /// 正典v3: 稽古は能力を直接伸ばさず通貨を稼ぐ＝現行の previewGains（能力差分）は0になるため、稼ぎの手応えはこちらで出す。
+    /// RNG非消費＝golden不変。
+    func previewGrainGains(_ action: WeekAction, offer: OfferSpec? = nil) -> [(currency: ExpCurrency, amount: Double)] {
         let after = previewState(action, offer: offer)
-        return Ability.allCases.compactMap { a in
-            let d = after[bank: a] - state[bank: a]
-            return d > 0.001 ? (a, d) : nil
+        return ExpCurrency.allCases.compactMap { c in
+            let d = after[currency: c] - state[currency: c]
+            return d > 0.001 ? (c, d) : nil
         }
     }
 
@@ -763,12 +763,12 @@ final class GameSession {
     /// 「注げる→器が満ちて弾かれる（横ブレ）」までひと続きで目視できる残高にしてある。
     static func debugAllocationState(config: GameConfig = GameConfig()) -> GameState {
         var s = GameState(config: config)
-        // 参照系UI再設計の目視用（§6チェックリスト①〜⑦を一画面で踏む）。数値は全て【仮】・ρ=0-honest。
-        // 粒総量は年初器(6.0)を超える貯め込み＝「注ぐ→器が満ちて弾かれる」＋器の食い合い⑤まで一続きで目視できる残高。
+        // 参照系UI再設計の目視用（§6チェックリスト①〜⑦を一画面で踏む）。数値は全て【仮】。
+        // 通貨総量は年初器(6.0)を超える貯め込み＝「注ぐ→器が満ちて弾かれる」＋器の食い合い⑤まで一続きで目視できる残高。
         s.センス = 43; s.発想 = 24; s.表現 = 78; s.華 = 18; s.メンタル = 35   // センス43→45でC→B跨ぎ④／表現78=高値
-        s.expセンス = 12; s.exp発想 = 14; s.exp表現 = 1; s.exp華 = 14; s.expメンタル = 9  // 表現は+1に2粒要るが1粒＝端数③
-        s.expネタ = 0; s.exp舞台 = 0   // ρ=0（共通枠は休眠）に忠実＝のこり(bank)と▲活性が食い違わない
-        return s   // growthBudget は WeekRunner が年初 year1 値(6.0)へ設定＝上の粒総量がそれを上回る＝食い合いが立つ
+        // 正典v3: 5通貨に配分（多対多＝複数能力のレシピを同時に満たせる残高を用意）
+        s.exp閃き = 12; s.exp語彙 = 14; s.exp間合い = 10; s.exp存在感 = 14; s.exp胆力 = 9
+        return s   // growthBudget は WeekRunner が年初 year1 値(6.0)へ設定＝上の通貨総量がそれを上回る＝食い合いが立つ
     }
 
     /// DEBUG: 決勝優勝が確定する（winFinale）まで自動プレイ。自由週はバイトで破産回避。

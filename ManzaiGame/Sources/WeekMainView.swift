@@ -836,20 +836,20 @@ struct WeekMainView: View {
         return out
     }
 
-    /// 稽古カードの「+N粒」用の整数粒ゲイン。previewGrainGains（RNG非消費・同色ロック粒の増分）を
+    /// 稽古カードの「+N粒」用の整数粒ゲイン。previewGrainGains（RNG非消費・正典v3の経験点通貨の増分）を
     /// intGains と同じ丸め差分規約（Int(after)−Int(before)＝ここは 0 が before なので Int(amount)）で >0 のみ返す。
     /// 差分0の粒はチップを出さない（+0を印字しない・§1-1）。全粒0の稀な稽古は呼び出し側で「粒わずか」。
     private func intGrainGains(_ action: WeekAction) -> [(name: String, color: Color, delta: Int)] {
         intGrains(from: session.previewGrainGains(action, offer: offer))
     }
 
-    /// 粒差分（[(ability, amount)]）→表示タプル。Int(amount.rounded()) で丸め・>0 のみ（+0を印字しない）。
+    /// 粒差分（[(currency, amount)]）→表示タプル。Int(amount.rounded()) で丸め・>0 のみ（+0を印字しない）。
     /// カード予告（previewGrainGains）と受け取り（lastGrainGains）が同じ丸めを通る＝予告と着地が一致する。
-    private func intGrains(from grains: [(ability: Ability, amount: Double)]) -> [(name: String, color: Color, delta: Int)] {
+    private func intGrains(from grains: [(currency: ExpCurrency, amount: Double)]) -> [(name: String, color: Color, delta: Int)] {
         var out: [(name: String, color: Color, delta: Int)] = []
         for g in grains {
             let d = Int(g.amount.rounded())
-            if d > 0 { out.append((name: "\(g.ability)", color: Theme.abilityColor(g.ability), delta: d)) }
+            if d > 0 { out.append((name: "\(g.currency)", color: Theme.currencyColor(g.currency), delta: d)) }
         }
         return out
     }

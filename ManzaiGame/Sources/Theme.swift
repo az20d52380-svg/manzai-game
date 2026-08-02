@@ -47,6 +47,13 @@ enum Theme {
     static let cCompat = Color(hex: 0xE8402C)  // 相性
     static let cMoney = Color(hex: 0x77CC99)   // お金（バイト等）
 
+    // 経験点通貨5種の色（正典v3・能力色と意図的に別系統＝「同じ色じゃない」ことが一目で分かる配色。全て【仮】）
+    static let curHirameki = Color(hex: 0xFFB100)    // 閃き（金・ひらめきの光）
+    static let curGoi = Color(hex: 0x2BB3A3)         // 語彙（青緑・知の落ち着き）
+    static let curMaai = Color(hex: 0x8B6FCE)        // 間合い（紫・間とテンポ）
+    static let curSonzaikan = Color(hex: 0xE0567C)   // 存在感（マゼンタ・華やぎ）
+    static let curTanryoku = Color(hex: 0x3A4F7A)    // 胆力（濃紺・肚の据わり）
+
     // v8育成メイン用パレット（全て【仮】）
     static let gainOrange = Color(hex: 0xFF8A1E)              // 実行時の「+N」オレンジ
     static let night = Color(hex: 0x3D5A80)                   // 回復カードのドット地色
@@ -78,6 +85,28 @@ enum Theme {
         case .表現: return "表"
         case .華: return "華"
         case .メンタル: return "メ"
+        }
+    }
+
+    /// 経験点通貨の色（正典v3・能力名と別立て＝パワプロの「筋力/敏捷/技術…」に相当）
+    static func currencyColor(_ c: ExpCurrency) -> Color {
+        switch c {
+        case .閃き: return curHirameki
+        case .語彙: return curGoi
+        case .間合い: return curMaai
+        case .存在感: return curSonzaikan
+        case .胆力: return curTanryoku
+        }
+    }
+
+    /// 通貨の1文字ラベル（色弱アクセシビリティ対応・能力バッジと同じ文法）
+    static func currencyChar(_ c: ExpCurrency) -> String {
+        switch c {
+        case .閃き: return "閃"
+        case .語彙: return "語"
+        case .間合い: return "間"
+        case .存在感: return "存"
+        case .胆力: return "胆"
         }
     }
 
@@ -250,5 +279,18 @@ struct AbilityBadge: View {
             .foregroundStyle(.white)
             .frame(width: size, height: size)
             .background(Theme.abilityColor(ability), in: Circle())
+    }
+}
+
+/// 経験点通貨の色付きバッジ（AbilityBadge と同型・正典v3。色弱アクセシビリティ対応で文字を併記）。
+struct CurrencyBadge: View {
+    let currency: ExpCurrency
+    var size: CGFloat = 16
+    var body: some View {
+        Text(Theme.currencyChar(currency))
+            .font(.maru(size * 0.56, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(Theme.currencyColor(currency), in: RoundedRectangle(cornerRadius: size * 0.28))
     }
 }

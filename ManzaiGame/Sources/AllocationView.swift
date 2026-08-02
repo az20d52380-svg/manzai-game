@@ -1,14 +1,15 @@
 // AllocationView.swift
-// 割り振り画面（経験点残高→能力へ注ぐ）。正典: docs/exp_abilityup_impl_reply_v0.md（二区画中間・割り振り時予算）。
-// UI再設計: Fable 01_能力アップUI再設計_参照忠実（2026-07-18・[golden影響=無]）＝参照系「能力アップ画面」の
-// 情報構造・操作を既存二区画機構の"上に"忠実翻案。借りるのは①現在→アップ後の2値＋グレード ②▲1タップ=+1段の
-// 一括仮置き ③「つぎの+1 ●n」逓増コストの常時表示 ④まとめ確定＝の情報構造だけ。機構・逓減カーブ・注ぐ量・golden
-// には1ビットも触れない——コストの n は既存 pourStep の"再生回数の集計表示"（GameSession.costOfNextStep）であり、
-// 支払いは従来どおり pourStep が1粒ずつ行う。実力ヘッダ/グレード/実力の絶対値表示はオーナー承認（2026-07-18・推奨線）。
+// 割り振り画面（経験点残高→能力へ注ぐ）。正典v3: docs/exp_currency_redesign_v0.md（パワプロ式5通貨・
+// オーナー指示2026-08-02「経験値はパワーそのままじゃない。筋力技術などで振り分けて能力アップする」対応）。
+// 旧・同色ロック+共通枠2グループ方式（docs/exp_abilityup_impl_reply_v0.md）を置換。借りるのは①現在→アップ後の
+// 2値＋グレード ②▲1タップ=+1段の一括仮置き ③レシピ内訳（この能力がどの通貨から何%育つか）の常時表示
+// ④まとめ確定＝の情報構造。機構・逓減カーブ・注ぐ量・golden には1ビットも触れない——コストの n は既存 pourStep の
+// "再生回数の集計表示"（GameSession.costOfNextStep）であり、支払いは従来どおり pourStep が1段ずつ行う。
 //
-// 判読性の文法: 色付き粒（塗りドット）＝その色の能力にだけ入る／共通粒（輪郭ドット）＝グループ枠ヘッダ（ρ>0で復活）。
-// 操作は本作の「タップで即」文法: ▲で1段仮置き（バーに薄ゴースト・「のこり」が n 減る・アップ後値が+1）→「注ぐ」で確定→
-// 段階リビール。確定は session.allocate()＝RNG非消費・golden不変。プレビューと確定は同じ pourStep をタップ順に再生する。
+// 判読性の文法: 通貨バッジ（角丸・色+文字＝色弱対応）＝能力バッジ（丸・色+文字）と意図的に別シェイプ。
+// 各能力行にレシピ内訳チップ（通貨バッジ+%）を常設＝「この能力は複数通貨のブレンドで伸びる」を毎回見せる。
+// 操作は本作の「タップで即」文法: ▲で1段仮置き（バーに薄ゴースト・アップ後値が+1）→「注ぐ」で確定→段階リビール。
+// 確定は session.allocate()＝RNG非消費・golden不変。プレビューと確定は同じ pourStep をタップ順に再生する。
 //
 // ⚠️ // MARK: 要Mac実機ビルド — UIは swift test で検証できない。レイアウト/コスト表示/ブロック仮置き/ゴースト/
 //    リビール/グレードpunch/器3枚目/端数トーストは simulator でビルド→起動→目視まで確認して初めて「完了」（規律D-10）。
@@ -61,10 +62,10 @@ struct AllocationView: View {
                     ScrollView {
                         VStack(spacing: Theme.Sp.s16) {
                             jitsuryokuHeader(pv)
-                            explainer
-                            groupCard(.ネタ, pv)
-                            groupCard(.舞台, pv)
-                            mentalCard(pv)
+                            recipeLegend
+                            ForEach(Ability.allCases, id: \.self) { a in
+                                abilityCard(a, pv)
+                            }
                             vesselCard(pv)
                         }
                         .padding(.horizontal, Theme.Sp.s16)
@@ -102,21 +103,22 @@ struct AllocationView: View {
         .padding(.horizontal, Theme.Sp.s16)
     }
 
-    // MARK: 経験点ウォレット（パワプロ式＝画面上部に複数通貨を常時デカ表示。仮置きで減るのが見える）
+    // MARK: 経験点ウォレット（パワプロ式＝画面上部に5通貨を常時デカ表示。仮置きで減るのが見える）
+    // 通貨は能力名と別立て（正典v3）＝角丸バッジ（AbilityBadgeの丸と意図的に別シェイプ）で「別物」と一目で分かる。
 
     private func expWallet(_ pv: GameState) -> some View {
-        HStack(spacing: 6) {
-            ForEach(Ability.allCases, id: \.self) { a in
+        HStack(spacing: 5) {
+            ForEach(ExpCurrency.allCases, id: \.self) { c in
                 HStack(spacing: 4) {
-                    AbilityBadge(ability: a, size: 18)   // 色弱対応: 色だけでなく文字（セ/発/表/華/メ）で区別
-                    Text("\(grains(pv[bank: a]))").font(.maru(16)).monospacedDigit()
+                    CurrencyBadge(currency: c, size: 18)
+                    Text("\(grains(pv[currency: c]))").font(.maru(15)).monospacedDigit()
                         .foregroundStyle(Theme.ink)
                         .contentTransition(.numericText())
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 7)
                 .background(.white, in: RoundedRectangle(cornerRadius: 10))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.abilityColor(a).opacity(0.85), lineWidth: 2))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.currencyColor(c).opacity(0.85), lineWidth: 2))
                 .shadow(color: Theme.cmdShadow, radius: 0, y: 2)
             }
         }
@@ -126,7 +128,14 @@ struct AllocationView: View {
 
     /// 残高の合成キー（numericText を回すための変化検知）
     private func walletSignature(_ pv: GameState) -> Int {
-        Ability.allCases.reduce(0) { $0 &* 31 &+ grains(pv[bank: $1]) }
+        ExpCurrency.allCases.reduce(0) { $0 &* 31 &+ grains(pv[currency: $1]) }
+    }
+
+    /// 通貨の凡例（画面上部で1度だけ「これは能力と別物」を言う・パワプロには無いが初見の理解を助ける【仮】）
+    private var recipeLegend: some View {
+        Text("能力は複数の経験点をブレンドして伸びる。稽古の種類で稼げる通貨が変わる。")
+            .font(.system(size: 11.5, design: .serif)).foregroundStyle(Theme.inkDim)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: 実力ヘッダカード（§3-5・参照系の「総合値 現在→アップ後」＋つぎの本番を1枚に統合）
@@ -220,38 +229,14 @@ struct AllocationView: View {
             .map { ($0.name, $0.week, $0.line) }
     }
 
-    /// 二区画の一行説明（枠のかたちが本体・これは補助線）。ρ=0 の間は休眠＝出さない（監査§2）
-    @ViewBuilder private var explainer: some View {
-        if config.expFreeShare != 0 {
-            Text("色の粒は、その色の項へ。共通の粒は、同じ枠のどちらへも。")
-                .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
+    // MARK: 能力カード（正典v3・グループ枠を廃し1能力1カードに統一＝レシピ内訳がグループの代わりに「多対多」を言う）
 
-    // MARK: グループ枠（二区画の判読性はこの「枠のかたち」が言う）
-
-    private func groupCard(_ g: ExpGroup, _ pv: GameState) -> some View {
-        VStack(spacing: Theme.Sp.s12) {
-            HStack {
-                Text(g.rawValue).font(.maru(11)).tracking(2).foregroundStyle(Theme.inkDim)
-                Spacer()
-                freeChip(g, pv)
-            }
-            ForEach(g.members, id: \.self) { a in
-                abilityRow(a, pv)
-            }
-        }
-        .padding(Theme.Sp.s16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
-        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
-    }
-
-    private func mentalCard(_ pv: GameState) -> some View {
+    private func abilityCard(_ a: Ability, _ pv: GameState) -> some View {
         VStack(alignment: .leading, spacing: Theme.Sp.s8) {
-            abilityRow(.メンタル, pv)
-            Text("器を使わない。").font(.system(size: 11, design: .serif)).foregroundStyle(Theme.inkFaint)
+            abilityRow(a, pv)
+            if a == .メンタル {
+                Text("器を使わない。").font(.system(size: 11, design: .serif)).foregroundStyle(Theme.inkFaint)
+            }
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
@@ -259,22 +244,21 @@ struct AllocationView: View {
         .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
     }
 
-    /// 共通粒チップ（輪郭ドット＝色がまだ決まっていない粒）。ρ(expFreeShare)=0 の間は休眠＝出さない（監査§2）
-    @ViewBuilder private func freeChip(_ g: ExpGroup, _ pv: GameState) -> some View {
-        if config.expFreeShare != 0 {
-            HStack(spacing: 4) {
-                Circle().stroke(Theme.inkDim, lineWidth: 1.5).frame(width: 7, height: 7)
-                Text("共通").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
-                Text("\(grains(pv[free: g]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
-                    .contentTransition(.numericText())
+    /// レシピ内訳チップ列（この能力がどの通貨から何%育つか・パワプロのコスト表に相当・正典v3の核）。
+    /// 常設表示＝「経験値はパワーそのまま使わない」がボタンを押さずとも常に見える。
+    private func recipeChips(_ a: Ability) -> some View {
+        HStack(spacing: 5) {
+            ForEach(config.abilityRecipes[a] ?? [], id: \.0) { c, w in
+                HStack(spacing: 3) {
+                    CurrencyBadge(currency: c, size: 13)
+                    Text("\(Int((w * 100).rounded()))%").font(.maru(9.5)).monospacedDigit()
+                        .foregroundStyle(Theme.inkDim)
+                }
             }
-            .padding(.horizontal, 8).padding(.vertical, 3)
-            .background(Theme.card, in: Capsule())
-            .overlay(Capsule().stroke(Theme.line, lineWidth: 1.5))
         }
     }
 
-    // MARK: 能力1行（§3-1）— 名前行[グレード＋現在→アップ後＋N]／バー／資源行[のこり・つぎの+1・▼▲]
+    // MARK: 能力1行（§3-1）— 名前行[グレード＋現在→アップ後＋N]／バー／レシピ内訳／資源行[つぎの段数・▼▲]
 
     private func abilityRow(_ a: Ability, _ pv: GameState) -> some View {
         let cap = a == .メンタル ? config.mentalCap : config.abilityCap
@@ -302,6 +286,7 @@ struct AllocationView: View {
                 Spacer(minLength: 4)
             }
             abilityBar(a, pv)
+            recipeChips(a)
             resourceRow(a, pv, cost: cost)
         }
     }
@@ -340,23 +325,19 @@ struct AllocationView: View {
         .frame(height: 10)
     }
 
-    /// 資源行（§3-1）: のこり ●n（同色ロック残高）・つぎの+1 ●m（次段コスト）・▼▲
+    /// 資源行（正典v3）: つぎの+1 に要る段数（レシピの全通貨を同時消費・costOfNextStep は不変）・▼▲。
+    /// 「のこり」は通貨ごとの単一残高でなくなった＝画面上部の通貨ウォレットが担う（重複表示をやめた）。
     private func resourceRow(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
         HStack(spacing: 10) {
-            HStack(spacing: 4) {
-                Text("のこり").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
-                AbilityBadge(ability: a, size: 12)
-                Text("\(grains(pv[bank: a]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
-                    .contentTransition(.numericText())
-            }
             costChip(a, pv, cost: cost)
             Spacer()
             stepper(a, pv, cost: cost)
         }
     }
 
-    /// 「つぎの+1 ●n」＝参照系コストグリッドの本作版（§3-2）。逓減ぶん n が増えていく様が「上げるほど高い」を言う。
-    /// nil の内訳: 上限→値側「極」が言う（ここは空）／器切れ→「器が足りない」／粒切れ・端数→「つぎ —」
+    /// 「つぎの+1 段」＝参照系コストグリッドの本作版（§3-2）。逓減ぶん n が増えていく様が「上げるほど高い」を言う。
+    /// 正典v3: 1段でレシピの全通貨を同時消費するため、通貨個別でなく「段数」で見せる（内訳は recipeChips が常設）。
+    /// nil の内訳: 上限→値側「極」が言う（ここは空）／器切れ→「器が足りない」／通貨切れ・端数→「つぎ —」
     @ViewBuilder private func costChip(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
         let cap = a == .メンタル ? config.mentalCap : config.abilityCap
         if pv[a] >= cap - GameEngine.pourEpsilon {
@@ -364,8 +345,7 @@ struct AllocationView: View {
         } else if let n = cost {
             HStack(spacing: 4) {
                 Text("つぎの+1").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
-                AbilityBadge(ability: a, size: 12)
-                Text("\(n)").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
+                Text("\(n)段").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
                     .contentTransition(.numericText())
             }
         } else if a != .メンタル, let b = pv.growthBudget, b - pv.growthUsed <= GameEngine.pourEpsilon {
@@ -463,7 +443,7 @@ struct AllocationView: View {
     }
 
     private func blockReason(_ a: Ability, _ pv: GameState) -> String {
-        if pv.pourable(a) <= GameEngine.pourEpsilon { return "注げる経験点がない。" }
+        if pv.pourable(a, config: config) <= GameEngine.pourEpsilon { return "注げる経験点がない。" }
         let cap = a == .メンタル ? config.mentalCap : config.abilityCap
         if pv[a] >= cap - GameEngine.pourEpsilon { return "ここは、上限まで来ている。" }
         if a != .メンタル, let b = pv.growthBudget, b - pv.growthUsed <= GameEngine.pourEpsilon {

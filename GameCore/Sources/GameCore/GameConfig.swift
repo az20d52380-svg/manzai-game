@@ -13,9 +13,21 @@ public enum Ability: CaseIterable, Hashable, Codable {
     case メンタル
 }
 
+/// 経験点通貨5種（正典v3・パワプロ式・能力名と別立て＝真の多対多。docs/exp_currency_redesign_v0.md）。
+/// Python: balance_sim.CURRENCIES（hirameki/goi/maai/sonzaikan/tanryoku と同順）。
+/// Codable は中断セーブ（WeekRunnerSnapshot/proposals-0039）用＝挙動・golden不変
+public enum ExpCurrency: CaseIterable, Hashable, Codable {
+    case 閃き
+    case 語彙
+    case 間合い
+    case 存在感
+    case 胆力
+}
+
 /// 増減の対象となるステータスの鍵（Python: add() の key）
 public enum StatKey {
     case ability(Ability)
+    case currency(ExpCurrency)   // 稽古発行の経験点通貨（正典v3）。add() は通さない＝GameEngine.applyGrowth が分岐
     case コンビ相性
     case 体力
     case 知名度
@@ -104,20 +116,22 @@ public struct GameConfig {
     /// 成長が完成する結成年数（王者の特権で解除される・sim_career.GROWTH_END_YEAR と同期）
     public var growthEndYear = 15
 
-    // --- 経験点割り振り【docs/exp_abilityup_impl_reply_v0.md・二区画中間。全て【仮】】 ---
-    /// 割り振り1段（+1タップ）で注ぐ経験点量。UIの逐次見積もり・確定・sim/goldenボットが
+    // --- 経験点割り振り【正典v3・パワプロ式5通貨。docs/exp_currency_redesign_v0.md。全て【仮】】 ---
+    /// 割り振り1段（+1タップ）で注ぐ「生の伸び試行量」の上限。UIの逐次見積もり・確定・sim/goldenボットが
     /// 全てこの刻みで pourStep を回す（単位を跨いだ一括評価を許さない＝貯め込みの1点評価上振れを構造で断つ）
     public var allocationStep = 1.0
-    /// 稽古発行のうち共通枠（ネタ/舞台）へ入る割合ρ。0で同色1:1に完全縮退（ロールバック先）。
-    /// 【仮・会計移設で再照準＝0】sim較正（§4-2ゲート4・ρスイープ{0/0.15/0.25/0.35}）で、共通枠のおすすめ追いつき注ぎが
-    /// 素朴帯（のんびり/バランス）を+13〜17pt押し上げ、やり込み帯との順序が潰れる（発行ゲートの轍）ことが実測された。
-    /// ゲート4の指示どおりρを下げ切り 0 に縮退＝共通枠は使わず同色1:1で発行（ExpGroup機構は残置・UI共通チップは0表示）。
-    /// balance_sim.EXP_FREE_SHARE と同期——注ぐ側とUIはこの値を読まない。
-    public var expFreeShare = 0.0
-    /// 稽古が発行する経験点（粒）の供給スケール【仮・会計移設で新設】。creditTraining が能力上昇量に掛ける。
-    /// 段刻みの逓減複利下振れ＋おすすめ全量注ぎで実力が予算上限に張り付き帯が潰れるため、供給を 0.48 に絞って
-    /// 「上手い＝分散」と「素朴」の帯順序・水準を復元する主ツマミ（§4-2ゲート3の供給再照準）。
-    /// [74/80] 到達率 やり込み44.5/のんびり23.1/バランス9.1（目標41.5/23.1/8.4）。balance_sim.EXP_SUPPLY_SCALE と同期。
+    /// 能力→通貨レシピ（Leontief固定比率＝1能力=複数通貨のブレンド。1通貨=複数能力に寄与＝真の多対多）。
+    /// 重みは同じ能力内で合計1.0を目安に【仮・sim較正で確定】。balance_sim.ABILITY_RECIPE と同期。
+    /// オーナー指示（2026-08-02）「パワプロは経験値をパワーそのまま使わず筋力/技術等で振り分ける」への対応。
+    public var abilityRecipes: [Ability: [(ExpCurrency, Double)]] = [
+        .センス:   [(.閃き, 0.45), (.間合い, 0.35), (.胆力, 0.20)],
+        .発想:     [(.閃き, 0.65), (.語彙, 0.35)],
+        .表現:     [(.語彙, 0.35), (.間合い, 0.65)],
+        .華:       [(.存在感, 0.70), (.閃き, 0.30)],
+        .メンタル: [(.存在感, 0.25), (.胆力, 0.75)],
+    ]
+    /// 稽古が発行する経験点通貨の供給スケール【仮・旧expSupplyScaleの較正値を継承】。creditCurrency が
+    /// 通貨加算量に掛ける。balance_sim.EXP_SUPPLY_SCALE と同期。
     public var expSupplyScale = 0.48
     /// 行動直後に WeekRunner が recommendedPlan で粒を自動全量注ぎするか【正典分離】。
     /// true（既定）= sim/golden/ボットの決定論的「おすすめ台本」＝ここが golden の期待値の前提（既定を変えると golden 再生成が要る）。
@@ -156,13 +170,15 @@ public struct GameConfig {
     public var livingCost = 100_000
     public var livingInterval = 4
 
-    // --- 稽古（Python: TRAININGS） ---
+    // --- 稽古（Python: TRAININGS）。正典v3: main/subは能力でなく経験点通貨を発行する（.currency）。
+    //     量は旧版（能力直付け）を踏襲＝既存の較正値（expSupplyScale等）を出発点にできる【仮】。
+    //     ネタ合わせのsubは相性（.コンビ相性）＝経験点通貨ではなく経済外add直結のまま不変。 ---
     public var trainings: [Training: TrainingSpec] = [
-        .ネタ作り:     TrainingSpec(main: (.ability(.発想), 3),     sub: (.ability(.センス), 1), cost: 0,      stamina: -20, fame: 0),
-        .ネタ見せ会:     TrainingSpec(main: (.ability(.表現), 6),     sub: (.ability(.メンタル), 3), cost: 80_000, stamina: -30, fame: 0),
-        .ネタ合わせ:   TrainingSpec(main: (.ability(.センス), 3),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
-        .ランニング・サウナ: TrainingSpec(main: (.ability(.メンタル), 6), sub: nil,                     cost: 80_000, stamina: -10, fame: 0),
-        .フリーライブ:     TrainingSpec(main: (.ability(.華), 3),       sub: (.ability(.表現), 1),    cost: 0,      stamina: -30, fame: 1),
+        .ネタ作り:     TrainingSpec(main: (.currency(.閃き), 3),     sub: (.currency(.語彙), 1),   cost: 0,      stamina: -20, fame: 0),
+        .ネタ見せ会:     TrainingSpec(main: (.currency(.間合い), 6),   sub: (.currency(.胆力), 3),   cost: 80_000, stamina: -30, fame: 0),
+        .ネタ合わせ:   TrainingSpec(main: (.currency(.間合い), 3),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
+        .ランニング・サウナ: TrainingSpec(main: (.currency(.胆力), 6),   sub: nil,                     cost: 80_000, stamina: -10, fame: 0),
+        .フリーライブ:     TrainingSpec(main: (.currency(.存在感), 3), sub: (.currency(.間合い), 1), cost: 0,      stamina: -30, fame: 1),
     ]
 
     // --- バイト（Python: JOBS） ---

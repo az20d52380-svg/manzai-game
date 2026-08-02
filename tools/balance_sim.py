@@ -38,12 +38,15 @@ LIVING_COST     = 100_000  # 4週ごと（マイナスOK・ペナルティなし
 LIVING_INTERVAL = 4
 
 # --- 稽古: 主効果 / 副効果 / 費用 / 体力 / 知名度 ---
+# 正典v3（パワプロ式5通貨・docs/exp_currency_redesign_v0.md）: main/subは能力でなく経験点通貨を発行する。
+# "cur:"接頭辞＝経験点通貨（ABILITY_RECIPEで能力へブレンド変換）／それ以外（compat等）は従来どおり経済外add直結。
+# 量は旧版（能力直付け）のamountを踏襲＝EXP_SUPPLY_SCALE等の既存較正値をそのまま出発点にできる【仮】。
 TRAININGS = {
-    "ネタ作り":     dict(main=("idea", 3),   sub=("sense", 1),  cost=0,      stam=-20, fame=0),
-    "ネタ見せ会":     dict(main=("expr", 6),   sub=("mental", 3), cost=80_000, stam=-30, fame=0),
-    "ネタ合わせ":   dict(main=("sense", 3),  sub=("compat", 1), cost=0,      stam=-20, fame=0),
-    "ランニング・サウナ": dict(main=("mental", 6), sub=None,          cost=80_000, stam=-10, fame=0),
-    "フリーライブ":     dict(main=("chara", 3),  sub=("expr", 1),   cost=0,      stam=-30, fame=1),
+    "ネタ作り":     dict(main=("cur:hirameki", 3),   sub=("cur:goi", 1),      cost=0,      stam=-20, fame=0),
+    "ネタ見せ会":     dict(main=("cur:maai", 6),       sub=("cur:tanryoku", 3), cost=80_000, stam=-30, fame=0),
+    "ネタ合わせ":   dict(main=("cur:maai", 3),       sub=("compat", 1),       cost=0,      stam=-20, fame=0),
+    "ランニング・サウナ": dict(main=("cur:tanryoku", 6), sub=None,                cost=80_000, stam=-10, fame=0),
+    "フリーライブ":     dict(main=("cur:sonzaikan", 3), sub=("cur:maai", 1),    cost=0,      stam=-30, fame=1),
 }
 
 # --- バイト: (収入, 体力) ---
@@ -97,16 +100,15 @@ class S:
     chara: float = INIT_ABILITY
     mental: float = INIT_ABILITY
     compat: float = COMPAT_INIT
-    # --- 経験点残高（正典: docs/exp_abilityup_impl_reply_v0.md・二区画中間・GameState.exp* の鏡像） ---
+    # --- 経験点残高（正典v3・パワプロ式5通貨・GameState.exp* の鏡像。docs/exp_currency_redesign_v0.md） ---
     # 稼ぐ時は成長予算を消費せずここに貯まり、能力へ注ぐ瞬間だけ add()（①逓減→②予算→③clamp）を通る。
-    # 同色ロック粒（色Cは能力Cにしか注げない）＋共通枠粒（ネタ=sense/idea・舞台=expr/chara。mentalは枠なし）
-    bank_sense: float = 0.0
-    bank_idea: float = 0.0
-    bank_expr: float = 0.0
-    bank_chara: float = 0.0
-    bank_mental: float = 0.0
-    free_neta: float = 0.0     # 共通枠: sense/idea へ注げる
-    free_butai: float = 0.0    # 共通枠: expr/chara へ注げる
+    # 通貨は能力名と別立て（1能力=複数通貨のブレンドで伸びる・1通貨=複数能力に寄与＝真の多対多）。
+    # ABILITY_RECIPE が通貨→能力の重み表（Leontief固定比率＝最も乏しい通貨がボトルネック）。
+    exp_hirameki: float = 0.0    # 閃き（アイデアの瞬発力）
+    exp_goi: float = 0.0         # 語彙（言葉の引き出し）
+    exp_maai: float = 0.0        # 間合い（間・テンポ）
+    exp_sonzaikan: float = 0.0   # 存在感（華・舞台映え）
+    exp_tanryoku: float = 0.0    # 胆力（メンタルの土台）
     # 記録
     osaka_in: bool = False
     osaka_win: bool = False
@@ -147,28 +149,35 @@ def jitsuryoku(s):
     return s.sense * W_SENSE + s.idea * W_IDEA + s.expr * W_EXPR + s.chara * W_CHARA
 
 # ============================================================
-# 経験点の割り振り（注ぐ側）—— GameCore/Allocation.swift の厳密な鏡像（ルール5）
+# 経験点の割り振り（注ぐ側）—— GameCore/Allocation.swift の厳密な鏡像（ルール5）。正典v3（パワプロ式5通貨）。
 # projected_gain / pour_step / recommended_plan の3関数は Swift と同値（同一式・同一順序）。
-# RandomSource を一切呼ばない＝乱数消費順は不変。数値は全て【仮】。
+# RandomSource を一切呼ばない＝乱数消費順は不変。数値は全て【仮】（docs/exp_currency_redesign_v0.md）。
 # ============================================================
 
-ALLOCATION_STEP  = 1.0     # 割り振り1段で注ぐ経験点量（GameConfig.allocationStep と同期）
-EXP_FREE_SHARE   = 0.0     # 【仮】稽古発行のうち共通枠へ入る割合ρ（GameConfig.expFreeShare と同期）。§4-2ゲート4で0に縮退（追いつき注ぎが素朴帯を上振れ）
-EXP_SUPPLY_SCALE = 0.48    # 【仮】稽古発行の粒の供給スケール（GameConfig.expSupplyScale と同期・§4-2ゲート3）。[74/80]やり込み44.5/のんびり23.1/バランス9.1
+ALLOCATION_STEP  = 1.0     # 割り振り1段で注ぐ「生の伸び試行量」（GameConfig.allocationStep と同期）
+EXP_SUPPLY_SCALE = 0.48    # 【仮】稽古発行の通貨供給スケール（GameConfig.expSupplyScale と同期・旧較正値を継承）
 POUR_EPS         = 1e-9    # 浮動小数の塵で粒を空費しない下限（GameEngine.pourEpsilon と同期）
 
-# 能力→所属枠（メンタルは None）。枠→メンバー。ExpGroup.of / .members の鏡像
-GROUP_OF = {"sense": "neta", "idea": "neta", "expr": "butai", "chara": "butai", "mental": None}
-GROUP_MEMBERS = {"neta": ["sense", "idea"], "butai": ["expr", "chara"]}
-BANK_ATTR = {"sense": "bank_sense", "idea": "bank_idea", "expr": "bank_expr",
-             "chara": "bank_chara", "mental": "bank_mental"}
-FREE_ATTR = {"neta": "free_neta", "butai": "free_butai"}
+# 経験点通貨5種（能力名と別立て＝真の多対多。ExpCurrency.allCases の鏡像）
+CURRENCIES = ["hirameki", "goi", "maai", "sonzaikan", "tanryoku"]
+CURRENCY_ATTR = {c: f"exp_{c}" for c in CURRENCIES}
+
+# 能力→通貨レシピ（Leontief固定比率＝1能力=複数通貨のブレンド。1通貨=複数能力に寄与）。
+# GameConfig.abilityRecipes の鏡像。重みは全て【仮】（sim較正で確定）。
+ABILITY_RECIPE = {
+    "sense":  [("hirameki", 0.45), ("maai", 0.35), ("tanryoku", 0.20)],
+    "idea":   [("hirameki", 0.65), ("goi", 0.35)],
+    "expr":   [("goi", 0.35), ("maai", 0.65)],
+    "chara":  [("sonzaikan", 0.70), ("hirameki", 0.30)],
+    "mental": [("sonzaikan", 0.25), ("tanryoku", 0.75)],
+}
 # add() の予算②で使う実力値換算重み（mental は 0＝予算を通らない）
 _W = {"sense": W_SENSE, "idea": W_IDEA, "expr": W_EXPR, "chara": W_CHARA, "mental": 0.0}
 
 def projected_gain(s, key, amount):
     """add() の①逓減→②予算キャップ→③clamp と同一式で「見える伸び」を副作用なしで返す純関数。
-    GameEngine.projectedGain の鏡像。s._yg（=growthUsed）と YEAR_GROWTH_CAP（=growthBudget）を参照"""
+    GameEngine.projectedGain の鏡像。s._yg（=growthUsed）と YEAR_GROWTH_CAP（=growthBudget）を参照。
+    通貨変換とは独立＝amount は既に「能力への生の伸び試行量」（呼び出し側がボトルネックで決める）"""
     if amount <= 0:
         return 0.0
     amt = amount
@@ -182,23 +191,26 @@ def projected_gain(s, key, amount):
     cap = MENTAL_CAP if key == "mental" else ABILITY_CAP
     return clamp(getattr(s, key) + amt, 0, cap) - getattr(s, key)
 
+def _affordable_raw(s, key):
+    """レシピの通貨残高から「このステップで注げる生の伸び試行量」をボトルネック（最も乏しい通貨）で決める。
+    ある通貨の重みが0.5で残高がbなら、その通貨だけで賄える生量は b/0.5。全通貨中の最小値が実際に払える量。
+    ALLOCATION_STEP を上限にクランプ（段刻みループ正典・論点C不変）"""
+    recipe = ABILITY_RECIPE[key]
+    afford = min((getattr(s, CURRENCY_ATTR[c]) / w for c, w in recipe), default=0.0)
+    return min(ALLOCATION_STEP, afford)
+
 def pour_step(s, key):
-    """1段（ALLOCATION_STEP・端数はあるだけ）を key に注ぐ。GameEngine.pourStep の鏡像。
-    支払い=同色ロック→共通枠の固定順。見える伸びが無い段は粒を消費しない。戻り値=実効伸び"""
-    bank_attr = BANK_ATTR[key]
-    locked_pay = min(getattr(s, bank_attr), ALLOCATION_STEP)
-    group = GROUP_OF[key]
-    free_attr = FREE_ATTR[group] if group else None
-    free_pay = min(getattr(s, free_attr), ALLOCATION_STEP - locked_pay) if free_attr else 0.0
-    amount = locked_pay + free_pay
+    """1段（ボトルネック通貨で決まる生量・端数はあるだけ）を key に注ぐ。GameEngine.pourStep の鏡像。
+    レシピの全通貨を同じ比率で同時消費（Leontief）。見える伸びが無い段は通貨を消費しない。戻り値=実効伸び"""
+    amount = _affordable_raw(s, key)
     if amount <= POUR_EPS:
         return 0.0
     gain = projected_gain(s, key, amount)
     if gain <= POUR_EPS:
         return 0.0
-    setattr(s, bank_attr, getattr(s, bank_attr) - locked_pay)
-    if free_attr:
-        setattr(s, free_attr, getattr(s, free_attr) - free_pay)
+    for c, w in ABILITY_RECIPE[key]:
+        attr = CURRENCY_ATTR[c]
+        setattr(s, attr, getattr(s, attr) - amount * w)
     add(s, key, amount)   # ①逓減→②予算（s._yg 更新）→③clamp
     return gain
 
@@ -206,28 +218,22 @@ ALL_ABILITIES = ["sense", "idea", "expr", "chara", "mental"]   # Ability.allCase
 
 def recommended_plan(s):
     """おすすめ注ぎ（決定論・golden台本の単一純関数）。GameEngine.recommendedPlan の鏡像。
-    (1) 同色ロックを allCases 順に注ぎ切る (2) 共通枠は各枠の「現在値が低い方」へ（追いつき既定）。
+    正典v3: 通貨が能力間で共有される（同じ通貨を複数能力が奪い合う）ため、旧来の「ロック→共通枠」2段では
+    なく、注げる（gain>0）能力の中で現在値が最も低いものへ毎ステップ回す単一の追いつきループに一般化した。
     scratch のコピーで計画を作る（呼び出し側が本適用する＝表示と確定が食い違わない）"""
     import copy
     scratch = copy.copy(s)
     plan = []
     guard = 0
-    for a in ALL_ABILITIES:
-        while getattr(scratch, BANK_ATTR[a]) > POUR_EPS and guard < 10_000 and pour_step(scratch, a) > 0:
-            plan.append(a)
-            guard += 1
-    for g in ("neta", "butai"):
-        while getattr(scratch, FREE_ATTR[g]) > POUR_EPS and guard < 10_000:
-            ordered = sorted(GROUP_MEMBERS[g], key=lambda t: getattr(scratch, t))
-            poured = False
-            for t in ordered:
-                if pour_step(scratch, t) > 0:
-                    plan.append(t)
-                    poured = True
-                    guard += 1
-                    break
-            if not poured:
-                break
+    while guard < 10_000:
+        candidates = [a for a in ALL_ABILITIES if _affordable_raw(scratch, a) > POUR_EPS]
+        if not candidates:
+            break
+        target = min(candidates, key=lambda a: getattr(scratch, a))
+        if pour_step(scratch, target) <= 0:
+            break
+        plan.append(target)
+        guard += 1
     return plan
 
 def apply_allocation(s, taps):
@@ -240,20 +246,13 @@ def pour_all(s):
     人ボット・simボット・golden の3系統が全てこの1経路を使う（台本分裂＝golden毒源を作らない）"""
     apply_allocation(s, recommended_plan(s))
 
-def credit_training(s, key, v):
-    """稽古発行: 能力への正の上昇 v を二区画クレジットに置換（add 直結の代わり）。
-    ロック側 += v×(1−ρ)／所属枠 += v×ρ。メンタルは枠なし＝100%ロック。GameEngine.applyTraining の鏡像。
-    負の加算・cost/stamina/fame は経済外＝従来どおり add 直結（呼び出し側の責務）"""
+def credit_currency(s, currency, v):
+    """稽古発行: 通貨への正の加算 v を供給スケールで割り引いて積む。GameEngine.creditCurrency の鏡像。
+    通貨はどの能力にも直接ロックされない＝発行側はもう1:1マッピングを持たない（正典v3の核）"""
     if v <= 0:
-        add(s, key, v)   # 負・ゼロは経済外＝直add（実運用では稽古の main/sub は常に正）
-        return
-    g0 = v * EXP_SUPPLY_SCALE   # 供給スケール（§4-2ゲート3・帯順序の復元ツマミ）
-    group = GROUP_OF[key]
-    if group is None:
-        setattr(s, BANK_ATTR[key], getattr(s, BANK_ATTR[key]) + g0)   # メンタル: 100%ロック
-    else:
-        setattr(s, BANK_ATTR[key], getattr(s, BANK_ATTR[key]) + g0 * (1 - EXP_FREE_SHARE))
-        setattr(s, FREE_ATTR[group], getattr(s, FREE_ATTR[group]) + g0 * EXP_FREE_SHARE)
+        return   # 負・ゼロは実運用では発生しない（稽古の main/sub は常に正）
+    attr = CURRENCY_ATTR[currency]
+    setattr(s, attr, getattr(s, attr) + v * EXP_SUPPLY_SCALE)
 
 # ============================================================
 # 行動
@@ -267,12 +266,12 @@ def do_training(s, name):
         return False
     fac = DEBT_TRAIN_FACTOR if (DEBT_TRAIN_FACTOR is not None and s.money < 0) else None
     s.money -= t["cost"]
-    # 会計移設（規律A第1段）: 能力の正加算は二区画クレジットへ。借金倍率は粒の量に掛ける（能力でなく粒に）。
-    # compat（ネタ合わせ sub）は能力でない＝経済外＝add 直結のまま。cost/stamina/fame も従来どおり。
+    # 正典v3: "cur:xxx" タグは経験点通貨へ（発行側・会計移設）。それ以外（compat等）は経済外＝add 直結のまま。
+    # 借金倍率は通貨の量に掛ける（能力でなく通貨に）。cost/stamina/fame も従来どおり。
     def _grow(k, v):
         amt = v if fac is None else v * fac
-        if k in BANK_ATTR:      # 演技系4＋メンタル＝経済へ
-            credit_training(s, k, amt)
+        if k.startswith("cur:"):
+            credit_currency(s, k[4:], amt)
         else:                   # compat など＝経済外
             add(s, k, amt)
     k, v = t["main"]; _grow(k, v)

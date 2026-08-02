@@ -36,6 +36,10 @@ public enum GameEngine {
             }
             let cap = (a == .メンタル) ? config.mentalCap : config.abilityCap
             s[a] = clamp(s[a] + amt, 0, cap)
+        case .currency:
+            // 通貨は add() を経由しない（creditCurrency が直接加算・decay/予算/clampを一切通さない・正典v3）。
+            // 呼ばれたら設計違反＝実運用では到達しない分岐（applyGrowth が .currency を creditCurrency へ振り分け済み）。
+            break
         case .コンビ相性:
             if config.compatGrows {
                 // 0012 相性凍結: freeze 中は"増える方向"だけ止める（減算=負は通す＝0019A等の相性-は効く）。
@@ -63,24 +67,18 @@ public enum GameEngine {
         5 + 15 * (1 - mental / 100)
     }
 
-    /// 会計移設（規律A第1段・docs/exp_abilityup_impl_reply_v0.md）: 稽古発行の能力への正の上昇 v を
-    /// 二区画クレジットへ置換（add 直結の代わり）。ロック側 += v×(1−ρ)／所属枠 += v×ρ。メンタルは枠なし＝100%ロック。
-    /// balance_sim.credit_training の鏡像。負・ゼロは経済外＝直add（実運用では稽古の main/sub は常に正）。
-    static func creditTraining(_ a: Ability, _ v: Double, to s: inout GameState, config: GameConfig) {
-        guard v > 0 else { add(.ability(a), v, to: &s, config: config); return }
-        let g0 = v * config.expSupplyScale   // 供給スケール（§4-2ゲート3・帯順序の復元ツマミ）
-        if let g = ExpGroup.of(a) {
-            s[bank: a] += g0 * (1 - config.expFreeShare)
-            s[free: g] += g0 * config.expFreeShare
-        } else {
-            s[bank: a] += g0   // メンタル: 100%ロック
-        }
+    /// 正典v3（パワプロ式5通貨・docs/exp_currency_redesign_v0.md）: 稽古発行の通貨への正の加算 v を
+    /// 供給スケールで割り引いて積む。通貨はどの能力にも直接ロックされない（発行側はもう1:1マッピングを持たない）。
+    /// balance_sim.credit_currency の鏡像。v<=0 は実運用では発生しない（稽古の main/sub は常に正）。
+    static func creditCurrency(_ c: ExpCurrency, _ v: Double, to s: inout GameState, config: GameConfig) {
+        guard v > 0 else { return }
+        s[currency: c] += v * config.expSupplyScale
     }
 
     /// Python: do_training。有料稽古は所持金必須【仮】。払えなければ false（呼び出し側でフォールバック）。
-    /// 借金中は能力上昇に debtTrainFactor（正典v2・生活苦）——倍率は粒の量に掛ける（能力でなく粒に）。
-    /// 会計移設: 能力の正加算は creditTraining（二区画クレジット）へ。cost/stamina/fame/相性は従来どおり add 直結。
-    /// 稼いだ粒は行動直後に WeekRunner.applyAllocation（recommendedPlan）で注ぐ（sim_career / gen_golden と同一順序）。
+    /// 借金中は通貨獲得に debtTrainFactor（正典v2・生活苦）——倍率は通貨の量に掛ける（能力でなく通貨に）。
+    /// 正典v3: 通貨の正加算は creditCurrency へ。cost/stamina/fame/相性は従来どおり add 直結。
+    /// 稼いだ通貨は行動直後に WeekRunner.applyAllocation（recommendedPlan）で注ぐ（sim_career / gen_golden と同一順序）。
     @discardableResult
     public static func applyTraining(_ t: Training, to s: inout GameState, config: GameConfig) -> Bool {
         guard let spec = config.trainings[t] else { return false }
@@ -100,11 +98,11 @@ public enum GameEngine {
         return true
     }
 
-    /// 稽古の main/sub 効果の適用先分岐: 能力＝二区画クレジット（経済へ）／相性など＝add 直結（経済外）。
+    /// 稽古の main/sub 効果の適用先分岐: 通貨＝creditCurrency（経済へ）／相性など＝add 直結（経済外）。
     /// balance_sim.do_training の _grow クロージャの鏡像。
     private static func applyGrowth(_ key: StatKey, _ amt: Double, to s: inout GameState, config: GameConfig) {
-        if case .ability(let a) = key {
-            creditTraining(a, amt, to: &s, config: config)
+        if case .currency(let c) = key {
+            creditCurrency(c, amt, to: &s, config: config)
         } else {
             add(key, amt, to: &s, config: config)
         }
