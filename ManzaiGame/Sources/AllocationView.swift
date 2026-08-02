@@ -55,8 +55,9 @@ struct AllocationView: View {
             // フッタぶん縮めてくれず、最終カードがフッタの裏に食い込んでいた。VStack内でScrollViewを可変
             // （他が固定高のため自動でmaxHeightを埋める）にし、フッタを実兄弟にすれば構造的に重ならない。
             VStack(spacing: 0) {
-                VStack(spacing: Theme.Sp.s16) {
+                VStack(spacing: Theme.Sp.s12) {
                     header
+                    expWallet(pv)   // パワプロの経験点常時表示＝上部の通貨バー（仮置きで残高が生きて減る）
                     ScrollView {
                         VStack(spacing: Theme.Sp.s16) {
                             jitsuryokuHeader(pv)
@@ -101,6 +102,33 @@ struct AllocationView: View {
         .padding(.horizontal, Theme.Sp.s16)
     }
 
+    // MARK: 経験点ウォレット（パワプロ式＝画面上部に複数通貨を常時デカ表示。仮置きで減るのが見える）
+
+    private func expWallet(_ pv: GameState) -> some View {
+        HStack(spacing: 6) {
+            ForEach(Ability.allCases, id: \.self) { a in
+                HStack(spacing: 4) {
+                    Circle().fill(Theme.abilityColor(a)).frame(width: 8, height: 8)
+                    Text("\(grains(pv[bank: a]))").font(.maru(16)).monospacedDigit()
+                        .foregroundStyle(Theme.ink)
+                        .contentTransition(.numericText())
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 7)
+                .background(.white, in: RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.abilityColor(a).opacity(0.85), lineWidth: 2))
+                .shadow(color: Theme.cmdShadow, radius: 0, y: 2)
+            }
+        }
+        .padding(.horizontal, Theme.Sp.s16)
+        .animation(.easeOut(duration: 0.25), value: walletSignature(pv))
+    }
+
+    /// 残高の合成キー（numericText を回すための変化検知）
+    private func walletSignature(_ pv: GameState) -> Int {
+        Ability.allCases.reduce(0) { $0 &* 31 &+ grains(pv[bank: $1]) }
+    }
+
     // MARK: 実力ヘッダカード（§3-5・参照系の「総合値 現在→アップ後」＋つぎの本番を1枚に統合）
 
     private func jitsuryokuHeader(_ pv: GameState) -> some View {
@@ -130,7 +158,8 @@ struct AllocationView: View {
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e1()
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
     }
 
     /// リビール中は revealedRows までを反映した実力（段階ロールアップ・§4）。平時は確定stateの実力。
@@ -215,7 +244,8 @@ struct AllocationView: View {
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e2()
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
     }
 
     private func mentalCard(_ pv: GameState) -> some View {
@@ -225,7 +255,8 @@ struct AllocationView: View {
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e2()
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
     }
 
     /// 共通粒チップ（輪郭ドット＝色がまだ決まっていない粒）。ρ(expFreeShare)=0 の間は休眠＝出さない（監査§2）
@@ -253,13 +284,19 @@ struct AllocationView: View {
         let showArrow = !committing && Int(after.rounded()) > Int(cur.rounded())
         let punchNow = committing && revealedRows.contains(a) && gradeCrossed(a)
         return VStack(spacing: 7) {
-            HStack(spacing: 6) {
-                Circle().fill(Theme.abilityColor(a)).frame(width: 8, height: 8)
-                Text(String(describing: a)).font(.maru(12.5)).foregroundStyle(Theme.ink)
-                valSlot(cur, cap: cap, color: Theme.abilityColor(a), accent: false, punch: punchNow)
+            HStack(spacing: 8) {
+                // パワプロ式: 等級のデカ文字バッジが行の主役（D青地→C緑地…昇格で色ごと変わる）
+                gradeBadge(cur, cap: cap, punch: punchNow)
+                Text(String(describing: a)).font(.maru(13.5)).foregroundStyle(Theme.ink)
+                Text("\(Int(cur.rounded()))").font(.maru(20)).monospacedDigit().foregroundStyle(Theme.ink)
+                    .contentTransition(.numericText())
                 if showArrow {
-                    Text("→").font(.maru(13)).foregroundStyle(Theme.inkDim)
-                    valSlot(after, cap: cap, color: Theme.abilityColor(a), accent: true)
+                    Image(systemName: "arrowtriangle.right.fill")
+                        .font(.system(size: 10)).foregroundStyle(Theme.gainOrange)
+                    gradeBadge(after, cap: cap, small: true)
+                    Text("\(Int(after.rounded()))").font(.maru(20)).monospacedDigit()
+                        .foregroundStyle(Theme.abilityColor(a))
+                        .contentTransition(.numericText())
                 }
                 gainLabel(a, pv)
                 Spacer(minLength: 4)
@@ -269,22 +306,20 @@ struct AllocationView: View {
         }
     }
 
-    /// グレード＋数値の1スロット（上限は数値の代わりに「極」金・§3-1）。accent=アップ後（能力色）／punch=昇格演出
-    @ViewBuilder private func valSlot(_ v: Double, cap: Double, color: Color, accent: Bool, punch: Bool = false) -> some View {
-        if v >= cap - GameEngine.pourEpsilon {
-            Text("極").font(.maru(16)).foregroundStyle(Theme.gold)
-                .scaleEffect(punch ? 1.18 : 1)
-        } else {
-            HStack(spacing: 3) {
-                // グレードは表示整数（丸め値）から引く＝「C 45」のような境界の食い違いを防ぐ（v8: 整数表示）
-                Text(Theme.rank(v.rounded())).font(.maru(11, weight: .bold))
-                    .foregroundStyle(punch ? Theme.gold : (accent ? color : Theme.inkDim))
-                    .scaleEffect(punch ? 1.18 : 1)
-                Text("\(Int(v.rounded()))").font(.maru(15)).monospacedDigit()
-                    .foregroundStyle(accent ? color : Theme.ink)
-                    .contentTransition(.numericText())
-            }
-        }
+    /// パワプロ式の等級バッジ（等級色の角丸地に白デカ文字・上限＝金「極」・punch=昇格の一拍）。
+    /// グレードは表示整数（丸め値）から引く＝「C 45」のような境界の食い違いを防ぐ（v8: 整数表示）
+    private func gradeBadge(_ v: Double, cap: Double, small: Bool = false, punch: Bool = false) -> some View {
+        let capped = v >= cap - GameEngine.pourEpsilon
+        let grade = capped ? "極" : Theme.rank(v.rounded())
+        let size: CGFloat = small ? 24 : 31
+        return Text(grade)
+            .font(.maru(small ? 13 : 16, weight: .black)).foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(capped ? Theme.gold : Theme.gradeColor(grade),
+                        in: RoundedRectangle(cornerRadius: 7))
+            .overlay(RoundedRectangle(cornerRadius: 7).stroke(.white, lineWidth: 1.5))
+            .shadow(color: Theme.cmdShadow, radius: 0, y: 1.5)
+            .scaleEffect(punch ? 1.25 : 1)
     }
 
     /// バー: 濃い塗り＝現在（リビール中は段階値）／薄い塗り＝仮置き後のゴースト
@@ -376,26 +411,34 @@ struct AllocationView: View {
     // MARK: ▼▲（§3-3・仮置きの単位を「+1段ブロック」へ。押せない時は沈まず横ブレ＋トースト・振動なし）
 
     private func stepper(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             if stagedBlocks(a) > 0 {
-                Button { unstage(a) } label: { stepGlyph("minus", active: true) }
-                    .buttonStyle(PressableStyle())
-                    .transition(.opacity)
+                Button { Sound.play(.cancel); unstage(a) } label: {
+                    Image(systemName: "minus")
+                        .font(.system(size: 13, weight: .heavy)).foregroundStyle(Theme.ink)
+                        .frame(width: 30, height: 30)
+                        .background(Theme.card2, in: Circle())
+                        .overlay(Circle().stroke(Theme.line, lineWidth: 2))
+                }
+                .buttonStyle(PressableStyle(silent: true))
+                .transition(.opacity)
             }
             let ok = cost != nil && !committing
-            Button { stage(a, pv, cost: cost) } label: { stepGlyph("plus", active: ok) }
-                .buttonStyle(PressableStyle(enabled: ok))
-                .modifier(ShakeEffect(animatableData: shakeSeed["plus\(a)"] ?? 0))
+            // ＋＝この画面の主役ボタン（パワプロの▲）。朱の塗り円・白十字・ハード影＝押したくなる形
+            Button { stage(a, pv, cost: cost) } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 17, weight: .black)).foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background(ok ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD],
+                                                                  startPoint: .top, endPoint: .bottom))
+                                   : AnyShapeStyle(Theme.inkFaint),
+                                in: Circle())
+                    .overlay(Circle().stroke(.white, lineWidth: 2))
+                    .shadow(color: ok ? Theme.vermD.opacity(0.45) : Theme.cmdShadow, radius: 0, y: 2.5)
+            }
+            .buttonStyle(PressableStyle(enabled: ok, silent: true))
+            .modifier(ShakeEffect(animatableData: shakeSeed["plus\(a)"] ?? 0))
         }
-    }
-
-    private func stepGlyph(_ name: String, active: Bool) -> some View {
-        Image(systemName: name)
-            .font(.system(size: 13, weight: .heavy))
-            .foregroundStyle(active ? Theme.ink : Theme.inkFaint)
-            .frame(width: 30, height: 30)
-            .background(Theme.card2, in: Circle())
-            .overlay(Circle().stroke(Theme.line, lineWidth: 2))
     }
 
     /// この能力に仮置き済みの+1段ブロック数（＝手振りの+N・▼の有無）
@@ -407,8 +450,10 @@ struct AllocationView: View {
     private func stage(_ a: Ability, _ pv: GameState, cost: Int?) {
         guard !committing else { return }
         if let n = cost {
+            Sound.play(.kira)   // 仮置き＝キラッ（粒を積む手応え）
             withAnimation(Theme.Motion.appearQuick) { blocks.append((ability: a, steps: n)) }
         } else {
+            Sound.play(.deny)
             withAnimation(.linear(duration: 0.15)) { shakeSeed["plus\(a)", default: 0] += 1 }
             toast = blockReason(a, pv)
         }
@@ -436,10 +481,11 @@ struct AllocationView: View {
         VStack(spacing: Theme.Sp.s8) {
             HStack(spacing: Theme.Sp.s8) {
                 Button { suggest() } label: {
-                    Text("おすすめ").font(.maru(12)).foregroundStyle(Theme.verm)
-                        .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(Theme.card, in: Capsule())
-                        .overlay(Capsule().stroke(Theme.verm.opacity(0.55), lineWidth: 1.5))
+                    Text("おすすめ").font(.maru(13)).foregroundStyle(Theme.verm)
+                        .padding(.horizontal, 16).padding(.vertical, 9)
+                        .background(.white, in: Capsule())
+                        .overlay(Capsule().stroke(Theme.verm.opacity(0.7), lineWidth: 2.5))
+                        .shadow(color: Theme.cmdShadow, radius: 0, y: 2)
                 }
                 .buttonStyle(PressableStyle())
                 .modifier(ShakeEffect(animatableData: shakeSeed["suggest"] ?? 0))
@@ -460,14 +506,20 @@ struct AllocationView: View {
                         .transition(.opacity)
                 }
             }
+            // パワプロの「決定！」＝画面の締めの大ボタン（朱グラデ・白内枠線・ハード影）
             Button { commit(pv) } label: {
-                Text(blocks.isEmpty ? "注ぐ" : "注ぐ（\(blocks.count)）")
-                    .font(.maru(15)).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity).padding(.vertical, 12)
-                    .background(blocks.isEmpty || committing ? Theme.inkFaint : Theme.verm,
-                                in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                Text(blocks.isEmpty ? "注ぐ" : "注ぐ！（\(blocks.count)段）")
+                    .font(.maru(17)).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(blocks.isEmpty || committing
+                                ? AnyShapeStyle(Theme.inkFaint)
+                                : AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD],
+                                                               startPoint: .top, endPoint: .bottom)),
+                                in: RoundedRectangle(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 11).stroke(.white.opacity(0.35), lineWidth: 1.5).padding(3))
+                    .shadow(color: blocks.isEmpty ? Theme.cmdShadow : Theme.vermD.opacity(0.45), radius: 0, y: 3)
             }
-            .buttonStyle(PressableStyle(enabled: !blocks.isEmpty && !committing))
+            .buttonStyle(PressableStyle(enabled: !blocks.isEmpty && !committing, silent: true))
             .modifier(ShakeEffect(animatableData: shakeSeed["commit"] ?? 0))
         }
         .padding(.horizontal, Theme.Sp.s16).padding(.top, Theme.Sp.s12).padding(.bottom, Theme.Sp.s8)
@@ -484,10 +536,12 @@ struct AllocationView: View {
         guard !committing else { return }
         let plan = session.recommendedAllocation()
         if plan.isEmpty {
+            Sound.play(.deny)
             withAnimation(.linear(duration: 0.15)) { shakeSeed["suggest", default: 0] += 1 }
             toast = "いま注げる経験点がない。"
             return
         }
+        Sound.play(.pop)
         var probe = s
         var newBlocks: [(ability: Ability, steps: Int)] = []
         var runAbility: Ability?
@@ -516,11 +570,13 @@ struct AllocationView: View {
     private func commit(_ pv: GameState) {
         guard !committing else { return }
         guard !blocks.isEmpty else {
+            Sound.play(.deny)
             withAnimation(.linear(duration: 0.15)) { shakeSeed["commit", default: 0] += 1 }
             toast = "まだ、経験点を選んでいない。"
             return
         }
         Haptics.confirm()   // 割り振り確定＝hConfirm（Haptics 3段）
+        Sound.play(.success)
         let currentTaps = taps
         var before: [Ability: Double] = [:]
         var after: [Ability: Double] = [:]
@@ -540,6 +596,9 @@ struct AllocationView: View {
             try? await Task.sleep(nanoseconds: 250_000_000)
             for a in Ability.allCases where (afterVals[a] ?? 0) - (beforeVals[a] ?? 0) > 0.0005 {
                 withAnimation(Theme.Motion.emphSpring) { _ = revealedRows.insert(a) }
+                // パワプロの昇格演出: 上がった行はキラ・等級が繰り上がった行はランクアップ音＋Haptics
+                if gradeCrossed(a) { Sound.play(.rankup); Haptics.confirm() }
+                else { Sound.play(.grain) }
                 try? await Task.sleep(nanoseconds: 340_000_000)
             }
             try? await Task.sleep(nanoseconds: 500_000_000)
@@ -584,7 +643,8 @@ struct AllocationView: View {
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e1()
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
     }
 
     /// 器の状態一文（3枚・排他）。満了＞食い合い＞平常。食い合い=手持ち粒を全部注ぐと器が先に尽きる（§5-1）
