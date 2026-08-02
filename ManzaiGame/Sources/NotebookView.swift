@@ -127,7 +127,7 @@ struct NotebookView: View {
                     ForEach(Ability.allCases, id: \.self) { a in
                         if s[bank: a] >= 1 {
                             HStack(spacing: 3) {
-                                Circle().fill(Theme.abilityColor(a)).frame(width: 7, height: 7)
+                                AbilityBadge(ability: a, size: 14)
                                 Text("\(Int(s[bank: a]))").font(.maru(11)).monospacedDigit()
                                     .foregroundStyle(Theme.ink)
                             }

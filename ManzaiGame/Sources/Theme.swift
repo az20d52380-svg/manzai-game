@@ -69,6 +69,18 @@ enum Theme {
         }
     }
 
+    /// 能力の1文字ラベル（色弱アクセシビリティ対応・オーナー指示2026-08-02）。
+    /// 色だけで能力を区別させない＝色付きバッジの中に必ずこの文字を置く。
+    static func abilityChar(_ a: Ability) -> String {
+        switch a {
+        case .センス: return "セ"
+        case .発想: return "発"
+        case .表現: return "表"
+        case .華: return "華"
+        case .メンタル: return "メ"
+        }
+    }
+
     /// 能力値→ランク文字。パワプロと同じ G→S のフルラダー（オーナー指示 2026-08-02）＝
     /// 序盤は G から始まり、昇格の階段が多い（表示写像のみ・判定に無関係）。閾値は全て【仮】。
     static func rank(_ v: Double) -> String {
@@ -223,5 +235,20 @@ struct ShakeEffect: GeometryEffect {
     func effectValue(size: CGSize) -> ProjectionTransform {
         ProjectionTransform(CGAffineTransform(
             translationX: travel * sin(animatableData * .pi * 4), y: 0))
+    }
+}
+
+/// 能力の色付きバッジ（色弱アクセシビリティ対応・オーナー指示2026-08-02）。
+/// 色の丸ドットだけで能力を区別させない＝必ず1文字ラベル（Theme.abilityChar）を併記する。
+/// パワプロのステータス表が色でなく「弾道／ミート／パワー」等の文字見出しで区別しているのに倣う。
+struct AbilityBadge: View {
+    let ability: Ability
+    var size: CGFloat = 16
+    var body: some View {
+        Text(Theme.abilityChar(ability))
+            .font(.maru(size * 0.56, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(Theme.abilityColor(ability), in: Circle())
     }
 }

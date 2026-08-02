@@ -108,7 +108,7 @@ struct AllocationView: View {
         HStack(spacing: 6) {
             ForEach(Ability.allCases, id: \.self) { a in
                 HStack(spacing: 4) {
-                    Circle().fill(Theme.abilityColor(a)).frame(width: 8, height: 8)
+                    AbilityBadge(ability: a, size: 18)   // 色弱対応: 色だけでなく文字（セ/発/表/華/メ）で区別
                     Text("\(grains(pv[bank: a]))").font(.maru(16)).monospacedDigit()
                         .foregroundStyle(Theme.ink)
                         .contentTransition(.numericText())
@@ -345,7 +345,7 @@ struct AllocationView: View {
         HStack(spacing: 10) {
             HStack(spacing: 4) {
                 Text("のこり").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
-                Circle().fill(Theme.abilityColor(a)).frame(width: 6, height: 6)
+                AbilityBadge(ability: a, size: 12)
                 Text("\(grains(pv[bank: a]))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
                     .contentTransition(.numericText())
             }
@@ -364,7 +364,7 @@ struct AllocationView: View {
         } else if let n = cost {
             HStack(spacing: 4) {
                 Text("つぎの+1").font(.maru(9.5)).foregroundStyle(Theme.inkDim)
-                Circle().fill(Theme.abilityColor(a)).frame(width: 6, height: 6)
+                AbilityBadge(ability: a, size: 12)
                 Text("\(n)").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.ink)
                     .contentTransition(.numericText())
             }
