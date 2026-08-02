@@ -408,37 +408,34 @@ struct AllocationView: View {
         return Theme.rank(b.rounded()) != Theme.rank(af.rounded())
     }
 
-    // MARK: ▼▲（§3-3・仮置きの単位を「+1段ブロック」へ。押せない時は沈まず横ブレ＋トースト・振動なし）
+    // MARK: ▲▼（パワプロ実機準拠・2026-08-02オーナー指示＝丸+ではなく縦積みの三角ボタン対）
+    // 押せない時は沈まず横ブレ＋トースト・振動なし（§3-3）。▲=1段仮置き／▼=1段取り消し（常時2つとも表示）。
 
     private func stepper(_ a: Ability, _ pv: GameState, cost: Int?) -> some View {
-        HStack(spacing: 8) {
-            if stagedBlocks(a) > 0 {
-                Button { Sound.play(.cancel); unstage(a) } label: {
-                    Image(systemName: "minus")
-                        .font(.system(size: 13, weight: .heavy)).foregroundStyle(Theme.ink)
-                        .frame(width: 30, height: 30)
-                        .background(Theme.card2, in: Circle())
-                        .overlay(Circle().stroke(Theme.line, lineWidth: 2))
-                }
-                .buttonStyle(PressableStyle(silent: true))
-                .transition(.opacity)
-            }
-            let ok = cost != nil && !committing
-            // ＋＝この画面の主役ボタン（パワプロの▲）。朱の塗り円・白十字・ハード影＝押したくなる形
-            Button { stage(a, pv, cost: cost) } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 17, weight: .black)).foregroundStyle(.white)
-                    .frame(width: 38, height: 38)
-                    .background(ok ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD],
-                                                                  startPoint: .top, endPoint: .bottom))
-                                   : AnyShapeStyle(Theme.inkFaint),
-                                in: Circle())
-                    .overlay(Circle().stroke(.white, lineWidth: 2))
-                    .shadow(color: ok ? Theme.vermD.opacity(0.45) : Theme.cmdShadow, radius: 0, y: 2.5)
-            }
-            .buttonStyle(PressableStyle(enabled: ok, silent: true))
-            .modifier(ShakeEffect(animatableData: shakeSeed["plus\(a)"] ?? 0))
+        let canUp = cost != nil && !committing
+        let canDown = stagedBlocks(a) > 0 && !committing
+        return VStack(spacing: 3) {
+            Button { stage(a, pv, cost: cost) } label: { triangleGlyph(up: true, active: canUp) }
+                .buttonStyle(PressableStyle(enabled: canUp, silent: true))
+                .modifier(ShakeEffect(animatableData: shakeSeed["plus\(a)"] ?? 0))
+            Button { Sound.play(.cancel); unstage(a) } label: { triangleGlyph(up: false, active: canDown) }
+                .buttonStyle(PressableStyle(enabled: canDown, silent: true))
         }
+    }
+
+    /// パワプロ実機の▲▼＝小さな角丸スクエアに三角。有効時は朱・無効時は淡いグレーで沈む。
+    private func triangleGlyph(up: Bool, active: Bool) -> some View {
+        Image(systemName: up ? "triangle.fill" : "arrowtriangle.down.fill")
+            .font(.system(size: 11, weight: .black))
+            .foregroundStyle(active ? .white : Theme.inkFaint)
+            .frame(width: 30, height: 22)
+            .background(active
+                        ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD],
+                                                       startPoint: .top, endPoint: .bottom))
+                        : AnyShapeStyle(Theme.card2),
+                        in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(active ? .white.opacity(0.6) : Theme.line, lineWidth: 1.5))
+            .shadow(color: active ? Theme.vermD.opacity(0.4) : .clear, radius: 0, y: 1.5)
     }
 
     /// この能力に仮置き済みの+1段ブロック数（＝手振りの+N・▼の有無）

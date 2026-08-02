@@ -69,24 +69,31 @@ enum Theme {
         }
     }
 
-    /// 能力値→ランク文字（mockup: 29→D, 41→C, 52→B）
+    /// 能力値→ランク文字。パワプロと同じ G→S のフルラダー（オーナー指示 2026-08-02）＝
+    /// 序盤は G から始まり、昇格の階段が多い（表示写像のみ・判定に無関係）。閾値は全て【仮】。
     static func rank(_ v: Double) -> String {
         switch v {
-        case ..<30: return "D"
-        case ..<45: return "C"
-        case ..<60: return "B"
-        case ..<80: return "A"
+        case ..<15: return "G"
+        case ..<25: return "F"
+        case ..<35: return "E"
+        case ..<45: return "D"
+        case ..<55: return "C"
+        case ..<70: return "B"
+        case ..<90: return "A"
         default: return "S"
         }
     }
 
-    /// 等級バッジの色（パワプロの G..S 配色に寄せた5段【仮】: D鈍/C緑/B青/A赤/S金）
+    /// 等級バッジの色（パワプロの G..S 配色に寄せた8段【仮】: G灰/F青灰/E青/D橙/C黄緑/B緑/A赤/S金）
     static func gradeColor(_ g: String) -> Color {
         switch g {
         case "S": return gold
         case "A": return verm
-        case "B": return cSense
-        case "C": return cMental
+        case "B": return cMental
+        case "C": return Color(hex: 0x9BC53D)
+        case "D": return cExpr
+        case "E": return cSense
+        case "F": return Color(hex: 0x7A93B8)
         default: return Color(hex: 0x9AA0AE)
         }
     }
