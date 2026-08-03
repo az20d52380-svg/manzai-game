@@ -247,14 +247,18 @@ struct AllocationView: View {
     /// レシピ内訳チップ列（この能力がどの通貨から何%育つか・パワプロのコスト表に相当・正典v3の核）。
     /// 常設表示＝「経験値はパワーそのまま使わない」がボタンを押さずとも常に見える。
     private func recipeChips(_ a: Ability) -> some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 7) {
             ForEach(config.abilityRecipes[a] ?? [], id: \.0) { c, w in
-                HStack(spacing: 3) {
-                    CurrencyBadge(currency: c, size: 13)
-                    Text("\(Int((w * 100).rounded()))%").font(.maru(9.5)).monospacedDigit()
-                        .foregroundStyle(Theme.inkDim)
+                HStack(spacing: 4) {
+                    CurrencyBadge(currency: c, size: 18)
+                    Text("\(Int((w * 100).rounded()))%").font(.maru(13)).monospacedDigit()
+                        .foregroundStyle(Theme.ink)
                 }
+                .padding(.horizontal, 7).padding(.vertical, 4)
+                .background(Theme.currencyColor(c).opacity(0.14), in: Capsule())
+                .overlay(Capsule().stroke(Theme.currencyColor(c).opacity(0.5), lineWidth: 1.5))
             }
+            Spacer(minLength: 0)
         }
     }
 

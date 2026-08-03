@@ -305,6 +305,18 @@ struct WeekMainView: View {
         }
     }
 
+    /// 能力ピルのアイコン（色弱対応で色だけに頼らない・オーナー指摘2026-08-03）
+    private func pillGlyph(_ a: Ability?) -> String {
+        guard let a else { return "heart.fill" }   // 相性
+        switch a {
+        case .センス: return "sparkles"
+        case .発想: return "lightbulb.fill"
+        case .表現: return "theatermasks.fill"
+        case .華: return "star.fill"
+        case .メンタル: return "brain.head.profile"
+        }
+    }
+
     /// 谷口評: 5能力平均のランク（Theme.rank）。数字を並べず一字で「いまどの辺か」を言う常設メーター。
     /// ランクアップの瞬間は punch（scale1.18+金・Haptics.confirm）＝パワプロの評価アップの一拍。
     private var partnerRank: String {
@@ -338,33 +350,44 @@ struct WeekMainView: View {
         let capped = isPerf && value >= session.config.abilityCap
         let gradeBase = ability != nil ? value : value / session.config.compatCap * 100
         let grade = Theme.rank(gradeBase)
-        return HStack(spacing: 5) {
+        return HStack(spacing: 6) {
+            // 能力アイコン（色+アイコンで常時判別・オーナー指摘2026-08-03「見えづらい」対応）:
+            // 序盤は全員グレードGで等級バッジが同色（灰）になり、かつ比例塗りは低値でほぼ見えず
+            // ピルが識別不能になっていた。能力固有色の丸を常設し、色だけに頼らないアイコンも添える。
+            ZStack {
+                Circle().fill(isPerf ? color : Theme.cCompat).frame(width: 22, height: 22)
+                Image(systemName: pillGlyph(ability))
+                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+            }
             // 等級バッジ（パワプロの G..S 相当・色は等級固有）
-            Text(grade).font(.maru(10)).foregroundStyle(.white)
-                .frame(width: 19, height: 19)
+            Text(grade).font(.maru(11)).foregroundStyle(.white)
+                .frame(width: 21, height: 21)
                 .background(Circle().fill(Theme.gradeColor(grade)))
                 .overlay(Circle().stroke(.white, lineWidth: 1.5))
                 .punch(on: grade, peak: 1.4)
-            Text(name).font(.maru(9.5)).foregroundStyle(Theme.ink.opacity(0.85))
-            Text("\(Int(value.rounded()))").font(.maru(12)).monospacedDigit().foregroundStyle(Theme.ink)
-                .contentTransition(.numericText())
-                .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
-                .punch(on: Int(value.rounded()), peak: 1.35)   // 値が動いた瞬間だけ跳ねる（ジュース核）
+            VStack(alignment: .leading, spacing: 0) {
+                Text(name).font(.maru(10.5)).foregroundStyle(Theme.ink)
+                Text("\(Int(value.rounded()))").font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink)
+                    .contentTransition(.numericText())
+                    .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
+                    .punch(on: Int(value.rounded()), peak: 1.35)   // 値が動いた瞬間だけ跳ねる（ジュース核）
+            }
             if let gain, gainsVisible, Int(gain.rounded()) >= 1 {
-                Text("+\(Int(gain.rounded()))").font(.maru(11)).foregroundStyle(Theme.gainOrange)
+                Text("+\(Int(gain.rounded()))").font(.maru(12)).foregroundStyle(Theme.gainOrange)
                     // +N規格（§3-3）: 出現0.2s=+8ptから浮き上がる／滞留（taskの1.2sから逆算0.6s）／退場0.4s=上昇フェード
                     .transition(.asymmetric(
                         insertion: .offset(y: 8).combined(with: .opacity),
                         removal: .offset(y: -8).combined(with: .opacity)))
             }
         }
-        .padding(.leading, 4).padding(.trailing, 8).padding(.vertical, 3)
+        .padding(.leading, 5).padding(.trailing, 10).padding(.vertical, 4)
         .background {
             ZStack(alignment: .leading) {
-                Capsule().fill(.white)
+                // 常時見える下地の色帯（比例0%でも識別できる・§旧: 比例塗りのみだと低値で消えていた）
+                (isPerf ? color : Theme.cCompat).opacity(0.14)
                 if isPerf {
                     GeometryReader { geo in
-                        Rectangle().fill(color.opacity(0.20))
+                        Rectangle().fill(color.opacity(0.30))
                             .frame(width: geo.size.width * fill)
                             .animation(.easeOut(duration: 0.4), value: fill)
                     }
@@ -372,7 +395,8 @@ struct WeekMainView: View {
             }
             .clipShape(Capsule())
         }
-        .overlay(Capsule().stroke(capped ? Theme.gold : color, lineWidth: 2))
+        .background(.white, in: Capsule())
+        .overlay(Capsule().stroke(capped ? Theme.gold : color, lineWidth: 2.5))
         .shadow(color: Theme.cmdShadow, radius: 0, y: 2)   // ハード影＝チャンキー
         .animation(.easeOut(duration: gainsVisible ? 0.2 : 0.4), value: gainsVisible)
     }
