@@ -113,8 +113,9 @@ struct WeekMainView: View {
         }
         .task {
             #if DEBUG
-            // UIスモーク（MZ_SMOKE と同じ慣習）: MZ_UI=cards で稽古カテゴリを開いた状態で起動＝カード列の目視用
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "cards" { openCategory = "keiko" }
+            // UIスモーク（MZ_SMOKE と同じ慣習）: MZ_UI=cards/stage で稽古カテゴリを開いた状態で起動＝カード列の目視用
+            // （cardsはpreoccupiedWeeks付き=0022ロック目視、stageは通常状態＝カードのgrainPills目視に使う）
+            if ["cards", "stage"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { openCategory = "keiko" }
             #endif
         }
         .task(id: session.week) {
@@ -626,25 +627,29 @@ struct WeekMainView: View {
     private func gainPills(_ gains: [(name: String, color: Color, delta: Int)]) -> some View {
         HStack(spacing: 4) {
             ForEach(Array(gains.prefix(3).enumerated()), id: \.offset) { _, g in
-                Text("\(g.name) +\(g.delta)")
-                    .font(.system(size: 9.5, weight: .bold)).foregroundStyle(.white)
-                    .padding(.horizontal, 5).padding(.vertical, 2)
+                Text("\(g.name)+\(g.delta)")
+                    .font(.system(size: 11, weight: .bold)).foregroundStyle(.white)
+                    .padding(.horizontal, 6).padding(.vertical, 3)
                     .background(g.color, in: Capsule())
             }
         }
     }
 
-    /// 稽古の「+N粒」チップ（塗りドット＝能力色＝行き先が決まっている粒／AllocationView・NotebookView と同じ粒の文法）。
-    /// ρ=0なので同色ロック粒のみ（共通粒は発行されない＝チップは全て塗りドット）。地=card2カプセル（貯まる粒＝即効の塗りピルと形で分ける・§1-2）。
+    /// 稽古の「+N粒」チップ（塗りドット＝通貨色＝行き先が決まっている粒／AllocationView・NotebookView と同じ
+    /// 通貨の文法。地=card2カプセル（貯まる粒＝即効の塗りピルと形で分ける・§1-2）。オーナー指摘2026-08-03で拡大。
     private func grainPills(_ grains: [(name: String, color: Color, delta: Int)]) -> some View {
         HStack(spacing: 4) {
             ForEach(Array(grains.prefix(3).enumerated()), id: \.offset) { _, g in
-                HStack(spacing: 3) {
-                    Circle().fill(g.color).frame(width: 6, height: 6)
-                    Text("\(g.name) +\(g.delta)").font(.system(size: 9.5, weight: .bold)).foregroundStyle(Theme.ink)
+                HStack(spacing: 4) {
+                    // 通貨バッジと同じ角丸シェイプ（CurrencyBadge型）＝1文字ラベルで色弱対応・カード幅でも切れない
+                    Text(g.name).font(.maru(9, weight: .bold)).foregroundStyle(.white)
+                        .frame(width: 15, height: 15)
+                        .background(g.color, in: RoundedRectangle(cornerRadius: 4))
+                    Text("+\(g.delta)").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.ink)
                 }
-                .padding(.horizontal, 5).padding(.vertical, 2)
+                .padding(.horizontal, 6).padding(.vertical, 3)
                 .background(Theme.card2, in: Capsule())
+                .overlay(Capsule().stroke(g.color.opacity(0.4), lineWidth: 1.2))
             }
         }
     }
@@ -873,7 +878,8 @@ struct WeekMainView: View {
         var out: [(name: String, color: Color, delta: Int)] = []
         for g in grains {
             let d = Int(g.amount.rounded())
-            if d > 0 { out.append((name: "\(g.currency)", color: Theme.currencyColor(g.currency), delta: d)) }
+            // 1文字ラベル（CurrencyBadgeと同じ・§カード幅で「間合い」等の長い通貨名が切れるのを防ぐ）
+            if d > 0 { out.append((name: Theme.currencyChar(g.currency), color: Theme.currencyColor(g.currency), delta: d)) }
         }
         return out
     }

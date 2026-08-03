@@ -62,7 +62,7 @@ struct AllocationView: View {
                     ScrollView {
                         VStack(spacing: Theme.Sp.s16) {
                             jitsuryokuHeader(pv)
-                            recipeLegend
+                            recipeGrid
                             ForEach(Ability.allCases, id: \.self) { a in
                                 abilityCard(a, pv)
                             }
@@ -131,11 +131,51 @@ struct AllocationView: View {
         ExpCurrency.allCases.reduce(0) { $0 &* 31 &+ grains(pv[currency: $1]) }
     }
 
-    /// 通貨の凡例（画面上部で1度だけ「これは能力と別物」を言う・パワプロには無いが初見の理解を助ける【仮】）
-    private var recipeLegend: some View {
-        Text("能力は複数の経験点をブレンドして伸びる。稽古の種類で稼げる通貨が変わる。")
-            .font(.system(size: 11.5, design: .serif)).foregroundStyle(Theme.inkDim)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    // MARK: レシピ表（パワプロ実機の「現在の経験点」グリッドに忠実な再現・オーナー指示2026-08-03）
+    // 行=能力・列=通貨・セルは数字（%ではなく実機と同じ「素の数字」表記＝オーナー指摘「パーセンテージが
+    // わからん」への対応）。列見出しに通貨バッジ、行見出しに能力バッジを置き、表の形そのものが
+    // 「1能力は複数通貨から・1通貨は複数能力へ」を一目で言う（旧: 文章の凡例／能力ごとの%チップを廃止）。
+
+    private var recipeGrid: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("現在の経験点").font(.maru(11)).foregroundStyle(Theme.inkDim)
+                .padding(.bottom, Theme.Sp.s8)
+            Grid(horizontalSpacing: 6, verticalSpacing: 6) {
+                GridRow {
+                    Color.clear.frame(width: 68, height: 1)   // 行見出し列ぶんの空白
+                    ForEach(ExpCurrency.allCases, id: \.self) { c in
+                        CurrencyBadge(currency: c, size: 22)
+                    }
+                }
+                Divider().gridCellColumns(6)
+                ForEach(Ability.allCases, id: \.self) { a in
+                    GridRow {
+                        HStack(spacing: 4) {
+                            AbilityBadge(ability: a, size: 16)
+                            Text(String(describing: a)).font(.maru(9.5)).foregroundStyle(Theme.ink)
+                                .lineLimit(1).minimumScaleFactor(0.75)
+                        }
+                        .frame(width: 68, alignment: .leading)
+                        ForEach(ExpCurrency.allCases, id: \.self) { c in
+                            let w = (config.abilityRecipes[a] ?? []).first { $0.0 == c }?.1
+                            Group {
+                                if let w {
+                                    Text("\(Int((w * 100).rounded()))")
+                                        .font(.maru(13)).monospacedDigit().foregroundStyle(Theme.ink)
+                                } else {
+                                    Text("－").font(.maru(12)).foregroundStyle(Theme.inkFaint)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(Theme.Sp.s16)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
     }
 
     // MARK: 実力ヘッダカード（§3-5・参照系の「総合値 現在→アップ後」＋つぎの本番を1枚に統合）
@@ -246,22 +286,6 @@ struct AllocationView: View {
 
     /// レシピ内訳チップ列（この能力がどの通貨から何%育つか・パワプロのコスト表に相当・正典v3の核）。
     /// 常設表示＝「経験値はパワーそのまま使わない」がボタンを押さずとも常に見える。
-    private func recipeChips(_ a: Ability) -> some View {
-        HStack(spacing: 7) {
-            ForEach(config.abilityRecipes[a] ?? [], id: \.0) { c, w in
-                HStack(spacing: 4) {
-                    CurrencyBadge(currency: c, size: 18)
-                    Text("\(Int((w * 100).rounded()))%").font(.maru(13)).monospacedDigit()
-                        .foregroundStyle(Theme.ink)
-                }
-                .padding(.horizontal, 7).padding(.vertical, 4)
-                .background(Theme.currencyColor(c).opacity(0.14), in: Capsule())
-                .overlay(Capsule().stroke(Theme.currencyColor(c).opacity(0.5), lineWidth: 1.5))
-            }
-            Spacer(minLength: 0)
-        }
-    }
-
     // MARK: 能力1行（§3-1）— 名前行[グレード＋現在→アップ後＋N]／バー／レシピ内訳／資源行[つぎの段数・▼▲]
 
     private func abilityRow(_ a: Ability, _ pv: GameState) -> some View {
@@ -290,7 +314,6 @@ struct AllocationView: View {
                 Spacer(minLength: 4)
             }
             abilityBar(a, pv)
-            recipeChips(a)
             resourceRow(a, pv, cost: cost)
         }
     }
