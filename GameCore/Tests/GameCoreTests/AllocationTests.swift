@@ -142,6 +142,30 @@ final class AllocationTests: XCTestCase {
         XCTAssertEqual(try? enc.encode(a), try? enc.encode(b), "同一タップ列の再生が非決定的")
     }
 
+    /// 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」）: 現在ランクが等級帯
+    /// （G/F/E/D/C/B/A/S）を跨いで上がるほど、同じ1段あたりの通貨消費が重くなる（パワプロ実機の階段状カーブ）。
+    func testPourStepCostsMoreCurrencyAtHigherRank() {
+        let config = GameConfig()   // 発想: 閃き0.65 / 語彙0.35。しきい値15/25/…でG→F→…と上がる
+        var low = GameState(config: config)
+        low.growthBudget = nil
+        low.発想 = 10   // G帯（倍率1.0）
+        low.exp閃き = 10; low.exp語彙 = 10
+        let lowGain = GameEngine.pourStep(.発想, to: &low, config: config)
+        let lowSpent = 10 - low.exp閃き
+
+        var high = GameState(config: config)
+        high.growthBudget = nil
+        high.発想 = 50   // C帯（倍率2.0）
+        high.exp閃き = 10; high.exp語彙 = 10
+        let highGain = GameEngine.pourStep(.発想, to: &high, config: config)
+        let highSpent = 10 - high.exp閃き
+
+        XCTAssertGreaterThan(lowGain, 0)
+        XCTAssertGreaterThan(highGain, 0)
+        XCTAssertEqual(highSpent, lowSpent * 2.0, accuracy: 1e-9, "50(C帯)は10(G帯)の倍率2.0倍の通貨を消費するはず")
+        XCTAssertEqual(GameEngine.rankCostMultiplier(.発想, state: GameState(config: config), config: config), 1.0)
+    }
+
     /// おすすめ注ぎ: 決定論・注げる通貨を残さない（器と上限とレシピが許す限り）・現在値が低い能力を優先
     func testRecommendedPlanIsDeterministicAndDrains() {
         let config = GameConfig()

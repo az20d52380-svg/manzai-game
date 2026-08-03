@@ -68,13 +68,25 @@ extension GameEngine {
         return clamp(s[a] + amt, 0, cap) - s[a]
     }
 
+    /// 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」への対応）: 現在ランクが
+    /// 高いほど1段あたりの通貨消費が重くなる階段状の倍率。balance_sim._rank_cost_multiplier の鏡像。
+    static func rankCostMultiplier(_ a: Ability, state s: GameState, config: GameConfig) -> Double {
+        let value = s[a]
+        for band in config.abilityRankCostBands where value < band.threshold {
+            return band.multiplier
+        }
+        return config.abilityRankCostMultS
+    }
+
     /// レシピの通貨残高から「このステップで注げる生の伸び試行量」をボトルネック（最も乏しい通貨）で決める
     /// （Leontief固定比率＝1能力を伸ばすには、レシピの全通貨を同じ比率で同時に持っている必要がある）。
-    /// ある通貨の重みが w で残高が b なら、その通貨だけで賄える生量は b/w。全通貨中の最小値が実際に払える量。
-    /// allocationStep を上限にクランプ（段刻みループ正典・論点C不変）。balance_sim._affordable_raw の鏡像。
+    /// ある通貨の重みが w・現在ランクの倍率が m で残高が b なら、その通貨だけで賄える生量は b/(w×m)。
+    /// 全通貨中の最小値が実際に払える量。現在ランクが高いほど m が重くなる＝同じ通貨残高でも段が伸びにくくなる
+    /// （正典v3-1）。allocationStep を上限にクランプ（段刻みループ正典・論点C不変）。balance_sim._affordable_raw の鏡像。
     static func affordableRaw(_ a: Ability, state s: GameState, config: GameConfig) -> Double {
         let recipe = config.abilityRecipes[a] ?? []
-        let afford = recipe.map { s[currency: $0.0] / $0.1 }.min() ?? 0
+        let mult = rankCostMultiplier(a, state: s, config: config)
+        let afford = recipe.map { s[currency: $0.0] / ($0.1 * mult) }.min() ?? 0
         return min(config.allocationStep, afford)
     }
 
@@ -89,8 +101,9 @@ extension GameEngine {
         guard amount > pourEpsilon else { return 0 }
         let gain = projectedGain(a, amount: amount, state: s, config: config)
         guard gain > pourEpsilon else { return 0 }
+        let mult = rankCostMultiplier(a, state: s, config: config)
         for (c, w) in config.abilityRecipes[a] ?? [] {
-            s[currency: c] -= amount * w
+            s[currency: c] -= amount * w * mult
         }
         add(.ability(a), amount, to: &s, config: config)
         return gain

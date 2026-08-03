@@ -133,6 +133,16 @@ public struct GameConfig {
     /// 稽古が発行する経験点通貨の供給スケール【仮・旧expSupplyScaleの較正値を継承】。creditCurrency が
     /// 通貨加算量に掛ける。balance_sim.EXP_SUPPLY_SCALE と同期。
     public var expSupplyScale = 0.48
+    /// 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」への対応）:
+    /// 現在ランクが高いほど1段あたりの通貨消費が重くなる階段状の倍率帯。パワプロ実機リサーチで確認済み
+    /// （査定値表は現在ランクが上がるほど1段の必要経験点が段階的に増える・g→sで数倍）。
+    /// しきい値は Theme.rank の等級ラダー（G/F/E/D/C/B/A/S）と同じ帯＝UIの等級表示と経済上の意味を一致させる。
+    /// (未満のしきい値, その帯の倍率) の昇順配列＋最終帯（S）のデフォルト倍率。balance_sim.RANK_COST_BANDS/
+    /// RANK_COST_MULT_S と同期。数値は全て【仮】（sim較正で確定・docs/exp_currency_redesign_v0.md §7-1）。
+    public var abilityRankCostBands: [(threshold: Double, multiplier: Double)] = [
+        (15, 1.00), (25, 1.15), (35, 1.35), (45, 1.60), (55, 2.00), (70, 2.50), (90, 3.20),
+    ]
+    public var abilityRankCostMultS = 4.20
     /// 行動直後に WeekRunner が recommendedPlan で粒を自動全量注ぎするか【正典分離】。
     /// true（既定）= sim/golden/ボットの決定論的「おすすめ台本」＝ここが golden の期待値の前提（既定を変えると golden 再生成が要る）。
     /// **実ゲーム（GameSession）は false に設定する** ＝ 粒がプレイヤーの手元に貯まり、AllocationView で手動割り振りする（パワプロ式の本体）。

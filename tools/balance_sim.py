@@ -174,6 +174,21 @@ ABILITY_RECIPE = {
 # add() の予算②で使う実力値換算重み（mental は 0＝予算を通らない）
 _W = {"sense": W_SENSE, "idea": W_IDEA, "expr": W_EXPR, "chara": W_CHARA, "mental": 0.0}
 
+# 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」への対応。
+# パワプロ実機リサーチ確認済み: 査定値表は現在ランクが上がるほど1段あたりの必要経験点が段階的に増える
+# （帯ごとの階段状カーブ・g→sで数倍に跳ね上がる）。GameConfig.abilityRankCostBands の鏡像。
+# しきい値は Theme.rank の等級ラダー（G/F/E/D/C/B/A/S）と同じ帯＝UIの等級表示と経済上の意味が一致する。
+# 数値は全て【仮】（sim較正で確定・docs/exp_currency_redesign_v0.md §7-1）。
+RANK_COST_BANDS = [(15, 1.00), (25, 1.15), (35, 1.35), (45, 1.60), (55, 2.00), (70, 2.50), (90, 3.20)]
+RANK_COST_MULT_S = 4.20   # 最終帯（S・90以上）のデフォルト倍率
+
+def _rank_cost_multiplier(value):
+    """現在値が高いほど1段あたりの通貨消費が重くなる倍率（等級帯の階段状カーブ）"""
+    for threshold, mult in RANK_COST_BANDS:
+        if value < threshold:
+            return mult
+    return RANK_COST_MULT_S
+
 def projected_gain(s, key, amount):
     """add() の①逓減→②予算キャップ→③clamp と同一式で「見える伸び」を副作用なしで返す純関数。
     GameEngine.projectedGain の鏡像。s._yg（=growthUsed）と YEAR_GROWTH_CAP（=growthBudget）を参照。
@@ -193,24 +208,28 @@ def projected_gain(s, key, amount):
 
 def _affordable_raw(s, key):
     """レシピの通貨残高から「このステップで注げる生の伸び試行量」をボトルネック（最も乏しい通貨）で決める。
-    ある通貨の重みが0.5で残高がbなら、その通貨だけで賄える生量は b/0.5。全通貨中の最小値が実際に払える量。
-    ALLOCATION_STEP を上限にクランプ（段刻みループ正典・論点C不変）"""
+    ある通貨の重みが0.5・現在ランクの倍率が2.0で残高がbなら、その通貨だけで賄える生量は b/(0.5×2.0)。
+    全通貨中の最小値が実際に払える量。現在ランクが高いほど倍率が重くなる＝同じ通貨残高でも段が伸びにくくなる
+    （正典v3-1・階段状の等級コスト）。ALLOCATION_STEP を上限にクランプ（段刻みループ正典・論点C不変）"""
     recipe = ABILITY_RECIPE[key]
-    afford = min((getattr(s, CURRENCY_ATTR[c]) / w for c, w in recipe), default=0.0)
+    mult = _rank_cost_multiplier(getattr(s, key))
+    afford = min((getattr(s, CURRENCY_ATTR[c]) / (w * mult) for c, w in recipe), default=0.0)
     return min(ALLOCATION_STEP, afford)
 
 def pour_step(s, key):
     """1段（ボトルネック通貨で決まる生量・端数はあるだけ）を key に注ぐ。GameEngine.pourStep の鏡像。
-    レシピの全通貨を同じ比率で同時消費（Leontief）。見える伸びが無い段は通貨を消費しない。戻り値=実効伸び"""
+    レシピの全通貨を同じ比率で、かつ現在ランクの等級コスト倍率ぶん上乗せして同時消費（Leontief×階段コスト）。
+    見える伸びが無い段は通貨を消費しない。戻り値=実効伸び"""
     amount = _affordable_raw(s, key)
     if amount <= POUR_EPS:
         return 0.0
     gain = projected_gain(s, key, amount)
     if gain <= POUR_EPS:
         return 0.0
+    mult = _rank_cost_multiplier(getattr(s, key))
     for c, w in ABILITY_RECIPE[key]:
         attr = CURRENCY_ATTR[c]
-        setattr(s, attr, getattr(s, attr) - amount * w)
+        setattr(s, attr, getattr(s, attr) - amount * w * mult)
     add(s, key, amount)   # ①逓減→②予算（s._yg 更新）→③clamp
     return gain
 
