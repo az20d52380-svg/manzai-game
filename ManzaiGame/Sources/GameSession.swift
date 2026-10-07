@@ -100,10 +100,11 @@ final class GameSession {
 
     init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil,
          combiName: String = "あなたのコンビ") {
-        // 実ゲームは自動注ぎを切る＝稽古で稼いだ粒がプレイヤーの手元に貯まり、AllocationView で手動割り振り（パワプロ式）。
-        // golden/sim は既定 true（決定論的おすすめ台本）のまま＝この分離で golden 不変・実ゲームだけ手動化。
+        // 実ゲームも自動注ぎ（A「削る」スライス1・fun_uiux_overhaul_v0 §5-1 A列）＝稽古で稼いだ粒は行動直後に
+        // recommendedPlan で全量注がれ、のばす画面（AllocationView）は通らない。GameConfig 既定値（true）と同じ＝
+        // sim/golden の前提と実ゲームが一致する（golden 不変）。明示しておくのは、既定値が将来変わっても実ゲームを固定するため。
         var cfg = config
-        cfg.autoPourAllocation = false
+        cfg.autoPourAllocation = true
         self.config = cfg
         self.combiName = combiName
         self.isRestored = false
@@ -122,7 +123,7 @@ final class GameSession {
     /// config は毎回新規生成して注入（バランス値は永続化しない＝更新後の値で続きが進む）。
     init(restoring save: SaveData, config: GameConfig = GameConfig()) {
         var cfg = config
-        cfg.autoPourAllocation = false
+        cfg.autoPourAllocation = true   // 新規と同じ（上の init の注記）。手動注ぎ時代の旧セーブに残る粒は、次の自由週の全量注ぎで消化される
         self.config = cfg
         self.combiName = save.combiName
         self.isRestored = true
