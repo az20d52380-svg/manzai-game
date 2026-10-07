@@ -119,7 +119,7 @@ struct WeekMainView: View {
             }
         }
         .task(id: session.week) {
-            // Beat2 獲得の一拍: この週の行動で入った粒/能力/相性/体力/収支をチップ列で立ち上げる
+            // Beat2 獲得の一拍: この週の行動で伸びた実力/相性/ネタ/体力をチップ（最大3枚）で立ち上げる
             // （状態差分駆動・入力遮断なし・RNG非消費）。lastDeltaWeek ゲートで、大会画面を挟んで
             // 戻った時に古い増減が再生される事故を防ぐ。終端で burstHold を必ず下ろす（世代一致時のみ＝
             // 週送り直後に旧タスクの後始末が新しい保留を下ろす競合を防ぐ）。
@@ -137,8 +137,8 @@ struct WeekMainView: View {
             burstChips = chips
             burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
             particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
-            // 獲得の音: 粒（キラキラ）＞汎用ポップ。収支が動いた週はお金の音も重ねる。
-            Sound.play(session.lastGrainGains.isEmpty ? .pop : .grain)
+            // 獲得の音: 実力が伸びた週はキラキラ＞汎用ポップ。収支が動いた週はお金の音も重ねる。
+            Sound.play(lastJitsuryokuGain > 0.001 ? .grain : .pop)
             if session.lastMoneyDelta > 0 { Sound.play(.money) }
             try? await Task.sleep(nanoseconds: 1_200_000_000)
             withAnimation(Theme.Motion.exit) { beatAdvice = nil }
@@ -188,7 +188,7 @@ struct WeekMainView: View {
                 // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
                 SpeedLinesBurst(trigger: particleFire, center: UnitPoint(x: 0.62, y: 0.55))
                 ParticleBurst(trigger: particleFire,
-                              colors: burstChips.map { $0.dot ?? ($0.bg == Theme.card2 ? Theme.gainOrange : $0.bg) },
+                              colors: burstChips.map { $0.bg == Theme.card2 ? Theme.gainOrange : $0.bg },
                               style: .spark, count: 26,
                               origin: UnitPoint(x: 0.62, y: 0.60))
             }
@@ -512,8 +512,7 @@ struct WeekMainView: View {
 
     // MARK: Beat2 獲得バースト（この週の行動で入ったものが立ち絵の頭上に立ち上る）
 
-    /// 出現は下から stagger（0.07s刻み・emphSpring）、退場は逆再生。チップの文法はカードの
-    /// 粒チップ（dot+card2）と効果ピル（色地+白字）をそのまま流用＝予告と着地が同じ顔。
+    /// 出現は下から stagger（0.07s刻み・emphSpring）、退場は逆再生。チップの色はカードの伸びと同じ＝予告と着地が同じ顔。
     private var burstOverlay: some View {
         VStack(alignment: .trailing, spacing: 5) {
             ForEach(Array(burstChips.enumerated()), id: \.element.id) { i, chip in
@@ -528,55 +527,38 @@ struct WeekMainView: View {
 
     private func burstChipView(_ chip: BurstChip) -> some View {
         // パワプロの「＋経験点ドン」＝でかく・白縁・ハード影（小さくつつましい獲得表示は手応えが死ぬ）。
-        HStack(spacing: 5) {
-            if let dot = chip.dot {
-                Circle().fill(dot).frame(width: 9, height: 9)
-            }
-            Text(chip.text).font(.system(size: 16, weight: .black)).foregroundStyle(chip.fg)
-        }
-        .padding(.horizontal, 12).padding(.vertical, 6)
-        .background(chip.bg, in: Capsule())
-        .overlay(Capsule().stroke(.white, lineWidth: 2))
-        .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
+        Text(chip.text).font(.system(size: 16, weight: .black)).foregroundStyle(chip.fg)
+            .padding(.horizontal, 12).padding(.vertical, 6)
+            .background(chip.bg, in: Capsule())
+            .overlay(Capsule().stroke(.white, lineWidth: 2))
+            .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
     }
 
-    /// この週の獲得チップ列を組む（表示専用・RNG非消費）。順序: 粒（稽古の主収穫）→能力/相性（直接効果）→
-    /// 体力→収支。差分0は出さない（+0を印字しない・§1-1）。
+    /// この週の獲得チップ列を組む（表示専用・RNG非消費）。最大3枚、順序: 実力 ↑（自動注ぎで実力値が伸びた週）→
+    /// 相性 +N→ネタ +N or 新ネタ→体力。経験点の通貨チップ・所持金チップは出さない（A「削る」）。差分0は出さない。
     private func makeBurstChips() -> [BurstChip] {
         var chips: [BurstChip] = []
-        var id = 0
-        for g in session.lastGrainGains {
-            // バーストは横幅に余裕がある＝通貨のフル名で出す（単漢字は初見で読めない・監査C-04）
-            let d = Int(g.amount.rounded())
-            guard d > 0 else { continue }
-            chips.append(BurstChip(id: id, dot: Theme.currencyColor(g.currency), text: "\(g.currency) +\(d)",
-                                   fg: Theme.ink, bg: Theme.card2)); id += 1
-        }
-        for g in session.lastGains {
-            let d = Int(g.amount.rounded())
-            guard d > 0 else { continue }
-            chips.append(BurstChip(id: id, dot: nil, text: "\(g.ability) +\(d)",
-                                   fg: .white, bg: Theme.abilityColor(g.ability))); id += 1
+        if lastJitsuryokuGain > 0.001 {
+            // 実力は1週で整数が動かない週が多い＝数字でなく「↑」（バーのオレンジと対）
+            chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.cSense))
         }
         let cd = Int(session.lastCompatGain.rounded())
         if cd > 0 {
-            chips.append(BurstChip(id: id, dot: nil, text: "相性 +\(cd)", fg: .white, bg: Theme.cCompat)); id += 1
+            chips.append(BurstChip(id: chips.count, text: "相性 +\(cd)", fg: .white, bg: Theme.cCompat))
+        }
+        if let n = session.lastNetaGain {
+            let pd = Int(n.polish.rounded())
+            if n.isNew || pd > 0 {
+                chips.append(BurstChip(id: chips.count, text: n.isNew ? "新ネタ" : "ネタ +\(pd)", fg: .white, bg: Theme.cIdea))
+            }
         }
         let sd = session.lastStaminaDelta
         if sd != 0 {
-            chips.append(BurstChip(id: id, dot: nil, text: "体力 \(sd > 0 ? "+" : "")\(sd)",
+            chips.append(BurstChip(id: chips.count, text: "体力 \(sd > 0 ? "+" : "")\(sd)",
                                    fg: sd > 0 ? .white : Theme.inkDim,
-                                   bg: sd > 0 ? Theme.cMental : Theme.card2)); id += 1
+                                   bg: sd > 0 ? Theme.cMental : Theme.card2))
         }
-        let md = session.lastMoneyDelta
-        if md != 0 {
-            let man = Double(abs(md)) / 10000
-            let txt = man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man)
-            chips.append(BurstChip(id: id, dot: nil, text: "\(md > 0 ? "+" : "-")¥\(txt)万",
-                                   fg: md > 0 ? .white : Theme.verm,
-                                   bg: md > 0 ? Theme.cMoney : Theme.verm.opacity(0.14))); id += 1
-        }
-        return chips
+        return Array(chips.prefix(3))
     }
 
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
@@ -803,10 +785,9 @@ private struct CardEffect {
     let color: Color
 }
 
-/// Beat2 獲得バーストの1チップ。dot!=nil は「貯まる粒」（card2地・塗りドット）、nil は即効の効果ピル（色地・白字）。
+/// Beat2 獲得バーストの1チップ（色地・白字。体力の減りだけ card2 地）。
 private struct BurstChip: Identifiable {
     let id: Int
-    let dot: Color?
     let text: String
     let fg: Color
     let bg: Color

@@ -28,6 +28,9 @@ final class GameSession {
     /// 直前の行動で稼いだ粒（同色ロック粒の増分。§1-3 受け取りの一拍＝週メインの獲得チップ行用）。
     /// ρ=0なので同色バンクのみ増える（共通枠は発行されない）。状態差分駆動で消費順・golden非対象。
     private(set) var lastGrainGains: [(currency: ExpCurrency, amount: Double)] = []
+    /// 直前の行動でネタに入ったもの（Beat2 獲得バースト用・表示専用・golden非対象）。
+    /// isNew=新しく書いた／それ以外は既存ネタの完成度の伸び（polish）。何も無ければ nil。
+    private(set) var lastNetaGain: (isNew: Bool, polish: Double)?
     /// 直前の行動での所持金/体力の増減（Beat2 獲得バースト用・表示専用）。週末の生活費も含む「この週の収支」。
     private(set) var lastMoneyDelta = 0
     private(set) var lastStaminaDelta = 0
@@ -194,6 +197,13 @@ final class GameSession {
         lastGrainGains = ExpCurrency.allCases.compactMap { c in
             let d = state[currency: c] - before[currency: c]
             return d > 0.001 ? (c, d) : nil
+        }
+        // Beat2 獲得バースト用のネタの伸び（applyNetaWork の結果の差分・RNG非消費・golden非対象）
+        if state.nextNetaID > before.nextNetaID {
+            lastNetaGain = (true, 0)
+        } else {
+            let d = state.netas.compactMap { n in before.netas.first { $0.id == n.id }.map { n.polish - $0.polish } }.max() ?? 0
+            lastNetaGain = d > 0.001 ? (false, d) : nil
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         lastMoneyDelta = state.money - before.money
