@@ -90,6 +90,13 @@ extension GameEngine {
         return min(config.allocationStep, afford)
     }
 
+    /// 「次の1段」に要る各通貨量（表示専用の純関数・RNG非消費・監査C-02）。
+    /// 1段＝allocationStep の生量を注ぐ時に pourStep が引く量（重み×現在ランクの倍率）。上げるほど増える。
+    public static func nextStepCost(_ a: Ability, state s: GameState, config: GameConfig) -> [(currency: ExpCurrency, amount: Double)] {
+        let mult = rankCostMultiplier(a, state: s, config: config)
+        return (config.abilityRecipes[a] ?? []).map { ($0.0, config.allocationStep * $0.1 * mult) }
+    }
+
     /// 1段（ボトルネック通貨で決まる生量・端数はあるだけ）を a に注ぐ。注入の最小単位＝全経路（+1タップ・
     /// おすすめ・sim/goldenボット）がこの関数を同じ刻みで回す（論点C(b): N回ループ正典。単位を跨いだ
     /// 一括評価を許さない＝貯め込みの1点評価上振れを構造的に不能にする）。

@@ -1,5 +1,9 @@
 // GameState.swift
 // コンビ1組の状態。SwiftUI 非依存の純 Swift（CLAUDE.mdルール1）。
+//
+// ⚠️ セーブ互換の規約（監査G-03・2026-10-06）: このstructは中断セーブ（GameSession.SaveData）にJSONで丸ごと乗る。
+//    Swift の合成 Decodable は「既定値付きの非Optional」でも旧セーブにキーが無いと復号に失敗する。
+//    出荷後に足すフィールドは必ず Optional（`var x: T? = nil`）にし、読む側で `?? 既定値` にすること。
 
 public struct GameState: Codable {
     public var money: Int

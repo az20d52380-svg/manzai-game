@@ -13,12 +13,16 @@ public struct StageResult: Codable {
     /// 大会・GP各回戦・敗者復活・決勝など「結果画面(S3)を出す本番」か。
     /// 体調ダウン/療養など週内の付随イベントは false（UIが名前で判別せず型で分岐できるように）。
     public let isStage: Bool
+    /// 本番スコア − 実効ライン（負＝足りなかった分）。表示専用（負けの"距離"・監査E-03）。
+    /// Optional＝旧セーブに無くても復号できる。乱数・判定には一切関与しない。
+    public let margin: Double?
 
-    public init(name: String, passed: Bool, prize: Int, isStage: Bool = true) {
+    public init(name: String, passed: Bool, prize: Int, isStage: Bool = true, margin: Double? = nil) {
         self.name = name
         self.passed = passed
         self.prize = prize
         self.isStage = isStage
+        self.margin = margin
     }
 }
 
@@ -65,6 +69,16 @@ public struct WeekRunner<R: RandomSource> {
     private var gpAlive: Bool
     private var finalist: Bool
     private var revival = false
+
+    /// GP にまだ残っているか（読み取り専用・UIの「次の本番」表示用。ロジック・乱数消費は不変＝golden不変）。
+    /// false＝回戦で敗退済み or エントリー費が払えず出場不可。決勝進出者は true のまま（finalist を併読）。
+    public var isGPAlive: Bool { gpAlive && gpStage < config.calendar.gpRounds.count }
+    /// 決勝（または敗者復活経由）の舞台に立つ資格があるか（読み取り専用・表示用）
+    public var isFinalist: Bool { finalist }
+    /// 準決勝敗退で敗者復活に回るか（読み取り専用・表示用）
+    public var hasRevival: Bool { revival && !revivalTried }
+    /// 通過済みGP回戦数（読み取り専用・表示用）
+    public var gpRoundsPassed: Int { gpStage }
 
     // 週内の進行位置（runYear のブロック1〜5に対応）。
     // Section/AutoStage の public 化と Codable は中断セーブ（WeekRunnerSnapshot）用＝可視性のみの変更・挙動不変。
@@ -149,7 +163,8 @@ public struct WeekRunner<R: RandomSource> {
                 }
                 acted = true
                 weekResults.append(StageResult(name: spec.name, passed: result.passed,
-                                               prize: result.passed ? spec.prize : 0))
+                                               prize: result.passed ? spec.prize : 0,
+                                               margin: result.score - netaLine))
             }
         }
         return proceed()
@@ -183,7 +198,7 @@ public struct WeekRunner<R: RandomSource> {
                 }
                 gpAlive = false
             }
-            weekResults.append(StageResult(name: name, passed: result.passed, prize: 0))
+            weekResults.append(StageResult(name: name, passed: result.passed, prize: 0, margin: result.score - roundLine))
         case .revival:
             revivalTried = true
             let revivalLine = cal.gpRevivalLine - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
@@ -193,7 +208,7 @@ public struct WeekRunner<R: RandomSource> {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 finalist = true
             }
-            weekResults.append(StageResult(name: "敗者復活", passed: result.passed, prize: 0))
+            weekResults.append(StageResult(name: "敗者復活", passed: result.passed, prize: 0, margin: result.score - revivalLine))
         case .final:
             finalTried = true
             // 決勝のみの人気補正（機微・judge_design §10-F）。王者防衛のライン上書き時にも適用
@@ -203,7 +218,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
             acted = true
             weekResults.append(StageResult(name: "GP決勝", passed: result.passed,
-                                           prize: result.passed ? cal.gpPrize : 0))
+                                           prize: result.passed ? cal.gpPrize : 0, margin: result.score - effLine))
             if result.passed {
                 state.money += cal.gpPrize
                 GameEngine.add(.知名度, cal.champFame, to: &state, config: config)
@@ -340,7 +355,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// 経験点の割り振り（粒→能力）を runner の権威 state に適用する（applyEventEffects と同じ規律・
     /// docs/exp_abilityup_impl_reply_v0.md）。RandomSource を一切呼ばない＝乱数消費順は1ビットも動かない。
-    /// 発行側（稽古→粒）が未配線の間は残高が常に0＝この関数は何もできない＝挙動・golden完全不変。
+    /// golden/sim 経路は autoPourAllocation=true で行動直後に全量注ぐため、ここに来る残高は実ゲーム（手動注ぎ）だけ。
     /// taps は AllocationView のタップ順（プレビューと同一列を同一順で再生＝表示と確定が食い違わない）。
     public mutating func applyAllocation(_ taps: [Ability]) {
         for a in taps { GameEngine.pourStep(a, to: &state, config: config) }

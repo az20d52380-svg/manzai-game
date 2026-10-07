@@ -184,4 +184,19 @@ final class AllocationTests: XCTestCase {
         let senseTaps = plan1.filter { $0 == .センス }.count
         XCTAssertGreaterThan(ideaTaps, senseTaps, "現在値が低い能力（発想）へ多く向かう")
     }
+
+    /// golden の前提値ガード（監査F-03）: 既定は「行動直後におすすめ全量注ぎ」。実ゲームだけが false にする。
+    func testAutoPourDefaultIsGoldenPremise() {
+        XCTAssertTrue(GameConfig().autoPourAllocation)
+    }
+
+    /// 次の1段の通貨量は、ランクが上がるほど増える（表示用・監査C-02）
+    func testNextStepCostGrowsWithRank() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        let low = GameEngine.nextStepCost(.センス, state: s, config: config).reduce(0) { $0 + $1.amount }
+        s.センス = 60
+        let high = GameEngine.nextStepCost(.センス, state: s, config: config).reduce(0) { $0 + $1.amount }
+        XCTAssertGreaterThan(high, low)
+    }
 }

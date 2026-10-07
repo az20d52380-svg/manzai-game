@@ -147,7 +147,7 @@ public struct GameConfig {
     /// true（既定）= sim/golden/ボットの決定論的「おすすめ台本」＝ここが golden の期待値の前提（既定を変えると golden 再生成が要る）。
     /// **実ゲーム（GameSession）は false に設定する** ＝ 粒がプレイヤーの手元に貯まり、AllocationView で手動割り振りする（パワプロ式の本体）。
     /// この分離により golden/sim は不変のまま、実ゲームだけプレイヤーが割り振れる。UI/注ぐ側はこの値を読まない。
-    public var autoPourAllocation = true
+    public var autoPourAllocation = true   // ⚠️ golden の前提＝既定 true を反転しない（実ゲームは GameSession 側で false にする・監査F-03）
 
     // --- 生活ルール【正典v2・docs/rule_holes_v0.md】 ---
     /// 借金中は稽古が半分しか身にならない（nil で無効。balance_sim.DEBT_TRAIN_FACTOR と同期）
