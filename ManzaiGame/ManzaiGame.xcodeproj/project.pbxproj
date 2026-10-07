@@ -23,8 +23,10 @@
 		274A09C6852CB442400DAE49 /* se_taiko.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */; };
 		290A540EAC4D4FD7912614B4 /* se_tada.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */; };
 		2A0C4D15DED110C70394538A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F49ED139642FC2518E962F8 /* RootView.swift */; };
+		2CF0DA6FF334100C755ADEDF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C28779B3A3A70B4A8256AD4F /* PrivacyInfo.xcprivacy */; };
 		2D7CCCC64634FD7E538BAFAA /* se_drumroll.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */; };
 		336B9D68201C9E9CE34E9BA1 /* se_pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 534D89327D384D6F43FDC17F /* se_pop.mp3 */; };
+		364D8FD35D19F6FA0B86ED88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B383B72A92017AEB3494614B /* Assets.xcassets */; };
 		3654B4E4ACE32B6F96F983F1 /* MPLUSRounded1c-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7E9074D521E24C7B5B3FE240 /* MPLUSRounded1c-Medium.ttf */; };
 		420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799C1CDD04C665A5DE37ABB /* SettingsView.swift */; };
 		4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A618381798F759B9F5580F /* Juice.swift */; };
@@ -110,9 +112,11 @@
 		AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cancel.mp3; sourceTree = "<group>"; };
 		AFF716652A1CEF538F57F1BF /* se_event.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_event.mp3; sourceTree = "<group>"; };
 		B18155352CE011A350B1DEC6 /* WeekMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekMainView.swift; sourceTree = "<group>"; };
+		B383B72A92017AEB3494614B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_success.mp3; sourceTree = "<group>"; };
 		B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_small.mp3; sourceTree = "<group>"; };
 		C0518515B27DFACD1B80A893 /* se_rankup.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_rankup.mp3; sourceTree = "<group>"; };
+		C28779B3A3A70B4A8256AD4F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		CC1F100811789DF64591C427 /* DialogueData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogueData.swift; sourceTree = "<group>"; };
 		D47D421441D548D881226B2E /* FontLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontLoader.swift; sourceTree = "<group>"; };
 		D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterAvatars.swift; sourceTree = "<group>"; };
@@ -254,6 +258,8 @@
 		AF0B7CD7489C7AF32E50E799 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B383B72A92017AEB3494614B /* Assets.xcassets */,
+				C28779B3A3A70B4A8256AD4F /* PrivacyInfo.xcprivacy */,
 				02D553EAD3BA203D00F2EEBA /* Audio */,
 				47E31199BB1D6E43436DF0B5 /* Fonts */,
 			);
@@ -321,10 +327,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				364D8FD35D19F6FA0B86ED88 /* Assets.xcassets in Resources */,
 				91217B57A08A20012B50956D /* MPLUSRounded1c-Black.ttf in Resources */,
 				B28B8F7585C02331B30451E3 /* MPLUSRounded1c-Bold.ttf in Resources */,
 				8B6790D2107EF19DC87AA12A /* MPLUSRounded1c-ExtraBold.ttf in Resources */,
 				3654B4E4ACE32B6F96F983F1 /* MPLUSRounded1c-Medium.ttf in Resources */,
+				2CF0DA6FF334100C755ADEDF /* PrivacyInfo.xcprivacy in Resources */,
 				085B8C61648D2030E1CAA987 /* bgm_daily.mp3 in Resources */,
 				1CD9067C8E549F3017A17AC5 /* bgm_finals.mp3 in Resources */,
 				FAE276B38C7A911C9F8445C2 /* bgm_tension.mp3 in Resources */,
@@ -404,6 +412,8 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "四分の夜";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -482,6 +492,8 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "四分の夜";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
