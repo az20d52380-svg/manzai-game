@@ -1,0 +1,319 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>作り直しモック v1（削って、舞台を主役にする）</title></head><body>
+<!-- fun_uiux_overhaul_v0 §6 のモック。数値は全て【仮】。台詞は既存の採点済みテキストの再利用のみ（新規のゲーム内文ゼロ）。
+     見込み％は GameEngine.perform と同じ形の式（実力＋相性＋ネタ補正＋ブレ±(5+15×(1−メンタル/100))＋10%で+12）を机上で計算した近似。 -->
+<style>
+  :root{
+    --cream:#F7EACE; --ink:#3A241F; --dim:#8c7458; --line:#E3CFA8;
+    --verm:#E8402C; --vermD:#B92E1E; --gold:#F6B301; --goldD:#C9971C; --goldL:#FFD86A;
+    --compat:#E8402C; --power:#2E7BFF; --neta:#8B5CF6; --stam:#12A870; --warn:#FF8A1E; --bad:#D8402C;
+    --maru:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","Rounded Mplus 1c",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--maru);color:var(--ink);-webkit-font-smoothing:antialiased;
+    background:linear-gradient(160deg,#EAD3AE,#D8B98A 60%,#C8A472);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;gap:14px}
+  .pitch{max-width:404px;text-align:center;color:#4a3a25}
+  .pitch h1{font-size:18px;font-weight:900}
+  .pitch p{font-size:12px;line-height:1.6;margin-top:5px;color:#5f4d33}
+  .tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .tabs button{font-family:var(--maru);font-weight:800;font-size:12px;border:2px solid #b89a6a;background:#fff8ea;color:#5a4830;border-radius:999px;padding:5px 12px;cursor:pointer}
+  .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .phone{width:404px;max-width:100%;border-radius:42px;padding:10px;background:linear-gradient(#241a18,#0f0a09);box-shadow:0 26px 64px rgba(50,30,15,.45)}
+  .screen{position:relative;border-radius:33px;overflow:hidden;height:820px;display:flex;flex-direction:column;background:#FFF6E6}
+  .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:118px;height:26px;background:#0f0a09;border-radius:0 0 16px 16px;z-index:60}
+  .view{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px}
+  .hide{display:none!important}
+
+  /* ① 次の本番カード */
+  .goal{margin:6px 12px 0;background:#fff;border:3px solid var(--ink);border-radius:18px;padding:12px 14px 12px;box-shadow:0 4px 0 #3a241f22}
+  .goal .top{display:flex;align-items:baseline;gap:8px}
+  .goal .nm{font-size:17px;font-weight:900}
+  .goal .wk{margin-left:auto;font-size:13px;font-weight:900;color:var(--verm)}
+  .meter{position:relative;height:30px;margin:12px 0 6px;border-radius:8px;background:#F3E6CC;overflow:visible}
+  .band{position:absolute;top:4px;bottom:4px;border-radius:6px;background:repeating-linear-gradient(135deg,#2E7BFF33 0 6px,#2E7BFF1a 6px 12px);border:2px dashed #2E7BFF88}
+  .base{position:absolute;top:-6px;width:4px;height:42px;background:var(--power);border-radius:2px;transition:left .6s cubic-bezier(.2,1.4,.4,1)}
+  .base::after{content:"▼";position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--power)}
+  .lineMk{position:absolute;top:-8px;width:0;height:46px;border-left:3px solid var(--verm)}
+  .lineMk span{position:absolute;top:46px;left:-22px;width:44px;text-align:center;font-size:10px;font-weight:900;color:var(--verm)}
+  .scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--dim);margin-top:14px}
+  .odds{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .odds .pct{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums}
+  .odds .word{font-size:13px;font-weight:900;padding:3px 10px;border-radius:999px;border:2px solid currentColor}
+  .odds .parts{margin-left:auto;font-size:11px;color:var(--dim);text-align:right;line-height:1.4}
+  .legend{font-size:9.5px;color:var(--dim);margin-top:6px}
+
+  /* ③ 舞台 */
+  .stage{position:relative;flex:1;min-height:150px;margin-top:10px;background:linear-gradient(#F5D9A6,#E7B979);overflow:hidden}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:46%;background:repeating-linear-gradient(90deg,#D9A764 0 34px,#CF9C58 34px 68px)}
+  .duo{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:18px;align-items:flex-end}
+  .guy{width:64px;height:112px;border-radius:32px 32px 14px 14px;position:relative}
+  .guy.a{background:linear-gradient(#4a7fe0,#2f5fc0)} .guy.b{background:linear-gradient(#e8553c,#c0331f);height:124px}
+  .guy::before{content:"";position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:44px;height:44px;border-radius:50%;background:#FBE2C4;box-shadow:inset 0 14px 0 #2b2230}
+  .mic{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:4px;height:84px;background:#555}
+  .voice{position:absolute;left:12px;right:12px;top:10px;background:#fffdf7f2;border:2px solid #E7CE9c;border-radius:12px;padding:7px 11px;font-size:12.5px;line-height:1.45}
+  .voice b{font-size:10px;color:var(--dim);margin-right:6px}
+
+  /* ② 行動カード */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:10px 12px 8px;background:#FFF1D8;border-top:3px solid var(--line)}
+  .card{font-family:var(--maru);text-align:left;background:#fff;border:3px solid var(--ink);border-radius:16px;padding:9px 11px;min-height:84px;cursor:pointer;box-shadow:0 4px 0 var(--ink);transition:transform .08s}
+  .card:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+  .card .t{font-size:15px;font-weight:900;display:flex;align-items:center;gap:6px}
+  .card .ic{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:13px;color:#fff}
+  .card .ef{font-size:11px;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+  .pill{font-size:10.5px;font-weight:900;border-radius:999px;padding:2px 8px;border:2px solid currentColor}
+  .card.extra{border-style:dashed}
+  .bot{display:flex;align-items:center;gap:10px;padding:8px 16px 16px;background:#2b2033;color:#fff}
+  .bot .w{font-size:20px;font-weight:900}
+  .bot .w small{font-size:10px;opacity:.7;display:block}
+  .stamina{flex:1;display:flex;align-items:center;gap:8px}
+  .stamina .bar{flex:1;height:16px;border-radius:8px;background:#ffffff22;overflow:hidden}
+  .stamina .fill{height:100%;border-radius:8px;transition:width .5s}
+  .stamina .num{font-size:18px;font-weight:900;width:38px;text-align:right}
+  .money{font-size:11px;font-weight:900;color:#FFB4A8}
+
+  /* 週の結果 / 舞台シート */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;border-top:3px solid var(--ink);padding:16px 16px 22px;box-shadow:0 -10px 30px #0003;z-index:30}
+  .sheet h3{font-size:13px;color:var(--dim);font-weight:900}
+  .delta{font-size:40px;font-weight:900;margin:2px 0 4px;font-variant-numeric:tabular-nums}
+  .delta small{font-size:14px;color:var(--dim)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+  .chip{font-size:13px;font-weight:900;border-radius:999px;padding:4px 12px;color:#fff}
+  .next{width:100%;font-family:var(--maru);font-size:16px;font-weight:900;color:#5A3A06;background:var(--gold);border:none;border-radius:14px;padding:13px;cursor:pointer;box-shadow:0 4px 0 var(--goldD)}
+
+  /* 3拍の客席メーター */
+  .beats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 6px}
+  .beat{background:#FFF6E6;border:2px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
+  .beat .lb{font-size:11px;font-weight:900;color:var(--dim)}
+  .beat .col{height:86px;display:flex;align-items:flex-end;justify-content:center;gap:4px;margin:6px 0}
+  .beat .seg{width:14px;border-radius:4px;background:#E9DCC2;transition:background .2s}
+  .beat .seg.on{background:var(--gold)}
+  .beat .seg.on.hi{background:var(--verm)}
+  .beat .lv{font-size:12px;font-weight:900}
+
+  /* 大会結果 */
+  .dark{background:linear-gradient(#2a1d36,#1a1224);color:#fff}
+  .dark .goal{display:none}
+  .tname{text-align:center;font-size:22px;font-weight:900;margin-top:10px}
+  .tsub{text-align:center;font-size:12px;opacity:.6;margin-top:2px}
+  .dark .beat{background:#ffffff10;border-color:#ffffff30}
+  .dark .beat .lb{color:#ffffffaa}
+  .dark .beat .seg{background:#ffffff22}
+  .stamp{margin:14px auto 6px;width:150px;height:110px;border:5px solid #fff;border-radius:10px;display:grid;place-items:center;font-size:38px;font-weight:900;transform:rotate(-4deg)}
+  .breakdown{margin:10px 14px 0;background:#ffffff12;border:2px solid #ffffff30;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.7;font-variant-numeric:tabular-nums}
+  .breakdown .dist{font-size:16px;font-weight:900;color:var(--goldL)}
+  .review{margin:10px 14px 0;background:#FBF4E4;color:var(--ink);border-radius:14px;padding:12px 14px;font-family:serif;font-size:14px;line-height:1.6}
+  .review small{display:block;font-family:var(--maru);font-size:10px;color:var(--dim);margin-top:6px}
+  .after{margin:12px 14px 0}
+  .note{max-width:404px;font-size:11px;color:#5f4d33;line-height:1.6}
+</style>
+
+<div class="pitch">
+  <h1>作り直しモック v1 ── 削って、舞台を主役にする</h1>
+  <p>行動カードを押すと1週進む。「舞台に立つ」は3拍の短い本番が流れる。第12週に初大会。上のタブで3画面へ直接飛べる。数値は全て【仮】。</p>
+</div>
+<div class="tabs">
+  <button data-go="main" class="on">① 週メイン</button>
+  <button data-go="result">② 成長（週の結果）</button>
+  <button data-go="tourn">③ 大会結果</button>
+  <button data-go="reset">はじめから</button>
+</div>
+
+<div class="phone"><div class="screen" id="screen">
+  <div class="notch"></div>
+
+  <!-- ① 週メイン -->
+  <div class="view" id="vMain">
+    <div class="goal" aria-label="次の本番">
+      <div class="top"><span class="nm" id="gName">春新人賞A</span><span class="wk" id="gWeeks">あと11週</span></div>
+      <div class="meter" id="meter">
+        <div class="band" id="band"></div>
+        <div class="lineMk" id="lineMk"><span id="lineLb">ライン30</span></div>
+        <div class="base" id="baseMk" title="いまの実力＋相性"></div>
+      </div>
+      <div class="scale"><span>0</span><span>20</span><span>40</span><span>60</span></div>
+      <div class="odds">
+        <span class="pct" id="pct">28%</span>
+        <span class="word" id="word">遠い</span>
+        <span class="parts" id="parts">実力 10 ＋ 相性 5<br>今夜の出来 ±19</span>
+      </div>
+      <div class="legend">▼＝いまの実力＋相性　斜線の帯＝その夜の出来の振れ幅　赤線＝通過ライン</div>
+    </div>
+
+    <div class="stage">
+      <div class="voice" id="voice"><b>俺</b>急がずに一本作れるのは、年のうちでこの辺りだけだ。</div>
+      <div class="floor"></div>
+      <div class="mic"></div>
+      <div class="duo"><div class="guy a"></div><div class="guy b"></div></div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+    <div class="bot">
+      <div class="w"><small>1年目</small><span id="wk">第1週</span></div>
+      <div class="stamina"><span style="font-size:11px">体力</span><div class="bar"><div class="fill" id="stFill"></div></div><span class="num" id="stNum">100</span></div>
+      <div class="money hide" id="money">お金が足りない</div>
+    </div>
+
+    <!-- ② 週の結果シート -->
+    <div class="sheet hide" id="sheet">
+      <h3 id="shTitle">今週の伸び</h3>
+      <div id="liveBox" class="hide">
+        <div class="beats" id="liveBeats"></div>
+      </div>
+      <div class="delta" id="shDelta">見込み +3%</div>
+      <div class="chips" id="shChips"></div>
+      <button class="next" id="shNext">次の週へ ▶</button>
+    </div>
+  </div>
+
+  <!-- ③ 大会結果 -->
+  <div class="view dark hide" id="vTourn">
+    <div class="tname" id="tName">春新人賞A</div>
+    <div class="tsub">第12週 ・ 本番</div>
+    <div style="margin:0 14px"><div class="beats" id="tBeats"></div></div>
+    <div class="stamp" id="tStamp">―</div>
+    <div class="breakdown" id="tBreak"></div>
+    <div class="review" id="tReview"></div>
+    <div class="after"><button class="next" id="tNext">次の週へ ▶</button></div>
+  </div>
+</div></div>
+
+<p class="note">見込み％・振れ幅は fun_uiux_overhaul_v0 §2 の式を机上で再現した近似（本実装では GameSession の表示専用の純関数で計算し、乱数は引かない）。舞台の客席メーターの高さは Neta.liveBuzz（決定論）に、演出の揺れだけ足したもの。台詞はすべて既存（DialogueData／JudgeData／TournamentResultView）からの再利用。</p>
+
+<script>
+const LINE = 30, TWEEK = 12, SCALE = 60;
+let S;
+function reset(){
+  S = {week:1, power:10, compat:5, stamina:100, mental:10, money:300000, polish:0, buzz:0, hasNeta:false};
+  render(); show('main');
+}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function blur(m){ return 5 + 15*(1 - m/100); }
+// 負の補正は「そのネタを選ばない」で0にできる（監査E-05）＝見込みは選んだ方が得な時だけ足す
+function netaBonus(){ if(!S.hasNeta) return 0; return Math.max(0, clamp((S.polish-50)*0.04 + (S.buzz-50)*0.02, -5, 5)); }
+function stamPen(st){ return st<10?-15: st<30?-10: st<50?-5: 0; }
+function pass(){ // 0.9×P(roll≥need) + 0.1×P(roll+12≥need)。体調ペナは本番の2週前から含める（それ以前は回復できるので出さない）
+  const near = (TWEEK - S.week) <= 2;
+  const B = blur(S.mental), base = S.power + S.compat + netaBonus() + (near ? stamPen(S.stamina) : 0);
+  const need = LINE - base;
+  const p = r => clamp((B - r)/(2*B), 0, 1);
+  return 0.9*p(need) + 0.1*p(need-12);
+}
+function word(p){ return p>=0.6?['届きそう','#12A870']: p>=0.4?['五分','#C9971C']: ['遠い','#D8402C']; }
+
+const ACTIONS = {
+  write:{t:'ネタを書く', ic:'✎', col:'#8B5CF6', st:-20, ef:[['ネタ ↑','#8B5CF6'],['実力 ↑','#2E7BFF'],['体力 −20','#7a6a58']]},
+  live: {t:'舞台に立つ', ic:'🎤', col:'#E8402C', st:-30, ef:[['手応え ↑','#8B5CF6'],['ネタ ↑','#8B5CF6'],['体力 −30','#7a6a58']]},
+  sync: {t:'相方と合わせる', ic:'⇄', col:'#E8402C', st:-20, ef:[['相性 ↑','#E8402C'],['実力 ↑','#2E7BFF'],['体力 −20','#7a6a58']]},
+  rest: {t:'休む', ic:'☾', col:'#3D5A80', st:+60, ef:[['体力 +60','#12A870'],['メンタル ↑','#12A870']]},
+  job:  {t:'バイト', ic:'¥', col:'#2FA35C', st:-20, ef:[['お金 +8万','#2FA35C'],['体力 −20','#7a6a58']], extra:true},
+};
+function render(){
+  const p = pass(), [w,c] = word(p), B = blur(S.mental), base = S.power + S.compat + netaBonus();
+  const X = v => clamp(v/SCALE*100, 0, 100) + '%';
+  document.getElementById('baseMk').style.left = `calc(${X(base)} - 2px)`;
+  const band = document.getElementById('band'); band.style.left = X(base-B); band.style.width = (clamp(base+B,0,SCALE)-clamp(base-B,0,SCALE))/SCALE*100 + '%';
+  document.getElementById('lineMk').style.left = X(LINE);
+  document.getElementById('pct').textContent = Math.round(p*100)+'%';
+  const wEl = document.getElementById('word'); wEl.textContent = w; wEl.style.color = c;
+  document.getElementById('pct').style.color = c;
+  const pen = (TWEEK - S.week) <= 2 ? stamPen(S.stamina) : 0;
+  document.getElementById('parts').innerHTML = `実力 ${Math.round(S.power)} ＋ 相性 ${Math.round(S.compat)}${S.hasNeta?` ＋ ネタ +${netaBonus().toFixed(0)}`:''}${pen?` <b style="color:#D8402C">体調 ${pen}</b>`:''}<br>今夜の出来 ±${Math.round(B)}`;
+  const left = TWEEK - S.week;
+  document.getElementById('gWeeks').textContent = left>0 ? `あと${left}週` : '今週！';
+  document.getElementById('wk').textContent = `第${S.week}週`;
+  document.getElementById('stNum').textContent = Math.round(S.stamina);
+  const f = document.getElementById('stFill'); f.style.width = S.stamina+'%';
+  f.style.background = S.stamina<30?'#D8402C': S.stamina<50?'#FF8A1E':'#12A870';
+  document.getElementById('money').classList.toggle('hide', S.money>=100000);
+  // 声（既存テキストの再利用のみ）
+  const v = document.getElementById('voice');
+  v.innerHTML = left<=3 && left>0 ? '<b>俺</b>止める場所を決めてから、頭から通す。'
+    : S.week>=8 ? '<b>谷口</b>来月まで本番なしか。長いな'
+    : '<b>俺</b>急がずに一本作れるのは、年のうちでこの辺りだけだ。';
+  // カード
+  const keys = ['write','live','sync','rest']; if(S.money<100000) keys.push('job');
+  const box = document.getElementById('cards'); box.innerHTML='';
+  keys.forEach(k=>{ const a=ACTIONS[k]; const b=document.createElement('button'); b.className='card'+(a.extra?' extra':'');
+    b.setAttribute('aria-label', a.t);
+    b.innerHTML = `<div class="t"><span class="ic" style="background:${a.col}">${a.ic}</span>${a.t}</div><div class="ef">${a.ef.map(e=>`<span class="pill" style="color:${e[1]}">${e[0]}</span>`).join('')}</div>`;
+    b.onclick=()=>act(k); box.appendChild(b); });
+}
+function beatsHTML(levels, id){
+  return ['ツカミ','中盤','オチ'].map((lb,i)=>`<div class="beat"><div class="lb">${lb}</div><div class="col" id="${id}${i}">${[1,2,3,4,5].map(n=>`<div class="seg" style="height:${12+n*14}px"></div>`).join('')}</div><div class="lv" id="${id}l${i}">　</div></div>`).join('');
+}
+function playBeats(id, levels, done){
+  let i=0; const words=['小','中','大','大','大'];
+  const step=()=>{ if(i>=3){ done&&done(); return; }
+    const segs=[...document.getElementById(id+i).children]; let k=0;
+    const fill=setInterval(()=>{ if(k<levels[i]){ segs[k].classList.add('on'); if(levels[i]>=4) segs[k].classList.add('hi'); k++; } else { clearInterval(fill);
+      document.getElementById(id+'l'+i).textContent = levels[i]<=1?'小':levels[i]<=3?'中':'大'; i++; setTimeout(step,260);} },110);
+  }; step();
+}
+function act(k){
+  const before = pass();
+  const chips = [];
+  let live = null;
+  if(k==='write'){ if(!S.hasNeta){ S.hasNeta=true; S.polish=30; chips.push(['新ネタ','#8B5CF6']); } else { S.polish=clamp(S.polish+8,0,100); chips.push(['ネタ +8','#8B5CF6']); } S.power+=0.25; chips.push(['実力 ↑','#2E7BFF']); }
+  if(k==='live'){ if(!S.hasNeta){ S.hasNeta=true; S.polish=30; }
+    const lb = clamp(S.power*0.7 + S.polish*0.5, 0, 100); S.buzz = S.buzz*0.6 + lb*0.4; S.polish=clamp(S.polish+6,0,100);
+    const base = clamp(Math.round(lb/12),1,5); live=[clamp(base+(Math.random()<.5?-1:0),1,5), clamp(base,1,5), clamp(base+(Math.random()<.4?1:0),1,5)];
+    chips.push(['手応え ↑','#8B5CF6'],['ネタ +6','#8B5CF6']); S.power+=0.1; }
+  if(k==='sync'){ S.compat=clamp(S.compat+1,0,20); S.power+=0.25; chips.push(['相性 +1','#E8402C'],['実力 ↑','#2E7BFF']); }
+  if(k==='rest'){ S.mental+=2; chips.push(['体力 +60','#12A870']); }
+  if(k==='job'){ S.money+=80000; chips.push(['お金 +8万','#2FA35C']); }
+  S.stamina = clamp(S.stamina + ACTIONS[k].st, 0, 100);
+  S.week += 1; if(S.week%4===1) S.money -= 100000;
+  const after = pass();
+  render();
+  // 週の結果シート
+  const d = Math.round((after-before)*100);
+  document.getElementById('shTitle').textContent = live ? '舞台の反応' : '今週の伸び';
+  document.getElementById('shDelta').innerHTML = `見込み ${d>=0?'+':''}${d}% <small>${Math.round(before*100)}% → ${Math.round(after*100)}%</small>`;
+  document.getElementById('shChips').innerHTML = chips.slice(0,3).map(c=>`<span class="chip" style="background:${c[1]}">${c[0]}</span>`).join('');
+  const lbx = document.getElementById('liveBox'); lbx.classList.toggle('hide', !live);
+  document.getElementById('sheet').classList.remove('hide');
+  if(live){ document.getElementById('liveBeats').innerHTML = beatsHTML(live,'lv'); playBeats('lv', live); }
+}
+document.getElementById('shNext').onclick=()=>{ document.getElementById('sheet').classList.add('hide'); if(S.week===TWEEK) tournament(); };
+function tournament(forced){
+  const B = blur(S.mental), base = S.power + S.compat + netaBonus() + stamPen(S.stamina);
+  let roll = forced ?? (Math.random()*2*B - B); if(forced===undefined && Math.random()<0.1) roll += 12;
+  const score = base + roll, ok = score >= LINE, m = score - LINE;
+  show('tourn');
+  const lv = x => clamp(Math.round(x),1,5);
+  const levels = [lv(3+m/8), lv(3+m/7), lv(3+m/6)];   // 客席はラインとの差で動く＝判と食い違わない
+  document.getElementById('tBeats').innerHTML = beatsHTML(levels,'tb');
+  const st = document.getElementById('tStamp'); st.textContent='…'; st.style.background='transparent'; st.style.borderColor='#fff';
+  document.getElementById('tBreak').innerHTML=''; document.getElementById('tReview').innerHTML='';
+  playBeats('tb', levels, ()=>{
+    st.textContent = ok?'通過':'敗退'; st.style.background = ok?'#E8402C':'#5a5070';
+    const sign = v => (v>=0?'+':'−')+Math.abs(Math.round(v));
+    const miss = m>=-3?'——あと一歩。': m>=-10?'——届かず。':'——遠い。';
+    document.getElementById('tBreak').innerHTML =
+      `実力 ${Math.round(S.power)} ＋ 相性 ${Math.round(S.compat)} ${S.hasNeta?`＋ ネタ ${sign(netaBonus())} `:''}${stamPen(S.stamina)?`＋ 体調 ${sign(stamPen(S.stamina))} `:''}＋ 今夜の出来 ${sign(roll)} ＝ <b>${Math.round(score)}</b><br>`+
+      `<span class="dist">${ok?`ライン${LINE}を ${Math.round(m)} 上回った ──どっと沸いた！`:`ライン${LINE}まで あと ${Math.abs(Math.round(m))}　${miss}`}</span>`;
+    document.getElementById('tReview').innerHTML = ok
+      ? '声が会場サイズに合っていた。この調子で。<small>審査講評（既存 JudgeData を再利用）</small>'
+      : '目が客でなく床を見ていた。次は前を。中身は良い。<small>審査講評（既存 JudgeData を再利用）</small>';
+  });
+}
+document.getElementById('tNext').onclick=()=>{ S.week+=1; render(); show('main'); };
+function show(v){
+  document.getElementById('vMain').classList.toggle('hide', v!=='main' && v!=='result');
+  document.getElementById('vTourn').classList.toggle('hide', v!=='tourn');
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.go===v));
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  const g=b.dataset.go;
+  if(g==='reset'){ reset(); return; }
+  if(g==='main'){ document.getElementById('sheet').classList.add('hide'); show('main'); }
+  if(g==='result'){ show('main'); act('live'); document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on', x.dataset.go==='result')); }
+  if(g==='tourn'){ tournament(-6); }
+});
+reset();
+</script>
+</body></html>
+</content>
+</invoke>
