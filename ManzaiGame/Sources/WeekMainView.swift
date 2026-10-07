@@ -1,6 +1,6 @@
 // WeekMainView.swift
 // SCREEN 01 育成メイン（A「削る」スライス1・docs/fun_uiux_overhaul_v0.md §5-1 A列／§6-1）。
-// 上＝立ち絵シーン（左上にピル・未選択時は心の声）／下＝行動カード4枚（2×2・常設）＋条件付きの小カード
+// 上＝立ち絵シーン（左上に実力/相性の2本バー・心の声）／下＝行動カード4枚（2×2・常設）＋条件付きの小カード
 // （オファー／バイト／年末へ）／最下部＝帯（年週・大会までN週・カレンダー/ネタ帳/設定・体力ゲージ・所持金）。
 // 1週1タップ: カードのタップ＝二拍（Beat1 発話0.7s→choose＝1週進む→Beat2 獲得バースト）。経験点は自動で全量注がれる
 // （GameSession の autoPourAllocation=true）＝のばす画面は通らない。決定ボタンは無い。
@@ -18,7 +18,7 @@ struct WeekMainView: View {
     @Bindable var session: GameSession
     let offer: OfferSpec?
 
-    /// 実行直後だけ true。ピルの「+N」を一瞬見せる（既存の lastGains 機構を流用）。
+    /// 週送りの直後だけ true。実力/相性バーにこの週の伸びをオレンジで一瞬重ねる（既存の lastGains 機構を流用）。
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
@@ -50,8 +50,6 @@ struct WeekMainView: View {
     @State private var weekStampVisible = false
     /// Beat2 と同時に爆ぜる獲得パーティクル（+1で一回・Juice.swift）。
     @State private var particleFire = 0
-    /// 谷口評（5能力平均のランク）がランクアップした瞬間の punch（AllocationView のグレード昇格と同じ文法）。
-    @State private var rankPunch = false
     /// 週頭の掛け合いのタップ送り位置（週が明けたら0に戻す）。
     @State private var banterIndex = 0
     /// Beat1 の一言を最後に出した週（変種ごと）。直近4週に出した変種は一言を省く＝最頻出テキストの間引き（監査A-04）
@@ -113,7 +111,7 @@ struct WeekMainView: View {
             }
         }
         .task(id: session.week) {
-            // 新しい週に入ったら「+N」を一瞬見せる（ピルのオレンジ）。相性/オファー能力は今も直接効くのでこのまま。
+            // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
                 gainsVisible = true
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
@@ -156,18 +154,6 @@ struct WeekMainView: View {
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
         .onChange(of: session.week) { _, _ in banterIndex = 0 }   // 掛け合いの読み位置は週頭でリセット
-        .onChange(of: partnerRank) { old, new in
-            // 谷口評のランクが上がった瞬間だけ punch（下がりは黙る）。AllocationView のグレード昇格と同じ文法。
-            let order = ["D", "C", "B", "A", "S"]
-            guard let o = order.firstIndex(of: old), let n = order.firstIndex(of: new), n > o else { return }
-            Haptics.confirm()
-            Sound.play(.rankup)   // 谷口評ランクアップ（パワプロの評価アップの音）
-            Task {
-                withAnimation(Theme.Motion.emphSpring) { rankPunch = true }
-                try? await Task.sleep(nanoseconds: 650_000_000)
-                withAnimation(Theme.Motion.appear) { rankPunch = false }
-            }
-        }
         .task(id: toast) {
             if let t = toast {
                 try? await Task.sleep(nanoseconds: t.count > 20 ? 2_600_000_000 : 1_400_000_000)
@@ -181,12 +167,13 @@ struct WeekMainView: View {
         }
     }
 
-    // MARK: 立ち絵シーン（左上ピル・心の声）
+    // MARK: 立ち絵シーン（左上の実力/相性バー・心の声）
 
     private var sceneZone: some View {
         sceneBackground
             .background(Color(hex: 0xFFFBF0).ignoresSafeArea(edges: .top))   // ステータスバー裏も稽古場の白
-            .overlay(alignment: .topLeading) { pillsColumn.padding(12) }
+            // 上端中央の目標バナー（2行になる週がある）の下に置く＝重ならない
+            .overlay(alignment: .topLeading) { statBars.padding(.leading, 12).padding(.top, 56) }
             .overlay(alignment: .bottomLeading) {
                 // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
                 if let b = beatAdvice {
@@ -266,120 +253,80 @@ struct WeekMainView: View {
         StageScene().ignoresSafeArea(edges: .top)
     }
 
-    // MARK: 6軸ダークピル（センス/発想/表現/華/メンタル/相性・data-theme無関係の暗色固定）
+    // MARK: 実力・相性の2本バー（A「削る」: 能力ピル6本・谷口評の置き換え。数字は整数・％は出さない）
 
-    private var pillsColumn: some View {
-        let rows: [(String, Ability?, Double, Color)] = [
-            ("センス", .センス, s.センス, Theme.cSense),
-            ("発想", .発想, s.発想, Theme.cIdea),
-            ("表現", .表現, s.表現, Theme.cExpr),
-            ("華", .華, s.華, Theme.cChara),
-            ("メンタル", .メンタル, s.メンタル, Theme.cMental),
-            ("相性", nil, s.compat, Theme.cCompat),
-        ]
-        return VStack(alignment: .leading, spacing: 4) {
-            ForEach(rows, id: \.0) { r in
-                statPill(name: r.0, ability: r.1, value: r.2, color: r.3)
-            }
-            rankChip
+    /// 実力＝その年の成長の器の満ち具合（growthUsed/growthBudget）。器は実力値の伸びしろ（実力値換算）なので、
+    /// バーの左端＝年初の実力値・右端＝器いっぱいの実力値、併記の数字＝いまの実力値（整数）。
+    /// 相性＝0〜compatCap。能力5本の内訳はネタ帳（最下帯のアイコン）で見る。
+    private var statBars: some View {
+        let cfg = session.config
+        let budget = s.growthBudget ?? 0
+        let jitsuFill = budget > 0 ? min(1, s.growthUsed / budget) : 0
+        let compatFill = min(1, max(0, s.compat / cfg.compatCap))
+        return VStack(alignment: .leading, spacing: 7) {
+            statBar(name: "実力", glyph: "sparkles", color: Theme.cSense,
+                    value: GameEngine.jitsuryoku(s, config: cfg), fill: jitsuFill,
+                    gainFill: budget > 0 ? lastJitsuryokuGain / budget : 0)
+            statBar(name: "相性", glyph: "heart.fill", color: Theme.cCompat,
+                    value: s.compat, fill: compatFill,
+                    gainFill: max(0, session.lastCompatGain) / cfg.compatCap)
         }
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .frame(width: 196)
+        .background(.white, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2.5))
+        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
     }
 
-    /// 能力ピルのアイコン（色弱対応で色だけに頼らない・オーナー指摘2026-08-03）
-    private func pillGlyph(_ a: Ability?) -> String {
-        guard let a else { return "heart.fill" }   // 相性
-        switch a {
-        case .センス: return "sparkles"
-        case .発想: return "lightbulb.fill"
-        case .表現: return "theatermasks.fill"
-        case .華: return "star.fill"
-        case .メンタル: return "brain.head.profile"
-        }
-    }
-
-    /// 谷口評: 5能力平均のランク（Theme.rank）。数字を並べず一字で「いまどの辺か」を言う常設メーター。
-    /// ランクアップの瞬間は punch（scale1.18+金・Haptics.confirm）＝パワプロの評価アップの一拍。
-    private var partnerRank: String {
-        Theme.rank((s.センス + s.発想 + s.表現 + s.華 + s.メンタル) / 5)
-    }
-
-    private var rankChip: some View {
-        HStack(spacing: 5) {
-            Text("谷口評").font(.maru(9.5)).foregroundStyle(Theme.ink.opacity(0.85))
-            Text(partnerRank).font(.maru(14))
-                .foregroundStyle(rankPunch ? Theme.gold : Theme.gradeColor(partnerRank))
-                .scaleEffect(rankPunch ? 1.25 : 1)
-        }
-        .padding(.horizontal, 9).padding(.vertical, 3)
-        .background(.white, in: Capsule())
-        .overlay(Capsule().stroke(rankPunch ? Theme.gold : Theme.gradeColor(partnerRank), lineWidth: 2))
-        .shadow(color: Theme.cmdShadow, radius: 0, y: 2)
-        .padding(.top, 2)
-    }
-
-    private func statPill(name: String, ability: Ability?, value: Double, color: Color) -> some View {
-        // 能力5種は lastGains、相性は lastCompatGain から「実際に伸びた分」を出す（プレビューではなく確定値）。
-        let gain: Double? = {
-            if let a = ability { return session.lastGains.first(where: { $0.ability == a })?.amount }
-            return session.lastCompatGain > 0.001 ? session.lastCompatGain : nil
-        }()
-        // パワプロ式: 白地チャンキーピル＋等級バッジ（D→S）。等級が「いまどの辺か」を一字で言う。
-        // 相性は 0..compatCap を 0..100 に写像して同じ等級尺で読む。上限到達で縁がgold。
-        let isPerf = ability != nil && ability != .メンタル
-        let capped = isPerf && value >= session.config.abilityCap
-        let gradeBase = ability != nil ? value : value / session.config.compatCap * 100
-        let grade = Theme.rank(gradeBase)
-        // 監査C-01: 塗りは「0〜上限の比」でなく「いまの等級帯の中での進み」。1年目でも注ぐたびに満ちて見え、
-        // 等級を跨ぐと空に戻る（等級の閾値そのものは経済と共有＝不変）。
-        let barCap = ability == nil ? 100 : (ability == .メンタル ? session.config.mentalCap : session.config.abilityCap)
-        let fill = Theme.rankProgress(gradeBase, cap: barCap)
-        return HStack(spacing: 6) {
-            // 能力アイコン（色+アイコンで常時判別・オーナー指摘2026-08-03「見えづらい」対応）:
-            // 序盤は全員グレードGで等級バッジが同色（灰）になり、かつ比例塗りは低値でほぼ見えず
-            // ピルが識別不能になっていた。能力固有色の丸を常設し、色だけに頼らないアイコンも添える。
+    /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分をオレンジで重ねる＝「押した週に何が動いたか」。
+    /// 満ちたら縁が金（旧ピルの上限到達と同じ文法）。色＋アイコン＋名前で区別（§6-5）。
+    private func statBar(name: String, glyph: String, color: Color, value: Double, fill: Double, gainFill: Double) -> some View {
+        let full = fill >= 0.999
+        let shown = gainsVisible && session.lastDeltaWeek == session.week ? min(gainFill, fill) : 0
+        return HStack(spacing: 7) {
             ZStack {
                 Circle().fill(color).frame(width: 22, height: 22)
-                Image(systemName: pillGlyph(ability))
-                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                Image(systemName: glyph).font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
             }
-            // 等級バッジ（パワプロの G..S 相当・色は等級固有）
-            Text(grade).font(.maru(11)).foregroundStyle(.white)
-                .frame(width: 21, height: 21)
-                .background(Circle().fill(Theme.gradeColor(grade)))
-                .overlay(Circle().stroke(.white, lineWidth: 1.5))
-                .punch(on: grade, peak: 1.4)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(name).font(.maru(10.5)).foregroundStyle(Theme.ink)
-                Text("\(Int(value.rounded()))").font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink)
-                    .contentTransition(.numericText())
-                    .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
-                    .punch(on: Int(value.rounded()), peak: 1.35)   // 値が動いた瞬間だけ跳ねる（ジュース核）
-            }
-            if let gain, gainsVisible, Int(gain.rounded()) >= 1 {
-                Text("+\(Int(gain.rounded()))").font(.maru(12)).foregroundStyle(Theme.gainOrange)
-                    // +N規格（§3-3）: 出現0.2s=+8ptから浮き上がる／滞留（taskの1.2sから逆算0.6s）／退場0.4s=上昇フェード
-                    .transition(.asymmetric(
-                        insertion: .offset(y: 8).combined(with: .opacity),
-                        removal: .offset(y: -8).combined(with: .opacity)))
-            }
-        }
-        .padding(.leading, 5).padding(.trailing, 10).padding(.vertical, 4)
-        .background {
-            ZStack(alignment: .leading) {
-                // 常時見える下地の色帯（比例0%でも識別できる・§旧: 比例塗りのみだと低値で消えていた）
-                color.opacity(0.14)
-                GeometryReader { geo in
-                    Rectangle().fill(color.opacity(0.30))
-                        .frame(width: geo.size.width * fill)
-                        .animation(.easeOut(duration: 0.4), value: fill)
+            Text(name).font(.maru(11)).foregroundStyle(Theme.ink).fixedSize()
+            GeometryReader { geo in
+                let w = geo.size.width
+                ZStack(alignment: .leading) {
+                    Capsule().fill(color.opacity(0.14))
+                    Capsule().fill(color).frame(width: w * fill)
+                    Rectangle().fill(Theme.gainOrange)
+                        .frame(width: w * shown)
+                        .offset(x: w * (fill - shown))
+                        .opacity(shown > 0 ? 1 : 0)
                 }
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(full ? Theme.gold : color.opacity(0.5), lineWidth: full ? 2 : 1))
+                .animation(.easeOut(duration: 0.6), value: fill)
+                .animation(.easeOut(duration: 0.3), value: shown)
             }
-            .clipShape(Capsule())
+            .frame(height: 11)
+            Text("\(Int(value.rounded()))").font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink)
+                .frame(width: 26, alignment: .trailing)
+                .contentTransition(.numericText())
+                .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
+                .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
         }
-        .background(.white, in: Capsule())
-        .overlay(Capsule().stroke(capped ? Theme.gold : color, lineWidth: 2.5))
-        .shadow(color: Theme.cmdShadow, radius: 0, y: 2)   // ハード影＝チャンキー
-        .animation(.easeOut(duration: gainsVisible ? 0.2 : 0.4), value: gainsVisible)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) \(Int(value.rounded()))")
+    }
+
+    /// 直前の週に伸びた実力値（lastGains の演技系4能力×重み＝実力値の増分。メンタルは実力値に入らない）。
+    private var lastJitsuryokuGain: Double {
+        let c = session.config
+        return session.lastGains.reduce(0) { acc, g in
+            switch g.ability {
+            case .センス: return acc + g.amount * c.weightSense
+            case .発想: return acc + g.amount * c.weightIdea
+            case .表現: return acc + g.amount * c.weightExpr
+            case .華: return acc + g.amount * c.weightChara
+            case .メンタル: return acc
+            }
+        }
     }
 
     // MARK: 心の声（状態駆動モノローグ）／Beat1 発話バブル（同じ器を共用）
