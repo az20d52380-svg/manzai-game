@@ -262,6 +262,14 @@ final class GameSession {
         }
     }
 
+    /// 行動カードの伸び表示用: action を適用し、自動注ぎ（config.autoPourAllocation）なら WeekRunner と同じ順で
+    /// 粒を全量注いだ後の状態（週末の生活費は含まない＝名目値）。乱数非消費・純関数＝golden不変。
+    func previewAfterPour(_ action: WeekAction, offer: OfferSpec? = nil) -> GameState {
+        var s = previewState(action, offer: offer)
+        if config.autoPourAllocation { GameEngine.pourRecommended(to: &s, config: config) }
+        return s
+    }
+
     // MARK: 割り振り（経験点残高→能力。docs/exp_abilityup_impl_reply_v0.md）
     //
     // ⚠️ previewState/previewGains と同じ規律: RandomSource を一切触らない＝乱数を消費しない＝golden不変。

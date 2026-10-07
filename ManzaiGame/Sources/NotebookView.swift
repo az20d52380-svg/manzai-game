@@ -104,7 +104,8 @@ struct NotebookView: View {
         let budget = s.growthBudget ?? 0
         let used = min(budget, s.growthUsed)
         let frac = budget > 0 ? used / budget : 0
-        let hasGrain = s.expTotal >= 1
+        // 自動注ぎ（A「削る」）では粒は行動直後に注がれ、のばす画面も無い＝残高と「のばす」誘導は出さない
+        let hasGrain = s.expTotal >= 1 && !session.config.autoPourAllocation
         // §3 誘導文は「注げる段があること」も条件に足す（器満了中は「注ぐ」が嘘の導きになる＝バッジと同じ recommendedPlan 由来で食い違いを消す）。
         let canPour = !session.recommendedAllocation().isEmpty
         return VStack(alignment: .leading, spacing: 8) {
