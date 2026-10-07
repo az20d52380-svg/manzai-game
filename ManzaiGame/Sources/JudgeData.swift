@@ -84,14 +84,20 @@ enum JudgeData {
     /// 話者固定行は必ずその署名／nil行だけ従来の署名ローテ。契約(text, judge)は不変。
     static func review(passed: Bool, state: GameState, salt: Int) -> (text: String, judge: String) {
         let pool: [PaperReview]
+        // 監査D-02: 1年目はメンタルが常に40未満＝旧条件では通過の講評が毎回同じ1行・敗退が毎回"緊張"になっていた。
+        // メンタル系は本当に低い時（<20）だけにし、通過側の1行は通常プールに混ぜて回す。
+        // 敗退で相性が低い（<8）時は関係性を指す講評を優先＝実際の不足に近い一点を指す。
         if passed {
             if state.compat >= 18 { pool = passChemistryHigh }
             else if state.stamina < 30 { pool = passStaminaLow }
-            else if state.メンタル < 40 { pool = passMentalLow }
-            else { pool = pass }
+            else { pool = pass + passMentalLow }
         } else {
             if state.stamina < 30 { pool = failStaminaLow }
-            else if state.メンタル < 40 { pool = failMentalLow }
+            else if state.メンタル < 20 { pool = failMentalLow }
+            else if state.compat < 8 {
+                let rel = fail.filter { $0.text.contains("関係") || $0.text.contains("相方") }
+                pool = rel.isEmpty ? fail : rel
+            }
             else { pool = fail }
         }
         guard !pool.isEmpty else { return ("", judgeNames[0]) }

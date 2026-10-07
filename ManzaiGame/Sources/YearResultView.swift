@@ -199,7 +199,7 @@ struct YearResultView: View {
     ]
     private static let yeStall = [  // 停滞年
         "合わせの録音で、電話の容量が今年も一杯になった。順位は、去年のままだ。",
-        "今年は、同じ準決勝の会場に三度立った。三度とも、決勝の会場を見ずに帰った。",
+        // 多年版のみ: "今年は、同じ準決勝の会場に三度立った。…"（準決勝が年1回の1年版では事実と矛盾＝監査D-06）
         "順位が貼り出される紙の、俺たちの名前の上と下は、今年も同じ二組だった。",
     ]
     private static let yeBankrupt = [  // 貧乏年
@@ -235,12 +235,11 @@ struct YearResultView: View {
         if o.champion { return ("優勝", true) }
         if o.bankrupt { return ("夜逃げ", false) }
         if o.reachedFinal { return ("決勝", true) }
+        // 監査C-07: 「最後に通過した回戦」ではなく「敗れた回戦」を言う（3回戦で負けた人に「2回戦」と出さない）
         let names = session.config.calendar.gpRoundNames
-        switch o.roundsPassed {
-        case 0: return ("予選敗退", false)
-        case let n where n - 1 < names.count: return (names[n - 1].replacingOccurrences(of: "GP", with: ""), true)
-        default: return ("\(o.roundsPassed)回戦", true)
-        }
+        let n = o.roundsPassed
+        if n < names.count { return (names[n].replacingOccurrences(of: "GP", with: "") + "敗退", n > 0) }
+        return ("準決勝敗退", true)
     }
 
     private func reachSub() -> String {

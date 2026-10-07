@@ -9,6 +9,10 @@ import GameCore
 
 struct FinalsPresentationView: View {
     let session: GameSession
+    /// 観客モード（監査H-01）: 決勝に進めなかった年、第47週に今年の決勝を客席から観る。自組は出ない。
+    var spectator: Bool = false
+    /// 観客モードの終わり（優勝組名を渡して年末へ戻る）
+    var onFinishSpectating: ((String) -> Void)? = nil
 
     @State private var beat = 0            // 0籤 1一斉オープン 2ボード 3最終決戦 4結果
     @State private var revealedJudges = 0  // 見せ札を1人ずつ開示（M-1式・0..7）
@@ -18,7 +22,10 @@ struct FinalsPresentationView: View {
     @State private var burstFire = 0       // 決着の紙吹雪バースト
 
     private var s: GameState { session.state }
-    private var d: FinalsData { FinalsData(state: s, champion: session.outcome?.champion ?? true) }
+    /// 優勝時は勝ち版、決勝で負けた時は負け版（監査E-08）、観客モードは自組抜きの3組
+    private var d: FinalsData { FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator) }
+    /// 最終決戦の3組名（観客モードはNPCの3組）
+    private var duelNames: [String] { spectator ? d.rivalNames : [session.combiName] + d.rivalNames }
 
     var body: some View {
         ZStack {
@@ -69,6 +76,7 @@ struct FinalsPresentationView: View {
         .onTapGesture { advance() }
         .onAppear {
             Sound.bgm(.finals)   // 番組のBGM（決勝の格）
+            if spectator { beat = 2 }   // 観客は籤と自組の採点を飛ばし、暫定ボードから観る
             #if DEBUG
             // 目視用: MZ_FIN=open/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
@@ -101,9 +109,9 @@ struct FinalsPresentationView: View {
     private var lowerThird: some View {
         HStack(spacing: 10) {
             Rectangle().fill(Theme.verm).frame(width: 5)
-            Text(session.combiName).font(.maru(14)).foregroundStyle(.white)
+            Text(spectator ? "客席から" : session.combiName).font(.maru(14)).foregroundStyle(.white)
             Spacer()
-            Text("結成1年").font(.maru(10)).foregroundStyle(Theme.gold.opacity(0.9))
+            Text(spectator ? session.combiName : "結成1年").font(.maru(10)).foregroundStyle(Theme.gold.opacity(0.9))
         }
         .padding(.horizontal, 16).frame(height: 40)
         .background(LinearGradient(colors: [Color(hex: 0x1A1424).opacity(0.96), Color(hex: 0x241A30).opacity(0.96)],
@@ -123,8 +131,8 @@ struct FinalsPresentationView: View {
         case 3 where revealVotes < 7:
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
             slamFire += 1
-            let usCount = d.voteOrder.prefix(revealVotes).filter { $0 == 0 }.count
-            if usCount == 4 {                                          // 過半数到達＝その瞬間に決着
+            let winCount = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
+            if winCount == 4 {                                          // 過半数到達＝その瞬間に決着
                 Haptics.rare(); burstFire += 1
                 Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
             } else {
@@ -261,14 +269,15 @@ struct FinalsPresentationView: View {
                 }
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(row.isSelf ? Theme.verm.opacity(0.7) : .clear, lineWidth: 1.5))
             }
-            Text(d.champion || d.boardRank <= 3 ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。")
+            Text(spectator ? "——今年の決勝。俺たちは、客席にいた。"
+                 : d.champion || d.boardRank <= 3 ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。")
                 .font(.system(size: 12, design: .serif)).foregroundStyle(.white.opacity(0.7)).padding(.top, 6)
         }
     }
 
     // MARK: Beat 3 — 最終決戦（M-1式＝3組・審査員7人が顔の上に組名札を掲げる）
     private var finalDuelBeat: some View {
-        let names = [session.combiName] + d.rivalNames
+        let names = duelNames
         let counts = (0..<3).map { k in d.voteOrder.prefix(revealVotes).filter { $0 == k }.count }
         return VStack(spacing: 14) {
             Text("最 終 決 戦").font(.maru(15)).tracking(6)
@@ -281,7 +290,7 @@ struct FinalsPresentationView: View {
             // 3組の得票カウンタ（番組のスコア表示・自組は金）
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { k in
-                    trioCounter(name: names.count > k ? names[k] : "—", count: counts[k], mine: k == 0)
+                    trioCounter(name: names.count > k ? names[k] : "—", count: counts[k], mine: !spectator && k == 0)
                 }
             }
 
@@ -291,9 +300,9 @@ struct FinalsPresentationView: View {
                     let shown = i < revealVotes
                     let vote = d.voteOrder[i]
                     VStack(spacing: 3) {
-                        votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: vote == 0)
+                        votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: !spectator && vote == 0)
                         CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 38)
-                            .overlay(Circle().stroke(shown ? (vote == 0 ? Theme.gold : .white.opacity(0.4))
+                            .overlay(Circle().stroke(shown ? (!spectator && vote == 0 ? Theme.gold : .white.opacity(0.4))
                                                            : .white.opacity(0.18), lineWidth: 1.5))
                         Text(String(d.judges[i].name.prefix(2)))
                             .font(.maru(8)).foregroundStyle(.white.opacity(0.6))
@@ -354,7 +363,7 @@ struct FinalsPresentationView: View {
 
     // MARK: Beat 4 — 優勝発表（3組から名前をコール）
     private var resultBeat: some View {
-        let names = [session.combiName] + d.rivalNames
+        let names = duelNames
         let winnerName = names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
         return VStack(spacing: 16) {
             Text("優 勝 は ——").font(.maru(13)).tracking(4).foregroundStyle(.white.opacity(0.8))
@@ -382,15 +391,19 @@ struct FinalsPresentationView: View {
                     .font(.system(size: 14, design: .serif)).lineSpacing(6).foregroundStyle(Color(hex: 0xEDE3FF))
                     .multilineTextAlignment(.center).padding(14).frame(maxWidth: .infinity)
                     .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+            } else if spectator {
+                Text("客席の照明が上がる前に、二人で席を立った。")
+                    .font(.system(size: 14, design: .serif)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
             } else {
                 Text("決勝").font(.maru(30)).foregroundStyle(.white)
                 Text("届かなかった。だが、この夜の舞台には立った。")
                     .font(.system(size: 14, design: .serif)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
             }
             Button {
-                if d.champion { session.acknowledgeWin() } else { session.acknowledgeResult() }
+                if spectator { onFinishSpectating?(winnerName) }
+                else if d.champion { session.acknowledgeWin() } else { session.acknowledgeResult() }
             } label: {
-                Text("結果を見る ▶").font(.maru(16)).foregroundStyle(Color(hex: 0x5A3A06))
+                Text(spectator ? "次の週へ ▶" : "結果を見る ▶").font(.maru(16)).foregroundStyle(Color(hex: 0x5A3A06))
                     .frame(maxWidth: .infinity).padding(.vertical, 13)
                     .background(Theme.gold, in: RoundedRectangle(cornerRadius: 14))
             }
@@ -412,8 +425,8 @@ struct FinalsData {
     let order: Int
     let total: Int
     let judges: [JudgeScore]
-    let board: [BoardRow]
-    let boardRank: Int
+    var board: [BoardRow]
+    var boardRank: Int
     let finalVotes: Int
     let champion: Bool
     /// 最終決戦に残るライバル2組（暫定ボード上位のNPC・M-1式＝3組で争う）
@@ -423,7 +436,7 @@ struct FinalsData {
     /// 優勝コンビ（0=自組/1=A/2=B）
     var winnerIndex: Int = 0
 
-    init(state s: GameState, champion: Bool) {
+    init(state s: GameState, champion: Bool, spectator: Bool = false) {
         self.champion = champion
         // UI専用RNG（能力から決定的にseed＝再現可・GameCoreの乱数列に非干渉）
         var rng = SeededRng(seed: UInt64(bitPattern: Int64(
@@ -468,6 +481,24 @@ struct FinalsData {
         rows.sort { $0.total > $1.total }
         self.board = rows
         self.boardRank = (rows.firstIndex { $0.isSelf } ?? 0) + 1
+
+        // 観客モード（監査H-01）: 自組を除いたボード・上位3組の最終決戦。勝者は最上位（index 0）
+        if spectator {
+            let npcRows = rows.filter { !$0.isSelf }
+            self.board = npcRows
+            self.boardRank = 0
+            let top = npcRows.prefix(3).map { $0.name }
+            self.rivalNames = Array(top)
+            let w = rng.int(4...7)
+            let a = rng.int(0...(7 - w))
+            let b = 7 - w - a
+            self.finalVotes = w
+            self.winnerIndex = 0
+            var order = Array(repeating: 0, count: w) + Array(repeating: 1, count: a) + Array(repeating: 2, count: b)
+            for i in stride(from: 6, through: 1, by: -1) { order.swapAt(i, rng.int(0...i)) }
+            self.voteOrder = order
+            return
+        }
 
         // 最終決戦（M-1式＝3組で争う・7票中）: 圧勝6〜7/接戦4〜5/敗北1〜3
         let votes = champion ? rng.int(5...7) : rng.int(1...3)

@@ -23,6 +23,22 @@ struct TournamentResultView: View {
     private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
     private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
+    /// 負けの距離 0..1（監査E-03）。margin（スコア−実効ライン）を3段に丸めて波形に渡す。数字は出さない。【仮】
+    private func nearMiss(_ r: StageResult) -> Double {
+        guard !r.passed, let m = r.margin else { return 0 }
+        if m >= -3 { return 1 }
+        if m >= -10 { return 0.45 }
+        return 0
+    }
+
+    /// 敗退の一言（距離3段）。margin が無い旧データは従来の一言
+    private func missLine(_ r: StageResult) -> String {
+        guard let m = r.margin else { return "——固い空気…" }
+        if m >= -3 { return "——あと一歩。" }
+        if m >= -10 { return "——届かず。" }
+        return "——遠い。"
+    }
+
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
     private func stampLabel(passed: Bool) -> String {
         if isMidTournament { return passed ? "優勝" : "敗退" }   // 道中の単発大会を勝ち抜く＝その大会で優勝（入賞とは意味が違う）
@@ -46,9 +62,9 @@ struct TournamentResultView: View {
                 Text("第\(summary.week)週 ・ 本番").font(.maru(12, weight: .bold)).foregroundStyle(.white.opacity(0.55))
 
                 // 笑い波形（結果連動）
-                WaveformView(passed: r.passed)
+                WaveformView(passed: r.passed, nearMiss: nearMiss(r))
 
-                Text(r.passed ? "——どっと沸いた！" : "——固い空気…")
+                Text(r.passed ? "——どっと沸いた！" : missLine(r))
                     .font(.maru(15)).foregroundStyle(r.passed ? Theme.gold : .white.opacity(0.45))
                     .frame(minHeight: 20)
 

@@ -21,16 +21,18 @@ enum DialogueData {
     /// 週頭（行動選択前）の一般セリフ。状態・状況・先週の結果だけに紐づける。
     /// 未選択の行動や、その週いない場所（楽屋等）の話はしない。
     /// 優先度: 低体力 > 金欠 > 連敗 > 直近通過 > 大会前 > 平常
+    /// week: 週番号。選択は週番号で回す＝同じ状態で週を迎えても連続で同じ行にならない（監査D-03）。
     static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
-                           nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String) -> Advice {
+                           nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String,
+                           week: Int = 0) -> Advice {
         if state.recoveryWeeks > 0 {   // 療養中は全てに優先（体の異常＝Fable13§2）
             return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks))
         }
         if state.stamina < 25 {
-            return Advice(name: "俺", text: pick(lowStamina, salt: Int(state.stamina)))
+            return Advice(name: "俺", text: pick(lowStamina, salt: week))
         }
         if state.money < 30_000 {
-            return Advice(name: "俺", text: pick(lowMoney, salt: state.money))
+            return Advice(name: "俺", text: pick(lowMoney, salt: week))
         }
         // 負けた翌週の一言（温度事故の停止）＝連敗プールより先。lossStreakで単発/反復を分ける（0003・Fable13便）。
         if justLost {
@@ -42,13 +44,15 @@ enum DialogueData {
         if justPassed {
             return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame)))
         }
-        if let m = nextMilestone, m.weeksLeft <= 2 {
-            return Advice(name: "俺", text: "そろそろ\(m.name)か。\(weakAbility)、あと少し上げておきたい。")
+        if let m = nextMilestone, m.weeksLeft == 2 {   // 1週前は掛け合い/平常に譲る（最頻出の単一行の間引き・監査D-04）
+            // 弱点が無い（全能力ほぼ同値）週は弱点句を省く（監査B-03）
+            return Advice(name: "俺", text: weakAbility.isEmpty ? "そろそろ\(m.name)か。"
+                                                               : "そろそろ\(m.name)か。\(weakAbility)、あと少し上げておきたい。")
         }
         if let m = nextMilestone, m.weeksLeft >= 6 {   // 本番が遠い週（週16-26の空白帯等）は仕込みの声
-            return Advice(name: "俺", text: pick(midseason, salt: Int(state.fame) &+ m.weeksLeft))
+            return Advice(name: "俺", text: pick(midseason, salt: week))
         }
-        return Advice(name: "俺", text: pick(平常, salt: Int(state.fame) + Int(state.compat) + Int(state.stamina)))
+        return Advice(name: "俺", text: pick(平常, salt: week))
     }
 
     // 主人公「俺」は標準語（方言なし）。ツッコミ体質・心配性・計算屋の色は残す。
@@ -197,52 +201,42 @@ enum DialogueData {
     // 新規行はSkill採点済（全○）。相方名は焼き込まない（「谷口と、ネタ抜きで飯でも。」は既存・既知として残置）。
     private static let reactionPools: [String: [Advice]] = [
         "t_ネタ作り": [
-            Advice(name: "俺", text: "家で書くか。集中がもつかどうか。"),
             Advice(name: "俺", text: "書く日は、朝のうちに机を片づける。"),
             Advice(name: "俺", text: "昨日までの分を読み返してから、続きにかかる。"),
         ],
         "t_ネタ見せ会": [
-            Advice(name: "俺", text: "人前で試すのが一番効く。"),
             Advice(name: "俺", text: "客前で崩れる場所を、先に知っておく。"),
             Advice(name: "俺", text: "今日は序盤を試す。うしろは次でいい。"),
         ],
         "t_ネタ合わせ": [
-            Advice(name: "俺", text: "合わせは、声を出してこそだ。"),
             Advice(name: "俺", text: "止める場所を決めてから、頭から通す。"),
             Advice(name: "俺", text: "昨日ずれた間を、今日のうちに戻す。"),
         ],
         "t_ランニング・サウナ": [
-            Advice(name: "俺", text: "整える。心と体からだ。"),
             Advice(name: "俺", text: "走る日は、ネタのことは考えない。"),
             Advice(name: "俺", text: "汗をかいて、今日は早く寝る。"),
         ],
         "t_フリーライブ": [
-            Advice(name: "俺", text: "客は少ないけど、場数だ。"),
             Advice(name: "俺", text: "出番は短い。その分、頭から飛ばす。"),
             Advice(name: "俺", text: "終わったら、客の入りだけ数えておく。"),
         ],
         "job_キツい": [
-            Advice(name: "俺", text: "引越しはキツいけど、背に腹は代えられない。"),
             Advice(name: "俺", text: "体で稼ぐ日だ。声は使わない。"),
             Advice(name: "俺", text: "終わりの時間だけ確かめて、引き受けた。"),
         ],
         "job_標準": [
-            Advice(name: "俺", text: "居酒屋、まあ無難だ。"),
             Advice(name: "俺", text: "運びながら、頭の中でネタを回せる。"),
             Advice(name: "俺", text: "店は忙しい方が、時間が早い。"),
         ],
         "job_楽": [
-            Advice(name: "俺", text: "今日は楽して稼ぐか。"),
             Advice(name: "俺", text: "座って数える仕事だ。頭は空けておける。"),
             Advice(name: "俺", text: "夕方には終わる。夜は直しに使える。"),
         ],
         "rest_完全休養": [
-            Advice(name: "俺", text: "今日はちゃんと寝よう。"),
             Advice(name: "俺", text: "携帯を伏せて、昼まで寝る。"),
             Advice(name: "俺", text: "布団を干してから、寝直す。"),
         ],
         "rest_気分転換": [
-            Advice(name: "俺", text: "少し気晴らしを。"),
             Advice(name: "俺", text: "一駅ぶん、歩いて帰る。"),
             Advice(name: "俺", text: "ネタ帳は持たずに出る。"),
         ],
@@ -252,7 +246,6 @@ enum DialogueData {
             Advice(name: "俺", text: "夕方から会う。店は、向こうが決める。"),
         ],
         "offer": [
-            Advice(name: "俺", text: "受けておくか。金は要る。"),
             Advice(name: "俺", text: "名前を覚えてもらう仕事だ。断る理由が薄い。"),
             Advice(name: "俺", text: "日取りだけ確かめて、受けた。"),
         ],

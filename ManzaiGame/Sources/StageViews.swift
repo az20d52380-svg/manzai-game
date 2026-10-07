@@ -10,6 +10,8 @@ import GameCore
 struct WaveformView: View {
     /// 結果連動: 通過=暖色で大きく育ちオチで跳ねる／敗退=寒色でフラット・疎ら（mvp §7）
     var passed: Bool = true
+    /// 敗退時の"惜しさ" 0..1（1＝あと一歩）。負けの波形を距離で変える（監査E-03）
+    var nearMiss: Double = 0
 
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -28,7 +30,7 @@ struct WaveformView: View {
                     startPoint: .zero, endPoint: CGPoint(x: W, y: 0))
 
                 func env(_ x: Double) -> Double {
-                    if !passed { return 0.10 + 0.06 * sin(x * 8) }   // 敗退: フラットで疎ら
+                    if !passed { return 0.10 + 0.30 * nearMiss * x + 0.06 * sin(x * 8) }   // 敗退: 惜しいほど後半が盛り上がる（監査E-03）
                     let b = 0.16 + 0.5 * x
                     let punch = exp(-pow((x - 0.83) / 0.06, 2)) * 0.95
                     return min(1, b + punch)
@@ -88,7 +90,8 @@ struct TournamentEntryView: View {
                 .padding(.horizontal, 14).padding(.vertical, 3)
                 .background(Theme.verm, in: Capsule())
             Text(spec.name).font(.maru(24))
-            Text("第\(spec.week)週 ・ 通過ライン \(Int(spec.line)) ・ 賞金 \(spec.prize / 10000)万")
+            // 監査B-04: 通過ラインと同じ単位（実力値＋相性）で「いまの実力」を並べる。ブレ・ネタ補正は出さない
+            Text("第\(spec.week)週 ・ 通過ライン \(Int(spec.line)) ／ いまの実力 \(Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded())) ・ 賞金 \(spec.prize / 10000)万")
                 .font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkDim)
 
             // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）
@@ -105,7 +108,7 @@ struct TournamentEntryView: View {
                     entryButton("🚌 夜行バスで出場", sub: "¥\(session.config.calendar.busTravel.cost.formatted())・体力を使う", enabled: session.state.money >= busTotal) { session.decideTournament(.夜行バス) }
                     entryButton("🚄 新幹線で出場", sub: "¥\(session.config.calendar.trainTravel.cost.formatted())・体力温存", enabled: session.state.money >= trainTotal) { session.decideTournament(.新幹線) }
                 } else {
-                    let cost = session.config.calendar.busTravel.cost + fee   // 東京開催もバス扱い（decideTournament(.夜行バス)）
+                    let cost = fee   // 東京開催は参加費のみ（WeekRunner.resolveTournament と同じ条件・監査G-05）
                     entryButton("出場する", sub: "東京開催", enabled: session.state.money >= cost) { session.decideTournament(.夜行バス) }
                 }
                 Button("見送る") { session.decideTournament(nil) }

@@ -118,6 +118,13 @@ struct RootView: View {
             }
             #endif
         }
+        .onChange(of: session.abandoned) { _, quit in
+            // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
+            if quit {
+                session = GameSession()
+                withAnimation(.easeInOut(duration: 0.3)) { started = false }
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）
             if phase == .background, started { session.saveNow() }
@@ -145,6 +152,10 @@ struct RootView: View {
     @ViewBuilder private var content: some View {
         if session.winFinale {
             FinalsPresentationView(session: session)                 // M-1本家型 決勝演出（籤→7審査員→ボード→めくり→優勝）
+        } else if session.watchingFinal {
+            // 決勝に進めなかった年の第47週＝今年の決勝を客席から観る（監査H-01）
+            FinalsPresentationView(session: session, spectator: true,
+                                   onFinishSpectating: { session.finishWatchingFinal(winner: $0) })
         } else if session.finished {
             if showEnding {
                 S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
@@ -158,7 +169,11 @@ struct RootView: View {
                                onEnding: session.outcome?.champion == true ? { showEnding = true } : nil)
             }
         } else if let result = session.pendingResult {
-            TournamentResultView(session: session, summary: result)   // S2波形→S3講評
+            if let r = result.results.last, r.name == "GP決勝", !r.passed {
+                FinalsPresentationView(session: session)              // 決勝で負けた夜も決勝演出で見せる（負け版・監査E-08）
+            } else {
+                TournamentResultView(session: session, summary: result)   // S2波形→S3講評
+            }
         } else {
             switch session.phase {
             case .freeAction(let offer):

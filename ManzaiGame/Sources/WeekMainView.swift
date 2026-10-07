@@ -59,6 +59,18 @@ struct WeekMainView: View {
     @State private var rankPunch = false
     /// 週頭の掛け合いのタップ送り位置（週が明けたら0に戻す）。
     @State private var banterIndex = 0
+    /// Beat1 の一言を最後に出した週（変種ごと）。直近4週に出した変種は一言を省く＝最頻出テキストの間引き（監査A-04）
+    @State private var lastBeatWeek: [String: Int] = [:]
+    /// のばす画面を最後に開いた週（監査B-01: 開いていない週が続いて粒が溜まったら誘導する）
+    @State private var lastAllocateOpenWeek = -10
+    /// のばすタイルの誘導明滅（監査B-01）
+    @State private var allocatePulse = false
+    /// 粒の凡例を一度添えたか（監査C-04③）
+    @State private var grainLegendShown = false
+    /// 「年末へ」の二度押し確認（監査A-03）
+    @State private var yearEndArmed = false
+    /// 進行中の設定（監査G-04）
+    @State private var showSettings = false
 
     private var s: GameState { session.state }
     private var groups: [CommandGroup] {
@@ -97,6 +109,30 @@ struct WeekMainView: View {
             // Bool の合成 Binding 経由（既存 showNotebook 等と同じ isPresented パターン）。
             if let kind = session.pendingChoiceEvent {
                 ChoiceEventOverlay(session: session, kind: kind) {}
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView(onClose: { showSettings = false },
+                         onQuitRun: { showSettings = false; session.abandonRun() })
+        }
+        .onChange(of: showAllocate) { _, showing in
+            if showing { lastAllocateOpenWeek = session.week }
+        }
+        .task(id: session.week) {
+            // 監査B-01: 稽古は粒を貯めるだけ＝注がないと何も伸びない。のばす画面を開かない週が続き、
+            // 注げる段が溜まったら（本番前週は1段でも）一言と明滅で誘導する。獲得バーストの後に出す。
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard !Task.isCancelled, toast == nil, session.pendingChoiceEvent == nil, !showAllocate else { return }
+            let soon = (nextMilestone()?.weeksLeft ?? 99) <= 1
+            guard pourableSteps >= (soon ? 1 : 3), lastAllocateOpenWeek < session.week - 1 else { return }
+            showToast(grainLegendShown ? "粒が貯まった。「のばす」で注ぐ。"
+                                       : "粒（閃き・語彙・間合い・存在感・胆力）が貯まった。「のばす」で注ぐ。")
+            grainLegendShown = true
+            for _ in 0..<2 {
+                withAnimation(.easeInOut(duration: 0.25)) { allocatePulse = true }
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                withAnimation(.easeInOut(duration: 0.25)) { allocatePulse = false }
+                try? await Task.sleep(nanoseconds: 300_000_000)
             }
         }
         .overlay(alignment: .bottom) {
@@ -181,8 +217,8 @@ struct WeekMainView: View {
             }
         }
         .task(id: toast) {
-            if toast != nil {
-                try? await Task.sleep(nanoseconds: 1_400_000_000)
+            if let t = toast {
+                try? await Task.sleep(nanoseconds: t.count > 20 ? 2_600_000_000 : 1_400_000_000)
                 toast = nil
             }
         }
@@ -268,7 +304,7 @@ struct WeekMainView: View {
                             .contentTransition(.numericText())
                     }
                     if m.weeksLeft >= 6 {
-                        Text("仕込みどき ・ 弱点は\(weakAbility())")
+                        Text(lullLine())
                             .font(.maru(9)).foregroundStyle(.white.opacity(0.65))
                     }
                 }
@@ -281,9 +317,8 @@ struct WeekMainView: View {
     }
 
     private var sceneBackground: some View {
-        // 「舞台」シーン（StageScene.swift）: 劇場の闇＋緞帳＋板張り＋スポットライト＋センターマイク＋
-        // 漫才師2人の逆光シルエット＋舞う塵。立ち絵イラスト導入までの見た目の到達点（TODO: 本イラスト差替）。
-        // 客席の闇はステータスバー裏まで届かせる（上端に台所色が残ると劇場の没入が切れる）。
+        // 稽古場シーン（StageScene.swift）: 明るい昼の稽古場＋板張り＋センターマイク＋漫才師2人＋光の中の塵。
+        // 立ち絵イラスト導入までの見た目の到達点（TODO: 本イラスト差替）。上端はステータスバー裏まで届かせる。
         StageScene().ignoresSafeArea(edges: .top)
     }
 
@@ -347,16 +382,19 @@ struct WeekMainView: View {
         // パワプロ式: 白地チャンキーピル＋等級バッジ（D→S）。等級が「いまどの辺か」を一字で言う。
         // 相性は 0..compatCap を 0..100 に写像して同じ等級尺で読む。上限到達で縁がgold。
         let isPerf = ability != nil && ability != .メンタル
-        let fill = isPerf ? min(1, max(0, value / session.config.abilityCap)) : 0
         let capped = isPerf && value >= session.config.abilityCap
         let gradeBase = ability != nil ? value : value / session.config.compatCap * 100
         let grade = Theme.rank(gradeBase)
+        // 監査C-01: 塗りは「0〜上限の比」でなく「いまの等級帯の中での進み」。1年目でも注ぐたびに満ちて見え、
+        // 等級を跨ぐと空に戻る（等級の閾値そのものは経済と共有＝不変）。
+        let barCap = ability == nil ? 100 : (ability == .メンタル ? session.config.mentalCap : session.config.abilityCap)
+        let fill = Theme.rankProgress(gradeBase, cap: barCap)
         return HStack(spacing: 6) {
             // 能力アイコン（色+アイコンで常時判別・オーナー指摘2026-08-03「見えづらい」対応）:
             // 序盤は全員グレードGで等級バッジが同色（灰）になり、かつ比例塗りは低値でほぼ見えず
             // ピルが識別不能になっていた。能力固有色の丸を常設し、色だけに頼らないアイコンも添える。
             ZStack {
-                Circle().fill(isPerf ? color : Theme.cCompat).frame(width: 22, height: 22)
+                Circle().fill(color).frame(width: 22, height: 22)
                 Image(systemName: pillGlyph(ability))
                     .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
             }
@@ -385,13 +423,11 @@ struct WeekMainView: View {
         .background {
             ZStack(alignment: .leading) {
                 // 常時見える下地の色帯（比例0%でも識別できる・§旧: 比例塗りのみだと低値で消えていた）
-                (isPerf ? color : Theme.cCompat).opacity(0.14)
-                if isPerf {
-                    GeometryReader { geo in
-                        Rectangle().fill(color.opacity(0.30))
-                            .frame(width: geo.size.width * fill)
-                            .animation(.easeOut(duration: 0.4), value: fill)
-                    }
+                color.opacity(0.14)
+                GeometryReader { geo in
+                    Rectangle().fill(color.opacity(0.30))
+                        .frame(width: geo.size.width * fill)
+                        .animation(.easeOut(duration: 0.4), value: fill)
                 }
             }
             .clipShape(Capsule())
@@ -422,7 +458,8 @@ struct WeekMainView: View {
     private var monoBox: some View {
         adviceBox(DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
                                           justPassed: session.justPassedStage, justLost: session.justLostStage,
-                                          nextMilestone: nextMilestone(), weakAbility: weakAbility()))
+                                          nextMilestone: nextMilestone(), weakAbility: weakAbility(),
+                                          week: session.week))
     }
 
     /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
@@ -486,6 +523,7 @@ struct WeekMainView: View {
     private var categoryRow: some View {
         HStack(spacing: 7) {
             ForEach(groups) { g in categoryTile(g) }
+            if session.noStagesLeft && session.week < session.config.weeks { yearEndTile }
         }
         .frame(height: 118)
     }
@@ -493,6 +531,7 @@ struct WeekMainView: View {
     private func categoryTile(_ g: CommandGroup) -> some View {
         let isOffer = g.id == "offer"
         return Button {
+            if burstHold || session.pendingChoiceEvent != nil { return }   // 監査F-10: 獲得バースト中の先送り防止
             if g.id == "data" { showNotebook = true; return }   // データ→S5ネタ帳（全画面）
             if g.id == "allocate" { showAllocate = true; return }   // のばす→割り振り（全画面）
             openCategory = g.id
@@ -509,13 +548,16 @@ struct WeekMainView: View {
             .frame(maxWidth: .infinity).frame(height: 84)
             .background(isOffer ? Color(hex: 0xFFF3D6) : Theme.card, in: RoundedRectangle(cornerRadius: 13))
             .overlay(RoundedRectangle(cornerRadius: 13).stroke(isOffer ? Theme.gold : Theme.line, lineWidth: 3))
+            .overlay(RoundedRectangle(cornerRadius: 13)
+                .stroke(Theme.gainOrange, lineWidth: 4)
+                .opacity(g.id == "allocate" && allocatePulse ? 1 : 0))
             .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝パワプロのチャンキーUI
             .overlay(alignment: .topTrailing) {
                 // 「のばす」タイルだけ: バッジ＝いま注げば伸びる段数（recommendedPlan.count・§2）。
                 // 見た目は現行の gainOrange カプセルのまま、意味だけ「粒総数」→「注げば伸びる段数」へ。
                 // 器満了・上限・逓減死では 0 になり自動消灯＝「開いたのに何もできない」空振りがゼロ。
                 if g.id == "allocate", pourableSteps >= 1 {
-                    Text("\(pourableSteps)")
+                    Text(pourableBadge)
                         .font(.maru(10)).monospacedDigit().foregroundStyle(.white)
                         .contentTransition(.numericText())   // §1-3 数字が繰り上がる
                         .padding(.horizontal, 6).padding(.vertical, 2)
@@ -545,7 +587,7 @@ struct WeekMainView: View {
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
         return Button {
-            guard pulledID == nil else { return }   // 引き抜き中の多重タップは無視
+            guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { return }   // 多重タップ・バースト中は無視（監査F-10）
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
                 Sound.play(.deny)
@@ -556,14 +598,19 @@ struct WeekMainView: View {
             Sound.play(.tap)   // 実行の決定音（週送りの一拍目）
             // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
             // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
-            withAnimation(.easeOut(duration: 0.18)) {
-                beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week)
+            // 監査A-04: 一言はこの変種で直近4週に出していない時だけ（毎週同じ3本が回るのを避ける）
+            let showBeat = session.week - (lastBeatWeek[v.id] ?? -100) > 4
+            if showBeat {
+                lastBeatWeek[v.id] = session.week
+                withAnimation(.easeOut(duration: 0.18)) {
+                    beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week)
+                }
             }
             withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }
             beatTask = Task {
                 try? await Task.sleep(nanoseconds: 120_000_000)
                 openCategory = nil          // カードを畳んで次週はカテゴリ列から
-                try? await Task.sleep(nanoseconds: 700_000_000)   // 発話の一拍
+                if showBeat { try? await Task.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
                 burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
                 burstHold = true
                 Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
@@ -587,6 +634,8 @@ struct WeekMainView: View {
         let gains = (!v.isTrain && v.affordable && !gated) ? intGains(v.action) : []
         // §4 満了: 器が満ちている間、稽古カードの伸び行位置は金縁の「満」判（稼ぎは無駄にならないが今年は注げない）。
         let vesselFull = v.isTrain && vesselIsFull
+        // 監査E-06: 器の外で効く効果（相性・ネタの完成度）は器が満ちても出し続ける
+        let extras = (v.isTrain && v.affordable && !gated) ? trainExtras(v.action) : []
         let moneyDelta = after.money - s.money
         let stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
         return VStack(alignment: .leading, spacing: 6) {
@@ -600,9 +649,14 @@ struct WeekMainView: View {
             } else if !v.affordable {
                 Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
             } else if vesselFull {
-                fullStamp
-            } else if !grains.isEmpty {
+                HStack(spacing: 4) {
+                    fullStamp
+                    grainPills(mentalGrains(v.action))   // メンタルは器を使わない＝胆力/存在感はまだ注げる
+                }
+                extrasLine(extras)
+            } else if !grains.isEmpty || !extras.isEmpty {
                 grainPills(grains)
+                extrasLine(extras)
             } else if !gains.isEmpty {
                 gainPills(gains)
             } else if v.isTrain {
@@ -617,7 +671,7 @@ struct WeekMainView: View {
             }
         }
         .padding(10)
-        .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 104, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 104, maxHeight: 112, alignment: .topLeading)
         .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : Theme.verm.opacity(0.55), lineWidth: 3))
         .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
@@ -689,8 +743,11 @@ struct WeekMainView: View {
     private func makeBurstChips() -> [BurstChip] {
         var chips: [BurstChip] = []
         var id = 0
-        for g in intGrains(from: session.lastGrainGains) {
-            chips.append(BurstChip(id: id, dot: g.color, text: "\(g.name) +\(g.delta)",
+        for g in session.lastGrainGains {
+            // バーストは横幅に余裕がある＝通貨のフル名で出す（単漢字は初見で読めない・監査C-04）
+            let d = Int(g.amount.rounded())
+            guard d > 0 else { continue }
+            chips.append(BurstChip(id: id, dot: Theme.currencyColor(g.currency), text: "\(g.currency) +\(d)",
                                    fg: Theme.ink, bg: Theme.card2)); id += 1
         }
         for g in session.lastGains {
@@ -769,6 +826,11 @@ struct WeekMainView: View {
             Button { showCalendar = true } label: {   // S4 カレンダーを開く
                 Image(systemName: "calendar").font(.system(size: 15)).foregroundStyle(.white.opacity(0.8))
             }.buttonStyle(PressableStyle())
+            .accessibilityLabel("カレンダー")
+            Button { showSettings = true } label: {   // 進行中の設定（音量・プライバシーポリシー・この年をやめる＝監査G-04）
+                Image(systemName: "gearshape.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.7))
+            }.buttonStyle(PressableStyle())
+            .accessibilityLabel("設定")
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 5) {
                 staminaGauge
@@ -798,17 +860,17 @@ struct WeekMainView: View {
 
     private var staminaGauge: some View {
         HStack(spacing: 5) {
-            Text("体力").font(.maru(10)).foregroundStyle(.white.opacity(0.8))
+            Text("体力").font(.maru(10)).foregroundStyle(.white.opacity(0.8)).fixedSize()
             ZStack(alignment: .leading) {
                 Capsule().fill(.white.opacity(0.16))
                 Capsule()
                     .fill(LinearGradient(colors: [staminaColor.opacity(0.82), staminaColor], startPoint: .top, endPoint: .bottom))
-                    .frame(width: 78 * CGFloat(max(0, min(100, s.stamina)) / 100))
+                    .frame(width: 64 * CGFloat(max(0, min(100, s.stamina)) / 100))
                     .shadow(color: staminaColor.opacity(0.6), radius: 3)
                     .animation(.easeOut(duration: 0.4), value: s.stamina)
                     .animation(.easeInOut(duration: 0.15), value: staminaZone)  // 閾値跨ぎの色クロスフェード（§3-4）
             }
-            .frame(width: 78, height: 10)
+            .frame(width: 64, height: 10)   // 歯車を足した分詰める（ラベルが押し出されないように）
             .opacity(gaugeFlash ? 0.25 : 1)
             .onChange(of: staminaZone) { old, new in
                 guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
@@ -890,6 +952,73 @@ struct WeekMainView: View {
         session.recommendedAllocation().count
     }
 
+    private var pourableBadge: String { "\(pourableSteps)" }
+
+    /// 稽古カードの器外効果（相性・ネタ）の1行（監査E-06）。表示は名目値＝プレビューと同じ規約。
+    private func trainExtras(_ action: WeekAction) -> [String] {
+        guard case .train(let t) = action else { return [] }
+        var out: [String] = []
+        let after = session.previewState(action, offer: offer)
+        let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
+        if cd > 0 { out.append("相性+\(cd)") }
+        let cfg = session.config
+        switch t {
+        case .ネタ作り:
+            let hasTarget = s.selectedNetaID.map { id in s.netas.contains { $0.id == id } } ?? false
+            out.append(hasTarget || s.netas.count >= cfg.netaActiveSlots ? "ネタ+\(Int(cfg.netaReviseGain))" : "新ネタ")
+        case .ネタ見せ会 where !s.netas.isEmpty:
+            out.append("ネタ+\(Int(cfg.netaLivePolishShow))")
+        case .フリーライブ where !s.netas.isEmpty:
+            out.append("ネタ+\(Int(cfg.netaLivePolishFree))")
+        default: break
+        }
+        return out
+    }
+
+    @ViewBuilder private func extrasLine(_ extras: [String]) -> some View {
+        if !extras.isEmpty {
+            Text(extras.joined(separator: " ・ "))
+                .font(.system(size: 10.5, weight: .bold)).foregroundStyle(Theme.cCompat)
+                .lineLimit(1).minimumScaleFactor(0.8)
+        }
+    }
+
+    /// 器が満ちた後もメンタルへ注げる粒（胆力・存在感）だけを出す（監査E-06）
+    private func mentalGrains(_ action: WeekAction) -> [(name: String, color: Color, delta: Int)] {
+        intGrains(from: session.previewGrainGains(action, offer: offer).filter { $0.currency == .胆力 || $0.currency == .存在感 })
+    }
+
+    /// 本番が遠い週の目標バナー2行目＝いまのネタの完成度（監査A-01: 中だるみ帯の副目標）
+    private func lullLine() -> String {
+        let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
+        guard let n = cur else { return "仕込みどき ・ まずはネタ作りから" }
+        return "仕込みどき ・ ネタ「\(n.name)」完成度 \(Int(n.polish))"
+    }
+
+    /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）
+    private var yearEndTile: some View {
+        Button {
+            if burstHold || session.pendingChoiceEvent != nil { return }
+            if yearEndArmed {
+                yearEndArmed = false
+                session.fastForwardToYearEnd()
+            } else {
+                yearEndArmed = true
+                showToast("もう一度押すと、年末まで休んで1年を閉じる。")
+                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
+            }
+        } label: {
+            VStack(spacing: 5) {
+                Image(systemName: "forward.end.fill").font(.system(size: 19)).foregroundStyle(Theme.inkDim)
+                Text(yearEndArmed ? "もう一度" : "年末へ").font(.maru(10.5)).foregroundStyle(Theme.inkDim).lineLimit(1)
+            }
+            .frame(maxWidth: .infinity).frame(height: 84)
+            .background(Theme.card2, in: RoundedRectangle(cornerRadius: 13))
+            .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.line, style: StrokeStyle(lineWidth: 3, dash: [6, 4])))
+        }
+        .buttonStyle(PressableStyle())
+    }
+
     /// §4 器満了: 成長予算を使い切ったか（AllocationView の器バー満ちと同一判定＝三面で食い違わない）。
     /// 満了成立は「注ぐ」瞬間だけなので growthUsed≥growthBudget で判定（budget未設定=無制限は満了なし）。
     private var vesselIsFull: Bool {
@@ -897,21 +1026,16 @@ struct WeekMainView: View {
         return s.growthUsed >= budget - GameEngine.pourEpsilon
     }
 
+    /// 一番低い能力名。差が1未満（第1週の全員10など）は「弱点なし」＝空文字（監査B-03: 根拠の無い助言を出さない）
     private func weakAbility() -> String {
         let pairs: [(String, Double)] = [("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)]
-        return pairs.min(by: { $0.1 < $1.1 })?.0 ?? "表現"
+        guard let lo = pairs.min(by: { $0.1 < $1.1 }), let hi = pairs.max(by: { $0.1 < $1.1 }), hi.1 - lo.1 >= 1 else { return "" }
+        return lo.0
     }
 
+    /// 次の本番（GameSession.upcomingStages の先頭＝出場資格・GP敗退を反映済み・監査A-02/F-01）
     private func nextMilestone() -> (name: String, weeksLeft: Int)? {
-        let cal = session.config.calendar
-        var ms: [(Int, String)] = []
-        for (i, r) in cal.gpRounds.enumerated() { ms.append((r.week, i < cal.gpRoundNames.count ? cal.gpRoundNames[i] : "頂GP\(i + 1)回戦")) }
-        ms.append((cal.gpFinalWeek, "頂GP 決勝"))
-        // 出場資格で絞る（AllocationView.nextStage と同じ走査）。絞らないと知名度不足でも
-        // 「推薦制中堅賞」が次目標に出る＝出られない大会へ逆算させる誤誘導になる。
-        for t in cal.tournaments where t.isEligible(year: session.year, state: s) { ms.append((t.week, t.name)) }
-        guard let next = ms.filter({ $0.0 >= session.week }).min(by: { $0.0 < $1.0 }) else { return nil }
-        return (next.1, next.0 - session.week)
+        session.nextStage.map { ($0.name, $0.week - session.week) }
     }
 }
 

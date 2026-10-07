@@ -1,6 +1,6 @@
 // CommandData.swift
-// v8育成メインのコマンドカタログ。カテゴリ（稽古/回復/バイト/のばす/データ[＋オファー]）を押す→
-// 変種カードの横スクロール列がせり上がる→カードのタップ＝即実行（session.choose）。決定ボタンは無い。
+// v8育成メインのコマンドカタログ。カテゴリ（稽古/回復/バイト/のばす/ネタ帳[＋オファー]）を押す→
+// 同じ場所に変種カードの3列グリッドが出る→カードのタップ＝即実行（session.choose）。決定ボタンは無い。
 // 変種は実 GameCore アクション（5稽古・3バイト・3休み・オファー）に配線し、伸びの数値は View 側で
 // GameSession.previewState（RNG非消費）から「現在値の整数→実行後の整数の差」で出す（怪我率・稽古Lvは出さない）。
 // のばす/データは kind=.info の「入口だけ」（variants空・WeekMainView 側が全画面を出す＝週を進めない）。
@@ -33,7 +33,7 @@ struct CommandGroup: Identifiable {
 
 enum CommandCatalog {
 
-    /// v8の5カテゴリ（稽古/回復/バイト/データ/アイテム）＋ offer!=nil の週だけ「オファー」を先頭に条件表示。
+    /// 5カテゴリ（稽古/回復/バイト/のばす/ネタ帳）＋ offer!=nil の週だけ「オファー」を先頭に条件表示。
     /// 数値ソース（config.trainings/jobs/rests）と WeekAction 配線は現行から完全据え置き。
     static func groups(config: GameConfig, offer: OfferSpec?, money: Int) -> [CommandGroup] {
         var groups: [CommandGroup] = []
@@ -102,7 +102,7 @@ enum CommandCatalog {
         groups.append(CommandGroup(id: "allocate", title: "のばす", glyph: "arrow.up.circle.fill", kind: .info,
                                    dotColors: [Theme.cSense, Theme.cExpr, Theme.cMental], variants: []))
         // データ（ネタ帳入口）: 押しても session.choose を呼ばない＝週は進まない。
-        groups.append(CommandGroup(id: "data", title: "データ", glyph: "chart.bar.fill", kind: .info,
+        groups.append(CommandGroup(id: "data", title: "ネタ帳", glyph: "book.closed.fill", kind: .info,   // 中身はネタ帳（監査C-05）
                                    dotColors: [Theme.inkFaint], variants: []))
         // アイテム枠は撤去（「準備中。この機能はまだ使えません。」の看板だけが立っていた）。
         // アイテム機構が実装される時に kind=.act のカテゴリとして復帰させる。

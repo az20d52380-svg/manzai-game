@@ -1,17 +1,17 @@
 // SettingsView.swift
 // S1b 設定（正本: uiux_vision_reply_part2 §S1b・難度低）。rSheet(上辺角丸)の白面リスト。
-// 音量(BGM/SE)・通知ON/OFF・規約/プライバシー(外部リンク)・購入復元・データ管理の入口。
-// MVPは音源/課金/セーブ未実装＝設定の「永続化のみ」実装（§実装ブリッジ）。閲覧＝無音・無振動、トグルのみSE極小。
-// データ管理は GameState の Codable セーブ設計とのすり合わせが別途要る（START_HERE 残タスク5）＝準備中。
+// 音量(BGM/SE)・プライバシーポリシー・（進行中のみ）この年をやめる。
+// 動かない項目（購入を復元・通知・データ管理・利用規約）は監査G-02で撤去。課金/通知を実装する時に戻す。
 
 import SwiftUI
 
 struct SettingsView: View {
     var onClose: () -> Void
+    /// 進行中に開いた時だけ渡す（「この年をやめてタイトルへ」・監査G-04）。タイトル画面からは nil。
+    var onQuitRun: (() -> Void)? = nil
     @AppStorage("vol_bgm") private var bgm: Double = 0.7
     @AppStorage("vol_se") private var se: Double = 0.8
-    @AppStorage("notif_on") private var notif: Bool = false
-    @State private var toast: String?
+    @State private var quitArmed = false
 
     var body: some View {
         ZStack {
@@ -28,33 +28,36 @@ struct SettingsView: View {
                             sliderRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
                         }
-                        section("通知") {
-                            Toggle(isOn: $notif) { Text("開演前に知らせる").font(.maru(13)).foregroundStyle(Theme.ink) }
-                                .tint(Theme.verm)
+                        // 監査G-02: 押しても何も起きない項目（購入を復元・通知・データ管理・利用規約）は撤去。
+                        // プライバシーポリシーは審査5.1.1でアプリ内リンクが必須＝URLが決まり次第 AppInfo に入れる。
+                        if let url = AppInfo.privacyPolicyURL {
+                            section("規約") {
+                                Link(destination: url) { linkRow("プライバシーポリシー") }
+                            }
                         }
-                        section("規約") {
-                            linkRow("利用規約")
-                            Divider()
-                            linkRow("プライバシーポリシー")
-                        }
-                        section("その他") {
-                            tapRow("購入を復元") { toastShow("購入情報を確認しました。") }
-                            Divider()
-                            tapRow("データ管理", trailing: "準備中") { }
+                        if let onQuitRun {
+                            section("この年") {
+                                Button {
+                                    if quitArmed { onQuitRun() } else { quitArmed = true }
+                                } label: {
+                                    HStack {
+                                        Text(quitArmed ? "もう一度押すと、この年の記録を消してタイトルへ戻る"
+                                                       : "この年をやめてタイトルへ")
+                                            .font(.maru(13)).foregroundStyle(quitArmed ? Theme.verm : Theme.ink)
+                                        Spacer()
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                         // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
                         Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
                             .font(.maru(9.5)).foregroundStyle(Theme.inkDim)
                             .padding(.top, Theme.Sp.s8)
-                        Text("四分の夜【仮】 v0 ・ 数値/文言は全て仮").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
+                        Text("\(AppInfo.displayName) v\(AppInfo.version)").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
                     }
                     .padding(Theme.Sp.s16)
                 }
-            }
-            if let toast {
-                Text(toast).font(.maru(12)).foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 8).background(Theme.pillDark, in: Capsule())
-                    .frame(maxHeight: .infinity, alignment: .bottom).padding(.bottom, 40).transition(.opacity)
             }
         }
     }
@@ -69,6 +72,7 @@ struct SettingsView: View {
             Spacer()
             Button(action: onClose) { Image(systemName: "xmark.circle.fill").font(.system(size: 24)).foregroundStyle(Theme.inkFaint) }
                 .buttonStyle(PressableStyle())
+                .accessibilityLabel("閉じる")
         }.padding(.horizontal, Theme.Sp.s16).padding(.bottom, Theme.Sp.s8)
     }
 
@@ -92,17 +96,15 @@ struct SettingsView: View {
         HStack { Text(label).font(.maru(13)).foregroundStyle(Theme.ink); Spacer()
             Image(systemName: "arrow.up.right.square").font(.system(size: 13)).foregroundStyle(Theme.inkFaint) }
     }
+}
 
-    private func tapRow(_ label: String, trailing: String? = nil, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack { Text(label).font(.maru(13)).foregroundStyle(Theme.ink); Spacer()
-                Text(trailing ?? "").font(.maru(11)).foregroundStyle(Theme.inkFaint)
-                Image(systemName: "chevron.right").font(.system(size: 11)).foregroundStyle(Theme.inkFaint) }
-        }.buttonStyle(.plain)
-    }
-
-    private func toastShow(_ t: String) {
-        withAnimation(.easeOut(duration: 0.2)) { toast = t }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { withAnimation { toast = nil } }
+/// 出荷情報の置き場（監査G-02/G-11/H-06）。名前とURLはオーナー確定待ち＝ここだけ書き換える。
+enum AppInfo {
+    /// アプリ名（ストア名・ホーム画面名と揃える）。確定前は作業名。
+    static let displayName = "四分の夜"
+    /// プライバシーポリシーのURL（審査5.1.1で必須）。nil の間は設定画面に行を出さない＝申請前に必ず埋める。
+    static let privacyPolicyURL: URL? = nil
+    static var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
     }
 }

@@ -1,6 +1,7 @@
 // IntroFlow.swift
-// S1 タイトル／コンビ結成（正本: uiux_vision_reply_part2 §S1）。MVP版＝非永続なので
-// 初回フローに絞る: KVタイトル →「はじめる」→ 回想3カット(紙芝居) → コンビ名入力見開き →（onComplete）→ 育成メイン。
+// S1 タイトル／コンビ結成（正本: uiux_vision_reply_part2 §S1）。新規開始の初回フロー:
+// KVタイトル →「はじめる」→ 回想3カット(紙芝居) → コンビ名入力見開き →（onComplete）→ 育成メイン。
+// 中断セーブがある時は RootView がこのフローを飛ばして続きから再開する。
 // セーブ/つづきから・顔合わせ・名鑑・排出・壁写真は永続レイヤ未実装のため本編送り（§0）。
 // ReminiscencePlayer は §依頼6 の共用部品①（S6b年表・優勝エピローグでも使う）。KV/立ち絵は【仮】プレースホルダ。
 
@@ -87,9 +88,9 @@ struct S1TitleView: View {
                 Spacer().frame(height: 70)
                 // ロゴ（仮）
                 VStack(spacing: 4) {
-                    Text("四分の夜").font(.maru(40)).foregroundStyle(.white)
+                    Text(AppInfo.displayName).font(.maru(40)).foregroundStyle(.white)
                         .shadow(color: Theme.gold.opacity(lit ? 0.5 : 0), radius: 16)
-                    Text("――漫才師、育成。【仮】").font(.maru(11)).tracking(2).foregroundStyle(.white.opacity(0.6))
+                    Text("――漫才師、育成。").font(.maru(11)).tracking(2).foregroundStyle(.white.opacity(0.6))
                 }
                 .opacity(lit ? 1 : 0)
                 .animation(.easeInOut(duration: 0.8).delay(0.4), value: lit)
@@ -113,6 +114,7 @@ struct S1TitleView: View {
                 Image(systemName: "gearshape.fill").font(.system(size: 18)).foregroundStyle(.white.opacity(0.6))
             }
             .buttonStyle(PressableStyle()).padding(.top, 54).padding(.trailing, 20)
+            .accessibilityLabel("設定")
         }
         .sheet(isPresented: $showSettings) { SettingsView { showSettings = false } }
         .onAppear { lit = true }
@@ -175,6 +177,7 @@ struct NameEntryView: View {
                 // ネタ帳の見開き（白面・罫線1本＋キャレット）
                 VStack(spacing: 6) {
                     TextField("コンビ名", text: $name)
+                        .onChange(of: name) { _, v in if v.count > 12 { name = String(v.prefix(12)) } }   // 監査G-09: 長い名前で画面が崩れる
                         .font(.maru(24)).foregroundStyle(inkWet ? Theme.ink : Theme.inkDim)
                         .multilineTextAlignment(.center)
                         .focused($focused)
@@ -202,6 +205,7 @@ struct NameEntryView: View {
     }
 
     private func decide() {
+        name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 書いた字が乾く
         Haptics.confirm()

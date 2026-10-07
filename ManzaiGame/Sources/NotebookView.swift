@@ -171,8 +171,7 @@ struct NotebookView: View {
                     Divider()
                 }
             }
-            Text("称号").font(.maru(12)).foregroundStyle(Theme.inkDim).padding(.top, Theme.Sp.s8)
-            Text("〈まだ無い〉【仮】").font(.maru(12)).foregroundStyle(Theme.inkFaint)
+            // 称号は周回メタ（未実装）の器＝実体が入るまで出さない（監査G-02: 【仮】の空欄を出荷画面に残さない）
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()

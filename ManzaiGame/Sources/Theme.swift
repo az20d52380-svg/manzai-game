@@ -125,6 +125,18 @@ enum Theme {
         }
     }
 
+    /// 等級帯の境界（rank と同じ閾値。経済の abilityRankCostBands と共有＝動かさない）
+    static let rankBounds: [Double] = [0, 15, 25, 35, 45, 55, 70, 90]
+
+    /// いまの等級帯の中での進み具合 0..1（監査C-01）。1年目は能力が10→16前後で、0〜上限のバーだと
+    /// 1割から動かず"伸び"が見えないため、バーは「次の等級まで」を描く。上の帯が無い S は cap までで測る。
+    static func rankProgress(_ v: Double, cap: Double) -> Double {
+        guard let i = rankBounds.lastIndex(where: { v >= $0 }) else { return 0 }
+        let lo = rankBounds[i]
+        let hi = i + 1 < rankBounds.count ? rankBounds[i + 1] : max(cap, lo + 1)
+        return min(1, max(0, (v - lo) / (hi - lo)))
+    }
+
     /// 等級バッジの色（パワプロの G..S 配色に寄せた8段【仮】: G灰/F青灰/E青/D橙/C黄緑/B緑/A赤/S金）
     static func gradeColor(_ g: String) -> Color {
         switch g {

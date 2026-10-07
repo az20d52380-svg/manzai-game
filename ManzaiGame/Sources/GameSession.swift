@@ -53,6 +53,11 @@ final class GameSession {
     private(set) var didFireNamelessSlip = false
     /// 0012「谷口の耳寄りな話」の一発化フラグ。確定発火（金欠×相性8+×大会3週以内なし）・キャリア1回。
     private(set) var didFireTaniguchiJob = false
+    /// 0017「負けた日の稽古場」/0018「通った日の分かれ道」/0010「前夜の一本」の一発化（監査D-01）。
+    /// 以前は条件成立のたびに同文で再発していた。2回目以降の負け/通過は心の声プールへ落ちる。
+    private(set) var didFireLostRehearsal = false
+    private(set) var didFirePassFork = false
+    private(set) var didFireEve = false
     // --- 週次ランダムイベント（UI層抽選・golden非干渉。runner.rng とは別インスタンスの独立乱数列） ---
     /// 発火抽選に使う UI 専用乱数。runner が消費する乱数列には一切食い込まない＝3年 golden 不変。
     private var uiEventRng = SplitMix64(seed: 424242)   // init で seed 由来値に上書き
@@ -77,6 +82,12 @@ final class GameSession {
     private(set) var categoryLog: [Int: BandCategory] = [:]
     /// S6 年計用: その年の獲得賞金合計（UI層の記録のみ・golden非対象）
     private(set) var totalPrize = 0
+    /// 進行中に「この年をやめてタイトルへ」が選ばれた（RootView がタイトルへ戻す・監査G-04）
+    private(set) var abandoned = false
+    /// 観客版決勝を観ている最中（監査H-01: 決勝に進めなかった年の第47週・RootView が切り替える）
+    private(set) var watchingFinal = false
+    /// 今年の観客版決勝を観終えたか（1年1回）
+    private(set) var didWatchFinal = false
 
     let config: GameConfig
     let year = 1                       // MVPは1年目のみ
@@ -130,6 +141,11 @@ final class GameSession {
         self.didFireEarlyFormality = save.didFireEarlyFormality
         self.didFireNamelessSlip = save.didFireNamelessSlip
         self.didFireTaniguchiJob = save.didFireTaniguchiJob
+        self.didFireLostRehearsal = save.didFireLostRehearsal ?? false
+        self.didFirePassFork = save.didFirePassFork ?? false
+        self.didFireEve = save.didFireEve ?? false
+        self.didWatchFinal = save.didWatchFinal ?? false
+        checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
         self.lastEventRollWeek = save.lastEventRollWeek
@@ -275,8 +291,25 @@ final class GameSession {
 
     /// おすすめ注ぎ＝GameCore正典の単一台本（golden台本・simボットと同じ recommendedPlan）を返す。
     /// View はこれを「仮置き」に展開するだけで、確定はプレイヤーの「注ぐ」タップ
+    /// 監査F-02: 正典台本は「最も低い能力」が器満了でゼロ利得になると止まるため、器を使わない能力（メンタル）へ
+    /// まだ注げる粒が残っていても空になる。UI専用に、台本の続きから「注げる能力を低い順に拾う」延長を足す。
+    /// 正典の recommendedPlan（golden台本）自体は不変・RNG非消費。
     func recommendedAllocation() -> [Ability] {
-        GameEngine.recommendedPlan(state: state, config: config)
+        var plan = GameEngine.recommendedPlan(state: state, config: config)
+        var probe = state
+        for a in plan { GameEngine.pourStep(a, to: &probe, config: config) }
+        var n = 0
+        outer: while n < 2_000 {
+            n += 1
+            for a in Ability.allCases.sorted(by: { probe[$0] < probe[$1] }) {
+                if GameEngine.pourStep(a, to: &probe, config: config) > 0 {
+                    plan.append(a)
+                    continue outer
+                }
+            }
+            break
+        }
+        return plan
     }
 
     /// AllocationView の「つぎの+1 ●n」: probe 状態から表示整数（Int(v.rounded())）を1つ上げるのに要する
@@ -306,15 +339,18 @@ final class GameSession {
     /// ツーカー帯初到達(一発・キャリア1回)。複数回呼ばれても保留が有れば再評価しない。
     private func evaluateChoiceEventFire() {
         guard pendingChoiceEvent == nil else { return }
-        if justLostStage {
+        if justLostStage, !didFireLostRehearsal {
             pendingChoiceEvent = .justLostRehearsal
+            didFireLostRehearsal = true
         } else if lossStreak >= 3, !styleTalkDone {
             pendingChoiceEvent = .styleTalk
-        } else if justPassedStage, let m = nextMilestoneForEvent(), m.week - week >= 3, state.stamina >= 15 {
+        } else if justPassedStage, !didFirePassFork, let m = nextMilestoneForEvent(), m.week - week >= 3, state.stamina >= 15 {
             pendingChoiceEvent = .justPassedFork
-        } else if let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
+            didFirePassFork = true
+        } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
             pendingChoiceEvent = .preTournamentEve
-        } else if !didFireEarlyFormality, week < 15, state.compat <= 7 {
+            didFireEve = true
+        } else if !didFireEarlyFormality, week >= 3, week < 15, state.compat <= 7 {
             pendingChoiceEvent = .earlyFormality
         } else if !didFireTsuukaChoice, state.compat >= 15 {
             pendingChoiceEvent = .tsuukaBreak
@@ -394,19 +430,50 @@ final class GameSession {
         }
     }
 
-    /// 次に来る本番の週と「格が高いか」（0010: 新人賞級・準決・GP決勝＝高格／GP1-3回戦・準々決勝＝低格）。
-    /// AllocationView.nextStage() と同型の走査（View層の既存実装には触れず、GameSession側にも1つ持つ）。
-    private func nextMilestoneForEvent() -> (week: Int, highStakes: Bool)? {
+    /// 今後の本番1件（表示・発火判定用）。
+    struct StageInfo {
+        let week: Int
+        let name: String
+        let line: Double
+        /// 0010「前夜の一本」の対象か（新人賞級・GP準決勝・決勝/敗者復活＝高格／GP1回戦〜準々決勝＝低格）
+        let highStakes: Bool
+        var isGP: Bool
+    }
+
+    /// これから実際に立てる本番の一覧（週順）。WeekMainView/AllocationView/イベント発火の唯一の走査（監査F-01）。
+    /// GP は敗退済みなら除外し、決勝/敗者復活は資格がある時だけ載せる（監査A-02: 敗退後の誤カウントダウンを止める）。
+    /// 自由週の画面では今週の本番は既に済んでいる（or 見送った）ので、今週は含めない。RNG非消費・golden不変。
+    func upcomingStages() -> [StageInfo] {
         let cal = config.calendar
-        var ms: [(week: Int, highStakes: Bool)] = []
-        for (i, r) in cal.gpRounds.enumerated() {
-            ms.append((r.week, i == cal.gpRounds.count - 1))   // 最後の回戦（準決勝）だけ高格
+        var ms: [StageInfo] = []
+        if runner.isGPAlive {
+            for i in runner.gpRoundsPassed..<cal.gpRounds.count {
+                let name = i < cal.gpRoundNames.count ? cal.gpRoundNames[i] : "頂GP\(i + 1)回戦"
+                ms.append(StageInfo(week: cal.gpRounds[i].week, name: name, line: cal.gpRounds[i].line,
+                                    highStakes: i == cal.gpRounds.count - 1, isGP: true))
+            }
         }
-        ms.append((cal.gpFinalWeek, true))   // GP決勝
+        if runner.isFinalist || runner.isGPAlive {
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine, highStakes: true, isGP: true))
+        } else if runner.hasRevival {
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine, highStakes: true, isGP: true))
+        }
         for t in cal.tournaments where t.isEligible(year: year, state: state) {
-            ms.append((t.week, true))        // 道中大会（新人賞等）は全て高格
+            ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false))
         }
-        return ms.filter { $0.week >= week }.min { $0.week < $1.week }
+        let includeThisWeek: Bool = { if case .freeAction = phase { return false }; return true }()
+        return ms.filter { $0.week > week || (includeThisWeek && $0.week == week) }
+            .sorted { $0.week < $1.week }
+    }
+
+    /// 次の本番（無ければ nil）
+    var nextStage: StageInfo? { upcomingStages().first }
+
+    /// GP の道が閉じ、この年に出られる本番が残っていないか（監査A-03「年末へ」の条件）
+    var noStagesLeft: Bool { upcomingStages().isEmpty }
+
+    private func nextMilestoneForEvent() -> (week: Int, highStakes: Bool)? {
+        nextStage.map { ($0.week, $0.highStakes) }
     }
 
     /// 今後3週以内に本番（大会/GP/決勝）が無いか（0012の発火ゲート＝3週凍結が追い込みを食い潰さない条件）。
@@ -566,6 +633,44 @@ final class GameSession {
         saveNow()
     }
 
+    /// 「年末へ」（監査A-03）: GPの道が閉じ出られる本番が無い時、残りの週を完全休養で送って年を閉じる。
+    /// 通常の choose/advance と同じ経路で進める（UIの近道であって、規則も乱数の使い方も通常プレイと同じ）。
+    func fastForwardToYearEnd() {
+        var steps = 0
+        while !finished, !winFinale, !watchingFinal, steps < 200 {   // 決勝の夜は止めて観せる（H-01）
+            steps += 1
+            if pendingChoiceEvent != nil { dismissChoiceEvent(); continue }   // 年を閉じる意思表示＝イベントは見送る
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .freeAction:         choose(.rest(.完全休養))
+            case .tournamentDecision: decideTournament(nil)
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: return
+            }
+        }
+    }
+
+    /// 決勝週に自由週を迎えた（＝決勝にも敗者復活にも出ない）なら、観客版決勝を立てる（監査H-01）。
+    private func checkSpectatorFinal() {
+        guard !didWatchFinal, case .freeAction = phase, week == config.calendar.gpFinalWeek,
+              !runner.isFinalist, !runner.hasRevival else { return }
+        watchingFinal = true
+    }
+
+    /// 観客版決勝を観終えた。優勝組を「出来事」に残して週メインへ戻る。
+    func finishWatchingFinal(winner: String) {
+        watchingFinal = false
+        didWatchFinal = true
+        log.append("第\(week)週: 頂GP決勝 優勝「\(winner)」（客席から）")
+        saveNow()
+    }
+
+    /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
+    func abandonRun() {
+        UserDefaults.standard.removeObject(forKey: Self.saveKey)
+        abandoned = true
+    }
+
     /// 「勝ち版」決勝演出の「次へ」。年末結果（S4）へ
     func acknowledgeWin() {
         winFinale = false
@@ -604,9 +709,19 @@ final class GameSession {
         var categoryLog: [Int: BandCategory]
         var totalPrize: Int
         var combiName: String
+        // ---- ここから下は後から足したフィールド。必ず Optional にする（旧セーブに無くても復号できる・監査G-03） ----
+        var version: Int?
+        var didFireLostRehearsal: Bool?
+        var didFirePassFork: Bool?
+        var didFireEve: Bool?
+        var didWatchFinal: Bool?
     }
 
     private static let saveKey = "manzai.save.v1"
+    /// 読めなかったセーブの退避先（黙って消さない・監査G-03）
+    private static let brokenSaveKey = "manzai.save.v1.broken"
+    /// セーブ形式の版数（フィールドを足したら上げる。足すフィールドは必ず Optional）
+    static let saveVersion = 2
 
     /// 中断セーブを書く。年が終わっていれば逆にセーブを消す（周回は持ち越さない）。
     /// 呼び出しはプレイヤー入力の各確定点（choose/decideTournament/advanceAuto/acknowledge*/allocate/
@@ -617,7 +732,7 @@ final class GameSession {
         let env = ProcessInfo.processInfo.environment
         if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil { return }   // QA自動走行で実プレイのセーブを潰さない
         #endif
-        guard !finished, !winFinale else {
+        guard !finished, !winFinale, !abandoned else {
             UserDefaults.standard.removeObject(forKey: Self.saveKey)
             return
         }
@@ -631,17 +746,31 @@ final class GameSession {
                             lastEventRollWeek: lastEventRollWeek, jobCount: jobCount,
                             pendingChoiceEvent: pendingChoiceEvent, weekBanter: weekBanter,
                             lastBanterRollWeek: lastBanterRollWeek, categoryLog: categoryLog,
-                            totalPrize: totalPrize, combiName: combiName)
-        if let data = try? JSONEncoder().encode(save) {
+                            totalPrize: totalPrize, combiName: combiName,
+                            version: Self.saveVersion,
+                            didFireLostRehearsal: didFireLostRehearsal, didFirePassFork: didFirePassFork,
+                            didFireEve: didFireEve, didWatchFinal: didWatchFinal)
+        do {
+            let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)
+        } catch {
+            print("[save] encode failed: \(error)")   // 前回のセーブは残したまま（上書きしない）
         }
     }
 
     /// 起動時のエントリポイント: セーブがあれば復元、無ければ新規（IntroFlow 前のプレースホルダ）。
     static func loadedOrNew(config: GameConfig = GameConfig()) -> GameSession {
-        if let data = UserDefaults.standard.data(forKey: saveKey),
-           let save = try? JSONDecoder().decode(SaveData.self, from: data) {
-            return GameSession(restoring: save, config: config)
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: saveKey) {
+            do {
+                let save = try JSONDecoder().decode(SaveData.self, from: data)
+                return GameSession(restoring: save, config: config)
+            } catch {
+                // 形式が合わず読めない＝黙って捨てずに退避してから新規へ（後の版で救出できるように）
+                print("[save] decode failed, moved to \(brokenSaveKey): \(error)")
+                defaults.set(data, forKey: brokenSaveKey)
+                defaults.removeObject(forKey: saveKey)
+            }
         }
         return GameSession()
     }
@@ -692,6 +821,7 @@ final class GameSession {
                 week = runner.week
                 state = runner.state
                 if case .freeAction = phase {
+                    checkSpectatorFinal()
                     evaluateChoiceEventFire()
                     // 掛け合いはイベント抽選の「後」に引く＝イベント出現週のUI乱数再現列を崩さない
                     // （以後の列は banter の消費分だけずれるが UI 層のみ＝golden非対象）。

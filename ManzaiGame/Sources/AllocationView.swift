@@ -62,7 +62,7 @@ struct AllocationView: View {
                     ScrollView {
                         VStack(spacing: Theme.Sp.s16) {
                             jitsuryokuHeader(pv)
-                            recipeGrid
+                            recipeGrid(pv)
                             ForEach(Ability.allCases, id: \.self) { a in
                                 abilityCard(a, pv)
                             }
@@ -109,14 +109,21 @@ struct AllocationView: View {
     private func expWallet(_ pv: GameState) -> some View {
         HStack(spacing: 5) {
             ForEach(ExpCurrency.allCases, id: \.self) { c in
-                HStack(spacing: 4) {
-                    CurrencyBadge(currency: c, size: 18)
-                    Text("\(grains(pv[currency: c]))").font(.maru(15)).monospacedDigit()
-                        .foregroundStyle(Theme.ink)
-                        .contentTransition(.numericText())
+                VStack(spacing: 2) {
+                    HStack(spacing: 4) {
+                        CurrencyBadge(currency: c, size: 18)
+                        Text("\(grains(pv[currency: c]))").font(.maru(15)).monospacedDigit()
+                            .foregroundStyle(Theme.ink)
+                            .contentTransition(.numericText())
+                    }
+                    // 通貨名を併記＝常時表示のこの5枚が画面唯一の凡例になる（別立ての凡例行を足さない）。
+                    // 単漢字バッジは初見で読めない（redteam_uiux_v0 §1-4。レビュアー自身が閃→関・間→闇と2文字誤読）。
+                    Text(String(describing: c)).font(.maru(9))
+                        .foregroundStyle(Theme.inkDim)
+                        .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 7)
+                .padding(.vertical, 6)
                 .background(.white, in: RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.currencyColor(c).opacity(0.85), lineWidth: 2))
                 .shadow(color: Theme.cmdShadow, radius: 0, y: 2)
@@ -136,15 +143,24 @@ struct AllocationView: View {
     // わからん」への対応）。列見出しに通貨バッジ、行見出しに能力バッジを置き、表の形そのものが
     // 「1能力は複数通貨から・1通貨は複数能力へ」を一目で言う（旧: 文章の凡例／能力ごとの%チップを廃止）。
 
-    private var recipeGrid: some View {
+    /// 監査C-02: 旧表はレシピ重み（固定の定数）を並べていて何をしても変わらなかった。
+    /// 実機の表と同じく「つぎの1段に要る各通貨量」を出す＝能力が上がるほど数字が増え、足りない通貨は朱。
+    private func recipeGrid(_ pv: GameState) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("現在の経験点").font(.maru(11)).foregroundStyle(Theme.inkDim)
+            Text("つぎの1段に要る経験点").font(.maru(11)).foregroundStyle(Theme.inkDim)
                 .padding(.bottom, Theme.Sp.s8)
             Grid(horizontalSpacing: 6, verticalSpacing: 6) {
                 GridRow {
                     Color.clear.frame(width: 68, height: 1)   // 行見出し列ぶんの空白
                     ForEach(ExpCurrency.allCases, id: \.self) { c in
-                        CurrencyBadge(currency: c, size: 22)
+                        // 列見出し（通貨）にも名前を併記＝行見出し（能力）と同じ形に揃える。
+                        // 揃うまでは「行だけフルネーム・列は単漢字」の非対称で、表が暗号に見えていた。
+                        VStack(spacing: 2) {
+                            CurrencyBadge(currency: c, size: 22)
+                            Text(String(describing: c)).font(.maru(8.5))
+                                .foregroundStyle(Theme.ink)
+                                .lineLimit(1).minimumScaleFactor(0.65)
+                        }
                     }
                 }
                 Divider().gridCellColumns(6)
@@ -156,12 +172,14 @@ struct AllocationView: View {
                                 .lineLimit(1).minimumScaleFactor(0.75)
                         }
                         .frame(width: 68, alignment: .leading)
+                        let costs = GameEngine.nextStepCost(a, state: pv, config: config)
                         ForEach(ExpCurrency.allCases, id: \.self) { c in
-                            let w = (config.abilityRecipes[a] ?? []).first { $0.0 == c }?.1
+                            let need = costs.first { $0.currency == c }?.amount
                             Group {
-                                if let w {
-                                    Text("\(Int((w * 100).rounded()))")
-                                        .font(.maru(13)).monospacedDigit().foregroundStyle(Theme.ink)
+                                if let need {
+                                    Text(need < 10 ? String(format: "%.1f", need) : "\(Int(need.rounded()))")
+                                        .font(.maru(13)).monospacedDigit()
+                                        .foregroundStyle(pv[currency: c] + 1e-9 < need ? Theme.verm : Theme.ink)
                                 } else {
                                     Text("－").font(.maru(12)).foregroundStyle(Theme.inkFaint)
                                 }
@@ -190,6 +208,9 @@ struct AllocationView: View {
                 Text("いまの実力").font(.maru(11)).foregroundStyle(Theme.inkDim)
                 Text("\(Int(now.rounded()))").font(.maru(21)).monospacedDigit().foregroundStyle(Theme.ink)
                     .contentTransition(.numericText())
+                // 監査E-02: 本番のスコアは「実力値＋相性」。1年目は相性の伸び幅の方が大きい＝内訳を見せる
+                Text("（実力 \(Int(GameEngine.jitsuryoku(s, config: config).rounded())) ＋ 相性 \(Int(s.compat.rounded()))）")
+                    .font(.maru(10)).monospacedDigit().foregroundStyle(Theme.inkDim)
                 if staged {
                     Text("→").font(.maru(15)).foregroundStyle(Theme.inkDim)
                     Text("\(Int(after.rounded()))").font(.maru(21)).monospacedDigit().foregroundStyle(Theme.ink)
@@ -244,6 +265,8 @@ struct AllocationView: View {
                             .frame(width: geo.size.width * CGFloat(min(1, after / scale)))
                         Capsule().fill(Theme.ink.opacity(0.55))
                             .frame(width: geo.size.width * CGFloat(min(1, now / scale)))
+                        Capsule().fill(Theme.cCompat.opacity(0.85))   // 相性ぶん（左端から・監査E-02）
+                            .frame(width: geo.size.width * CGFloat(min(1, s.compat / scale)))
                         Rectangle().fill(Theme.verm)
                             .frame(width: 2, height: 14)
                             .offset(x: geo.size.width * CGFloat(min(1, stage.line / scale)) - 1)
@@ -254,19 +277,9 @@ struct AllocationView: View {
         }
     }
 
-    /// 次に来る本番（大会 or GP回戦 or 決勝）とその要求ライン。WeekMainView.nextMilestone と同じ走査＋出場資格で絞る
+    /// 次に来る本番とその要求ライン（GameSession.upcomingStages の先頭＝資格・GP敗退を反映済み・監査F-01）
     private func nextStage() -> (name: String, week: Int, line: Double)? {
-        let cal = config.calendar
-        var ms: [(week: Int, name: String, line: Double)] = []
-        for (i, r) in cal.gpRounds.enumerated() {
-            ms.append((r.week, i < cal.gpRoundNames.count ? cal.gpRoundNames[i] : "GP回戦\(i + 1)", r.line))
-        }
-        ms.append((cal.gpFinalWeek, "頂GP 決勝", cal.gpFinalLine))
-        for t in cal.tournaments where t.isEligible(year: session.year, state: s) {
-            ms.append((t.week, t.name, t.line))
-        }
-        return ms.filter { $0.week >= session.week }.min { $0.week < $1.week }
-            .map { ($0.name, $0.week, $0.line) }
+        session.nextStage.map { ($0.name, $0.week, $0.line) }
     }
 
     // MARK: 能力カード（正典v3・グループ枠を廃し1能力1カードに統一＝レシピ内訳がグループの代わりに「多対多」を言う）
@@ -344,9 +357,9 @@ struct AllocationView: View {
             ZStack(alignment: .leading) {
                 Capsule().fill(Theme.card2)
                 Capsule().fill(color.opacity(0.35))
-                    .frame(width: geo.size.width * CGFloat(min(1, max(0, ghost / cap))))
+                    .frame(width: geo.size.width * CGFloat(Theme.rank(ghost) != Theme.rank(current) ? 1 : Theme.rankProgress(ghost, cap: cap)))   // 等級帯の中での進み（監査C-01）
                 Capsule().fill(color)
-                    .frame(width: geo.size.width * CGFloat(min(1, max(0, current / cap))))
+                    .frame(width: geo.size.width * CGFloat(Theme.rankProgress(current, cap: cap)))
             }
         }
         .frame(height: 10)
