@@ -143,14 +143,15 @@ struct S1TitleView: View {
 
     var body: some View {
         ZStack {
-            keyVisual
+            // 開演前の舞台＝いつか立つ舞台の光の中に二人（見た目の作り直し v1 §6 I1・暗い紫と隠れた二人をやめる）
+            StageFrame(mode: .preshow, performers: true, floorTop: 0.60)
             VStack(spacing: Theme.Sp.s16) {
-                Spacer().frame(height: 70)
+                Spacer().frame(height: 128)
                 // ロゴ（仮）
-                VStack(spacing: 4) {
-                    Text(AppInfo.displayName).font(.maru(40)).foregroundStyle(.white)
-                        .shadow(color: Theme.gold.opacity(lit ? 0.5 : 0), radius: 16)
-                    Text("――漫才師、育成。").font(.maru(11)).tracking(2).foregroundStyle(.white.opacity(0.6))
+                VStack(spacing: 6) {
+                    Telop(text: AppInfo.displayName, size: 46, color: Color(hex: 0xFFF3D6))
+                        .shadow(color: Theme.gold.opacity(lit ? 0.6 : 0), radius: 18)
+                    Telop(text: "――漫才師、育成。", size: 15, color: Theme.houseLight)
                 }
                 .opacity(lit ? 1 : 0)
                 .animation(.easeInOut(duration: 0.8).delay(0.4), value: lit)
@@ -158,65 +159,28 @@ struct S1TitleView: View {
                 Spacer()
 
                 Button(action: onStart) {
-                    Text("はじめる").font(.maru(18)).foregroundStyle(Color(hex: 0x2A2440))
-                        .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s16)
+                    Text("はじめる").font(.maru(.title)).foregroundStyle(Theme.onGold)
+                        .frame(maxWidth: .infinity, minHeight: 56)
                         .background(Theme.gold, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                        .e2()
+                        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.btn).stroke(.white.opacity(0.8), lineWidth: 2))
+                        .shadow(color: Theme.goldD, radius: 0, y: 4)
                 }
                 .buttonStyle(PressableStyle())
                 .padding(.horizontal, Theme.Sp.s32)
-                .padding(.bottom, 50)
+                .padding(.bottom, 92)   // 客席の頭の列より上＝二人を隠さない
                 .opacity(lit ? 1 : 0).animation(.easeOut(duration: 0.5).delay(0.9), value: lit)
             }
         }
         .overlay(alignment: .topTrailing) {
             Button { showSettings = true } label: {   // Quietの歯車 → S1b設定
-                Image(systemName: "gearshape.fill").font(.system(size: 18)).foregroundStyle(.white.opacity(0.6))
+                Image(systemName: "gearshape.fill").font(.system(size: 18)).foregroundStyle(.white.opacity(0.85))
+                    .frame(width: 44, height: 44)
             }
-            .buttonStyle(PressableStyle()).padding(.top, 54).padding(.trailing, 20)
+            .buttonStyle(PressableStyle()).padding(.top, 44).padding(.trailing, 28)
             .accessibilityLabel("設定")
         }
         .sheet(isPresented: $showSettings) { SettingsView { showSettings = false } }
         .onAppear { lit = true }
-    }
-
-    // KV【仮】: 上手袖から見た夜の舞台（袖の暗部＋スポット＋二人の影＋マイク）
-    private var keyVisual: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .bottom) {
-                LinearGradient(colors: [.black, Color(hex: 0x241C33), Color(hex: 0x3A2A2A)],
-                               startPoint: .top, endPoint: .bottom)
-                // スポットライトの輪（先に灯る）
-                RadialGradient(colors: [Theme.gold.opacity(lit ? 0.22 : 0), .clear],
-                               center: .init(x: 0.55, y: 0.72), startRadius: 10, endRadius: 240)
-                    .animation(.easeOut(duration: 0.4), value: lit)
-                // 舞台床
-                Rectangle().fill(Color.white.opacity(0.04)).frame(height: 90)
-                // マイク＋二人の影
-                HStack(alignment: .bottom, spacing: 8) {
-                    stageDuo
-                    VStack(spacing: 0) {   // センターマイク
-                        Circle().fill(.black.opacity(0.6)).frame(width: 12, height: 12)
-                        Rectangle().fill(.black.opacity(0.5)).frame(width: 3, height: 70)
-                    }
-                }
-                .padding(.bottom, 30).padding(.trailing, 40)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                // 上手袖（左端の暗部）
-                LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
-                    .frame(width: 70).frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .ignoresSafeArea()
-        }
-    }
-
-    private var stageDuo: some View {
-        HStack(alignment: .bottom, spacing: 3) {
-            Capsule().fill(.black.opacity(0.55)).frame(width: 34, height: 78)
-                .overlay(alignment: .top) { Circle().fill(.black.opacity(0.55)).frame(width: 20).offset(y: 8) }
-            Capsule().fill(.black.opacity(0.6)).frame(width: 38, height: 86)
-                .overlay(alignment: .top) { Circle().fill(.black.opacity(0.6)).frame(width: 22).offset(y: 8) }
-        }
     }
 }
 
