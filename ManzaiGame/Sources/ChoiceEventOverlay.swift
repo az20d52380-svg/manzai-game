@@ -102,7 +102,8 @@ struct ChoiceEventOverlay: View {
             ForEach(session.availableEventChoices(), id: \.id) { choice in
                 Button {
                     session.applyEventChoice(choice.id)
-                    withAnimation(Theme.Motion.appear) { chosenID = choice.id; afterShown = 0 }
+                    // 選んだ瞬間に返事の1行目を出す（0 だと区切り線の下が空のまま＝壊れて見えた・audit_intro_event B-01）
+                    withAnimation(Theme.Motion.appear) { chosenID = choice.id; afterShown = min(1, text.afterChoice[choice.id]?.count ?? 0) }
                 } label: {
                     Text(text.choiceLabels[choice.id] ?? choice.id).font(.maru(14)).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
