@@ -70,6 +70,7 @@
 		F33DD67A56FAEDBCFD666534 /* se_applause_hall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */; };
 		F5C20BF8C4688D372B1CDAD2 /* se_cheer_mid.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */; };
 		FAE276B38C7A911C9F8445C2 /* bgm_tension.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */; };
+		FEC32EB9053F087229AB0EC2 /* StageFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E107DFFE29351633A0776D9 /* StageFrame.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -100,6 +101,7 @@
 		830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_big.mp3; sourceTree = "<group>"; };
 		86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_finals.mp3; sourceTree = "<group>"; };
 		8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_hall.mp3; sourceTree = "<group>"; };
+		8E107DFFE29351633A0776D9 /* StageFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageFrame.swift; sourceTree = "<group>"; };
 		90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_taiko.mp3; sourceTree = "<group>"; };
 		915FB4D3357203506A4F5A67 /* IntroFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroFlow.swift; sourceTree = "<group>"; };
 		9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Black.ttf"; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				2AAFBC0284B7A53A0A48C18D /* S6bView.swift */,
 				A799C1CDD04C665A5DE37ABB /* SettingsView.swift */,
 				9602D87CE2E13D9365DE6EEE /* SoundManager.swift */,
+				8E107DFFE29351633A0776D9 /* StageFrame.swift */,
 				3B1F087A453470E4CF970A6B /* StageScene.swift */,
 				584B31B6D7B7B692F33CC50E /* StageViews.swift */,
 				1B5B0AD382326CD111BFDE10 /* TalkParts.swift */,
@@ -395,6 +398,7 @@
 				9FB3C8B8D6363401D9B7EEFD /* S6bView.swift in Sources */,
 				420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */,
 				07755E46FD8EC92ACE98C353 /* SoundManager.swift in Sources */,
+				FEC32EB9053F087229AB0EC2 /* StageFrame.swift in Sources */,
 				21E800CFC18797B54C85B120 /* StageScene.swift in Sources */,
 				0925CDD9634B4E4FADD702CC /* StageViews.swift in Sources */,
 				1D5713E40EEA45D0B98E861B /* TalkParts.swift in Sources */,

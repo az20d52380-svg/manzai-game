@@ -38,6 +38,7 @@ struct RootView: View {
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "allocate": AllocationView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
+            case "frame": StageFrame(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
             }
             #else
@@ -216,6 +217,18 @@ struct RootView: View {
     private func forceChampion() {
         session = GameSession(startState: GameSession.debugMaxedState())
         session.debugAdvanceToChampionFinale()
+    }
+
+    /// MZ_UI=frame の舞台の状態（MZ_MODE=preshow/lit/judging/winner/loser/spectator・既定 lit）
+    private var debugFrameMode: StageFrame.Mode {
+        switch ProcessInfo.processInfo.environment["MZ_MODE"] {
+        case "preshow": return .preshow
+        case "judging": return .judging
+        case "winner": return .winner
+        case "loser": return .loser
+        case "spectator": return .spectator
+        default: return .lit
+        }
     }
 
     /// 能力マックスの新規ゲームを第1週から始める（自動プレイしない＝手で無双して遊ぶ）。
