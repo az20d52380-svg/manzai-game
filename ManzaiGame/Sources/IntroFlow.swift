@@ -8,12 +8,22 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: 回想紙芝居プレイヤー（共用部品・静止画+字幕+クロスフェード0.18s）
+// MARK: 回想紙芝居プレイヤー（共用部品・夕景の3段階＋紙の地の文＋吹き出し・クロスフェード0.18s）
+// 見た目の作り直し v1 §6 I2：暗い紫と半透明の灰色の形をやめ、明るい夕景（昼→放課後→宵）と色付きの二人で描く。
+
+/// 回想の時刻（背景の色）。黒にしない。
+enum DuskMood { case noon, after, eve }
 
 struct ReminiscenceCard: Identifiable {
     let id = UUID()
     let caption: String
-    var tint: Color = Theme.ink   // 切り絵シルエットの色（過去=色が付く前＝暗色）
+    var tint: Color = Theme.ink   // 旧切り絵シルエットの色（互換のため残す・未使用）
+    var mood: DuskMood = .eve
+    /// 台詞（あれば話者の吹き出しで出す。caption は地の文の紙）
+    var speaker: String? = nil
+    var line: String? = nil
+    /// 二人の立ち位置（true＝並ぶ／false＝離れている）
+    var together: Bool = true
 }
 
 struct ReminiscencePlayer: View {
@@ -22,29 +32,27 @@ struct ReminiscencePlayer: View {
     @State private var index = 0
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            // 切り絵シルエット（仮・カットごとに少しずらす）
-            silhouette(for: index)
-                .id(index)
+        let card = cards[safe: index] ?? cards[0]
+        VStack(spacing: 0) {
+            ReminiscenceScene(mood: card.mood, together: card.together)
+                .frame(maxHeight: .infinity)
+                .id("scene\(index)")
                 .transition(.opacity)
-
-            VStack {
-                Spacer()
-                Text(cards[safe: index]?.caption ?? "")
-                    .font(.system(size: 16, design: .serif)).lineSpacing(8)
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Theme.Sp.s32)
-                    .id("cap\(index)")
-                    .transition(.opacity)
-                Spacer().frame(height: 60)
-                Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45))
-                    .padding(.bottom, Theme.Sp.s24)
+            VStack(spacing: 14) {
+                if let line = card.line {
+                    TalkBubble(advice: Advice(name: card.speaker, text: line), large: true)   // 回想の台詞は1枚に1つ＝決め台詞として大きく
+                }
+                NarrationCard(text: card.caption, showCue: true)
             }
+            .id("cap\(index)")
+            .transition(.opacity)
+            .padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 30)
         }
+        .background(LinearGradient(colors: ReminiscenceScene.colors(card.mood), startPoint: .top, endPoint: .bottom)
+                        .ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture {
+            Sound.play(.cursor)
             if index + 1 < cards.count {
                 withAnimation(.easeInOut(duration: 0.18)) { index += 1 }   // 紙めくりクロスフェード
             } else {
@@ -52,24 +60,76 @@ struct ReminiscencePlayer: View {
             }
         }
     }
+}
 
-    // 切り絵シルエット（仮）: 二人の影＋スポット。カット番号で構図を少し変える。
-    private func silhouette(for i: Int) -> some View {
+/// 回想の場面: 夕景の色＋窓の光＋床＋色付きの二人（俺＝青・谷口＝朱）。
+struct ReminiscenceScene: View {
+    let mood: DuskMood
+    let together: Bool
+
+    static func colors(_ m: DuskMood) -> [Color] {
+        switch m {
+        case .noon: return Theme.duskNoon
+        case .after: return Theme.duskAfter
+        case .eve: return Theme.duskEve
+        }
+    }
+
+    var body: some View {
         GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            let floorTop = h * 0.70
+            let figH = min(230, h * 0.50)
             ZStack {
-                RadialGradient(colors: [Color(hex: 0x2A2440), .black],
-                               center: .center, startRadius: 20, endRadius: geo.size.height * 0.7)
-                HStack(alignment: .bottom, spacing: i == 1 ? 4 : 40) {
-                    Capsule().fill(Color.white.opacity(0.10)).frame(width: 60, height: 150)
-                        .overlay(alignment: .top) { Circle().fill(Color.white.opacity(0.10)).frame(width: 34).offset(y: 14) }
-                    if i != 0 {
-                        Capsule().fill(Color.white.opacity(0.10)).frame(width: 56, height: 138)
-                            .overlay(alignment: .top) { Circle().fill(Color.white.opacity(0.10)).frame(width: 32).offset(y: 14) }
+                LinearGradient(colors: Self.colors(mood), startPoint: .top, endPoint: .bottom)
+                // 窓（教室・廊下の窓／宵は灯りのついた窓）
+                HStack(spacing: 12) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(LinearGradient(colors: windowColors, startPoint: .top, endPoint: .bottom))
+                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(.white.opacity(0.45), lineWidth: 5))
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.bottom, geo.size.height * 0.28)
+                .frame(width: w * 0.80, height: h * 0.36)
+                .position(x: w / 2, y: h * 0.32)
+                // 床と、窓から床へ落ちる光
+                LinearGradient(colors: floorColors, startPoint: .top, endPoint: .bottom)
+                    .frame(height: h - floorTop)
+                    .position(x: w / 2, y: floorTop + (h - floorTop) / 2)
+                Rectangle()
+                    .fill(LinearGradient(colors: [Color.white.opacity(mood == .eve ? 0.10 : 0.28), .clear],
+                                         startPoint: .top, endPoint: .bottom))
+                    .frame(width: w * 0.5, height: h - floorTop)
+                    .rotationEffect(.degrees(-18))
+                    .position(x: w * 0.42, y: floorTop + (h - floorTop) * 0.5)
+                    .blur(radius: 6)
+                // 二人
+                ManzaiFigure(height: figH * 0.9, tilt: together ? 2.2 : 0, accent: Color(hex: 0x2E55B0), breathe: 3.1,
+                             bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
+                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                    .position(x: together ? w * 0.34 : w * 0.24, y: h * 0.95 - figH * 0.45)
+                ManzaiFigure(height: figH, tilt: together ? -2.6 : 0, accent: Color(hex: 0xB02318), breathe: 2.4,
+                             bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
+                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                    .position(x: together ? w * 0.67 : w * 0.72, y: h * 0.95 - figH * 0.50)
             }
+            .clipped()
+        }
+        .ignoresSafeArea(edges: .top)
+    }
+
+    private var windowColors: [Color] {
+        switch mood {
+        case .noon: return [Color(hex: 0xFFFFFF), Color(hex: 0xFFF3D6)]
+        case .after: return [Color(hex: 0xFFF1D6), Color(hex: 0xFFC98E)]
+        case .eve: return [Color(hex: 0xFFE3A0), Color(hex: 0xF6B37A)]
+        }
+    }
+    private var floorColors: [Color] {
+        switch mood {
+        case .noon: return [Color(hex: 0xEED2A4), Color(hex: 0xD9B07A)]
+        case .after: return [Color(hex: 0xE2A47A), Color(hex: 0xC98462)]
+        case .eve: return [Color(hex: 0xB07E86), Color(hex: 0x8C6A82)]
         }
     }
 }
@@ -279,9 +339,12 @@ struct IntroFlowView: View {
     private enum Stage { case title, reminiscence, nameEntry, notif }
 
     private let cards = [
-        ReminiscenceCard(caption: "高校の教室。窓際で、谷口が一人で喋っていた。\n誰も聞いていなかった。俺だけが、笑った。"),
-        ReminiscenceCard(caption: "「コンビ、組まへんか」\n谷口はそう言った。放課後の、誰もいない廊下で。"),
-        ReminiscenceCard(caption: "それから、何年。\n売れない日々の、まだ入口だった。"),
+        // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた・語は1字も変えない）
+        ReminiscenceCard(caption: "高校の教室。窓際で、谷口が一人で喋っていた。\n誰も聞いていなかった。俺だけが、笑った。",
+                         mood: .noon, together: false),
+        ReminiscenceCard(caption: "谷口はそう言った。放課後の、誰もいない廊下で。",
+                         mood: .after, speaker: "谷口", line: "コンビ、組まへんか"),
+        ReminiscenceCard(caption: "それから、何年。\n売れない日々の、まだ入口だった。", mood: .eve),
     ]
 
     var body: some View {

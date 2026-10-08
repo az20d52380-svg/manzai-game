@@ -54,12 +54,14 @@ struct TalkBubble: View {
     let advice: Advice
     var showCue: Bool = false
     var faceSize: CGFloat = 54
+    /// 決め台詞（回想の「コンビ、組まへんか」など1回きりの台詞）は title 段より大きい22pt
+    var large: Bool = false
 
     private var name: String { advice.name ?? "俺" }
 
     var body: some View {
         Text(advice.text)
-            .font(.maru(.body)).lineSpacing(TypeStep.body.lineSpacing)
+            .font(large ? .maru(22, weight: .heavy) : .maru(.body)).lineSpacing(TypeStep.body.lineSpacing)
             .foregroundStyle(Theme.ink)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 18).padding(.trailing, 26)
