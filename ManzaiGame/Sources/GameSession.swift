@@ -34,6 +34,8 @@ final class GameSession {
     /// 直前の行動での所持金/体力の増減（Beat2 獲得バースト用・表示専用）。週末の生活費も含む「この週の収支」。
     private(set) var lastMoneyDelta = 0
     private(set) var lastStaminaDelta = 0
+    /// Beat2 獲得チップ用の知名度の増分（表示専用・golden非対象）。舞台に立つ週の「押した→残った」を見せる（G1）
+    private(set) var lastFameDelta: Double = 0
     /// 上記の増減が属する週。View は lastDeltaWeek == week の時だけバーストを出す＝大会画面を
     /// 挟んで戻った時に古い増減が再生される事故を防ぐ（表示ゲートのみ・golden非対象）。
     private(set) var lastDeltaWeek = -1
@@ -208,6 +210,7 @@ final class GameSession {
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         lastMoneyDelta = state.money - before.money
         lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
+        lastFameDelta = state.fame - before.fame
         lastDeltaWeek = week
         // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
         if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }

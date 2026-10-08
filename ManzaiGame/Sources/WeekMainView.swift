@@ -153,9 +153,11 @@ struct WeekMainView: View {
             guard !chips.isEmpty else { clearBeat(); return }
             burstChips = chips
             burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
-            particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
-            // 獲得の音: 実力が伸びた週はキラキラ＞汎用ポップ。収支が動いた週はお金の音も重ねる。
-            Sound.play(lastJitsuryokuGain > 0.001 ? .grain : .pop)
+            if chips.contains(where: \.up) {
+                particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
+                // 獲得の音: 実力が伸びた週はキラキラ＞汎用ポップ。収支が動いた週はお金の音も重ねる。
+                Sound.play(lastJitsuryokuGain > 0.001 ? .grain : .pop)
+            }   // 体力が減るだけの週は火花も集中線も音も出さない（損を祝わない・R4 の穴①）
             if session.lastMoneyDelta > 0 { Sound.play(.money) }
             await waitOrSkip(seconds: 1.2)   // 画面タップで畳める（K6）
             clearBeat()
@@ -205,7 +207,7 @@ struct WeekMainView: View {
                 // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
                 SpeedLinesBurst(trigger: particleFire, center: UnitPoint(x: 0.62, y: 0.55))
                 ParticleBurst(trigger: particleFire,
-                              colors: burstChips.map { $0.bg == Theme.card2 ? Theme.gainOrange : $0.bg },
+                              colors: burstChips.filter(\.up).map(\.bg),
                               style: .spark, count: 26,
                               origin: UnitPoint(x: 0.62, y: 0.60))
             }
@@ -213,7 +215,7 @@ struct WeekMainView: View {
                 // Beat2 獲得バースト: 立ち絵の頭上に獲得チップが立ち上る（触れない・入力遮断なし）。
                 // 人形の大型化に合わせ頭上へ逃がす（頭に被ると谷口が首なしに見える）。
                 burstOverlay
-                    .padding(.trailing, 16).padding(.bottom, 262)
+                    .padding(.trailing, 36).padding(.bottom, 150)   // 谷口の頭のすぐ上（旧262＝寄席ポスターに重なっていた）
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .top) {
@@ -478,14 +480,14 @@ struct WeekMainView: View {
                     .font(.system(size: compact ? 11 : 13, weight: .bold)).foregroundStyle(.white)
                     .frame(width: compact ? 22 : 26, height: compact ? 22 : 26)
                     .background(gated ? Theme.inkFaint : tint, in: RoundedRectangle(cornerRadius: 7))
-                Text(v.name).font(.maru(compact ? 13 : 15)).foregroundStyle(gated ? Theme.inkDim : Theme.ink)
+                Text(v.name).font(.maru(compact ? 13 : 15)).foregroundStyle(gated ? Theme.inkSub : Theme.ink)
                     .lineLimit(1).minimumScaleFactor(0.8)
                 if case .acceptOffer = v.action {
                     Text(v.desc).font(.maru(10)).foregroundStyle(Theme.goldD).lineLimit(1)   // オファー名（既存の OfferSpec.name）
                 }
             }
             if gated {
-                Text(preoccupied ? "撮影で埋まる" : "谷口：今日は休め").font(.maru(10.5)).foregroundStyle(Theme.verm)
+                Text(preoccupied ? "撮影で埋まる" : "谷口：今日は休め").font(.maru(13, weight: .bold)).foregroundStyle(Theme.vermD)
             } else if !v.affordable {
                 Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
             } else if !compact, !effects.isEmpty {
@@ -505,7 +507,7 @@ struct WeekMainView: View {
             .stroke(gated ? Theme.line : tint.opacity(compact ? 0.8 : 0.55),
                     style: StrokeStyle(lineWidth: 3, dash: compact ? [6, 4] : [])))
         .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
-        .opacity(gated ? 0.6 : 1)
+        // 押せないカードは地と縁で言う（全体を薄くすると一番読ませたい「今日は休め」が1.8〜2.2:1まで落ちた）
     }
 
     /// カードごとの地色（アイコン地・縁）。色だけに頼らずアイコン＋名前でも区別する（§6-5）。
@@ -521,7 +523,9 @@ struct WeekMainView: View {
     }
 
     private func effectPill(_ e: CardEffect) -> some View {
-        Text(e.text).font(.system(size: 11, weight: .heavy)).foregroundStyle(e.color)
+        // 字は濃い版（白地/10%地で4.5:1以上・K3）。3枚並んでも溢れないよう縮小可
+        Text(e.text).font(.maru(12, weight: .heavy)).foregroundStyle(e.color)
+            .lineLimit(1).minimumScaleFactor(0.8)
             .padding(.horizontal, 6).padding(.vertical, 2)
             .background(e.color.opacity(0.10), in: Capsule())
             .overlay(Capsule().stroke(e.color.opacity(0.7), lineWidth: 1.5))
@@ -544,10 +548,10 @@ struct WeekMainView: View {
 
     private func burstChipView(_ chip: BurstChip) -> some View {
         // パワプロの「＋経験点ドン」＝でかく・白縁・ハード影（小さくつつましい獲得表示は手応えが死ぬ）。
-        Text(chip.text).font(.system(size: 16, weight: .black)).foregroundStyle(chip.fg)
+        Text(chip.text).font(.maru(17, weight: .black)).foregroundStyle(chip.fg)
             .padding(.horizontal, 12).padding(.vertical, 6)
             .background(chip.bg, in: Capsule())
-            .overlay(Capsule().stroke(.white, lineWidth: 2))
+            .overlay(Capsule().stroke(chip.up ? .white : Theme.lineStrong, lineWidth: 2))
             .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
     }
 
@@ -571,23 +575,29 @@ struct WeekMainView: View {
         var chips: [BurstChip] = []
         if lastJitsuryokuGain > 0.001 {
             // 実力は1週で整数が動かない週が多い＝数字でなく「↑」（バーのオレンジと対）
-            chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.cSense))
+            chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.senseDeep))
         }
         let cd = Int(session.lastCompatGain.rounded())
         if cd > 0 {
-            chips.append(BurstChip(id: chips.count, text: "相性 +\(cd)", fg: .white, bg: Theme.cCompat))
+            chips.append(BurstChip(id: chips.count, text: "相性 +\(cd)", fg: .white, bg: Theme.vermD))
         }
         if let n = session.lastNetaGain {
             let pd = Int(n.polish.rounded())
             if n.isNew || pd > 0 {
-                chips.append(BurstChip(id: chips.count, text: n.isNew ? "新ネタ" : "ネタ +\(pd)", fg: .white, bg: Theme.cIdea))
+                chips.append(BurstChip(id: chips.count, text: n.isNew ? "新ネタ" : "ネタ +\(pd)", fg: .white, bg: Theme.ideaDeep))
             }
+        }
+        // G1: 舞台に立つ週の知名度（押した週に必ず何かが残る・最大3枚の枠の中）
+        let fd = session.lastFameDelta
+        if fd > 0.001 {
+            chips.append(BurstChip(id: chips.count, text: "知名度 +\(max(1, Int(fd.rounded())))", fg: .white, bg: Theme.goldDeep))
         }
         let sd = session.lastStaminaDelta
         if sd != 0 {
+            // 体力の減りは白地＋縁＋補助色＝見えるが祝わない（旧 card2 地は壁と1.06:1で消えていた）
             chips.append(BurstChip(id: chips.count, text: "体力 \(sd > 0 ? "+" : "")\(sd)",
-                                   fg: sd > 0 ? .white : Theme.inkDim,
-                                   bg: sd > 0 ? Theme.cMental : Theme.card2))
+                                   fg: sd > 0 ? .white : Theme.inkSub,
+                                   bg: sd > 0 ? Theme.mentalDeep : .white, up: sd > 0))
         }
         return Array(chips.prefix(3))
     }
@@ -731,11 +741,14 @@ struct WeekMainView: View {
         let cfg = session.config
         var out: [CardEffect] = []
         if GameEngine.jitsuryoku(after, config: cfg) - GameEngine.jitsuryoku(s, config: cfg) > 0.001 {
-            out.append(CardEffect(text: "実力 ↑", color: Theme.cSense))
+            out.append(CardEffect(text: "実力 ↑", color: Theme.senseDeep))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
-        if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: Theme.cCompat)) }
-        if let neta = netaEffect(v.action) { out.append(CardEffect(text: neta, color: Theme.cIdea)) }
+        if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: Theme.vermD)) }
+        if let neta = netaEffect(v.action) { out.append(CardEffect(text: neta, color: Theme.ideaDeep)) }
+        // G1: 舞台に立つ週は知名度が上がる＝押した週に必ず何かが残ることをカードで予告する
+        let fd = after.fame - s.fame
+        if fd > 0.001 { out.append(CardEffect(text: "知名度 +\(max(1, Int(fd.rounded())))", color: Theme.goldDeep)) }
         return out
     }
 
@@ -823,4 +836,6 @@ private struct BurstChip: Identifiable {
     let text: String
     let fg: Color
     let bg: Color
+    /// 伸び（祝う）か、減り（祝わない＝白地＋縁）か
+    var up: Bool = true
 }
