@@ -15,6 +15,10 @@ struct TournamentResultView: View {
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
     @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
     @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
+    /// 開示列のタスク（保持して画面を離れたら取り消す＝投げっぱなしにしない・X4-08）
+    @State private var revealTask: Task<Void, Never>?
+    /// 判の前の溜めをタップで畳む要求（規格K6）。判の叩きつけ以降は畳まない（解放は必ず見せる）
+    @State private var skipRequested = false
 
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
@@ -118,31 +122,58 @@ struct TournamentResultView: View {
         .screenShake(trigger: slamFire, intensity: r.passed ? 10 : 7)     // 判の衝撃（勝敗とも）
         .screenFlash(trigger: r.passed ? slamFire : 0,                    // 白むのは通過だけ
                      color: Color(hex: 0xFFEDCB), strength: 0.4)
-        .onAppear {
-            Sound.bgm(.tension)                                              // 本番の緊張（日常BGMからクロスフェード）
-            Task {
-                // 波形の余韻＋開示前の静止0.3s（溜め→開示の最小単位・§4-2a）を含む1.6s
-                if r.passed { Sound.play(.cheerMid) }                        // 客席の「どっ」（波形と同時）
-                try? await Task.sleep(nanoseconds: 900_000_000)
-                Sound.play(.drumroll)                                        // 開示前のタメ
-                try? await Task.sleep(nanoseconds: 700_000_000)
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
-                slamFire += 1                                                // シェイク＋（通過なら）フラッシュ
-                if r.passed {
-                    confettiFire += 1; Haptics.rare()
-                    Sound.play(.taiko); Sound.play(.applauseHall)            // 通過＝太鼓ドン＋会場拍手
-                } else {
-                    Haptics.confirm()
-                    Sound.play(.taiko2)                                      // 敗退＝重いドドン（拍手なし＝静けさ）
-                }
-                try? await Task.sleep(nanoseconds: 400_000_000)
-                withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
-                try? await Task.sleep(nanoseconds: 600_000_000)
-                withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
+        .overlay {
+            // 判が出るまでは画面のどこを叩いても溜めを畳んで判へ飛ぶ（K6・初回から）
+            if !revealed {
+                Color.clear.contentShape(Rectangle())
+                    .onTapGesture { skipRequested = true }
             }
         }
+        .onAppear { beginReveal() }
+        .onDisappear { revealTask?.cancel() }
         .overlay {
             if let i = climaxIndex { climaxOverlay(i) }   // ⑪ 山場のタップ送り
+        }
+    }
+
+    /// 開示列を始める（1回だけ）。開演の儀（visual_genre_overhaul_v1 §6 L11）を挟む時はその相の後にここを呼ぶ。
+    private func beginReveal() {
+        guard revealTask == nil else { return }
+        Sound.bgm(.tension)                                              // 本番の緊張（日常BGMからクロスフェード）
+        revealTask = Task { await runReveal() }
+    }
+
+    /// 波形の余韻＋開示前の静止（溜め→開示の最小単位・§4-2a）→判→講評→残り。溜めは skipRequested で畳める。
+    private func runReveal() async {
+        let r = result
+        if r.passed { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
+        await pause(0.9)
+        if Task.isCancelled { return }
+        if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
+        await pause(0.7)
+        if Task.isCancelled { return }
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
+        slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
+        if r.passed {
+            confettiFire += 1; Haptics.rare()
+            Sound.play(.taiko); Sound.play(.applauseHall)                // 通過＝太鼓ドン＋会場拍手
+        } else {
+            Haptics.confirm()
+            Sound.play(.taiko2)                                          // 敗退＝重いドドン（拍手なし＝静けさ）
+        }
+        try? await Task.sleep(nanoseconds: 400_000_000)                  // 判の解放は畳まない（0.4s は必ず見せる）
+        if Task.isCancelled { return }
+        withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
+        try? await Task.sleep(nanoseconds: 600_000_000)
+        if Task.isCancelled { return }
+        withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
+    }
+
+    /// 指定秒だけ待つ。畳む要求か取り消しで即戻る。
+    private func pause(_ seconds: Double) async {
+        for _ in 0..<Int(seconds / 0.05) {
+            if skipRequested || Task.isCancelled { return }
+            try? await Task.sleep(nanoseconds: 50_000_000)
         }
     }
 
