@@ -306,3 +306,122 @@ struct CurrencyBadge: View {
             .background(Theme.currencyColor(currency), in: RoundedRectangle(cornerRadius: size * 0.28))
     }
 }
+
+// MARK: 見た目の作り直し v1 のトークン（正本 docs/visual_genre_overhaul_v1.md §4-1・§4-2・§4-4。全て【仮】）
+// 画面は3つの照明状態のどれかに属する：楽屋（昼・紙）／夕景（回想・夜の日常）／舞台（本番）。
+// 暗い側は暖色（R＞G＞B）に固定＝紫を使わない（R2-03）。文字は20pt未満を4.5:1以上（K3）。
+
+extension Theme {
+    // --- 楽屋（昼）: 週メインのクリーム3色版（bgGradient）＋白カード＋太縁＋ハード影 ---
+    /// 補助文字（白 6.46:1・bg2 5.37:1）。inkDim/inkFaint は文字に使わない（罫線・無効面だけ）
+    static let inkSub = Color(hex: 0x625A78)
+    /// 3:1 以上が要る縁（選択肢カード・入力欄・体力減チップの縁）
+    static let lineStrong = Color(hex: 0x9C8E7A)
+    /// 紙（講評・地の文・めくり以外の読み物）
+    static let paperTop = Color(hex: 0xFDFBF4)
+    static let paperBottom = Color(hex: 0xF6EEDC)
+    static let paperEdge = Color(hex: 0xE6D9BE)
+    static let paperInk = Color(hex: 0x33301F)
+    /// 紙の上の署名・見出し（7.2:1・旧 A98B52 2.8:1 の置き換え）
+    static let sealName = Color(hex: 0x6E5020)
+    /// めくり札の白紙と墨
+    static let mekuri = Color(hex: 0xFFFDF6)
+    static let sumi = Color(hex: 0x1E1A2B)
+    /// 話者の色（俺＝青・谷口＝朱）。名前札の地は濃い版（白字 4.5:1 以上）
+    static let cOre = Color(hex: 0x4A7BE8)
+    static let cOreDeep = Color(hex: 0x3566D6)
+    static let cTaniguchi = Color(hex: 0xF0533E)
+    /// 金の面の上の字
+    static let onGold = Color(hex: 0x5A3A06)
+
+    // --- 色相ごとの濃い版（Deep）: 色付きの小さい文字・白字を載せる塗りの両方に使える（白地 5.5:1 以上） ---
+    static let senseDeep = Color(hex: 0x1F63D1)
+    static let ideaDeep = Color(hex: 0x6A3FD9)
+    static let exprDeep = Color(hex: 0xB04400)
+    static let charaDeep = Color(hex: 0xC21F5B)
+    static let mentalDeep = Color(hex: 0x147650)
+    static let moneyDeep = Color(hex: 0x2A7447)
+    static let goldDeep = Color(hex: 0x845F00)
+
+    static func abilityDeep(_ a: Ability) -> Color {
+        switch a {
+        case .センス: return senseDeep
+        case .発想: return ideaDeep
+        case .表現: return exprDeep
+        case .華: return charaDeep
+        case .メンタル: return mentalDeep
+        }
+    }
+
+    // --- 夕景（回想・帰り道・夜の日常）: 明るい暖色のグラデ。黒にしない ---
+    static let duskNoon = [Color(hex: 0xFFF7EC), Color(hex: 0xFFE9B8)]                       // 昼（平均L 約0.85）
+    static let duskAfter = [Color(hex: 0xFFD9A8), Color(hex: 0xF7A878), Color(hex: 0xE98A6A)] // 放課後（約0.5）
+    static let duskEve = [Color(hex: 0xF2A27A), Color(hex: 0xC98A9A), Color(hex: 0x8F86C0)]   // 宵（約0.35・藍へ寄せるが黒にしない）
+    /// 逆光の人物の縁
+    static let rimGold = gold
+
+    // --- 舞台（本番）: 暖色の客席に光る舞台。暗いのは客席だけ ---
+    /// 客席の闇（暖黒・純黒禁止）。旧 B2 案の 140D18 は紫寄りなので採らない
+    static let house = Color(hex: 0x1A100C)
+    /// 一文字幕・袖幕・緞帳（臙脂）
+    static let curtain = Color(hex: 0x5B1A12)
+    static let curtainLit = Color(hex: 0x8E2A1C)
+    static let curtainShade = Color(hex: 0x3A0F0B)
+    /// 光の芯（house 比 17:1）と、その外の金→朱
+    static let spotCore = Color(hex: 0xFFF3D6)
+    static let spotMid = gold.opacity(0.55)
+    static let spotEdge = verm.opacity(0.20)
+    /// 舞台板（スポットの下だけ明るい）
+    static let boardsLit = Color(hex: 0xC8935A)
+    static let boardsDark = Color(hex: 0x4A3020)
+    /// 光を返す金の面（金屏風）。採点中は暗い2段、最明部は自組の優勝の瞬間だけ
+    static let goldLeafLo = Color(hex: 0x6E5426)
+    static let goldLeafMid = Color(hex: 0xA07E36)
+    static let goldLeafHi = Color(hex: 0xD9B45A)
+    /// 客電の粒・笑った客席の縁
+    static let houseLight = Color(hex: 0xFFE3A0)
+    /// 下三分テロップの地（暖黒）
+    static let lowerThird = Color(hex: 0x241712)
+    /// 大会の格の金属色（道中＝銅／GP予選〜準決・客席から＝銀／GP決勝＝金）
+    static let bronze = Color(hex: 0xC07A43)
+    static let silver = Color(hex: 0xC9CED6)
+}
+
+/// 文字の段（K2）: display 34 Black／title 20 ExtraBold／body 17／sub 13 Bold。1画面で3段まで。12pt 未満は使わない。
+/// 第1便は固定 pt（Dynamic Type 追従は第2便）。body は台詞＝Bold・地の文＝Medium。
+enum TypeStep {
+    case display, title, body, bodyMedium, sub
+    var size: CGFloat {
+        switch self {
+        case .display: return 34
+        case .title: return 20
+        case .body, .bodyMedium: return 17
+        case .sub: return 13
+        }
+    }
+    var weight: Font.Weight {
+        switch self {
+        case .display: return .black
+        case .title: return .heavy
+        case .body, .sub: return .bold
+        case .bodyMedium: return .medium
+        }
+    }
+    /// 行送りの足し分（body は約1.65倍）
+    var lineSpacing: CGFloat {
+        switch self {
+        case .body, .bodyMedium: return 10
+        case .sub: return 4
+        default: return 2
+        }
+    }
+}
+
+extension Font {
+    static func maru(_ step: TypeStep) -> Font { .maru(step.size, weight: step.weight) }
+}
+
+extension View {
+    /// 週メインのチャンキーな面のハード影（真下・ぼかし0）
+    func hardShadow(_ y: CGFloat = 3) -> some View { shadow(color: Theme.cmdShadow, radius: 0, y: y) }
+}
