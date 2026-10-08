@@ -12,6 +12,8 @@ struct WaveformView: View {
     var passed: Bool = true
     /// 敗退時の"惜しさ" 0..1（1＝あと一歩）。負けの波形を距離で変える（監査E-03）
     var nearMiss: Double = 0
+    /// 判の後に小さく出す客席メーター（舞台の上・見た目の作り直し v1 §6 R1）
+    var compact: Bool = false
 
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -21,7 +23,7 @@ struct WaveformView: View {
                 // 中心線
                 var base = Path()
                 base.move(to: CGPoint(x: 0, y: mid)); base.addLine(to: CGPoint(x: W, y: mid))
-                ctx.stroke(base, with: .color(.white.opacity(0.10)), lineWidth: 1)
+                ctx.stroke(base, with: .color(compact ? Theme.ink.opacity(0.12) : .white.opacity(0.10)), lineWidth: 1)
 
                 let warm = [Theme.gold, Theme.cExpr, Theme.verm]
                 let cold = [Color(hex: 0xAEB4C4), Color(hex: 0x8890A4)]
@@ -62,18 +64,23 @@ struct WaveformView: View {
                 ctx.stroke(bottom, with: grad, style: StrokeStyle(lineWidth: 3, lineJoin: .round))
             }
         }
-        .frame(height: 104)
+        .frame(height: compact ? 44 : 104)
         .overlay(alignment: .bottom) {
-            HStack {
-                Text("ツカミ"); Spacer(); Text("中盤"); Spacer(); Text("オチ")
+            if !compact {
+                HStack {
+                    Text("ツカミ"); Spacer(); Text("中盤"); Spacer(); Text("オチ")
+                }
+                .font(.maru(10)).foregroundStyle(.white.opacity(0.45)).offset(y: 14)
             }
-            .font(.maru(10)).foregroundStyle(.white.opacity(0.45)).offset(y: 14)
         }
-        .padding(12)
-        // 暗転結果画面の中の「客席モニタ」＝ダークガラス（白紙カードは闇で浮きすぎる）
-        .background(Color(hex: 0x1D1730).opacity(0.85), in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.14), lineWidth: 1.5))
-        .shadow(color: .black.opacity(0.35), radius: 12, y: 8)
+        .padding(compact ? 8 : 12)
+        // 舞台の上の小さい客席メーター（compact）は明るい紙の地＝舞台の光の中で読める（紫のガラスはやめる・§4-1）。
+        // 従来の大きい版は暖色のダークガラス（暗転画面の「客席モニタ」）
+        .background(compact ? AnyShapeStyle(Theme.paperTop.opacity(0.95)) : AnyShapeStyle(Theme.lowerThird.opacity(0.85)),
+                    in: RoundedRectangle(cornerRadius: compact ? 14 : 18))
+        .overlay(RoundedRectangle(cornerRadius: compact ? 14 : 18)
+            .stroke(compact ? Theme.paperEdge : .white.opacity(0.14), lineWidth: 1.5))
+        .shadow(color: .black.opacity(0.30), radius: compact ? 6 : 12, y: compact ? 4 : 8)
     }
 }
 

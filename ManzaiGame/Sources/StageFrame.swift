@@ -229,3 +229,19 @@ struct FlipCard<Front: View, Back: View>: View, Animatable {
         .rotation3DEffect(.degrees(angle), axis: (x: 0, y: 1, z: 0), perspective: 0.5)
     }
 }
+
+// MARK: テロップ（暗い地の上に置いてよい短く太い字＝白字＋墨の縁）
+
+struct Telop: View {
+    let text: String
+    var size: CGFloat = 22
+    var color: Color = .white
+    var body: some View {
+        let edge = Theme.sumi
+        Text(text).font(.maru(size, weight: .black)).foregroundStyle(color)
+            .shadow(color: edge, radius: 0, x: 2, y: 0).shadow(color: edge, radius: 0, x: -2, y: 0)
+            .shadow(color: edge, radius: 0, x: 0, y: 2).shadow(color: edge, radius: 0, x: 0, y: -2)
+            .shadow(color: .black.opacity(0.35), radius: 4, y: 3)
+            .multilineTextAlignment(.center)
+    }
+}

@@ -49,75 +49,104 @@ struct TournamentResultView: View {
         return passed ? "通過" : "敗退"
     }
 
+    /// 大会の格の金属色（道中＝銅／GP＝銀。金は決勝の夜だけ・§4-1）
+    private var metal: Color { isMidTournament ? Theme.bronze : Theme.silver }
+
+    /// 入口と同じ単位の「通過ライン」（名目値。道中＝大会の値／GP回戦＝その週の値／敗者復活）。無ければ出さない
+    private var displayLine: Double? {
+        let cal = session.config.calendar
+        if let t = cal.tournament(inWeek: summary.week) { return t.line }
+        if result.name == "敗者復活" { return cal.gpRevivalLine }
+        return cal.gpRounds.first { $0.week == summary.week }?.line
+    }
+    /// 入口と同じ「いまの実力」（実力値＋相性）
+    private var currentPower: Int {
+        Int((GameEngine.jitsuryoku(summary.state, config: session.config) + summary.state.compat).rounded())
+    }
+
     var body: some View {
         let r = result
         let review = JudgeData.review(passed: r.passed, state: summary.state, salt: summary.week)
-        let stars = JudgeData.stars(summary.state)
 
-        ScrollView {
-            VStack(spacing: 14) {
-                // ヘッダ（道中大会は「頂グランプリ」帯を出さない＝大会名 r.name が主題。GP系のみ帯を出す＝⑫）
-                if !isMidTournament {
-                    Text("頂 グランプリ").font(.maru(12)).foregroundStyle(.white)
-                        .padding(.horizontal, 14).padding(.vertical, 3)
-                        .background(Theme.verm, in: Capsule())
-                }
-                Text(r.name).font(.maru(22)).foregroundStyle(.white)
-                Text("第\(summary.week)週 ・ 本番").font(.maru(12, weight: .bold)).foregroundStyle(.white.opacity(0.55))
-
-                // 笑い波形（結果連動）
-                WaveformView(passed: r.passed, nearMiss: nearMiss(r))
-
-                Text(r.passed ? "——どっと沸いた！" : missLine(r))
-                    .font(.maru(15)).foregroundStyle(r.passed ? Theme.gold : .white.opacity(0.45))
-                    .frame(minHeight: 20)
-
-                if revealed {
-                    stamp(passed: r.passed)
-                }
-                if revealedReview {
-                    washi(text: review.text, judge: review.judge, passed: r.passed)
-                        .transition(.opacity)
-                }
-                if revealedRest {
-                    starsRow(stars).transition(.opacity)
-                    if r.prize > 0 {
-                        Text("賞金 +\(r.prize / 10000)万 ↗").font(.maru(15)).monospacedDigit()
-                            .foregroundStyle(Theme.cMental).transition(.opacity)
-                    }
-                    Button {
-                        if climaxPages.isEmpty { session.acknowledgeResult() }
-                        else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
-                    } label: {
-                        Text("次へ ▶").font(.maru(15)).foregroundStyle(.white)
-                            .frame(maxWidth: .infinity).padding(.vertical, 12)
-                            .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                    }
-                    .buttonStyle(PressableStyle())
-                    .padding(.horizontal, 40).padding(.top, 4)
-                    .transition(.opacity)
-                }
-            }
-            .padding(.horizontal, 18).padding(.vertical, 20)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // 暗転した客席＝結果は舞台の闇の中で言い渡される（紙の講評が闇に浮かぶ）
-        .background {
+        GeometryReader { geo in
             ZStack {
-                LinearGradient(colors: [Color(hex: 0x120D22), Color(hex: 0x241633), Color(hex: 0x1A1128)],
-                               startPoint: .top, endPoint: .bottom)
-                // 判の席に落ちるスポットライト
-                RadialGradient(colors: [Color(hex: 0xFFE9C4).opacity(0.14), .clear],
-                               center: UnitPoint(x: 0.5, y: 0.30), startRadius: 20, endRadius: 320)
+                // 舞台（判の前は明転・敗退はスポットを絞って色温度を下げる＝暗くはしない）
+                StageFrame(mode: revealed && !r.passed ? .loser : .lit, floorTop: 0.52)
+                    .animation(.easeInOut(duration: 0.4), value: revealed)
+
+                VStack(spacing: 0) {
+                    // 一文字幕の上に大会名（GP系は頂グランプリの札）
+                    VStack(spacing: 4) {
+                        if !isMidTournament {
+                            Text("頂 グランプリ").font(.maru(.sub)).foregroundStyle(.white)
+                                .padding(.horizontal, 14).padding(.vertical, 2)
+                                .background(Theme.vermD, in: Capsule())
+                                .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                        }
+                        Telop(text: r.name, size: 24)
+                        Text("第\(summary.week)週 ・ 本番").font(.maru(.sub)).foregroundStyle(Theme.houseLight)
+                    }
+                    .padding(.top, 50)
+
+                    // 判（大会名のすぐ下・二人の頭の上）＋一言のテロップ
+                    VStack(spacing: 10) {
+                        stamp(passed: r.passed)
+                        if revealed {
+                            Telop(text: r.passed ? "——どっと沸いた！" : missLine(r), size: 20,
+                                  color: r.passed ? Color(hex: 0xFFE07A) : .white)
+                                .transition(.opacity)
+                        }
+                    }
+                    .padding(.top, 10)
+
+                    Spacer(minLength: 0)
+
+                    // 舞台板の上＝読み物と出口（判の後に段階で出す）
+                    VStack(spacing: 10) {
+                        if revealedReview {
+                            WaveformView(passed: r.passed, nearMiss: nearMiss(r), compact: true)
+                                .transition(.opacity)
+                            washi(text: review.text, judge: review.judge, passed: r.passed)
+                                .transition(.opacity.combined(with: .offset(y: 10)))
+                        }
+                        if revealedRest {
+                            HStack(spacing: 8) {
+                                if let line = displayLine {
+                                    // G4: 入口と同じ2つを同じ大きさで再掲（大きくしない＝見込みに寄せない）
+                                    Text("通過ライン \(Int(line)) ／ いまの実力 \(currentPower)")
+                                        .font(.maru(.sub)).foregroundStyle(Theme.ink)
+                                        .padding(.horizontal, 10).padding(.vertical, 5)
+                                        .background(.white.opacity(0.92), in: Capsule())
+                                }
+                                if r.prize > 0 {
+                                    GainChip(text: "賞金 +\(r.prize / 10000)万", kind: .gain(Theme.moneyDeep))
+                                }
+                            }
+                            .transition(.opacity)
+                            Button {
+                                if climaxPages.isEmpty { session.acknowledgeResult() }
+                                else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
+                            } label: {
+                                Text("次へ ▶").font(.maru(.body)).foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity, minHeight: 52)
+                                    .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                                    .shadow(color: Theme.vermD, radius: 0, y: 3)
+                            }
+                            .buttonStyle(PressableStyle())
+                            .padding(.horizontal, 24)
+                            .transition(.opacity)
+                        }
+                    }
+                    .padding(.horizontal, 18).padding(.bottom, 22)
+                }
             }
-            .ignoresSafeArea()
         }
         .overlay {
-            // 通過の紙吹雪（判と同時に舞う・敗退は降らない＝静けさが重さ）
+            // 通過の紙吹雪（判と同時に舞う・敗退は降らない＝静けさが重さ）。色は大会の格（銅/銀）
             ParticleBurst(trigger: confettiFire,
-                          colors: [Theme.gold, Theme.verm, .white, Theme.cExpr],
+                          colors: [metal, Theme.gold, .white, Theme.verm],
                           style: .confetti, count: 44,
-                          origin: UnitPoint(x: 0.5, y: 0.30))
+                          origin: UnitPoint(x: 0.5, y: 0.40))
         }
         .screenShake(trigger: slamFire, intensity: r.passed ? 10 : 7)     // 判の衝撃（勝敗とも）
         .screenFlash(trigger: r.passed ? slamFire : 0,                    // 白むのは通過だけ
@@ -180,13 +209,13 @@ struct TournamentResultView: View {
     /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=鈍色——色でなく重さの差（負けにも勝ちと同じ物量）。
     /// 敗退の地は暗転背景に溶けない鈍色（inkは闇と同化するため明度だけ上げる）。
     private func stamp(passed: Bool) -> some View {
-        let c = passed ? Theme.verm : Color(hex: 0x5A5470)
+        let c = passed ? Theme.verm : Color(hex: 0x4E423C)   // 敗退は暖色の炭（舞台の光の中で沈まない・紫は使わない）
         return Text(stampLabel(passed: passed))
-            .font(.maru(30)).foregroundStyle(.white)
-            .frame(width: 108, height: 108)
-            .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 120),
+            .font(.maru(.display)).foregroundStyle(.white)
+            .frame(width: 124, height: 124)
+            .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 130),
                        in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(.white.opacity(0.55), lineWidth: 2).padding(5))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(metal, lineWidth: 3).padding(5))   // 縁＝大会の格の金属色
             .rotationEffect(.degrees(-4))
             .shadow(color: c.opacity(0.55), radius: 16, y: 8)
             .scaleEffect(revealed ? 1 : 2.3)      // 高くから叩きつける（slamFire のシェイクと同時に着地）
@@ -194,73 +223,55 @@ struct TournamentResultView: View {
     }
 
     private func washi(text: String, judge: String, passed: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("審 査 講 評").font(.maru(11)).tracking(6).foregroundStyle(Color(hex: 0xA98B52))
-                .frame(maxWidth: .infinity).padding(.bottom, 12)
-            Text(text)
-                .font(.system(size: 15, design: .serif))
-                .lineSpacing(7).foregroundStyle(Color(hex: 0x33301F))
-                .frame(maxWidth: .infinity, alignment: .leading)
-            // 講評フッタ: 審査員名は左・スタンプは右で被らせない（mvp §8）
-            HStack(alignment: .bottom) {
-                Text("審査員　\(judge)").font(.maru(12.5, weight: .bold)).foregroundStyle(Color(hex: 0xA98B52))
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                CharacterFace(spec: FaceCatalog.judge(judge), size: 40)
+                    .overlay(Circle().stroke(.white, lineWidth: 2))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("審査講評").font(.maru(.sub)).foregroundStyle(Theme.sealName)
+                    Text("審査員　\(judge)").font(.maru(.sub)).foregroundStyle(Theme.sealName)
+                }
                 Spacer(minLength: 8)
-                Text(stampLabel(passed: passed)).font(.maru(12)).foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .background(passed ? Theme.verm : Theme.ink, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+                Text(stampLabel(passed: passed)).font(.maru(.sub)).foregroundStyle(.white)
+                    .frame(width: 46, height: 46)
+                    .background(passed ? Theme.verm : Color(hex: 0x4E423C), in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
                     .rotationEffect(.degrees(-4))
             }
-            .padding(.top, 16)
+            Text(text)
+                .font(.maru(.bodyMedium)).lineSpacing(TypeStep.bodyMedium.lineSpacing)
+                .foregroundStyle(Theme.paperInk)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)   // 講評は最後まで出す（切らない）
         }
-        .padding(22)
-        .background(LinearGradient(colors: [Color(hex: 0xFDFBF4), Color(hex: 0xF6EEDC)],
-                                   startPoint: .top, endPoint: .bottom),
+        .padding(18)
+        .background(LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom),
                     in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: 0xE6D9BE), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.paperEdge, lineWidth: 1))
         .shadow(color: Color(hex: 0x785014, alpha: 0.3), radius: 14, y: 8)
-    }
-
-    private func starsRow(_ stars: [(String, Int)]) -> some View {
-        HStack(spacing: 6) {
-            ForEach(stars, id: \.0) { s in
-                HStack(spacing: 3) {
-                    Text(s.0).font(.maru(11)).foregroundStyle(Theme.inkDim)
-                    Text(starString(s.1)).font(.system(size: 11)).foregroundStyle(Theme.goldD)
-                }
-                .padding(.horizontal, 9).padding(.vertical, 5)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: 9))
-                .overlay(RoundedRectangle(cornerRadius: 9).stroke(Theme.line, lineWidth: 1.5))
-            }
-        }
-    }
-
-    private func starString(_ n: Int) -> String {
-        String(repeating: "★", count: n) + String(repeating: "☆", count: max(0, 5 - n))
     }
 
     // MARK: ⑪ 山場（敗者復活で散る）のタップ送りオーバーレイ（Fable doc02）
     private func climaxOverlay(_ i: Int) -> some View {
         let page = climaxPages[min(i, climaxPages.count - 1)]
         let isLast = i >= climaxPages.count - 1
-        return ZStack {
-            Color(hex: 0x14121C).opacity(0.98).ignoresSafeArea()   // 暖色の結果画面から静かな夜へ転調
-            VStack(alignment: .leading, spacing: 16) {
+        return VStack(spacing: 0) {
+            ReminiscenceScene(mood: .eve, together: true)   // 会場の外の宵（暗転ではなく夕景・§4-1）
+                .frame(maxHeight: .infinity)
+            Group {
                 if let sp = page.speaker {
-                    Text(sp).font(.maru(12)).tracking(2).foregroundStyle(Theme.gold.opacity(0.85))
+                    TalkBubble(advice: Advice(name: sp, text: page.text), showCue: !isLast)
+                } else {
+                    NarrationCard(text: page.text, showCue: !isLast)
                 }
-                Text(page.text)
-                    .font(.system(size: 17, design: .serif)).lineSpacing(10)
-                    .foregroundStyle(.white.opacity(0.92))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentTransition(.opacity)
-                Text(isLast ? "タップして終える" : "タップ")
-                    .font(.maru(10)).foregroundStyle(.white.opacity(0.38))
-                    .frame(maxWidth: .infinity, alignment: .trailing).padding(.top, 6)
             }
-            .padding(.horizontal, 34).frame(maxWidth: 430)
+            .id(i)
+            .transition(.opacity)
+            .padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 34)
         }
+        .background(LinearGradient(colors: Theme.duskEve, startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture {
+            Sound.play(.cursor)
             if isLast { session.acknowledgeResult() }
             else { withAnimation(.easeInOut(duration: 0.45)) { climaxIndex = i + 1 } }
         }
