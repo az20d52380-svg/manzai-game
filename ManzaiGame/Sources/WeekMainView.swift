@@ -44,6 +44,11 @@ struct WeekMainView: View {
     /// 世代トークン burstGen で「古いバーストタスクの後始末が新しい保留を下ろす」競合を防ぐ。
     @State private var burstHold = false
     @State private var burstGen = 0
+    /// Beat2 をタップで畳む要求（規格K6「待ちは畳める」）。立てると Beat2 の残りの間が即終わる（退場は見せる）。
+    @State private var burstSkip = false
+    /// 選択肢イベントを今出すか。pendingChoiceEvent と burstHold の「変化」で明示的に判定し直す
+    /// （合成 Binding の get だけに任せると、保留が外れても提示が読み直されず、次のタップまで出ない不具合があった）。
+    @State private var showEvent = false
     /// 満了成立後の週メイン初回トースト（この年1回だけ）用フラグ。
     @State private var vesselFullToastShown = false
     /// 週送りスタンプ「第N週」（週が明けた瞬間に中央で0.7sフラッシュ・触れない）。
@@ -84,9 +89,9 @@ struct WeekMainView: View {
         }
         .fullScreenCover(isPresented: Binding(
             // Beat2 バースト表示中は提示を待たせる（burstHold）＝獲得の一拍がcoverに隠れない。
-            // burstHold は choose 直前に立ち、バースト退場（または対象なし）で必ず下りる。
-            get: { session.pendingChoiceEvent != nil && !burstHold },
-            set: { if !$0 { session.dismissChoiceEvent() } }
+            // 提示の判定は syncEventPresentation（イベントが立った／保留が外れた の変化で呼ぶ）に一本化。
+            get: { showEvent },
+            set: { if !$0 { showEvent = false; session.dismissChoiceEvent() } }
         )) {
             // 選択肢イベント（0024ピース3・確定発火）。pendingChoiceEvent は private(set) なので
             // Bool の合成 Binding 経由（既存 showNotebook 等と同じ isPresented パターン）。
@@ -104,12 +109,27 @@ struct WeekMainView: View {
         }
         .overlay {
             // Beat1 中は全面でタップを受けて即スキップ（＝早送り）。ビート中の誤タップで
-            // 別カードが暴発しない安全網を兼ねる。週送り後（Beat2 中）は即座に外れて入力自由。
+            // 別カードが暴発しない安全網を兼ねる。Beat2（獲得チップ）中のタップは残りの間を畳む（K6）。
             if pulledID != nil {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture { beatTask?.cancel() }
+            } else if burstHold {
+                Color.clear.contentShape(Rectangle())
+                    .onTapGesture { burstSkip = true }
             }
         }
+        .onChange(of: burstHold) { _, holding in
+            // 保留が外れたら、チップが引いた後に0.3秒の間を置いてから、立っているイベントを出す（G2）。
+            guard !holding else { return }
+            Task {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                syncEventPresentation()
+            }
+        }
+        .onChange(of: session.pendingChoiceEvent) { _, kind in
+            if kind == nil { showEvent = false } else { syncEventPresentation() }
+        }
+        .onAppear { syncEventPresentation() }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
@@ -124,24 +144,21 @@ struct WeekMainView: View {
             // 戻った時に古い増減が再生される事故を防ぐ。終端で burstHold を必ず下ろす（世代一致時のみ＝
             // 週送り直後に旧タスクの後始末が新しい保留を下ろす競合を防ぐ）。
             let gen = burstGen
+            burstSkip = false
             defer { if gen == burstGen { burstHold = false } }
-            guard session.lastDeltaWeek == session.week else {
-                withAnimation(Theme.Motion.exit) { beatAdvice = nil }
-                return
-            }
+            // 後始末（一言を消す等）は世代が一致する時だけ＝旧週のタスクの続きが次週の Beat1 を消さない（X4-04）。
+            func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
+            guard session.lastDeltaWeek == session.week else { clearBeat(); return }
             let chips = makeBurstChips()
-            guard !chips.isEmpty else {
-                withAnimation(Theme.Motion.exit) { beatAdvice = nil }
-                return
-            }
+            guard !chips.isEmpty else { clearBeat(); return }
             burstChips = chips
             burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
             particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
             // 獲得の音: 実力が伸びた週はキラキラ＞汎用ポップ。収支が動いた週はお金の音も重ねる。
             Sound.play(lastJitsuryokuGain > 0.001 ? .grain : .pop)
             if session.lastMoneyDelta > 0 { Sound.play(.money) }
-            try? await Task.sleep(nanoseconds: 1_200_000_000)
-            withAnimation(Theme.Motion.exit) { beatAdvice = nil }
+            await waitOrSkip(seconds: 1.2)   // 画面タップで畳める（K6）
+            clearBeat()
             burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
             try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
         }
@@ -532,6 +549,20 @@ struct WeekMainView: View {
             .background(chip.bg, in: Capsule())
             .overlay(Capsule().stroke(.white, lineWidth: 2))
             .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
+    }
+
+    /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
+    private func syncEventPresentation() {
+        if session.pendingChoiceEvent != nil, !burstHold, pulledID == nil { showEvent = true }
+    }
+
+    /// 指定秒だけ待つ。途中で burstSkip が立てば即戻る（タスクの取り消しでも即戻る）。
+    private func waitOrSkip(seconds: Double) async {
+        let steps = Int(seconds / 0.05)
+        for _ in 0..<steps {
+            if burstSkip || Task.isCancelled { return }
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
     }
 
     /// この週の獲得チップ列を組む（表示専用・RNG非消費）。最大3枚、順序: 実力 ↑（自動注ぎで実力値が伸びた週）→
