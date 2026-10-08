@@ -7,6 +7,17 @@
 import SwiftUI
 import GameCore
 
+/// 決勝のビート（順に進む・飛ばさない）。旧 Int の beat 0..4 と同じ順序。
+enum FinalsBeat: Int, Comparable {
+    case lot = 0      // 籤（出順）
+    case open = 1     // 7審査員の採点（1人ずつ開く＝オーナー判断 2026-10-09）
+    case board = 2    // 暫定ボード
+    case duel = 3     // 最終決戦（めくり）
+    case result = 4   // 優勝発表
+    static func < (a: FinalsBeat, b: FinalsBeat) -> Bool { a.rawValue < b.rawValue }
+    var next: FinalsBeat { FinalsBeat(rawValue: min(rawValue + 1, FinalsBeat.result.rawValue)) ?? .result }
+}
+
 struct FinalsPresentationView: View {
     let session: GameSession
     /// 観客モード（監査H-01）: 決勝に進めなかった年、第47週に今年の決勝を客席から観る。自組は出ない。
@@ -14,7 +25,7 @@ struct FinalsPresentationView: View {
     /// 観客モードの終わり（優勝組名を渡して年末へ戻る）
     var onFinishSpectating: ((String) -> Void)? = nil
 
-    @State private var beat = 0            // 0籤 1一斉オープン 2ボード 3最終決戦 4結果
+    @State private var beat: FinalsBeat = .lot
     @State private var revealedJudges = 0  // 見せ札を1人ずつ開示（M-1式・0..7）
     @State private var revealVotes = 0     // 最終決戦のめくり票数
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
@@ -22,8 +33,13 @@ struct FinalsPresentationView: View {
     @State private var burstFire = 0       // 決着の紙吹雪バースト
 
     private var s: GameState { session.state }
+    /// 見せ札の合成結果。描画のたびに作り直さず、最初に1回だけ作って保持する（X4-18）。
+    @State private var dataCache: FinalsData?
     /// 優勝時は勝ち版、決勝で負けた時は負け版（監査E-08）、観客モードは自組抜きの3組
-    private var d: FinalsData { FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator) }
+    private var d: FinalsData { dataCache ?? makeData() }
+    private func makeData() -> FinalsData {
+        FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator)
+    }
     /// 最終決戦の3組名（観客モードはNPCの3組）
     private var duelNames: [String] { spectator ? d.rivalNames : [session.combiName] + d.rivalNames }
 
@@ -45,17 +61,17 @@ struct FinalsPresentationView: View {
 
                 Group {
                     switch beat {
-                    case 0: lotBeat
-                    case 1: openBeat
-                    case 2: boardBeat
-                    case 3: finalDuelBeat
-                    default: resultBeat
+                    case .lot: lotBeat
+                    case .open: openBeat
+                    case .board: boardBeat
+                    case .duel: finalDuelBeat
+                    case .result: resultBeat
                     }
                 }
                 .frame(maxWidth: .infinity)
 
-                if beat < 4 {
-                    Text(beat == 1 && revealedJudges < 7 ? "タップで1人ずつ発表" : "タップで進む")
+                if beat < .result {
+                    Text(beat == .open && revealedJudges < 7 ? "タップで1人ずつ発表" : "タップで進む")
                         .font(.maru(10)).foregroundStyle(.white.opacity(0.4))
                 }
             }
@@ -75,14 +91,15 @@ struct FinalsPresentationView: View {
         .contentShape(Rectangle())
         .onTapGesture { advance() }
         .onAppear {
+            if dataCache == nil { dataCache = makeData() }
             Sound.bgm(.finals)   // 番組のBGM（決勝の格）
-            if spectator { beat = 2 }   // 観客は籤と自組の採点を飛ばし、暫定ボードから観る
+            if spectator { beat = .board }   // 観客は籤と自組の採点を飛ばし、暫定ボードから観る
             #if DEBUG
             // 目視用: MZ_FIN=open/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
-            case "open": beat = 1; revealedJudges = 5
-            case "duel": beat = 3; revealVotes = 5
-            case "win": beat = 4
+            case "open": beat = .open; revealedJudges = 5
+            case "duel": beat = .duel; revealVotes = 5
+            case "win": beat = .result
             default: break
             }
             #endif
@@ -122,13 +139,13 @@ struct FinalsPresentationView: View {
 
     private func advance() {
         switch beat {
-        case 1 where revealedJudges < 7:
+        case .open where revealedJudges < 7:
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealedJudges += 1 }   // 1人ずつ開示（M-1式・天堂寺がトリ）
             slamFire += 1                                             // 開示のたび衝撃（テレビのドン）
             Haptics.confirm()
             Sound.play(revealedJudges >= 7 ? .tada : .don)            // 1人ずつドン・全員出たらジャジャーン
             if revealedJudges >= 7 { Sound.play(.applauseHall) }
-        case 3 where revealVotes < 7:
+        case .duel where revealVotes < 7:
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
             slamFire += 1
             let winCount = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
@@ -140,12 +157,12 @@ struct FinalsPresentationView: View {
                 Sound.play(.don)                                       // 札1枚＝ドン
             }
         default:
-            if beat == 3 && d.champion && !celebrate {
+            if beat == .duel && d.champion && !celebrate {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { celebrate = true }
                 Haptics.rare(); burstFire += 1
             }
             Sound.play(.transition)
-            withAnimation(.easeInOut(duration: 0.4)) { beat = min(beat + 1, 4) }
+            withAnimation(.easeInOut(duration: 0.4)) { beat = beat.next }
         }
     }
 
