@@ -49,12 +49,22 @@ enum Sound {
     static func play(_ se: SE) { shared.play(se) }
     static func bgm(_ track: BGM) { shared.playBGM(track) }
     static func stopBGM(fade: TimeInterval = 0.6) { shared.stopBGM(fade: fade) }
+    /// BGM を一時的に絞る（factor=0..1・溜めや開演の暗転用）。duck(1) で戻す。進行中のフェードは取り消して上書きする。
+    static func duck(_ factor: Float, over duration: TimeInterval = 0.3) { shared.duck(factor, over: duration) }
+    /// 効果音を一時的に止める（「全SE断」の間）。false で戻す。
+    static func hushSE(_ on: Bool) { shared.seHushed = on }
 }
 
 final class SoundEngine {
     private var sePlayers: [String: [AVAudioPlayer]] = [:]   // SEごとの多重プール（連打対応・最大3面）
     private var bgmPlayer: AVAudioPlayer?
     private var currentBGM: BGM?
+    /// BGM の一時的な絞り（1=設定どおり）。開演の暗転・決勝の溜めで使う。
+    private var duckFactor: Float = 1
+    /// 「全SE断」の間は効果音を鳴らさない
+    var seHushed = false
+    /// プレイヤーごとの進行中フェード（新しいフェードを始める時に取り消す＝フェード同士が音量を奪い合わない）
+    private var fadeTimers: [ObjectIdentifier: Timer] = [:]
 
     init() {
         // ambient = マナー(消音)スイッチを尊重＋他アプリ音と混ざれる（ゲームの標準）
@@ -71,7 +81,7 @@ final class SoundEngine {
 
     func play(_ se: SE) {
         let vol = seVolume
-        guard vol > 0.01 else { return }
+        guard vol > 0.01, !seHushed else { return }
         guard let url = Bundle.main.url(forResource: se.rawValue, withExtension: "mp3") else { return }
         var pool = sePlayers[se.rawValue] ?? []
         // 空いている面を探す（鳴っていないプレイヤーを再利用）
@@ -91,7 +101,7 @@ final class SoundEngine {
 
     func playBGM(_ track: BGM) {
         guard currentBGM != track else {
-            bgmPlayer?.volume = bgmVolume   // 同曲なら音量だけ追従
+            if let p = bgmPlayer { cancelFade(p); p.volume = bgmVolume * duckFactor }   // 同曲なら音量だけ追従
             return
         }
         currentBGM = track
@@ -104,7 +114,13 @@ final class SoundEngine {
         p.prepareToPlay()
         p.play()
         bgmPlayer = p
-        fadeIn(p, to: bgmVolume, over: 0.8)
+        fadeIn(p, to: bgmVolume * duckFactor, over: 0.8)
+    }
+
+    func duck(_ factor: Float, over duration: TimeInterval) {
+        duckFactor = max(0, min(1, factor))
+        guard let p = bgmPlayer else { return }
+        fade(p, to: bgmVolume * duckFactor, over: duration, stopAtEnd: false)
     }
 
     func stopBGM(fade: TimeInterval) {
@@ -114,31 +130,38 @@ final class SoundEngine {
     }
 
     /// 設定スライダー変更の即時反映（SettingsView から呼ぶ）
-    func refreshBGMVolume() { bgmPlayer?.volume = bgmVolume }
+    func refreshBGMVolume() { bgmPlayer?.volume = bgmVolume * duckFactor }
 
-    // MARK: フェード（Timerベース・0.05s刻み）
+    // MARK: フェード（Timerベース・0.05s刻み・プレイヤーごとに取り消し可能）
+
+    private func cancelFade(_ p: AVAudioPlayer) {
+        fadeTimers.removeValue(forKey: ObjectIdentifier(p))?.invalidate()
+    }
+
+    /// 今の音量から target へ線形に動かす。同じプレイヤーの進行中フェードは取り消す。
+    private func fade(_ p: AVAudioPlayer, to target: Float, over duration: TimeInterval, stopAtEnd: Bool) {
+        cancelFade(p)
+        let start = p.volume
+        let steps = max(1, Int(duration / 0.05))
+        var n = 0
+        let key = ObjectIdentifier(p)
+        fadeTimers[key] = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] t in
+            n += 1
+            p.volume = start + (target - start) * Float(n) / Float(steps)
+            if n >= steps {
+                t.invalidate()
+                self?.fadeTimers.removeValue(forKey: key)
+                if stopAtEnd { p.stop() }
+            }
+        }
+    }
 
     private func fadeIn(_ p: AVAudioPlayer, to target: Float, over duration: TimeInterval) {
-        let steps = max(1, Int(duration / 0.05))
-        let inc = target / Float(steps)
-        var n = 0
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { t in
-            n += 1
-            p.volume = min(target, inc * Float(n))
-            if n >= steps { t.invalidate() }
-        }
+        fade(p, to: target, over: duration, stopAtEnd: false)
     }
 
     private func fadeOut(_ p: AVAudioPlayer?, over duration: TimeInterval) {
         guard let p, p.isPlaying else { return }
-        let start = p.volume
-        let steps = max(1, Int(duration / 0.05))
-        let dec = start / Float(steps)
-        var n = 0
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { t in
-            n += 1
-            p.volume = max(0, start - dec * Float(n))
-            if n >= steps { p.stop(); t.invalidate() }
-        }
+        fade(p, to: 0, over: duration, stopAtEnd: true)
     }
 }
