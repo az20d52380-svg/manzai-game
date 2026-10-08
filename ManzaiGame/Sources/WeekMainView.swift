@@ -306,7 +306,7 @@ struct WeekMainView: View {
             }
             .frame(height: 11)
             Text("\(Int(value.rounded()))").font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink)
-                .frame(width: 26, alignment: .trailing)
+                .frame(minWidth: 26, alignment: .trailing).fixedSize()   // 3桁でも切れない（旧 width 26 は「100」で溢れた）
                 .contentTransition(.numericText())
                 .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
                 .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
@@ -594,6 +594,7 @@ struct WeekMainView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(m.name).font(.maru(9)).foregroundStyle(.white.opacity(0.65)).lineLimit(1)
                     Text(m.weeksLeft <= 0 ? "今週！" : "大会まで\(m.weeksLeft)週").font(.maru(12))
+                        .lineLimit(1).minimumScaleFactor(0.8)   // 375pt 幅で2行に折れない
                         .foregroundStyle(m.weeksLeft <= 3 ? Theme.verm : Theme.gold)   // 残3週から追い込みの朱
                         .contentTransition(.numericText())   // 週送りで数字が繰り下がる
                 }

@@ -224,7 +224,7 @@ struct FinalsPresentationView: View {
                                                     startPoint: .top, endPoint: .bottom))
                     .shadow(color: j.axisColor.opacity(0.7), radius: 6)
             } else {
-                Text("？").font(.maru(20)).foregroundStyle(.white.opacity(0.3)).frame(height: 29)
+                Text("？").font(.maru(20)).foregroundStyle(.white.opacity(0.3)).frame(minHeight: 29)
             }
             CharacterFace(spec: FaceCatalog.judge(j.name), size: 34)
                 .overlay(Circle().stroke(shown ? j.axisColor : .white.opacity(0.2), lineWidth: 1.5))

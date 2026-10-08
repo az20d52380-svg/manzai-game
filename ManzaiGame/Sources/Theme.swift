@@ -238,10 +238,10 @@ extension Font {
         }
         let name: String
         switch weight {
-        case .black: name = "MPLUSRounded1c-Black"
-        case .heavy: name = "MPLUSRounded1c-ExtraBold"
-        case .bold, .semibold: name = "MPLUSRounded1c-Bold"
-        default: name = "MPLUSRounded1c-Medium"
+        case .black: name = "RoundedMplus1c-Black"
+        case .heavy: name = "RoundedMplus1c-ExtraBold"
+        case .bold, .semibold: name = "RoundedMplus1c-Bold"
+        default: name = "RoundedMplus1c-Medium"
         }
         return .custom(name, size: size)
     }

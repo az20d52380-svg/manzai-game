@@ -22,8 +22,9 @@ enum FontLoader {
         }
     }
 
-    /// 登録済みか（Font.maru のフォールバック判定用）
+    /// 登録済みか（Font.maru のフォールバック判定用）。ファイル名は MPLUSRounded1c-*.ttf だが、
+    /// フォント内部の PostScript 名は RoundedMplus1c-*（2026-10-08 判明。名前違いで全量が system 丸ゴに落ちていた）。
     static var isAvailable: Bool {
-        UIFont(name: "MPLUSRounded1c-Bold", size: 12) != nil
+        UIFont(name: "RoundedMplus1c-Bold", size: 12) != nil
     }
 }

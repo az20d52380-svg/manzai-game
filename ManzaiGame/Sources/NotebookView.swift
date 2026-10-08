@@ -330,7 +330,7 @@ struct NotebookView: View {
                 }
             }.frame(height: 6)
             Text("\(Int(value.rounded()))").font(.maru(10)).monospacedDigit().foregroundStyle(Theme.inkFaint)
-                .frame(width: 20, alignment: .trailing)
+                .frame(minWidth: 20, alignment: .trailing).fixedSize()
         }
     }
 
