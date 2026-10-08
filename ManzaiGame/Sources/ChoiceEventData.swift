@@ -12,7 +12,20 @@ struct ChoiceEventText {
     let afterChoice: [String: [Advice]]  // 選択後の会話
 }
 
+/// イベントの場面（見た目の作り直し v1 §4-1）。楽屋＝昼の稽古場／夕景＝夜の日常（暗紫は使わない・明るい暖色）
+enum EventScene { case keiko, dusk }
+
 enum ChoiceEventData {
+    /// 場面の既定値。夜の出来事（前夜・飲み会・書けた夜・終電・負けた日）は夕景、他は昼の稽古場【仮】
+    static func scene(for kind: ChoiceEventKind) -> EventScene {
+        switch kind {
+        case .preTournamentEve, .brokeDrinkingInvite, .wroteOneTonight, .lastTrainReview, .justLostRehearsal:
+            return .dusk
+        default:
+            return .keiko
+        }
+    }
+
     static func text(for kind: ChoiceEventKind) -> ChoiceEventText {
         switch kind {
         case .justLostRehearsal: return justLostRehearsal
