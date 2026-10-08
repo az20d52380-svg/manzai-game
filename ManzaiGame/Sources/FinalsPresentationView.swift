@@ -31,6 +31,8 @@ struct FinalsPresentationView: View {
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
     @State private var slamFire = 0        // 開示のたびの衝撃（フラッシュ＋シェイク・Juice.swift）
     @State private var burstFire = 0       // 決着の紙吹雪バースト
+    /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
+    @State private var holdingSeventh = false
 
     private var s: GameState { session.state }
     /// 見せ札の合成結果。描画のたびに作り直さず、最初に1回だけ作って保持する（X4-18）。
@@ -103,6 +105,8 @@ struct FinalsPresentationView: View {
         .screenFlash(trigger: slamFire, color: Color(hex: 0xFFE9C4), strength: 0.30)
         .contentShape(Rectangle())
         .onTapGesture { advance() }
+        // 長押し＝その場面の残りを一気にめくる早送り（ビートは飛ばさない＝決勝演出の規則・K6/R2-01）
+        .onLongPressGesture(minimumDuration: 0.5) { fastForwardBeat() }
         .onAppear {
             if dataCache == nil { dataCache = makeData() }
             Sound.bgm(.finals)   // 番組のBGM（決勝の格）
@@ -147,18 +151,25 @@ struct FinalsPresentationView: View {
     }
 
     private func advance() {
+        guard !holdingSeventh else { return }
         switch beat {
+        case .open where revealedJudges == 6:
+            // 7人目（天堂寺がトリ）の前だけ、全SE断＋BGMを絞る0.6秒の間（伝説の間・finals_direction §2-2）
+            holdingSeventh = true
+            Sound.hushSE(true); Sound.duck(0.25, over: 0.2)
+            Task {
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                Sound.hushSE(false); Sound.duck(1, over: 0.4)
+                holdingSeventh = false
+                revealJudge()
+            }
         case .open where revealedJudges < 7:
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealedJudges += 1 }   // 1人ずつ開示（M-1式・天堂寺がトリ）
-            slamFire += 1                                             // 開示のたび衝撃（テレビのドン）
-            Haptics.confirm()
-            Sound.play(revealedJudges >= 7 ? .tada : .don)            // 1人ずつドン・全員出たらジャジャーン
-            if revealedJudges >= 7 { Sound.play(.applauseHall) }
+            revealJudge()
         case .duel where revealVotes < 7:
             withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
-            slamFire += 1
             let winCount = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
             if winCount == 4 {                                          // 過半数到達＝その瞬間に決着
+                slamFire += 1                                           // 揺れ・閃光は決着の1回だけ（X2-26〜28）
                 Haptics.rare(); burstFire += 1
                 Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
             } else {
@@ -172,6 +183,33 @@ struct FinalsPresentationView: View {
             }
             Sound.play(.transition)
             withAnimation(.easeInOut(duration: 0.4)) { beat = beat.next }
+        }
+    }
+
+    /// 審査員を1人開く（M-1式＝1人ずつ・オーナー判断 Q2）。揺れ・閃光は付けない（決着と優勝だけ）
+    private func revealJudge() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealedJudges += 1 }
+        Haptics.confirm()
+        Sound.play(revealedJudges >= 7 ? .tada : .don)            // 1人ずつドン・全員出たらジャジャーン
+        if revealedJudges >= 7 { Sound.play(.applauseHall) }
+    }
+
+    /// 長押しの早送り: 今の場面の残りの札を一度に開く（場面は飛ばさない・次へは通常のタップ）
+    private func fastForwardBeat() {
+        guard !holdingSeventh else { return }
+        switch beat {
+        case .open where revealedJudges < 7:
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { revealedJudges = 7 }
+            Haptics.confirm(); Sound.play(.tada); Sound.play(.applauseHall)
+        case .duel where revealVotes < 7:
+            let before = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { revealVotes = 7 }
+            if before < 4 {   // 早送りの中で決着が来た＝決着の一打だけは鳴らす
+                slamFire += 1; Haptics.rare(); burstFire += 1
+                Sound.play(.taiko); Sound.play(.cheerBig)
+            }
+        default:
+            break
         }
     }
 
