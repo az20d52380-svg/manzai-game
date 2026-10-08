@@ -86,7 +86,7 @@ struct StageFrame: View {
     // MARK: 光の芯
 
     private func spotlight(w: CGFloat, h: CGFloat, centerY: CGFloat) -> some View {
-        let shrink: CGFloat = mode == .loser ? 0.84 : (mode == .preshow ? 0.85 : 1)
+        let shrink: CGFloat = mode == .loser ? 0.84 : (mode == .preshow ? 0.95 : 1)
         let core: Color = mode == .loser ? Color(hex: 0xF4ECE0) : (mode == .spectator ? Color(hex: 0xEEF2F6) : Theme.spotCore)
         let mid: Color = mode == .spectator ? Theme.silver.opacity(0.45) : (mode == .loser ? Color(hex: 0xD8C8B0).opacity(0.40) : Theme.spotMid)
         return RadialGradient(colors: [core.opacity(0.95), core.opacity(0.70), mid, Theme.spotEdge, .clear],

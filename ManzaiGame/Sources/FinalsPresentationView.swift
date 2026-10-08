@@ -43,14 +43,22 @@ struct FinalsPresentationView: View {
     /// 最終決戦の3組名（観客モードはNPCの3組）
     private var duelNames: [String] { spectator ? d.rivalNames : [session.combiName] + d.rivalNames }
 
+    /// ビート→舞台の状態。籤＝開演前／採点〜最終決戦＝金屏風（客席から観る年は銀）／結果＝自組の優勝だけ最明部
+    private var stageMode: StageFrame.Mode {
+        switch beat {
+        case .lot: return .preshow
+        case .open, .board, .duel: return spectator ? .spectator : .judging
+        case .result: return d.champion ? .winner : (spectator ? .spectator : .loser)
+        }
+    }
+    /// 舞台に二人を立たせるビート（籤＝これから立つ舞台／優勝＝二人が画面にいる・A2 §1-9）
+    private var stagePerformers: Bool { beat == .lot || (beat == .result && !spectator) }
+
     var body: some View {
         ZStack {
-            // 番組の黒（M-1中継の暗転スタジオ）＋足元から金赤の照り＋ビネット
-            LinearGradient(colors: [Color(hex: 0x080610), Color(hex: 0x140E1E), Color(hex: 0x241118)],
-                           startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-            RadialGradient(colors: [Theme.gold.opacity(0.13), .clear],
-                           center: UnitPoint(x: 0.5, y: 1.05), startRadius: 40, endRadius: 520)
-                .ignoresSafeArea()
+            // 暖色の客席に光る舞台（オーナー判断 Q1=A・visual_genre_overhaul_v1 §6 F1）。採点〜最終決戦は金屏風
+            StageFrame(mode: stageMode, performers: stagePerformers, floorTop: beat == .lot ? 0.60 : 0.56)
+                .animation(.easeInOut(duration: 0.5), value: beat)
             if celebrate {
                 RaysView().ignoresSafeArea().allowsHitTesting(false)   // 優勝の放射光
                 ConfettiView().ignoresSafeArea().allowsHitTesting(false)
@@ -70,12 +78,17 @@ struct FinalsPresentationView: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                if beat < .result {
-                    Text(beat == .open && revealedJudges < 7 ? "タップで1人ずつ発表" : "タップで進む")
-                        .font(.maru(10)).foregroundStyle(.white.opacity(0.4))
+                if beat < .result, !(beat == .duel && revealVotes < 7) {
+                    // 送りの合図は▼1種（K4）。採点だけ「1人ずつ」と添える
+                    VStack(spacing: 4) {
+                        if beat == .open && revealedJudges < 7 {
+                            Telop(text: "タップで1人ずつ発表", size: 13, color: Theme.houseLight)
+                        }
+                        AdvanceCue(color: Theme.gold)
+                    }
                 }
             }
-            .padding(.horizontal, 20).padding(.vertical, 34)
+            .padding(.horizontal, 20).padding(.top, 44).padding(.bottom, 56)
 
             // 下部テロップ（番組の下三分帯・コンビ名）
             VStack { Spacer()
@@ -98,6 +111,7 @@ struct FinalsPresentationView: View {
             // 目視用: MZ_FIN=open/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
             case "open": beat = .open; revealedJudges = 5
+            case "board": beat = .board
             case "duel": beat = .duel; revealVotes = 5
             case "win": beat = .result
             default: break
@@ -109,12 +123,8 @@ struct FinalsPresentationView: View {
     /// 番組タイトル（黒×金の中継グラフィック）
     private var broadcastTitle: some View {
         VStack(spacing: 5) {
-            Text("頂 グランプリ")
-                .font(.system(size: 24, weight: .black, design: .serif)).tracking(6)
-                .foregroundStyle(LinearGradient(colors: [Color(hex: 0xFFE9A8), Theme.gold, Color(hex: 0xB8860B)],
-                                                startPoint: .top, endPoint: .bottom))
-                .shadow(color: Theme.gold.opacity(0.55), radius: 10)
-            Text("決 勝").font(.maru(11)).tracking(8).foregroundStyle(.white)
+            Telop(text: "頂 グランプリ", size: 26, color: Color(hex: 0xFFE9A8))
+            Text("決勝").font(.maru(.sub)).tracking(4).foregroundStyle(.white)
                 .padding(.horizontal, 14).padding(.vertical, 3)
                 .background(LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom),
                             in: Capsule())
@@ -126,13 +136,12 @@ struct FinalsPresentationView: View {
     private var lowerThird: some View {
         HStack(spacing: 10) {
             Rectangle().fill(Theme.verm).frame(width: 5)
-            Text(spectator ? "客席から" : session.combiName).font(.maru(14)).foregroundStyle(.white)
+            Text(spectator ? "客席から" : session.combiName).font(.maru(.body)).foregroundStyle(.white)
             Spacer()
-            Text(spectator ? session.combiName : "結成1年").font(.maru(10)).foregroundStyle(Theme.gold.opacity(0.9))
+            Text(spectator ? session.combiName : "結成1年").font(.maru(.sub)).foregroundStyle(Theme.gold)
         }
-        .padding(.horizontal, 16).frame(height: 40)
-        .background(LinearGradient(colors: [Color(hex: 0x1A1424).opacity(0.96), Color(hex: 0x241A30).opacity(0.96)],
-                                   startPoint: .top, endPoint: .bottom))
+        .padding(.horizontal, 16).frame(height: 46)
+        .background(Theme.lowerThird.opacity(0.96))
         .overlay(alignment: .top) { Rectangle().fill(Theme.gold.opacity(0.85)).frame(height: 1.5) }
         .padding(.bottom, 0)
     }
@@ -170,29 +179,25 @@ struct FinalsPresentationView: View {
     private var lotBeat: some View {
         VStack(spacing: 16) {
             Spacer(minLength: 16)
-            Text("出 順 発 表").font(.maru(12)).tracking(6).foregroundStyle(.white.opacity(0.7))
+            Telop(text: "出順発表", size: 17)
             // 金縁の出順プレート（テレビの札）
             VStack(spacing: 0) {
-                Text("\(d.order)").font(.system(size: 74, weight: .black, design: .rounded)).monospacedDigit()
-                    .foregroundStyle(LinearGradient(colors: [.white, Color(hex: 0xFFE9A8)],
-                                                    startPoint: .top, endPoint: .bottom))
-                Text("番目 ／ 全10組").font(.maru(12)).foregroundStyle(Theme.gold.opacity(0.9))
+                Text("\(d.order)").font(.maru(74, weight: .black)).monospacedDigit()
+                    .foregroundStyle(Theme.sumi)
+                Text("番目 ／ 全10組").font(.maru(.sub)).foregroundStyle(Theme.goldDeep)
                     .padding(.bottom, 12)
             }
             .frame(width: 190)
-            .background(LinearGradient(colors: [Color(hex: 0x231B33), Color(hex: 0x120D1E)],
-                                       startPoint: .top, endPoint: .bottom),
-                        in: RoundedRectangle(cornerRadius: 14))
+            .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(
                 LinearGradient(colors: [Color(hex: 0xFFE9A8), Theme.gold, Color(hex: 0x8A6508)],
                                startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2.5))
             .shadow(color: Theme.gold.opacity(0.35), radius: 16, y: 6)
-            Text(d.order == 1 ? "トップバッター。会場はまだ温まっていない。"
-                 : d.order >= 9 ? "大トリ。ここまでの空気を、全部ひっくり返す番だ。"
-                 : "中盤。沸いた流れに、どう乗るか。")
-                .font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.75))
-                .multilineTextAlignment(.center)
             Spacer(minLength: 16)
+            NarrationCard(text: d.order == 1 ? "トップバッター。会場はまだ温まっていない。"
+                          : d.order >= 9 ? "大トリ。ここまでの空気を、全部ひっくり返す番だ。"
+                          : "中盤。沸いた流れに、どう乗るか。")
+                .padding(.bottom, 30)
         }
     }
 
@@ -204,91 +209,98 @@ struct FinalsPresentationView: View {
         // 既に確定済みの点数・出順の上に、選択中ネタの型を審査員の固定嗜好表で引いて添えるだけの純表示。
         let kata = session.selectedNeta?.kata
         return VStack(spacing: 14) {
-            Text(allShown ? "採点" : revealedJudges == 0 ? "採点発表" : "\(revealedJudges) / 7 人")
-                .font(.maru(12)).foregroundStyle(.white.opacity(0.7))
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
+            Telop(text: allShown ? "採点" : revealedJudges == 0 ? "採点発表" : "\(revealedJudges) / 7 人", size: 17)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 10) {
                 ForEach(Array(d.judges.enumerated()), id: \.offset) { i, j in
                     judgeCard(j, shown: i < revealedJudges, kata: kata)
                 }
             }
             VStack(spacing: 2) {
-                Text("\(running)")
-                    .font(.system(size: 58, weight: .black, design: .rounded)).monospacedDigit()
-                    .foregroundStyle(allShown
-                        ? AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xFFF3C8), Theme.gold, Color(hex: 0xC8971A)],
-                                                       startPoint: .top, endPoint: .bottom))
-                        : AnyShapeStyle(Color.white.opacity(0.92)))
-                    .shadow(color: allShown ? Theme.gold.opacity(0.6) : .clear, radius: 14)
+                Telop(text: "\(running)", size: 64, color: allShown ? Color(hex: 0xFFE07A) : .white)
+                    .monospacedDigit()
                     .contentTransition(.numericText())
                     .punch(on: running, peak: 1.16)   // 1人開くたび合計がドンと跳ねる
-                Text(allShown ? "/ 700" : "……").font(.maru(12)).foregroundStyle(.white.opacity(0.5))
+                Telop(text: allShown ? "/ 700" : "……", size: 15, color: Theme.houseLight)
             }
             .padding(.top, 2)
             if let kata, allShown {
-                Text("\(NetaCatalog.displayName(kata))で挑んだ一本。")
-                    .font(.system(size: 11.5, design: .serif)).foregroundStyle(.white.opacity(0.55))
+                NarrationCard(text: "\(NetaCatalog.displayName(kata))で挑んだ一本。")
             }
         }
     }
 
     private func judgeCard(_ j: JudgeScore, shown: Bool, kata: NetaKata?) -> some View {
-        // M-1の採点開示＝審査員の「顔」の上に点数が出る（番組の画）。
-        VStack(spacing: 2) {
-            if shown {
-                Text("\(j.score)")
-                    .font(.system(size: 24, weight: .black, design: .rounded)).monospacedDigit()
-                    .foregroundStyle(LinearGradient(colors: [.white, Color(hex: 0xFFEDC0)],
-                                                    startPoint: .top, endPoint: .bottom))
-                    .shadow(color: j.axisColor.opacity(0.7), radius: 6)
-            } else {
-                Text("？").font(.maru(20)).foregroundStyle(.white.opacity(0.3)).frame(minHeight: 29)
-            }
-            CharacterFace(spec: FaceCatalog.judge(j.name), size: 34)
-                .overlay(Circle().stroke(shown ? j.axisColor : .white.opacity(0.2), lineWidth: 1.5))
-                .saturation(shown ? 1 : 0.3)
-            Text(j.name).font(.maru(8.5)).foregroundStyle(.white.opacity(0.75)).lineLimit(1).minimumScaleFactor(0.7)
-            if shown, let kata {
-                Text(NetaCatalog.affinity(kata, judge: j.name))
-                    .font(.maru(9, weight: .bold)).foregroundStyle(Theme.gold.opacity(0.9))
+        // M-1の採点開示＝審査員の「顔」の上に点数が出る（番組の画）。札は白紙＋墨、上の帯が重視軸の色。
+        // 表と裏を別の面で描く＝回転の途中で面を切り替えるので鏡文字にならない（A2 §3-B1・L10 FlipCard）。
+        let h: CGFloat = kata != nil ? 132 : 116
+        return FlipCard(shown: shown) {
+            judgeFace(j, kata: kata, height: h)
+        } back: {
+            judgeBack(j, height: h)
+        }
+        .scaleEffect(shown ? 1 : 0.96)
+        .animation(.spring(response: 0.32, dampingFraction: 0.7), value: shown)
+    }
+
+    private func judgeFace(_ j: JudgeScore, kata: NetaKata?, height: CGFloat) -> some View {
+        VStack(spacing: 4) {
+            Text("\(j.score)").font(.maru(30, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
+            CharacterFace(spec: FaceCatalog.judge(j.name), size: 40)
+                .overlay(Circle().stroke(j.axisColor, lineWidth: 2))
+            Text(j.name).font(.maru(.sub)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.6)
+            if let kata {
+                Text(NetaCatalog.affinity(kata, judge: j.name)).font(.maru(12, weight: .bold)).foregroundStyle(Theme.goldDeep)
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
         }
-        .frame(maxWidth: .infinity).frame(height: kata != nil ? 104 : 92)
-        .background(LinearGradient(colors: shown ? [Color(hex: 0x2A2040), Color(hex: 0x171126)]
-                                                 : [Color(hex: 0x171126), Color(hex: 0x100B1B)],
-                                   startPoint: .top, endPoint: .bottom),
-                    in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10)
-            .stroke(shown ? j.axisColor.opacity(0.85) : Theme.gold.opacity(0.22), lineWidth: shown ? 1.8 : 1))
-        .shadow(color: shown ? j.axisColor.opacity(0.35) : .clear, radius: 8, y: 3)
-        .rotation3DEffect(.degrees(shown ? 0 : 180), axis: (x: 0, y: 1, z: 0))
-        .scaleEffect(shown ? 1 : 0.94)
-        .animation(.spring(response: 0.32, dampingFraction: 0.7), value: shown)
+        .padding(.top, 9).padding(.horizontal, 4)
+        .frame(maxWidth: .infinity).frame(height: height, alignment: .top)
+        .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 10))
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(topLeadingRadius: 10, topTrailingRadius: 10).fill(j.axisColor).frame(height: 5)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.sumi.opacity(0.6), lineWidth: 1))
+        .shadow(color: Theme.goldLeafLo.opacity(0.6), radius: 0, y: 4)
+    }
+
+    private func judgeBack(_ j: JudgeScore, height: CGFloat) -> some View {
+        VStack(spacing: 4) {
+            Text("？").font(.maru(30, weight: .black)).foregroundStyle(Theme.goldLeafMid)
+            CharacterFace(spec: FaceCatalog.judge(j.name), size: 40)
+                .saturation(0.35)
+            Text(j.name).font(.maru(.sub)).foregroundStyle(Theme.inkSub).lineLimit(1).minimumScaleFactor(0.6)
+        }
+        .padding(.top, 9).padding(.horizontal, 4)
+        .frame(maxWidth: .infinity).frame(height: height, alignment: .top)
+        .background(Color(hex: 0xF3E6C6), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.goldLeafMid, lineWidth: 1.5))
+        .shadow(color: Theme.goldLeafLo.opacity(0.6), radius: 0, y: 4)
     }
 
     // MARK: Beat 2 — 暫定ボード（全10組順位）
     private var boardBeat: some View {
-        VStack(spacing: 6) {
-            Text("暫定ボード").font(.maru(12)).foregroundStyle(.white.opacity(0.7)).padding(.bottom, 2)
+        VStack(spacing: 5) {
+            Telop(text: "暫定ボード", size: 17).padding(.bottom, 2)
             ForEach(Array(d.board.enumerated()), id: \.offset) { rank, row in
                 HStack(spacing: 10) {
-                    Text("\(rank + 1)").font(.maru(13)).monospacedDigit()
-                        .foregroundStyle(rank < 3 ? Theme.gold : .white.opacity(0.6)).frame(width: 22)
-                    Text(row.isSelf ? "あなたたち" : row.name).font(.maru(12))
-                        .foregroundStyle(row.isSelf ? .white : .white.opacity(0.75))
+                    Text("\(rank + 1)").font(.maru(.body)).monospacedDigit()
+                        .foregroundStyle(rank < 3 ? Theme.goldDeep : Theme.inkSub).frame(width: 24)
+                    // 自組は付けたコンビ名で出す（「あなたたち」で名前が消えていた・A2 §1-7）
+                    Text(row.isSelf ? session.combiName : row.name).font(.maru(row.isSelf ? .body : .bodyMedium))
+                        .foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
                     Spacer()
-                    Text("\(row.total)").font(.maru(13)).monospacedDigit().foregroundStyle(.white.opacity(0.9))
+                    Text("\(row.total)").font(.maru(.body)).monospacedDigit().foregroundStyle(Theme.sumi)
                 }
-                .padding(.horizontal, 12).padding(.vertical, 7)
-                .background(row.isSelf ? Theme.verm.opacity(0.22) : Color.white.opacity(0.04),
-                            in: RoundedRectangle(cornerRadius: 8))
+                .padding(.horizontal, 12).padding(.vertical, 5)
+                .background(row.isSelf ? Color(hex: 0xFFE9E2) : Theme.mekuri.opacity(0.94), in: RoundedRectangle(cornerRadius: 8))
                 .overlay(alignment: .leading) {
-                    if rank < 3 { Rectangle().fill(Theme.gold).frame(width: 3).clipShape(RoundedRectangle(cornerRadius: 2)) }
+                    if rank < 3 { Rectangle().fill(Theme.gold).frame(width: 4).clipShape(RoundedRectangle(cornerRadius: 2)) }
                 }
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(row.isSelf ? Theme.verm.opacity(0.7) : .clear, lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(row.isSelf ? Theme.verm : .clear, lineWidth: 2))
             }
-            Text(spectator ? "——今年の決勝。俺たちは、客席にいた。"
-                 : d.champion || d.boardRank <= 3 ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。")
-                .font(.system(size: 12, design: .serif)).foregroundStyle(.white.opacity(0.7)).padding(.top, 6)
+            Telop(text: spectator ? "——今年の決勝。俺たちは、客席にいた。"
+                  : d.champion || d.boardRank <= 3 ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。",
+                  size: 15).padding(.top, 6)
         }
     }
 
@@ -297,12 +309,8 @@ struct FinalsPresentationView: View {
         let names = duelNames
         let counts = (0..<3).map { k in d.voteOrder.prefix(revealVotes).filter { $0 == k }.count }
         return VStack(spacing: 14) {
-            Text("最 終 決 戦").font(.maru(15)).tracking(6)
-                .foregroundStyle(LinearGradient(colors: [Color(hex: 0xFFE9A8), Theme.gold],
-                                                startPoint: .top, endPoint: .bottom))
-                .shadow(color: Theme.gold.opacity(0.5), radius: 8)
-            Text("勝ち残った3組。審査員は、面白かった方の名を書く。")
-                .font(.system(size: 12, design: .serif)).foregroundStyle(.white.opacity(0.75))
+            Telop(text: "最終決戦", size: 22, color: Color(hex: 0xFFE9A8))
+            Telop(text: "勝ち残った3組。審査員は、面白かった方の名を書く。", size: 13)
 
             // 3組の得票カウンタ（番組のスコア表示・自組は金）
             HStack(spacing: 8) {
@@ -312,69 +320,66 @@ struct FinalsPresentationView: View {
             }
 
             // 審査員7人: 顔の上に票札（組名）が掲がる（M-1の票開示）
-            HStack(spacing: 5) {
+            HStack(spacing: 3) {
                 ForEach(0..<7, id: \.self) { i in
                     let shown = i < revealVotes
                     let vote = d.voteOrder[i]
                     VStack(spacing: 3) {
                         votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: !spectator && vote == 0)
-                        CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 38)
-                            .overlay(Circle().stroke(shown ? (!spectator && vote == 0 ? Theme.gold : .white.opacity(0.4))
-                                                           : .white.opacity(0.18), lineWidth: 1.5))
+                        CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 40)
+                            .overlay(Circle().stroke(shown ? (!spectator && vote == 0 ? Theme.gold : .white)
+                                                           : .white.opacity(0.5), lineWidth: 2))
                         Text(String(d.judges[i].name.prefix(2)))
-                            .font(.maru(8)).foregroundStyle(.white.opacity(0.6))
+                            .font(.maru(12, weight: .bold)).foregroundStyle(Theme.sumi)
+                            .padding(.horizontal, 4).background(Theme.mekuri.opacity(0.9), in: Capsule())
                     }
                 }
             }
-            Text(revealVotes < 7 ? "タップで札をめくる（\(revealVotes)/7）" : "——開票、出揃った。")
-                .font(.maru(12)).foregroundStyle(revealVotes < 7 ? .white.opacity(0.6) : Theme.gold)
+            VStack(spacing: 4) {
+                Telop(text: revealVotes < 7 ? "タップで札をめくる（\(revealVotes)/7）" : "——開票、出揃った。",
+                      size: 14, color: revealVotes < 7 ? Theme.houseLight : Color(hex: 0xFFE07A))
+                if revealVotes < 7 { AdvanceCue(color: Theme.gold) }
+            }
         }
     }
 
     private func trioCounter(name: String, count: Int, mine: Bool) -> some View {
         VStack(spacing: 1) {
-            Text(name).font(.maru(10)).lineLimit(1).minimumScaleFactor(0.6)
-                .foregroundStyle(mine ? .white : .white.opacity(0.65))
+            Text(name).font(.maru(.sub)).lineLimit(1).minimumScaleFactor(0.6)
+                .foregroundStyle(Theme.ink)
             Text("\(count)")
-                .font(.system(size: 30, weight: .black, design: .rounded)).monospacedDigit()
-                .foregroundStyle(mine ? AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xFFF3C8), Theme.gold],
-                                                                     startPoint: .top, endPoint: .bottom))
-                                      : AnyShapeStyle(Color.white.opacity(0.8)))
+                .font(.maru(34, weight: .black)).monospacedDigit()
+                .foregroundStyle(mine ? Theme.vermD : Theme.sumi)
                 .contentTransition(.numericText())
                 .punch(on: count, peak: 1.3)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
-        .background(Color.white.opacity(mine ? 0.08 : 0.04), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10)
-            .stroke(mine ? Theme.gold.opacity(0.6) : .white.opacity(0.15), lineWidth: mine ? 1.5 : 1))
+        .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(mine ? Theme.gold : Theme.paperEdge, lineWidth: mine ? 3 : 1))
+        .shadow(color: Theme.goldLeafLo.opacity(0.6), radius: 0, y: 3)
     }
 
-    /// 票札1枚: 組名が書かれた札が審査員の頭上に掲がる。自組＝朱地に金縁。めくりは3D回転＋バネ着地。
+    /// 票札1枚: 組名が書かれた札が審査員の頭上に掲がる。自組＝朱地に金縁。表と裏を別の面で描く（鏡文字にならない）。
     private func votePlate(shown: Bool, voteName: String, forUs: Bool) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(shown ? (forUs ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD],
-                                                                    startPoint: .top, endPoint: .bottom))
-                                     : AnyShapeStyle(Color(hex: 0xF2EDE0)))
-                            : AnyShapeStyle(Color(hex: 0x1B1526)))
-            if shown {
-                Text(voteName)
-                    .font(.system(size: 8.5, weight: .black))
-                    .foregroundStyle(forUs ? Color(hex: 0xFFF3C8) : Color(hex: 0x2C2740))
-                    .lineLimit(2).minimumScaleFactor(0.5)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 2)
-            } else {
-                Text("？").font(.maru(13)).foregroundStyle(.white.opacity(0.25))
-            }
+        FlipCard(shown: shown) {
+            Text(voteName)
+                .font(.maru(12, weight: .black))
+                .foregroundStyle(forUs ? Color(hex: 0xFFF3C8) : Theme.sumi)
+                .lineLimit(2).minimumScaleFactor(0.5)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 2)
+                .frame(width: 48, height: 46)
+                .background(forUs ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom))
+                                  : AnyShapeStyle(Theme.mekuri), in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(forUs ? Theme.gold : Theme.paperEdge, lineWidth: forUs ? 2 : 1))
+                .shadow(color: forUs ? Theme.verm.opacity(0.5) : .clear, radius: 6, y: 2)
+        } back: {
+            Text("？").font(.maru(17, weight: .black)).foregroundStyle(Theme.goldLeafMid)
+                .frame(width: 48, height: 46)
+                .background(Color(hex: 0xF3E6C6), in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.goldLeafMid, lineWidth: 1.5))
         }
-        .frame(width: 46, height: 34)
-        .overlay(RoundedRectangle(cornerRadius: 6)
-            .stroke(shown ? (forUs ? Theme.gold : Color(hex: 0xC8C0A8)) : .white.opacity(0.15),
-                    lineWidth: shown && forUs ? 1.8 : 1))
-        .shadow(color: shown && forUs ? Theme.verm.opacity(0.5) : .clear, radius: 6, y: 2)
-        .rotation3DEffect(.degrees(shown ? 0 : 180), axis: (x: 0, y: 1, z: 0))
         .animation(.spring(response: 0.3, dampingFraction: 0.65), value: shown)
     }
 
