@@ -230,44 +230,69 @@ struct NameEntryView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-            VStack(spacing: Theme.Sp.s24) {
-                Text("コンビ名を、決めよう。").font(.maru(15)).foregroundStyle(Theme.inkDim)
-
-                // ネタ帳の見開き（白面・罫線1本＋キャレット）
-                VStack(spacing: 6) {
-                    TextField("コンビ名", text: $name)
-                        .onChange(of: name) { _, v in if v.count > 12 { name = String(v.prefix(12)) } }   // 監査G-09: 長い名前で画面が崩れる
-                        .font(.maru(24)).foregroundStyle(inkWet ? Theme.ink : Theme.inkDim)
-                        .multilineTextAlignment(.center)
-                        .focused($focused)
-                        .submitLabel(.done)
-                        .onSubmit(decide)
-                    Rectangle().fill(Theme.inkFaint).frame(height: 1.5)   // 罫線
+            Theme.bgGradient.ignoresSafeArea()
+            VStack(spacing: Theme.Sp.s16) {
+                // 二人（色付き）＋センターマイク＝これから名前を付けるコンビ（見た目の作り直し v1 §6 I3）
+                ZStack(alignment: .bottom) {
+                    Ellipse().fill(Theme.ink.opacity(0.10)).frame(width: 220, height: 18).blur(radius: 3)
+                    HStack(alignment: .bottom, spacing: 18) {
+                        ManzaiFigure(height: 120, tilt: 2.2, accent: Color(hex: 0x2E55B0), breathe: 3.1,
+                                     bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
+                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                        CenterMic(height: 96)
+                        ManzaiFigure(height: 132, tilt: -2.6, accent: Color(hex: 0xB02318), breathe: 2.4,
+                                     bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
+                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                    }
                 }
-                .padding(Theme.Sp.s24)
-                .frame(maxWidth: .infinity)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-                .e2()
-                .padding(.horizontal, Theme.Sp.s24)
+                .padding(.top, 40)
+
+                Text("コンビ名を、決めよう。").font(.maru(.title)).foregroundStyle(Theme.ink)
+
+                // めくり札（白紙に墨・上に紐の輪2つ）に名前を書く
+                TextField("コンビ名", text: $name)
+                    .onChange(of: name) { _, v in if v.count > 12 { name = String(v.prefix(12)) } }   // 監査G-09: 長い名前で画面が崩れる
+                    .font(.maru(30, weight: .black)).foregroundStyle(Theme.sumi)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                    .focused($focused)
+                    .submitLabel(.done)
+                    .onSubmit(decide)
+                    .padding(.vertical, 26).padding(.horizontal, 18)
+                    .frame(maxWidth: .infinity)
+                    .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.paperEdge, lineWidth: 1.5))
+                    .overlay(alignment: .top) {
+                        HStack(spacing: 120) { ring; ring }.offset(y: -7)   // 紐の輪（めくり札の印）
+                    }
+                    .scaleEffect(inkWet ? 1.03 : 1)
+                    .shadow(color: Theme.ink.opacity(0.14), radius: 10, y: 4)
+                    .padding(.horizontal, Theme.Sp.s32)
 
                 Button(action: decide) {
-                    Text("これでいく").font(.maru(16)).foregroundStyle(.white)
-                        .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s12)
+                    Text("これでいく").font(.maru(.body)).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, minHeight: 52)
                         .background(name.isEmpty ? Theme.inkFaint : Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                        .shadow(color: name.isEmpty ? .clear : Theme.vermD, radius: 0, y: 3)
                 }
                 .buttonStyle(PressableStyle(enabled: !name.isEmpty))
                 .disabled(name.isEmpty)
                 .padding(.horizontal, Theme.Sp.s32)
+                Spacer()
             }
         }
         .onAppear { focused = true }
     }
 
+    private var ring: some View {
+        Circle().stroke(Color(hex: 0x8A7A60), lineWidth: 2).frame(width: 12, height: 12)
+            .background(Circle().fill(Theme.mekuri))
+    }
+
     private func decide() {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
-        withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 書いた字が乾く
+        withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name) }
     }
