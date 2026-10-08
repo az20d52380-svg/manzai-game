@@ -17,40 +17,92 @@ struct YearResultView: View {
 
     @State private var appear = false
     @State private var stampIn = false
+    @State private var confettiFire = 0
 
     var body: some View {
         ScrollView {
+            // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
             VStack(spacing: Theme.Sp.s16) {
                 yearBadge.stagger(0, appear)
                 reachStamp.stagger(1, appear)
-                radarBlock.stagger(2, appear)
-                breakdownBlock.stagger(3, appear)
+                gradeLadder.stagger(2, appear)
+                totalsBlock.stagger(3, appear)
                 eventsBlock.stagger(4, appear)
-                totalsBlock.stagger(5, appear)
-                yearEndMonolog.stagger(6, appear)
-                restartButton.stagger(7, appear)
+                yearEndMonolog.stagger(5, appear)
+                restartButton.stagger(6, appear)
+                breakdownBlock.stagger(7, appear)
+                radarBlock.stagger(8, appear)
             }
             .padding(.horizontal, Theme.Sp.s24).padding(.vertical, Theme.Sp.s32)
             .frame(maxWidth: .infinity)
         }
-        .background(
-            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-        )
+        .background(Theme.bgGradient.ignoresSafeArea())
+        .overlay {
+            // 優勝の年だけ、判と同時に金の紙吹雪（年に1度の祝い）
+            ParticleBurst(trigger: confettiFire, colors: [Theme.gold, Theme.verm, .white, Color(hex: 0xFFE07A)],
+                          style: .confetti, count: 54, origin: UnitPoint(x: 0.5, y: 0.18))
+        }
         .onAppear {
             withAnimation(.easeOut(duration: Theme.Motion.emph)) { appear = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) { stampIn = true }
                 Haptics.confirm()   // 年1回の重み
+                if o?.champion == true { confettiFire += 1; Sound.play(.fanfare) }
             }
         }
+    }
+
+    // MARK: 等級の段（4月→いま・G5）
+
+    /// 5能力の 4月の等級 → いまの等級 と、次の等級までの進み。上がった能力は金の縁と「↑」。等級は表示写像だけ（Theme.rank）
+    private var gradeLadder: some View {
+        let base = GameState(config: session.config)
+        let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
+        return VStack(alignment: .leading, spacing: 9) {
+            Text("この1年で育ったもの").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+            ForEach(order, id: \.self) { a in
+                let from = Theme.rank(base[a]), to = Theme.rank(s[a])
+                let up = from != to
+                let cap = a == .メンタル ? session.config.mentalCap : session.config.abilityCap
+                HStack(spacing: 10) {
+                    AbilityBadge(ability: a, size: 22)
+                    Text("\(a)").font(.maru(.sub)).foregroundStyle(Theme.ink).frame(width: 56, alignment: .leading)
+                    gradeChip(from, dim: true)
+                    Image(systemName: "arrow.right").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.inkSub)
+                    gradeChip(to, dim: false)
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Theme.abilityColor(a).opacity(0.14))
+                            Capsule().fill(Theme.abilityColor(a))
+                                .frame(width: geo.size.width * Theme.rankProgress(s[a], cap: cap))
+                        }
+                    }
+                    .frame(height: 9)
+                    Text(up ? "↑" : " ").font(.maru(.sub)).foregroundStyle(Theme.goldDeep).frame(width: 14)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background(up ? Color(hex: 0xFFF6DD) : .clear, in: RoundedRectangle(cornerRadius: 9))
+                .overlay(RoundedRectangle(cornerRadius: 9).stroke(up ? Theme.gold : .clear, lineWidth: 2))
+            }
+        }
+        .padding(Theme.Sp.s16)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .hardShadow()
+    }
+
+    private func gradeChip(_ g: String, dim: Bool) -> some View {
+        Text(g).font(.maru(17, weight: .black)).foregroundStyle(.white)
+            .frame(width: 30, height: 26)
+            .background(Theme.gradeColor(g).opacity(dim ? 0.55 : 1), in: RoundedRectangle(cornerRadius: 6))
     }
 
     // MARK: 年目バッジ
 
     private var yearBadge: some View {
         VStack(spacing: 2) {
-            Text(session.combiName).font(.maru(14)).foregroundStyle(Theme.ink)
-            Text("\(session.year)年目 ・ 年次リザルト").font(.maru(11)).tracking(2).foregroundStyle(Theme.inkDim)
+            Text(session.combiName).font(.maru(.title)).foregroundStyle(Theme.ink)
+            Text("\(session.year)年目 ・ 年次リザルト").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
         }
     }
 
@@ -61,13 +113,13 @@ struct YearResultView: View {
         let c = passed ? Theme.verm : Theme.ink
         return VStack(spacing: 6) {
             Text(text)
-                .font(.maru(30)).foregroundStyle(.white)
-                .padding(.horizontal, 22).padding(.vertical, 8)
+                .font(.maru(.display)).foregroundStyle(.white)
+                .padding(.horizontal, 24).padding(.vertical, 8)
                 .background(c, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
                 .rotationEffect(.degrees(-4))
                 .scaleEffect(stampIn ? 1 : 1.3)
                 .opacity(stampIn ? 1 : 0)
-            Text(reachSub()).font(.maru(11)).foregroundStyle(Theme.inkDim)
+            Text(reachSub()).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
         }
     }
 
@@ -81,7 +133,7 @@ struct YearResultView: View {
                 legendDot(Theme.inkFaint, "4月", dashed: true)
                 legendDot(Theme.verm, "現在", dashed: false)
             }
-            .font(.maru(10)).foregroundStyle(Theme.inkDim)
+            .font(.maru(.sub)).foregroundStyle(Theme.inkSub)
         }
         .padding(Theme.Sp.s16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
@@ -92,13 +144,13 @@ struct YearResultView: View {
 
     private var breakdownBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("この1年の使い方").font(.maru(11)).foregroundStyle(Theme.inkDim)
+            Text("この1年の使い方").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
             ActionBreakdownBand(weeks: session.config.weeks, categoryByWeek: session.categoryLog)
             HStack(spacing: 10) {
                 ForEach([BandCategory.keiko, .baito, .kaifuku, .taikai], id: \.label) { cat in
                     HStack(spacing: 4) {
                         Circle().fill(cat.color).frame(width: 7, height: 7)
-                        Text(cat.label).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                        Text(cat.label).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
                     }
                 }
             }
@@ -113,12 +165,12 @@ struct YearResultView: View {
     private var eventsBlock: some View {
         let lines = Array(session.log.suffix(3))
         return VStack(alignment: .leading, spacing: 5) {
-            Text("出来事").font(.maru(11)).foregroundStyle(Theme.inkDim)
+            Text("出来事").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
             if lines.isEmpty {
-                Text("——大会は、来年こそ。").font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
+                Text("——大会は、来年こそ。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
             } else {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                    Text(line).font(.system(size: 13, design: .serif)).foregroundStyle(Theme.ink)
+                    Text(line).font(.maru(.bodyMedium)).foregroundStyle(Theme.ink)
                 }
             }
         }
@@ -132,21 +184,23 @@ struct YearResultView: View {
 
     private var totalsBlock: some View {
         HStack(spacing: 0) {
-            total("賞金 年計", "¥\(session.totalPrize.formatted())")
+            total("賞金 年計", session.totalPrize, yen: true)
             Divider().frame(height: 30)
-            total("知名度", "\(Int(s.fame))")
+            total("知名度", Int(s.fame), yen: false)
             Divider().frame(height: 30)
-            total("最終所持金", "¥\(s.money.formatted())")
+            total("最終所持金", s.money, yen: true)
         }
         .padding(.vertical, Theme.Sp.s12)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
         .e1()
     }
 
-    private func total(_ k: String, _ v: String) -> some View {
+    private func total(_ k: String, _ v: Int, yen: Bool) -> some View {
         VStack(spacing: 3) {
-            Text(v).font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-            Text(k).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+            CountUpText(value: v, yen: yen)
+                .font(.maru(.title)).foregroundStyle(v < 0 ? Theme.vermD : Theme.ink)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Text(k).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
         }
         .frame(maxWidth: .infinity)
     }
@@ -158,16 +212,7 @@ struct YearResultView: View {
     private var yearEndMonolog: some View {
         Group {
             if let line = yearEndLine() {
-                VStack(alignment: .leading, spacing: Theme.Sp.s12) {
-                    Rectangle().fill(Theme.inkFaint.opacity(0.5)).frame(width: 40, height: 1)
-                    Text(line)
-                        .font(.system(size: 14.5, design: .serif))
-                        .foregroundStyle(Theme.ink)
-                        .lineSpacing(7)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding(.horizontal, Theme.Sp.s16)
-                .padding(.top, Theme.Sp.s4)
+                NarrationCard(text: line)
             }
         }
     }
@@ -213,9 +258,10 @@ struct YearResultView: View {
 
     private var restartButton: some View {
         Button(action: onEnding ?? onRestart) {
-            Text(onEnding != nil ? "勇退エンディングへ ▶" : "もう一度").font(.maru(16)).foregroundStyle(.white)
-                .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s12)
+            Text(onEnding != nil ? "勇退エンディングへ ▶" : "もう一度").font(.maru(.body)).foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: 52)
                 .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                .shadow(color: Theme.vermD, radius: 0, y: 3)
         }
         .buttonStyle(PressableStyle()).padding(.horizontal, Theme.Sp.s24).padding(.top, Theme.Sp.s4)
     }
@@ -259,5 +305,30 @@ private extension View {
             .opacity(appear ? 1 : 0)
             .offset(y: appear ? 0 : 10)
             .animation(.easeOut(duration: Theme.Motion.std).delay(0.1 + Double(index) * 0.15), value: appear)
+    }
+}
+
+// MARK: 数え上げの数字（年に1度の集計を「数える」で見せる・0.8秒・演出ひかえめでは即値）
+
+struct CountUpText: View {
+    let value: Int
+    var yen: Bool = false
+    @State private var shown = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Text(yen ? "¥\(shown.formatted())" : "\(shown)")
+            .monospacedDigit()
+            .contentTransition(.numericText())
+            .task(id: value) {
+                if reduceMotion { shown = value; return }
+                try? await Task.sleep(nanoseconds: 500_000_000)   // 判の押印の後から数え始める
+                let steps = 20
+                for i in 1...steps {
+                    try? await Task.sleep(nanoseconds: 40_000_000)
+                    withAnimation(.linear(duration: 0.04)) { shown = Int(Double(value) * Double(i) / Double(steps)) }
+                }
+                shown = value
+            }
     }
 }

@@ -49,9 +49,13 @@ struct RadarChart: View {
 
     static func abilityAxes(current: GameState, base: GameState, config: GameConfig) -> [(name: String, value: Double, base: Double, cap: Double, color: Color)] {
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
+        // 表示の縮尺は「今の最大値の1.3倍（30以上・実際の上限以下）」に寄せる。上限120のままだと1年目の実値（10→16前後）が
+        // 外周の1割＝誰が遊んでも中心の点になり、何も育っていないように見えた（audit_weekmain_tokens §2-2・A2 §1-11）。
+        let maxVal = order.map { current[$0] }.max() ?? 0
+        let zoom = max(30, (maxVal * 1.3 / 10).rounded(.up) * 10)
         return order.map { a in
-            let cap = (a == .メンタル) ? config.mentalCap : config.abilityCap
-            return ("\(a)", current[a], base[a], cap, Theme.abilityColor(a))
+            let realCap = (a == .メンタル) ? config.mentalCap : config.abilityCap
+            return ("\(a)", current[a], base[a], min(realCap, zoom), Theme.abilityColor(a))
         }
     }
 
