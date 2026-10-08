@@ -830,6 +830,11 @@ final class GameSession {
                 state = runner.state
                 self.outcome = outcome
                 if outcome.champion {
+                    // GP決勝の優勝は WeekRunner が週の結果を返さず即 yearDone になる（Calendar の即時リターン）＝
+                    // .weekDone 経由の記録（出来事ログ・賞金年計）に載らない。表示用の記録だけここで足す（GameCore 不変）。
+                    week = runner.week
+                    log.append("第\(runner.week)週: 頂GP決勝 優勝 +\(config.calendar.gpPrize / 10000)万")
+                    totalPrize += config.calendar.gpPrize
                     winFinale = true   // 優勝＝「勝ち版」演出を挟んでから S4 へ
                 } else {
                     finished = true
