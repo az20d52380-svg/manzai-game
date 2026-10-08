@@ -31,6 +31,8 @@ struct FinalsPresentationView: View {
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
     @State private var slamFire = 0        // 開示のたびの衝撃（フラッシュ＋シェイク・Juice.swift）
     @State private var burstFire = 0       // 決着の紙吹雪バースト
+    /// 銀の紙吹雪（他組の優勝・自組の決勝敗退）
+    @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
     @State private var holdingSeventh = false
 
@@ -59,10 +61,12 @@ struct FinalsPresentationView: View {
     var body: some View {
         ZStack {
             // 暖色の客席に光る舞台（オーナー判断 Q1=A・visual_genre_overhaul_v1 §6 F1）。採点〜最終決戦は金屏風
-            StageFrame(mode: stageMode, performers: stagePerformers, floorTop: beat == .lot ? 0.60 : 0.56)
+            StageFrame(mode: stageMode, performers: stagePerformers,
+                       floorTop: beat == .lot ? 0.60 : (beat == .result ? 0.62 : 0.56))
                 .animation(.easeInOut(duration: 0.5), value: beat)
-            if celebrate {
-                RaysView().ignoresSafeArea().allowsHitTesting(false)   // 優勝の放射光
+            if celebrate && d.champion {
+                // 金の放射光と紙吹雪は自組の優勝の夜だけ（他組の優勝・決勝敗退には降らない・A2 §3-B2）
+                RaysView().ignoresSafeArea().allowsHitTesting(false)
                 ConfettiView().ignoresSafeArea().allowsHitTesting(false)
             }
 
@@ -100,6 +104,9 @@ struct FinalsPresentationView: View {
         .overlay {
             ParticleBurst(trigger: burstFire, colors: [Theme.gold, Color(hex: 0xFFE07A), Theme.verm, .white],
                           style: .confetti, count: 60, origin: UnitPoint(x: 0.5, y: 0.42))
+            // 他組の優勝・自組の決勝敗退＝銀の紙吹雪（負けの夜にも同じ物量・金は使わない・X2-06）
+            ParticleBurst(trigger: silverFire, colors: [Theme.silver, .white, Color(hex: 0xAEB6C2)],
+                          style: .confetti, count: 50, origin: UnitPoint(x: 0.5, y: 0.30))
         }
         .screenShake(trigger: slamFire, intensity: 8)
         .screenFlash(trigger: slamFire, color: Color(hex: 0xFFE9C4), strength: 0.30)
@@ -422,56 +429,62 @@ struct FinalsPresentationView: View {
     }
 
     // MARK: Beat 4 — 優勝発表（3組から名前をコール）
+    // 二人は舞台の上に立つ（StageFrame の performers）。名前はめくり札、判は金の丸判、耳打ちは谷口の吹き出し。
     private var resultBeat: some View {
         let names = duelNames
         let winnerName = names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
-        return VStack(spacing: 16) {
-            Text("優 勝 は ——").font(.maru(13)).tracking(4).foregroundStyle(.white.opacity(0.8))
+        return VStack(spacing: 12) {
+            Telop(text: "優勝は ——", size: 17)
             Text(winnerName)
-                .font(.system(size: 30, weight: .black)).lineLimit(1).minimumScaleFactor(0.6)
-                .foregroundStyle(d.champion
-                    ? AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xFFF3C8), Theme.gold],
-                                                   startPoint: .top, endPoint: .bottom))
-                    : AnyShapeStyle(Color.white.opacity(0.9)))
-                .shadow(color: d.champion ? Theme.gold.opacity(0.6) : .clear, radius: 12)
-                .padding(.horizontal, 22).padding(.vertical, 10)
-                .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12)
-                    .stroke(d.champion ? Theme.gold.opacity(0.8) : .white.opacity(0.2), lineWidth: 1.5))
-                .scaleEffect(celebrate || !d.champion ? 1 : 1.8)
+                .font(.maru(30, weight: .black)).lineLimit(1).minimumScaleFactor(0.6)
+                .foregroundStyle(Theme.sumi)
+                .padding(.horizontal, 24).padding(.vertical, 10)
+                .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(d.champion ? Theme.gold : Theme.silver, lineWidth: 3))
+                .shadow(color: (d.champion ? Theme.gold : Theme.silver).opacity(0.7), radius: 12)
+                .scaleEffect(celebrate || !d.champion ? 1 : 1.6)
             if d.champion {
-                Text("優勝").font(.system(size: 44, weight: .black)).foregroundStyle(Color(hex: 0x5A3A06))
-                    .frame(width: 160, height: 160)
-                    .background(RadialGradient(colors: [Color(hex: 0xFFE07A), Theme.gold], center: .topLeading, startRadius: 5, endRadius: 170), in: Circle())
-                    .overlay(Circle().stroke(.white.opacity(0.8), lineWidth: 4))
-                    .overlay(Circle().stroke(Theme.gold.opacity(0.5), lineWidth: 10).blur(radius: 8))
-                    .rotationEffect(.degrees(-8)).shadow(color: Theme.gold.opacity(0.8), radius: 28, y: 8)
+                Text("優勝").font(.maru(40, weight: .black)).foregroundStyle(Theme.onGold)
+                    .frame(width: 128, height: 128)
+                    .background(RadialGradient(colors: [Color(hex: 0xFFE07A), Theme.gold], center: .topLeading, startRadius: 5, endRadius: 140), in: Circle())
+                    .overlay(Circle().stroke(.white.opacity(0.85), lineWidth: 4))
+                    .rotationEffect(.degrees(-8)).shadow(color: Theme.gold.opacity(0.8), radius: 24, y: 8)
                     .scaleEffect(celebrate ? 1 : 2.0)
-                Text("谷口が、そっと耳打ちした。\n「……なあ、腹減ったな」")
-                    .font(.system(size: 14, design: .serif)).lineSpacing(6).foregroundStyle(Color(hex: 0xEDE3FF))
-                    .multilineTextAlignment(.center).padding(14).frame(maxWidth: .infinity)
-                    .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+            } else if !spectator {
+                Telop(text: "決勝", size: 30)
+            }
+            Spacer(minLength: 0)
+            // 余韻（文言は既存のまま・地の文と台詞を分けただけ）
+            if d.champion {
+                VStack(spacing: 10) {
+                    NarrationCard(text: "谷口が、そっと耳打ちした。")
+                    TalkBubble(advice: Advice(name: "谷口", text: "……なあ、腹減ったな"))
+                }
             } else if spectator {
-                Text("客席の照明が上がる前に、二人で席を立った。")
-                    .font(.system(size: 14, design: .serif)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
+                NarrationCard(text: "客席の照明が上がる前に、二人で席を立った。")
             } else {
-                Text("決勝").font(.maru(30)).foregroundStyle(.white)
-                Text("届かなかった。だが、この夜の舞台には立った。")
-                    .font(.system(size: 14, design: .serif)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
+                NarrationCard(text: "届かなかった。だが、この夜の舞台には立った。")
             }
             Button {
                 if spectator { onFinishSpectating?(winnerName) }
                 else if d.champion { session.acknowledgeWin() } else { session.acknowledgeResult() }
             } label: {
-                Text(spectator ? "次の週へ ▶" : "結果を見る ▶").font(.maru(16)).foregroundStyle(Color(hex: 0x5A3A06))
-                    .frame(maxWidth: .infinity).padding(.vertical, 13)
+                Text(spectator ? "次の週へ ▶" : "結果を見る ▶").font(.maru(.body)).foregroundStyle(Theme.onGold)
+                    .frame(maxWidth: .infinity, minHeight: 52)
                     .background(Theme.gold, in: RoundedRectangle(cornerRadius: 14))
+                    .shadow(color: Theme.goldD, radius: 0, y: 3)
             }
-            .buttonStyle(.plain).padding(.horizontal, 30).padding(.top, 4)
+            .buttonStyle(PressableStyle()).padding(.horizontal, 24).padding(.bottom, 28)
         }
+        .frame(maxHeight: .infinity)
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.2)) { celebrate = true }
-            if d.champion { Sound.play(.fanfare); Sound.play(.cheerBig) }   // 優勝＝ファンファーレ＋大歓声
+            if d.champion {
+                withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.2)) { celebrate = true }
+                Sound.play(.fanfare); Sound.play(.cheerBig)   // 優勝＝ファンファーレ＋大歓声
+            } else {
+                silverFire += 1                                // 他組の優勝・決勝敗退は銀の紙吹雪だけ
+                Sound.play(.applauseHall)
+            }
         }
     }
 }
