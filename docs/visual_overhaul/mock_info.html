@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B3 情報設計モック</title>
+<!--
+  B3「情報設計路線」モック（blue_info.md の §1・§2 を画面にしたもの）。単一HTML・外部依存なし。
+  1px＝1pt（iPhone 17：402×874pt）。ゲーム内の文言は全て既存の採点済みテキストの再利用（ChoiceEventData・TournamentResultView・
+  FinalsPresentationView・YearResultView の文字列）。数字は見せ札の例。フォントは端末の丸ゴ（無ければ角ゴ）で代用＝本番は M PLUS Rounded 1c。
+-->
+<style>
+:root{
+  --bgTop:#FFF7EC; --bg2:#FFE6CF; --bgBottom:#FFDDBE; --card:#FFFFFF; --card2:#FFF9F0;
+  --line:#F1E6D6; --cmdShadow:#EADFCF; --lineStrong:#9C8E7A;
+  --ink:#2C2740; --inkSub:#625A78; --inkDim:#8E86A0;
+  --verm:#E8402C; --vermD:#C22E1D; --gold:#F6B301; --onGold:#5A3A06; --goldDeep:#845F00;
+  --senseDeep:#1F63D1; --ideaDeep:#6A3FD9; --exprDeep:#B04400; --charaDeep:#C21F5B; --mentalDeep:#147650;
+  --cSense:#3B8BFF; --cIdea:#8B5CF6; --cExpr:#FF7A2F; --cChara:#FF5C93; --cMental:#22B07A;
+  --cOre:#4A7BE8; --speakerOre:#3566D6;
+  --nightDeep:#15101F; --nightLift:#2A2040; --nightCard:#2E2545;
+  --onNight:#FFFFFF; --onNightSub:#D8D2E4; --onNightMute:#ABA4BE; --vermOnNight:#FF7A66;
+  --page:#EEE8DF; --pageInk:#2C2740;
+  --f: "Hiragino Maru Gothic ProN","M PLUS Rounded 1c","Hiragino Sans","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--pageInk);font-family:var(--f);padding:24px 16px 64px}
+h1{font-size:22px;font-weight:800;margin-bottom:6px}
+.lead{font-size:14px;line-height:1.7;max-width:1100px;margin-bottom:20px;color:#4a4458}
+.sheet{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:28px}
+.panel{background:#fff;border-radius:16px;padding:16px;border:2px solid var(--line);box-shadow:0 3px 0 var(--cmdShadow)}
+.panel h2{font-size:15px;font-weight:800;margin-bottom:10px}
+.scale div{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.scale .tag{font-size:12px;color:var(--inkSub);width:150px;flex:none}
+.sw{display:grid;grid-template-columns:repeat(2,auto);gap:6px 14px;font-size:12px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip i{display:inline-block;width:22px;height:22px;border-radius:6px;border:1px solid #0002}
+.phones{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.col{width:402px}
+.cap{font-size:13px;line-height:1.6;margin-top:10px;color:#4a4458}
+.cap b{color:var(--ink)}
+.phone{position:relative;width:402px;height:874px;border-radius:46px;overflow:hidden;
+  box-shadow:0 0 0 10px #1b1726, 0 18px 40px #0004;font-family:var(--f)}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:50}
+.status{position:absolute;top:18px;left:38px;font-size:16px;font-weight:700;z-index:51}
+.abs{position:absolute}
+/* 段 */
+.display{font-size:34px;font-weight:900;line-height:1.15}
+.title{font-size:20px;font-weight:800;line-height:1.3}
+.body{font-size:17px;font-weight:700;line-height:28px}
+.bodyM{font-size:17px;font-weight:500;line-height:28px}
+.sub{font-size:13px;font-weight:700;line-height:18px}
+/* 明るい地 */
+.day{background:linear-gradient(var(--bgTop),var(--bg2) 60%,var(--bgBottom))}
+.night{background:linear-gradient(var(--nightDeep),var(--nightLift))}
+.hard{box-shadow:0 3px 0 var(--cmdShadow)}
+.stage{left:0;right:0;overflow:hidden}
+.wall{position:absolute;inset:0 0 38% 0;background:linear-gradient(#FFF6E6,#FFF0D8)}
+.floor{position:absolute;left:0;right:0;bottom:0;height:38%;background:
+  repeating-linear-gradient(90deg,#E9C99A 0 2px,#F2D7AE 2px 46px),linear-gradient(#F2D7AE,#E3BE8A)}
+.veil{position:absolute;inset:0;background:#fff;opacity:.25}
+.fig{position:absolute;bottom:14%;width:64px}
+.fig .head{width:46px;height:46px;border-radius:50%;background:#F4D3B8;margin:0 auto;position:relative;overflow:hidden}
+.fig .head::before{content:"";position:absolute;left:0;right:0;top:0;height:22px;background:#2B2533;border-radius:23px 23px 6px 6px}
+.fig .bodyf{width:64px;height:84px;border-radius:24px 24px 8px 8px;margin-top:-4px}
+.mic{position:absolute;bottom:14%;width:4px;height:78px;background:#6d6878;left:50%}
+.mic::before{content:"";position:absolute;top:-12px;left:-7px;width:18px;height:18px;border-radius:50%;background:#8d889a}
+.win{left:16px;right:16px;border-radius:16px;border:2.5px solid var(--line);background:var(--card);padding:16px}
+.paper{background:var(--card2);border-left:6px solid var(--gold)}
+.cue{position:absolute;right:14px;bottom:10px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid var(--inkSub);animation:bob .8s ease-in-out infinite alternate}
+.cue.gold{border-top-color:var(--gold)}
+@keyframes bob{to{transform:translateY(3px)}}
+@media (prefers-reduced-motion: reduce){.cue{animation:none}}
+.face{width:56px;height:56px;border-radius:50%;background:#F4D3B8;border:2.5px solid #fff;position:relative;overflow:hidden;box-shadow:0 2px 0 #2C274033}
+.face::before{content:"";position:absolute;left:0;right:0;top:0;height:24px;background:#2B2533}
+.face.sm::before{height:15px}
+.face .eyes{position:absolute;top:30px;left:16px;width:20px;display:flex;justify-content:space-between}
+.face .eyes i{width:5px;height:5px;border-radius:50%;background:#2C2740;display:block}
+.face .collar{position:absolute;bottom:0;left:0;right:0;height:12px}
+.tag{display:inline-block;color:#fff;border-radius:999px;padding:1px 10px}
+.choice{left:24px;right:24px;height:60px;border-radius:16px;background:#fff;border:3px solid #F6B30188;display:flex;align-items:center;justify-content:center;color:var(--ink);box-shadow:0 3px 0 var(--cmdShadow)}
+.btn{left:24px;right:24px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--verm);box-shadow:0 4px 0 var(--vermD)}
+.btn.gold{background:var(--gold);color:var(--onGold);box-shadow:0 4px 0 #B88600}
+.gchip{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:12px;color:#fff;border:2px solid #fff;box-shadow:0 3px 0 #0002}
+.band{left:16px;right:16px;display:flex;justify-content:space-between;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:800}
+.jcard{width:84px;height:150px;border-radius:12px;background:var(--nightCard);border:1.8px solid #ffffff33;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0}
+.jcard .face{width:48px;height:48px}
+.note{position:absolute;font-size:11px;color:#9a3a2a;background:#fff8;border-radius:4px;padding:0 4px;z-index:40;display:none}
+.shownotes .note{display:block}
+.toggle{font-size:13px;margin:0 0 16px;display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 12px}
+.yband{left:16px;right:16px;border-radius:16px;background:#fff;border:2.5px solid var(--line);box-shadow:0 3px 0 var(--cmdShadow)}
+.wave polyline{fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<h1>B3「情報設計路線」モック — 1画面1判断・文字3段・合図は▼1種</h1>
+<p class="lead">blue_info.md §1（規格）と §2（画面ごと）を402pt 幅の5画面にしたもの。各画面の下に「主役／使う段／親指の帯」を書いた。ゲーム内の文言は全て既存の採点済みテキスト。数字は見せ札の例。▼の上下の動きは「視差効果を減らす」設定で止まる。</p>
+
+<div class="sheet">
+  <div class="panel scale">
+    <h2>文字の段（1画面で3つまで）</h2>
+    <div><span class="tag">display 34 Black</span><span class="display">判・優勝名</span></div>
+    <div><span class="tag">title 20 ExtraBold</span><span class="title">見出し・主ボタン・数字</span></div>
+    <div><span class="tag">body 17 Bold / Medium・行送り28</span><span class="body">台詞・地の文・選択肢</span></div>
+    <div><span class="tag">sub 13 Bold</span><span class="sub">名前札・チップ・ラベル</span></div>
+  </div>
+  <div class="panel">
+    <h2>文字に使ってよい色（計算値）</h2>
+    <div class="sw">
+      <span class="chip"><i style="background:#2C2740"></i>ink 2C2740</span><span>白 14.27／bg2 11.87</span>
+      <span class="chip"><i style="background:#625A78"></i>inkSub 625A78（新設）</span><span>白 6.46／bg2 5.37</span>
+      <span class="chip"><i style="background:#8E86A0"></i>inkDim 8E86A0（文字に使わない）</span><span>白 3.46 ✕</span>
+      <span class="chip"><i style="background:#C22E1D"></i>vermD C22E1D</span><span>白 5.67・白字 5.67</span>
+      <span class="chip"><i style="background:#1F63D1"></i>senseDeep 1F63D1</span><span>白 5.58</span>
+      <span class="chip"><i style="background:#147650"></i>mentalDeep 147650</span><span>白 5.62</span>
+      <span class="chip"><i style="background:#845F00"></i>goldDeep 845F00</span><span>白 5.80</span>
+      <span class="chip"><i style="background:#D8D2E4;border-color:#999"></i>onNightSub D8D2E4</span><span>暗地 9.72〜13.66</span>
+      <span class="chip"><i style="background:#ABA4BE"></i>onNightMute ABA4BE</span><span>暗地 5.99〜8.42</span>
+      <span class="chip"><i style="background:#FF7A66"></i>vermOnNight FF7A66</span><span>暗地 5.61〜7.88</span>
+    </div>
+  </div>
+</div>
+
+<label class="toggle"><input type="checkbox" id="nt"> 寸法の注記を出す</label>
+
+<div class="phones" id="phones">
+
+<!-- ① イベント：最後のビート＋選択肢 -->
+<div class="col">
+<div class="phone day">
+  <div class="island"></div><div class="status" style="color:#2C2740">1:05</div>
+  <!-- 上の帯：題札＋額縁 -->
+  <div class="abs band" style="top:62px;height:44px">
+    <span class="title" style="background:#fff;border:3px solid var(--gold);border-radius:12px;padding:4px 12px;color:var(--ink)">まだ敬語の残る間</span>
+    <span style="display:flex;gap:6px">
+      <span class="pill sub"><span class="dot" style="background:var(--cMental)"></span>体力 80</span>
+      <span class="pill sub"><span class="dot" style="background:var(--verm)"></span>相性 5</span>
+    </span>
+  </div>
+  <!-- 場面 -->
+  <div class="abs stage" style="top:112px;height:180px">
+    <div class="wall"></div><div class="floor"></div>
+    <div class="fig" style="left:120px"><div class="head"></div><div class="bodyf" style="background:var(--cOre)"></div></div>
+    <div class="mic" style="height:70px"></div>
+    <div class="fig" style="left:222px"><div class="head"></div><div class="bodyf" style="background:var(--verm)"></div></div>
+    <div class="veil"></div>
+  </div>
+  <!-- 地の文の紙（\n を外して1段落） -->
+  <div class="abs win paper hard" style="top:300px;height:336px">
+    <p class="bodyM" style="color:var(--ink)">コンビを組んで、まだ月が浅い。稽古場のパイプ椅子は、二脚とも壁際に畳んだままだ。谷口はネタ帳を、いつも両手で返してくる。俺が片手で受け取ると、受け渡しのあいだに、拳ひとつ分の隙間が空く。稽古の帰りぎわ、俺のツッコミについて谷口が何か言いかけて、やめた。俺の方も、一個、言いかけて、飲み込んでいる。</p>
+  </div>
+  <!-- 判断の帯 -->
+  <div class="abs choice body" style="top:660px">踏み込んで言う</div>
+  <div class="abs choice body" style="top:732px">間合いを保つ</div>
+  <div class="note" style="top:300px;left:300px">窓 y300〜636</div>
+  <div class="note" style="top:660px;left:300px">判断 y≥650</div>
+  <div class="note" style="top:112px;left:300px">場面は伸縮</div>
+</div>
+<p class="cap"><b>主役</b>＝選択肢カード（最後のビートなので▼は出さない＝ボタンが合図）。<b>段</b>＝title 20／body 17／sub 13。<b>親指の帯</b>＝選択肢（y660〜792）。地の文は `\n` を外して1段落（文言は同じ）・1行約19字。</p>
+</div>
+
+<!-- ② イベント：選んだ直後 -->
+<div class="col">
+<div class="phone day">
+  <div class="island"></div><div class="status" style="color:#2C2740">1:05</div>
+  <div class="abs band" style="top:62px;height:44px">
+    <span class="title" style="background:#fff;border:3px solid var(--gold);border-radius:12px;padding:4px 12px;color:var(--ink)">まだ敬語の残る間</span>
+    <span style="display:flex;gap:6px">
+      <span class="pill sub" style="border-color:var(--lineStrong)"><span class="dot" style="background:var(--cMental)"></span>体力 65</span>
+      <span class="pill sub" style="border-color:var(--verm)"><span class="dot" style="background:var(--verm)"></span>相性 7</span>
+    </span>
+  </div>
+  <div class="abs stage" style="top:112px;height:300px">
+    <div class="wall"></div><div class="floor"></div>
+    <div class="fig" style="left:116px;transform:scale(1.06);transform-origin:bottom"><div class="head"></div><div class="bodyf" style="background:var(--cOre)"></div></div>
+    <div class="mic"></div>
+    <div class="fig" style="left:222px;transform:scale(.94);transform-origin:bottom;filter:saturate(.5)"><div class="head"></div><div class="bodyf" style="background:var(--verm)"></div></div>
+    <div class="veil"></div>
+  </div>
+  <!-- 選んだ札＋結果チップ -->
+  <div class="abs" style="top:398px;left:16px"><span class="sub" style="background:#fff;border:2px solid var(--gold);border-radius:8px;padding:3px 10px;color:var(--ink)">踏み込んで言う</span></div>
+  <div class="abs" style="top:388px;right:16px;display:flex;gap:6px">
+    <span class="gchip title" style="background:var(--vermD)">相性 +2</span>
+    <span class="gchip title" style="background:#fff;color:var(--inkSub);border:2px solid var(--lineStrong)">体力 −15</span>
+  </div>
+  <!-- 台詞窓 -->
+  <div class="abs win hard" style="top:452px;height:170px;padding-left:16px;padding-top:28px">
+    <p class="body" style="color:var(--ink)">一個、言っていいか。お前のボケ、俺はまだ半分しか信じてない。</p>
+    <div class="cue"></div>
+  </div>
+  <div class="abs" style="top:424px;left:26px;text-align:center">
+    <div class="face"><div class="eyes"><i></i><i></i></div><div class="collar" style="background:var(--cOre)"></div></div>
+  </div>
+  <div class="abs" style="top:432px;left:90px"><span class="tag sub" style="background:var(--speakerOre)">俺</span></div>
+  <div class="note" style="top:388px;left:16px;margin-top:-16px">チップは閉じるまで残す</div>
+</div>
+<p class="cap"><b>主役</b>＝結果チップ（相性 +2・体力 −15）。上の帯の数値が同時に跳ねる。<b>段</b>＝title 20／body 17／sub 13。選んだ札は窓の上に残す。窓の右下に▼。選んだ瞬間に最初の返答が出る（空欄なし）。</p>
+</div>
+
+<!-- ③ 大会結果：敗退 -->
+<div class="col">
+<div class="phone night">
+  <div class="island"></div><div class="status" style="color:#fff">1:00</div>
+  <div class="abs" style="top:0;left:0;right:0;height:520px;background:radial-gradient(circle at 50% 52%,#FFE9C433,transparent 55%)"></div>
+  <div class="abs" style="top:74px;left:0;right:0;text-align:center">
+    <div class="title" style="color:var(--onNight)">春新人賞A</div>
+    <div class="body" style="color:var(--onNightSub)">第12週・本番</div>
+    <div class="body" style="color:var(--onNightSub)">今夜かけるネタ　商店街の福引</div>
+  </div>
+  <svg class="abs wave" style="top:186px;left:24px" width="354" height="90" viewBox="0 0 354 90">
+    <rect x="1" y="1" width="352" height="88" rx="14" fill="#2E2545" stroke="#ffffff22"/>
+    <polyline stroke="#ABA4BE" stroke-width="3" points="14,50 40,46 66,52 92,44 118,50 144,47 170,52 196,49 222,51 248,50 274,51 300,50 340,50"/>
+  </svg>
+  <!-- 判 -->
+  <div class="abs" style="top:300px;left:141px;width:120px;height:120px;border-radius:4px;background:radial-gradient(circle at 0 0,#6a6482,#5A5470);border:2px solid var(--onNightSub);transform:rotate(-4deg);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px #0006">
+    <span class="display" style="color:#fff">敗退</span>
+  </div>
+  <div class="abs body" style="top:436px;left:0;right:0;text-align:center;color:var(--onNightSub)">——遠い。</div>
+  <!-- 講評の紙 -->
+  <div class="abs" style="top:486px;left:24px;right:24px;border-radius:12px;background:linear-gradient(#FDFBF4,#F6EEDC);border:1px solid #E6D9BE;padding:20px;box-shadow:0 8px 14px #78501455">
+    <p class="bodyM" style="color:var(--ink)">後半、声の圧が落ちた。体力も4分の一部です。</p>
+    <p class="body" style="color:var(--goldDeep);margin-top:12px">審査員　目白 慧</p>
+  </div>
+  <div class="abs btn title" style="top:740px">次へ ▶</div>
+  <div class="note" style="top:300px;left:270px">主役＝判（最も明るい面）</div>
+  <div class="note" style="top:186px;left:24px;margin-top:-16px">波形は高さ90へ（脇役）</div>
+</div>
+<p class="cap"><b>主役</b>＝判。<b>段</b>＝display 34（判）／title 20（大会名・次へ）／body 17（副題・ネタ・一言・講評・署名）。<b>消した物</b>：星3段・講評の小判・字間の割り付け・判より先に出る一言。<b>待ち</b>＝タップで判へ飛べる・判の0.3秒後に全部出る。</p>
+</div>
+
+<!-- ④ 決勝：採点（一斉オープンの後） -->
+<div class="col">
+<div class="phone night">
+  <div class="island"></div><div class="status" style="color:#fff">1:03</div>
+  <div class="abs" style="top:66px;left:0;right:0;text-align:center">
+    <span class="title" style="color:var(--gold)">頂 グランプリ</span>
+    <span class="body" style="color:#fff;background:var(--vermD);border:1px solid var(--gold);border-radius:999px;padding:0 14px;margin-left:6px">決勝</span>
+  </div>
+  <!-- ビートの進み -->
+  <div class="abs" style="top:110px;left:0;right:0;display:flex;justify-content:center;gap:10px">
+    <span class="dot" style="background:var(--onNightSub)"></span><span class="dot" style="background:var(--onNightSub)"></span>
+    <span class="dot" style="background:var(--gold);width:10px;height:10px;margin-top:-1px"></span>
+    <span class="dot" style="border:1.5px solid var(--onNightMute)"></span><span class="dot" style="border:1.5px solid var(--onNightMute)"></span>
+  </div>
+  <div class="abs title" style="top:136px;left:0;right:0;text-align:center;color:var(--onNight)">採点</div>
+  <div class="abs" id="judges" style="top:178px;left:20px;right:20px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
+  <div class="abs" style="top:524px;left:0;right:0;text-align:center">
+    <div style="font-size:64px;font-weight:900;line-height:1;background:linear-gradient(#FFF3C8,#F6B301,#C8971A);-webkit-background-clip:text;background-clip:text;color:transparent">642</div>
+    <div class="body" style="color:var(--onNightSub)">/ 700</div>
+  </div>
+  <!-- 下三分 -->
+  <div class="abs" style="bottom:0;left:0;right:0;height:86px;background:#1A1424f2;border-top:1.5px solid var(--gold);display:flex;align-items:flex-start;padding:14px 16px 0;gap:12px">
+    <span style="width:5px;height:28px;background:var(--verm)"></span>
+    <span class="title" style="color:#fff">しろくろ</span>
+    <span class="body" style="color:var(--gold);margin-left:auto">結成1年</span>
+  </div>
+  <div class="note" style="top:110px;left:250px">ビートの進み（文字なし）</div>
+</div>
+<p class="cap"><b>主役</b>＝合計 642（絵の数字）。<b>段</b>＝display 34（点）／title 20（見出し・コンビ名）／body 17（姓・決勝・/700）。審査員は姓だけ・重視軸は色＋1文字のバッジ（2型色覚でセンス×発想 ΔE 5.6 のため）。<b>操作</b>＝伏せ札の時の1タップ（採点発表）だけ。後は自動で進む。</p>
+</div>
+
+<!-- ⑤ 年末リザルト：最初の1画面 -->
+<div class="col">
+<div class="phone day">
+  <div class="island"></div><div class="status" style="color:#2C2740">1:09</div>
+  <div class="abs" style="top:70px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:4px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="face sm" style="width:40px;height:40px"><div class="eyes" style="top:22px;left:11px;width:16px"><i></i><i></i></div><div class="collar" style="background:var(--cOre);height:9px"></div></div>
+      <span class="title" style="color:var(--ink)">しろくろ</span>
+      <div class="face sm" style="width:40px;height:40px"><div class="eyes" style="top:22px;left:11px;width:16px"><i></i><i></i></div><div class="collar" style="background:var(--verm);height:9px"></div></div>
+    </div>
+    <div class="body" style="color:var(--inkSub)">1年目・年次リザルト</div>
+  </div>
+  <div class="abs" style="top:170px;left:0;right:0;display:flex;justify-content:center">
+    <span class="display" style="background:var(--ink);color:#fff;border-radius:4px;padding:10px 26px;transform:rotate(-4deg);box-shadow:0 6px 0 #0002">1回戦敗退</span>
+  </div>
+  <div class="abs body" style="top:250px;left:0;right:0;text-align:center;color:var(--inkSub)">頂グランプリ 到達段階</div>
+  <div class="abs yband" style="top:296px;height:104px;display:flex">
+    <div style="flex:1;text-align:center;padding-top:18px"><div class="title" style="color:var(--ink)">¥0</div><div class="body" style="color:var(--inkSub)">賞金 年計</div></div>
+    <div style="width:1px;background:var(--line);margin:18px 0"></div>
+    <div style="flex:1;text-align:center;padding-top:18px"><div class="title" style="color:var(--ink)">3</div><div class="body" style="color:var(--inkSub)">知名度</div></div>
+    <div style="width:1px;background:var(--line);margin:18px 0"></div>
+    <div style="flex:1.3;text-align:center;padding-top:18px"><div class="title" style="color:var(--vermD)">−¥912,000</div><div class="body" style="color:var(--inkSub)">最終所持金</div></div>
+  </div>
+  <div class="abs win paper hard" style="top:420px;height:140px">
+    <p class="bodyM" style="color:var(--ink)">順位が貼り出される紙の、俺たちの名前の上と下は、今年も同じ二組だった。</p>
+  </div>
+  <!-- 下層の頭（スクロールで続く） -->
+  <div class="abs yband" style="top:580px;height:120px;padding:16px">
+    <div class="title" style="color:var(--ink)">この1年の使い方</div>
+    <div style="margin-top:12px;height:22px;border-radius:11px;background:repeating-linear-gradient(90deg,#3D5A80 0 6px,#fff 6px 7.5px);"></div>
+  </div>
+  <div class="abs" style="bottom:0;left:0;right:0;height:120px;background:linear-gradient(#FFDDBE00,#FFDDBE 30%)"></div>
+  <div class="abs btn title" style="top:770px">もう一度</div>
+  <div class="note" style="top:770px;left:24px;margin-top:-16px">出口は画面下に固定</div>
+  <div class="note" style="top:580px;left:250px">ここから下層</div>
+</div>
+<p class="cap"><b>主役</b>＝判。<b>段</b>＝display 34／title 20／body 17。最初の1画面に「名前・判・数字3つ・独白1行・出口」だけ。レーダー（等級の輪で正規化）・1年の使い方・出来事は下層。マイナスの所持金は「−¥」＋vermD。</p>
+</div>
+
+</div>
+
+<script>
+// 審査員札（姓・重視軸のバッジ・点）。点は見せ札の例（Σ=642）。
+const J=[["音羽","華","#D0306A",92],["白波","表","#C24E0A",91],["卯月","発","#7444E8",90],["花園","♥","#C22E1D",93],["目白","発","#7444E8",89],["神楽坂","メ","#17805A",94],["天堂寺","セ","#1F63D1",93]];
+const box=document.getElementById('judges');
+J.forEach(([n,b,c,s])=>{
+  const d=document.createElement('div');d.className='jcard';d.style.borderColor=c;
+  d.innerHTML=`<span class="display" style="color:#fff">${s}</span>
+  <div class="face"><div class="eyes" style="top:26px;left:14px;width:18px"><i></i><i></i></div><div class="collar" style="background:${c};height:10px"></div></div>
+  <span style="display:flex;align-items:center;gap:4px"><span class="badge" style="background:${c}">${b}</span><span class="body" style="color:var(--onNightSub)">${n}</span></span>`;
+  box.appendChild(d);
+});
+document.getElementById('nt').addEventListener('change',e=>{document.getElementById('phones').classList.toggle('shownotes',e.target.checked)});
+</script>
+</body>
+</html>

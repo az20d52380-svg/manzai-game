@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B1 サクセス路線 モック</title>
+<style>
+/* 同梱フォントを相対参照（外部依存なし）。無い環境はヒラギノ丸ゴ→system にフォールバック */
+@font-face { font-family: "MaruGame"; font-weight: 500; src: url("../../ManzaiGame/Resources/Fonts/MPLUSRounded1c-Medium.ttf"); }
+@font-face { font-family: "MaruGame"; font-weight: 700; src: url("../../ManzaiGame/Resources/Fonts/MPLUSRounded1c-Bold.ttf"); }
+@font-face { font-family: "MaruGame"; font-weight: 800; src: url("../../ManzaiGame/Resources/Fonts/MPLUSRounded1c-ExtraBold.ttf"); }
+@font-face { font-family: "MaruGame"; font-weight: 900; src: url("../../ManzaiGame/Resources/Fonts/MPLUSRounded1c-Black.ttf"); }
+
+:root {
+  --bgTop:#FFF7EC; --bg2:#FFE6CF; --bgBottom:#FFDDBE;
+  --stageTop:#FFF8E8; --stageBot:#FFE7B8;
+  --card:#FFFFFF; --card2:#FFF9F0; --line:#F1E6D6; --cmdShadow:#EADFCF;
+  --ink:#2C2740; --inkSub:#6B6380;
+  --verm:#E8402C; --vermD:#C22E1D; --gold:#F6B301; --goldD:#E09A00; --goldHi:#FFF3C8; --onGold:#5A3A06;
+  --curtHi:#F0533E; --curt:#D93A26; --curtLo:#C22E1D;
+  --ore:#4A7BE8; --oreD:#2E55B0; --tani:#F0533E; --taniD:#C22E1D;
+  --cSense:#3B8BFF; --cIdea:#8B5CF6; --cExpr:#FF7A2F; --cChara:#FF5C93; --cMental:#22B07A;
+  --botbar:#2A2440; --gainOrange:#FF8A1E; --crowd:rgba(138,90,60,.6);
+  --skin:#FFDFC2;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background:#E9E2D8; color:var(--ink);
+  font-family:"MaruGame","Hiragino Maru Gothic ProN","Rounded Mplus 1c",ui-rounded,system-ui,sans-serif;
+  padding:24px 16px 64px;
+}
+.doc { max-width:1200px; margin:0 auto; }
+.doc h1 { font-size:22px; font-weight:900; margin-bottom:6px; }
+.doc .lead { font-size:13px; font-weight:700; color:var(--inkSub); line-height:1.7; margin-bottom:22px; }
+.row { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; margin-bottom:40px; }
+.cap { width:320px; max-width:100%; font-size:13px; line-height:1.75; font-weight:500; }
+.cap h2 { font-size:17px; font-weight:900; margin-bottom:8px; }
+.cap ul { padding-left:1.1em; }
+.cap li { margin-bottom:4px; }
+.cap .before { margin-top:12px; font-size:12px; font-weight:700; color:var(--inkSub); }
+.cap .before img { display:block; width:150px; margin-top:6px; border-radius:14px; border:2px solid #CFC6BA; }
+
+/* ===== 端末の枠（402×874pt を等倍） ===== */
+.phone {
+  position:relative; width:402px; height:874px; flex:none;
+  border-radius:46px; overflow:hidden; background:var(--bgTop);
+  box-shadow:0 0 0 10px #1d1a24, 0 18px 40px rgba(0,0,0,.25);
+  margin:10px;
+}
+.phone .notch { position:absolute; top:11px; left:50%; width:124px; height:36px; margin-left:-62px; background:#000; border-radius:20px; z-index:50; }
+.phone .home { position:absolute; bottom:8px; left:50%; width:140px; height:5px; margin-left:-70px; border-radius:3px; background:rgba(255,255,255,.75); z-index:50; }
+.phone .home.dark { background:rgba(44,39,64,.55); }
+.abs { position:absolute; }
+.daily { background:linear-gradient(var(--bgTop), var(--bg2) 60%, var(--bgBottom)); }
+
+/* ===== 共通部品 ===== */
+.hard { box-shadow:0 3px 0 var(--cmdShadow); }
+.chunky { background:var(--card); border:2.5px solid var(--line); border-radius:16px; box-shadow:0 3px 0 var(--cmdShadow); }
+.ribbon {
+  position:absolute; left:50%; transform:translateX(-50%);
+  background:linear-gradient(var(--goldHi), var(--gold) 55%, var(--goldD));
+  color:var(--onGold); font-weight:800; font-size:20px; letter-spacing:1px;
+  padding:6px 22px 7px; border-radius:999px; border:2.5px solid #fff;
+  box-shadow:0 3px 0 rgba(194,138,0,.55); white-space:nowrap;
+}
+.nametag {
+  display:inline-block; font-weight:800; font-size:13px; color:#fff;
+  padding:2px 10px 3px; border-radius:999px; border:2px solid #fff;
+  box-shadow:0 2px 0 var(--cmdShadow); white-space:nowrap;
+}
+.bubble {
+  position:relative; background:#fff; border-radius:14px; border:3px solid; padding:13px 15px 15px;
+  font-size:17px; font-weight:700; line-height:1.6; color:var(--ink);
+  box-shadow:0 3px 0 var(--cmdShadow);
+}
+.bubble .cue { position:absolute; right:10px; bottom:6px; width:0; height:0;
+  border-left:6px solid transparent; border-right:6px solid transparent; border-top:9px solid; animation:bob .8s ease-in-out infinite alternate; }
+.bubble.tailL::before, .bubble.tailR::before { content:""; position:absolute; top:22px; width:14px; height:14px; background:#fff; border:3px solid; border-color:inherit; transform:rotate(45deg); }
+.bubble.tailL::before { left:-9px; border-top-color:transparent; border-right-color:transparent; }
+.bubble.tailR::before { right:-9px; border-bottom-color:transparent; border-left-color:transparent; }
+@keyframes bob { from { transform:translateY(0); } to { transform:translateY(3px); } }
+.talk { position:absolute; display:flex; align-items:flex-start; gap:10px; }
+.talk .who { display:flex; flex-direction:column; align-items:center; gap:0; flex:none; }
+.talk .who .nametag { margin-top:-10px; position:relative; z-index:2; }
+.narr {
+  position:absolute; background:var(--card2); border:2.5px solid var(--line); border-radius:14px;
+  box-shadow:0 3px 0 var(--cmdShadow); padding:12px 16px 14px 22px; font-size:16px; font-weight:500; line-height:1.7;
+  background-image:repeating-linear-gradient(transparent 0 26px, rgba(233,220,200,.8) 26px 27px);
+}
+.narr::before { content:""; position:absolute; left:0; top:0; bottom:0; width:6px; border-radius:12px 0 0 12px; background:var(--gold); }
+.choice {
+  position:absolute; left:20px; right:20px; height:56px; display:flex; align-items:center; justify-content:center;
+  background:#fff; border:3px solid rgba(232,64,44,.75); border-radius:16px; box-shadow:0 3px 0 var(--cmdShadow);
+  font-size:17px; font-weight:800; color:var(--ink);
+}
+.chip {
+  display:inline-block; font-weight:900; font-size:16px; color:#fff; padding:6px 13px 7px; border-radius:999px;
+  border:2px solid #fff; box-shadow:0 3px 0 rgba(44,39,64,.25); white-space:nowrap;
+}
+.chip.loss { background:#fff; color:var(--inkSub); border-color:var(--line); }
+.pill { display:inline-flex; align-items:center; gap:6px; background:rgba(36,28,51,.82); color:#fff; border:1px solid rgba(232,64,44,.55);
+  padding:5px 12px; border-radius:999px; font-weight:800; font-size:12px; white-space:nowrap; }
+.pill b { color:var(--verm); font-weight:800; }
+.btn {
+  position:absolute; left:40px; right:40px; height:54px; display:flex; align-items:center; justify-content:center;
+  border-radius:14px; font-weight:800; font-size:17px;
+}
+.btn.verm { background:var(--verm); color:#fff; box-shadow:0 4px 0 var(--vermD); }
+.btn.gold { background:var(--gold); color:var(--onGold); box-shadow:0 4px 0 #C8971A; }
+
+/* ===== 最下帯（FrameBar＝週メインの botbar を共有） ===== */
+.framebar { position:absolute; left:0; right:0; bottom:0; height:96px; background:var(--botbar); color:#fff; padding:10px 14px 0; display:flex; gap:12px; align-items:flex-start; }
+.framebar .yw small { display:block; font-size:11px; font-weight:800; opacity:.7; }
+.framebar .yw b { font-size:17px; font-weight:800; }
+.framebar .sep { width:1px; height:26px; background:rgba(255,255,255,.18); margin-top:4px; }
+.framebar .ms small { display:block; font-size:11px; font-weight:800; opacity:.7; }
+.framebar .ms b { font-size:12px; font-weight:800; color:var(--gold); }
+.framebar .icons { display:flex; gap:12px; margin-top:6px; }
+.framebar .icons i { width:18px; height:18px; border-radius:4px; background:rgba(255,255,255,.75); display:block; }
+.framebar .right { margin-left:auto; text-align:right; }
+.framebar .st { display:flex; align-items:center; gap:5px; font-size:10px; font-weight:800; }
+.framebar .gauge { width:64px; height:10px; border-radius:5px; background:rgba(255,255,255,.16); overflow:hidden; }
+.framebar .gauge i { display:block; height:100%; background:var(--cMental); border-radius:5px; }
+.framebar .st b { font-size:13px; color:var(--cMental); width:28px; text-align:right; }
+.framebar .money { font-size:12px; font-weight:800; margin-top:6px; }
+
+/* ===== 顔グラ（CharacterFace の写し） ===== */
+.face { position:relative; width:var(--s,64px); height:var(--s,64px); border-radius:50%; background:#fff; overflow:hidden; flex:none;
+  box-shadow:0 0 0 2.5px #fff, 0 2px 0 2.5px rgba(44,39,64,.2); }
+.face .collar { position:absolute; left:14%; width:72%; height:30%; top:72%; border-radius:30% 30% 8% 8%; background:var(--col); }
+.face .skin { position:absolute; left:11%; top:6%; width:78%; height:78%; border-radius:50%; background:var(--skin); overflow:hidden; }
+.face .skin .hair { position:absolute; left:0; top:0; width:100%; height:var(--hh,42%); background:var(--hc); }
+.face .skin .eye { position:absolute; top:55%; width:8.5%; height:8.5%; border-radius:50%; background:var(--ink); }
+.face .skin .eye.l { left:31%; } .face .skin .eye.r { left:61%; }
+.face .strand { position:absolute; top:28%; width:13%; height:52%; border-radius:999px; background:var(--hc); }
+.face .strand.l { left:9%; } .face .strand.r { right:9%; }
+.face .bun { position:absolute; left:39%; top:0; width:23%; height:23%; border-radius:50%; background:var(--hc); }
+.face .glass { position:absolute; top:44%; width:24%; height:24%; border:1.6px solid var(--ink); border-radius:50%; }
+.face .glass.l { left:24%; } .face .glass.r { left:52%; }
+.face .beard { position:absolute; left:20%; top:52%; width:60%; height:34%; border-bottom:5px solid var(--hc); border-radius:50%; }
+.face .sweat { position:absolute; right:10%; top:22%; width:12%; height:17%; background:#7FC4FF; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; }
+
+/* ===== 舞台の人形（ManzaiFigure の写し） ===== */
+.fig { position:absolute; width:calc(var(--h) * .62); height:var(--h); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+.fig .shadow { position:absolute; bottom:-6px; width:calc(var(--h) * .62); height:10px; border-radius:50%; background:rgba(44,39,64,.20); filter:blur(2px); }
+.fig .head { position:relative; width:calc(var(--h) * .30); height:calc(var(--h) * .30); border-radius:50%; background:var(--skin); overflow:hidden; flex:none; }
+.fig .head::before { content:""; position:absolute; left:0; top:0; width:100%; height:52%; background:var(--hair); }
+.fig .body { position:relative; width:calc(var(--h) * .48); height:calc(var(--h) * .72); margin-top:calc(var(--h) * -.10);
+  border-radius:calc(var(--h) * .20) calc(var(--h) * .20) 9px 9px; background:linear-gradient(var(--b1), var(--b2)); flex:none; }
+.fig .body::before { content:""; position:absolute; left:19%; width:62%; top:5px; height:6px; border-radius:3px; background:var(--acc); }
+.fig.ore { --b1:var(--ore); --b2:var(--oreD); --acc:#2E55B0; --hair:#40394F; }
+.fig.tani { --b1:var(--tani); --b2:var(--taniD); --acc:#B02318; --hair:#2E2838; }
+.fig.dim { filter:saturate(.5); transform:scale(.94); transform-origin:bottom center; }
+.fig.talk { transform:scale(1.06) translateY(-3px); transform-origin:bottom center; }
+.fig.hop { transform:translateY(-16px) rotate(-3deg); }
+.fig.hop2 { transform:translateY(-10px) rotate(3deg); }
+.mic { position:absolute; width:16px; display:flex; flex-direction:column; align-items:center; }
+.mic .h { width:16px; height:16px; border-radius:50%; background:radial-gradient(circle at 35% 25%, #B8B4C8, #3A3448); }
+.mic .p { width:3px; background:linear-gradient(#6A6480,#2E2840); }
+.mic .f { width:30px; height:8px; border-radius:50%; background:#2A2438; }
+
+/* ===== 場面：稽古場（StageScene .keiko の写し） ===== */
+.keiko .wall { position:absolute; left:0; right:0; top:0; height:58%; background:linear-gradient(#FFFBF0, #FFF2DC, #FFE9C8); }
+.keiko .floor, .stage .floor { position:absolute; left:0; right:0; bottom:0; height:42%;
+  background:repeating-linear-gradient(0deg, transparent 0 22px, rgba(154,117,70,.22) 22px 23px), linear-gradient(#EED2A4, #DDB682, #C89A62); }
+.keiko .shaft { position:absolute; left:-10%; top:-10%; width:70%; height:140%; background:linear-gradient(115deg, rgba(255,246,216,.75), rgba(255,240,198,.25) 45%, transparent 70%); filter:blur(8px); }
+.prop-box { position:absolute; width:34px; height:44px; border-radius:5px; background:linear-gradient(#9A8F84,#7B7067); box-shadow:0 2px 0 rgba(44,39,64,.25); }
+.prop-box::before { content:""; position:absolute; left:9px; top:8px; width:16px; height:3px; border-radius:2px; background:#3A3448; }
+.prop-box::after { content:""; position:absolute; left:11px; top:20px; width:12px; height:12px; border-radius:50%; background:radial-gradient(circle at 40% 35%, #FFF6C9, #F6B301); box-shadow:0 0 10px rgba(246,179,1,.8); }
+
+/* ===== 本番の額縁（StageFrame） ===== */
+.stage { position:absolute; inset:0; background:linear-gradient(var(--stageTop), var(--stageBot)); }
+.stage .spot { position:absolute; left:-20%; right:-20%; top:8%; height:70%; background:radial-gradient(ellipse at 50% 55%, rgba(255,252,236,.95), rgba(255,246,214,.4) 45%, transparent 70%); }
+.valance { position:absolute; left:0; right:0; top:0; height:118px; z-index:20;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 18px, rgba(0,0,0,.06) 18px 30px), linear-gradient(var(--curtHi), var(--curt) 65%, var(--curtLo));
+  border-bottom:3px solid var(--gold); }
+.valance::after { content:""; position:absolute; left:0; right:0; bottom:-17px; height:14px;
+  background:radial-gradient(circle at 50% 0, var(--curtLo) 12px, transparent 13px) 0 0 / 28px 14px repeat-x; }
+.valance .fringe { position:absolute; left:0; right:0; bottom:-3px; height:3px; background:var(--gold); }
+.valance .lights { position:absolute; left:10px; right:10px; top:66px; height:8px;
+  background:radial-gradient(circle, #FFF3C8 2.5px, rgba(255,243,200,.0) 3.5px) 0 0 / 22px 8px repeat-x; }
+.valance .title { position:absolute; left:0; right:0; top:70px; text-align:center; color:#fff; font-weight:900; font-size:22px; letter-spacing:1px;
+  text-shadow:2px 0 var(--ink), -2px 0 var(--ink), 0 2px var(--ink), 0 -2px var(--ink), 1.5px 1.5px var(--ink), -1.5px -1.5px var(--ink), 1.5px -1.5px var(--ink), -1.5px 1.5px var(--ink); }
+.curt { position:absolute; top:0; bottom:0; width:16px; z-index:19;
+  background:repeating-linear-gradient(90deg, var(--curt) 0 5px, var(--curtHi) 5px 8px, var(--curtLo) 8px 12px, var(--curt) 12px 16px); }
+.curt.l { left:0; box-shadow:2px 0 0 rgba(246,179,1,.9); } .curt.r { right:0; box-shadow:-2px 0 0 rgba(246,179,1,.9); }
+.crowd { position:absolute; left:0; right:0; height:56px; display:flex; justify-content:center; z-index:15; }
+.crowd span { display:block; width:46px; height:56px; margin:0 -3px; position:relative; }
+.crowd span::before { content:""; position:absolute; left:11px; top:6px; width:24px; height:24px; border-radius:50%; background:var(--crowd); }
+.crowd span::after { content:""; position:absolute; left:2px; top:26px; width:42px; height:34px; border-radius:21px 21px 0 0; background:var(--crowd); }
+.rays { position:absolute; left:-50%; top:-50%; width:200%; height:200%;
+  background:repeating-conic-gradient(from 0deg at 50% 50%, rgba(246,179,1,.22) 0deg 10deg, rgba(255,243,200,0) 10deg 25.7deg); }
+.conf { position:absolute; width:8px; height:12px; border-radius:1px; z-index:30; }
+
+/* ===== 文字の型 ===== */
+.outline-ink { text-shadow:2.5px 0 var(--ink), -2.5px 0 var(--ink), 0 2.5px var(--ink), 0 -2.5px var(--ink), 1.8px 1.8px var(--ink), -1.8px -1.8px var(--ink), 1.8px -1.8px var(--ink), -1.8px 1.8px var(--ink), 0 6px 0 rgba(255,255,255,.95); }
+.outline-white { text-shadow:2.5px 0 #fff, -2.5px 0 #fff, 0 2.5px #fff, 0 -2.5px #fff, 1.8px 1.8px #fff, -1.8px -1.8px #fff, 1.8px -1.8px #fff, -1.8px 1.8px #fff, 0 6px 0 var(--cmdShadow); }
+.telop { position:absolute; font-weight:900; font-size:26px; color:#fff; transform:rotate(-3deg);
+  text-shadow:3px 0 var(--verm), -3px 0 var(--verm), 0 3px var(--verm), 0 -3px var(--verm), 2px 2px var(--verm), -2px -2px var(--verm), 2px -2px var(--verm), -2px 2px var(--verm), 0 6px 0 var(--vermD); white-space:nowrap; }
+.stamp { position:absolute; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:32px; color:#fff;
+  border-radius:4px; transform:rotate(-4deg); box-shadow:0 8px 18px rgba(232,64,44,.45); }
+.stamp::after { content:""; position:absolute; inset:5px; border:2px solid rgba(255,255,255,.6); border-radius:2px; }
+
+/* ===== 決勝の札（行動カードと同じ面） ===== */
+.jcard { position:absolute; width:84px; height:116px; background:#fff; border:3px solid var(--ax); border-radius:14px; box-shadow:0 3px 0 var(--cmdShadow);
+  display:flex; flex-direction:column; align-items:center; padding-top:6px; }
+.jcard .sc { font-weight:900; font-size:30px; line-height:1; color:var(--ink); border-bottom:4px solid var(--ax); padding:0 4px 2px; }
+.jcard .face { margin-top:8px; }
+.jcard .nm { font-size:12px; font-weight:800; color:var(--ink); margin-top:5px; white-space:nowrap; }
+.lowerthird { position:absolute; left:16px; right:16px; height:44px; background:#fff; border:2.5px solid var(--line); border-radius:12px; box-shadow:0 3px 0 var(--cmdShadow);
+  display:flex; align-items:center; overflow:hidden; z-index:25; }
+.lowerthird::before { content:""; width:6px; align-self:stretch; background:var(--verm); }
+.lowerthird b { font-size:15px; font-weight:800; margin-left:12px; }
+.lowerthird small { margin-left:auto; margin-right:14px; font-size:12px; font-weight:800; color:var(--goldD); }
+.cuetag { position:absolute; right:22px; width:40px; height:34px; background:#fff; border:2.5px solid var(--line); border-radius:10px; box-shadow:0 3px 0 var(--cmdShadow); z-index:26; }
+.cuetag::after { content:""; position:absolute; left:12px; top:10px; border-left:7px solid transparent; border-right:7px solid transparent; border-top:10px solid var(--verm); animation:bob .8s ease-in-out infinite alternate; }
+
+/* ===== バー（statBar の写し） ===== */
+.sbar { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; }
+.sbar .dot { width:22px; height:22px; border-radius:50%; flex:none; }
+.sbar .track { flex:1; height:11px; border-radius:6px; overflow:hidden; position:relative; }
+.sbar .track i { position:absolute; left:0; top:0; bottom:0; border-radius:6px; }
+.sbar .track u { position:absolute; top:0; bottom:0; background:var(--gainOrange); }
+.sbar .val { font-weight:900; font-size:15px; width:62px; text-align:right; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>B1「サクセス路線」モック（5画面・402×874pt 等倍）</h1>
+  <p class="lead">全画面を週メインと同じ部品（クリーム地・白地＋太い縁＋ハード影・顔グラ＋名前札＋吹き出し・獲得チップ・丸ゴ極太の数字）で組む案。暗い地は使わず、本番は「明るい舞台＋朱の緞帳の額縁」。
+  画面内の文言はすべて既存の採点済みテキストと既存のUIラベル（数値はモック用の例）。本文の設計は <code>blue_success.md</code> §1〜§2。フォントは同梱の M PLUS Rounded 1c を相対パスで読む（読めない環境ではヒラギノ丸ゴに落ちる）。</p>
+
+  <!-- ===================== 1. イベント：会話→選択肢 ===================== -->
+  <div class="row">
+    <div class="phone daily">
+      <div class="notch"></div>
+      <!-- 札 -->
+      <div class="ribbon" style="top:66px;">行けない飲み会</div>
+      <!-- 場面：稽古場 -->
+      <div class="abs keiko" style="left:0; right:0; top:112px; height:378px; overflow:hidden; border-top:2.5px solid var(--line); border-bottom:2.5px solid var(--line);">
+        <div class="wall"></div><div class="floor"></div><div class="shaft"></div>
+        <div class="prop-box" style="left:300px; top:70px;"></div>
+        <div class="mic" style="left:194px; top:234px;"><div class="h"></div><div class="p" style="height:96px;"></div><div class="f"></div></div>
+        <div class="fig ore" style="--h:168px; left:86px; top:188px;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+        <div class="fig tani dim" style="--h:180px; left:230px; top:176px;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      </div>
+      <!-- 親指の帯：俺の台詞 -->
+      <div class="talk" style="left:16px; top:508px; right:16px;">
+        <div class="who">
+          <div class="face" style="--s:64px; --col:var(--ore); --hc:#40394F;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div></div>
+          <span class="nametag" style="background:var(--ore);">俺</span>
+        </div>
+        <div class="bubble tailL" style="border-color:rgba(74,123,232,.55); flex:1;">今月の稽古場代、残りがちょうど四千円なんだよな</div>
+      </div>
+      <!-- 選択肢カード -->
+      <div class="choice" style="top:644px;">行く</div>
+      <div class="choice" style="top:712px;">断って稽古場に残る</div>
+      <!-- 額縁の帯 -->
+      <div class="framebar">
+        <div class="yw"><small>1年目</small><b>3週</b></div>
+        <div class="sep"></div>
+        <div class="ms"><small>春新人賞A</small><b>大会まで9週</b></div>
+        <div class="icons"><i></i><i></i><i></i></div>
+        <div class="right">
+          <div class="st">体力 <span class="gauge"><i style="width:70%;"></i></span><b>70</b></div>
+          <div class="money">¥42,000</div>
+        </div>
+      </div>
+      <div class="home"></div>
+    </div>
+    <div class="cap">
+      <h2>① 週次イベント：会話→選択肢</h2>
+      <ul>
+        <li>3段構図：上＝イベント名の金のリボン札／中＝場面（稽古場＋二人＋小道具1点＝照明の百円玉の箱）／下＝親指の帯。</li>
+        <li>話者＝俺：顔グラ64pt＋青の名前札＋白い吹き出し（縁は話者色55%・本文17pt Bold）。黙っている谷口は彩度0.5・0.94倍。</li>
+        <li>選択肢は行動カードと同じ面（白＋朱3pt縁＋ハード影・高さ56pt）。押すと沈む。</li>
+        <li>最下帯は週メインの botbar を共有（体力・所持金が見えたまま選ぶ）。</li>
+      </ul>
+      <div class="before">Before（05_event_choice_live_w03 系＝暗紫・細明朝・上詰め）
+        <img src="../../feedback_shots/overhaul_v1/05_event_0011.png" alt="Before：イベント画面"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 2. イベント：選んだ後 ===================== -->
+  <div class="row">
+    <div class="phone daily">
+      <div class="notch"></div>
+      <div class="ribbon" style="top:66px;">行けない飲み会</div>
+      <div class="abs keiko" style="left:0; right:0; top:112px; height:470px; overflow:hidden; border-top:2.5px solid var(--line); border-bottom:2.5px solid var(--line);">
+        <div class="wall"></div><div class="floor"></div><div class="shaft"></div>
+        <div class="prop-box" style="left:300px; top:120px;"></div>
+        <div class="mic" style="left:194px; top:312px;"><div class="h"></div><div class="p" style="height:110px;"></div><div class="f"></div></div>
+        <div class="fig ore dim" style="--h:186px; left:80px; top:262px;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+        <div class="fig tani talk" style="--h:200px; left:224px; top:248px;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+        <!-- 獲得チップ（頭上・最大3枚） -->
+        <div class="abs" style="left:200px; top:150px; display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+          <span class="chip loss">メンタル -1</span>
+          <span class="chip" style="background:var(--cIdea);">発想 +1</span>
+        </div>
+      </div>
+      <!-- 選んだ札（残す） -->
+      <div class="abs" style="left:16px; top:600px;">
+        <span class="nametag" style="background:#fff; color:var(--onGold); border-color:var(--gold); border-width:2.5px; font-size:13px;">断って稽古場に残る</span>
+      </div>
+      <!-- 谷口の台詞（右寄せ） -->
+      <div class="talk" style="left:16px; top:644px; right:16px; flex-direction:row-reverse;">
+        <div class="who">
+          <div class="face" style="--s:64px; --col:var(--tani); --hc:#2E2838; --hh:52%;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div></div>
+          <span class="nametag" style="background:var(--tani);">谷口</span>
+        </div>
+        <div class="bubble tailR" style="border-color:rgba(240,83,62,.55); flex:1;">……なら、俺も残るわ<span class="cue" style="border-top-color:var(--tani);"></span></div>
+      </div>
+      <div class="framebar">
+        <div class="yw"><small>1年目</small><b>3週</b></div>
+        <div class="sep"></div>
+        <div class="ms"><small>春新人賞A</small><b>大会まで9週</b></div>
+        <div class="icons"><i></i><i></i><i></i></div>
+        <div class="right">
+          <div class="st">体力 <span class="gauge"><i style="width:70%;"></i></span><b>70</b></div>
+          <div class="money">¥42,000</div>
+        </div>
+      </div>
+      <div class="home"></div>
+    </div>
+    <div class="cap">
+      <h2>② 週次イベント：選んだ後</h2>
+      <ul>
+        <li>選んだカードが帯の上端へ縮んで「選んだ札」として残る（B-10）。</li>
+        <li>0.15秒の溜めの後、頭上に獲得チップ（効果の実値＝0011 の B：発想+1・メンタル−1）。減りは白地＋補助色で祝わない。</li>
+        <li>選択後の会話の1行目が自動で出る（空欄 B-01 が起きない）。話している谷口が1.06倍で弾み、俺は沈む。</li>
+        <li>送りは吹き出し右下の話者色の ▼（弾む）。「タップで進む」の灰色文字は使わない。</li>
+      </ul>
+      <div class="before">Before（選んだ結果が何も出ないまま閉じる）
+        <img src="../../feedback_shots/overhaul_v1/05_event_choice_live_w03_result.png" alt="Before：選択後"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 3. 大会結果：通過 ===================== -->
+  <div class="row">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="stage">
+        <div class="spot"></div>
+        <div class="abs" style="left:0; right:0; top:248px; height:200px;"><div class="floor" style="position:absolute; left:0; right:0; bottom:0; height:100%; background:repeating-linear-gradient(0deg, transparent 0 22px, rgba(154,117,70,.22) 22px 23px), linear-gradient(#F2DCB4, #E2BE8C, #CFA36C);"></div></div>
+      </div>
+      <div class="valance"><div class="title">春新人賞A</div><div class="fringe"></div></div>
+      <div class="curt l"></div><div class="curt r"></div>
+      <!-- 判と一言 -->
+      <div class="stamp" style="left:141px; top:138px; width:120px; height:120px; background:radial-gradient(circle at 20% 15%, rgba(232,64,44,.86), var(--verm)); z-index:22;">優勝</div>
+      <div class="telop" style="left:96px; top:266px; z-index:22;">——どっと沸いた！</div>
+      <!-- 二人（跳ねる）＋マイク -->
+      <div class="mic" style="left:193px; top:322px; z-index:12;"><div class="h"></div><div class="p" style="height:68px;"></div><div class="f"></div></div>
+      <div class="fig ore hop" style="--h:118px; left:112px; top:300px; z-index:12;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      <div class="fig tani hop2" style="--h:126px; left:222px; top:292px; z-index:12;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      <!-- 客席の頭 -->
+      <div class="crowd" style="top:392px;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <!-- 波形パネル -->
+      <div class="abs chunky" style="left:20px; right:20px; top:452px; height:52px; overflow:hidden; z-index:16;">
+        <svg width="362" height="48" viewBox="0 0 362 48" style="display:block;">
+          <defs><linearGradient id="wv" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#FF8A1E" stop-opacity=".55"/><stop offset="1" stop-color="#FF8A1E" stop-opacity=".05"/></linearGradient></defs>
+          <path d="M0 40 C20 38,30 30,44 34 S70 22,84 30 S110 18,126 26 S150 12,166 24 S190 8,206 20 S232 4,248 16 S276 2,292 12 S322 0,340 8 L362 6 L362 48 L0 48 Z" fill="url(#wv)"/>
+          <path d="M0 40 C20 38,30 30,44 34 S70 22,84 30 S110 18,126 26 S150 12,166 24 S190 8,206 20 S232 4,248 16 S276 2,292 12 S322 0,340 8 L362 6" fill="none" stroke="#FF8A1E" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <!-- 講評＝審査員の吹き出し -->
+      <div class="talk" style="left:16px; right:16px; top:520px; z-index:16;">
+        <div class="who">
+          <div class="face" style="--s:60px; --col:var(--verm); --hc:#D8D4DC; --hh:40%;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div><div class="bun"></div></div>
+          <span class="nametag" style="background:var(--verm); font-size:12px;">花園 千代</span>
+        </div>
+        <div class="bubble tailL" style="border-color:rgba(232,64,44,.55); font-size:15px; font-weight:500; line-height:1.65; padding:11px 13px 13px;">掛け合いの継ぎ目が、どこにも見えへんかった。どっちが先に決めたわけでもない拍で、二人そろて動いてたわぁ。</div>
+      </div>
+      <!-- 賞金・ネタ・次の大会 -->
+      <div class="abs" style="left:18px; right:18px; top:690px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; z-index:16;">
+        <span class="chip" style="background:linear-gradient(var(--gold), var(--goldD)); color:var(--onGold); font-size:15px;">賞金 +50万 ↗</span>
+        <span class="chip" style="background:var(--cSense); font-size:13px; padding:5px 11px;">王道しゃべくり</span>
+        <span class="pill">春新人賞B <b>あと3週</b></span>
+      </div>
+      <div class="btn verm" style="top:770px;">次へ ▶</div>
+      <!-- 紙吹雪 -->
+      <i class="conf" style="left:40px; top:140px; background:var(--gold); transform:rotate(20deg);"></i>
+      <i class="conf" style="left:86px; top:200px; background:var(--cSense); transform:rotate(-30deg);"></i>
+      <i class="conf" style="left:300px; top:150px; background:var(--cChara); transform:rotate(40deg);"></i>
+      <i class="conf" style="left:340px; top:230px; background:var(--cMental); transform:rotate(-10deg);"></i>
+      <i class="conf" style="left:60px; top:300px; background:var(--verm); transform:rotate(60deg);"></i>
+      <i class="conf" style="left:318px; top:330px; background:var(--gold); transform:rotate(15deg);"></i>
+      <i class="conf" style="left:270px; top:128px; background:var(--cIdea); transform:rotate(-45deg);"></i>
+      <i class="conf" style="left:120px; top:128px; background:var(--cExpr); transform:rotate(35deg);"></i>
+      <i class="conf" style="left:36px; top:420px; background:var(--cChara); transform:rotate(-20deg);"></i>
+      <i class="conf" style="left:356px; top:410px; background:var(--cSense); transform:rotate(50deg);"></i>
+      <div class="home dark"></div>
+    </div>
+    <div class="cap">
+      <h2>③ 大会結果：通過（道中大会の判は「優勝」）</h2>
+      <ul>
+        <li>地は「照明の当たった明るい舞台」＋朱の一文字幕・袖幕（金の房）。前景に客席の頭の列＝見られている構図。最下帯は引っ込む（舞台だけ）。</li>
+        <li>溜め（この前の0.6秒）：幕が寄る・集中線・無音・塵と呼吸が止まる・二人の寄りのコマ。タップで判へ飛べる。</li>
+        <li>判と一言を同時に叩きつける（波形と一言が先に結果をバラさない）。一言は描き文字テロップ。</li>
+        <li>講評は審査員の顔＋名前札（重視軸の色）＋白い吹き出し。賞金は金のチップでカウントアップ。次の大会の札で「次の一手」。</li>
+        <li>敗退は同じ大きさの紺の判・彩度0.6・粒なし・二人がうつむく（暗くはしない）。</li>
+      </ul>
+      <div class="before">Before（09_tourney_result_pass_a＝暗紫の闇に小さい部品）
+        <img src="../../feedback_shots/overhaul_v1/09_tourney_result_pass_a.png" alt="Before：大会結果"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 4. 決勝：採点 ===================== -->
+  <div class="row">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="stage">
+        <div class="spot"></div>
+        <div class="abs" style="left:0; right:0; bottom:0; height:270px;"><div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent 0 22px, rgba(154,117,70,.22) 22px 23px), linear-gradient(#F2DCB4, #E2BE8C, #CFA36C);"></div></div>
+      </div>
+      <div class="valance"><div class="lights"></div><div class="fringe"></div></div>
+      <div class="curt l"></div><div class="curt r"></div>
+      <!-- 番組ロゴ -->
+      <div class="abs" style="left:0; right:0; top:134px; text-align:center; z-index:21;">
+        <div class="outline-ink" style="font-weight:900; font-size:26px; letter-spacing:4px; color:var(--gold);">頂 グランプリ</div>
+        <span class="nametag" style="background:linear-gradient(var(--verm), var(--vermD)); border-color:var(--gold); border-width:1.5px; font-size:12px; letter-spacing:8px; margin-top:6px; padding:2px 14px 3px 22px;">決 勝</span>
+        <div style="font-size:13px; font-weight:800; color:var(--inkSub); margin-top:8px;">採点</div>
+      </div>
+      <!-- 7枚の札（4＋3） -->
+      <div class="jcard" style="--ax:var(--cChara); left:18px; top:240px;"><div class="sc">90</div><div class="face" style="--s:48px; --col:var(--cChara); --hc:#6E4358; --hh:45%;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div><i class="strand l"></i><i class="strand r"></i></div><div class="nm">音羽 ルリ</div></div>
+      <div class="jcard" style="--ax:var(--cExpr); left:110px; top:240px;"><div class="sc">94</div><div class="face" style="--s:48px; --col:var(--cExpr); --hc:#23202E;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div></div><div class="nm">白波 剛</div></div>
+      <div class="jcard" style="--ax:var(--cIdea); left:202px; top:240px;"><div class="sc">94</div><div class="face" style="--s:48px; --col:var(--cIdea); --hc:#7A5638;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div></div><div class="nm">卯月 走太</div></div>
+      <div class="jcard" style="--ax:var(--verm); left:294px; top:240px;"><div class="sc">94</div><div class="face" style="--s:48px; --col:var(--verm); --hc:#D8D4DC; --hh:40%;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div><div class="bun"></div></div><div class="nm">花園 千代</div></div>
+      <div class="jcard" style="--ax:var(--cIdea); left:64px; top:368px;"><div class="sc">89</div><div class="face" style="--s:48px; --col:var(--cIdea); --hc:#2C2740;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div><i class="glass l"></i><i class="glass r"></i></div><div class="nm">目白 慧</div></div>
+      <div class="jcard" style="--ax:var(--cMental); left:156px; top:368px;"><div class="sc">90</div><div class="face" style="--s:48px; --col:var(--cMental); --hc:#C8A44E; --hh:45%;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div><i class="strand l"></i><i class="strand r"></i></div><div class="nm" style="font-size:11px;">神楽坂 とんぼ</div></div>
+      <div class="jcard" style="--ax:var(--cSense); left:248px; top:368px;"><div class="sc">91</div><div class="face" style="--s:48px; --col:var(--cSense); --hc:#C8C4CE; --hh:26%;"><div class="collar"></div><div class="skin"><div class="hair"></div><i class="eye l"></i><i class="eye r"></i></div><i class="beard"></i></div><div class="nm" style="font-size:11px;">天堂寺 銀郎</div></div>
+      <!-- 合計（チャンキー数字） -->
+      <div class="abs" style="left:0; right:0; top:496px; text-align:center; z-index:21;">
+        <div class="outline-ink" style="font-weight:900; font-size:64px; line-height:1; color:var(--gold); letter-spacing:2px;">642</div>
+        <div style="font-size:13px; font-weight:800; color:var(--inkSub); margin-top:8px;">/ 700</div>
+      </div>
+      <!-- 舞台の二人（袖ではなく舞台上・マイク） -->
+      <div class="mic" style="left:193px; top:640px; z-index:12;"><div class="h"></div><div class="p" style="height:76px;"></div><div class="f"></div></div>
+      <div class="fig ore" style="--h:128px; left:108px; top:614px; z-index:12;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      <div class="fig tani" style="--h:136px; left:224px; top:606px; z-index:12;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      <div class="lowerthird" style="top:770px;"><b>あなたのコンビ</b><small>結成1年</small></div>
+      <div class="cuetag" style="top:724px;"></div>
+      <div class="home dark"></div>
+    </div>
+    <div class="cap">
+      <h2>④ 決勝：採点（明るい番組セット）</h2>
+      <ul>
+        <li>ほぼ黒の地を廃止。朱の幕＋金の房＋電飾の粒＝決勝の格。番組ロゴは明朝をやめ丸ゴ Black の金＋ink縁。</li>
+        <li>7枚の札＝行動カードと同じ面（白＋重視軸色3pt縁＋ハード影）。点数30pt・名前12pt・顔48pt（現状 8.5pt／34pt）。伏せ札は表裏を別 View にして鏡文字を消す。</li>
+        <li>溜めは色でなく：幕が寄る・無音0.6秒・集中線保持・二人の寄りのコマ。開示の強さは1〜6人目＝弱／7人目＝強。</li>
+        <li>合計はチャンキー数字（金＋ink縁＋白のハード影）・下1桁だけ長く回る。下三分は白いテロップ帯にコンビ名と「結成N年」。</li>
+        <li>二人が舞台に立っている（現状は全ビートで不在）。</li>
+      </ul>
+      <div class="before">Before（10_finals_win_03_judges_open）
+        <img src="../../feedback_shots/overhaul_v1/10_finals_win_03_judges_open.png" alt="Before：決勝の採点"></div>
+    </div>
+  </div>
+
+  <!-- ===================== 5. 優勝 ===================== -->
+  <div class="row">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="stage" style="overflow:hidden;">
+        <div class="rays" style="top:-58%;"></div>
+        <div class="spot" style="top:20%;"></div>
+        <div class="abs" style="left:0; right:0; bottom:0; height:250px;"><div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent 0 22px, rgba(154,117,70,.20) 22px 23px), linear-gradient(#F4E0BC, #E6C595, #D3A971);"></div></div>
+      </div>
+      <div class="valance"><div class="lights"></div><div class="title" style="color:var(--gold); font-size:22px; letter-spacing:4px;">頂 グランプリ</div><div class="fringe"></div></div>
+      <div class="curt l"></div><div class="curt r"></div>
+      <div class="abs" style="left:0; right:0; top:146px; text-align:center; z-index:21;">
+        <div style="font-size:15px; font-weight:800; letter-spacing:4px; color:var(--inkSub);">優 勝 は ——</div>
+        <div style="display:inline-block; margin-top:8px; background:#fff; border:3px solid var(--gold); border-radius:14px; box-shadow:0 3px 0 rgba(200,151,26,.6); padding:6px 22px 8px; font-weight:900; font-size:32px; color:var(--ink);">あなたのコンビ</div>
+      </div>
+      <!-- 金の丸判 -->
+      <div class="abs" style="left:121px; top:256px; width:160px; height:160px; border-radius:50%; z-index:21; transform:rotate(-8deg);
+        background:radial-gradient(circle at 25% 20%, #FFE07A, var(--gold) 70%); box-shadow:0 0 0 4px rgba(255,255,255,.9), 0 0 26px 8px rgba(246,179,1,.55), 0 8px 0 #C8971A;
+        display:flex; align-items:center; justify-content:center; font-weight:900; font-size:46px; color:var(--onGold);">優勝</div>
+      <!-- 二人（跳ねる） -->
+      <div class="mic" style="left:193px; top:470px; z-index:12;"><div class="h"></div><div class="p" style="height:76px;"></div><div class="f"></div></div>
+      <div class="fig ore hop" style="--h:132px; left:104px; top:438px; z-index:12;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      <div class="fig tani hop2" style="--h:140px; left:226px; top:428px; z-index:12;"><div class="shadow"></div><div class="head"></div><div class="body"></div></div>
+      <!-- 1年の手応え帯 -->
+      <div class="abs chunky" style="left:20px; right:20px; top:604px; padding:10px 14px; z-index:21;">
+        <div class="sbar"><span class="dot" style="background:var(--cSense);"></span>実力<span class="track" style="background:rgba(59,139,255,.14);"><i style="width:78%; background:var(--cSense);"></i><u style="left:30%; width:48%; opacity:.0;"></u></span><span class="val">10→16</span></div>
+        <div class="sbar" style="margin-top:8px;"><span class="dot" style="background:var(--verm);"></span>相性<span class="track" style="background:rgba(232,64,44,.14);"><i style="width:84%; background:var(--verm);"></i></span><span class="val">5→19</span></div>
+        <div style="margin-top:9px;"><span class="chip" style="background:var(--cSense); font-size:13px; padding:4px 11px;">王道しゃべくり</span></div>
+      </div>
+      <div class="btn gold" style="top:752px; z-index:21;">結果を見る ▶</div>
+      <!-- 紙吹雪（60枚相当の一部） -->
+      <i class="conf" style="left:30px; top:130px; background:var(--gold); transform:rotate(20deg);"></i>
+      <i class="conf" style="left:70px; top:250px; background:var(--cSense); transform:rotate(-30deg);"></i>
+      <i class="conf" style="left:330px; top:140px; background:var(--cChara); transform:rotate(40deg);"></i>
+      <i class="conf" style="left:350px; top:300px; background:var(--cMental); transform:rotate(-10deg);"></i>
+      <i class="conf" style="left:40px; top:390px; background:var(--verm); transform:rotate(60deg);"></i>
+      <i class="conf" style="left:316px; top:420px; background:var(--gold); transform:rotate(15deg);"></i>
+      <i class="conf" style="left:290px; top:220px; background:var(--cIdea); transform:rotate(-45deg);"></i>
+      <i class="conf" style="left:96px; top:180px; background:var(--cExpr); transform:rotate(35deg);"></i>
+      <i class="conf" style="left:60px; top:540px; background:var(--cChara); transform:rotate(-20deg);"></i>
+      <i class="conf" style="left:346px; top:560px; background:var(--cSense); transform:rotate(50deg);"></i>
+      <i class="conf" style="left:180px; top:126px; background:var(--cMental); transform:rotate(70deg);"></i>
+      <i class="conf" style="left:236px; top:590px; background:var(--gold); transform:rotate(-60deg);"></i>
+      <i class="conf" style="left:140px; top:430px; background:var(--cIdea); transform:rotate(25deg);"></i>
+      <i class="conf" style="left:300px; top:500px; background:var(--verm); transform:rotate(-35deg);"></i>
+      <div class="home dark"></div>
+    </div>
+    <div class="cap">
+      <h2>⑤ 優勝（日の出の優勝）</h2>
+      <ul>
+        <li>暗い地の上の金ではなく、明るい地いっぱいの金の放射光＋紙吹雪＋跳ねる二人で華を作る。金の丸判は現行の形のまま。</li>
+        <li>優勝名は標準ゴシックをやめ丸ゴ Black＋金縁の白パネル。</li>
+        <li>「1年の手応え」帯：4月→今の実力・相性（既存データだけ）＋かけたネタの型。</li>
+        <li>このあと「耳打ち」のビートで紙吹雪を止め、放射光を30%へ、袖幕を半分寄せる＝涙は暗さでなく静けさで言う（既存文を紙→谷口の吹き出しの2ビートに）。</li>
+        <li>他組の優勝・自組の敗退では放射光も紙吹雪も出さない（客席の年は銀の紙吹雪・頭越しの構図）。</li>
+      </ul>
+      <div class="before">Before（10_finals_win_07_champion＝本作最大の華・ただし地は暗く二人がいない）
+        <img src="../../feedback_shots/overhaul_v1/10_finals_win_07_champion.png" alt="Before：優勝"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

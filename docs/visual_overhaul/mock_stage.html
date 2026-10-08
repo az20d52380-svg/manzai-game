@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>舞台演出路線モック</title>
+<style>
+:root{
+  /* 楽屋（昼） */
+  --bgTop:#FFF7EC; --bg2:#FFE6CF; --bgBottom:#FFDDBE; --card:#FFFFFF; --card2:#FFF9F0; --line:#F1E6D6; --cmdShadow:#EADFCF;
+  --ink:#2C2740; --inkSub:#645C78; --verm:#E8402C; --vermD:#C22E1D; --gold:#F6B301; --goldD:#E09A00; --onGold:#5A3A06;
+  --paperTop:#FDFBF4; --paperBottom:#F6EEDC; --paperEdge:#E6D9BE; --paperInk:#33301F; --sealName:#6E5020;
+  --mekuri:#FFFDF6; --sumi:#1E1A2B; --cOre:#4A7BE8; --cOreD:#3A66C8; --cTani:#F0533E;
+  /* 夕景 */
+  --duskA1:#FFD9A8; --duskA2:#F7A878; --duskA3:#E98A6A;
+  /* 舞台 */
+  --house:#140D18; --curtain:#5B1A12; --curtainLit:#8E2A1C; --curtainShade:#3A0F0B; --spotCore:#FFF3D6;
+  --boardsLit:#C8935A; --boardsDark:#4A3020; --leafLo:#6E5426; --leafMid:#A07E36; --leafHi:#D9B45A;
+  --houseLight:#FFE3A0; --lowerThird:#1A1424; --silver:#C9CED6;
+  --cSense:#3B8BFF; --cIdea:#8B5CF6; --cExpr:#FF7A2F; --cChara:#FF5C93; --cMental:#22B07A;
+  --maru:"Hiragino Maru Gothic ProN","M PLUS Rounded 1c","Rounded Mplus 1c","Hiragino Sans",system-ui,sans-serif;
+  --num:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",system-ui,sans-serif;
+  --mincho:"Hiragino Mincho ProN","Yu Mincho",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#E7E1D8;color:var(--ink);font-family:var(--maru);padding:24px 16px 48px}
+header{max-width:1100px;margin:0 auto 20px}
+header h1{font-size:22px;font-weight:900;letter-spacing:.02em}
+header p{font-size:13px;color:#4E4760;margin-top:6px;line-height:1.7}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.legend span{font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;border:1.5px solid #0002}
+.wall{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+figure{width:402px;max-width:100%}
+figcaption{font-size:12.5px;line-height:1.65;color:#3E3850;margin-top:10px}
+figcaption b{font-weight:900}
+.phone{position:relative;width:402px;height:874px;max-width:100%;overflow:hidden;border-radius:38px;
+  box-shadow:0 18px 40px #2C274038, 0 0 0 8px #1E1A2B;}
+.abs{position:absolute}
+/* ===== 共通部品 ===== */
+.bubbleRow{display:flex;align-items:flex-end;gap:8px}
+.bubbleRow.right{flex-direction:row-reverse}
+.faceCol{display:flex;flex-direction:column;align-items:center;gap:4px}
+.face{width:64px;height:64px;border-radius:50%;background:#fff;border:2.5px solid #fff;box-shadow:0 2px 0 #2C274033;overflow:hidden}
+.nameTag{font-size:13px;font-weight:800;color:#fff;padding:2px 9px;border-radius:99px}
+.bubble{background:#fff;border:2.5px solid var(--line);border-radius:14px;box-shadow:0 3px 0 var(--cmdShadow);
+  padding:12px 14px 14px;font-size:17px;font-weight:700;line-height:1.55;color:var(--ink);position:relative;max-width:290px}
+.paper{background:linear-gradient(180deg,var(--paperTop),var(--paperBottom));border:1px solid var(--paperEdge);border-radius:12px;
+  box-shadow:0 1px 3px #2C274014;padding:14px 18px 18px 22px;font-size:17px;font-weight:700;line-height:1.65;color:var(--paperInk);position:relative}
+.paper::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 3px 3px 0;background:var(--gold)}
+.dogear{position:absolute;right:0;bottom:0;width:20px;height:20px;background:linear-gradient(135deg,transparent 50%,#E9DCC0 50%);border-bottom-right-radius:12px}
+.adv{position:absolute;right:26px;bottom:8px;color:var(--verm);font-size:14px;line-height:1;animation:bob .8s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.adv{animation:none}}
+.mekuri{background:var(--mekuri);color:var(--sumi);border:1px solid var(--paperEdge);border-radius:4px;box-shadow:0 3px 10px #2C27401A;
+  position:relative;text-align:center;font-weight:900}
+.mekuri .ring{position:absolute;top:-6px;width:10px;height:10px;border-radius:50%;border:2px solid #8A7A60;background:var(--mekuri)}
+.telop{font-weight:900;color:#fff;letter-spacing:0;
+  text-shadow:2px 0 0 var(--sumi),-2px 0 0 var(--sumi),0 2px 0 var(--sumi),0 -2px 0 var(--sumi),1.5px 1.5px 0 var(--sumi),-1.5px 1.5px 0 var(--sumi),1.5px -1.5px 0 var(--sumi),-1.5px -1.5px 0 var(--sumi),0 4px 6px #0006}
+.choice{background:#fff;border:3px solid #F6B301B0;border-radius:16px;box-shadow:0 3px 0 var(--cmdShadow);height:56px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:var(--ink)}
+.btnStage{background:var(--verm);color:#fff;border-radius:12px;height:50px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;box-shadow:inset 0 0 0 1px var(--gold),0 4px 0 var(--curtainShade)}
+/* ===== 舞台の額縁 ===== */
+.valance{position:absolute;left:0;right:0;top:0;height:118px;z-index:5;
+  background:repeating-linear-gradient(90deg,var(--curtain) 0 14px,var(--curtainLit) 14px 22px,var(--curtain) 22px 34px),var(--curtain);
+  box-shadow:0 6px 12px #0008}
+.valance::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:8px;
+  background:radial-gradient(circle at 6px 0,var(--gold) 3px,transparent 3.5px) 0 2px/12px 8px repeat-x,linear-gradient(var(--gold),var(--gold)) 0 0/100% 2px no-repeat}
+.wing{position:absolute;top:0;bottom:0;width:26px;z-index:4;
+  background:repeating-linear-gradient(90deg,var(--curtainShade) 0 6px,var(--curtain) 6px 14px,var(--curtainLit) 14px 18px,var(--curtain) 18px 26px)}
+.wing.l{left:0;box-shadow:6px 0 12px #0008}.wing.r{right:0;box-shadow:-6px 0 12px #0008}
+.lowerThird{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--lowerThird);border-top:1.5px solid #F6B301D9;
+  display:flex;align-items:center;padding:0 18px 0 0;z-index:8}
+.lowerThird .bar{width:5px;height:100%;background:var(--verm);margin-right:14px}
+.lowerThird .nm{font-size:18px;font-weight:900;color:#fff;flex:1}
+.lowerThird .yr{font-size:13px;font-weight:800;color:var(--gold);margin-right:10px}
+.lowerThird .tri{color:var(--gold);font-size:14px;animation:bob .8s ease-in-out infinite alternate}
+.heads{position:absolute;left:0;right:0;display:flex;justify-content:center;gap:2px;z-index:6}
+.head{width:36px;height:30px;border-radius:18px 18px 4px 4px;background:#241A28;position:relative}
+.head.lit{box-shadow:inset 0 2px 0 var(--houseLight),0 -2px 6px #FFE3A066}
+.stamp{width:108px;height:108px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#fff;border-radius:4px;transform:rotate(-4deg);position:relative}
+.stamp::after{content:"";position:absolute;inset:5px;border:2px solid #FFFFFF8C;border-radius:3px}
+.jcard{width:80px;height:150px;background:var(--mekuri);border:1px solid var(--sumi);border-radius:8px;box-shadow:0 4px 0 #2A1E0C66;
+  display:flex;flex-direction:column;align-items:center;padding-top:8px;position:relative;overflow:hidden}
+.jcard .band{position:absolute;top:0;left:0;right:0;height:5px}
+.jcard .sc{font-family:var(--num);font-weight:900;font-size:34px;line-height:1;color:var(--sumi);margin-top:4px}
+.jcard .jf{width:44px;height:44px;border-radius:50%;overflow:hidden;margin-top:6px;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--ax)}
+.jcard .jn{font-size:13px;font-weight:800;color:var(--ink);margin-top:5px;white-space:nowrap}
+.jcard .ax{margin-top:6px;font-size:12px;font-weight:900;color:#fff;padding:1px 8px;border-radius:99px;background:var(--ax)}
+.abs.paper,.abs.mekuri{position:absolute}
+</style>
+</head>
+<body>
+<header>
+  <h1>B2「舞台演出路線」モック ― 昼は紙、夜は光</h1>
+  <p>402×874pt の縦画面5枚。左2枚が日常（夕景・楽屋）、右3枚が本番（舞台）。読む文字は必ず紙・札・テロップの上に置き、暗い地に直に置くのは短く太く大きい数字と判だけ。<br>
+  ゲーム内の文言は既存の採点済みテキスト（回想・イベント「まだ敬語の残る間」・講評・決勝の既存語）だけを使用。コンビ名「しろくろ」は撮影時の入力例。正本は <code>blue_stage.md</code>。</p>
+  <div class="legend">
+    <span style="background:#FFF7EC">楽屋（昼）</span>
+    <span style="background:linear-gradient(90deg,#FFD9A8,#E98A6A)">夕景（回想・夜の日常）</span>
+    <span style="background:#140D18;color:#FFE3A0">舞台（本番）</span>
+  </div>
+</header>
+
+<div class="wall">
+
+<!-- ========== 1 回想② 夕景 ========== -->
+<figure>
+<div class="phone" style="background:linear-gradient(180deg,var(--duskA1) 0%,var(--duskA2) 52%,#EE9670 58%,var(--duskA3) 100%)">
+  <!-- 廊下の窓 -->
+  <div class="abs" style="left:34px;top:110px;width:334px;height:230px;display:flex;gap:10px">
+    <div style="flex:1;border-radius:6px;background:linear-gradient(180deg,#FFF1D6,#FFD9A8);box-shadow:inset 0 0 0 5px #E98A6A55"></div>
+    <div style="flex:1;border-radius:6px;background:linear-gradient(180deg,#FFF1D6,#FFD9A8);box-shadow:inset 0 0 0 5px #E98A6A55"></div>
+    <div style="flex:1;border-radius:6px;background:linear-gradient(180deg,#FFF1D6,#FFD9A8);box-shadow:inset 0 0 0 5px #E98A6A55"></div>
+  </div>
+  <!-- 床に伸びる窓の光 -->
+  <div class="abs" style="left:-40px;top:505px;width:520px;height:120px;background:repeating-linear-gradient(100deg,#FFF3D655 0 70px,transparent 70px 120px);transform:skewX(-28deg);filter:blur(2px)"></div>
+  <!-- 二人（逆光シルエット＋金の rim） -->
+  <div class="abs fig" data-x="92" data-y="300" data-h="220" data-sil="1" data-muf="#4A7BE8"></div>
+  <div class="abs fig" data-x="222" data-y="290" data-h="232" data-sil="1" data-muf="#F0533E"></div>
+  <div class="abs" style="left:96px;top:512px;width:230px;height:22px;border-radius:50%;background:#2C274033;filter:blur(4px)"></div>
+  <!-- 谷口の吹き出し（右） -->
+  <div class="abs" style="right:16px;top:560px">
+    <div class="bubbleRow right">
+      <div class="faceCol"><div class="face" data-face="tani"></div><div class="nameTag" style="background:var(--vermD)">谷口</div></div>
+      <div class="bubble" style="font-size:22px;font-weight:900;padding-right:30px">コンビ、組まへんか<span class="adv" style="right:10px;bottom:6px">▼</span></div>
+    </div>
+  </div>
+  <!-- 地の文の紙 -->
+  <div class="abs paper" style="left:16px;right:16px;top:690px">谷口はそう言った。<br>放課後の、誰もいない廊下で。<div class="dogear"></div><span class="adv">▼</span></div>
+</div>
+<figcaption><b>① 回想②（夕景）</b>：暗紫（平均L0.009）→放課後の橙（平均L約0.5）。人物は逆光のシルエット＋金の rim＋マフラーの色（俺＝青・谷口＝朱）。台詞は谷口の吹き出し、地の文は紙。「タップで進む」の文字は無く、紙と吹き出しの右下の▼だけ。</figcaption>
+</figure>
+
+<!-- ========== 2 イベント 楽屋（昼の稽古場） ========== -->
+<figure>
+<div class="phone" style="background:linear-gradient(180deg,var(--bgTop),var(--bg2) 60%,var(--bgBottom))">
+  <!-- 場面：稽古場 -->
+  <div class="abs" style="left:0;right:0;top:0;height:430px;background:linear-gradient(180deg,#FFFBF0,#FFF2DC 60%,#FFE9C8)"></div>
+  <div class="abs" style="left:0;right:0;top:268px;height:162px;background:linear-gradient(180deg,#EED2A4,#DDB682 60%,#C89A62)"></div>
+  <div class="abs" style="left:0;right:0;top:268px;height:162px;background:repeating-linear-gradient(90deg,#9A754633 0 1px,transparent 1px 40px)"></div>
+  <div class="abs" style="left:-30px;top:-20px;width:240px;height:460px;background:linear-gradient(160deg,#FFF6D8B0,#FFF0C640 60%,transparent);transform:skewX(-18deg);filter:blur(8px)"></div>
+  <!-- 畳んだパイプ椅子（本文の小道具） -->
+  <div class="abs" style="left:356px;top:176px;width:13px;height:96px;border-radius:3px;background:#8E86A0;transform:rotate(4deg);box-shadow:inset -3px 0 0 #6E6680"></div>
+  <div class="abs" style="left:374px;top:178px;width:13px;height:94px;border-radius:3px;background:#8E86A0;transform:rotate(5deg);box-shadow:inset -3px 0 0 #6E6680"></div>
+  <!-- 演目札（めくり） -->
+  <div class="abs mekuri" style="left:91px;top:66px;width:220px;height:54px;line-height:54px;font-size:20px">
+    <span class="ring" style="left:60px"></span><span class="ring" style="right:60px"></span>まだ敬語の残る間</div>
+  <!-- 二人（色付き・話者強調） -->
+  <div class="abs fig" data-x="52" data-y="190" data-h="200" data-body="#4A7BE8,#2E55B0" data-muf="#2E55B0" data-sat="1"></div>
+  <div class="abs" style="left:196px;top:262px;width:6px;height:132px;background:linear-gradient(#6A6480,#2E2840);border-radius:2px"></div>
+  <div class="abs" style="left:189px;top:248px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#B8B4C8,#3A3448)"></div>
+  <div class="abs fig" data-x="222" data-y="186" data-h="208" data-body="#F0533E,#C22E1D" data-muf="#B02318" data-dim="1"></div>
+  <!-- 親指の帯 -->
+  <div class="abs paper" style="left:16px;right:16px;top:458px">俺の方も、一個、言いかけて、<br>飲み込んでいる。<div class="dogear"></div></div>
+  <div class="abs" style="left:28px;right:28px;top:600px;display:flex;flex-direction:column;gap:14px">
+    <div class="choice">踏み込んで言う</div>
+    <div class="choice">間合いを保つ</div>
+  </div>
+</div>
+<figcaption><b>② 週次イベント（楽屋・昼）</b>：暗紫一面（平均L0.03）→週メインと同じ昼の稽古場。上＝場面（話している俺が少し大きく、谷口は彩度を落とす）、下＝親指の帯。演目名はめくり札で入り、地の文は紙、選択肢は行動カードと同じ白札＋太縁＋ハード影。選んだ後は二人の頭上に結果チップ。</figcaption>
+</figure>
+
+<!-- ========== 3 大会結果・敗退 舞台 ========== -->
+<figure>
+<div class="phone" style="background:var(--house)">
+  <!-- 舞台奥の緞帳（光の当たる所だけ明るい） -->
+  <div class="abs" style="left:0;right:0;top:118px;height:300px;background:repeating-linear-gradient(90deg,#3A0F0B 0 10px,#5B1A12 10px 24px,#6E2216 24px 30px,#5B1A12 30px 40px)"></div>
+  <!-- スポット（敗退＝絞り0.6） -->
+  <div class="abs" style="left:61px;top:150px;width:280px;height:300px;background:radial-gradient(ellipse at 50% 60%,#FFF3D6CC 0%,#F6B30166 26%,#E8402C26 48%,transparent 70%)"></div>
+  <!-- 舞台板 -->
+  <div class="abs" style="left:0;right:0;top:350px;height:80px;background:radial-gradient(ellipse at 50% 20%,var(--boardsLit) 0%,#8A6440 35%,var(--boardsDark) 70%)"></div>
+  <div class="abs" style="left:186px;top:350px;width:30px;height:80px;background:linear-gradient(#FFF3D655,transparent);filter:blur(3px)"></div>
+  <!-- 二人とマイク -->
+  <div class="abs fig" data-x="140" data-y="248" data-h="118" data-body="#4A7BE8,#2E55B0" data-muf="#2E55B0"></div>
+  <div class="abs" style="left:198px;top:292px;width:4px;height:70px;background:linear-gradient(#6A6480,#2E2840)"></div>
+  <div class="abs" style="left:193px;top:283px;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#B8B4C8,#3A3448)"></div>
+  <div class="abs fig" data-x="214" data-y="244" data-h="124" data-body="#F0533E,#C22E1D" data-muf="#B02318"></div>
+  <!-- 笑いの光の帯（敗退＝暖灰・低く平ら） -->
+  <svg class="abs" style="left:30px;top:180px" width="342" height="60" viewBox="0 0 342 60">
+    <polyline fill="none" stroke="#9A8F8A" stroke-width="3" stroke-linejoin="round" points="0,32 12,30 24,33 36,29 48,31 60,28 72,32 84,30 96,31 108,29 120,32 132,30 144,31 156,28 168,32 180,29 192,31 204,27 216,31 228,29 240,30 252,27 264,30 276,28 288,30 300,27 312,30 324,29 342,30"/>
+  </svg>
+  <!-- 客席の頭（逆光・灯ったのは少し） -->
+  <div class="heads" style="top:400px">
+    <div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div>
+  </div>
+  <!-- 額縁 -->
+  <div class="valance"><div class="telop abs" style="left:0;right:0;top:56px;text-align:center;font-size:26px">春新人賞A</div>
+    <div class="abs" style="left:0;right:0;top:92px;text-align:center;font-size:13px;font-weight:800;color:var(--houseLight)">第12週 ・ 本番</div></div>
+  <div class="wing l"></div><div class="wing r"></div>
+  <!-- 判＋光輪（勝敗で同じ大きさ） -->
+  <div class="abs" style="left:101px;top:432px;width:200px;height:140px;background:radial-gradient(ellipse,#E8402C33,transparent 65%)"></div>
+  <div class="abs stamp" style="left:147px;top:444px;background:radial-gradient(circle at 20% 15%,#5E5872,#3E3950)">敗退</div>
+  <div class="abs telop" style="left:0;right:0;top:566px;text-align:center;font-size:20px">——遠い。</div>
+  <!-- 講評の紙 -->
+  <div class="abs" style="left:20px;right:20px;top:606px;background:linear-gradient(180deg,var(--paperTop),var(--paperBottom));border:1px solid var(--paperEdge);border-radius:12px;padding:12px 18px 12px;box-shadow:0 8px 14px #78501440">
+    <div style="text-align:center;font-size:13px;font-weight:800;color:var(--sealName);letter-spacing:.3em">審査講評</div>
+    <div style="font-family:var(--mincho);font-weight:600;font-size:17px;line-height:1.65;color:var(--paperInk);margin-top:6px">後半、声の圧が落ちた。<br>体力も4分の一部です。</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--cIdea)" data-face="mejiro"></div>
+      <div style="font-size:13px;font-weight:800;color:var(--sealName)">審査員　目白 慧</div>
+    </div>
+  </div>
+  <div class="abs" style="left:20px;right:20px;top:770px;display:flex;gap:6px;justify-content:center">
+    <div style="background:var(--paperTop);border-radius:9px;padding:4px 8px;font-size:13px;font-weight:800;color:var(--inkSub)">構成 <span style="color:#B07800">★★☆☆☆</span></div>
+    <div style="background:var(--paperTop);border-radius:9px;padding:4px 8px;font-size:13px;font-weight:800;color:var(--inkSub)">間 <span style="color:#B07800">★★☆☆☆</span></div>
+    <div style="background:var(--paperTop);border-radius:9px;padding:4px 8px;font-size:13px;font-weight:800;color:var(--inkSub)">熱量 <span style="color:#B07800">★☆☆☆☆</span></div>
+  </div>
+  <div class="abs btnStage" style="left:40px;right:40px;top:812px">次へ ▶</div>
+</div>
+<figcaption><b>③ 大会結果・敗退（舞台）</b>：暗紫一面→「客席の闇の中の明るい舞台」。額縁（一文字幕・袖幕・板・客席の頭）は本番の全画面で共通。波形は客席の上を流れる光の帯として左から描かれ、オチと判と一言は同時に出る。判の大きさと光輪は通過と同じ（色温度だけ違う）。講評は紙のまま・本文17pt・署名を濃く・小判を審査員の顔に。</figcaption>
+</figure>
+
+<!-- ========== 4 決勝 採点（金屏風） ========== -->
+<figure>
+<div class="phone" style="background:var(--house)">
+  <!-- 金屏風（暗い2段・6扇） -->
+  <div class="abs" style="left:0;right:0;top:118px;height:640px;
+    background:linear-gradient(90deg,transparent 0 16.4%,#0000002A 16.6%,transparent 16.9% 33.1%,#0000002A 33.3%,transparent 33.6% 49.8%,#0000002A 50%,transparent 50.3% 66.4%,#0000002A 66.6%,transparent 66.9% 83.1%,#0000002A 83.3%,transparent 83.6%),
+    radial-gradient(ellipse at 50% 25%,#C49A48 0%,var(--leafMid) 35%,var(--leafLo) 80%)"></div>
+  <!-- 額縁 -->
+  <div class="valance">
+    <div class="telop abs" style="left:0;right:0;top:50px;text-align:center;font-size:26px;color:#FFE9A8">頂 グランプリ</div>
+    <div class="abs" style="left:166px;top:88px;width:70px;height:22px;border-radius:99px;background:linear-gradient(var(--verm),var(--vermD));box-shadow:0 0 0 1px #F6B301CC;color:#fff;font-size:13px;font-weight:900;text-align:center;line-height:22px">決勝</div>
+  </div>
+  <div class="wing l"></div><div class="wing r"></div>
+  <div class="abs telop" style="left:0;right:0;top:142px;text-align:center;font-size:18px">採点</div>
+  <!-- 7札（上4・下3） -->
+  <div class="abs" id="judges" style="left:30px;right:30px;top:184px;display:flex;flex-wrap:wrap;gap:12px 7px;justify-content:center"></div>
+  <!-- 合計 -->
+  <div class="abs" style="left:0;right:0;top:516px;text-align:center">
+    <div style="font-family:var(--num);font-weight:900;font-size:72px;line-height:1;color:#FFE07A;
+      text-shadow:3px 0 0 var(--sumi),-3px 0 0 var(--sumi),0 3px 0 var(--sumi),0 -3px 0 var(--sumi),2px 2px 0 var(--sumi),-2px 2px 0 var(--sumi),2px -2px 0 var(--sumi),-2px -2px 0 var(--sumi),0 0 24px #F6B30199">642</div>
+    <div class="telop" style="font-size:15px;margin-top:4px">/ 700</div>
+  </div>
+  <div class="abs paper" style="left:50px;right:50px;top:642px;font-size:16px;text-align:center;padding:10px 18px">王道しゃべくりで挑んだ一本。</div>
+  <!-- 客席（拍手で灯る） -->
+  <div class="heads" style="top:742px">
+    <div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div><div class="head lit"></div>
+  </div>
+  <div class="heads" style="top:770px;gap:4px">
+    <div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div><div class="head" style="width:44px;height:40px"></div>
+  </div>
+  <div class="lowerThird"><div class="bar"></div><div class="nm">しろくろ</div><div class="yr">結成1年</div><div class="tri">▼</div></div>
+</div>
+<figcaption><b>④ 決勝・採点（舞台＋金屏風）</b>：ほぼ黒の地（平均L0.04）→札の背後に光を返す金の面を1枚。伏せ札→全SE断0.6s→<b>7枚同時フリップ</b>→合計ドラム（1タップ）。札は白紙＋墨で、点・顔・名前・重視軸の能力名。裏面は別の面なので鏡文字にならない。下三分は付けたコンビ名と金の▼。</figcaption>
+</figure>
+
+<!-- ========== 5 決勝 優勝（光の量） ========== -->
+<figure>
+<div class="phone" style="background:var(--house)">
+  <!-- 金屏風（最明部まで）＋光条 -->
+  <div class="abs" style="left:0;right:0;top:118px;height:700px;background:radial-gradient(ellipse at 50% 38%,#F3D98A 0%,var(--leafHi) 22%,var(--leafMid) 55%,var(--leafLo) 90%)"></div>
+  <div class="abs" style="left:-200px;top:-80px;width:802px;height:900px;background:repeating-conic-gradient(from 0deg at 50% 52%,#FFF3D633 0deg 9deg,transparent 9deg 25.7deg);mix-blend-mode:screen"></div>
+  <div class="abs" id="confetti" style="inset:0;pointer-events:none"></div>
+  <!-- 額縁 -->
+  <div class="valance">
+    <div class="telop abs" style="left:0;right:0;top:50px;text-align:center;font-size:26px;color:#FFE9A8">頂 グランプリ</div>
+    <div class="abs" style="left:166px;top:88px;width:70px;height:22px;border-radius:99px;background:linear-gradient(var(--verm),var(--vermD));box-shadow:0 0 0 1px #F6B301CC;color:#fff;font-size:13px;font-weight:900;text-align:center;line-height:22px">決勝</div>
+  </div>
+  <div class="wing l"></div><div class="wing r"></div>
+  <div class="abs telop" style="left:0;right:0;top:142px;text-align:center;font-size:17px">優 勝 は ——</div>
+  <!-- 金縁のめくり札（名付けで書いた札と同じ様式） -->
+  <div class="abs mekuri" style="left:71px;top:182px;width:260px;height:76px;line-height:70px;font-size:32px;border:2px solid var(--gold);box-shadow:0 0 0 1px #8A6508,0 6px 18px #5A3A0666">
+    <span class="ring" style="left:70px"></span><span class="ring" style="right:70px"></span>しろくろ
+    <div class="abs" style="left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#B8860B,#FFE9A8,#B8860B)"></div></div>
+  <!-- 丸判 -->
+  <div class="abs" style="left:126px;top:286px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 25% 20%,#FFE07A,var(--gold) 70%);
+    box-shadow:0 0 0 4px #FFFFFFCC,0 0 30px 8px #F6B301AA,0 8px 0 #8A6508;transform:rotate(-8deg);display:flex;align-items:center;justify-content:center;
+    font-size:48px;font-weight:900;color:var(--onGold)">優勝</div>
+  <!-- 舞台板と跳ねる二人 -->
+  <div class="abs" style="left:0;right:0;top:600px;height:170px;background:radial-gradient(ellipse at 50% 18%,#E8B878 0%,var(--boardsLit) 30%,#8A6440 60%,var(--boardsDark) 90%)"></div>
+  <div class="abs fig" data-x="120" data-y="452" data-h="150" data-body="#4A7BE8,#2E55B0" data-muf="#2E55B0"></div>
+  <div class="abs" style="left:198px;top:528px;width:5px;height:88px;background:linear-gradient(#6A6480,#2E2840)"></div>
+  <div class="abs" style="left:192px;top:516px;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#B8B4C8,#3A3448)"></div>
+  <div class="abs fig" data-x="214" data-y="444" data-h="158" data-body="#F0533E,#C22E1D" data-muf="#B02318"></div>
+  <div class="heads" style="top:770px;gap:4px">
+    <div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div><div class="head lit" style="width:44px;height:40px"></div>
+  </div>
+  <div class="lowerThird"><div class="bar"></div><div class="nm">しろくろ</div><div class="yr">結成1年</div><div class="tri">▼</div></div>
+</div>
+<figcaption><b>⑤ 決勝・優勝（舞台の最大光量）</b>：光条の間の暗帯（L0.003）を金屏風の最明部で持ち上げ、金の紙吹雪・金縁のめくり札（名付けで自分が書いた名前）・丸判・舞台で跳ねる二人。<b>2.4s 後、0.6s で光を落として袖へ</b>（涙は光の外：二人の後ろ姿＋谷口の白い吹き出し「……なあ、腹減ったな」）→「結果を見る」→はねの儀で年末の明るい紙面へ。金はこの夜だけ。</figcaption>
+</figure>
+
+</div>
+
+<script>
+// 人形（ManzaiFigure 相当）と顔（CharacterFace 相当）を描く。乱数なし・位置は決定的。
+(function(){
+  function figure(el){
+    var x=+el.dataset.x, y=+el.dataset.y, h=+el.dataset.h;
+    var w=h*0.62, headR=h*0.15, bw=h*0.48, bh=h*0.70;
+    var sil=el.dataset.sil==="1";
+    var body=(el.dataset.body||"#2C2740,#2C2740").split(",");
+    var muf=el.dataset.muf||"#F6B301";
+    var id="g"+Math.round(x)+"_"+Math.round(y);
+    var skin=sil?"#2C2740":"#FFDFC2", hair=sil?"#2C2740":"#2E2838";
+    var rim=sil?'stroke="#F6B301" stroke-width="1.5"':'';
+    var bodyFill=sil?"#2C2740E0":"url(#"+id+")";
+    var cx=w/2, headCy=headR+2, bodyTop=headCy+headR*0.7;
+    var svg='<svg width="'+w+'" height="'+(h+10)+'" viewBox="0 0 '+w+' '+(h+10)+'" style="overflow:visible">'+
+      '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+body[0]+'"/><stop offset="1" stop-color="'+(body[1]||body[0])+'"/></linearGradient></defs>'+
+      '<ellipse cx="'+cx+'" cy="'+(bodyTop+bh+3)+'" rx="'+(bw*0.68)+'" ry="5" fill="#2C274033"/>'+
+      '<path d="M'+(cx-bw/2)+','+(bodyTop+bh)+' L'+(cx-bw/2)+','+(bodyTop+bw*0.42)+' Q'+(cx-bw/2)+','+bodyTop+' '+cx+','+bodyTop+' Q'+(cx+bw/2)+','+bodyTop+' '+(cx+bw/2)+','+(bodyTop+bw*0.42)+' L'+(cx+bw/2)+','+(bodyTop+bh)+' Z" fill="'+bodyFill+'" '+rim+'/>'+
+      '<rect x="'+(cx-bw*0.31)+'" y="'+(bodyTop+4)+'" width="'+(bw*0.62)+'" height="6" rx="3" fill="'+muf+'"/>'+
+      '<circle cx="'+cx+'" cy="'+headCy+'" r="'+headR+'" fill="'+skin+'" '+rim+'/>'+
+      (sil?'':'<path d="M'+(cx-headR)+','+headCy+' A'+headR+','+headR+' 0 0 1 '+(cx+headR)+','+headCy+' Z" fill="'+hair+'"/>')+
+      '</svg>';
+    el.style.left=x+"px"; el.style.top=y+"px"; el.innerHTML=svg;
+    if(el.dataset.dim==="1"){ el.style.filter="saturate(.5)"; el.style.transform="scale(.97)"; el.style.transformOrigin="bottom center"; }
+    if(el.dataset.sat==="1"){ el.style.transform="scale(1.04)"; el.style.transformOrigin="bottom center"; }
+  }
+  document.querySelectorAll(".fig").forEach(figure);
+
+  var faces={
+    tani:{hair:"#2E2838",cap:0.52,collar:"#F0533E"},
+    mejiro:{hair:"#2C2740",cap:0.42,collar:"#8B5CF6",glasses:true},
+    otowa:{hair:"#6E4358",cap:0.45,collar:"#FF5C93",long:true},
+    shiranami:{hair:"#23202E",cap:0.42,collar:"#FF7A2F"},
+    uzuki:{hair:"#7A5638",cap:0.42,collar:"#8B5CF6"},
+    hanazono:{hair:"#D8D4DC",cap:0.40,collar:"#E8402C",bun:true},
+    kagurazaka:{hair:"#C8A44E",cap:0.45,collar:"#22B07A",long:true},
+    tendoji:{hair:"#C8C4CE",cap:0.26,collar:"#3B8BFF",beard:true}
+  };
+  function face(el){
+    var f=faces[el.dataset.face]; if(!f) return;
+    var s=100, r=39, cy=46;
+    var g='<svg viewBox="0 0 100 100" width="100%" height="100%"><rect width="100" height="100" fill="#fff"/>'+
+      '<path d="M22,100 L26,80 Q30,72 50,72 Q70,72 74,80 L78,100 Z" fill="'+f.collar+'"/>'+
+      '<circle cx="50" cy="'+cy+'" r="'+r+'" fill="#FFDFC2"/>'+
+      '<clipPath id="c'+el.dataset.face+'"><rect x="0" y="0" width="100" height="'+(cy-r+2*r*f.cap)+'"/></clipPath>'+
+      '<circle cx="50" cy="'+cy+'" r="'+r+'" fill="'+f.hair+'" clip-path="url(#c'+el.dataset.face+')"/>'+
+      (f.long?'<rect x="9" y="38" width="8" height="34" rx="4" fill="'+f.hair+'"/><rect x="83" y="38" width="8" height="34" rx="4" fill="'+f.hair+'"/>':'')+
+      (f.bun?'<circle cx="50" cy="8" r="10" fill="'+f.hair+'"/>':'')+
+      '<circle cx="38" cy="'+(cy+4)+'" r="3.4" fill="#2C2740"/><circle cx="62" cy="'+(cy+4)+'" r="3.4" fill="#2C2740"/>'+
+      (f.glasses?'<circle cx="38" cy="'+(cy+3)+'" r="10" fill="none" stroke="#2C2740" stroke-width="2.4"/><circle cx="62" cy="'+(cy+3)+'" r="10" fill="none" stroke="#2C2740" stroke-width="2.4"/><line x1="48" y1="'+(cy+3)+'" x2="52" y2="'+(cy+3)+'" stroke="#2C2740" stroke-width="2.4"/>':'')+
+      (f.beard?'<path d="M24,60 Q50,92 76,60" fill="none" stroke="'+f.hair+'" stroke-width="7" stroke-linecap="round"/>':'')+
+      '</svg>';
+    el.innerHTML=g;
+  }
+  document.querySelectorAll("[data-face]").forEach(face);
+
+  // 7審査員の札（点は撮影時 10_finals_win_03 の値・軸は FinalsData の Spec と同じ）
+  var J=[["90","otowa","音羽","華","#FF5C93"],["94","shiranami","白波","表現","#FF7A2F"],["94","uzuki","卯月","発想","#8B5CF6"],["94","hanazono","花園","相性","#E8402C"],
+         ["89","mejiro","目白","発想","#8B5CF6"],["90","kagurazaka","神楽坂","メンタル","#22B07A"],["91","tendoji","天堂寺","センス","#3B8BFF"]];
+  var box=document.getElementById("judges");
+  J.forEach(function(j){
+    var c=document.createElement("div"); c.className="jcard"; c.style.setProperty("--ax",j[4]);
+    c.innerHTML='<div class="band" style="background:'+j[4]+'"></div><div class="sc">'+j[0]+'</div><div class="jf" data-face="'+j[1]+'"></div><div class="jn" style="font-size:'+13+'px">'+j[2]+'</div><div class="ax">'+j[3]+'</div>';
+    box.appendChild(c); face(c.querySelector(".jf"));
+  });
+
+  // 金の紙吹雪（決定的な配置・48枚）
+  var cf=document.getElementById("confetti"), pal=["#F6B301","#FFE07A","#E8402C","#FFFFFF","#FFF3D6","#E09A00"];
+  for(var i=0;i<48;i++){
+    var p=document.createElement("div");
+    var x=((Math.sin(i*12.9898)*43758.5453)%1+1)%1, y=((Math.sin(i*78.233)*12345.678)%1+1)%1;
+    p.style.cssText="position:absolute;left:"+(x*390+6)+"px;top:"+(y*640+120)+"px;width:"+(6+i%3*2)+"px;height:"+(9+i%4*2)+"px;background:"+pal[i%pal.length]+
+      ";transform:rotate("+(i*47%180)+"deg);border-radius:1px;opacity:.95;box-shadow:0 1px 0 #0003";
+    cf.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
