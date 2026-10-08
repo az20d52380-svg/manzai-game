@@ -28,6 +28,10 @@ struct ChoiceEventOverlay: View {
     @State private var afterShown = 0
     /// 選択肢・閉じるの出現を最後の行から0.4秒遅らせる（送りの連打が選択に化けない・K5/X3-06）
     @State private var footerReady = false
+    /// 選んだ結果の効果チップ（方向だけ・数字なし＝選択肢イベント規約「効果は方向だけ」と揃える・E2）。閉じるまで残す
+    @State private var effectChips: [EffectChip] = []
+
+    private struct EffectChip: Identifiable { let id: Int; let text: String; let up: Bool; let color: Color }
 
     /// 読み物の1件（地の文 or 台詞）。古いものは薄く残して読み戻せる。
     private struct Line: Identifiable { let id: Int; let advice: Advice }
@@ -106,6 +110,18 @@ struct ChoiceEventOverlay: View {
                     .overlay(Capsule().stroke(.white, lineWidth: 2.5))
                     .shadow(color: Theme.goldD.opacity(0.55), radius: 0, y: 3)
                     .padding(.top, 8)
+            }
+            .overlay(alignment: .topTrailing) {
+                // 選んだ結果＝二人の頭上に効果チップ（伸び＝濃い色の塗り／減り＝白地で祝わない）
+                VStack(alignment: .trailing, spacing: 6) {
+                    ForEach(Array(effectChips.enumerated()), id: \.element.id) { i, c in
+                        GainChip(text: c.text, kind: c.up ? .gain(c.color) : .loss)
+                            .transition(.scale(scale: 0.6, anchor: .bottomTrailing).combined(with: .opacity))
+                            .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.08), value: effectChips.count)
+                    }
+                }
+                .padding(.top, 64).padding(.trailing, 16)
+                .allowsHitTesting(false)
             }
             .overlay(alignment: .bottom) {
                 Rectangle().fill(Theme.line).frame(height: 2.5)   // 場面と読み物の境（週メインの縁と同じ）
@@ -192,11 +208,32 @@ struct ChoiceEventOverlay: View {
     }
 
     private func choose(_ id: String) {
+        let before = session.state
         session.applyEventChoice(id)
+        showEffects(before: before, after: session.state)
         footerReady = false
         // 選んだ瞬間に返事の1行目を出す（0 だと区切りの下が空のまま＝壊れて見えた・audit_intro_event B-01）
         withAnimation(Theme.Motion.appear) { chosenID = id; afterShown = min(1, text.afterChoice[id]?.count ?? 0) }
         armFooterIfNeeded()
+    }
+
+    /// 選択の前後の差から効果チップを組む（表示専用・RNG非消費）。伸びを先に、最大3枚。
+    private func showEffects(before b: GameState, after a: GameState) {
+        var ups: [(String, Color)] = [], downs: [(String, Color)] = []
+        func add(_ name: String, _ d: Double, _ c: Color) {
+            if d > 0.001 { ups.append(("\(name) ↑", c)) } else if d < -0.001 { downs.append(("\(name) ↓", c)) }
+        }
+        for ab in Ability.allCases { add("\(ab)", a[ab] - b[ab], Theme.abilityDeep(ab)) }
+        add("相性", a.compat - b.compat, Theme.vermD)
+        add("知名度", a.fame - b.fame, Theme.goldDeep)
+        add("体力", a.stamina - b.stamina, Theme.mentalDeep)
+        add("所持金", Double(a.money - b.money), Theme.moneyDeep)
+        let all = (ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }).prefix(3)
+        guard !all.isEmpty else { return }
+        Sound.play(ups.isEmpty ? .pop : .grain)
+        withAnimation(Theme.Motion.emphSpring) {
+            effectChips = all.enumerated().map { EffectChip(id: $0.offset, text: $0.element.0, up: $0.element.1, color: $0.element.2) }
+        }
     }
 
     /// 送り切ったら0.4秒置いて帯（選択肢／閉じる）を出す
