@@ -4,6 +4,7 @@
 // 使い方: .punch(on:) 値が変わった瞬間に跳ねる／ParticleBurst(trigger:) +1で一回爆ぜる／
 //        .screenFlash(trigger:) 一瞬白む／.screenShake(trigger:) 画面が揺れる。
 // 電池: バースト終了後は TimelineView を破棄（アイドル時の再描画コストゼロ）。
+// 「視差効果を減らす」（accessibilityReduceMotion）では粒・集中線・揺れを出さず、閃光は弱く短くする（K6）。
 
 import SwiftUI
 
@@ -32,6 +33,7 @@ struct ParticleBurst: View {
 
     @State private var burstStart: Date?
     @State private var burstSeq = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var life: Double { style == .spark ? 0.9 : 1.7 }
 
@@ -96,6 +98,7 @@ struct ParticleBurst: View {
         }
         .allowsHitTesting(false)
         .onChange(of: trigger) { _, _ in
+            guard !reduceMotion else { return }
             burstSeq += 1
             burstStart = Date()
             let seq = burstSeq
@@ -118,6 +121,7 @@ struct SpeedLinesBurst: View {
 
     @State private var start: Date?
     @State private var seq = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let life = 0.32
 
     var body: some View {
@@ -149,6 +153,7 @@ struct SpeedLinesBurst: View {
         }
         .allowsHitTesting(false)
         .onChange(of: trigger) { _, _ in
+            guard !reduceMotion else { return }
             seq += 1
             start = Date()
             let s = seq
@@ -167,10 +172,12 @@ private struct PunchModifier<T: Equatable>: ViewModifier {
     let value: T
     var peak: CGFloat = 1.22
     @State private var punched = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func body(content: Content) -> some View {
         content
             .scaleEffect(punched ? peak : 1)
             .onChange(of: value) { _, _ in
+                guard !reduceMotion else { return }
                 withAnimation(.spring(response: 0.22, dampingFraction: 0.45)) { punched = true }
                 Task {
                     try? await Task.sleep(nanoseconds: 140_000_000)
@@ -194,13 +201,15 @@ private struct ScreenFlashModifier: ViewModifier {
     var color: Color = .white
     var strength: Double = 0.45
     @State private var opacity = 0.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func body(content: Content) -> some View {
         content.overlay {
             color.opacity(opacity).ignoresSafeArea().allowsHitTesting(false)
         }
         .onChange(of: trigger) { _, _ in
-            opacity = strength
-            withAnimation(.easeOut(duration: 0.32)) { opacity = 0 }
+            // 光過敏の逃げ道: 演出ひかえめでは弱く（最大0.12）ゆっくり戻す
+            opacity = reduceMotion ? min(strength, 0.12) : strength
+            withAnimation(.easeOut(duration: reduceMotion ? 0.5 : 0.32)) { opacity = 0 }
         }
     }
 }
@@ -231,10 +240,12 @@ private struct ScreenShakeModifier: ViewModifier {
     let trigger: Int
     var intensity: CGFloat = 9
     @State private var phase: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func body(content: Content) -> some View {
         content
             .modifier(ScreenShakeEffect(intensity: intensity, animatableData: phase))
             .onChange(of: trigger) { _, _ in
+                guard !reduceMotion else { return }
                 withAnimation(.linear(duration: 0.38)) { phase += 1 }
             }
     }

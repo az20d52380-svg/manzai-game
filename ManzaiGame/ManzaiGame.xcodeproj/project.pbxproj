@@ -15,6 +15,7 @@
 		13105DD511B67B290F9706DE /* se_tap.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 62ED400B84054F70C3BA1883 /* se_tap.mp3 */; };
 		1AF6138DFD7BF866327A2154 /* se_kira.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6083AAF4C14A5E6DFED2E5DF /* se_kira.mp3 */; };
 		1CD9067C8E549F3017A17AC5 /* bgm_finals.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */; };
+		1D5713E40EEA45D0B98E861B /* TalkParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5B0AD382326CD111BFDE10 /* TalkParts.swift */; };
 		1FCCD2091EABB90AE69CD4DA /* se_cancel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */; };
 		208D21CE23C46C5EA1538078 /* AllocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7D79CA9152E376CA2D55F1C /* AllocationView.swift */; };
 		20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */; };
@@ -76,6 +77,7 @@
 		03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaCatalog.swift; sourceTree = "<group>"; };
 		0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameApp.swift; sourceTree = "<group>"; };
 		0B56CF2CC9552602E05AC67B /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		2479B3303C35A9B094342137 /* se_cursor.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cursor.mp3; sourceTree = "<group>"; };
 		2AAFBC0284B7A53A0A48C18D /* S6bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S6bView.swift; sourceTree = "<group>"; };
 		2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				9602D87CE2E13D9365DE6EEE /* SoundManager.swift */,
 				3B1F087A453470E4CF970A6B /* StageScene.swift */,
 				584B31B6D7B7B692F33CC50E /* StageViews.swift */,
+				1B5B0AD382326CD111BFDE10 /* TalkParts.swift */,
 				E7C2B6670FC11321C4559DCB /* Theme.swift */,
 				A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */,
 				B18155352CE011A350B1DEC6 /* WeekMainView.swift */,
@@ -394,6 +397,7 @@
 				07755E46FD8EC92ACE98C353 /* SoundManager.swift in Sources */,
 				21E800CFC18797B54C85B120 /* StageScene.swift in Sources */,
 				0925CDD9634B4E4FADD702CC /* StageViews.swift in Sources */,
+				1D5713E40EEA45D0B98E861B /* TalkParts.swift in Sources */,
 				E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */,
 				E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */,
 				11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */,
