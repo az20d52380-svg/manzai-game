@@ -573,6 +573,11 @@ struct WeekMainView: View {
     /// 相性 +N→ネタ +N or 新ネタ→体力。経験点の通貨チップ・所持金チップは出さない（A「削る」）。差分0は出さない。
     private func makeBurstChips() -> [BurstChip] {
         var chips: [BurstChip] = []
+        // G3: 等級（G〜S）が上がった週だけ、先頭の1枚を等級チップにして祝う（週メインに等級は常設しない＝スライス1の既決）
+        if let up = rankUpThisWeek() {
+            chips.append(BurstChip(id: chips.count, text: "\(up.ability) \(up.from)→\(up.to)", fg: .white,
+                                   bg: Theme.gradeColor(up.to) == Theme.gold ? Theme.goldDeep : Theme.gradeColor(up.to)))
+        }
         if lastJitsuryokuGain > 0.001 {
             // 実力は1週で整数が動かない週が多い＝数字でなく「↑」（バーのオレンジと対）
             chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.senseDeep))
@@ -600,6 +605,21 @@ struct WeekMainView: View {
                                    bg: sd > 0 ? Theme.mentalDeep : .white, up: sd > 0))
         }
         return Array(chips.prefix(3))
+    }
+
+    /// この週の行動で等級が上がった能力（最初の1つ）。lastGains の増分から週の前の値を戻して比べる（表示専用・RNG非消費）
+    private func rankUpThisWeek() -> (ability: Ability, from: String, to: String)? {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_RANKUP"] != nil, session.lastDeltaWeek == session.week {
+            return (.センス, "G", "F")   // 目視用（等級チップの見た目だけ確かめる）
+        }
+        #endif
+        for g in session.lastGains {
+            let after = s[g.ability], before = after - g.amount
+            let from = Theme.rank(before), to = Theme.rank(after)
+            if from != to { return (g.ability, from, to) }
+        }
+        return nil
     }
 
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
