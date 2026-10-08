@@ -31,6 +31,8 @@ struct FinalsPresentationView: View {
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
     @State private var slamFire = 0        // 開示のたびの衝撃（フラッシュ＋シェイク・Juice.swift）
     @State private var burstFire = 0       // 決着の紙吹雪バースト
+    /// 開演の儀が終わったか（決勝の入りの儀式・L11）
+    @State private var ceremonyDone = false
     /// 銀の紙吹雪（他組の優勝・自組の決勝敗退）
     @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
@@ -111,9 +113,15 @@ struct FinalsPresentationView: View {
         .screenShake(trigger: slamFire, intensity: 8)
         .screenFlash(trigger: slamFire, color: Color(hex: 0xFFE9C4), strength: 0.30)
         .contentShape(Rectangle())
-        .onTapGesture { advance() }
+        .onTapGesture { if ceremonyDone { advance() } }
         // 長押し＝その場面の残りを一気にめくる早送り（ビートは飛ばさない＝決勝演出の規則・K6/R2-01）
-        .onLongPressGesture(minimumDuration: 0.5) { fastForwardBeat() }
+        .onLongPressGesture(minimumDuration: 0.5) { if ceremonyDone { fastForwardBeat() } }
+        .overlay {
+            if !ceremonyDone {
+                StageCeremony { ceremonyDone = true }
+                    .transition(.opacity)
+            }
+        }
         .onAppear {
             if dataCache == nil { dataCache = makeData() }
             Sound.bgm(.finals)   // 番組のBGM（決勝の格）

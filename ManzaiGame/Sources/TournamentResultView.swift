@@ -19,6 +19,8 @@ struct TournamentResultView: View {
     @State private var revealTask: Task<Void, Never>?
     /// 判の前の溜めをタップで畳む要求（規格K6）。判の叩きつけ以降は畳まない（解放は必ず見せる）
     @State private var skipRequested = false
+    /// 開演の儀が終わったか（儀式の相 → 開示列の順・X4-11：覆いの下で開示が先に終わらない）
+    @State private var ceremonyDone = false
 
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
@@ -158,7 +160,12 @@ struct TournamentResultView: View {
                     .onTapGesture { skipRequested = true }
             }
         }
-        .onAppear { beginReveal() }
+        .overlay {
+            if !ceremonyDone {
+                StageCeremony { ceremonyDone = true; beginReveal() }
+                    .transition(.opacity)
+            }
+        }
         .onDisappear { revealTask?.cancel() }
         .overlay {
             if let i = climaxIndex { climaxOverlay(i) }   // ⑪ 山場のタップ送り

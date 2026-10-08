@@ -245,3 +245,53 @@ struct Telop: View {
             .multilineTextAlignment(.center)
     }
 }
+
+// MARK: 開演の儀（客電が落ちる→暗転→スポットイン→明転・visual_genre_overhaul_v1 §6 L11）
+
+/// 本番画面の最初の相として重ねる。初回は約1.5秒、2回目以降は約0.6秒。タップで即終わる（K6）。
+/// 暗いのはこの溜めの間だけ（§4-1「暗くしてよいのは溜めの1.5秒以内」）。演出ひかえめでは短いクロスフェード。
+struct StageCeremony: View {
+    var onDone: () -> Void
+    @State private var spot: CGFloat = 0.1
+    @State private var veil: Double = 1
+    @State private var done = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private static let seenKey = "stage_ceremony_seen"
+
+    var body: some View {
+        ZStack {
+            Theme.house
+            RadialGradient(colors: [Theme.spotCore, Theme.spotMid, Theme.spotEdge, .clear],
+                           center: .center, startRadius: 0, endRadius: 300)
+                .scaleEffect(spot)
+                .blendMode(.screen)
+        }
+        .opacity(veil)
+        .ignoresSafeArea()
+        .contentShape(Rectangle())
+        .onTapGesture { finish() }
+        .allowsHitTesting(!done)
+        .task { await run() }
+    }
+
+    private func run() async {
+        let first = !UserDefaults.standard.bool(forKey: Self.seenKey)
+        UserDefaults.standard.set(true, forKey: Self.seenKey)
+        let short = !first || reduceMotion
+        Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
+        try? await Task.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)
+        guard !done else { return }
+        withAnimation(.easeOut(duration: short ? 0.25 : 0.6)) { spot = 1.4 }   // スポットイン
+        try? await Task.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
+        guard !done else { return }
+        finish()
+    }
+
+    private func finish() {
+        guard !done else { return }
+        done = true
+        Sound.duck(1, over: 0.4)
+        withAnimation(.easeIn(duration: 0.3)) { veil = 0 }            // 明転
+        onDone()
+    }
+}
