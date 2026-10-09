@@ -44,10 +44,21 @@ struct FinalsPresentationView: View {
     /// 優勝時は勝ち版、決勝で負けた時は負け版（監査E-08）、観客モードは自組抜きの3組
     private var d: FinalsData { dataCache ?? makeData() }
     private func makeData() -> FinalsData {
-        FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator)
+        // 決勝の点差（負けた夜は結果画面のデータ・優勝の夜は session が控えた値）。復元直後でも結果データから読める
+        let margin = session.pendingResult?.results.last(where: { $0.name == "GP決勝" })?.margin ?? session.lastFinalMargin
+        #if DEBUG
+        // 目視用: MZ_FMARGIN=点差 で決勝の結果を差し替える（負＝敗退。-2 なら最終決戦で惜敗、-20 なら1本目で敗退）
+        if let m = Double(ProcessInfo.processInfo.environment["MZ_FMARGIN"] ?? ""), !spectator {
+            return FinalsData(state: s, champion: m > 0, margin: m, year: session.year)
+        }
+        #endif
+        return FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator,
+                          margin: spectator ? nil : margin, year: session.year)
     }
-    /// 最終決戦の3組名（観客モードはNPCの3組）
-    private var duelNames: [String] { spectator ? d.rivalNames : [session.combiName] + d.rivalNames }
+    /// 1組の表示名（自組は付けたコンビ名）
+    private func displayName(_ e: FinalsEntry) -> String { e.isSelf ? session.combiName : e.name }
+    /// 最終決戦の3組名（1本目の順位順。自組が4位以下の年は他の3組）
+    private var duelNames: [String] { d.duelEntries.map(displayName) }
 
     /// ビート→舞台の状態。籤＝開演前／採点〜最終決戦＝金屏風（客席から観る年は銀）／結果＝自組の優勝だけ最明部
     private var stageMode: StageFrame.Mode {
@@ -248,7 +259,7 @@ struct FinalsPresentationView: View {
             .shadow(color: Theme.gold.opacity(0.35), radius: 16, y: 6)
             Spacer(minLength: 16)
             NarrationCard(text: d.order == 1 ? "トップバッター。会場はまだ温まっていない。"
-                          : d.order >= 9 ? "大トリ。ここまでの空気を、全部ひっくり返す番だ。"
+                          : d.order == 10 ? "大トリ。ここまでの空気を、全部ひっくり返す番だ。"
                           : "中盤。沸いた流れに、どう乗るか。")
                 .padding(.bottom, 30)
         }
@@ -368,7 +379,7 @@ struct FinalsPresentationView: View {
             // 3組の得票カウンタ（番組のスコア表示・自組は金）
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { k in
-                    trioCounter(name: names.count > k ? names[k] : "—", count: counts[k], mine: !spectator && k == 0)
+                    trioCounter(name: names.count > k ? names[k] : "—", count: counts[k], mine: k == d.selfDuelIndex)
                 }
             }
 
@@ -378,9 +389,9 @@ struct FinalsPresentationView: View {
                     let shown = i < revealVotes
                     let vote = d.voteOrder[i]
                     VStack(spacing: 3) {
-                        votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: !spectator && vote == 0)
+                        votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: vote == d.selfDuelIndex)
                         CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 40)
-                            .overlay(Circle().stroke(shown ? (!spectator && vote == 0 ? Theme.gold : .white)
+                            .overlay(Circle().stroke(shown ? (vote == d.selfDuelIndex ? Theme.gold : .white)
                                                            : .white.opacity(0.5), lineWidth: 2))
                         Text(String(d.judges[i].name.prefix(2)))
                             .font(.maru(12, weight: .bold)).foregroundStyle(Theme.sumi)
@@ -501,36 +512,76 @@ struct FinalsPresentationView: View {
 
 struct JudgeScore { let name: String; let score: Int; let axisColor: Color }
 struct BoardRow { let name: String; let total: Int; let isSelf: Bool }
+/// 決勝の1組（出順つき）。自組は isSelf（名前は表示時に session.combiName に差し替える）
+struct FinalsEntry { let name: String; let total: Int; let order: Int; let isSelf: Bool }
 
 struct FinalsData {
+    /// 自組の出順（1〜10・観客モードは 0）
     let order: Int
+    /// 自組の合計（観客モードは 0）
     let total: Int
     let judges: [JudgeScore]
+    /// 10組（出順つき）。M-1 と同じく、出順どおりに1組ずつ出てボードに載る
+    let entries: [FinalsEntry]
+    /// 1本目の最終順位（全組・合計の高い順）
     var board: [BoardRow]
+    /// 自組の1本目の順位（観客モードは 0）
     var boardRank: Int
     let finalVotes: Int
     let champion: Bool
-    /// 最終決戦に残るライバル2組（暫定ボード上位のNPC・M-1式＝3組で争う）
-    var rivalNames: [String] = []
-    /// 票札のめくり順（0=自組/1=ライバルA/2=ライバルB）。表示専用のシャッフル。
+    /// 最終決戦の3組（1本目の順位順）。自組が4位以下の年は、自組を含まない3組
+    var duelEntries: [FinalsEntry] = []
+    /// 票札のめくり順（duelEntries の添字）。表示専用のシャッフル
     var voteOrder: [Int] = []
-    /// 優勝コンビ（0=自組/1=A/2=B）
+    /// 優勝コンビ（duelEntries の添字）
     var winnerIndex: Int = 0
+    /// 自組が最終決戦に立つか
+    var selfInDuel: Bool { duelEntries.contains { $0.isSelf } }
+    /// 最終決戦での自組の添字（立たない年は nil）
+    var selfDuelIndex: Int? { duelEntries.firstIndex { $0.isSelf } }
 
-    init(state s: GameState, champion: Bool, spectator: Bool = false) {
+    /// - margin: GameCore の決勝のスコアと実効ラインの差（正＝優勝）。順位をこの差に沿わせる＝見せ札が内部の結果と矛盾しない
+    /// - year: 年ごとに決勝の顔ぶれと出順を変える（毎年同じ10組にしない）
+    init(state s: GameState, champion: Bool, spectator: Bool = false, margin: Double? = nil, year: Int = 1) {
         self.champion = champion
-        // UI専用RNG（能力から決定的にseed＝再現可・GameCoreの乱数列に非干渉）
+        // UI専用RNG（能力と年から決定的にseed＝再現可・GameCoreの乱数列に非干渉）
         var rng = SeededRng(seed: UInt64(bitPattern: Int64(
             Int(s.発想) &* 131 &+ Int(s.センス) &* 197 &+ Int(s.表現) &* 251 &+
-            Int(s.華) &* 313 &+ Int(s.メンタル) &* 389 &+ Int(s.compat) &* 457 &+ 0x1F17)))
+            Int(s.華) &* 313 &+ Int(s.メンタル) &* 389 &+ Int(s.compat) &* 457 &+ year &* 7919 &+ 0x1F17)))
+
+        // 今年の顔ぶれ（名簿から決定的に選ぶ。常連は毎年いるとは限らない）
+        var pool = FinalsData.npcNames
+        for i in stride(from: pool.count - 1, through: 1, by: -1) { pool.swapAt(i, rng.int(0...i)) }
+        let npcCount = spectator ? 10 : 9
+        let names = Array(pool.prefix(npcCount))
+
+        // 自組の1本目の順位（内部の結果＝決勝の点差から）。優勝の年でも1本目1位とは限らない（R1 P7）
+        let rank: Int
+        if spectator {
+            rank = 0
+        } else if champion {
+            let m = margin ?? 6
+            rank = m >= 8 ? 1 : (m >= 3 ? rng.int(1...2) : rng.int(1...3))
+        } else if let m = margin, m >= -4 {
+            rank = rng.int(1...3)          // 惜敗＝最終決戦まで残って、そこで敗れる
+        } else {
+            let m = margin ?? -12          // 大きく届かない＝1本目で敗退（4〜10位）
+            rank = min(10, max(4, 4 + Int((-m - 4) / 3) + rng.int(0...1)))
+        }
 
         // 表示合計S（/700・帯写像＝内部式の逆算防止のため帯内ジッタ）【仮】
-        let total = champion ? rng.int(632...668) : rng.int(600...631)
+        let total: Int
+        if spectator { total = 0 }
+        else if champion { total = rng.int(632...668) }
+        else if rank <= 3 { total = rng.int(618...645) }
+        else { total = max(560, min(630, 628 - (rank - 4) * 7 + rng.int(-3...3))) }
         self.total = total
-        self.order = rng.int(1...10)
+        let myOrder = spectator ? 0 : rng.int(1...10)
+        self.order = myOrder
+        self.boardRank = rank
 
-        // 7審査員: raw = S/7 + 人格bias + 重視軸tilt + ノイズ → Σ=S補正 → [50,99]クランプ
-        let base = Double(total) / 7.0
+        // 7審査員（自組の採点）: raw = S/7 + 人格bias + 重視軸tilt + ノイズ → Σ=S補正 → [50,99]クランプ
+        let base = Double(max(total, 600)) / 7.0
         let perfAvg = (Double(s.発想) + Double(s.センス) + Double(s.表現) + Double(s.華)) / 4.0
         func tilt(_ v: Double) -> Double { max(-3, min(3, (v - perfAvg) / 10.0)) }
         struct Spec { let name: String; let bias: Double; let axis: Double; let color: Color; let noise: Int }
@@ -545,68 +596,75 @@ struct FinalsData {
             Spec(name: "天堂寺 銀郎",    bias: -2, axis: Double(s.センス),        color: Theme.cSense,  noise: 1),
         ]
         let raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-$0.noise...$0.noise)) }
-        // Σ=S へ丸め補正
         var ints = raw.map { Int($0.rounded()) }
-        var diff = total - ints.reduce(0, +)
-        var idx = 0
-        while diff != 0 && idx < 100 { let k = idx % 7; ints[k] += diff > 0 ? 1 : -1; diff += diff > 0 ? -1 : 1; idx += 1 }
+        if !spectator {
+            // Σ=S へ丸め補正
+            var diff = total - ints.reduce(0, +)
+            var idx = 0
+            while diff != 0 && idx < 100 { let k = idx % 7; ints[k] += diff > 0 ? 1 : -1; diff += diff > 0 ? -1 : 1; idx += 1 }
+        }
         ints = ints.map { max(50, min(99, $0)) }
         self.judges = zip(specs, ints).map { JudgeScore(name: $0.name, score: $1, axisColor: $0.color) }
 
-        // 暫定ボード: 自組totalを基準にNPC9組を後方生成（champion=1位／それ以外は帯内）
-        var npc: [Int] = []
-        let spread = champion ? -1 : 0
-        for _ in 0..<9 { npc.append(total + spread * rng.int(1...30) - rng.int(2...45) + (champion ? 0 : rng.int(-8...12))) }
-        var rows = npc.enumerated().map { BoardRow(name: FinalsData.npcNames[$0.offset % FinalsData.npcNames.count], total: max(520, min(695, $0.element)), isSelf: false) }
-        rows.append(BoardRow(name: "あなたたち", total: total, isSelf: true))
-        rows.sort { $0.total > $1.total }
-        self.board = rows
-        self.boardRank = (rows.firstIndex { $0.isSelf } ?? 0) + 1
-
-        // 観客モード（監査H-01）: 自組を除いたボード・上位3組の最終決戦。勝者は最上位（index 0）
+        // 他組の合計: 自組より上に (rank−1) 組、残りは下（観客モードは10組を帯の中で）。同点は作らない
+        var npcTotals: [Int] = []
         if spectator {
-            let npcRows = rows.filter { !$0.isSelf }
-            self.board = npcRows
-            self.boardRank = 0
-            let top = npcRows.prefix(3).map { $0.name }
-            self.rivalNames = Array(top)
-            let w = rng.int(4...7)
-            let a = rng.int(0...(7 - w))
-            let b = 7 - w - a
-            self.finalVotes = w
-            self.winnerIndex = 0
-            var order = Array(repeating: 0, count: w) + Array(repeating: 1, count: a) + Array(repeating: 2, count: b)
-            for i in stride(from: 6, through: 1, by: -1) { order.swapAt(i, rng.int(0...i)) }
-            self.voteOrder = order
-            return
+            for _ in 0..<npcCount { npcTotals.append(rng.int(565...662)) }
+        } else {
+            for i in 0..<npcCount {
+                npcTotals.append(i < rank - 1 ? min(699, total + rng.int(1...22)) : max(520, total - rng.int(1...48)))
+            }
+        }
+        var used: Set<Int> = spectator ? [] : [total]
+        npcTotals = npcTotals.map { t in
+            var v = t
+            let above = !spectator && t > total
+            while used.contains(v) { v += above ? 1 : -1 }
+            used.insert(v)
+            return v
         }
 
-        // 最終決戦（M-1式＝3組で争う・7票中）: 圧勝6〜7/接戦4〜5/敗北1〜3
-        let votes = champion ? rng.int(5...7) : rng.int(1...3)
-        self.finalVotes = votes
-
-        // ライバル2組＝暫定ボード上位のNPC（自分を除く上から2組）
-        let rivals = rows.filter { !$0.isSelf }.prefix(2).map { $0.name }
-        self.rivalNames = Array(rivals)
-
-        // 残票をライバル2組へ配分（A>=B・非優勝時はAが必ず自組を上回る＝Aが優勝）
-        let remaining = 7 - votes
-        let aLow = champion ? (remaining + 1) / 2 : max((remaining + 1) / 2, votes + 1)
-        let a = remaining == 0 ? 0 : rng.int(min(aLow, remaining)...remaining)
-        let b = remaining - a
-        self.winnerIndex = champion ? 0 : 1
-
-        // めくり順のシャッフル（表示専用・既存drawの後に追加＝これまでの数値は不変）。
-        var order = Array(repeating: 0, count: votes) + Array(repeating: 1, count: a) + Array(repeating: 2, count: b)
-        for i in stride(from: 6, through: 1, by: -1) {
-            let j = rng.int(0...i)
-            order.swapAt(i, j)
+        // 出順: 自組は order、他組は残りの番号をシャッフル
+        var orders = Array(1...10).filter { $0 != myOrder }
+        for i in stride(from: orders.count - 1, through: 1, by: -1) { orders.swapAt(i, rng.int(0...i)) }
+        var all = zip(names, npcTotals).enumerated().map { i, nt in
+            FinalsEntry(name: nt.0, total: nt.1, order: orders[i], isSelf: false)
         }
-        self.voteOrder = order
+        if !spectator { all.append(FinalsEntry(name: "あなたたち", total: total, order: myOrder, isSelf: true)) }
+        self.entries = all.sorted { $0.order < $1.order }
+        let ranked = all.sorted { $0.total > $1.total }
+        self.board = ranked.map { BoardRow(name: $0.name, total: $0.total, isSelf: $0.isSelf) }
+
+        // 最終決戦（M-1式＝1本目の上位3組・7票）
+        let duel = Array(ranked.prefix(3))
+        self.duelEntries = duel
+        let selfIdx = duel.firstIndex { $0.isSelf }
+        let winner: Int
+        if champion, let si = selfIdx {
+            winner = si
+        } else {
+            // 自組以外の誰か（1本目の順位が高いほど勝ちやすい・表示だけ）
+            let cands = (0..<3).filter { $0 != selfIdx }
+            let roll = rng.int(1...10)
+            winner = roll <= 5 ? cands[0] : (roll <= 8 || cands.count < 3 ? cands[min(1, cands.count - 1)] : cands[2])
+        }
+        self.winnerIndex = winner
+        let w = rng.int(4...7)                                   // 勝者は必ず過半数
+        self.finalVotes = selfIdx == nil ? 0 : (selfIdx == winner ? w : 0)
+        var counts = [0, 0, 0]
+        counts[winner] = w
+        let others = (0..<3).filter { $0 != winner }
+        let a = rng.int(0...(7 - w))
+        counts[others[0]] = a
+        counts[others[1]] = 7 - w - a
+        var vorder = counts.enumerated().flatMap { Array(repeating: $0.offset, count: $0.element) }
+        for i in stride(from: 6, through: 1, by: -1) { vorder.swapAt(i, rng.int(0...i)) }
+        self.voteOrder = vorder
     }
 
-    /// NPCコンビ名（架空・プレースホルダ枠。本来は name_generator が毎周生成）
-    static let npcNames = ["紺屋", "夜明けの犬", "サーカス", "青写真", "十三", "静物画", "テレフォン", "北緯", "帰り道"]
+    /// NPCコンビ名（架空・プレースホルダ枠。本来は name_generator が毎周生成）。年ごとにこの中から9〜10組を選ぶ
+    static let npcNames = ["紺屋", "夜明けの犬", "サーカス", "青写真", "十三", "静物画", "テレフォン", "北緯", "帰り道",
+                           "灯台守", "三番線", "東口", "ペンギン座", "トランジスタ", "まどろみ", "夕凪", "赤鉛筆", "合鍵"]
 }
 
 /// UI専用の決定的PRNG（SplitMix系・GameCoreのRandomSourceとは別物＝乱数列に非干渉）

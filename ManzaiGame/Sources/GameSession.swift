@@ -95,6 +95,9 @@ final class GameSession {
     private(set) var watchingFinal = false
     /// 今年の観客版決勝を観終えたか（1年1回）
     private(set) var didWatchFinal = false
+    /// 今年の決勝のスコアとラインの差（score − 実効ライン）。決勝演出の順位・票を内部の結果に沿って合成するため
+    /// （正＝優勝。0に近いほど接戦）。表示専用・golden非対象
+    private(set) var lastFinalMargin: Double?
 
     let config: GameConfig
     /// 結成何年目か（WeekRunner が持つ値をそのまま読む＝セーブ・復元も runner のスナップショットに乗る）
@@ -751,6 +754,7 @@ final class GameSession {
         totalPrize = 0
         didWatchFinal = false
         watchingFinal = false
+        lastFinalMargin = nil
         lastAction = nil
         lastGains = []
         lastCompatGain = 0
@@ -891,6 +895,7 @@ final class GameSession {
                     log.append(summarize(summary))
                 }
                 let big = summary.results.filter(\.isStage)
+                if let f = big.last(where: { $0.name == "GP決勝" }) { lastFinalMargin = f.margin }
                 if !big.isEmpty {
                     // 連敗カウント＆直近通過（心の声用）: 通過でリセット・敗退で加算
                     for r in big {
@@ -921,6 +926,8 @@ final class GameSession {
                                                   prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0)))
                 }
                 if outcome.champion {
+                    // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）
+                    lastFinalMargin = runner.snapshot().weekResults.last(where: { $0.name == "GP決勝" })?.margin
                     // GP決勝の優勝は WeekRunner が週の結果を返さず即 yearDone になる（Calendar の即時リターン）＝
                     // .weekDone 経由の記録（出来事ログ・賞金年計）に載らない。表示用の記録だけここで足す（GameCore 不変）。
                     week = runner.week
