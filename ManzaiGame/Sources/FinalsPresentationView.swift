@@ -1,19 +1,23 @@
 // FinalsPresentationView.swift
 // M-1本家型 決勝演出（uiux_vision_reply_part1 §4-2b/c/d ＋ Fable doc03 の7審査員）。
-// 籤(出順) → 7審査員を1人ずつ開く(見せ札＝各点＋審査員名＋重視軸の色。合計は全員の後) → 暫定ボード順位 → 最終決戦めくり(票) → 優勝。
+// M-1と同じ進行（comedy_research_v2/r1 §2・§7 P2/P3・2026-10-10）: 先に出る組が出順どおり1組ずつ出てボードに載る →
+// 自組の籤 → ネタ → 7審査員を1人ずつ開く(合計は全員の後) → 暫定席に入るか敗退か → 後の組が1組ずつ出て暫定席が入れ替わる
+// → 上位3組の最終決戦めくり(票) → 優勝。観客モードは10組を順に観てから最終決戦。
 // ★絶対制約: 全て「単一の内部結果(outcome)」からの演出的合成。GameCoreの判定・乱数列には一切触れない＝golden不変。
 // 数値は全て【仮・実機目視で調整】。表示用RNGは state から決定的に seed（再現可・GameCore非消費）。
 
 import SwiftUI
 import GameCore
 
-/// 決勝のビート（順に進む・飛ばさない）。旧 Int の beat 0..4 と同じ順序。
+/// 決勝のビート（順に進む・飛ばさない）。中身の無いビート（出順1番の「先の組」）だけは入らない。
 enum FinalsBeat: Int, Comparable {
-    case lot = 0      // 籤（出順）
-    case open = 1     // 7審査員の採点（1人ずつ開く＝オーナー判断 2026-10-09）
-    case board = 2    // 暫定ボード
-    case duel = 3     // 最終決戦（めくり）
-    case result = 4   // 優勝発表
+    case preceding = 0 // 自組より前の出順の組が1組ずつ出る（自動で送る・タップで次の組）
+    case lot = 1       // 自組の籤（出順）
+    case perform = 2   // ネタ（舞台の二人・歓声。自動で採点へ）
+    case open = 3      // 7審査員の採点（1人ずつ開く＝オーナー判断 2026-10-09）
+    case board = 4     // 自組がボードに入る → 後の組が1組ずつ出て暫定席が入れ替わる → 1本目の確定
+    case duel = 5      // 最終決戦（めくり）
+    case result = 6    // 優勝発表
     static func < (a: FinalsBeat, b: FinalsBeat) -> Bool { a.rawValue < b.rawValue }
     var next: FinalsBeat { FinalsBeat(rawValue: min(rawValue + 1, FinalsBeat.result.rawValue)) ?? .result }
 }
@@ -26,6 +30,10 @@ struct FinalsPresentationView: View {
     var onFinishSpectating: ((String) -> Void)? = nil
 
     @State private var beat: FinalsBeat = .lot
+    /// ボードに載った組の数（出順の先頭から）。先の組→自組→後の組の順に増える
+    @State private var shown = 0
+    /// 自組がボードに入った後、後の組を自動で流し始めたか（自組の入りの瞬間はタップを待つ）
+    @State private var boardAuto = false
     @State private var revealedJudges = 0  // 見せ札を1人ずつ開示（M-1式・0..7）
     @State private var revealVotes = 0     // 最終決戦のめくり票数
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
@@ -64,18 +72,25 @@ struct FinalsPresentationView: View {
     private var stageMode: StageFrame.Mode {
         switch beat {
         case .lot: return .preshow
-        case .open, .board, .duel: return spectator ? .spectator : .judging
+        case .perform: return .lit
+        case .preceding, .open, .board, .duel: return spectator ? .spectator : .judging
         case .result: return d.champion ? .winner : (spectator ? .spectator : .loser)
         }
     }
-    /// 舞台に二人を立たせるビート（籤＝これから立つ舞台／優勝＝二人が画面にいる・A2 §1-9）
-    private var stagePerformers: Bool { beat == .lot || (beat == .result && !spectator) }
+    /// 舞台に二人を立たせるビート（籤＝これから立つ舞台／ネタ中／優勝＝二人が画面にいる・A2 §1-9）
+    private var stagePerformers: Bool { beat == .lot || beat == .perform || (beat == .result && !spectator) }
+    /// ボードの n 組時点の順位（合計の高い順）
+    private func standings(_ n: Int) -> [FinalsEntry] {
+        Array(d.entries.prefix(n)).sorted { $0.total > $1.total }
+    }
+    /// 自動送りの鍵（ビート・自動開始・開演の儀の終わりが変わるたびに張り直す）
+    private var autoKey: String { "\(beat.rawValue)-\(boardAuto)-\(ceremonyDone)" }
 
     var body: some View {
         ZStack {
             // 暖色の客席に光る舞台（オーナー判断 Q1=A・visual_genre_overhaul_v1 §6 F1）。採点〜最終決戦は金屏風
             StageFrame(mode: stageMode, performers: stagePerformers,
-                       floorTop: beat == .lot ? 0.60 : (beat == .result ? 0.62 : 0.56))
+                       floorTop: beat == .lot ? 0.60 : (beat == .result ? 0.62 : (beat == .perform ? 0.58 : 0.56)))
                 .animation(.easeInOut(duration: 0.5), value: beat)
             if celebrate && d.champion {
                 // 金の放射光と紙吹雪は自組の優勝の夜だけ（他組の優勝・決勝敗退には降らない・A2 §3-B2）
@@ -88,7 +103,9 @@ struct FinalsPresentationView: View {
 
                 Group {
                     switch beat {
+                    case .preceding: precedingBeat
                     case .lot: lotBeat
+                    case .perform: performBeat
                     case .open: openBeat
                     case .board: boardBeat
                     case .duel: finalDuelBeat
@@ -136,17 +153,38 @@ struct FinalsPresentationView: View {
         .onAppear {
             if dataCache == nil { dataCache = makeData() }
             Sound.bgm(.finals)   // 番組のBGM（決勝の格）
-            if spectator { beat = .board }   // 観客は籤と自組の採点を飛ばし、暫定ボードから観る
+            if spectator {
+                beat = .board; shown = 0; boardAuto = true   // 観客は10組を出順どおりに観てから最終決戦
+            } else {
+                beat = d.order == 1 ? .lot : .preceding        // トップバッターは先の組が無い
+            }
             #if DEBUG
-            // 目視用: MZ_FIN=open/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
+            // 目視用: MZ_FIN=pre/open/board/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
+            case "pre": beat = .preceding; shown = max(0, d.order - 1)
             case "open": beat = .open; revealedJudges = 5
-            case "board": beat = .board
+            case "board": beat = .board; shown = 10; boardAuto = true
             case "duel": beat = .duel; revealVotes = 5
             case "win": beat = .result
             default: break
             }
             #endif
+        }
+        // 先の組・後の組の自動送り（1.25秒ごとに1組）とネタの間（1.8秒で採点へ）。タップはいつでも次へ
+        .task(id: autoKey) {
+            guard ceremonyDone else { return }
+            if beat == .perform {
+                try? await Task.sleep(nanoseconds: 1_800_000_000)
+                if !Task.isCancelled, beat == .perform { goNext() }
+                return
+            }
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_250_000_000)
+                if Task.isCancelled { return }
+                if beat == .preceding, shown < d.order - 1 { stepBoard() }
+                else if beat == .board, boardAuto, shown < d.entries.count { stepBoard() }
+                else { return }
+            }
         }
     }
 
@@ -179,6 +217,13 @@ struct FinalsPresentationView: View {
     private func advance() {
         guard !holdingSeventh else { return }
         switch beat {
+        case .preceding where shown < d.order - 1:
+            stepBoard()
+        case .board where !boardAuto:
+            boardAuto = true      // 自組の入りを見せた後のタップ＝後の組を流し始める（最初の1組はすぐ出す・大トリなら確定へ）
+            if shown < d.entries.count { stepBoard() }
+        case .board where shown < d.entries.count:
+            stepBoard()
         case .open where revealedJudges == 6:
             // 7人目（天堂寺がトリ）の前だけ、全SE断＋BGMを絞る0.6秒の間（伝説の間・finals_direction §2-2）
             holdingSeventh = true
@@ -207,8 +252,37 @@ struct FinalsPresentationView: View {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { celebrate = true }
                 Haptics.rare(); burstFire += 1
             }
-            Sound.play(.transition)
-            withAnimation(.easeInOut(duration: 0.4)) { beat = beat.next }
+            goNext()
+        }
+    }
+
+    /// 次のビートへ。ボードに入る瞬間は自組の行を載せ、暫定席に入れたかを音で返す
+    private func goNext() {
+        let nextBeat = beat.next
+        Sound.play(.transition)
+        if nextBeat == .board && !spectator {
+            shown = d.order
+            boardAuto = false
+            let rank = (standings(shown).firstIndex { $0.isSelf } ?? 0) + 1
+            if rank <= 3 { Sound.play(.cheerMid); Haptics.confirm() } else { Sound.play(.taiko2); Haptics.rare() }
+        }
+        withAnimation(.easeInOut(duration: 0.4)) { beat = nextBeat }
+    }
+
+    /// ボードに次の組を1組載せる。暫定席（上位3）に入れば「ドン」、自組が押し出されたら重い太鼓
+    private func stepBoard() {
+        guard shown < d.entries.count else { return }
+        let wasSelfSeated = standings(shown).prefix(3).contains { $0.isSelf }
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) { shown += 1 }
+        let entry = d.entries[shown - 1]
+        let top = standings(shown).prefix(3)
+        let seated = top.contains { $0.order == entry.order }
+        if wasSelfSeated && !top.contains(where: { $0.isSelf }) {
+            Sound.play(.taiko2); Haptics.rare()            // 自組が席を立つ
+        } else if seated {
+            Sound.play(.don); Haptics.confirm()            // 暫定席に入った
+        } else {
+            Sound.play(.applauseSmall); Haptics.tick()
         }
     }
 
@@ -224,6 +298,13 @@ struct FinalsPresentationView: View {
     private func fastForwardBeat() {
         guard !holdingSeventh else { return }
         switch beat {
+        case .preceding where shown < d.order - 1:
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { shown = d.order - 1 }
+            Haptics.confirm()
+        case .board where shown < d.entries.count:
+            boardAuto = true
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { shown = d.entries.count }
+            Haptics.confirm()
         case .open where revealedJudges < 7:
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { revealedJudges = 7 }
             Haptics.confirm(); Sound.play(.tada); Sound.play(.applauseHall)
@@ -241,27 +322,105 @@ struct FinalsPresentationView: View {
 
     // MARK: Beat 0 — 籤（出順）
     private var lotBeat: some View {
-        VStack(spacing: 16) {
-            Spacer(minLength: 16)
-            Telop(text: "出順発表", size: 17)
+        // 札は上に小さく置き、舞台の二人（StageFrame の performers）を隠さない
+        VStack(spacing: 8) {
+            Telop(text: "出順発表", size: 15)
             // 金縁の出順プレート（テレビの札）
-            VStack(spacing: 0) {
-                Text("\(d.order)").font(.maru(74, weight: .black)).monospacedDigit()
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(d.order)").font(.maru(56, weight: .black)).monospacedDigit()
                     .foregroundStyle(Theme.sumi)
                 Text("番目 ／ 全10組").font(.maru(.sub)).foregroundStyle(Theme.goldDeep)
-                    .padding(.bottom, 12)
             }
-            .frame(width: 190)
+            .padding(.horizontal, 22).padding(.vertical, 2)
             .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(
                 LinearGradient(colors: [Color(hex: 0xFFE9A8), Theme.gold, Color(hex: 0x8A6508)],
                                startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2.5))
             .shadow(color: Theme.gold.opacity(0.35), radius: 16, y: 6)
-            Spacer(minLength: 16)
+            Telop(text: session.combiName, size: 24, color: .white)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Spacer(minLength: 150)
             NarrationCard(text: d.order == 1 ? "トップバッター。会場はまだ温まっていない。"
                           : d.order == 10 ? "大トリ。ここまでの空気を、全部ひっくり返す番だ。"
                           : "中盤。沸いた流れに、どう乗るか。")
                 .padding(.bottom, 30)
+        }
+    }
+
+    // MARK: 先の組（出順が自組より前）— 1組ずつ出てボードに載る
+    private var precedingBeat: some View {
+        VStack(spacing: 10) {
+            if shown == 0 {
+                Telop(text: "ファーストラウンド", size: 17)
+            } else {
+                nowCard(d.entries[shown - 1])
+            }
+            standingsList(n: shown, newest: shown > 0 ? d.entries[shown - 1] : nil)
+        }
+    }
+
+    // MARK: ネタ（舞台の二人・歓声。1.8秒で採点へ）
+    private var performBeat: some View {
+        VStack(spacing: 10) {
+            Spacer(minLength: 20)
+            if let neta = session.selectedNeta {
+                Telop(text: "「\(neta.name)」", size: 22, color: .white)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+            }
+            Spacer(minLength: 200)
+        }
+        .onAppear {
+            Sound.play(.cheerMid)
+            Task {
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                Sound.play(.cheerBig)
+            }
+        }
+    }
+
+    /// 今出た1組の札（出順・名前・合計）。自組は朱の縁
+    private func nowCard(_ e: FinalsEntry) -> some View {
+        HStack(spacing: 10) {
+            Text("\(e.order)番目").font(.maru(.sub)).foregroundStyle(Theme.goldDeep)
+            Text(displayName(e)).font(.maru(.title)).foregroundStyle(Theme.ink)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Spacer(minLength: 6)
+            Text("\(e.total)").font(.maru(30, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
+                .contentTransition(.numericText())
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(e.isSelf ? Theme.verm : Theme.gold, lineWidth: 2.5))
+        .shadow(color: Theme.goldLeafLo.opacity(0.6), radius: 0, y: 3)
+        .id(e.order)
+        .transition(.scale(scale: 0.9).combined(with: .opacity))
+    }
+
+    /// その時点のボード。上位3組＝暫定席（金）、4位以下＝敗退（薄く）。押し出された組は席を立つ（薄くなる）
+    private func standingsList(n: Int, newest: FinalsEntry?) -> some View {
+        let rows = standings(n)
+        return VStack(spacing: 4) {
+            ForEach(Array(rows.enumerated()), id: \.element.order) { rank, e in
+                let seated = rank < 3
+                HStack(spacing: 10) {
+                    Text("\(rank + 1)").font(.maru(.body)).monospacedDigit()
+                        .foregroundStyle(seated ? Theme.goldDeep : Theme.inkSub).frame(width: 24)
+                    Text(displayName(e)).font(.maru(e.isSelf ? .body : .bodyMedium))
+                        .foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
+                    Spacer()
+                    if !seated {
+                        Text("敗退").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                    }
+                    Text("\(e.total)").font(.maru(.body)).monospacedDigit().foregroundStyle(Theme.sumi)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 4)
+                .background(e.isSelf ? Color(hex: 0xFFE9E2) : Theme.mekuri.opacity(0.94), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(alignment: .leading) {
+                    if seated { Rectangle().fill(Theme.gold).frame(width: 4).clipShape(RoundedRectangle(cornerRadius: 2)) }
+                }
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(e.isSelf ? Theme.verm : (newest?.order == e.order ? Theme.gold : .clear), lineWidth: 2))
+                .opacity(seated || e.isSelf ? 1 : 0.62)
+            }
         }
     }
 
@@ -341,30 +500,27 @@ struct FinalsPresentationView: View {
         .shadow(color: Theme.goldLeafLo.opacity(0.6), radius: 0, y: 4)
     }
 
-    // MARK: Beat 2 — 暫定ボード（全10組順位）
+    // MARK: ボード — 自組が入る → 後の組が1組ずつ出て暫定席が入れ替わる → 1本目の確定
     private var boardBeat: some View {
-        VStack(spacing: 5) {
-            Telop(text: "暫定ボード", size: 17).padding(.bottom, 2)
-            ForEach(Array(d.board.enumerated()), id: \.offset) { rank, row in
-                HStack(spacing: 10) {
-                    Text("\(rank + 1)").font(.maru(.body)).monospacedDigit()
-                        .foregroundStyle(rank < 3 ? Theme.goldDeep : Theme.inkSub).frame(width: 24)
-                    // 自組は付けたコンビ名で出す（「あなたたち」で名前が消えていた・A2 §1-7）
-                    Text(row.isSelf ? session.combiName : row.name).font(.maru(row.isSelf ? .body : .bodyMedium))
-                        .foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-                    Spacer()
-                    Text("\(row.total)").font(.maru(.body)).monospacedDigit().foregroundStyle(Theme.sumi)
+        let selfRank = (standings(shown).firstIndex { $0.isSelf } ?? 0) + 1
+        let done = shown >= d.entries.count
+        return VStack(spacing: 10) {
+            if !spectator && !boardAuto {
+                // 自組がボードに入った瞬間（タップを待つ）
+                VStack(spacing: 4) {
+                    Telop(text: "暫定\(selfRank)位", size: 30, color: selfRank <= 3 ? Color(hex: 0xFFE07A) : .white)
+                    Telop(text: selfRank <= 3 ? "暫定席へ" : "ここで敗退", size: 15, color: Theme.houseLight)
                 }
-                .padding(.horizontal, 12).padding(.vertical, 5)
-                .background(row.isSelf ? Color(hex: 0xFFE9E2) : Theme.mekuri.opacity(0.94), in: RoundedRectangle(cornerRadius: 8))
-                .overlay(alignment: .leading) {
-                    if rank < 3 { Rectangle().fill(Theme.gold).frame(width: 4).clipShape(RoundedRectangle(cornerRadius: 2)) }
-                }
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(row.isSelf ? Theme.verm : .clear, lineWidth: 2))
+            } else if done {
+                Telop(text: spectator ? "——今年の決勝。俺たちは、客席にいた。"
+                      : d.selfInDuel ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。",
+                      size: 15)
+            } else if shown == 0 {
+                Telop(text: "ファーストラウンド", size: 17)
+            } else {
+                nowCard(d.entries[shown - 1])
             }
-            Telop(text: spectator ? "——今年の決勝。俺たちは、客席にいた。"
-                  : d.champion || d.boardRank <= 3 ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。",
-                  size: 15).padding(.top, 6)
+            standingsList(n: shown, newest: shown > 0 && !done ? d.entries[shown - 1] : nil)
         }
     }
 
