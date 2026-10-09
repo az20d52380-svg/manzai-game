@@ -1,6 +1,6 @@
 // FinalsPresentationView.swift
 // M-1本家型 決勝演出（uiux_vision_reply_part1 §4-2b/c/d ＋ Fable doc03 の7審査員）。
-// 籤(出順) → 7審査員一斉オープン(見せ札＝各点＋審査員名＋重視軸の色＋合計) → 暫定ボード順位 → 最終決戦めくり(票) → 優勝。
+// 籤(出順) → 7審査員を1人ずつ開く(見せ札＝各点＋審査員名＋重視軸の色。合計は全員の後) → 暫定ボード順位 → 最終決戦めくり(票) → 優勝。
 // ★絶対制約: 全て「単一の内部結果(outcome)」からの演出的合成。GameCoreの判定・乱数列には一切触れない＝golden不変。
 // 数値は全て【仮・実機目視で調整】。表示用RNGは state から決定的に seed（再現可・GameCore非消費）。
 
@@ -256,7 +256,8 @@ struct FinalsPresentationView: View {
 
     // MARK: Beat 1 — 7審査員 一斉オープン（見せ札）
     private var openBeat: some View {
-        let running = d.judges.prefix(revealedJudges).reduce(0) { $0 + $1.score }
+        // M-1と同じく、7人全員の札が出るまで合計は出さない（途中の点数は伏せる・オーナー指摘 2026-10-10）
+        let total = d.judges.reduce(0) { $0 + $1.score }
         let allShown = revealedJudges >= 7
         // 見せ札の型ラベル（v2 §4-3補2）: FinalsData（Σ=S補正・rng.int等）の計算には一切関与しない、
         // 既に確定済みの点数・出順の上に、選択中ネタの型を審査員の固定嗜好表で引いて添えるだけの純表示。
@@ -269,10 +270,9 @@ struct FinalsPresentationView: View {
                 }
             }
             VStack(spacing: 2) {
-                Telop(text: "\(running)", size: 64, color: allShown ? Color(hex: 0xFFE07A) : .white)
+                Telop(text: allShown ? "\(total)" : "？？？", size: 64, color: allShown ? Color(hex: 0xFFE07A) : Theme.houseLight)
                     .monospacedDigit()
-                    .contentTransition(.numericText())
-                    .punch(on: running, peak: 1.16)   // 1人開くたび合計がドンと跳ねる
+                    .punch(on: allShown, peak: 1.2)   // 7人目が開いた瞬間に初めて合計がドンと出る
                 Telop(text: allShown ? "/ 700" : "……", size: 15, color: Theme.houseLight)
             }
             .padding(.top, 2)
