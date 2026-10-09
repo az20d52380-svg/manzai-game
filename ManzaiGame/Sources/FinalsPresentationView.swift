@@ -157,7 +157,7 @@ struct FinalsPresentationView: View {
             Rectangle().fill(Theme.verm).frame(width: 5)
             Text(spectator ? "客席から" : session.combiName).font(.maru(.body)).foregroundStyle(.white)
             Spacer()
-            Text(spectator ? session.combiName : "結成1年").font(.maru(.sub)).foregroundStyle(Theme.gold)
+            Text(spectator ? session.combiName : "結成\(session.year)年").font(.maru(.sub)).foregroundStyle(Theme.gold)
         }
         .padding(.horizontal, 16).frame(height: 46)
         .background(Theme.lowerThird.opacity(0.96))

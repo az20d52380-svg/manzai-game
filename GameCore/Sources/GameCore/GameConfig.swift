@@ -97,6 +97,9 @@ public struct OfferSpec: Codable {
 public struct GameConfig {
     // --- 基本（Python: WEEKS ほか） ---
     public var weeks = 48
+    /// 1キャリアの年数（本編は結成10年で完結・master_spec_v2 §1。Python: sim_career.YEARS と同期）。
+    /// 年の進め方そのもの（年初の体力全回復・成長予算・GPシード）は WeekRunner(year:) が持つ＝この値は「何年目で区切るか」だけ
+    public var careerYears = 10
     public var initMoney = 300_000
     public var initStamina = 100.0
     public var initFame = 3.0

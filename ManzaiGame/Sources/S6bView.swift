@@ -94,10 +94,16 @@ struct S6bView: View {
         VStack(spacing: Theme.Sp.s16) {
             Spacer()
             Text("年表").font(.maru(12)).tracking(2).foregroundStyle(.white.opacity(0.5))
-            HStack {
-                Text("\(session.year)年目").font(.maru(13)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
-                Spacer()
-                Text(reachText).font(.maru(14)).foregroundStyle(Theme.gold)
+            // 1年＝1行（結成からの頂グランプリの到達）。最後の行が優勝の年
+            VStack(spacing: 6) {
+                ForEach(session.yearHistory, id: \.year) { r in
+                    HStack {
+                        Text("\(r.year)年目").font(.maru(13)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
+                        Spacer()
+                        Text(r.champion ? "頂グランプリ 優勝" : YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
+                            .font(.maru(14)).foregroundStyle(r.champion ? Theme.gold : .white.opacity(0.85))
+                    }
+                }
             }
             .padding(Theme.Sp.s16).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: Theme.Rad.card))
             .padding(.horizontal, Theme.Sp.s24)
@@ -108,13 +114,6 @@ struct S6bView: View {
             Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45)).padding(.bottom, Theme.Sp.s24)
         }
         .contentShape(Rectangle()).onTapGesture { advance(.wall) }
-    }
-
-    private var reachText: String {
-        guard let o = session.outcome else { return "——" }
-        if o.champion { return "頂グランプリ 優勝" }
-        if o.reachedFinal { return "決勝進出" }
-        return "予選 \(o.roundsPassed)回戦"
     }
 
     // MARK: ⑤ 壁写真焼き付き→緞帳→もう一度

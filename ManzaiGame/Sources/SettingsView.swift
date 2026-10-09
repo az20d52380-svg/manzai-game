@@ -1,6 +1,6 @@
 // SettingsView.swift
 // S1b 設定（正本: uiux_vision_reply_part2 §S1b・難度低）。rSheet(上辺角丸)の白面リスト。
-// 音量(BGM/SE)・プライバシーポリシー・（進行中のみ）この年をやめる。
+// 音量(BGM/SE)・プライバシーポリシー・（進行中のみ）このキャリアをやめる。
 // 動かない項目（購入を復元・通知・データ管理・利用規約）は監査G-02で撤去。課金/通知を実装する時に戻す。
 
 import SwiftUI
@@ -36,13 +36,13 @@ struct SettingsView: View {
                             }
                         }
                         if let onQuitRun {
-                            section("この年") {
+                            section("このキャリア") {
                                 Button {
                                     if quitArmed { onQuitRun() } else { quitArmed = true }
                                 } label: {
                                     HStack {
-                                        Text(quitArmed ? "もう一度押すと、この年の記録を消してタイトルへ戻る"
-                                                       : "この年をやめてタイトルへ")
+                                        Text(quitArmed ? "もう一度押すと、ここまでの記録を消してタイトルへ戻る"
+                                                       : "やめてタイトルへ戻る")
                                             .font(.maru(13)).foregroundStyle(quitArmed ? Theme.verm : Theme.ink)
                                         Spacer()
                                     }

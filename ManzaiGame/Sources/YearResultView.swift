@@ -2,7 +2,8 @@
 // S6 年次リザルト（正本: uiux_vision_reply_part2 §S6）。縦1カラムの紙面（年表の1ページ様式・e3）。
 // 上から: 年目バッジ → 到達段階の判 → レーダー重ね(4月線+現在面) → 48週行動内訳色帯 → 出来事3行(大会結果のみ) → 賞金/知名度年計。
 // トランジション: 紙面が下から0.4s・要素は上から0.15s間隔の時間差表示。判押印0.25s+hConfirm。レーダーモーフ0.8s・行動内訳帯左から0.6s。
-// MVPは1年完結なので二択(勇退/続投=S6b/S9)は未実装＝「もう一度」で新周回。締めは年次独白(voice_corpus yearEnd.*)。
+// 複数年キャリア（2026-10-10）: 区切りでない年末は「◯年目へ」で翌年へ。優勝年は勇退エンディングへ、
+// 夜逃げ・結成10年目の年末は「もう一度」で新しいキャリアへ。締めは年次独白(voice_corpus yearEnd.*)。
 
 import SwiftUI
 import GameCore
@@ -11,6 +12,7 @@ struct YearResultView: View {
     let session: GameSession
     var onRestart: () -> Void
     var onEnding: (() -> Void)? = nil   // 優勝時のみ: 勇退エンディング(S6b)へ
+    var onNextYear: (() -> Void)? = nil // キャリアが続く年末のみ: 翌年へ
 
     private var s: GameState { session.state }
     private var o: YearOutcome? { session.outcome }
@@ -26,6 +28,7 @@ struct YearResultView: View {
                 yearBadge.stagger(0, appear)
                 reachStamp.stagger(1, appear)
                 gradeLadder.stagger(2, appear)
+                historyBlock.stagger(2, appear)
                 totalsBlock.stagger(3, appear)
                 eventsBlock.stagger(4, appear)
                 yearEndMonolog.stagger(5, appear)
@@ -56,7 +59,7 @@ struct YearResultView: View {
 
     /// 5能力の 4月の等級 → いまの等級 と、次の等級までの進み。上がった能力は金の縁と「↑」。等級は表示写像だけ（Theme.rank）
     private var gradeLadder: some View {
-        let base = GameState(config: session.config)
+        let base = session.yearStartState
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
         return VStack(alignment: .leading, spacing: 9) {
             Text("この1年で育ったもの").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
@@ -97,6 +100,45 @@ struct YearResultView: View {
             .background(Theme.gradeColor(g).opacity(dim ? 0.55 : 1), in: RoundedRectangle(cornerRadius: 6))
     }
 
+    // MARK: これまで（1年＝1行・2年目以降だけ）
+
+    /// 結成からの頂グランプリの到達を1年1行で並べる（何年もかけて登っていく手応え・表示専用）
+    @ViewBuilder private var historyBlock: some View {
+        if session.yearHistory.count >= 2 {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("これまでの頂グランプリ").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                ForEach(session.yearHistory, id: \.year) { r in
+                    let label = Self.reachLabel(r, names: session.config.calendar.gpRoundNames)
+                    HStack(spacing: 10) {
+                        Text("\(r.year)年目").font(.maru(.sub)).monospacedDigit().foregroundStyle(Theme.inkSub)
+                            .frame(width: 52, alignment: .leading)
+                        Text(label).font(.maru(.sub)).foregroundStyle(r.champion || r.reachedFinal ? Theme.goldDeep : Theme.ink)
+                        Spacer()
+                        if r.year == session.year {
+                            Text("今年").font(.maru(.sub)).foregroundStyle(.white)
+                                .padding(.horizontal, 7).padding(.vertical, 2)
+                                .background(Theme.vermD, in: Capsule())
+                        }
+                    }
+                }
+            }
+            .padding(Theme.Sp.s16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+            .hardShadow()
+        }
+    }
+
+    /// 1年の到達の短い呼び名（年表・これまで共用）。敗れた回戦を言う（監査C-07 と同じ規則）
+    static func reachLabel(_ r: GameSession.YearRecord, names: [String]) -> String {
+        if r.champion { return "優勝" }
+        if r.bankrupt { return "夜逃げ" }
+        if r.reachedFinal { return "決勝" }
+        if r.roundsPassed < names.count { return names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "敗退" }
+        return "準決勝敗退"
+    }
+
     // MARK: 年目バッジ
 
     private var yearBadge: some View {
@@ -127,7 +169,7 @@ struct YearResultView: View {
 
     private var radarBlock: some View {
         VStack(spacing: 4) {
-            RadarChart(axes: RadarChart.abilityAxes(current: s, base: GameState(config: session.config), config: session.config))
+            RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.yearStartState, config: session.config))
                 .frame(height: 210)
             HStack(spacing: 12) {
                 legendDot(Theme.inkFaint, "4月", dashed: true)
@@ -224,8 +266,10 @@ struct YearResultView: View {
         let pool: [String]
         if o.bankrupt {
             pool = Self.yeBankrupt                                               // 貧乏年
-        } else if !o.champion && !o.reachedFinal && s.compat < 10 {
-            pool = Self.yeDissolution                                            // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】）
+        } else if session.careerOver && !o.champion && !o.reachedFinal && s.compat < 10 {
+            // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】）。終わり方の語彙なので、
+            // キャリアの区切りの年末だけ（翌年へ続く年末に出すと「最後だった」と矛盾する）
+            pool = Self.yeDissolution
         } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
             pool = Self.yeLeap                                                    // 躍進年
         } else {
@@ -257,8 +301,9 @@ struct YearResultView: View {
     ]
 
     private var restartButton: some View {
-        Button(action: onEnding ?? onRestart) {
-            Text(onEnding != nil ? "勇退エンディングへ ▶" : "もう一度").font(.maru(.body)).foregroundStyle(.white)
+        Button(action: onNextYear ?? onEnding ?? onRestart) {
+            Text(onNextYear != nil ? "\(session.year + 1)年目へ ▶" : onEnding != nil ? "勇退エンディングへ ▶" : "もう一度")
+                .font(.maru(.body)).foregroundStyle(.white)
                 .frame(maxWidth: .infinity, minHeight: 52)
                 .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
                 .shadow(color: Theme.vermD, radius: 0, y: 3)

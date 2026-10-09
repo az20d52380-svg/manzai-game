@@ -50,6 +50,10 @@ struct RootView: View {
             let smoke = ProcessInfo.processInfo.environment["MZ_SMOKE"]
             let ui = ProcessInfo.processInfo.environment["MZ_UI"]
             if smoke != nil || ui != nil { started = true }   // スモーク/UI確認時はS1を飛ばす
+            // 複数年の目視: MZ_YEARS=n で n 年ぶん自動で年末→翌年へ進めてから、他のフックを掛ける
+            if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
+                session.debugAdvanceYears(n)
+            }
             if session.week <= 1 {
                 if smoke == "1" { session.debugAdvanceToFirstResult() }
                 else if smoke == "2" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
@@ -167,7 +171,8 @@ struct RootView: View {
                 YearResultView(session: session,
                                onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max),
                                                                   combiName: session.combiName) },
-                               onEnding: session.outcome?.champion == true ? { showEnding = true } : nil)
+                               onEnding: session.outcome?.champion == true ? { showEnding = true } : nil,
+                               onNextYear: session.careerOver ? nil : { session.startNextYear() })
             }
         } else if let result = session.pendingResult {
             if let r = result.results.last, r.name == "GP決勝", !r.passed {

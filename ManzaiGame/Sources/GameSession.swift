@@ -1,7 +1,9 @@
 // GameSession.swift
 // ui_design_v0.md §5 の ViewModel。WeekRunner（GameCore）を保持し、Phase に応じて人の入力を待つ。
 // ロジックは一切持たず、WeekRunner を駆動して結果を @Observable な表示用プロパティに写すだけ。
-// MVP は1年完結（S6 リザルト→タイトル）。多年キャリアは本編で（ui_design §1）。
+// 複数年キャリア（core_loop_reconsideration_v0 §7・2026-10-10）: 年末（S6）→ startNextYear() で翌年の WeekRunner を
+// GameCareer.runCareer と同じ形（状態と乱数列を持ち越し・前年準々決勝以上で1回戦シード）で立てる。
+// 区切り＝優勝（勇退）／夜逃げ／結成 config.careerYears 年目の年末。
 
 import Foundation
 import Observation
@@ -95,7 +97,12 @@ final class GameSession {
     private(set) var didWatchFinal = false
 
     let config: GameConfig
-    let year = 1                       // MVPは1年目のみ
+    /// 結成何年目か（WeekRunner が持つ値をそのまま読む＝セーブ・復元も runner のスナップショットに乗る）
+    var year: Int { runner.year }
+    /// この年の4月（年初）の状態。年末の「この1年で育ったもの」とレーダーの4月線の基準（表示専用・golden非対象）
+    private(set) var yearStartState: GameState
+    /// 1年＝1行の記録（年末の「これまで」と勇退エンディングの年表に使う・表示専用・golden非対象）
+    private(set) var yearHistory: [YearRecord] = []
     let combiName: String              // S1で入力（表示専用・golden非対象）
     /// 中断セーブから復元されたセッションか（RootView が IntroFlow をスキップする判定に使う）
     let isRestored: Bool
@@ -118,6 +125,7 @@ final class GameSession {
         let start = startState ?? GameState(config: cfg)
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed))
+        self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
         self.phase = firstPhase
@@ -137,6 +145,14 @@ final class GameSession {
         self.state = save.runner.state
         self.phase = save.phase
         self.week = save.runner.week
+        // 複数年（v3）: 旧セーブ（1年完結時代）には無い＝1年目の新規と同じ基準に落とす
+        self.yearStartState = save.yearStartState ?? GameState(config: cfg)
+        self.yearHistory = save.yearHistory ?? []
+        if case .yearDone(let o) = save.phase {
+            // 年末の画面（S6）で中断した＝翌年へ進む前。年末の結果をそのまま出し直す
+            self.outcome = o
+            self.finished = true
+        }
         self.pendingResult = save.pendingResult
         self.log = save.log
         self.lossStreak = save.lossStreak
@@ -372,7 +388,7 @@ final class GameSession {
         } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
             pendingChoiceEvent = .preTournamentEve
             didFireEve = true
-        } else if !didFireEarlyFormality, week >= 3, week < 15, state.compat <= 7 {
+        } else if !didFireEarlyFormality, year == 1, week >= 3, week < 15, state.compat <= 7 {   // 結成初期＝1年目だけ
             pendingChoiceEvent = .earlyFormality
         } else if !didFireTsuukaChoice, state.compat >= 15 {
             pendingChoiceEvent = .tsuukaBreak
@@ -697,7 +713,65 @@ final class GameSession {
     func acknowledgeWin() {
         winFinale = false
         finished = true
-        saveNow()   // finished=true なのでセーブは消える（周回は持ち越さない）
+        saveNow()   // 優勝＝キャリアの区切り（勇退）なのでセーブは消える
+    }
+
+    // MARK: 複数年キャリア（core_loop_reconsideration_v0 §7・2026-10-10）
+
+    /// 1年＝1行の記録（表示専用・golden非対象）
+    struct YearRecord: Codable, Equatable {
+        let year: Int
+        let roundsPassed: Int
+        let reachedFinal: Bool
+        let champion: Bool
+        let bankrupt: Bool
+        let prize: Int
+    }
+
+    /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／結成 careerYears 年目の年末）
+    var careerOver: Bool {
+        guard let o = outcome else { return false }
+        return o.champion || o.bankrupt || year >= config.careerYears
+    }
+
+    /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
+    /// 状態と乱数列を持ち越し、年初処理（体力全回復・その年までの成長予算）は WeekRunner(year:) が行う。
+    /// 前年に準々決勝以上（roundsPassed>=3）なら1回戦シード（runCareer の gpSeeded と同じ条件）。RNG非消費。
+    func startNextYear() {
+        guard finished, !careerOver, let o = outcome else { return }
+        var r = WeekRunner(state: runner.state, year: year + 1, config: config, rng: runner.rng,
+                           gpSeeded: o.roundsPassed >= 3)
+        yearStartState = r.state
+        // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）
+        finished = false
+        outcome = nil
+        pendingResult = nil
+        log = []
+        categoryLog = [:]
+        totalPrize = 0
+        didWatchFinal = false
+        watchingFinal = false
+        lastAction = nil
+        lastGains = []
+        lastCompatGain = 0
+        lastGrainGains = []
+        lastNetaGain = nil
+        lastMoneyDelta = 0
+        lastStaminaDelta = 0
+        lastFameDelta = 0
+        lastDeltaWeek = -1
+        justPassedStage = false
+        justLostStage = false
+        justOroshiNeta = nil
+        weekBanter = nil
+        pendingChoiceEvent = nil
+        lastEventRollWeek = -1
+        lastBanterRollWeek = -1
+        let first = r.begin()
+        runner = r
+        phase = first
+        pump()
+        saveNow()
     }
 
     // MARK: 中断セーブ（proposals/0039＋UI層フラグ拡張）
@@ -737,24 +811,29 @@ final class GameSession {
         var didFirePassFork: Bool?
         var didFireEve: Bool?
         var didWatchFinal: Bool?
+        // v3（複数年キャリア）
+        var yearStartState: GameState?
+        var yearHistory: [YearRecord]?
     }
 
     private static let saveKey = "manzai.save.v1"
     /// 読めなかったセーブの退避先（黙って消さない・監査G-03）
     private static let brokenSaveKey = "manzai.save.v1.broken"
     /// セーブ形式の版数（フィールドを足したら上げる。足すフィールドは必ず Optional）
-    static let saveVersion = 2
+    static let saveVersion = 3
 
-    /// 中断セーブを書く。年が終わっていれば逆にセーブを消す（周回は持ち越さない）。
+    /// 中断セーブを書く。キャリアが区切られた（優勝・夜逃げ・最終年の年末）ら逆にセーブを消す。
+    /// 区切りでない年末は、翌年へ進む前の年末画面として残す（復元で S6 を出し直す）。
     /// 呼び出しはプレイヤー入力の各確定点（choose/decideTournament/advanceAuto/acknowledge*/allocate/
     /// applyEventChoice/ネタ操作）＋RootView の scenePhase(.background) 保険。init からは呼ばない
     /// （IntroFlow 前のプレースホルダ・セッションがセーブを作らないように）。
     func saveNow() {
         #if DEBUG
         let env = ProcessInfo.processInfo.environment
-        if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil { return }   // QA自動走行で実プレイのセーブを潰さない
+        // QA自動走行で実プレイのセーブを潰さない（MZ_ALLOWSAVE=1 は中断→再開の目視用に、あえて書く）
+        if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
-        guard !finished, !winFinale, !abandoned else {
+        guard !winFinale, !abandoned, !(finished && careerOver) else {
             UserDefaults.standard.removeObject(forKey: Self.saveKey)
             return
         }
@@ -771,7 +850,8 @@ final class GameSession {
                             totalPrize: totalPrize, combiName: combiName,
                             version: Self.saveVersion,
                             didFireLostRehearsal: didFireLostRehearsal, didFirePassFork: didFirePassFork,
-                            didFireEve: didFireEve, didWatchFinal: didWatchFinal)
+                            didFireEve: didFireEve, didWatchFinal: didWatchFinal,
+                            yearStartState: yearStartState, yearHistory: yearHistory)
         do {
             let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)
@@ -832,6 +912,14 @@ final class GameSession {
             case .yearDone(let outcome):
                 state = runner.state
                 self.outcome = outcome
+                // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
+                // pump が同じ年末に再入しても二重に積まない
+                if yearHistory.last?.year != runner.year {
+                    yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
+                                                  reachedFinal: outcome.reachedFinal, champion: outcome.champion,
+                                                  bankrupt: outcome.bankrupt,
+                                                  prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0)))
+                }
                 if outcome.champion {
                     // GP決勝の優勝は WeekRunner が週の結果を返さず即 yearDone になる（Calendar の即時リターン）＝
                     // .weekDone 経由の記録（出来事ログ・賞金年計）に載らない。表示用の記録だけここで足す（GameCore 不変）。
@@ -940,6 +1028,31 @@ final class GameSession {
             case .gpRound, .gpRevival, .gpFinal: advanceAuto()
             default: return
             }
+        }
+    }
+
+    /// QA用（複数年）: n 年ぶん年末まで自動プレイして翌年へ進める（MZ_YEARS=n）。区切りに当たったら止まる。
+    /// 自由週は「金が細ればバイト・体力があればネタ作り・無ければ休む」の素朴な台本（夜逃げで止まらないように）。
+    func debugAdvanceYears(_ n: Int) {
+        for _ in 0..<n {
+            var steps = 0
+            while !finished, !winFinale, steps < 600 {
+                steps += 1
+                if watchingFinal { finishWatchingFinal(winner: "—"); continue }
+                if pendingChoiceEvent != nil { dismissChoiceEvent(); continue }
+                if pendingResult != nil { acknowledgeResult(); continue }
+                switch phase {
+                case .tournamentDecision: decideTournament(.新幹線)
+                case .freeAction:
+                    if state.money < 250_000 { choose(.job(.標準)) }
+                    else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
+                    else { choose(.rest(.完全休養)) }
+                case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+                default: steps = 600
+                }
+            }
+            guard finished, !careerOver else { return }
+            startNextYear()
         }
     }
 
