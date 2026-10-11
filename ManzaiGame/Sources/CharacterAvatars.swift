@@ -135,12 +135,16 @@ enum FaceCatalog {
         }
     }
 
-    /// 会話の話者名→顔（俺/谷口以外は汎用）
+    /// 決勝の司会（黒の衣装・オールバック）
+    static let mc = FaceSpec(hair: .allback, hairColor: Color(hex: 0x2A2530), collar: Color(hex: 0x23202B))
+
+    /// 会話の話者名→顔（俺/谷口/司会以外は汎用）
     static func speaker(_ name: String?) -> FaceSpec {
         switch name {
         case "谷口": return taniguchi
         case nil, "俺": return ore
-        default: return FaceSpec()
+        case FinalsMC.name: return mc
+        default: return judge(name ?? "")   // 審査員の名前なら審査員の顔、それ以外は汎用
         }
     }
 }

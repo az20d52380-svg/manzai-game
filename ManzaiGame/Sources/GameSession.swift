@@ -507,6 +507,11 @@ final class GameSession {
             .sorted { $0.week < $1.week }
     }
 
+    /// 今年の決勝に敗者復活から上がったか（準決勝を通っていない決勝進出者＝講評の「昼からもう一本」用・表示専用）
+    var reachedFinalViaRevival: Bool {
+        runner.gpRoundsPassed < config.calendar.gpRounds.count
+    }
+
     /// 次の本番（無ければ nil）
     var nextStage: StageInfo? { upcomingStages().first }
 

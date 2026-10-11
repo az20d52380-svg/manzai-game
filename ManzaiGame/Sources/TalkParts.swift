@@ -13,6 +13,7 @@ enum SpeakerStyle {
         switch name {
         case "谷口": return Theme.vermD
         case nil, "俺": return Theme.cOreDeep
+        case FinalsMC.name: return Color(hex: 0x23202B)   // 司会＝黒（白字 16:1）
         default: return Theme.inkSub
         }
     }

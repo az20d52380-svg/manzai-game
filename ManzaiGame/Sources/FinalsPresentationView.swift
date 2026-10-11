@@ -15,9 +15,10 @@ enum FinalsBeat: Int, Comparable {
     case lot = 1       // 自組の籤（出順）
     case perform = 2   // ネタ（舞台の二人・歓声。自動で採点へ）
     case open = 3      // 7審査員の採点（1人ずつ開く＝オーナー判断 2026-10-09）
-    case board = 4     // 自組がボードに入る → 後の組が1組ずつ出て暫定席が入れ替わる → 1本目の確定
-    case duel = 5      // 最終決戦（めくり）
-    case result = 6    // 優勝発表
+    case comments = 4  // 司会が審査員2人（最高点・最低点）に講評を振る（r1 §3・P4）
+    case board = 5     // 自組がボードに入る → 後の組が1組ずつ出て暫定席が入れ替わる → 1本目の確定
+    case duel = 6      // 最終決戦（めくり）
+    case result = 7    // 優勝発表
     static func < (a: FinalsBeat, b: FinalsBeat) -> Bool { a.rawValue < b.rawValue }
     var next: FinalsBeat { FinalsBeat(rawValue: min(rawValue + 1, FinalsBeat.result.rawValue)) ?? .result }
 }
@@ -34,6 +35,8 @@ struct FinalsPresentationView: View {
     @State private var shown = 0
     /// 自組がボードに入った後、後の組を自動で流し始めたか（自組の入りの瞬間はタップを待つ）
     @State private var boardAuto = false
+    /// 講評の何人目か（0=最高点の審査員・1=最低点の審査員）
+    @State private var commentStep = 0
     @State private var revealedJudges = 0  // 見せ札を1人ずつ開示（M-1式・0..7）
     @State private var revealVotes = 0     // 最終決戦のめくり票数
     @State private var celebrate = false   // 優勝の紙吹雪・スタンプ
@@ -73,7 +76,7 @@ struct FinalsPresentationView: View {
         switch beat {
         case .lot: return .preshow
         case .perform: return .lit
-        case .preceding, .open, .board, .duel: return spectator ? .spectator : .judging
+        case .preceding, .open, .comments, .board, .duel: return spectator ? .spectator : .judging
         case .result: return d.champion ? .winner : (spectator ? .spectator : .loser)
         }
     }
@@ -107,6 +110,7 @@ struct FinalsPresentationView: View {
                     case .lot: lotBeat
                     case .perform: performBeat
                     case .open: openBeat
+                    case .comments: commentsBeat
                     case .board: boardBeat
                     case .duel: finalDuelBeat
                     case .result: resultBeat
@@ -163,6 +167,7 @@ struct FinalsPresentationView: View {
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
             case "pre": beat = .preceding; shown = max(0, d.order - 1)
             case "open": beat = .open; revealedJudges = 5
+            case "comments": beat = .comments; revealedJudges = 7
             case "board": beat = .board; shown = 10; boardAuto = true
             case "duel": beat = .duel; revealVotes = 5
             case "win": beat = .result
@@ -219,6 +224,9 @@ struct FinalsPresentationView: View {
         switch beat {
         case .preceding where shown < d.order - 1:
             stepBoard()
+        case .comments where commentStep < commentPicks.count - 1:
+            withAnimation(.easeOut(duration: 0.25)) { commentStep += 1 }
+            Sound.play(.cursor); Haptics.tick()
         case .board where !boardAuto:
             boardAuto = true      // 自組の入りを見せた後のタップ＝後の組を流し始める（最初の1組はすぐ出す・大トリなら確定へ）
             if shown < d.entries.count { stepBoard() }
@@ -340,9 +348,7 @@ struct FinalsPresentationView: View {
             Telop(text: session.combiName, size: 24, color: .white)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Spacer(minLength: 150)
-            NarrationCard(text: d.order == 1 ? "トップバッター。会場はまだ温まっていない。"
-                          : d.order == 10 ? "大トリ。ここまでの空気を、全部ひっくり返す番だ。"
-                          : "中盤。沸いた流れに、どう乗るか。")
+            mcBubble(FinalsMC.call(order: d.order, name: session.combiName))
                 .padding(.bottom, 30)
         }
     }
@@ -424,6 +430,39 @@ struct FinalsPresentationView: View {
         }
     }
 
+    // MARK: 司会の吹き出し（決勝の進行役）
+    private func mcBubble(_ text: String) -> some View {
+        TalkBubble(advice: Advice(name: FinalsMC.name, text: text), faceSize: 44)
+            .transition(.opacity)
+    }
+
+    // MARK: 講評（採点の直後・司会が最高点と最低点の審査員に振る）
+    /// 講評する審査員（最高点の人→最低点の人。同点は席順の早い方）
+    private var commentPicks: [JudgeScore] {
+        let ordered = d.judges.enumerated().sorted {
+            $0.element.score != $1.element.score ? $0.element.score > $1.element.score : $0.offset < $1.offset
+        }.map(\.element)
+        guard let hi = ordered.first, let lo = ordered.last else { return [] }
+        return hi.name == lo.name ? [hi] : [hi, lo]
+    }
+
+    private var commentsBeat: some View {
+        let picks = commentPicks
+        let i = min(commentStep, max(0, picks.count - 1))
+        return VStack(spacing: 12) {
+            Telop(text: "\(d.total)点", size: 30, color: Color(hex: 0xFFE07A)).monospacedDigit()
+            if picks.indices.contains(i) {
+                let j = picks[i]
+                mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0))
+                TalkBubble(advice: Advice(name: j.name, text: FinalsJudgeTalk.comment(
+                    judge: j.name, score: j.score, state: s, viaRevival: session.reachedFinalViaRevival,
+                    high: i == 0, salt: j.score &+ session.year &* 7 &+ d.order &+ i)))
+                    .id(j.name)
+                    .transition(.opacity.combined(with: .offset(y: 8)))
+            }
+        }
+    }
+
     // MARK: Beat 1 — 7審査員 一斉オープン（見せ札）
     private var openBeat: some View {
         // M-1と同じく、7人全員の札が出るまで合計は出さない（途中の点数は伏せる・オーナー指摘 2026-10-10）
@@ -446,7 +485,9 @@ struct FinalsPresentationView: View {
                 Telop(text: allShown ? "/ 700" : "……", size: 15, color: Theme.houseLight)
             }
             .padding(.top, 2)
-            if let kata, allShown {
+            if revealedJudges == 0 {
+                mcBubble(FinalsMC.startScoring)
+            } else if let kata, allShown {
                 NarrationCard(text: "\(NetaCatalog.displayName(kata))で挑んだ一本。")
             }
         }
@@ -509,12 +550,11 @@ struct FinalsPresentationView: View {
                 // 自組がボードに入った瞬間（タップを待つ）
                 VStack(spacing: 4) {
                     Telop(text: "暫定\(selfRank)位", size: 30, color: selfRank <= 3 ? Color(hex: 0xFFE07A) : .white)
-                    Telop(text: selfRank <= 3 ? "暫定席へ" : "ここで敗退", size: 15, color: Theme.houseLight)
                 }
+                mcBubble(selfRank <= 3 ? FinalsMC.seated(name: session.combiName, rank: selfRank)
+                                       : FinalsMC.eliminated(name: session.combiName, rank: selfRank))
             } else if done {
-                Telop(text: spectator ? "——今年の決勝。俺たちは、客席にいた。"
-                      : d.selfInDuel ? "——上位3組。もう一本、最終決戦へ。" : "——決勝の舞台には立った。",
-                      size: 15)
+                mcBubble(FinalsMC.firstRoundEnd)
             } else if shown == 0 {
                 Telop(text: "ファーストラウンド", size: 17)
             } else {
@@ -530,7 +570,7 @@ struct FinalsPresentationView: View {
         let counts = (0..<3).map { k in d.voteOrder.prefix(revealVotes).filter { $0 == k }.count }
         return VStack(spacing: 14) {
             Telop(text: "最終決戦", size: 22, color: Color(hex: 0xFFE9A8))
-            Telop(text: "勝ち残った3組。審査員は、面白かった方の名を書く。", size: 13)
+            if revealVotes == 0 { mcBubble(FinalsMC.startVoting) }
 
             // 3組の得票カウンタ（番組のスコア表示・自組は金）
             HStack(spacing: 8) {
@@ -609,7 +649,7 @@ struct FinalsPresentationView: View {
         let names = duelNames
         let winnerName = names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
         return VStack(spacing: 12) {
-            Telop(text: "優勝は ——", size: 17)
+            mcBubble(FinalsMC.announceWinner)
             Text(winnerName)
                 .font(.maru(30, weight: .black)).lineLimit(1).minimumScaleFactor(0.6)
                 .foregroundStyle(Theme.sumi)
@@ -805,7 +845,14 @@ struct FinalsData {
             winner = roll <= 5 ? cands[0] : (roll <= 8 || cands.count < 3 ? cands[min(1, cands.count - 1)] : cands[2])
         }
         self.winnerIndex = winner
-        let w = rng.int(4...7)                                   // 勝者は必ず過半数
+        // 勝者は必ず過半数。全員一致（7票）は現実にほぼ無い（オーナー指摘 2026-10-10）＝決勝で圧倒した時だけ
+        let m = margin ?? 0
+        let w: Int
+        if champion, selfIdx == winner {
+            w = m >= 20 ? rng.int(6...7) : (m >= 10 ? rng.int(5...6) : rng.int(4...5))
+        } else {
+            w = rng.int(4...6)
+        }
         self.finalVotes = selfIdx == nil ? 0 : (selfIdx == winner ? w : 0)
         var counts = [0, 0, 0]
         counts[winner] = w
