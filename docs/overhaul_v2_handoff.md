@@ -28,3 +28,4 @@
 - 論点2〜5の回答待ち。回答前に式（規律A）は入れない。
 - 2026-10-12：v3 計測ボット `tools/bots_v3.py`・基準線 `tools/exp_v3_anchor.py` を追加（715c6d5）。毎日10時の自走タスク「manzai-autonomous-progress」を設定（決めない範囲だけ1日1件：a 王者編の調査doc → b のんびり改の行動分析 → c 論点2〜5の追加実測）。
 - 2026-10-12：作業リスト c（のんびり改の行動分析）済み → `eval_axes_design_v0.md` §5（閃きを出すネタ作りが2%・オファーが週の36〜42%）。
+- 2026-10-12：作業リスト a・b（王者編の調査doc＋今の式での連覇の実測）済み → `docs/dynasty_v2_research_v0.md`・`tools/exp_dynasty_v2.py`。b の「式案（cfg_r2）での連覇」は未。
