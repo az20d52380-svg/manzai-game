@@ -285,6 +285,8 @@ def redirect_capped_training(s, choice):
     if act != "train":
         return choice
     key = B.TRAININGS[arg]["main"][0]
+    if key.startswith("cur:"):
+        return choice   # 正典v3: 主効果は通貨（能力の上限で差し替える対象がない）。旧版はここで AttributeError だった
     if getattr(s, key) < _cap_of(key):
         return choice
     cands = [(getattr(s, t["main"][0]), name) for name, t in B.TRAININGS.items()
