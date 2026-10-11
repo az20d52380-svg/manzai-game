@@ -26,3 +26,4 @@
 ## 2026-10-12 自走メモ（オーナー不在・決定はしない範囲）
 - sim_career の旧ボットのエラーを修理（golden不変）。旧ボットは v3 で0%前後＝帯の基準線には v3 対応ボット（`tools/exp_eval_axes/bots_v3.py`・`proto.BuildBot`）を使う。
 - 論点2〜5の回答待ち。回答前に式（規律A）は入れない。
+- 2026-10-12：v3 計測ボット `tools/bots_v3.py`・基準線 `tools/exp_v3_anchor.py` を追加（715c6d5）。毎日10時の自走タスク「manzai-autonomous-progress」を設定（決めない範囲だけ1日1件：a 王者編の調査doc → b のんびり改の行動分析 → c 論点2〜5の追加実測）。
