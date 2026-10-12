@@ -87,7 +87,11 @@ public enum GameEngine {
         }
         let factor: Double? = (s.money < 0) ? config.debtTrainFactor : nil
         s.money -= spec.cost
-        applyGrowth(spec.main.0, factor.map { spec.main.1 * $0 } ?? spec.main.1, to: &s, config: config)
+        // アイテム（Item.swift）：ICレコーダー＝ネタ作りの主効果+、稽古場の年契約＝全稽古の主効果+。未購入（nil）なら恒等＝golden不変
+        var mainAmt = spec.main.1
+        if t == .ネタ作り, s.hasRecorder == true { mainAmt += config.itemRecorderBonus }
+        if s.studioActive == true { mainAmt += config.itemStudioBonus }
+        applyGrowth(spec.main.0, factor.map { mainAmt * $0 } ?? mainAmt, to: &s, config: config)
         if let sub = spec.sub {
             applyGrowth(sub.0, factor.map { sub.1 * $0 } ?? sub.1, to: &s, config: config)
         }
@@ -118,7 +122,12 @@ public enum GameEngine {
     /// Python: do_rest
     public static func applyRest(_ r: Rest, to s: inout GameState, config: GameConfig) {
         guard let spec = config.rests[r] else { return }
-        add(.体力, spec.recovery, to: &s, config: config)
+        var recovery = spec.recovery
+        if let t = s.sentoTickets, t > 0 {           // 銭湯の回数券（Item.swift）。未購入は nil＝恒等
+            recovery += config.itemSentoRecovery
+            s.sentoTickets = t - 1
+        }
+        add(.体力, recovery, to: &s, config: config)
         add(spec.bonus.0, spec.bonus.1, to: &s, config: config)
     }
 

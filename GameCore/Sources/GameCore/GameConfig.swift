@@ -152,6 +152,26 @@ public struct GameConfig {
     /// この分離により golden/sim は不変のまま、実ゲームだけプレイヤーが割り振れる。UI/注ぐ側はこの値を読まない。
     public var autoPourAllocation = true   // ⚠️ golden の前提＝既定 true を反転しない（実ゲームは GameSession 側で false にする・監査F-03）
 
+    // --- アイテム（Item.swift・docs/item_design_v0.md。全て【仮】）。Python: balance_sim.ITEMS ---
+    public var items: [ShopItem: ItemSpec] = [
+        .栄養ドリンク: ItemSpec(price: 3_000, yearlyLimit: 6, summary: "体力が少し戻る"),
+        .銭湯の回数券: ItemSpec(price: 10_000, yearlyLimit: 99, summary: "休む4回ぶん、回復が増える"),
+        .中古のICレコーダー: ItemSpec(price: 30_000, yearlyLimit: nil, summary: "ネタ作りで閃きが少し多く出る（ずっと）"),
+        .新幹線回数券: ItemSpec(price: 200_000, yearlyLimit: 1, summary: "今年の大阪遠征が交通費なし・疲れない"),
+        .ネタ作家の勉強会: ItemSpec(price: 150_000, yearlyLimit: 2, summary: "閃きと語彙の経験点"),
+        .ボイトレ短期集中: ItemSpec(price: 250_000, yearlyLimit: 1, summary: "間合いと語彙の経験点"),
+        .稽古場の年契約: ItemSpec(price: 2_400_000, yearlyLimit: 1, summary: "今年の稽古がすべて少し効く"),
+    ]
+    public var itemDrinkStamina = 8.0
+    public var itemSentoTickets = 4
+    public var itemSentoRecovery = 10.0
+    public var itemRecorderBonus = 1.0     // ネタ作りの主効果（閃き）に足す生の量（供給スケール前）
+    public var itemStudioBonus = 1.0       // 全稽古の主効果に足す生の量（供給スケール前）
+    public var itemStudyHirameki = 4.0     // 勉強会：通貨に直接（供給スケール後）
+    public var itemStudyGoi = 2.0
+    public var itemVoiceMaai = 4.0         // ボイトレ：通貨に直接
+    public var itemVoiceGoi = 2.0
+
     // --- 生活ルール【正典v2・docs/rule_holes_v0.md】 ---
     /// 借金中は稽古が半分しか身にならない（nil で無効。balance_sim.DEBT_TRAIN_FACTOR と同期）
     public var debtTrainFactor: Double? = 0.5

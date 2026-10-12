@@ -329,6 +329,8 @@ def enter_tournament(s, pol, t, rng):
     エントリー費2,000円は全大会共通【正典v2・H7対策】。大阪はさらに遠征費"""
     need = GP_ENTRY_FEE
     tr = pol.transport(s) if t["osaka"] else None
+    if tr is not None and getattr(s, "shinkansen_active", None):
+        tr = dict(cost=0, stam=0)   # 新幹線回数券（Item.swift 鏡像）
     if tr is not None:
         need += tr["cost"]
     if s.money < need:
@@ -354,6 +356,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
     seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）。
     gp_seed=True で1回戦免除（前年に準々決勝以上へ進出した組・実在準拠のシード制）"""
     s.stamina = 100.0          # 体力のみ年初に全回復
+    B.reset_yearly_items(s)    # その年だけのアイテム効果（GameCore WeekRunner.init と同位置・未購入は恒等）
     if CAP_CURVE is not None:
         base, slope, floor = CAP_CURVE
         if CAREER_BUDGET:

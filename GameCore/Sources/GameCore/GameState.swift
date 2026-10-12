@@ -72,6 +72,18 @@ public struct GameState: Codable {
     /// ＝稽古ロックは一度も効かない（compatFreezeWeeks/netaBoostWeeks と同型の inert フィールド）。
     public var preoccupiedWeeks = 0
 
+    // --- アイテム（Item.swift・2026-10-12）。セーブ互換のため全て Optional（nil＝未購入・効果なし＝golden不変）---
+    /// その年に買った回数（年初に消える）
+    public var itemCounts: [String: Int]? = nil
+    /// 銭湯の回数券の残り（休むの回復に上乗せ）
+    public var sentoTickets: Int? = nil
+    /// 中古のICレコーダー（ネタ作りの閃き+1・キャリアで1回）
+    public var hasRecorder: Bool? = nil
+    /// 新幹線回数券（その年の遠征が交通費0・体力減なし）
+    public var shinkansenActive: Bool? = nil
+    /// 稽古場の年契約（その年の稽古の主効果+1）
+    public var studioActive: Bool? = nil
+
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
         stamina = config.initStamina

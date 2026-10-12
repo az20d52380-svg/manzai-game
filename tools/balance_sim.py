@@ -293,13 +293,79 @@ def do_training(s, name):
             credit_currency(s, k[4:], amt)
         else:                   # compat など＝経済外
             add(s, k, amt)
-    k, v = t["main"]; _grow(k, v)
+    k, v = t["main"]
+    # アイテム（GameCore/Item.swift の鏡像）：ICレコーダー＝ネタ作りの主効果+、稽古場の年契約＝全稽古の主効果+。未購入は恒等
+    if name == "ネタ作り" and getattr(s, "has_recorder", None):
+        v += ITEM_RECORDER_BONUS
+    if getattr(s, "studio_active", None):
+        v += ITEM_STUDIO_BONUS
+    _grow(k, v)
     if t["sub"]:
         k, v = t["sub"]; _grow(k, v)
     add(s, "stamina", t["stam"])
     if t["fame"]:
         add(s, "fame", t["fame"])
     return True
+
+# ============================================================
+# アイテム（GameCore/Item.swift の鏡像・docs/item_design_v0.md・全て【仮】）。購入は乱数を引かない
+# ============================================================
+ITEMS = {   # 名前: (価格, 年の上限 None=キャリア1回)
+    "栄養ドリンク": (3_000, 6), "銭湯の回数券": (10_000, 99), "中古のICレコーダー": (30_000, None),
+    "新幹線回数券": (200_000, 1), "ネタ作家の勉強会": (150_000, 2), "ボイトレ短期集中": (250_000, 1),
+    "稽古場の年契約": (2_400_000, 1),
+}
+ITEM_DRINK_STAMINA = 8.0
+ITEM_SENTO_TICKETS = 4
+ITEM_SENTO_RECOVERY = 10.0
+ITEM_RECORDER_BONUS = 1.0
+ITEM_STUDIO_BONUS = 1.0
+ITEM_STUDY = (4.0, 2.0)    # 閃き・語彙（通貨に直接）
+ITEM_VOICE = (4.0, 2.0)    # 間合い・語彙（通貨に直接）
+
+def can_buy(s, item):
+    price, lim = ITEMS[item]
+    if s.money < price:
+        return False
+    if item == "中古のICレコーダー":
+        return not getattr(s, "has_recorder", None)
+    if item == "銭湯の回数券" and getattr(s, "sento_tickets", None):
+        return False
+    if item == "新幹線回数券" and getattr(s, "shinkansen_active", None):
+        return False
+    if item == "稽古場の年契約" and getattr(s, "studio_active", None):
+        return False
+    counts = getattr(s, "item_counts", None) or {}
+    return lim is None or counts.get(item, 0) < lim
+
+def buy_item(s, item):
+    if not can_buy(s, item):
+        return False
+    s.money -= ITEMS[item][0]
+    counts = dict(getattr(s, "item_counts", None) or {})
+    counts[item] = counts.get(item, 0) + 1
+    s.item_counts = counts
+    if item == "栄養ドリンク":
+        add(s, "stamina", ITEM_DRINK_STAMINA)
+    elif item == "銭湯の回数券":
+        s.sento_tickets = ITEM_SENTO_TICKETS
+    elif item == "中古のICレコーダー":
+        s.has_recorder = True
+    elif item == "新幹線回数券":
+        s.shinkansen_active = True
+    elif item == "ネタ作家の勉強会":
+        s.exp_hirameki += ITEM_STUDY[0]; s.exp_goi += ITEM_STUDY[1]
+    elif item == "ボイトレ短期集中":
+        s.exp_maai += ITEM_VOICE[0]; s.exp_goi += ITEM_VOICE[1]
+    elif item == "稽古場の年契約":
+        s.studio_active = True
+    return True
+
+def reset_yearly_items(s):
+    """年初（WeekRunner.init と同じ位置）。未購入は恒等"""
+    for k in ("item_counts", "shinkansen_active", "studio_active"):
+        if getattr(s, k, None) is not None:
+            setattr(s, k, None)
 
 def do_job(s, name):
     inc, st = JOBS[name]
@@ -315,6 +381,10 @@ def do_offer(s, offer):
 
 def do_rest(s, name):
     rec, (k, v) = RESTS[name]
+    t = getattr(s, "sento_tickets", None)
+    if t:                                   # 銭湯の回数券（Item.swift 鏡像）
+        rec += ITEM_SENTO_RECOVERY
+        s.sento_tickets = t - 1
     add(s, "stamina", rec)
     add(s, k, v)
 

@@ -111,6 +111,7 @@ public struct WeekRunner<R: RandomSource> {
             budget += max(config.capCurveFloor, config.capCurveBase - config.capCurveSlope * Double(k - 1))
         }
         s.growthBudget = budget
+        GameEngine.resetYearlyItems(&s)  // その年だけのアイテム効果と回数を消す（未購入は恒等）
         self.state = s
         self.year = year
         self.config = config
@@ -147,7 +148,8 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func resolveTournament(travel: Travel?) -> Phase {
         defer { pendingSpec = nil }
         if let spec = pendingSpec, let travel = travel {
-            let ts = config.calendar.travelSpec(travel)
+            var ts = config.calendar.travelSpec(travel)
+            if state.shinkansenActive == true { ts = TravelSpec(cost: 0, stamina: 0) }   // 新幹線回数券（Item.swift）
             let need = config.calendar.entryFee + (spec.osaka ? ts.cost : 0)
             if state.money >= need {
                 state.money -= config.calendar.entryFee
@@ -424,6 +426,12 @@ public struct WeekRunner<R: RandomSource> {
 
     /// 「今かけるネタ」の選択（大会/自由週・v2 §4）。1本目/2本目（決勝）。乱数非依存。
     /// ★選択自体は乱数を引かないが、Phase 1-a で本番の実効ラインに効く（netaScoreBonus）＝勝敗に効く選択。
+    /// アイテムを買う（乱数非消費・Item.swift）。買えなければ false
+    @discardableResult
+    public mutating func applyItemPurchase(_ item: ShopItem) -> Bool {
+        GameEngine.buy(item, to: &state, config: config)
+    }
+
     public mutating func applyNetaSelect(id: Int?) { state.selectedNetaID = id }
     public mutating func applyNetaSelect2(id: Int?) { state.selectedNetaID2 = id }
 
