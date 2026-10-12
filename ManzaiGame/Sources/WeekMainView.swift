@@ -63,6 +63,8 @@ struct WeekMainView: View {
     @State private var yearEndArmed = false
     /// 進行中の設定（監査G-04）
     @State private var showSettings = false
+    /// 買い物（ShopView・アイテム）
+    @State private var showShop = false
 
     private var s: GameState { session.state }
     private var mainCards: [CommandVariant] {
@@ -98,6 +100,9 @@ struct WeekMainView: View {
             if let kind = session.pendingChoiceEvent {
                 ChoiceEventOverlay(session: session, kind: kind) {}
             }
+        }
+        .sheet(isPresented: $showShop) {
+            ShopView(session: session) { showShop = false }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(onClose: { showSettings = false },
@@ -668,6 +673,10 @@ struct WeekMainView: View {
                 Image(systemName: "book.closed.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8))
             }.buttonStyle(PressableStyle())
             .accessibilityLabel("ネタ帳")
+            Button { showShop = true } label: {   // 買い物（アイテム）
+                Image(systemName: "bag.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8))
+            }.buttonStyle(PressableStyle())
+            .accessibilityLabel("買い物")
             Button { showSettings = true } label: {   // 進行中の設定（音量・プライバシーポリシー・この年をやめる＝監査G-04）
                 Image(systemName: "gearshape.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.7))
             }.buttonStyle(PressableStyle())

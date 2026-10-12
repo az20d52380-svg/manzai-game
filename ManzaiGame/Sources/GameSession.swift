@@ -641,6 +641,12 @@ final class GameSession {
     }
 
     /// 改名（自動命名の上書き・v2 §9決点3）
+    /// 買い物（ShopView）。買えなければ何もしない
+    func buyItem(_ item: ShopItem) {
+        guard runner.applyItemPurchase(item) else { return }
+        state = runner.state
+    }
+
     func renameNeta(_ id: Int, to name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }

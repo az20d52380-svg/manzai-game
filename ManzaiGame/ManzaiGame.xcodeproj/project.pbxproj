@@ -62,6 +62,7 @@
 		B5FF297729B861895AB02480 /* FinalsPresentationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599065030751D5F2DB350459 /* FinalsPresentationView.swift */; };
 		BB02DEED0D8FB7F6D961745C /* se_cursor.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2479B3303C35A9B094342137 /* se_cursor.mp3 */; };
 		BBBE44D86DED0FD7E6AB7A55 /* se_laugh_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 51C23F3FD0E280B988905E04 /* se_laugh_small.mp3 */; };
+		C135C70C43982811F7AD0254 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4BD130E2E1C169A1A5799E /* ShopView.swift */; };
 		D6DD3EA8BA750EBBFE6DBB11 /* se_rankup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C0518515B27DFACD1B80A893 /* se_rankup.mp3 */; };
 		DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */; };
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
@@ -100,6 +101,7 @@
 		7ABBF9FD27D827A700C7A2A7 /* MPLUSRounded1c-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-ExtraBold.ttf"; sourceTree = "<group>"; };
 		7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_grain.mp3; sourceTree = "<group>"; };
 		7E9074D521E24C7B5B3FE240 /* MPLUSRounded1c-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Medium.ttf"; sourceTree = "<group>"; };
+		7F4BD130E2E1C169A1A5799E /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
 		830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_big.mp3; sourceTree = "<group>"; };
 		86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_finals.mp3; sourceTree = "<group>"; };
 		8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_hall.mp3; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 				5F49ED139642FC2518E962F8 /* RootView.swift */,
 				2AAFBC0284B7A53A0A48C18D /* S6bView.swift */,
 				A799C1CDD04C665A5DE37ABB /* SettingsView.swift */,
+				7F4BD130E2E1C169A1A5799E /* ShopView.swift */,
 				9602D87CE2E13D9365DE6EEE /* SoundManager.swift */,
 				8E107DFFE29351633A0776D9 /* StageFrame.swift */,
 				3B1F087A453470E4CF970A6B /* StageScene.swift */,
@@ -401,6 +404,7 @@
 				2A0C4D15DED110C70394538A /* RootView.swift in Sources */,
 				9FB3C8B8D6363401D9B7EEFD /* S6bView.swift in Sources */,
 				420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */,
+				C135C70C43982811F7AD0254 /* ShopView.swift in Sources */,
 				07755E46FD8EC92ACE98C353 /* SoundManager.swift in Sources */,
 				FEC32EB9053F087229AB0EC2 /* StageFrame.swift in Sources */,
 				21E800CFC18797B54C85B120 /* StageScene.swift in Sources */,
