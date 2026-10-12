@@ -119,7 +119,9 @@ final class GameSession {
         // recommendedPlan で全量注がれ、のばす画面（AllocationView）は通らない。GameConfig 既定値（true）と同じ＝
         // sim/golden の前提と実ゲームが一致する（golden 不変）。明示しておくのは、既定値が将来変わっても実ゲームを固定するため。
         var cfg = config
-        cfg.autoPourAllocation = true
+        // 2026-10-12：手動の能力アップを戻す（オーナー判断 2026-10-10 core_loop_reconsideration_v0 ②・パワプロ式4ボタン）。
+        // 経験点は貯まり、週メインの「能力アップ」（AllocationView）で振る。おすすめ＝今までの自動注ぎと同じ1関数。golden は既定 true のまま。
+        cfg.autoPourAllocation = false
         self.config = cfg
         self.combiName = combiName
         self.isRestored = false
@@ -139,7 +141,7 @@ final class GameSession {
     /// config は毎回新規生成して注入（バランス値は永続化しない＝更新後の値で続きが進む）。
     init(restoring save: SaveData, config: GameConfig = GameConfig()) {
         var cfg = config
-        cfg.autoPourAllocation = true   // 新規と同じ（上の init の注記）。手動注ぎ時代の旧セーブに残る粒は、次の自由週の全量注ぎで消化される
+        cfg.autoPourAllocation = false  // 新規と同じ（上の init の注記・2026-10-12 手動へ戻す）
         self.config = cfg
         self.combiName = save.combiName
         self.isRestored = true

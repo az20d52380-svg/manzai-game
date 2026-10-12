@@ -65,6 +65,8 @@ struct WeekMainView: View {
     @State private var showSettings = false
     /// 買い物（ShopView・アイテム）
     @State private var showShop = false
+    /// 能力アップ（AllocationView・経験点を能力に振る）
+    @State private var showAllocation = false
 
     private var s: GameState { session.state }
     /// 開いている4ボタンの下位一覧（nil＝4ボタン）。パワプロ式（オーナー指示 2026-10-12）
@@ -102,6 +104,9 @@ struct WeekMainView: View {
             if let kind = session.pendingChoiceEvent {
                 ChoiceEventOverlay(session: session, kind: kind) {}
             }
+        }
+        .fullScreenCover(isPresented: $showAllocation) {
+            AllocationView(session: session) { showAllocation = false }
         }
         .sheet(isPresented: $showShop) {
             ShopView(session: session) { showShop = false }
@@ -493,23 +498,27 @@ struct WeekMainView: View {
         .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
     }
 
-    /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは当面アイテム画面を開く【仮・中身はオーナー判断】
+    /// たまっている経験点の合計（粒・切り捨て）
+    private var expGrains: Int { Int(s.expTotal + 1e-9) }
+
+    /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは経験点の振り分け画面（AllocationView）
     private func categoryTile(_ c: CommandCategory) -> some View {
         let tint: Color = { switch c { case .練習: return Theme.cIdea; case .バイト: return Theme.cMoney
                                       case .休む: return Theme.night; case .能力アップ: return Theme.gold } }()
+        let ready = c == .能力アップ && expGrains > 0
         let gated = c == .練習 && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let sub: String = {
             switch c {
             case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "ネタ・合わせ・舞台 ほか"
             case .バイト: return "お金を稼ぐ"
             case .休む: return "体力を戻す"
-            case .能力アップ: return "アイテムで伸ばす"
+            case .能力アップ: return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で能力を上げる"
             }
         }()
         return Button {
             guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { return }
             Sound.play(.tap)
-            if c == .能力アップ { showShop = true; return }
+            if c == .能力アップ { showAllocation = true; return }
             withAnimation(Theme.Motion.appearQuick) { openCat = c }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
@@ -521,7 +530,7 @@ struct WeekMainView: View {
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).foregroundStyle(Theme.inkFaint)
                 }
-                Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : Theme.inkSub).lineLimit(1)
+                Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
             }
             .padding(.horizontal, 12).padding(.vertical, 12)
             .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
@@ -835,6 +844,12 @@ struct WeekMainView: View {
         var out: [CardEffect] = []
         if GameEngine.jitsuryoku(after, config: cfg) - GameEngine.jitsuryoku(s, config: cfg) > 0.001 {
             out.append(CardEffect(text: "実力 ↑", color: Theme.senseDeep))
+        }
+        // 手動の能力アップ：稽古で入る経験点を出す（パワプロの練習画面と同じ「何が貯まるか」）。大きい順に最大2つ
+        let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
+            .sorted { $0.1 > $1.1 }.prefix(2)
+        for (c, d) in gains {
+            out.append(CardEffect(text: "\(c) +\(max(1, Int(d.rounded())))", color: Theme.currencyColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: Theme.vermD)) }
