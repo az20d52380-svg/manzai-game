@@ -212,7 +212,7 @@ enum DialogueData {
             Advice(name: "俺", text: "昨日ずれた間を、今日のうちに戻す。"),
         ],
         "t_ランニング・サウナ": [
-            Advice(name: "俺", text: "走る日は、ネタのことは考えない。"),
+            Advice(name: "俺", text: "今日はジム。ネタのことは考えない。"),
             Advice(name: "俺", text: "汗をかいて、今日は早く寝る。"),
         ],
         "t_フリーライブ": [

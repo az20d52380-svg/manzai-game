@@ -746,50 +746,50 @@ struct WeekMainView: View {
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
 
+    /// 最下帯（2026-10-12 作り直し・オーナー「アイテムとかの下のUIUXまだ悪い」）：
+    /// 上段＝年週・体力・所持金（いつも見る数字）／下段＝名前付きのメニュー4つ（日程・コンビ・お店・設定）。
+    /// 大会までの週は上の目標バナーと重複するので外した。
     private var botbar: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("\(session.year)年目").font(.maru(9)).foregroundStyle(.white.opacity(0.65))
-                Text("\(session.week)週").font(.maru(17)).foregroundStyle(.white)
-            }
-            if let m = nextMilestone() {
-                Rectangle().fill(.white.opacity(0.18)).frame(width: 1, height: 26)
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(m.name).font(.maru(9)).foregroundStyle(.white.opacity(0.65)).lineLimit(1)
-                    Text(m.weeksLeft <= 0 ? "今週！" : "大会まで\(m.weeksLeft)週").font(.maru(12))
-                        .lineLimit(1).minimumScaleFactor(0.8)   // 375pt 幅で2行に折れない
-                        .foregroundStyle(m.weeksLeft <= 3 ? Theme.verm : Theme.gold)   // 残3週から追い込みの朱
-                        .contentTransition(.numericText())   // 週送りで数字が繰り下がる
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text("\(session.year)年目").font(.maru(11)).foregroundStyle(.white.opacity(0.7))
+                    Text("\(session.week)週").font(.maru(19)).foregroundStyle(.white)
+                        .contentTransition(.numericText())
                 }
-            }
-            Button { showCalendar = true } label: {   // S4 カレンダーを開く
-                Image(systemName: "calendar").font(.system(size: 15)).foregroundStyle(.white.opacity(0.8))
-            }.buttonStyle(PressableStyle())
-            .accessibilityLabel("カレンダー")
-            Button { showNotebook = true } label: {   // S5 ネタ帳（旧「ネタ帳」タイルの移設・A「削る」）
-                Image(systemName: "book.closed.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8))
-            }.buttonStyle(PressableStyle())
-            .accessibilityLabel("コンビの情報")
-            Button { showShop = true } label: {   // 買い物（アイテム）
-                Image(systemName: "bag.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8))
-            }.buttonStyle(PressableStyle())
-            .accessibilityLabel("買い物")
-            Button { showSettings = true } label: {   // 進行中の設定（音量・プライバシーポリシー・この年をやめる＝監査G-04）
-                Image(systemName: "gearshape.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.7))
-            }.buttonStyle(PressableStyle())
-            .accessibilityLabel("設定")
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 5) {
+                .fixedSize()
                 staminaGauge
-                Text("¥\(s.money.formatted())").font(.maru(12)).monospacedDigit()
+                Spacer(minLength: 4)
+                Text("¥\(s.money.formatted())").font(.maru(15)).monospacedDigit()
                     .foregroundStyle(s.money < 0 ? Theme.verm : .white)
+                    .lineLimit(1).minimumScaleFactor(0.7)
                     .contentTransition(.numericText())            // 収支が動くと数字が繰る
                     .punch(on: s.money, peak: 1.18)               // ＋跳ねる（ジュース核）
                     .animation(.easeOut(duration: 0.4), value: s.money)
             }
+            HStack(spacing: 6) {
+                menuButton("calendar", "日程") { showCalendar = true }              // S4 カレンダー
+                menuButton("person.2.fill", "コンビ") { showNotebook = true }       // S5 コンビの情報（旧ネタ帳）
+                menuButton("bag.fill", "お店") { showShop = true }                  // 買い物（アイテム）
+                menuButton("gearshape.fill", "設定") { showSettings = true }        // 音量・この年をやめる（監査G-04）
+            }
         }
-        .padding(.horizontal, 14).padding(.top, 9).padding(.bottom, 16)
+        .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 12)
         .background(Theme.botbarDark.ignoresSafeArea(edges: .bottom))
+    }
+
+    private func menuButton(_ glyph: String, _ label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 3) {
+                Image(systemName: glyph).font(.system(size: 16, weight: .semibold))
+                Text(label).font(.maru(10.5, weight: .bold))
+            }
+            .foregroundStyle(.white.opacity(0.9))
+            .frame(maxWidth: .infinity, minHeight: 46)
+            .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityLabel(label)
     }
 
     private var staminaColor: Color {
@@ -812,12 +812,12 @@ struct WeekMainView: View {
                 Capsule().fill(.white.opacity(0.16))
                 Capsule()
                     .fill(LinearGradient(colors: [staminaColor.opacity(0.82), staminaColor], startPoint: .top, endPoint: .bottom))
-                    .frame(width: 64 * CGFloat(max(0, min(100, s.stamina)) / 100))
+                    .frame(width: 96 * CGFloat(max(0, min(100, s.stamina)) / 100))
                     .shadow(color: staminaColor.opacity(0.6), radius: 3)
                     .animation(.easeOut(duration: 0.4), value: s.stamina)
                     .animation(.easeInOut(duration: 0.15), value: staminaZone)  // 閾値跨ぎの色クロスフェード（§3-4）
             }
-            .frame(width: 64, height: 10)   // 歯車を足した分詰める（ラベルが押し出されないように）
+            .frame(width: 96, height: 10)
             .opacity(gaugeFlash ? 0.25 : 1)
             .onChange(of: staminaZone) { old, new in
                 guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
