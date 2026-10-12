@@ -745,7 +745,7 @@ struct WeekMainView: View {
             Button { showNotebook = true } label: {   // S5 ネタ帳（旧「ネタ帳」タイルの移設・A「削る」）
                 Image(systemName: "book.closed.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8))
             }.buttonStyle(PressableStyle())
-            .accessibilityLabel("ネタ帳")
+            .accessibilityLabel("コンビの情報")
             Button { showShop = true } label: {   // 買い物（アイテム）
                 Image(systemName: "bag.fill").font(.system(size: 14)).foregroundStyle(.white.opacity(0.8))
             }.buttonStyle(PressableStyle())

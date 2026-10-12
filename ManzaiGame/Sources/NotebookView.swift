@@ -1,6 +1,6 @@
 // NotebookView.swift
 // S5 ネタ帳（正本: uiux_vision_reply_part2 §S5）。見開きメタファ（縦持ちはタブで代替）。
-// ちから=レーダー5角形(演技4+メンタル・共用RadarChart)＋相性は別系統のverm帯＋成長の伸びしろ(器の空き・数値なし)。
+// 能力（旧ちから）=1能力1行（等級・値・バー）＋相性（2026-10-12 パワプロ式に作り直し・旧レーダー/器の輪は git 履歴）。
 // きろく=大会履歴(判ミニチュア+回戦名)・称号。効果量の事前表示はしない既定を維持（ここは「育ったか」を見る場所）。
 // 表示専用（RNG非消費・golden非対象）。育成メインの「データ」から開く。
 
@@ -43,7 +43,7 @@ struct NotebookView: View {
 
     private var header: some View {
         HStack {
-            Text("ネタ帳").font(.maru(16)).foregroundStyle(Theme.ink)
+            Text("コンビの情報").font(.maru(20, weight: .heavy)).foregroundStyle(Theme.ink)
             Spacer()
             Text(session.combiName).font(.maru(12)).foregroundStyle(Theme.inkDim)
             Button(action: onClose) {
@@ -55,9 +55,9 @@ struct NotebookView: View {
 
     private var tabBar: some View {
         HStack(spacing: 0) {
-            tabButton("ちから", .chikara)
-            tabButton("きろく", .kiroku)
-            tabButton("ネタ", .neta)
+            tabButton("能力", .chikara)
+            tabButton("戦績", .kiroku)
+            tabButton("持ちネタ", .neta)
         }
         .padding(4).background(Theme.card2, in: Capsule()).padding(.horizontal, Theme.Sp.s24)
     }
@@ -70,80 +70,81 @@ struct NotebookView: View {
         }.buttonStyle(.plain)
     }
 
-    // MARK: ちから（レーダー＋相性帯＋伸びしろ）
+    // MARK: 能力（パワプロの選手情報式・2026-10-12 オーナー「ちから/きろく/ネタも意味わからん」）
+    // 1能力1行＝等級・値・次の等級までのバー。レーダーと「成長の器」の輪は外した（器は満ちた時だけ1行で言う）。
 
     private var chikaraPage: some View {
-        VStack(spacing: Theme.Sp.s16) {
-            RadarChart(axes: RadarChart.abilityAxes(current: s, base: GameState(config: session.config), config: session.config))
-                .frame(height: 240)
-                .padding(Theme.Sp.s16)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()
-
-            // 相性は別系統＝verm帯（器なし・位置でも分離）
-            VStack(alignment: .leading, spacing: 6) {
-                HStack { Text("相性").font(.maru(11)).foregroundStyle(Theme.cCompat); Spacer()
-                    Text("\(Int(s.compat)) / \(Int(session.config.compatCap))").font(.maru(12)).monospacedDigit().foregroundStyle(Theme.inkDim) }
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Theme.card2)
-                        Capsule().fill(Theme.cCompat)
-                            .frame(width: geo.size.width * CGFloat(min(1, s.compat / session.config.compatCap)))
-                    }
-                }.frame(height: 10)
+        let cfg = session.config
+        let budget = s.growthBudget ?? 0
+        let full = budget > 0 && s.growthUsed >= budget * 0.98
+        let exp = AbilityUpView.points(s.expTotal)
+        return VStack(spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("実力").font(.maru(14, weight: .bold)).foregroundStyle(Theme.inkSub)
+                Text("\(Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))").font(.maru(30, weight: .heavy))
+                    .monospacedDigit().foregroundStyle(Theme.ink)
+                Spacer()
+                if exp > 0 && !cfg.autoPourAllocation {
+                    Text("経験点 \(exp) 未使用").font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.goldDeep)
+                }
             }
-            .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e1()
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
 
-            growthRoom
+            VStack(spacing: 0) {
+                ForEach(Array(Ability.allCases.enumerated()), id: \.element) { i, a in
+                    if i > 0 { Divider().padding(.leading, 60) }
+                    abilityRow(a, cap: a == .メンタル ? cfg.mentalCap : cfg.abilityCap)
+                }
+                Divider().padding(.leading, 60)
+                compatRow
+            }
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+
+            if full {
+                Text("今年はもう、能力が伸びにくい（年が明けると戻る）。")
+                    .font(.maru(12)).foregroundStyle(Theme.inkSub)
+            }
         }
     }
 
-    // 成長の伸びしろ（器の空き＝成長予算の残り・数値なし）＋未割り振りの経験点残高
-    // （正典v3: docs/exp_currency_redesign_v0.md。5通貨バッジ＝AllocationView と同じ通貨の文法。
-    //  ここは読む場所＝注ぐ操作は「のばす」に置く）
-    private var growthRoom: some View {
-        let budget = s.growthBudget ?? 0
-        let used = min(budget, s.growthUsed)
-        let frac = budget > 0 ? used / budget : 0
-        // 自動注ぎ（A「削る」）では粒は行動直後に注がれ、のばす画面も無い＝残高と「のばす」誘導は出さない
-        let hasGrain = s.expTotal >= 1 && !session.config.autoPourAllocation
-        // §3 誘導文は「注げる段があること」も条件に足す（器満了中は「注ぐ」が嘘の導きになる＝バッジと同じ recommendedPlan 由来で食い違いを消す）。
-        let canPour = !session.recommendedAllocation().isEmpty
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("成長の器").font(.maru(11)).foregroundStyle(Theme.inkDim)
-            HStack(spacing: Theme.Sp.s16) {
-                ZStack {
-                    Circle().stroke(Theme.card2, lineWidth: 10)
-                    Circle().trim(from: 0, to: CGFloat(frac))
-                        .stroke(Theme.gold, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                }.frame(width: 56, height: 56)
-                Text(frac < 0.98 ? "まだ、伸びしろがある。" : "この年の器は、満ちた。")
-                    .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.ink)
-                Spacer()
-            }
-            if hasGrain {
-                Divider().padding(.vertical, 2)
-                Text("のこりの経験点").font(.maru(11)).foregroundStyle(Theme.inkDim)
-                HStack(spacing: Theme.Sp.s8) {
-                    ForEach(ExpCurrency.allCases, id: \.self) { c in
-                        if s[currency: c] >= 1 {
-                            HStack(spacing: 3) {
-                                CurrencyBadge(currency: c, size: 14)
-                                Text("\(Int(s[currency: c]))").font(.maru(11)).monospacedDigit()
-                                    .foregroundStyle(Theme.ink)
-                            }
-                        }
-                    }
-                    Spacer()
+    private func abilityRow(_ a: Ability, cap: Double) -> some View {
+        let v = s[a]
+        let g = Theme.rank(v)
+        return HStack(spacing: 12) {
+            Text(g).font(.maru(18, weight: .heavy)).foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .background(Theme.gradeColor(g), in: RoundedRectangle(cornerRadius: 8))
+            Text("\(a)").font(.maru(15, weight: .bold)).foregroundStyle(Theme.ink).frame(width: 74, alignment: .leading)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.line)
+                    Capsule().fill(Theme.abilityColor(a)).frame(width: geo.size.width * Theme.rankProgress(v, cap: cap))
                 }
-                // 満了中は器の一文（すぐ上）だけが立つ＝この誘導は「注げる段がある時」だけ（§3）。
-                if canPour {
-                    Text("注いでいない経験点がある。「のばす」から注ぐ。")
-                        .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
-                }
-            }
+            }.frame(height: 8)
+            Text("\(Int(v.rounded()))").font(.maru(17, weight: .heavy)).monospacedDigit().foregroundStyle(Theme.ink)
+                .frame(width: 34, alignment: .trailing)
         }
-        .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e1()
+        .padding(.horizontal, 12).padding(.vertical, 9)
+    }
+
+    private var compatRow: some View {
+        let cap = session.config.compatCap
+        return HStack(spacing: 12) {
+            Image(systemName: "heart.fill").font(.system(size: 16, weight: .bold)).foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .background(Theme.cCompat, in: RoundedRectangle(cornerRadius: 8))
+            Text("相性").font(.maru(15, weight: .bold)).foregroundStyle(Theme.ink).frame(width: 74, alignment: .leading)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.line)
+                    Capsule().fill(Theme.cCompat).frame(width: geo.size.width * CGFloat(min(1, s.compat / cap)))
+                }
+            }.frame(height: 8)
+            Text("\(Int(s.compat))").font(.maru(17, weight: .heavy)).monospacedDigit().foregroundStyle(Theme.ink)
+                .frame(width: 34, alignment: .trailing)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 9)
     }
 
     // MARK: きろく（大会履歴＋称号）
