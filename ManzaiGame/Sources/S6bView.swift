@@ -109,7 +109,7 @@ struct S6bView: View {
             .padding(.horizontal, Theme.Sp.s24)
 
             Text("—— \(session.combiName) ——").font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.8)).padding(.top, Theme.Sp.s24)
-            Text("四分間で、笑わせてきた。").font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.6))
+            Text("結成からの記録").font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.6))
             Spacer()
             Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45)).padding(.bottom, Theme.Sp.s24)
         }
@@ -137,7 +137,7 @@ struct S6bView: View {
             }
             .scaleEffect(burned ? 1 : 1.05).opacity(burned ? 1 : 0)
 
-            Text("その写真は、袖の壁に、ピンで留められた。")
+            Text("写真を袖の壁に貼った。")
                 .font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.8)).opacity(burned ? 1 : 0)
             Spacer()
             Button(action: onFinish) {

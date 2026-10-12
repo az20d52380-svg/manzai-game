@@ -227,7 +227,7 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "行こう。先輩とのつながりは大事だ"),
+                Advice(name: "俺", text: "行こう。先輩に顔を出しておきたい"),
                 Advice(name: "谷口", text: "了解。一杯だけで帰ろな"),
             ],
             "B": [
@@ -393,7 +393,7 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "今のうちに詰めよう。熱があるうちがいい"),
+                Advice(name: "俺", text: "今のうちに詰めよう。今夜中に通したい"),
                 Advice(name: "谷口", text: "よっしゃ。もうひと頑張りや"),
             ],
             "B": [

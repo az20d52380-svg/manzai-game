@@ -209,7 +209,7 @@ struct YearResultView: View {
         return VStack(alignment: .leading, spacing: 5) {
             Text("出来事").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
             if lines.isEmpty {
-                Text("——大会は、来年こそ。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
+                Text("来年の大会に向けて準備しよう。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
             } else {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                     Text(line).font(.maru(.bodyMedium)).foregroundStyle(Theme.ink)
@@ -300,16 +300,16 @@ struct YearResultView: View {
         "最初の一年で、ここまで来られるとは思ってなかった。",
     ]
     private static let yeFirstStall = [  // 停滞年（1年目）
-        "最初の一年が終わった。上は、思ったより遠かった。",
-        "一年目は、ほとんど何もできなかった。来年は、もう一つ上に行きたい。",
+        "最初の一年が終わった。来年は準決勝を越えたい。",
+        "一年目は悔しい。来年は稽古を増やそう。",
     ]
     private static let yeBankrupt = [  // 貧乏年
-        "金のない一年だった。それでも稽古はやめなかった。",
+        "金のない一年だった。来年は少し貯めよう。",
         "バイトばかりの年だった。来年は、もう少し稽古に時間を使いたい。",
-        "大会には全部出た。参加費はきつかったけど、出てよかった。",
+        "大会には全部出た。来年も同じように出よう。",
     ]
     private static let yeDissolution = [  // 解散年（相性が最後まで低い＝袂を分かつ）＝終わり方の語彙（統合設計§1-2・drama-voice採点済A○/B3○）
-        "二人で舞台に立つのは、今月が最後になった。\n来月からは、俺一人だ。",
+        "谷口とは今月でお別れだ。\n来月からは一人でやる。",
     ]
 
     private var restartButton: some View {
