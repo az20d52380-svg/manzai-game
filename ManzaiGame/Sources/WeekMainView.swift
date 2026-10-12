@@ -572,8 +572,18 @@ struct WeekMainView: View {
                 HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0) } }
             }
             if !compact { Spacer(minLength: 0) }
+            // 一覧（compact かつ実線）は伸びとコストを2行に分ける＝2列の幅でも札が切れない
+            if compact, !dashed, !effects.isEmpty {
+                ViewThatFits(in: .horizontal) {   // 入りきらなければ2段に折る（札を「…」で切らない）
+                    HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } }
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 4) { ForEach(effects.prefix(2), id: \.text) { effectPill($0).fixedSize() } }
+                        HStack(spacing: 4) { ForEach(effects.dropFirst(2), id: \.text) { effectPill($0).fixedSize() } }
+                    }
+                }
+            }
             HStack(spacing: 4) {
-                if compact { ForEach(effects, id: \.text) { effectPill($0) } }
+                if compact, dashed { ForEach(effects, id: \.text) { effectPill($0) } }
                 if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
                 if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
             }
@@ -705,7 +715,7 @@ struct WeekMainView: View {
         let man = Double(abs(money)) / 10000
         let txt = (man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man))
         return Text("\(up ? "+" : "-")¥\(txt)万")
-            .font(.system(size: 12, weight: .heavy))
+            .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMoney : Theme.verm))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Capsule())
@@ -714,7 +724,7 @@ struct WeekMainView: View {
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
         let up = delta > 0
         return Text("体力 \(up ? "+" : "")\(delta)")
-            .font(.system(size: 12, weight: .heavy))
+            .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMental : Theme.inkDim))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
