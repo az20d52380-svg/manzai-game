@@ -21,7 +21,7 @@ struct CommandVariant: Identifiable {
 
 /// 週メインの4ボタン（パワプロのサクセス式・オーナー指示 2026-10-12）。押すと同じ場所が種類の一覧に切り替わる。
 enum CommandCategory: String, CaseIterable, Identifiable {
-    case ネタを書く, 練習, バイト, 休む, 能力アップ   // ネタを書くは練習から独立（オーナー 2026-10-12「練習とネタ書くとかわけるのもあり」）
+    case ネタを書く, 練習, バイト, 休む, 能力アップ, お店   // ネタを書くは練習から独立・お店も並べる（オーナー 2026-10-12）
     var id: String { rawValue }
     var glyph: String {
         switch self {
@@ -30,6 +30,7 @@ enum CommandCategory: String, CaseIterable, Identifiable {
         case .バイト: return "yensign.circle.fill"
         case .休む: return "moon.zzz.fill"
         case .能力アップ: return "arrow.up.circle.fill"
+        case .お店: return "bag.fill"
         }
     }
 }
@@ -61,7 +62,7 @@ enum CommandCatalog {
                 (.ネタ合わせ, "相方と合わせる", "二人で合わせる", "arrow.left.arrow.right"),
                 (.フリーライブ, "舞台に立つ", "客前で場数を踏む", "mic.fill"),
                 (.ネタ見せ会, "ネタ見せ会", "作家の前で試す", "theatermasks.fill"),
-                (.ランニング・サウナ, "ジムで鍛える", "体と度胸をつける", "dumbbell.fill"),
+                (.ランニング・サウナ, "話し方教室", "人前で話す度胸をつける", "person.wave.2.fill"),
             ]
             return trains.compactMap { t, name, desc, glyph in
                 guard let spec = config.trainings[t] else { return nil }
@@ -88,7 +89,7 @@ enum CommandCatalog {
                 guard config.rests[r] != nil else { return nil }
                 return CommandVariant(id: "rest_\(r)", name: name, desc: desc, glyph: glyph, action: .rest(r), isTrain: false)
             }
-        case .ネタを書く, .能力アップ:
+        case .ネタを書く, .能力アップ, .お店:
             return []   // ネタを書く＝ネタの一覧（WeekMainView.netaWriteList）／能力アップ＝AbilityUpView
         }
     }

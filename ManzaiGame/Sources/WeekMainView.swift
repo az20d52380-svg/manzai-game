@@ -450,11 +450,9 @@ struct WeekMainView: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             } else {
-                VStack(spacing: 9) {
-                    categoryTile(.ネタを書く)   // ネタはこのゲームの中心＝一番上の幅広（2026-10-12）
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
-                        ForEach(CommandCategory.allCases.filter { $0 != .ネタを書く }) { c in categoryTile(c) }
-                    }
+                // 6つを同じ大きさの2×3（オーナー 2026-10-12「視認性悪いからアイテムショップもここに」）
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                    ForEach(CommandCategory.allCases) { c in categoryTile(c) }
                 }
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
@@ -641,7 +639,7 @@ struct WeekMainView: View {
     /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは経験点の振り分け画面（AllocationView）
     private func categoryTile(_ c: CommandCategory) -> some View {
         let tint: Color = { switch c { case .ネタを書く: return Theme.cIdea; case .練習: return Theme.cExpr; case .バイト: return Theme.cMoney
-                                      case .休む: return Theme.night; case .能力アップ: return Theme.gold } }()
+                                      case .休む: return Theme.night; case .能力アップ: return Theme.gold; case .お店: return Theme.cChara } }()
         let ready = c == .能力アップ && expGrains > 0
         let gated = (c == .練習 || c == .ネタを書く) && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let sub: String = {
@@ -650,12 +648,13 @@ struct WeekMainView: View {
                 if gated { return s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め" }
                 if let n = session.selectedNeta { return "\(session.activeNetas.count)本 ・ 勝負ネタ「\(n.name)」" }
                 return session.activeNetas.isEmpty ? "まだネタがない。まず一本" : "\(session.activeNetas.count)本 書いた"
-            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "合わせ・舞台・ネタ見せ会"
+            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "合わせ・舞台 ほか"
             case .バイト: return "お金を稼ぐ"
             case .休む: return "体力を戻す"
             case .能力アップ:
                 if unspentBeforeStage { return "大会前に振っておこう" }
                 return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で能力を上げる"
+            case .お店: return "アイテムを買う"
             }
         }()
         return Button {
@@ -667,6 +666,7 @@ struct WeekMainView: View {
             }
             Sound.play(.tap)
             if c == .能力アップ { showAllocation = true; return }
+            if c == .お店 { showShop = true; return }
             withAnimation(Theme.Motion.appearQuick) {
                 openCat = c
                 if c == .ネタを書く { openNetaWrite = true }
@@ -684,7 +684,7 @@ struct WeekMainView: View {
                 Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
             }
             .padding(.horizontal, 12).padding(.vertical, 12)
-            .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
             .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
             .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
                 .stroke(gated ? Theme.line : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : tint.opacity(0.55),
@@ -909,7 +909,6 @@ struct WeekMainView: View {
             HStack(spacing: 6) {
                 menuButton("calendar", "日程") { showCalendar = true }              // S4 カレンダー
                 menuButton("person.2.fill", "コンビ") { showNotebook = true }       // S5 コンビの情報（旧ネタ帳）
-                menuButton("bag.fill", "お店") { showShop = true }                  // 買い物（アイテム）
                 menuButton("gearshape.fill", "設定") { showSettings = true }        // 音量・この年をやめる（監査G-04）
             }
         }
