@@ -1,15 +1,17 @@
 // ShopView.swift
 // お店（円で買うアイテム・GameCore/Item.swift）。入口は週画面の最下帯の袋アイコン。
-// 2026-10-12 作り直し（オーナー「アイテムのとこのUIUX悪すぎる」）：素のiOS一覧→アプリの札の見た目・アイコン・
-// 買う前に確認・残り回数の札。効果は向きだけ書く（％は出さない）。乱数非消費・golden不変。
+// 2026-10-12 作り直し（オーナー「アイテムのとこのUIUX悪すぎる」）：素のiOS一覧→アプリの札の見た目・アイコン・残り回数の札。
+// 買い方（オーナー 2026-10-12「押したら買えて、キャンセルだけ」「常時で」）：値段を押す＝すぐ買う。店を開いている間は
+// 買った行にずっと「戻す」が出る（店に入った時の状態から残りを買い直す＝ずれない）。とじると確定。乱数非消費・golden不変。
 import SwiftUI
 import GameCore
 
 struct ShopView: View {
     let session: GameSession
     let onClose: () -> Void
-    @State private var confirming: ShopItem?
-    @State private var bought: String?
+    /// 店に入った時の状態（「戻す」の起点）と、この来店で買った順
+    @State private var visitStart: GameState?
+    @State private var purchases: [ShopItem] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,30 +19,15 @@ struct ShopView: View {
             ScrollView {
                 VStack(spacing: 10) {
                     ForEach(ShopItem.allCases, id: \.self) { row($0) }
-                    Text("回数に限りがあるものは、年が明けると戻ります。")
+                    Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
+                        .multilineTextAlignment(.center)
                         .font(.maru(11)).foregroundStyle(Theme.inkSub).padding(.top, 4)
                 }
                 .padding(.horizontal, 16).padding(.bottom, 20)
             }
         }
         .background(LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
-        .overlay(alignment: .bottom) {
-            if let b = bought {
-                Text(b).font(.maru(14, weight: .bold)).foregroundStyle(.white)
-                    .padding(.horizontal, 18).padding(.vertical, 10)
-                    .background(Theme.ink.opacity(0.9), in: Capsule())
-                    .padding(.bottom, 30)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .confirmationDialog(confirming.map { "\($0.rawValue)を買う？" } ?? "",
-                            isPresented: Binding(get: { confirming != nil }, set: { if !$0 { confirming = nil } }),
-                            titleVisibility: .visible) {
-            if let item = confirming {
-                Button("¥\(price(item).formatted()) で買う") { buy(item) }
-                Button("やめる", role: .cancel) { confirming = nil }
-            }
-        }
+        .onAppear { if visitStart == nil { visitStart = session.state } }
     }
 
     private var header: some View {
@@ -84,13 +71,28 @@ struct ShopView: View {
                 }
             }
             Spacer(minLength: 0)
-            Button { confirming = item } label: {
-                Text("¥\(price(item).formatted())").font(.maru(13, weight: .heavy)).monospacedDigit()
-                    .foregroundStyle(ok ? .white : Theme.inkSub)
-                    .padding(.horizontal, 12).padding(.vertical, 9)
-                    .background(ok ? Theme.verm : Theme.line, in: Capsule())
+            VStack(alignment: .trailing, spacing: 6) {
+                Button { buy(item) } label: {
+                    Text("¥\(price(item).formatted())").font(.maru(13, weight: .heavy)).monospacedDigit()
+                        .foregroundStyle(ok ? .white : Theme.inkSub)
+                        .padding(.horizontal, 12).padding(.vertical, 9)
+                        .background(ok ? Theme.verm : Theme.line, in: Capsule())
+                }
+                .buttonStyle(PressableStyle(enabled: ok)).disabled(!ok)
+                let n = purchases.filter { $0 == item }.count
+                if n > 0 {
+                    Button { undo(item) } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.uturn.backward").font(.system(size: 10, weight: .bold))
+                            Text(n > 1 ? "戻す（\(n)個）" : "戻す").font(.maru(11.5, weight: .bold))
+                        }
+                        .foregroundStyle(Theme.inkSub)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .overlay(Capsule().stroke(Theme.inkFaint, lineWidth: 1.2))
+                    }
+                    .buttonStyle(PressableStyle())
+                }
             }
-            .buttonStyle(PressableStyle(enabled: ok)).disabled(!ok)
         }
         .padding(.horizontal, 12).padding(.vertical, 12)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
@@ -110,14 +112,18 @@ struct ShopView: View {
     }
 
     private func buy(_ item: ShopItem) {
-        confirming = nil
-        session.buyItem(item)
+        if visitStart == nil { visitStart = session.state }
+        guard session.buyItem(item) else { return }
+        purchases.append(item)
         Haptics.tick()
-        withAnimation(Theme.Motion.appearQuick) { bought = "\(item.rawValue)を買った" }
-        Task {
-            try? await Task.sleep(nanoseconds: 1_400_000_000)
-            withAnimation(Theme.Motion.appearQuick) { bought = nil }
-        }
+    }
+
+    /// この来店で買った item を1つ返す＝店に入った時の状態から、残りの買い物だけ順に買い直す
+    private func undo(_ item: ShopItem) {
+        guard let start = visitStart, let i = purchases.lastIndex(of: item) else { return }
+        purchases.remove(at: i)
+        session.replayShopVisit(from: start, purchases)
+        Haptics.tick()
     }
 
     private func limitText(_ item: ShopItem, _ spec: ItemSpec?) -> String {

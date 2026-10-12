@@ -265,7 +265,11 @@ struct WeekMainView: View {
                             .foregroundStyle(m.weeksLeft <= 3 ? Theme.verm : Theme.gold)
                             .contentTransition(.numericText())
                     }
-                    if m.weeksLeft >= 6 {
+                    if m.weeksLeft <= 2 && unspentBeforeStage {
+                        // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
+                        Text("経験点が残ってる ・ 能力アップで振ろう")
+                            .font(.maru(9.5, weight: .bold)).foregroundStyle(Theme.gold)
+                    } else if m.weeksLeft >= 6 {
                         Text(lullLine())
                             .font(.maru(9)).foregroundStyle(.white.opacity(0.65))
                     }
@@ -498,6 +502,12 @@ struct WeekMainView: View {
         .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
     }
 
+    /// 大会が近く（2週以内）、まだ振れる経験点がある＝バナーと能力アップの縁で知らせる（振るのは自分）
+    private var unspentBeforeStage: Bool {
+        guard expGrains > 0, let m = nextMilestone(), m.weeksLeft <= 2 else { return false }
+        return !session.recommendedAllocation().isEmpty
+    }
+
     /// たまっている経験点の合計（粒・切り捨て）
     private var expGrains: Int { AbilityUpView.points(s.expTotal) }
 
@@ -512,7 +522,9 @@ struct WeekMainView: View {
             case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "ネタ・合わせ・舞台 ほか"
             case .バイト: return "お金を稼ぐ"
             case .休む: return "体力を戻す"
-            case .能力アップ: return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で能力を上げる"
+            case .能力アップ:
+                if unspentBeforeStage { return "大会前に振っておこう" }
+                return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で能力を上げる"
             }
         }()
         return Button {
@@ -535,7 +547,9 @@ struct WeekMainView: View {
             .padding(.horizontal, 12).padding(.vertical, 12)
             .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
             .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : tint.opacity(0.55), lineWidth: 3))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
+                .stroke(gated ? Theme.line : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : tint.opacity(0.55),
+                        lineWidth: (c == .能力アップ && unspentBeforeStage) ? 4.5 : 3))
             .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
         }
         .buttonStyle(PressableStyle())

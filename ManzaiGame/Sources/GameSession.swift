@@ -644,8 +644,16 @@ final class GameSession {
 
     /// 改名（自動命名の上書き・v2 §9決点3）
     /// 買い物（ShopView）。買えなければ何もしない
-    func buyItem(_ item: ShopItem) {
-        guard runner.applyItemPurchase(item) else { return }
+    @discardableResult
+    func buyItem(_ item: ShopItem) -> Bool {
+        guard runner.applyItemPurchase(item) else { return false }
+        state = runner.state
+        return true
+    }
+
+    /// お店の「戻す」：店に入った時の状態 start から、残った買い物 items だけを順に買い直す（乱数非消費）
+    func replayShopVisit(from start: GameState, _ items: [ShopItem]) {
+        runner.replayItemPurchases(from: start, items)
         state = runner.state
     }
 
@@ -986,6 +994,30 @@ final class GameSession {
             case .gpRound, .gpRevival, .gpFinal: advanceAuto()
             default: return
             }
+        }
+    }
+
+    /// DEBUG: 大会前の振り忘れの知らせ（MZ_UI=prestage）の目視用。練習（体力が落ちたら休む）で、最初の大会の
+    /// weeksBefore 週前まで進める＝経験点が貯まったまま大会が近い状態。RNG は通常の週送りと同じ（golden非対象）。
+    func debugAdvanceUntilStage(weeksBefore: Int, stageWeek: Int) {
+        var steps = 0
+        while week < stageWeek - weeksBefore, !finished, steps < 120 {
+            steps += 1
+            if let kind = pendingChoiceEvent {   // 途中の選択イベントは1つ目の選択肢で流す
+                if let c = ChoiceEventTable.choices(for: kind, config: config).first(where: { $0.gate(state) }) {
+                    applyEventChoice(c.id)
+                }
+                dismissChoiceEvent()
+                continue
+            }
+            guard case .freeAction = phase else { return }
+            choose(state.stamina < config.staminaGate + 10 ? .rest(.完全休養) : .train(.ネタ作り))
+        }
+        if let kind = pendingChoiceEvent {   // 着いた週の頭に出た選択イベント（前夜など）も流す
+            if let c = ChoiceEventTable.choices(for: kind, config: config).first(where: { $0.gate(state) }) {
+                applyEventChoice(c.id)
+            }
+            dismissChoiceEvent()
         }
     }
 

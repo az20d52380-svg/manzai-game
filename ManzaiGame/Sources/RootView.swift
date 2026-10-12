@@ -66,6 +66,12 @@ struct RootView: View {
             if (ui == "grown" || ui == "notebook"), session.week <= 1 {
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
+            if ui == "prestage", session.week <= 1 {
+                // 大会前の振り忘れの知らせの目視：最初の大会（春新人賞A）の1週前まで練習で進める
+                if let w = session.nextStage?.week {
+                    session.debugAdvanceUntilStage(weeksBefore: 1, stageWeek: w)
+                }
+            }
             if ui == "calendar", session.week <= 1 {
                 session.debugAdvanceToFirstResult()   // 数週バイトで進める（過去週の色ドット＋大会週の目視）
             }
