@@ -71,6 +71,12 @@ struct WeekMainView: View {
     private var s: GameState { session.state }
     /// 開いている4ボタンの下位一覧（nil＝4ボタン）。パワプロ式（オーナー指示 2026-10-12）
     @State private var openCat: CommandCategory?
+    /// 練習→ネタを書く の下の「どのネタを磨くか」一覧を開いているか
+    @State private var openNetaWrite = false
+    /// 新しいネタの題名入力（nil＝入力欄を閉じている）。空欄で書く＝おまかせの題名
+    @State private var newNetaTitle: String?
+    /// 書いた直後に付ける題名（新ネタの id と題名）
+    @State private var pendingNetaTitle: (id: Int, title: String)?
     private var mainCards: [CommandVariant] {
         CommandCatalog.mainCards(config: session.config, money: s.money)
     }
@@ -425,20 +431,24 @@ struct WeekMainView: View {
             if let cat = openCat {
                 // 下位一覧：戻る＋種類のカード（小さめ・2列）。実行したら4ボタンへ戻る
                 HStack(spacing: 8) {
-                    Button { withAnimation(Theme.Motion.appearQuick) { openCat = nil } } label: {
+                    Button { withAnimation(Theme.Motion.appearQuick) { if newNetaTitle != nil { newNetaTitle = nil } else if openNetaWrite { openNetaWrite = false } else { openCat = nil } } } label: {
                         Label("もどる", systemImage: "chevron.left").font(.maru(13, weight: .bold))
                             .foregroundStyle(Theme.inkSub).padding(.horizontal, 10).padding(.vertical, 6)
                             .background(Theme.card, in: Capsule())
                     }.buttonStyle(PressableStyle())
-                    Text(cat.rawValue).font(.maru(16, weight: .heavy)).foregroundStyle(Theme.ink)
+                    Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(.maru(16, weight: .heavy)).foregroundStyle(Theme.ink)
                     Spacer()
                 }
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
-                    ForEach(CommandCatalog.cards(cat, config: session.config, money: s.money)) { v in
-                        actionCard(v, compact: true, dashed: false)
+                if openNetaWrite {
+                    netaWriteList.transition(.move(edge: .trailing).combined(with: .opacity))
+                } else {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                        ForEach(CommandCatalog.cards(cat, config: session.config, money: s.money)) { v in
+                            actionCard(v, compact: true, dashed: false)
+                        }
                     }
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
-                .transition(.move(edge: .trailing).combined(with: .opacity))
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
                     ForEach(CommandCategory.allCases) { c in categoryTile(c) }
@@ -459,6 +469,140 @@ struct WeekMainView: View {
         .animation(Theme.Motion.appearQuick, value: extras.map(\.id))
     }
 
+    // MARK: ネタを書く（どのネタを磨くか／新しく書くか）
+
+    /// 完成度の段階名（表示のみ・閾値【仮】）。業界語を避けた普通の言葉（会話ルールv3）
+    static func netaStage(_ polish: Double) -> String {
+        switch polish {
+        case ..<25: return "書きかけ"
+        case ..<50: return "形になってきた"
+        case ..<75: return "仕上がってきた"
+        case ..<90: return "よく仕上がった"
+        default: return "完成"
+        }
+    }
+
+    private var netaWriteList: some View {
+        let cfg = session.config
+        let write = CommandCatalog.cards(.練習, config: cfg, money: s.money).first { if case .train(.ネタ作り) = $0.action { return true }; return false }
+        let mult = s.netaBoostWeeks > 0 ? cfg.netaBoostMult : 1.0
+        return VStack(spacing: 7) {
+            ForEach(session.activeNetas, id: \.id) { n in
+                let after = min(100, n.polish + cfg.netaReviseGain * mult)
+                Button {
+                    guard let w = write, pulledID == nil, !burstHold else { return }
+                    session.selectNeta(n.id)
+                    perform(w)
+                } label: {
+                    HStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Text("「\(n.name)」").font(.maru(14, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
+                                Text(Self.netaStage(n.polish)).font(.maru(10, weight: .bold)).foregroundStyle(Theme.ideaDeep)
+                                    .padding(.horizontal, 6).padding(.vertical, 1)
+                                    .overlay(Capsule().stroke(Theme.cIdea.opacity(0.7), lineWidth: 1.2))
+                                if n.id == s.selectedNetaID {
+                                    Text("勝負ネタ").font(.maru(10, weight: .bold)).foregroundStyle(.white)
+                                        .padding(.horizontal, 6).padding(.vertical, 1).background(Theme.verm, in: Capsule())
+                                }
+                            }
+                            HStack(spacing: 6) {
+                                GeometryReader { g in
+                                    ZStack(alignment: .leading) {
+                                        Capsule().fill(Theme.line)
+                                        Capsule().fill(Theme.cIdea.opacity(0.35)).frame(width: g.size.width * after / 100)
+                                        Capsule().fill(Theme.cIdea).frame(width: g.size.width * n.polish / 100)
+                                    }
+                                }.frame(height: 7)
+                                Text("完成度 \(Int(n.polish)) → \(Int(after))").font(.maru(11, weight: .bold)).monospacedDigit()
+                                    .foregroundStyle(Theme.ideaDeep).fixedSize()
+                            }
+                            Text("舞台で \(n.stageCount) 回").font(.maru(10.5)).foregroundStyle(Theme.inkSub)
+                        }
+                        Image(systemName: "pencil").font(.system(size: 15, weight: .bold)).foregroundStyle(.white)
+                            .frame(width: 34, height: 34).background(Theme.cIdea, in: Circle())
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 9)
+                    .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.cIdea.opacity(0.45), lineWidth: 2))
+                }
+                .buttonStyle(PressableStyle())
+            }
+            if session.activeNetas.count < cfg.netaActiveSlots {
+                if let draft = newNetaTitle {
+                    // 題名を自分で付ける（空欄＝おまかせ）。オーナー 2026-10-12「タイトル決めとかこっちでかけるように」
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("新しいネタの題名").font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkSub)
+                        TextField(NetaCatalog.autoName(forID: s.nextNetaID), text: Binding(get: { draft }, set: { newNetaTitle = String($0.prefix(16)) }))
+                            .font(.maru(16, weight: .bold)).foregroundStyle(Theme.ink)
+                            .padding(.horizontal, 12).padding(.vertical, 10)
+                            .background(Theme.card2, in: RoundedRectangle(cornerRadius: 10))
+                            .submitLabel(.done)
+                        Button {
+                            guard let w = write, pulledID == nil, !burstHold else { return }
+                            let t = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if !t.isEmpty { pendingNetaTitle = (s.nextNetaID, t) }
+                            session.selectNeta(nil)
+                            perform(w)
+                        } label: {
+                            Text(draft.trimmingCharacters(in: .whitespaces).isEmpty ? "おまかせの題名で書く" : "この題名で書く")
+                                .font(.maru(15, weight: .heavy)).foregroundStyle(.white)
+                                .frame(maxWidth: .infinity, minHeight: 46)
+                                .background(Theme.cIdea, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                        }
+                        .buttonStyle(PressableStyle())
+                    }
+                    .padding(12)
+                    .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.cIdea.opacity(0.6), lineWidth: 2))
+                } else {
+                    Button { withAnimation(Theme.Motion.appearQuick) { newNetaTitle = "" } } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus").font(.system(size: 14, weight: .heavy))
+                            Text("新しいネタを書く").font(.maru(14, weight: .bold))
+                            Spacer()
+                            Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本書ける").font(.maru(10.5)).foregroundStyle(Theme.inkSub)
+                        }
+                        .foregroundStyle(Theme.ideaDeep)
+                        .padding(.horizontal, 12).padding(.vertical, 12)
+                        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+                        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.cIdea.opacity(0.45), style: StrokeStyle(lineWidth: 2, dash: [6, 4])))
+                    }
+                    .buttonStyle(PressableStyle())
+                }
+            }
+        }
+    }
+
+    /// 行動の実行（二拍：引き抜き→一言→週送り→バースト）。行動カードとネタの一覧から呼ぶ。
+    private func perform(_ v: CommandVariant) {
+        Sound.play(.tap)   // 実行の決定音（週送りの一拍目）
+        // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
+        // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
+        // 監査A-04: 一言はこのカードで直近4週に出していない時だけ（毎週同じ3本が回るのを避ける）
+        let showBeat = session.week - (lastBeatWeek[v.id] ?? -100) > 4
+        if showBeat {
+            lastBeatWeek[v.id] = session.week
+            withAnimation(.easeOut(duration: 0.18)) {
+                beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week)
+            }
+        }
+        withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }
+        beatTask = Task {
+            try? await Task.sleep(nanoseconds: 120_000_000)
+            if showBeat { try? await Task.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
+            burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
+            burstHold = true
+            Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
+            session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
+            if let p = pendingNetaTitle {   // 新しいネタに、プレイヤーが付けた題名を付ける
+                if session.activeNetas.contains(where: { $0.id == p.id }) { session.renameNeta(p.id, to: p.title) }
+                pendingNetaTitle = nil
+            }
+            withAnimation(Theme.Motion.appear) { pulledID = nil; openCat = nil; openNetaWrite = false; newNetaTitle = nil }   // 実行したら4ボタンへ戻る
+        }
+    }
+
     private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil) -> some View {
         let preoccupied = v.isTrain && s.preoccupiedWeeks > 0                       // 0022 撮影で稽古枠が埋まった週
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
@@ -472,27 +616,13 @@ struct WeekMainView: View {
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
-            Sound.play(.tap)   // 実行の決定音（週送りの一拍目）
-            // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
-            // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
-            // 監査A-04: 一言はこのカードで直近4週に出していない時だけ（毎週同じ3本が回るのを避ける）
-            let showBeat = session.week - (lastBeatWeek[v.id] ?? -100) > 4
-            if showBeat {
-                lastBeatWeek[v.id] = session.week
-                withAnimation(.easeOut(duration: 0.18)) {
-                    beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week)
-                }
+            // ネタを書く（練習の一覧から）：持ちネタがあれば、どれを磨くか／新しく書くかの一覧を挟む（2026-10-12 オーナー「ネタ育てる要素ない」）
+            if case .train(.ネタ作り) = v.action, openCat == .練習, !openNetaWrite {
+                Sound.play(.tap)
+                withAnimation(Theme.Motion.appearQuick) { openNetaWrite = true }
+                return
             }
-            withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }
-            beatTask = Task {
-                try? await Task.sleep(nanoseconds: 120_000_000)
-                if showBeat { try? await Task.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
-                burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
-                burstHold = true
-                Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
-                session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
-                withAnimation(Theme.Motion.appear) { pulledID = nil; openCat = nil }   // 実行したら4ボタンへ戻る   // 常設カードは同じ場所に戻る＝次の週の手札
-            }
+            perform(v)
         } label: {
             actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
