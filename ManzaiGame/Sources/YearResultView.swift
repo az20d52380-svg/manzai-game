@@ -263,7 +263,7 @@ struct YearResultView: View {
     /// オーナー決定 2026-07-06：else（決勝未到達・非破産）を fame/roundsPassed で二分。閾値は【仮】——sim到達分布で後日確定。
     private func yearEndLine() -> String? {
         guard let o else { return nil }
-        let pool: [String]
+        var pool: [String]
         if o.bankrupt {
             pool = Self.yeBankrupt                                               // 貧乏年
         } else if session.careerOver && !o.champion && !o.reachedFinal && s.compat < 10 {
@@ -274,6 +274,11 @@ struct YearResultView: View {
             pool = Self.yeLeap                                                    // 躍進年
         } else {
             pool = Self.yeStall                                                  // 停滞年
+        }
+        // 1年目には「去年」「今年も」が無い（不具合 2026-10-12）。前年を前提にする行を外し、1年目用の行を足す。
+        if session.year <= 1 {
+            if pool == Self.yeStall { pool = Self.yeFirstStall }
+            else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap }
         }
         guard !pool.isEmpty else { return nil }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
@@ -290,6 +295,13 @@ struct YearResultView: View {
         "今年もたくさん稽古した。でも、結果は去年と同じだった。",
         // 多年版のみ: "今年は、同じ準決勝の会場に三度立った。…"（準決勝が年1回の1年版では事実と矛盾＝監査D-06）
         "今年も同じあたりで止まった。来年は、その上に行きたい。",
+    ]
+    private static let yeFirstLeap = [   // 躍進年（1年目）
+        "最初の一年で、ここまで来られるとは思ってなかった。",
+    ]
+    private static let yeFirstStall = [  // 停滞年（1年目）
+        "最初の一年が終わった。上は、思ったより遠かった。",
+        "一年目は、ほとんど何もできなかった。来年は、もう一つ上に行きたい。",
     ]
     private static let yeBankrupt = [  // 貧乏年
         "金のない一年だった。それでも稽古はやめなかった。",
