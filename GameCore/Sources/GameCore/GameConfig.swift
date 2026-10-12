@@ -39,6 +39,9 @@ public enum Training: CaseIterable, Hashable, Codable {
     case ネタ合わせ
     case ランニング・サウナ
     case フリーライブ
+    // 練習の場所（お金を払う良い場所・money_items_neta_v1 §1・オーナー確定 2026-10-13）。家で書く＝ネタ作り
+    case 喫茶店で書く
+    case ファミレスで書く
 }
 
 public enum Job: CaseIterable, Hashable, Codable {
@@ -212,7 +215,14 @@ public struct GameConfig {
         .ネタ合わせ:   TrainingSpec(main: (.currency(.間合い), 3),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
         .ランニング・サウナ: TrainingSpec(main: (.currency(.胆力), 6),   sub: nil,                     cost: 80_000, stamina: -10, fame: 0),
         .フリーライブ:     TrainingSpec(main: (.currency(.存在感), 3), sub: (.currency(.間合い), 1), cost: 0,      stamina: -30, fame: 1),
+        // 場所【仮】（Python: PLACE_TRAININGS と同値。golden/sim の既定ボットは使わない）
+        .喫茶店で書く:   TrainingSpec(main: (.currency(.閃き), 4.5),   sub: (.currency(.語彙), 1.5), cost: 10_000, stamina: -20, fame: 0),
+        .ファミレスで書く: TrainingSpec(main: (.currency(.閃き), 4),   sub: (.currency(.語彙), 1),   cost: 5_000,  stamina: -30, fame: 0),
     ]
+    /// ネタを書く場所ごとの完成度の伸び（家で書く＝ネタ作り は netaReviseGain）【仮】
+    public var netaPlaceGain: [Training: Double] = [.喫茶店で書く: 10, .ファミレスで書く: 12]
+    /// ネタを書く行動か（家・喫茶店・ファミレス）
+    public static let netaWriteTrainings: Set<Training> = [.ネタ作り, .喫茶店で書く, .ファミレスで書く]
 
     // --- バイト（Python: JOBS） ---
     public var jobs: [Job: (income: Int, stamina: Double)] = [

@@ -49,6 +49,21 @@ TRAININGS = {
     "フリーライブ":     dict(main=("cur:sonzaikan", 3), sub=("cur:maai", 1),    cost=0,      stam=-30, fame=1),
 }
 
+# --- 練習の場所（お金を払う良い場所・docs/money_items_neta_v1.md §1・オーナー確定 2026-10-13）【値は仮】---
+# Swift: Training.喫茶店で書く/.ファミレスで書く（GameConfig.trainings）と同値。既定では TRAININGS に入れない
+# ＝既存のボット・sim・golden の基準は不変。測る時だけ enable_places() で足す（tools/exp_places_v1.py）。
+PLACE_TRAININGS = {
+    "喫茶店で書く":   dict(main=("cur:hirameki", 4.5), sub=("cur:goi", 1.5), cost=10_000, stam=-20, fame=0),
+    "ファミレスで書く": dict(main=("cur:hirameki", 4),   sub=("cur:goi", 1),   cost=5_000,  stam=-30, fame=0),
+}
+
+def enable_places(on=True):
+    for k, v in PLACE_TRAININGS.items():
+        if on:
+            TRAININGS[k] = v
+        else:
+            TRAININGS.pop(k, None)
+
 # --- バイト: (収入, 体力) ---
 JOBS = {
     "キツい": (120_000, -30),

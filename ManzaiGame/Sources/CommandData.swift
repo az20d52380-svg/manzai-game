@@ -94,6 +94,20 @@ enum CommandCatalog {
         }
     }
 
+    /// 「ネタを書く」の場所（オーナー確定 2026-10-13「家で書くとか喫茶店で書くとか、そういうふうに選んだら」）
+    static func netaPlaces(config: GameConfig, money: Int) -> [CommandVariant] {
+        let places: [(Training, String, String, String)] = [
+            (.ネタ作り, "家で書く", "いつもの机で", "house.fill"),
+            (.喫茶店で書く, "喫茶店で書く", "家より集中できる", "cup.and.saucer.fill"),
+            (.ファミレスで書く, "ファミレスで朝まで", "安いけど疲れる", "fork.knife"),
+        ]
+        return places.compactMap { t, name, desc, glyph in
+            guard let spec = config.trainings[t] else { return nil }
+            return CommandVariant(id: "t_\(t)", name: name, desc: desc, glyph: glyph,
+                                  action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost)
+        }
+    }
+
     /// 「ネタを書く」の実体（ネタの一覧から、選んだネタ／新ネタに対して実行する）
     static func netaWrite(config: GameConfig) -> CommandVariant? {
         guard config.trainings[.ネタ作り] != nil else { return nil }

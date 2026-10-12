@@ -591,18 +591,19 @@ final class GameSession {
     ///  - ネタ見せ会/フリーライブ: 選択中ネタがあればそれを、無ければ直近のアクティブネタを客前にかける。
     ///    アクティブネタが1本も無ければ何もしない（まだ書いた ネタが無い＝最初の ネタ作り が先）。
     private func applyNetaWork(for action: WeekAction) {
-        guard case .train(let t) = action, t == .ネタ作り || t == .ネタ見せ会 || t == .フリーライブ else { return }
+        guard case .train(let t) = action, GameConfig.netaWriteTrainings.contains(t) || t == .ネタ見せ会 || t == .フリーライブ else { return }
+        let placeGain = config.netaPlaceGain[t]   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
         switch t {
-        case .ネタ作り:
+        case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
             if let id = state.selectedNetaID, state.netas.contains(where: { $0.id == id }) {
-                runner.applyNetaRevise(id: id)
+                runner.applyNetaRevise(id: id, gain: placeGain)
             } else if state.netas.count < config.netaActiveSlots {
                 let kata = NetaCatalog.autoKata(forID: state.nextNetaID)
                 let id = runner.applyNetaCreate(kata: kata, lengthFit: NetaCatalog.defaultLengthFit(for: kata),
                                                  name: NetaCatalog.autoName(forID: state.nextNetaID))
                 runner.applyNetaSelect(id: id)
             } else if let last = state.netas.last {
-                runner.applyNetaRevise(id: last.id)
+                runner.applyNetaRevise(id: last.id, gain: placeGain)
             }
         case .ネタ見せ会, .フリーライブ:
             let targetID = (state.selectedNetaID.flatMap { id in state.netas.contains { $0.id == id } ? id : nil })

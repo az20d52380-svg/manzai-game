@@ -382,10 +382,11 @@ public struct WeekRunner<R: RandomSource> {
     /// 改稿（`ネタ作り`・既存ネタ選択時）。完成度を上げる（0..100 clamp）。
     /// 0016 書けた一本（寝かせる）: netaBoostWeeks>0 の間は netaBoostMult 倍で乗る。★golden不変: gen_golden は
     /// ネタ個体を持たない＝この関数を呼ばない＋イベント非発火で netaBoostWeeks は常に0＝乗算は恒等（×1.0）。
-    public mutating func applyNetaRevise(id: Int) {
+    /// gain＝場所ごとの伸び（nil＝家で書く＝netaReviseGain・money_items_neta_v1 §1）
+    public mutating func applyNetaRevise(id: Int, gain: Double? = nil) {
         guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
         let mult = state.netaBoostWeeks > 0 ? config.netaBoostMult : 1.0
-        state.netas[i].polish = GameEngine.clamp(state.netas[i].polish + config.netaReviseGain * mult, 0, 100)
+        state.netas[i].polish = GameEngine.clamp(state.netas[i].polish + (gain ?? config.netaReviseGain) * mult, 0, 100)
     }
 
     /// 客前でかける（`ネタ見せ会`＝hard/`フリーライブ`＝!hard）。手応え算出→buzz移動平均→完成度↑・場数↑・おろし。乱数非依存。
