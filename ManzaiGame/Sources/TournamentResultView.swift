@@ -296,15 +296,19 @@ struct ClimaxPage {
 enum ClimaxData {
     /// 準決敗退（週45）の前段。敗者復活の枠が残る＝ここでは泣かせず軽く受ける。
     static let semifinalLoss: [ClimaxPage] = [
-        ClimaxPage(speaker: nil, text: "準決勝で落ちた。敗者復活の枠には、残った。\n次の舞台は、決勝の日の昼にある。稽古の組み直しは、その夜のうちに決めた。"),
+        ClimaxPage(speaker: nil, text: "準決勝で落ちた。でも、敗者復活に回れる。\n決勝の日の昼が勝負だ。今夜のうちに稽古を組み直そう。"),
     ]
     /// 敗者復活の敗北（週47・決勝と同日の昼）＝1年版デモの実質最終戦。話者ごと1ページ（本文はFable doc02・Skill採点済）。
     static let revivalLoss: [ClimaxPage] = [
-        ClimaxPage(speaker: nil, text: "敗者復活で、終わった。\n会場を出ると、外はまだ明るかった。"),
-        ClimaxPage(speaker: "谷口", text: "……なあ。夜まで、おるか。"),
-        ClimaxPage(speaker: "俺", text: "見て帰る。立ち見なら、まだ入れる。"),
-        ClimaxPage(speaker: nil, text: "決勝は、立ち見の柵の前で見た。\n優勝が決まった瞬間、立ち見の列はひとつ前へ詰めて、俺たちはそのままでいた。"),
-        ClimaxPage(speaker: nil, text: "会場を出るとき、裏口へ、優勝したコンビ宛の花が運び込まれていくのが見えた。\n\n谷口とは、駅の手前で別れた。決めたのは、次の合わせの時間だけだった。"),
+        ClimaxPage(speaker: nil, text: "敗者復活で負けた。今年は、ここまでだ。"),
+        ClimaxPage(speaker: "谷口", text: "……決勝、見ていくか？"),
+        ClimaxPage(speaker: "俺", text: "見よう。来年、あそこに立つために。"),
+        ClimaxPage(speaker: nil, text: "決勝会場。立ち見の列の後ろ。"),
+        ClimaxPage(speaker: "谷口", text: "優勝したとこ、ほんまにすごかったな"),
+        ClimaxPage(speaker: "俺", text: "ああ。今の俺たちとは、まだ差がある"),
+        ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
+        ClimaxPage(speaker: "谷口", text: "悔しいな。来年は、絶対あっち側に立とな"),
+        ClimaxPage(speaker: "俺", text: "ああ。次の合わせ、いつにする"),
     ]
     /// 本番結果から山場ページを選ぶ（発火A=準決敗退／発火B=敗者復活敗退）。該当なし=空＝通常の「次へ」。
     static func pages(for r: StageResult) -> [ClimaxPage] {
