@@ -21,10 +21,11 @@ struct CommandVariant: Identifiable {
 
 /// 週メインの4ボタン（パワプロのサクセス式・オーナー指示 2026-10-12）。押すと同じ場所が種類の一覧に切り替わる。
 enum CommandCategory: String, CaseIterable, Identifiable {
-    case 練習, バイト, 休む, 能力アップ
+    case ネタを書く, 練習, バイト, 休む, 能力アップ   // ネタを書くは練習から独立（オーナー 2026-10-12「練習とネタ書くとかわけるのもあり」）
     var id: String { rawValue }
     var glyph: String {
         switch self {
+        case .ネタを書く: return "square.and.pencil"
         case .練習: return "figure.mind.and.body"
         case .バイト: return "yensign.circle.fill"
         case .休む: return "moon.zzz.fill"
@@ -57,7 +58,6 @@ enum CommandCatalog {
         switch cat {
         case .練習:
             let trains: [(Training, String, String, String)] = [
-                (.ネタ作り, "ネタを書く", "机に向かって書く", "pencil"),
                 (.ネタ合わせ, "相方と合わせる", "二人で合わせる", "arrow.left.arrow.right"),
                 (.フリーライブ, "舞台に立つ", "客前で場数を踏む", "mic.fill"),
                 (.ネタ見せ会, "ネタ見せ会", "作家の前で試す", "theatermasks.fill"),
@@ -88,9 +88,16 @@ enum CommandCatalog {
                 guard config.rests[r] != nil else { return nil }
                 return CommandVariant(id: "rest_\(r)", name: name, desc: desc, glyph: glyph, action: .rest(r), isTrain: false)
             }
-        case .能力アップ:
-            return []
+        case .ネタを書く, .能力アップ:
+            return []   // ネタを書く＝ネタの一覧（WeekMainView.netaWriteList）／能力アップ＝AbilityUpView
         }
+    }
+
+    /// 「ネタを書く」の実体（ネタの一覧から、選んだネタ／新ネタに対して実行する）
+    static func netaWrite(config: GameConfig) -> CommandVariant? {
+        guard config.trainings[.ネタ作り] != nil else { return nil }
+        return CommandVariant(id: "t_\(Training.ネタ作り)", name: "ネタを書く", desc: "机に向かって書く", glyph: "pencil",
+                              action: .train(.ネタ作り), isTrain: true)
     }
 
     /// 下段の小カード。オファー週だけオファー。

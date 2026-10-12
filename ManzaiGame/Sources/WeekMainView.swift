@@ -431,7 +431,7 @@ struct WeekMainView: View {
             if let cat = openCat {
                 // 下位一覧：戻る＋種類のカード（小さめ・2列）。実行したら4ボタンへ戻る
                 HStack(spacing: 8) {
-                    Button { withAnimation(Theme.Motion.appearQuick) { if newNetaTitle != nil { newNetaTitle = nil } else if openNetaWrite { openNetaWrite = false } else { openCat = nil } } } label: {
+                    Button { withAnimation(Theme.Motion.appearQuick) { if newNetaTitle != nil { newNetaTitle = nil } else if openNetaWrite && openCat != .ネタを書く { openNetaWrite = false } else { openCat = nil; openNetaWrite = false } } } label: {
                         Label("もどる", systemImage: "chevron.left").font(.maru(13, weight: .bold))
                             .foregroundStyle(Theme.inkSub).padding(.horizontal, 10).padding(.vertical, 6)
                             .background(Theme.card, in: Capsule())
@@ -450,8 +450,11 @@ struct WeekMainView: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
-                    ForEach(CommandCategory.allCases) { c in categoryTile(c) }
+                VStack(spacing: 9) {
+                    categoryTile(.ネタを書く)   // ネタはこのゲームの中心＝一番上の幅広（2026-10-12）
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                        ForEach(CommandCategory.allCases.filter { $0 != .ネタを書く }) { c in categoryTile(c) }
+                    }
                 }
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
@@ -484,7 +487,7 @@ struct WeekMainView: View {
 
     private var netaWriteList: some View {
         let cfg = session.config
-        let write = CommandCatalog.cards(.練習, config: cfg, money: s.money).first { if case .train(.ネタ作り) = $0.action { return true }; return false }
+        let write = CommandCatalog.netaWrite(config: cfg)
         let mult = s.netaBoostWeeks > 0 ? cfg.netaBoostMult : 1.0
         return VStack(spacing: 7) {
             ForEach(session.activeNetas, id: \.id) { n in
@@ -616,12 +619,6 @@ struct WeekMainView: View {
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
-            // ネタを書く（練習の一覧から）：持ちネタがあれば、どれを磨くか／新しく書くかの一覧を挟む（2026-10-12 オーナー「ネタ育てる要素ない」）
-            if case .train(.ネタ作り) = v.action, openCat == .練習, !openNetaWrite {
-                Sound.play(.tap)
-                withAnimation(Theme.Motion.appearQuick) { openNetaWrite = true }
-                return
-            }
             perform(v)
         } label: {
             actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact)
@@ -643,13 +640,17 @@ struct WeekMainView: View {
 
     /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは経験点の振り分け画面（AllocationView）
     private func categoryTile(_ c: CommandCategory) -> some View {
-        let tint: Color = { switch c { case .練習: return Theme.cIdea; case .バイト: return Theme.cMoney
+        let tint: Color = { switch c { case .ネタを書く: return Theme.cIdea; case .練習: return Theme.cExpr; case .バイト: return Theme.cMoney
                                       case .休む: return Theme.night; case .能力アップ: return Theme.gold } }()
         let ready = c == .能力アップ && expGrains > 0
-        let gated = c == .練習 && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
+        let gated = (c == .練習 || c == .ネタを書く) && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let sub: String = {
             switch c {
-            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "ネタ・合わせ・舞台 ほか"
+            case .ネタを書く:
+                if gated { return s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め" }
+                if let n = session.selectedNeta { return "\(session.activeNetas.count)本 ・ 勝負ネタ「\(n.name)」" }
+                return session.activeNetas.isEmpty ? "まだネタがない。まず一本" : "\(session.activeNetas.count)本 書いた"
+            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "合わせ・舞台・ネタ見せ会"
             case .バイト: return "お金を稼ぐ"
             case .休む: return "体力を戻す"
             case .能力アップ:
@@ -659,9 +660,17 @@ struct WeekMainView: View {
         }()
         return Button {
             guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { return }
+            if gated {
+                Sound.play(.deny)
+                showToast(s.preoccupiedWeeks > 0 ? "今週は撮影。稽古の時間がない。" : "体力が足りない。今日は休もう。")
+                return
+            }
             Sound.play(.tap)
             if c == .能力アップ { showAllocation = true; return }
-            withAnimation(Theme.Motion.appearQuick) { openCat = c }
+            withAnimation(Theme.Motion.appearQuick) {
+                openCat = c
+                if c == .ネタを書く { openNetaWrite = true }
+            }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
