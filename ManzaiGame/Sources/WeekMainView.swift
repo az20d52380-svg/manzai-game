@@ -106,7 +106,7 @@ struct WeekMainView: View {
             }
         }
         .fullScreenCover(isPresented: $showAllocation) {
-            AllocationView(session: session) { showAllocation = false }
+            AbilityUpView(session: session) { showAllocation = false }
         }
         .sheet(isPresented: $showShop) {
             ShopView(session: session) { showShop = false }
@@ -499,7 +499,7 @@ struct WeekMainView: View {
     }
 
     /// たまっている経験点の合計（粒・切り捨て）
-    private var expGrains: Int { Int(s.expTotal + 1e-9) }
+    private var expGrains: Int { AbilityUpView.points(s.expTotal) }
 
     /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは経験点の振り分け画面（AllocationView）
     private func categoryTile(_ c: CommandCategory) -> some View {
