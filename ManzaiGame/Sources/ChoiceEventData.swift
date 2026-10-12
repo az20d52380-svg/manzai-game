@@ -54,11 +54,11 @@ enum ChoiceEventData {
     private static let justLostRehearsal = ChoiceEventText(
         title: "負けた日の稽古場",
         setup: [
-            Advice(name: nil, text: "負けた翌週。稽古場の鍵は、俺が開けた。二人とも、荷物は入口に置いたままだ。\n入口の脇に、前の時間の団体が畳んで積んだ、番号入りのカラーコーンが残っている。\n三番だけ、色が褪せている。"),
-            Advice(name: "俺", text: "鍵、開けたぞ"),
-            Advice(name: "谷口", text: "……開けたな"),
-            Advice(name: "俺", text: "掘るか、畳むか。どっちでもいい。決めろ"),
-            Advice(name: "谷口", text: "決められへんから、お前が今、鍵開けたんやろ"),
+            Advice(name: nil, text: "稽古場。負けた翌週の夕方。"),
+            Advice(name: "俺", text: "講評、読んだか"),
+            Advice(name: "谷口", text: "読んだ。言われたこと、ほとんど同じやったな"),
+            Advice(name: "俺", text: "今日どうする。直すか、休むか"),
+            Advice(name: "谷口", text: "お前に任せるわ。正直、まだ頭が回ってへん"),
         ],
         choiceLabels: [
             "A": "敗因を掘る",
@@ -67,20 +67,16 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "荷物、そこでいい。始めるぞ"),
-                Advice(name: "谷口", text: "……声、まだ出るやろか"),
-                Advice(name: "俺", text: "出るとこまででいい。止まったら、そこが今日の粗だ"),
+                Advice(name: "俺", text: "直そう。崩れたところから始める"),
+                Advice(name: "谷口", text: "わかった。声出るとこまでやろ"),
             ],
             "B": [
-                Advice(name: "俺", text: "稽古場の予約は、まだ一時間残ってる。料金は、負けた日も、勝った日も、同じだ"),
-                Advice(name: "俺", text: "今日は畳む。鍵、閉めるぞ"),
-                Advice(name: "谷口", text: "おう。……コーン、三番だけ褪せとるな"),
-                Advice(name: "俺", text: "明日、いちばんに来る。それでいい"),
+                Advice(name: "俺", text: "今日はやめよう。明日、朝から集まろう"),
+                Advice(name: "谷口", text: "助かるわ。明日はちゃんと来る"),
             ],
             "C": [
-                Advice(name: "俺", text: "掘るのも畳むのもやめだ。飯だけ食って帰る"),
-                Advice(name: "谷口", text: "ええな。負けた日の飯は、なんでか、味が濃い"),
-                Advice(name: "俺", text: "奢らないぞ。割り勘だ"),
+                Advice(name: "俺", text: "ここじゃ考えがまとまらない。外で飯食いながら話そう"),
+                Advice(name: "谷口", text: "ええな。そのほうが話せそうや"),
             ],
         ]
     )
@@ -90,10 +86,10 @@ enum ChoiceEventData {
     private static let styleTalk = ChoiceEventText(
         title: "型を捨てる相談",
         setup: [
-            Advice(name: nil, text: "三週続けて、名前は張り出しの下の方にあった。\n稽古場の白板に、同じネタのタイトルが三回、書いては消してある。\n谷口はタイトルを、漢字でも必ずカタカナで書く。消しあとのカタカナが、うっすら三つ重なっている。\n四回目は、まだ書いていない。"),
-            Advice(name: "俺", text: "三回、同じ負け方をした。"),
-            Advice(name: "谷口", text: "同じ負け方は、同じネタのせいか、同じ俺らのせいか、どっちや。"),
-            Advice(name: "俺", text: "たぶん、両方だ。"),
+            Advice(name: nil, text: "稽古場。三週続けて落ちた週。"),
+            Advice(name: "俺", text: "三回とも、同じところで落ちてる"),
+            Advice(name: "谷口", text: "ネタのせいか、俺らのせいか、どっちやろな"),
+            Advice(name: "俺", text: "たぶん両方だ。型ごと変えるか、このまま磨くか決めたい"),
         ],
         choiceLabels: [
             "A": "新機軸に作り替える",
@@ -101,14 +97,13 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "作り替える。今の型は、いったん崩す。"),
-                Advice(name: "谷口", text: "崩すいうことは、噛み合うてるとこも一回ばらすことやで。……ええんやな。"),
-                Advice(name: "俺", text: "同じ負け方を、四回目はしたくない。"),
+                Advice(name: "俺", text: "作り替えよう。今の型はいったん崩す"),
+                Advice(name: "谷口", text: "わかった。噛み合うてるとこも一回ばらすことになるけど、ええんやな"),
+                Advice(name: "俺", text: "ああ。同じ負け方はもうしたくない"),
             ],
             "B": [
-                Advice(name: "俺", text: "変えない。この型のまま、精度だけ上げる。"),
-                Advice(name: "谷口", text: "……せやな。俺は、この形の俺らが好きや。"),
-                Advice(name: "俺", text: "好きなだけじゃ、四回目も同じところで消える。"),
+                Advice(name: "俺", text: "変えない。この型のまま精度を上げよう"),
+                Advice(name: "谷口", text: "俺もそれがええ。この形、好きやねん"),
             ],
         ]
     )
@@ -118,10 +113,10 @@ enum ChoiceEventData {
     private static let justPassedFork = ChoiceEventText(
         title: "通った日の分かれ道",
         setup: [
-            Advice(name: nil, text: "回戦を通過した。次の戦いまで、まだ日がある。\n谷口には、勝った日のライブのフライヤーを稽古場の壁に一枚だけ貼る癖がある。\n今日で三枚目になった。三枚目は、少し曲がっていた。"),
-            Advice(name: "谷口", text: "通ったなあ。……こういう時ほど、足元すくわれる言うやろ"),
-            Advice(name: "俺", text: "分かってるなら、気を抜くなよ。"),
-            Advice(name: "谷口", text: "分かってるのと、やめられるのは、別やねんな"),
+            Advice(name: nil, text: "楽屋。回戦を通過した夜。"),
+            Advice(name: "谷口", text: "通ったな。次まで、まだ日があるで"),
+            Advice(name: "俺", text: "この勢いで舞台を増やすか、次に備えて絞るか"),
+            Advice(name: "谷口", text: "どっちもありやな。お前はどう思う"),
         ],
         choiceLabels: [
             "A": "勢いで露出・場数に賭ける",
@@ -129,12 +124,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "乗る。動けるうちに、顔を売る。"),
-                Advice(name: "谷口", text: "ええな。……転ぶ時は、先に言うてくれよ"),
+                Advice(name: "俺", text: "今は出られるだけ出よう。場数が欲しい"),
+                Advice(name: "谷口", text: "よっしゃ。ライブの空き、探しとくわ"),
             ],
             "B": [
-                Advice(name: "俺", text: "締める。次で勝たなきゃ、今日のは、ただの一日で終わる。"),
-                Advice(name: "谷口", text: "地味やなあ。……嫌いやないけどな、そういうの"),
+                Advice(name: "俺", text: "浮かれずに次の準備をしよう"),
+                Advice(name: "谷口", text: "せやな。次で落ちたら意味ないもんな"),
             ],
         ]
     )
@@ -144,7 +139,9 @@ enum ChoiceEventData {
     private static let preTournamentEve = ChoiceEventText(
         title: "前夜の一本",
         setup: [
-            Advice(name: nil, text: "大会は明日。稽古場に、まだ二人でいる。\n稽古場の置き時計は、谷口が持ち込んだ日から四分進んでいる。直そうと言うと、\n谷口は「本番、四分早う終わる気分でちょうどええ」と言って、直さない。\nその時計で、十一時を四分過ぎた。三本目の入りだけが、まだ決まっていない。"),
+            Advice(name: nil, text: "稽古場。大会の前の夜。"),
+            Advice(name: "谷口", text: "明日やな。もう一回通すか"),
+            Advice(name: "俺", text: "迷ってる。詰めたいけど、疲れも残したくない"),
         ],
         choiceLabels: [
             "A": "残って詰める",
@@ -152,12 +149,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "今夜やる。朝の勘に賭けるほど、朝の自分を信用してない。"),
-                Advice(name: "谷口", text: "……せやな。俺も、朝の俺はあんまり信用してへんねん。"),
+                Advice(name: "俺", text: "あと一回だけ通そう。後半が不安だ"),
+                Advice(name: "谷口", text: "わかった。終わったらすぐ帰ろな"),
             ],
             "B": [
-                Advice(name: "俺", text: "今夜はここまで。半拍は、明日の勘に預ける。"),
-                Advice(name: "谷口", text: "珍しいな、お前が寝る方選ぶの。……ええ判断やと思うで。"),
+                Advice(name: "俺", text: "今日はここまでにしよう。明日に残す"),
+                Advice(name: "谷口", text: "せやな。よう寝て、明日に合わせよ"),
             ],
         ]
     )
@@ -167,10 +164,10 @@ enum ChoiceEventData {
     private static let tsuukaBreak = ChoiceEventText(
         title: "慣れの外し方",
         setup: [
-            Advice(name: nil, text: "稽古場のホワイトボードに、三本目の段取りが消されずに残っている。\nいつからか、二人にしか読めない略字になった。「A→タ→落」。\n書いた俺と、読める谷口。それで足りている。\n今日も、目配せだけで一本通した。オチの場所を、客より先に二人が知っている。"),
-            Advice(name: "谷口", text: "最近、俺ら目ぇ合わすだけで一本終わるな"),
-            Advice(name: "俺", text: "終わる。"),
-            Advice(name: "谷口", text: "気持ちええけど、こわいやつやな、それ"),
+            Advice(name: nil, text: "稽古場。ネタが仕上がってきた週。"),
+            Advice(name: "谷口", text: "最近、合わせがすんなりいくな"),
+            Advice(name: "俺", text: "慣れてきた。でも、慣れすぎるのも怖い"),
+            Advice(name: "谷口", text: "わざと崩してみるか、このまま固めるか、やな"),
         ],
         choiceLabels: [
             "A": "あえて崩す実験に出る",
@@ -178,12 +175,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "一回、崩す。二人にだけ通じる呼吸は、劇場の後ろまで届かない。"),
-                Advice(name: "谷口", text: "……やろな。お前がそのボード消すの、そろそろやと思とった"),
+                Advice(name: "俺", text: "一回崩して、新しいことを試そう"),
+                Advice(name: "谷口", text: "おもろそうや。失敗してもええ時期やしな"),
             ],
             "B": [
-                Advice(name: "俺", text: "今は固める。崩すのは、固まってからでいい。"),
-                Advice(name: "谷口", text: "ええよ。……この略字、もうちょい二人で使い倒そか"),
+                Advice(name: "俺", text: "今の呼吸を固めよう。せっかく合ってきた"),
+                Advice(name: "谷口", text: "わかった。このまま仕上げよか"),
             ],
         ]
     )
@@ -193,7 +190,10 @@ enum ChoiceEventData {
     private static let earlyFormality = ChoiceEventText(
         title: "まだ敬語の残る間",
         setup: [
-            Advice(name: nil, text: "コンビを組んで、まだ月が浅い。稽古場のパイプ椅子は、二脚とも壁際に畳んだままだ。\n谷口はネタ帳を、いつも両手で返してくる。俺が片手で受け取ると、\n受け渡しのあいだに、拳ひとつ分の隙間が空く。\n稽古の帰りぎわ、俺のツッコミについて谷口が何か言いかけて、やめた。\n俺の方も、一個、言いかけて、飲み込んでいる。"),
+            Advice(name: nil, text: "稽古場。組んでまだ間もない頃。"),
+            Advice(name: "谷口", text: "あの……このネタ、ここ変えてもいいですか"),
+            Advice(name: "俺", text: "敬語、まだ抜けないな"),
+            Advice(name: "谷口", text: "なんか、まだ遠慮してしもて"),
         ],
         choiceLabels: [
             "A": "踏み込んで言う",
@@ -201,14 +201,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "一個、言っていいか。お前のボケ、俺はまだ半分しか信じてない。"),
-                Advice(name: "谷口", text: "……はっきり言うやん。ええよ、残りの半分、稽古で埋めさしたるわ。"),
-                Advice(name: "俺", text: "今、初めて片手でネタ帳を寄越したな。"),
+                Advice(name: "俺", text: "思ったことは遠慮なく言ってくれ。俺も言う"),
+                Advice(name: "谷口", text: "……わかった。ほな、言うで"),
             ],
             "B": [
-                Advice(name: "俺", text: "……いや、なんでもない。今日はここまでにしよう。"),
-                Advice(name: "谷口", text: "せやな。ほな、また明日。"),
-                Advice(name: "俺", text: "ネタ帳は、今日は俺が仕舞っておく。"),
+                Advice(name: "俺", text: "無理に崩さなくていい。少しずつでいいよ"),
+                Advice(name: "谷口", text: "ありがとう。慣れるまで待っててな"),
             ],
         ]
     )
@@ -218,9 +216,10 @@ enum ChoiceEventData {
     private static let brokeDrinkingInvite = ChoiceEventText(
         title: "行けない飲み会",
         setup: [
-            Advice(name: nil, text: "谷口の携帯が、鳴って、切れて、また鳴った。\n稽古場の照明は、壁の箱に百円玉を入れると一時間だけつく。今夜の残りは、その百円玉で数えられる程度だ。"),
-            Advice(name: "谷口", text: "今日、同期が集まるらしいわ。会費、ひとり四千円やて"),
-            Advice(name: "俺", text: "今月の稽古場代、残りがちょうど四千円なんだよな"),
+            Advice(name: nil, text: "稽古場。金のない月の夜。"),
+            Advice(name: "谷口", text: "先輩から飲み会の誘いや。顔出したほうがええかな"),
+            Advice(name: "俺", text: "行けば顔はつながる。でも、金がない"),
+            Advice(name: "谷口", text: "稽古もしたいしな。どうする"),
         ],
         choiceLabels: [
             "A": "行く",
@@ -228,12 +227,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "谷口", text: "久しぶりに、みんなの顔見たわ"),
-                Advice(name: "俺", text: "その分、来週は箱に入れる百円玉を、一枚ずつ数えることになる"),
+                Advice(name: "俺", text: "行こう。先輩とのつながりは大事だ"),
+                Advice(name: "谷口", text: "了解。一杯だけで帰ろな"),
             ],
             "B": [
-                Advice(name: "谷口", text: "……なら、俺も残るわ"),
-                Advice(name: "俺", text: "払わずに済んだ会費が、二人で八千円。箱の照明なら、八十時間ぶんだ"),
+                Advice(name: "俺", text: "断って、ここで稽古しよう"),
+                Advice(name: "谷口", text: "せやな。先輩には俺から謝っとくわ"),
             ],
         ]
     )
@@ -244,10 +243,10 @@ enum ChoiceEventData {
     private static let senpaiMeishi = ChoiceEventText(
         title: "先輩の名刺",
         setup: [
-            Advice(name: nil, text: "先輩が肉を焼き終えるより先に、伝票を裏返した。番組の名前が入った名刺を一枚、焼き網の縁に置く。角が、熱で少しずつ反っていく。"),
-            Advice(name: "先輩", text: "ここは俺が持つ。……で、一個、顔繋いどこか？"),
-            Advice(name: "俺", text: "ありがとうございます。……その話、少し考えさせてください。"),
-            Advice(name: "谷口", text: "先輩、こいつ、肉より先に伝票見る男なんですわ。"),
+            Advice(name: nil, text: "焼肉屋。先輩のおごり。"),
+            Advice(name: "先輩", text: "番組の人、紹介しようか。お前ら、そろそろ出てもいい頃だろ"),
+            Advice(name: "俺", text: "ありがたいです。……少し考えさせてください"),
+            Advice(name: "谷口", text: "ええ話やと思うけど、まだ早い気もするな"),
         ],
         choiceLabels: [
             "A": "紹介を受ける",
@@ -255,14 +254,13 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "先輩", text: "ええ度胸や。番号、今日中に鳴らせ。"),
-                Advice(name: "俺", text: "はい。……この名刺、反ってますね。伸ばして持っときます。"),
-                Advice(name: "谷口", text: "反ったやつ伸ばして使うの、こいつの得意技なんですわ。"),
+                Advice(name: "俺", text: "お願いします。紹介してください"),
+                Advice(name: "先輩", text: "おう。ちゃんと準備しとけよ"),
+                Advice(name: "谷口", text: "がんばろな"),
             ],
             "B": [
-                Advice(name: "先輩", text: "そうか。……まあ、飯は残さず食え。"),
-                Advice(name: "俺", text: "はい。いただきます。……この一本は、また今度で。"),
-                Advice(name: "谷口", text: "すんません、うちのが。……先輩、この反った名刺、もらといてええですか。"),
+                Advice(name: "俺", text: "ご飯だけいただきます。紹介は、もう少し力をつけてからで"),
+                Advice(name: "先輩", text: "そうか。その気になったら言えよ"),
             ],
         ]
     )
@@ -273,9 +271,10 @@ enum ChoiceEventData {
     private static let peerFoldedChair = ChoiceEventText(
         title: "畳んだコンビの椅子",
         setup: [
-            Advice(name: nil, text: "同期のコンビが、今日で畳む。片方が辞める。もう一方は、一人でどうするかまだ決めていないらしい。\n谷口が倉庫から折り畳みのパイプ椅子を一脚提げてきた。あいつがいつも座っていた椅子だ。座面は片側だけ沈んでいて、座り方の癖がそのまま型になって残っている。背もたれには、コンビ名を書いたガムテを剥がした跡が、粘って光っている。\n枠はひとつ。座れるのは、ひとりずつだ。当たり前のことを、わざわざ確かめた。"),
-            Advice(name: "谷口", text: "あいつら、今日で解散やって。倉庫のこれ、俺らにくれるって"),
-            Advice(name: "俺", text: "あいつの出番枠、来月から空くらしい"),
+            Advice(name: nil, text: "劇場の裏。同期が解散を決めた日。"),
+            Advice(name: "谷口", text: "あいつら、今日で終わりやって"),
+            Advice(name: "俺", text: "出てた枠が一つ空くな"),
+            Advice(name: "谷口", text: "その枠、うちに回ってくるかもしれへん"),
         ],
         choiceLabels: [
             "A": "空き枠を引き継ぐ",
@@ -283,12 +282,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "枠は、取る。場数がいる"),
-                Advice(name: "谷口", text: "取ろか。……座り心地は、あんま良ないやろけどな"),
+                Advice(name: "俺", text: "空いた枠、引き継がせてもらおう"),
+                Advice(name: "谷口", text: "わかった。あいつらのぶんまでやろ"),
             ],
             "B": [
-                Advice(name: "俺", text: "枠はいい。今取る枠じゃない"),
-                Advice(name: "谷口", text: "ほな、見送りだけ行こか。あいつ、俺らが来たら椅子の話しかせえへんやろけど"),
+                Advice(name: "俺", text: "枠はいい。今日は送り出すだけにしよう"),
+                Advice(name: "谷口", text: "せやな。今日はそれがええ"),
             ],
         ]
     )
@@ -299,10 +298,11 @@ enum ChoiceEventData {
     private static let namelessReservationSlip = ChoiceEventText(
         title: "名前の無い予約票",
         setup: [
-            Advice(name: nil, text: "来週の稽古場を押さえに、受付の予約票をめくった。\nうちの枠は、決まって二段で書く。上に俺、下に谷口。二人で一枠。\n前の週の欄に、平日の朝いちが埋まっていた。上の段に、谷口の名前だけ。下の段は空いている。時刻の「9」の、丸の閉じ方が甘い。あいつの字だ。"),
-            Advice(name: "谷口", text: "あー、それな。あの日、たまたま場所空いとったから、ちょっと横になってただけや"),
-            Advice(name: "俺", text: "そうか。来週は、いつもの土曜で押さえとく。"),
-            Advice(name: nil, text: "予約票を閉じた。\n朝いちの枠は、半額になる時間だ。横になるだけなら、もっと安い場所がいくらでもある。\n来週の土曜の欄に、二人分の名前を、上から順に書いた。"),
+            Advice(name: nil, text: "稽古場の受付。来週の予約。"),
+            Advice(name: "俺", text: "予約票、俺たちの名前で取っておいた"),
+            Advice(name: "谷口", text: "おお、ありがとう。いつも助かるわ"),
+            Advice(name: "俺", text: "来週は二回取れた。どっちも使おう"),
+            Advice(name: "谷口", text: "了解。ネタも二本持ってくわ"),
         ],
         choiceLabels: [:],
         afterChoice: [:]
@@ -313,9 +313,11 @@ enum ChoiceEventData {
     private static let lineupTop = ChoiceEventText(
         title: "香盤表の一番上",
         setup: [
-            Advice(name: nil, text: "対バンがはねて、楽屋に戻る。前座は入りが早い。朝から動いて、体はもう夜の分まで使い終えている。\n壁に、香盤表が貼ってある。主催が手で書いたやつだ。上から出番順に名前が並んでいて、一番上が俺たちだ。下へ下がるほど、どこかで見た名前になる。一番下の組は、先週テレビでネタをやっていた。\n谷口は香盤表のほうを見ない。しゃがんで、足元のケーブルをもう巻いている。"),
-            Advice(name: "谷口", text: "俺ら先やからな。機材、先に積んどこ。掃けたらすぐ出られるように"),
-            Advice(name: "俺", text: "一番上だ。俺たちが終わってから、客席は埋まっていく"),
+            Advice(name: nil, text: "楽屋。香盤表が貼り出された日。"),
+            Advice(name: "谷口", text: "見て。今日、うちらが一番上や"),
+            Advice(name: "俺", text: "本当だ。トリ前じゃなく、トップか"),
+            Advice(name: "谷口", text: "最初に出るの、緊張するな"),
+            Advice(name: "俺", text: "でも客が温まる前に掴めたら強い。頭を固めよう"),
         ],
         choiceLabels: [:],
         afterChoice: [:]
@@ -327,7 +329,10 @@ enum ChoiceEventData {
     private static let photoShootOffer = ChoiceEventText(
         title: "撮られる仕事",
         setup: [
-            Advice(name: nil, text: "オファーの紙が一枚、机に置いてある。若手特集の撮影、丸一日拘束、ネタは一切やらない。\n顔と佇まいだけでいい、と書いてある。芸人の仕事に、芸をしない一日が混じっている。\n稽古場の壁には、前に使っていたコンビが貼っていたスチール写真の跡が、四角く白く残っている。\n日に焼けなかったその四角だけが、この壁で一番きれいだ。\n谷口が紙を一度裏返して、また表に戻した。"),
+            Advice(name: nil, text: "事務所。撮影の仕事の話。"),
+            Advice(name: "マネージャー", text: "若手特集の撮影が来てる。丸一日かかるけど、ネタはやらなくていい"),
+            Advice(name: "俺", text: "顔が出るのはありがたい。でも、一日稽古できない"),
+            Advice(name: "谷口", text: "どうする。俺はどっちでもええで"),
         ],
         choiceLabels: [
             "A": "受ける",
@@ -335,12 +340,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "一日、稽古が飛ぶ。顔で呼ばれた仕事は、初めてだ。"),
-                Advice(name: "谷口", text: "顔で呼ばれるうちに行っとき。あの白い四角も、そう言うてるやろ。"),
+                Advice(name: "俺", text: "受けよう。名前を覚えてもらういい機会だ"),
+                Advice(name: "谷口", text: "よっしゃ。ちゃんとした服、着ていかなな"),
             ],
             "B": [
-                Advice(name: "俺", text: "今日は稽古に回す。撮られてる時間で、二本目の入りを詰めたい。"),
-                Advice(name: "谷口", text: "顔売る話やのに、お前は台本の話しかせえへんな。……ええよ、二本目やろ。"),
+                Advice(name: "俺", text: "断ろう。今は稽古を優先したい"),
+                Advice(name: "谷口", text: "わかった。その分、しっかりやろ"),
             ],
         ]
     )
@@ -351,11 +356,9 @@ enum ChoiceEventData {
     private static let taniguchiShortJob = ChoiceEventText(
         title: "耳寄りな話",
         setup: [
-            Advice(name: nil, text: "稽古場に谷口が先に来ていた。求人票を四つ折りにして持っている。折り目が、給料の桁をちょうど横切っている。"),
-            Advice(name: "谷口", text: "割のええ短期の仕事、二人分おさえてきた。三週間、まとまるで"),
-            Advice(name: "俺", text: "三週間、ネタ合わせが飛ぶな"),
-            Advice(name: "谷口", text: "飛ぶな。……お前が今、そろばん弾いた顔したん、見えてたで"),
-            Advice(name: nil, text: "ホワイトボードには、先週二人で書いたネタの順番がまだ消えずに残っている。三週間、たぶんこのままだ。"),
+            Advice(name: nil, text: "稽古場。谷口が求人票を持ってきた。"),
+            Advice(name: "谷口", text: "短期のバイト、二人で入らへん？ けっこう稼げるで"),
+            Advice(name: "俺", text: "金は助かる。でも稽古の時間が減る"),
         ],
         choiceLabels: [
             "A": "二人で受ける",
@@ -363,14 +366,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "谷口", text: "ほな、三週間な。……ホワイトボード、消さんといたるわ"),
-                Advice(name: "俺", text: "合わせは戻ってから、まとめて取り返す。段取りは組んである"),
-                Advice(name: "谷口", text: "お前のその段取り、たまに好きやで。……たまにな"),
+                Advice(name: "俺", text: "やろう。今は金が要る"),
+                Advice(name: "谷口", text: "決まりや。終わったら稽古しよな"),
             ],
             "B": [
-                Advice(name: "俺", text: "金は、バイトで少しずつ詰める。三週間まとめて抜けたら、順番が崩れる"),
-                Advice(name: "谷口", text: "そっちか。……ええよ、そっちで。求人票は、鞄の底で腐らせとくわ"),
-                Advice(name: "俺", text: "腐らせとけ。順番が崩れるよりは、安い"),
+                Advice(name: "俺", text: "悪い、今は稽古を選びたい"),
+                Advice(name: "谷口", text: "わかった。お前がそう言うなら、そうしよ"),
             ],
         ]
     )
@@ -381,10 +382,10 @@ enum ChoiceEventData {
     private static let wroteOneTonight = ChoiceEventText(
         title: "書けた一本",
         setup: [
-            Advice(name: nil, text: "深夜二時。この稽古場の机は脚が一本だけ短くて、前に使っていたコンビが折り畳んだ大会のフライヤーを噛ませてある。谷口が書く手に力が入るたび、そのフライヤーが一ミリずつ迫り出してくる。\n一本、まとまった。谷口が最後の一行を、誰もいない客席に向かって小さく声に出して読んだ。読み終えて、ペンを置いた。谷口が声に出して読むのは、できたと思ったときだけだ。"),
-            Advice(name: "谷口", text: "……できたな、これ。久しぶりに、腹の底が動いた"),
-            Advice(name: "俺", text: "今からもう一周するか。それとも、寝かせるか"),
-            Advice(name: "谷口", text: "寝かせて腐るネタは、もともと腐っとる。——って先輩が言うてた。俺は今すぐやりたい派やけどな"),
+            Advice(name: nil, text: "稽古場。深夜。"),
+            Advice(name: "谷口", text: "書けた。これ、いけると思う"),
+            Advice(name: "俺", text: "読ませてくれ。……いいな、これ"),
+            Advice(name: "谷口", text: "今から詰めるか？ もう遅いけど"),
         ],
         choiceLabels: [
             "A": "今夜のうちに詰める",
@@ -392,12 +393,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "じゃあ、もう一周だ。フライヤーが机から迫り出しきる前に終わる、で計っておく"),
-                Advice(name: "谷口", text: "時間で区切るなや。……まあ、ええわ。朝まで付き合う"),
+                Advice(name: "俺", text: "今のうちに詰めよう。熱があるうちがいい"),
+                Advice(name: "谷口", text: "よっしゃ。もうひと頑張りや"),
             ],
             "B": [
-                Advice(name: "俺", text: "わかった。明かりだけ消す。ノートは、開いたままにしておこう"),
-                Advice(name: "谷口", text: "開いたままかい。……朝いちばんに、目が合うようにか"),
+                Advice(name: "俺", text: "一晩寝かせよう。明日、もう一回読む"),
+                Advice(name: "谷口", text: "せやな。朝に読んだら、また違うかもしれへん"),
             ],
         ]
     )
@@ -408,10 +409,10 @@ enum ChoiceEventData {
     private static let regularEmployment = ChoiceEventText(
         title: "正社員の話",
         setup: [
-            Advice(name: nil, text: "バックヤードのシフト表は、店長の手書きだ。正社員の名前は黒ペン、バイトの名前は鉛筆で書いてある。鉛筆の名前は消しても跡が残る。\n俺の名前の下に、先月辞めた誰かの名前が、薄く残ったままだ。"),
-            Advice(name: "店長", text: "悪い話じゃない。……いつまでも、若い体力に甘えてらんないよ。黒で、書き直してやる。"),
-            Advice(name: "俺", text: "ありがとうございます。少し、考えさせてください。"),
-            Advice(name: "谷口", text: "店長、こいつ今、シフト表の自分の名前見てますわ。……見てるうちは、まだ決めてへん。"),
+            Advice(name: nil, text: "バイト先の事務所。"),
+            Advice(name: "店長", text: "正社員にならないか。給料も上がるし、生活は安定するよ"),
+            Advice(name: "俺", text: "ありがたい話です。でも、ネタに使える時間が減ります"),
+            Advice(name: "谷口", text: "お前の人生やし、お前が決めたらええで"),
         ],
         choiceLabels: [
             "A": "受ける",
@@ -419,12 +420,13 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "黒で、って言った。鉛筆より、たぶん長持ちする。"),
-                Advice(name: "谷口", text: "……そうか。ほな俺、お前のシフト表、覚えとくわ。空いてる日から、合わせる。"),
+                Advice(name: "俺", text: "受けます。生活を立て直したい"),
+                Advice(name: "店長", text: "助かるよ。稽古の日は、できるだけ配慮する"),
+                Advice(name: "谷口", text: "わかった。俺も時間合わせるわ"),
             ],
             "B": [
-                Advice(name: "俺", text: "鉛筆のままで、って言った。店長、黒のペンは出さなかった。"),
-                Advice(name: "谷口", text: "ちゃんと見てから決めたやんけ。……それやったら、俺は文句ないわ。"),
+                Advice(name: "俺", text: "すみません。今は芸人一本でやりたいです"),
+                Advice(name: "店長", text: "そうか。応援してるよ"),
             ],
         ]
     )
@@ -435,8 +437,10 @@ enum ChoiceEventData {
     private static let lastTrainReview = ChoiceEventText(
         title: "終電までの反省会",
         setup: [
-            Advice(name: nil, text: "フリーライブが終わった。客席は八人。数え直しても八人で、そのうち一人は、開演前にうちのチラシを配っていたスタッフだった。\n谷口のリュックからは、配りきれなかったチラシの束がまだはみ出している。三十枚は残っている。\n駅のホームに二人。終電まで、二十分ある。"),
-            Advice(name: "谷口", text: "実質七人やな。……七人ぶん、どこがあかんかったか、今やっとくか？"),
+            Advice(name: nil, text: "駅のホーム。フリーライブの帰り。"),
+            Advice(name: "谷口", text: "今日、客八人やったな"),
+            Advice(name: "俺", text: "反応も薄かった。何が悪かったんだろう"),
+            Advice(name: "谷口", text: "終電まで、まだちょっとあるで"),
         ],
         choiceLabels: [
             "A": "その場で敗因を洗う",
@@ -444,12 +448,12 @@ enum ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "二十分ある。その二十分で、洗えるだけ洗う。"),
-                Advice(name: "谷口", text: "ええな。……立ったまま行こ。座ったら、明日になる。"),
+                Advice(name: "俺", text: "今のうちに洗い出そう。忘れないうちに"),
+                Advice(name: "谷口", text: "わかった。まず出だしからやな"),
             ],
             "B": [
-                Advice(name: "俺", text: "今日は畳む。反省は、腹が減ってると精度が落ちる。"),
-                Advice(name: "谷口", text: "せやな。……その七人の話は、明日、湯気の立っとる方でやろ。"),
+                Advice(name: "俺", text: "今日はもう帰ろう。明日、落ち着いて話そう"),
+                Advice(name: "谷口", text: "せやな。今日は疲れたわ"),
             ],
         ]
     )
@@ -459,10 +463,10 @@ enum ChoiceEventData {
     private static let luckyThirdLine = ChoiceEventText(
         title: "三行目を一度で",
         setup: [
-            Advice(name: nil, text: "ネタ帳を開いて、いつもの三行目で手が止まるのを待った。あそこはいつも通らない。消しゴムの跡が濃くて、紙が薄くなって、光にかざすと三行目だけ向こうが透ける。\n今日は、消さなかった。一度書いて、そのまま次の行へ進んでいた。\n何が変わったのか、勘定してみる。体は軽い。声も出る。客の入りは先週と同じだ。足しても引いても、余りが合わない。"),
-            Advice(name: "俺", text: "三行目、一度で通ったな"),
-            Advice(name: "谷口", text: "こういう日は、たいてい次でこけるねん"),
-            Advice(name: nil, text: "谷口はそれだけ言って、台本に目を戻した。俺は、なぜ通ったのかをまだ数えていた。数えきれる気は、しなかった。"),
+            Advice(name: nil, text: "稽古場。ネタ合わせの途中。"),
+            Advice(name: "谷口", text: "今の三行目、初めてうまくいったな"),
+            Advice(name: "俺", text: "ずっと詰まってたところだ。今の感じ、忘れないうちにもう一回やろう"),
+            Advice(name: "谷口", text: "よっしゃ、もう一回や"),
         ],
         choiceLabels: [:],
         afterChoice: [:]
@@ -473,13 +477,11 @@ enum ChoiceEventData {
     private static let greenroomSilentTen = ChoiceEventText(
         title: "楽屋で無言の十分",
         setup: [
-            Advice(name: nil, text: "ライブがはねて、楽屋に戻った。四分の出番で、客席が動いたのは頭の三十秒だけだった。\n共有のドーランが、机の上で蓋を開けたまま転がっている。俺の指が当たる側だけ角が深く凹んで、次に買い足すのがいつになるかは、決めていない。\n十分、どちらも喋らなかった。先に段取りの話をしたのが、どちらだったかは覚えていない。"),
-            Advice(name: "谷口", text: "幕、そっち持つわ。俺、平台たたむ"),
-            Advice(name: "俺", text: "頼む。楽屋、二十分で開けてくれって"),
-            Advice(name: "谷口", text: "次の現場、二十時入りやったな"),
-            Advice(name: "俺", text: "電車、一本早めるか。乗り換えで詰まる"),
-            Advice(name: "谷口", text: "ほな、先出るわ"),
-            Advice(name: "俺", text: "ドーラン、閉めとく"),
+            Advice(name: nil, text: "楽屋。ウケなかったライブの後。"),
+            Advice(name: "谷口", text: "……今日は、あかんかったな"),
+            Advice(name: "俺", text: "頭の三十秒だけだった。そこから客が離れた"),
+            Advice(name: "谷口", text: "ちょっと休んでから話そか"),
+            Advice(name: "俺", text: "そうしよう。落ち着いたら、どこで離れたか確かめる"),
         ],
         choiceLabels: [:],
         afterChoice: [:]
