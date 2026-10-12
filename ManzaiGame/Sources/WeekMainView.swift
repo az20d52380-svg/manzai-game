@@ -67,6 +67,8 @@ struct WeekMainView: View {
     @State private var showShop = false
 
     private var s: GameState { session.state }
+    /// 開いている4ボタンの下位一覧（nil＝4ボタン）。パワプロ式（オーナー指示 2026-10-12）
+    @State private var openCat: CommandCategory?
     private var mainCards: [CommandVariant] {
         CommandCatalog.mainCards(config: session.config, money: s.money)
     }
@@ -411,8 +413,28 @@ struct WeekMainView: View {
         let showYearEnd = session.noStagesLeft && session.week < session.config.weeks
         return VStack(spacing: 9) {
             // 常設4枚は位置を動かさない（条件付きのカードは下に足す＝親指が覚えた場所が週ごとにずれない）
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
-                ForEach(mainCards) { v in actionCard(v) }
+            if let cat = openCat {
+                // 下位一覧：戻る＋種類のカード（小さめ・2列）。実行したら4ボタンへ戻る
+                HStack(spacing: 8) {
+                    Button { withAnimation(Theme.Motion.appearQuick) { openCat = nil } } label: {
+                        Label("もどる", systemImage: "chevron.left").font(.maru(13, weight: .bold))
+                            .foregroundStyle(Theme.inkSub).padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(Theme.card, in: Capsule())
+                    }.buttonStyle(PressableStyle())
+                    Text(cat.rawValue).font(.maru(16, weight: .heavy)).foregroundStyle(Theme.ink)
+                    Spacer()
+                }
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                    ForEach(CommandCatalog.cards(cat, config: session.config, money: s.money)) { v in
+                        actionCard(v, compact: true, dashed: false)
+                    }
+                }
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            } else {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                    ForEach(CommandCategory.allCases) { c in categoryTile(c) }
+                }
+                .transition(.move(edge: .leading).combined(with: .opacity))
             }
             if !extras.isEmpty || showYearEnd {
                 HStack(spacing: 9) {
@@ -428,7 +450,7 @@ struct WeekMainView: View {
         .animation(Theme.Motion.appearQuick, value: extras.map(\.id))
     }
 
-    private func actionCard(_ v: CommandVariant, compact: Bool = false) -> some View {
+    private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil) -> some View {
         let preoccupied = v.isTrain && s.preoccupiedWeeks > 0                       // 0022 撮影で稽古枠が埋まった週
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
@@ -460,10 +482,10 @@ struct WeekMainView: View {
                 burstHold = true
                 Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
                 session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
-                withAnimation(Theme.Motion.appear) { pulledID = nil }   // 常設カードは同じ場所に戻る＝次の週の手札
+                withAnimation(Theme.Motion.appear) { pulledID = nil; openCat = nil }   // 実行したら4ボタンへ戻る   // 常設カードは同じ場所に戻る＝次の週の手札
             }
         } label: {
-            actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact)
+            actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
         }
@@ -471,9 +493,48 @@ struct WeekMainView: View {
         .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
     }
 
+    /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは当面アイテム画面を開く【仮・中身はオーナー判断】
+    private func categoryTile(_ c: CommandCategory) -> some View {
+        let tint: Color = { switch c { case .練習: return Theme.cIdea; case .バイト: return Theme.cMoney
+                                      case .休む: return Theme.night; case .能力アップ: return Theme.gold } }()
+        let gated = c == .練習 && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
+        let sub: String = {
+            switch c {
+            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "ネタ・合わせ・舞台 ほか"
+            case .バイト: return "お金を稼ぐ"
+            case .休む: return "体力を戻す"
+            case .能力アップ: return "アイテムで伸ばす"
+            }
+        }()
+        return Button {
+            guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { return }
+            Sound.play(.tap)
+            if c == .能力アップ { showShop = true; return }
+            withAnimation(Theme.Motion.appearQuick) { openCat = c }
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: c.glyph).font(.system(size: 15, weight: .bold)).foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(gated ? Theme.inkFaint : tint, in: RoundedRectangle(cornerRadius: 8))
+                    Text(c.rawValue).font(.maru(18)).foregroundStyle(gated ? Theme.inkSub : Theme.ink)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).foregroundStyle(Theme.inkFaint)
+                }
+                Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : Theme.inkSub).lineLimit(1)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 12)
+            .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+            .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(gated ? Theme.line : tint.opacity(0.55), lineWidth: 3))
+            .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
+        }
+        .buttonStyle(PressableStyle())
+    }
+
     /// カードの顔: アイコン＋名前／伸び（実力 ↑・相性 +N・ネタ +N）／コスト（所持金・体力）。
     /// compact（条件付きの小カード）は伸びとコストを1行にまとめ、破線の縁で「今だけのカード」と分ける。
-    private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool) -> some View {
+    private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool, dashed: Bool) -> some View {
         let after = session.previewAfterPour(v.action, offer: offer)
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
@@ -490,6 +551,9 @@ struct WeekMainView: View {
                 if case .acceptOffer = v.action {
                     Text(v.desc).font(.maru(10)).foregroundStyle(Theme.goldD).lineLimit(1)   // オファー名（既存の OfferSpec.name）
                 }
+            }
+            if compact, !dashed, !gated {
+                Text(v.desc).font(.maru(10.5)).foregroundStyle(Theme.inkSub).lineLimit(1)
             }
             if gated {
                 Text(preoccupied ? "撮影で埋まる" : "谷口：今日は休め").font(.maru(13, weight: .bold)).foregroundStyle(Theme.vermD)
@@ -510,7 +574,7 @@ struct WeekMainView: View {
         .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
             .stroke(gated ? Theme.line : tint.opacity(compact ? 0.8 : 0.55),
-                    style: StrokeStyle(lineWidth: 3, dash: compact ? [6, 4] : [])))
+                    style: StrokeStyle(lineWidth: 3, dash: dashed ? [6, 4] : [])))
         .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
         // 押せないカードは地と縁で言う（全体を薄くすると一番読ませたい「今日は休め」が1.8〜2.2:1まで落ちた）
     }
