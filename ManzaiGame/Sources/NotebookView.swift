@@ -158,7 +158,26 @@ struct NotebookView: View {
 
     private var kirokuPage: some View {
         VStack(alignment: .leading, spacing: Theme.Sp.s12) {
-            Text("大会の記録").font(.maru(12)).foregroundStyle(Theme.inkDim)
+            // これまでの年（出来事ログは年ごとに消えるので、2年目以降は前の年が見えなかった）。年の記録＝yearHistory
+            if !session.yearHistory.isEmpty {
+                Text("これまでの頂グランプリ").font(.maru(12)).foregroundStyle(Theme.inkDim)
+                ForEach(session.yearHistory, id: \.year) { r in
+                    HStack(spacing: 10) {
+                        Text("\(r.year)年目").font(.maru(12)).monospacedDigit().foregroundStyle(Theme.inkSub)
+                            .frame(width: 44, alignment: .leading)
+                        Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
+                            .font(.maru(13, weight: .bold))
+                            .foregroundStyle(r.champion || r.reachedFinal ? Theme.goldDeep : Theme.ink)
+                        Spacer()
+                        if r.prize > 0 {
+                            Text("賞金 \(r.prize / 10000)万").font(.maru(11)).foregroundStyle(Theme.moneyDeep)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+                Divider().padding(.vertical, 4)
+            }
+            Text(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会").font(.maru(12)).foregroundStyle(Theme.inkDim)
             if session.log.isEmpty {
                 Text("——まだ、舞台の記録はない。").font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
                     .padding(.vertical, Theme.Sp.s8)
