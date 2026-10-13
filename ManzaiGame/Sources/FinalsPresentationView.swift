@@ -453,12 +453,20 @@ struct FinalsPresentationView: View {
             Telop(text: "\(d.total)点", size: 30, color: Color(hex: 0xFFE07A)).monospacedDigit()
             if picks.indices.contains(i) {
                 let j = picks[i]
-                mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0))
-                TalkBubble(advice: Advice(name: j.name, text: FinalsJudgeTalk.comment(
+                let text = FinalsJudgeTalk.comment(
                     judge: j.name, score: j.score, state: s, viaRevival: session.reachedFinalViaRevival,
-                    high: i == 0, salt: j.score &+ session.year &* 7 &+ d.order &+ i)))
+                    high: i == 0, salt: j.score &+ session.year &* 7 &+ d.order &+ i)
+                mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0))
+                TalkBubble(advice: Advice(name: j.name, text: text))
                     .id(j.name)
                     .transition(.opacity.combined(with: .offset(y: 8)))
+                // 審査員のボケ行なら、司会が拾う1拍（r6 §5-4・P3）
+                if let p = FinalsMC.pickup(after: text) {
+                    mcBubble(p.mc)
+                    if let reply = p.reply {
+                        TalkBubble(advice: Advice(name: j.name, text: reply))
+                    }
+                }
             }
         }
     }
