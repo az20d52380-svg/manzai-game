@@ -38,7 +38,7 @@ struct S6bView: View {
     private var kougyou: some View {
         VStack(spacing: Theme.Sp.s24) {
             Spacer()
-            Text("最後の興行。").font(.maru(14)).foregroundStyle(.white.opacity(0.7))
+            Text("最後の舞台。").font(.maru(14)).foregroundStyle(.white.opacity(0.7))
             // 通帳様式の残金→0
             Text("¥\(counted ? 0 : max(0, s.money))")
                 .font(.maru(30)).monospacedDigit().foregroundStyle(Theme.gold)
@@ -82,9 +82,9 @@ struct S6bView: View {
 
     private var montageCards: [ReminiscenceCard] {
         [
-            ReminiscenceCard(caption: "谷口の手帳の、最後のページ。\nコンビ名が、結成の日の日付と一緒に書いてあった。"),
-            ReminiscenceCard(caption: "帰りの電車。\n窓の外を、四つの季節が、順番に流れていった。"),
-            ReminiscenceCard(caption: "いつものファミレス。同じ席。\nドリンクバーだけ頼んで、二人で、何時間も喋った。"),
+            ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。"),
+            ReminiscenceCard(caption: "大会の帰り。夜の電車。"),
+            ReminiscenceCard(caption: "いつものファミレス。同じ席。"),
         ]
     }
 
@@ -137,7 +137,7 @@ struct S6bView: View {
             }
             .scaleEffect(burned ? 1 : 1.05).opacity(burned ? 1 : 0)
 
-            Text("写真を袖の壁に貼った。")
+            Text("楽屋の壁。最後の舞台の夜。")
                 .font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.8)).opacity(burned ? 1 : 0)
             Spacer()
             Button(action: onFinish) {

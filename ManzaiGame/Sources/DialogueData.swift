@@ -221,7 +221,7 @@ enum DialogueData {
         ],
         "job_キツい": [
             Advice(name: "俺", text: "体で稼ぐ日だ。腰を痛めないようにしよう。"),
-            Advice(name: "俺", text: "終わりの時間だけ確かめて、引き受けた。"),
+            Advice(name: "俺", text: "終わりの時間だけ確かめて、引き受けよう。"),
         ],
         "job_標準": [
             Advice(name: "俺", text: "まかないが出るのはありがたい。"),
@@ -246,7 +246,7 @@ enum DialogueData {
         ],
         "offer": [
             Advice(name: "俺", text: "名前を覚えてもらえる仕事だ。受けよう。"),
-            Advice(name: "俺", text: "日取りだけ確かめて、受けた。"),
+            Advice(name: "俺", text: "日取りだけ確かめて、受けよう。"),
         ],
     ]
 

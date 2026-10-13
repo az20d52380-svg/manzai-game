@@ -209,7 +209,7 @@ struct YearResultView: View {
         return VStack(alignment: .leading, spacing: 5) {
             Text("出来事").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
             if lines.isEmpty {
-                Text("来年の大会に向けて準備しよう。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
+                Text("今年は、大会に出なかった。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
             } else {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                     Text(line).font(.maru(.bodyMedium)).foregroundStyle(Theme.ink)
@@ -287,29 +287,29 @@ struct YearResultView: View {
 
     // yearEnd.* 逐語（voice_corpus_v0 §4-3＋§8・calibration 0be8a11）。独白(俺)・標準語。相方固有名を含む行は除外。
     private static let yeLeap = [   // 躍進年
-        "今年は一年中、予定が埋まってた。去年とは大違いだ。",
-        "来年も春まで予定が入ってる。稽古の週は、ちゃんと確保しよう。",
-        "後輩に挨拶されることが増えた。少しは名前が知られてきたらしい。",
+        "去年より、ずっと忙しい一年だった。たまには実家に顔を出そう。",
+        "電車で、知らない人に声をかけられた。少し、身なりに気をつけよう。",
+        "後輩に挨拶されることが増えた。今度、飯でもおごってやろう。",
     ]
     private static let yeStall = [  // 停滞年
-        "今年もたくさん稽古した。でも、結果は去年と同じだった。",
+        "今年は、思ったほど勝ち進めなかった。谷口が落ち込んでないか心配だ。",
         // 多年版のみ: "今年は、同じ準決勝の会場に三度立った。…"（準決勝が年1回の1年版では事実と矛盾＝監査D-06）
-        "今年も同じあたりで止まった。来年は、その上に行きたい。",
+        "バイトと稽古だけで、一年が終わった。明日は一日、何もしないで休もう。",
     ]
     private static let yeFirstLeap = [   // 躍進年（1年目）
-        "最初の一年で、ここまで来られるとは思ってなかった。",
+        "一年目で、ここまで来るとは思わなかった。谷口に、ちゃんと礼を言おう。",
     ]
     private static let yeFirstStall = [  // 停滞年（1年目）
-        "最初の一年が終わった。来年は準決勝を越えたい。",
+        "最初の一年が終わった。春からのことを、谷口と相談しよう。",
         "一年目は悔しい。来年は稽古を増やそう。",
     ]
     private static let yeBankrupt = [  // 貧乏年
-        "金のない一年だった。来年は少し貯めよう。",
-        "バイトばかりの年だった。来年は、もう少し稽古に時間を使いたい。",
-        "大会には全部出た。来年も同じように出よう。",
+        "家賃が、もう払えない。今夜のうちに荷物をまとめよう。",
+        "バイトを増やしても、生活費が足りなかった。谷口には、自分の口で話そう。",
+        "大会の参加費も、もう出せない。親に電話して、実家に帰ろう。",
     ]
     private static let yeDissolution = [  // 解散年（相性が最後まで低い＝袂を分かつ）＝終わり方の語彙（統合設計§1-2・drama-voice採点済A○/B3○）
-        "谷口とは今月でお別れだ。\n来月からは一人でやる。",
+        "谷口とのコンビは、解散することにした。\n明日、二人で事務所に話しに行く。",
     ]
 
     private var restartButton: some View {

@@ -329,11 +329,11 @@ struct IntroFlowView: View {
 
     private let cards = [
         // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた・語は1字も変えない）
-        ReminiscenceCard(caption: "高校の教室。休み時間。\n谷口の話を、俺だけが面白がって聞いていた。",
+        ReminiscenceCard(caption: "高校の教室。休み時間。",
                          mood: .noon, together: false),
         ReminiscenceCard(caption: "放課後の廊下。",
                          mood: .after, speaker: "谷口", line: "コンビ、組まへんか"),
-        ReminiscenceCard(caption: "数年後。二人はコンビとして舞台に立っている。\nまだ、ほとんど誰にも知られていない。", mood: .eve),
+        ReminiscenceCard(caption: "数年後。小さな劇場の楽屋。", mood: .eve),
     ]
 
     var body: some View {
