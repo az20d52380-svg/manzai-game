@@ -214,11 +214,37 @@ NETA_COEF_FRESH  = 0.02
 NETA_CLAMP       = 5.0
 NETA_SECOND_PEN  = 3.0     # 決勝2本目の完成度60未満ペナルティ
 NETA_RANDOM_PICK = False   # 計測C: ネタ選択をランダム化（プレイヤースキル寄与の測定）
+# --- 2026-10-14 追加：アプリ（GameCore）と同じ式で測る（既定OFF＝従来の実測を再現できる） ---
+# GameEngine.netaScoreBonus＝(polish−50)×0.04＋(buzz−50)×0.02・±5／決勝2本目 polish<60 で −3（neta_system_redesign_v2 §(a)(b)）
+# buzz＝ライブ手応えの移動平均（Neta.liveBuzz＝clamp(実力×0.7＋完成度×0.5, 0,100)・α=0.4・乱数なし）
+# 新ネタ polish=30・buzz=0／改稿 +8（netaReviseGain）／ネタ見せ会 +12・フリーライブ +6（netaLivePolishShow/Free）
+NETA_V2            = False
+NETA_SKIP_NEGATIVE = False  # 補正がマイナスのネタは掛けない（ネタなし＝0）。「粗いネタを選ぶと損」の差を測る
+V2_NEW_POLISH = 30.0
+V2_REVISE     = 8.0
+V2_LIVE_SHOW  = 12.0
+V2_LIVE_FREE  = 6.0
+V2_ALPHA      = 0.4
+V2_POWER_W    = 0.7
+V2_POLISH_W   = 0.5
+V2_COEF_BUZZ  = 0.02
+V2_SECOND_MIN = 60.0
 
 def _neta_new():
+    if NETA_V2:
+        return dict(comp=V2_NEW_POLISH, buzz=0.0, fresh=0.0, used=set())
     return dict(comp=NETA_CREATE_COMP, fresh=100.0, used=set())
 
+def _v2_live(s, n, polish_gain):
+    """Swift WeekRunner.applyNetaLive と同順：手応え（演じた時点）→buzz移動平均→完成度↑"""
+    lb = max(0.0, min(100.0, B.jitsuryoku(s) * V2_POWER_W + n["comp"] * V2_POLISH_W))
+    n["buzz"] = n["buzz"] * (1 - V2_ALPHA) + lb * V2_ALPHA
+    n["comp"] = min(100.0, n["comp"] + polish_gain)
+
 def _neta_bonus(n, series):
+    if NETA_V2:
+        bonus = (n["comp"] - 50) * NETA_COEF_COMP + (n["buzz"] - 50) * V2_COEF_BUZZ
+        return max(-NETA_CLAMP, min(NETA_CLAMP, bonus))
     comp_part = (n["comp"] - 50) * NETA_COEF_COMP
     if series in n["used"]:
         comp_part *= 0.5   # 同一大会系統への再投入は完成度補正半減（審査員は覚えている）
@@ -230,14 +256,31 @@ def _neta_pick(s, series, rng):
         return None
     if NETA_RANDOM_PICK:
         return rng.choice(s.netas)
-    return max(s.netas, key=lambda n: _neta_bonus(n, series))
+    best = max(s.netas, key=lambda n: _neta_bonus(n, series))
+    if NETA_SKIP_NEGATIVE and _neta_bonus(best, series) < 0:
+        return None
+    return best
 
 def _neta_use(n, series):
+    if NETA_V2:
+        return   # Swift の大会は buzz/polish を動かさない（netaScoreBonus は読むだけ）
     n["used"].add(series)
     n["fresh"] = max(0.0, n["fresh"] + NETA_USE_FRESH)
 
 def _neta_on_train(s, arg):
     """稽古行動をネタ資産に接続（能力効果は従来どおり併存）"""
+    if NETA_V2:
+        if arg == "ネタ作り":
+            if len(s.netas) < 2:
+                s.netas.append(_neta_new())
+            else:
+                n = min(s.netas, key=lambda x: x["comp"])
+                n["comp"] = min(100.0, n["comp"] + V2_REVISE)
+        elif arg == "ネタ見せ会" and s.netas:
+            _v2_live(s, max(s.netas, key=lambda x: x["comp"]), V2_LIVE_SHOW)
+        elif arg == "フリーライブ" and s.netas:
+            _v2_live(s, min(s.netas, key=lambda x: x["buzz"]), V2_LIVE_FREE)
+        return
     if arg == "ネタ作り":
         if len(s.netas) < 2:
             s.netas.append(_neta_new())
@@ -258,13 +301,15 @@ def _neta_line_adj(s, series, rng, final=False):
         return 0.0
     n = _neta_pick(s, series, rng)
     if n is None:
+        if NETA_V2:
+            return 0.0   # Swift：選んでいなければ決勝でも 0（2本目の減点も付かない＝netaScoreBonus の guard）
         return NETA_SECOND_PEN if final else 0.0   # ネタ0本で決勝は2本目ペナルティ相当
     adj = -_neta_bonus(n, series)
     _neta_use(n, series)
     if final:
         others = [x for x in s.netas if x is not n]
         second = max(others, key=lambda x: x["comp"]) if others else None
-        if second is None or second["comp"] < 60:
+        if second is None or second["comp"] < (V2_SECOND_MIN if NETA_V2 else 60):
             adj += NETA_SECOND_PEN   # 「2本目がなかった」敗因
     return adj
 
