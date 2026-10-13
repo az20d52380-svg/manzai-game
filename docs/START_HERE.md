@@ -128,6 +128,7 @@ cd GameCore && swift test
 - `gamecore_design.md` — GameCore 設計メモ v0
 - `guest_appearance_design_v0.md` — 客演・顔見せ設計 v0 — 初回キャリア中に「引いた相方」と世界で出会う
 - `handoff_2026-10-12.md` — 引き継ぎ（2026-10-12 夜・次のチャット用）
+- `handoff_2026-10-14.md` — 引き継ぎ（2026-10-14 早朝・止まって見えた反省・次の手順）
 - `improvement_proposals_v0.md` — ゲーム改善・修正提案 v0 — 優先度付き32項目
 - `item_design_v0.md` — アイテム設計 v0 — ゲーム内通貨・課金・金余り対策
 - `judge_comments_v1.md` — 審査員コメント量産 v1 — 実在講評の型分析と予選紙講評・決勝コメントの増量
