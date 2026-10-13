@@ -105,9 +105,11 @@ struct RootView: View {
                 var st = GameSession.debugMaxedState(); st.compat = 10; st.money = 500_000; st.preoccupiedWeeks = 1
                 session = GameSession(startState: st)
             }
-            if ui == "neta", session.week <= 1 {
+            if ui == "neta" || ui == "netaentry", session.week <= 1 {
                 // ネタ帳目視: 持ちネタ（鉄板/おろし前/擦り切れ/保管庫）を積んだ開始状態（数値は全て【仮】）
                 session = GameSession(startState: GameSession.debugNetaState())
+                // netaentry＝その持ちネタのまま最初の大会の入口で止める（入口のネタ選びの目視・2026-10-14）
+                if ui == "netaentry" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）

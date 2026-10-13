@@ -28,7 +28,7 @@ SIMCTL_CHILD_MZ_UI=cards xcrun simctl launch --terminate-running-process "iPhone
 xcrun simctl io "iPhone 17 Pro" screenshot /tmp/shot.png
 ```
 
-- **UIスモーク環境変数**（DEBUG限定・`SIMCTL_CHILD_` プレフィクスで渡す）: `MZ_UI=cards`=稽古カード列で起動／`MZ_UI=grown`=能力マックスで週メインに留まる／`MZ_SMOKE=1..5`=既存（初結果/大会入口/年末/優勝/優勝ボード）。目視フックが足りなくなったら**この慣習で増やす**（本導線は不変のまま）。2026-10-14 追加：`MZ_NOEVENT=1`＝選択イベントを発火させない（grown 等の目視用）／`MZ_FANREPORT=1`＝結果画面に観客の声カードを必ず出す。
+- **UIスモーク環境変数**（DEBUG限定・`SIMCTL_CHILD_` プレフィクスで渡す）: `MZ_UI=cards`=稽古カード列で起動／`MZ_UI=grown`=能力マックスで週メインに留まる／`MZ_SMOKE=1..5`=既存（初結果/大会入口/年末/優勝/優勝ボード）。目視フックが足りなくなったら**この慣習で増やす**（本導線は不変のまま）。2026-10-14 追加：`MZ_NOEVENT=1`＝選択イベントを発火させない（grown 等の目視用）／`MZ_FANREPORT=1`＝結果画面に観客の声カードを必ず出す／`MZ_UI=netaentry`＝持ちネタを積んだまま最初の大会の入口で止める。
 - SourceKit(LSP)の「No such module」診断は索引の誤検知。**正はxcodebuild**。
 
 ## 3. 残り実装の順序（回答docの実装順提案の統合・上から順に）
