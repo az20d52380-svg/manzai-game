@@ -112,6 +112,11 @@ struct TournamentResultView: View {
                                 .transition(.opacity.combined(with: .offset(y: 10)))
                         }
                         if revealedRest {
+                            if r.burst == true || debugForceFanReport {   // ハマった夜は必ず痕跡を残す（見える運・canonical_v2 §1）
+                                fanReportCard(FanReportData.burst(name: session.combiName,
+                                                                  salt: summary.year * 131 + summary.week))
+                                    .transition(.opacity.combined(with: .offset(y: 8)))
+                            }
                             HStack(spacing: 8) {
                                 if let line = displayLine {
                                     // G4: 入口と同じ2つを同じ大きさで再掲（大きくしない＝見込みに寄せない）
@@ -227,6 +232,31 @@ struct TournamentResultView: View {
             .shadow(color: c.opacity(0.55), radius: 16, y: 8)
             .scaleEffect(revealed ? 1 : 2.3)      // 高くから叩きつける（slamFire のシェイクと同時に着地）
             .opacity(revealed ? 1 : 0)
+    }
+
+    /// DEBUG限定の目視フック：MZ_FANREPORT=1 でハマった夜でなくてもカードを出す（表示だけ・判定不変）
+    private var debugForceFanReport: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["MZ_FANREPORT"] != nil
+        #else
+        return false
+        #endif
+    }
+
+    /// 観客の一言（架空SNS）。紙講評＝審査員の声と見分けがつくよう、白カード＋SNS名の小札で出す
+    private func fanReportCard(_ text: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: "bubble.left.fill").font(.system(size: 10, weight: .bold))
+                Text("\(FanReportData.sns)・観客の声").font(.maru(10.5, weight: .bold))
+            }
+            .foregroundStyle(Theme.inkSub)
+            Text(text).font(.maru(13, weight: .bold)).foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.94)))
     }
 
     private func washi(text: String, judge: String, passed: Bool) -> some View {
