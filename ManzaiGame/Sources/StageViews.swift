@@ -14,6 +14,8 @@ struct WaveformView: View {
     var nearMiss: Double = 0
     /// 判の後に小さく出す客席メーター（舞台の上・見た目の作り直し v1 §6 R1）
     var compact: Bool = false
+    /// ハマった夜（見える運・canonical_v2 §1「ハマは波形で必ず可視化」）：中盤に客席のスイッチが入った山が立つ。勝敗とも
+    var burst: Bool = false
 
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -32,10 +34,11 @@ struct WaveformView: View {
                     startPoint: .zero, endPoint: CGPoint(x: W, y: 0))
 
                 func env(_ x: Double) -> Double {
-                    if !passed { return 0.10 + 0.30 * nearMiss * x + 0.06 * sin(x * 8) }   // 敗退: 惜しいほど後半が盛り上がる（監査E-03）
+                    let surge = burst ? exp(-pow((x - 0.45) / 0.07, 2)) * 0.7 : 0   // ハマった夜の中盤の山
+                    if !passed { return min(1, 0.10 + 0.30 * nearMiss * x + 0.06 * sin(x * 8) + surge) }   // 敗退: 惜しいほど後半が盛り上がる（監査E-03）
                     let b = 0.16 + 0.5 * x
                     let punch = exp(-pow((x - 0.83) / 0.06, 2)) * 0.95
-                    return min(1, b + punch)
+                    return min(1, b + punch + surge)
                 }
                 var top = Path()
                 var i: CGFloat = 0

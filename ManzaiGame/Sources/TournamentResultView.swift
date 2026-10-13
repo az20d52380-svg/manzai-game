@@ -106,7 +106,7 @@ struct TournamentResultView: View {
                     // 舞台板の上＝読み物と出口（判の後に段階で出す）
                     VStack(spacing: 10) {
                         if revealedReview {
-                            WaveformView(passed: r.passed, nearMiss: nearMiss(r), compact: true)
+                            WaveformView(passed: r.passed, nearMiss: nearMiss(r), compact: true, burst: r.burst == true || debugForceFanReport)
                                 .transition(.opacity)
                             washi(text: review.text, judge: review.judge, passed: r.passed)
                                 .transition(.opacity.combined(with: .offset(y: 10)))
