@@ -267,7 +267,7 @@ struct NotebookView: View {
             HStack(spacing: 8) {
                 Text("舞台 \(neta.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkFaint)
                 ForEach(neta.lengthFit, id: \.self) { l in
-                    Text(NetaCatalog.displayName(l)).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                    Text(NetaCatalog.displayName(l)).font(.maru(10.5)).foregroundStyle(Theme.inkDim)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(Theme.card2, in: Capsule())
                 }
@@ -338,13 +338,13 @@ struct NotebookView: View {
     @ViewBuilder private func netaBadges(_ neta: Neta) -> some View {
         HStack(spacing: 4) {
             if !neta.isDown {
-                Text("まだ人前でやっていない").font(.maru(9)).foregroundStyle(Theme.inkFaint)
+                Text("まだ人前でやっていない").font(.maru(10.5)).foregroundStyle(Theme.inkFaint)
                     .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .overlay(Capsule().stroke(Theme.inkFaint, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
             }
             if neta.isTeppan(config: session.config) {
-                Text("自信作").font(.maru(9, weight: .bold)).foregroundStyle(Theme.goldD)
+                Text("自信作").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.goldD)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(Theme.gold.opacity(0.18), in: Capsule())
             }
@@ -407,7 +407,7 @@ struct NotebookView: View {
                 HStack(spacing: 6) {
                     Text(NetaCatalog.displayName(neta.kata)).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
                     if revival {
-                        Text("もう一度").font(.maru(9, weight: .bold)).foregroundStyle(Theme.cCompat)
+                        Text("もう一度").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.cCompat)
                     }
                 }
             }
