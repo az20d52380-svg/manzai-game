@@ -42,6 +42,9 @@ public enum Training: CaseIterable, Hashable, Codable {
     // 練習の場所（お金を払う良い場所・money_items_neta_v1 §1・オーナー確定 2026-10-13）。家で書く＝ネタ作り
     case 喫茶店で書く
     case ファミレスで書く
+    // お店から移した「お金を払うやり方」（1週使う練習・オーナー原則「アイテムで能力は上がらない」）
+    case 作家の勉強会
+    case ボイトレ
 }
 
 public enum Job: CaseIterable, Hashable, Codable {
@@ -159,6 +162,8 @@ public struct GameConfig {
     public var autoPourAllocation = true   // ⚠️ golden の前提＝既定 true を反転しない（実ゲームは GameSession 側で false にする・監査F-03）
 
     // --- アイテム（Item.swift・docs/item_design_v0.md。全て【仮】）。Python: balance_sim.ITEMS ---
+    /// お店で売る品（オーナー原則 2026-10-12「アイテムで能力は上がらない」）。能力に効く4品は売らない（持っている人の効果は残す）
+    public var shopLineup: [ShopItem] = [.栄養ドリンク, .銭湯の回数券, .新幹線回数券]
     public var items: [ShopItem: ItemSpec] = [
         .栄養ドリンク: ItemSpec(price: 3_000, yearlyLimit: 6, summary: "体力が少し戻る"),
         .銭湯の回数券: ItemSpec(price: 10_000, yearlyLimit: 99, summary: "休む4回ぶん、回復が増える"),
@@ -221,6 +226,8 @@ public struct GameConfig {
         // 場所【仮】（Python: PLACE_TRAININGS と同値。golden/sim の既定ボットは使わない）
         .喫茶店で書く:   TrainingSpec(main: (.currency(.閃き), 4.5),   sub: (.currency(.語彙), 1.5), cost: 10_000, stamina: -20, fame: 0),
         .ファミレスで書く: TrainingSpec(main: (.currency(.閃き), 4),   sub: (.currency(.語彙), 1),   cost: 5_000,  stamina: -30, fame: 0),
+        .作家の勉強会:   TrainingSpec(main: (.currency(.閃き), 6),     sub: (.currency(.語彙), 3),   cost: 80_000, stamina: -20, fame: 0),
+        .ボイトレ:       TrainingSpec(main: (.currency(.存在感), 6),   sub: (.currency(.間合い), 2), cost: 80_000, stamina: -20, fame: 0),
     ]
     /// ネタを書く場所ごとの完成度の伸び（家で書く＝ネタ作り は netaReviseGain）【仮】
     public var netaPlaceGain: [Training: Double] = [.喫茶店で書く: 10, .ファミレスで書く: 12]

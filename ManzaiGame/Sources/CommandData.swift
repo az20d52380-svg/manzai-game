@@ -63,6 +63,8 @@ enum CommandCatalog {
                 (.フリーライブ, "舞台に立つ", "客前で場数を踏む", "mic.fill"),
                 (.ネタ見せ会, "ネタ見せ会", "作家の前で試す", "theatermasks.fill"),
                 (.ランニング・サウナ, "話し方教室", "人前で話す度胸をつける", "person.wave.2.fill"),
+                (.作家の勉強会, "作家の勉強会", "書く力をつける", "book.fill"),
+                (.ボイトレ, "ボイトレ", "声を通るようにする", "waveform"),
             ]
             return trains.compactMap { t, name, desc, glyph in
                 guard let spec = config.trainings[t] else { return nil }

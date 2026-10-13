@@ -55,6 +55,9 @@ TRAININGS = {
 PLACE_TRAININGS = {
     "喫茶店で書く":   dict(main=("cur:hirameki", 4.5), sub=("cur:goi", 1.5), cost=10_000, stam=-20, fame=0),
     "ファミレスで書く": dict(main=("cur:hirameki", 4),   sub=("cur:goi", 1),   cost=5_000,  stam=-30, fame=0),
+    # お店から移した「お金を払うやり方」（1週使う練習・money_items_neta_v1 §3）【仮】
+    "作家の勉強会":   dict(main=("cur:hirameki", 6),   sub=("cur:goi", 3),     cost=80_000, stam=-20, fame=0),
+    "ボイトレ":       dict(main=("cur:sonzaikan", 6),  sub=("cur:maai", 2),    cost=80_000, stam=-20, fame=0),
 }
 
 def enable_places(on=True):
@@ -338,7 +341,13 @@ ITEM_STUDIO_BONUS = 1.0
 ITEM_STUDY = (4.0, 2.0)    # 閃き・語彙（通貨に直接）
 ITEM_VOICE = (4.0, 2.0)    # 間合い・語彙（通貨に直接）
 
+# お店で売る品（オーナー原則 2026-10-12「アイテムで能力は上がらない」・money_items_neta_v1 §3）。
+# 能力に効く4品（ICレコーダー・勉強会・ボイトレ・稽古場の年契約）は売らない。Swift: GameConfig.shopLineup と同値。
+SHOP_LINEUP = ["栄養ドリンク", "銭湯の回数券", "新幹線回数券"]
+
 def can_buy(s, item):
+    if item not in SHOP_LINEUP:
+        return False
     price, lim = ITEMS[item]
     if s.money < price:
         return False

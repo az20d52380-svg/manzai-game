@@ -18,7 +18,7 @@ struct ShopView: View {
             header
             ScrollView {
                 VStack(spacing: 10) {
-                    ForEach(ShopItem.allCases, id: \.self) { row($0) }
+                    ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.center)
                         .font(.maru(11)).foregroundStyle(Theme.inkSub).padding(.top, 4)

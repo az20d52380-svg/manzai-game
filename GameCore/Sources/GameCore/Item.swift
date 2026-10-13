@@ -26,7 +26,7 @@ public struct ItemSpec {
 extension GameEngine {
     /// 今買えるか（所持金・回数・持ち越し中の回数券）。表示と確定の両方がこれを使う。
     public static func canBuy(_ item: ShopItem, state s: GameState, config: GameConfig) -> Bool {
-        guard let spec = config.items[item], s.money >= spec.price else { return false }
+        guard config.shopLineup.contains(item), let spec = config.items[item], s.money >= spec.price else { return false }
         switch item {
         case .中古のICレコーダー: return s.hasRecorder != true
         case .銭湯の回数券: return (s.sentoTickets ?? 0) == 0

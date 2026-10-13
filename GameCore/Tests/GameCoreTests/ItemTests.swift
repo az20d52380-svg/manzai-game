@@ -16,11 +16,21 @@ final class ItemTests: XCTestCase {
     func testRecorderOnceAndBoostsNetaWriting() {
         var a = GameState(config: config), b = GameState(config: config)
         b.money = 100_000
-        XCTAssertTrue(GameEngine.buy(.中古のICレコーダー, to: &b, config: config))
+        // 2026-10-12 原則「アイテムで能力は上がらない」：もう売らない。前のセーブで持っている人の効果は残す
         XCTAssertFalse(GameEngine.canBuy(.中古のICレコーダー, state: b, config: config))
+        b.hasRecorder = true
         GameEngine.applyTraining(.ネタ作り, to: &a, config: config)
         GameEngine.applyTraining(.ネタ作り, to: &b, config: config)
         XCTAssertEqual(b[currency: .閃き] - a[currency: .閃き], config.itemRecorderBonus * config.expSupplyScale, accuracy: 1e-9)
+    }
+
+    func testAbilityItemsAreNotSold() {
+        var s = GameState(config: config); s.money = 10_000_000
+        for item in [ShopItem.中古のICレコーダー, .ネタ作家の勉強会, .ボイトレ短期集中, .稽古場の年契約] {
+            XCTAssertFalse(GameEngine.canBuy(item, state: s, config: config), "\(item) は売らない")
+            XCTAssertFalse(GameEngine.buy(item, to: &s, config: config))
+        }
+        XCTAssertEqual(s.money, 10_000_000)
     }
 
     func testSentoTicketsAddRecovery() {
@@ -37,7 +47,7 @@ final class ItemTests: XCTestCase {
     func testYearlyEffectsClearedByNewYear() {
         var s = GameState(config: config); s.money = 3_000_000
         XCTAssertTrue(GameEngine.buy(.新幹線回数券, to: &s, config: config))
-        XCTAssertTrue(GameEngine.buy(.稽古場の年契約, to: &s, config: config))
+        s.studioActive = true   // 稽古場の年契約はもう売らない（前のセーブで持っている場合の年明けの後始末だけ確かめる）
         let r = WeekRunner(state: s, year: 2, config: config, rng: SplitMix64(seed: 1))
         XCTAssertNil(r.state.shinkansenActive)
         XCTAssertNil(r.state.studioActive)
