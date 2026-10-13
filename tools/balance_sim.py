@@ -398,7 +398,7 @@ def do_offer(s, offer):
 # Swift: Rest.サウナ/.温泉に一泊（GameConfig.rests/restCosts）と同値。既定では RESTS に入れない＝既存の基準不変。
 PAID_RESTS = {
     "サウナ":     (80,  ("mental", 2)),
-    "温泉に一泊": (100, ("compat", 1)),
+    "温泉に一泊": (100, ("mental", 2)),   # 相性+1 は帯を壊した（v3やり込み 初回優勝3.3→12.3%・§6-2）＝メンタルに【仮】
 }
 REST_COST = {"サウナ": 10_000, "温泉に一泊": 60_000}
 

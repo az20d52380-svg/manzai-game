@@ -241,7 +241,7 @@ public struct GameConfig {
         .相方と過ごす: (recovery: 20, bonus: (.コンビ相性, 1)),
         // 有料【仮】（Python: PAID_RESTS/REST_COST と同値。golden/sim の既定ボットは使わない）
         .サウナ:       (recovery: 80, bonus: (.ability(.メンタル), 2)),
-        .温泉に一泊:   (recovery: 100, bonus: (.コンビ相性, 1)),
+        .温泉に一泊:   (recovery: 100, bonus: (.ability(.メンタル), 2)),   // 相性+1 は帯を壊した（money_items_neta_v1 §6-2）
     ]
     /// 休みの費用（無い＝無料）。払えなければ完全休養になる
     public var restCosts: [Rest: Int] = [.サウナ: 10_000, .温泉に一泊: 60_000]
