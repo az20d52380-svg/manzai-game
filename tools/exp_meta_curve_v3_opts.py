@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """dynasty_v2_research §5 の選択肢 (A)(B) を §5 と同じ設定で実測（決定ではなく材料・数値は全て【仮】）。
-usage: python3 exp_meta_curve_v3_opts.py [n]
+usage: python3 exp_meta_curve_v3_opts.py [n] [m,m,...] [cfg.json]（cfg を渡すと式案の上で測る＝§5-2 と同じ入れ方）
 - 現状: J0 を成長予算に上乗せ（全年）＋E0
 - (A) J0 は10年目まで：11年目の頭に s._yg += J0（延長年は上乗せ分を取り上げる＝使い切っていれば延長年の伸びは基準カーブが追いつくまで0）
 - (B) E0 だけ（予算の上乗せ J0 なし）
@@ -38,6 +38,11 @@ def career(pol, seed, J0, opt, extend=(3, 25)):
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 300
     ms = [float(x) for x in sys.argv[2].split(",")] if len(sys.argv) > 2 else (0.5, 0.67, 0.83, 1.0)
+    if len(sys.argv) > 3:
+        import os, json
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "exp_eval_axes"))
+        import proto as P
+        P.CFG.update(json.load(open(sys.argv[3]))); P.install(); P.install_rec()
     V.apply()
     base_curve = C.CAP_CURVE
     try:
