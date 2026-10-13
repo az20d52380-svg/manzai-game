@@ -157,3 +157,4 @@ cd GameCore && swift test
 - `trophy_design_v1.md` — 実績・トロフィー設計 v1 — 難易度別ポイント制（総枠30pt）
 - `trophy_flavor_v0.md` — トロフィー獲得演出・フレーバー文 v0 — 全22個＋実績デザイン則
 - `comedy_research_v2/r6c_m1_mc_flow.md` — M-1決勝の進行の型（講評を振る人数・最終決戦の理由・冒頭の掛け合い・出順）調査・2026-10-14
+- `money_sink_research_v0.md` — 終盤のお金の使い道の型（他作品）と選択肢・2026-10-14
