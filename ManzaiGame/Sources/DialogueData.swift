@@ -21,7 +21,7 @@ enum DialogueData {
     /// 週頭（行動選択前）の一般セリフ。状態・状況・先週の結果だけに紐づける。
     /// 未選択の行動や、その週いない場所（楽屋等）の話はしない。
     /// 優先度: 低体力 > 金欠 > 連敗 > 直近通過 > 大会前 > 平常
-    /// week: 週番号。選択は週番号で回す＝同じ状態で週を迎えても連続で同じ行にならない（監査D-03）。
+    /// week: 選択の salt（呼び出し側は 年×131＋週）。選択は週で回す＝同じ状態で週を迎えても連続で同じ行にならない（監査D-03）。
     static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
                            nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String,
                            week: Int = 0) -> Advice {

@@ -446,7 +446,7 @@ final class GameSession {
         let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
         guard uiEventRng.nextUniform() < rate else { return }
         // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
-        weekBanter = DialogueData.banter(band: banterBand(), salt: week)
+        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week)   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない
     }
 
     /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。

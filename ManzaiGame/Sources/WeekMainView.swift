@@ -378,7 +378,7 @@ struct WeekMainView: View {
         adviceBox(DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
                                           justPassed: session.justPassedStage, justLost: session.justLostStage,
                                           nextMilestone: nextMilestone(), weakAbility: weakAbility(),
-                                          week: session.week))
+                                          week: session.year &* 131 &+ session.week))   // 年も混ぜる＝毎年同じ週に同じ行にしない
     }
 
     /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
