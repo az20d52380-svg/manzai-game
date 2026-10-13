@@ -35,6 +35,7 @@
 25. [x] 済 数値に出ない選択の効果（0012A/0016B/0023A）と日時の言い回しの点検（読むだけ）→ `dialogue_clarity_audit_v0.md` §5
 26. [x] 済 週メインの A/B 2件（器のトースト・仕込みどき）を直す → `dialogue_clarity_audit_v0.md` §6
 27. [x] 済 週メインの C 判定の行（`dialogue_clarity_audit_v0.md` §1 の WeekMainView・YearResultView の C）を表示文だけで直す（数値不変）→ §7。残り（実力↑の量・ネタ+N・勝負ネタの説明）は表示の仕組みが要る
+28. [x] 済 コンテンツ在庫の実装本数を数え直す（読むだけ）→ `content_inventory_plan_v0.md` §7（ファンレポ・トロフィー・ライバル台詞・才能解放は未実装／モブ名18組）
 7. [x] 済 旧 `AllocationView.swift`（未使用・702行）を消す（RootView の目視フックは AbilityUpView に差し替え済み）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
