@@ -68,7 +68,7 @@ struct TournamentResultView: View {
 
     var body: some View {
         let r = result
-        let review = JudgeData.review(passed: r.passed, state: summary.state, salt: summary.week)
+        let review = JudgeData.review(passed: r.passed, state: summary.state, salt: summary.year * 131 + summary.week)   // 年も混ぜる＝回戦の週は固定なので週だけだと毎年同じ1行になる
 
         GeometryReader { geo in
             ZStack {
