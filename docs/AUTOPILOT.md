@@ -8,17 +8,19 @@
 
 ## 中断中（未コミットの変更が作業ツリーにある）
 - [ ] **会話 v3 の残り（opus に依頼中 2026-10-13 10:3x）**：`IntroFlow.swift`・`YearResultView.swift`・`S6bView.swift`・`TalkParts.swift`・`FinalsTalk.swift` の文字列。依頼が上限で止まっていたら：`git diff --stat` で範囲→v3 バナーで残りを書く→ビルド→`docs/dialogue_rewrite_v3.md` §4 に一覧→コミット。
-- [ ] **審査員の講評の調査（sonnet に依頼中）**：`docs/comedy_research_v2/r6_m1_judge_comments.md`。止まっていたら続きから（Web検索は最大10回）。
+- （講評の調査は済：9adeebf）
 ## キュー（上から）
 1. [x] 済（下の「済」参照）練習の場所の実測を記録（`tools/exp_places_v1.py` n=300 済み：のんびり 決勝0.7→1.3%・ローテ 36.3→43.7%・やり込み 44.3→45.0%。初回優勝はほぼ不変）→ `money_items_neta_v1.md` §6 に追記→コミット。
-2. [ ] 審査員コメント：M-1 歴代講評の型の調査（sonnet・上限で中断・`docs/comedy_research_v2/r6_m1_judge_comments.md` があれば続きから）→ `manzai-judge-comments` スキルと `JudgeData.swift` を、その型（一言目・触れる所・長さ・褒め方と落とし方・点数との関係）で書き直す。実在の講評の丸写し・実在審査員の決め台詞は禁止（架空の審査員）。
+2. [ ] **審査員コメントの書き直し（調査済み：`docs/comedy_research_v2/r6_m1_judge_comments.md` §5〜§7）**：§7 の P1（決勝コメント55行を§5-1の配分表で点検し欠ける型を足す）・P3（司会の拾い X1〜X4）・P4（審査員のユーモア行＝全体の約1割・的は審査員自身）・P6（言い換え表を `manzai-judge-comments` スキルへ・実装先の記述を直す）。触るのは `FinalsTalk.swift`・`JudgeData.swift`・スキル。**会話 v3 の残り（§中断中）が FinalsTalk.swift を触っている間は始めない**。opus に依頼・実在の講評の丸写し禁止・架空の審査員。
 3. [x] 済（335dc63・下記）お金を払う休み（オーナー案・`money_items_neta_v1.md` §2）：サウナ¥1万（回復80）・温泉に一泊¥6万（回復100・相方と＝相性+1）【仮】。規律A：`tools/balance_sim.py`（RESTS とは別表で既定無効＝基準不変）→ GameCore Rest＋費用→ gen_golden（差分なし確認）→ swift test → 休むの一覧に追加 → 帯を実測（n=300）。整体は新しい仕組みが要るので後回し。
 4. [x] 済（下記）お店の入れ替え（オーナー原則「アイテムで能力は上がらない」）：勉強会・ボイトレはお店から外し、練習の「お金を払うやり方」（Training 追加・規律A・既定無効）へ。稽古場の年契約・ICレコーダーはお店から外す（ICの作り変えは判断待ち3）。帯を実測。
 5. [x] 済（下記）総合の帯の実測（場所＋休み＋お店入れ替え後）：のんびり・ローテ・やり込み（n=300→結論だけ1000）→ `money_items_neta_v1.md` §6。
 6. [~] 進行中（§中断中の1つ目）会話の分かりやすさ点検の残り（日常化の後、`dialogue_clarity_audit_v0.md` の A/B で残った行を直す。IntroFlow・YearResultView・S6bView も v3 で見直す）。
+8. [ ] （任意・安いうちに）講評の追加調査 r6 §7 P9（2024〜25・2001〜2010 の講評を集計して頻度を更新）
 7. [x] 済 旧 `AllocationView.swift`（未使用・702行）を消す（RootView の目視フックは AbilityUpView に差し替え済み）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
+- 審査員の講評（r6 §7）：P2 講評の話者数（2人のまま／上位は全員…）・P5 出番の文脈フック・P7 最終決戦の一票の理由・P8 開幕の審査員同士の掛け合い
 - **お金の使い道を全部使うと、ふつうの初回優勝が0.8→4.0%**：①このまま ②年の回数上限【推奨】③効果を下げる ④お金を減らす（money_items_neta_v1 §6-4）
 - `money_items_neta_v1.md` §5：Q2 温泉の相性を残すか／Q3 ICレコーダーは外すか「ネタが1本多く持てる」に変えるか／§4 持ち物（パワプロ式）を入れるか／新アイテム（お守り・いい枕・勝負服）
 - `money_items_neta_v0.md` §4 ネタ育て step2（型を自分で選ぶ 等）
