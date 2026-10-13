@@ -58,6 +58,7 @@ cd GameCore && swift test
 - 決勝敗北時の優勝者・ライバル: `champion_selection_v1.md`（正典・選出ロジック）/ `relationship_champions_v0.md`（絆＋優勝時セリフ）/ `relationship_archetype_variants_v0.md`（後輩/先輩/同期を毎周別の型に）/ `name_generator_v0.md`（コンビ名生成）/ `rival_design_v0.md`（4組の役柄テンプレ）/ `partner_finals_reactions_v0.md`（相方別の袖反応・非谷口は関西弁にしない）
 - キャラ: `partner_characters_v0.md`（相方・男6/女4＝得意能力6軸を網羅）/ `character_archetypes_v0.md`（22類型×口調×得意能力・後輩/先輩の量産型）/ `partner_finals_reactions_v0.md`（相方別の袖反応）/ `judge_design_v0.md`（審査員7名）
 - **審査員の"好み"研究（2026-07-17）**: `judge_preference_research_v0.md`（`judge_design_v0.md`の背景研究＝実在賞レースの採点作法だけをWeb調査で分解し架空7審査員へ翻案。**核心の誤解を正す＝審査トレンドは年で変わらない・各審査員が年をまたいで一貫した固有の物差しを持つ・年で変わるのは"パネルの配合"だけ**［用語を"審査トレンド"→"審査パネルの配合"に締める］。§1=採点作法の実測個人差［点差の大小/加点減点/甘辛/尺厳密/情の肩入れが年をまたいで安定］／§2=好みの7類型T1-T7＝既存7軸と1対1・**T5変わり者好きは独立枠を置かず卯月[新規性◎]と神楽坂[型破り◎/×]に内包**／§3=多軸で割れるからパネルが豊か＝"一番ウケた組が負ける"はドラマの燃料／§5=**ネタ型×好みの相性表**［◎○△×・王道しゃべくり/関係性/伏線回収/リターン型/非定型実験/瞬発/華先行×T1-T7・どの型にも◎が1つ＝勝ち筋担保］／§7=judge_design全審査員への接地確認表。**全て研究材料であり判定式に相性を乗せる提案ではない＝相性をスコアに乗せるかは judge_design §0 のオーナー決定・`replayability_research_v0.md` §7 の未決に属す（規律C-8）。実名/実在言い回し借用ゼロ・golden非干渉・数値は全て【仮】**）
+- **審査員講評の追加調査 r6b（2026-10-13）**: `comedy_research_v2/r6b_judge_comments_more.md`（r6 の P9。取れたのは2024の要約記事2本＝約56件と2007の個人メモ4件のみ。2024は褒め入りが過半・観点は構成/キャラ上昇。2025と2001〜10の本文は取れず。既存表は変えず注記する提案）
 - 収益: `monetization_decision_v0.md` / `pricing_proposal_v0.md`
 - オーナー判断材料: `owner_decision_brief_v0.md`（決定記録①〜④含む）/ `concerns_register_v0.md`
 - 実態把握（潜りすぎ対策）: `game_reality_check_v0.md`（中立ブリーフィング＝今どんなゲームか・強み弱み・本の要否・次の1手＝実機で遊ぶ）
