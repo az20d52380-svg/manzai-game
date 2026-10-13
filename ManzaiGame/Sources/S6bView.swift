@@ -82,9 +82,16 @@ struct S6bView: View {
 
     private var montageCards: [ReminiscenceCard] {
         [
-            ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。"),
-            ReminiscenceCard(caption: "大会の帰り。夜の電車。"),
-            ReminiscenceCard(caption: "いつものファミレス。同じ席。"),
+            ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。",
+                             talk: [Advice(name: "俺", text: "終電なくなった。今日はここで寝る"),
+                                    Advice(name: "谷口", text: "ええよ。毛布、一枚しかないけどな")]),
+            ReminiscenceCard(caption: "大会の帰り。夜の電車。",
+                             talk: [Advice(name: "谷口", text: "終電、間に合うてよかったな"),
+                                    Advice(name: "俺", text: "ああ。来年も、また出よう")]),
+            ReminiscenceCard(caption: "いつものファミレス。同じ席。",
+                             talk: [Advice(name: "谷口", text: "いつもの、ドリンクバーでええ？"),
+                                    Advice(name: "俺", text: "うん。今日は長くなりそうだし"),
+                                    Advice(name: "谷口", text: "ほな、二つ頼むわ")]),
         ]
     }
 

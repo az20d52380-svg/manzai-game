@@ -22,6 +22,8 @@ struct ReminiscenceCard: Identifiable {
     /// 台詞（あれば話者の吹き出しで出す。caption は地の文の紙）
     var speaker: String? = nil
     var line: String? = nil
+    /// 短い会話（1〜2往復）。あれば line より優先して吹き出しを順に並べる（v3 ①：会話で場面が分かる）
+    var talk: [Advice] = []
     /// 二人の立ち位置（true＝並ぶ／false＝離れている）
     var together: Bool = true
 }
@@ -39,7 +41,11 @@ struct ReminiscencePlayer: View {
                 .id("scene\(index)")
                 .transition(.opacity)
             VStack(spacing: 14) {
-                if let line = card.line {
+                if !card.talk.isEmpty {
+                    ForEach(card.talk.indices, id: \.self) { i in
+                        TalkBubble(advice: card.talk[i])
+                    }
+                } else if let line = card.line {
                     TalkBubble(advice: Advice(name: card.speaker, text: line), large: true)   // 回想の台詞は1枚に1つ＝決め台詞として大きく
                 }
                 NarrationCard(text: card.caption, showCue: true)
@@ -330,10 +336,17 @@ struct IntroFlowView: View {
     private let cards = [
         // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた・語は1字も変えない）
         ReminiscenceCard(caption: "高校の教室。休み時間。",
-                         mood: .noon, together: false),
+                         mood: .noon,
+                         talk: [Advice(name: "谷口", text: "その消しゴム、落としたで"),
+                                Advice(name: "俺", text: "あ、ありがとう。隣のクラスの？"),
+                                Advice(name: "谷口", text: "谷口や。購買、一緒に行かへん？")],
+                         together: false),
         ReminiscenceCard(caption: "放課後の廊下。",
                          mood: .after, speaker: "谷口", line: "コンビ、組まへんか"),
-        ReminiscenceCard(caption: "数年後。小さな劇場の楽屋。", mood: .eve),
+        ReminiscenceCard(caption: "数年後。小さな劇場の楽屋。", mood: .eve,
+                         talk: [Advice(name: "谷口", text: "緊張してきたわ。手、冷たいねん"),
+                                Advice(name: "俺", text: "水、飲んどけよ。次が出番だぞ"),
+                                Advice(name: "谷口", text: "せやな。ほな、行こか")]),
     ]
 
     var body: some View {
