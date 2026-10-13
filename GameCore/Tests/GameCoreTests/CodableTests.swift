@@ -103,4 +103,17 @@ final class CodableTests: XCTestCase {
             if case .yearDone = phase { break }
         }
     }
+
+    /// 旧セーブ互換：margin・burst の無い StageResult も復号でき、両方 nil になる（表示専用の任意項目）
+    func testStageResultDecodesOldSaveWithoutBurst() throws {
+        let old = #"{"name":"GP1回戦","passed":true,"prize":0,"isStage":true}"#.data(using: .utf8)!
+        let r = try JSONDecoder().decode(StageResult.self, from: old)
+        XCTAssertEqual(r.name, "GP1回戦")
+        XCTAssertNil(r.margin)
+        XCTAssertNil(r.burst)
+        let now = StageResult(name: "敗者復活", passed: false, prize: 0, margin: -3, burst: true)
+        let back = try JSONDecoder().decode(StageResult.self, from: JSONEncoder().encode(now))
+        XCTAssertEqual(back.burst, true)
+        XCTAssertEqual(back.margin, -3)
+    }
 }
