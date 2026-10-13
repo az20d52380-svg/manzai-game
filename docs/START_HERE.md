@@ -162,3 +162,4 @@ cd GameCore && swift test
 - `neta_bonus_remeasure_v0.md` — ネタ補正をアプリと同じ式で再計測（帯が大きく上がる・案と実測）・2026-10-14
 - `exp_currency_naming_research_v0.md` — 経験点と能力の名前の分け方（他作品の型・名前案）・2026-10-14
 - `saturation_check_v0.md` — 段階が働いていない値（最終回の会場・知名度）の点検・2026-10-14
+- `decision_brief_2026-10-14.md` — 判断待ちの並べ直し（聞く順・推奨・材料）・2026-10-14
