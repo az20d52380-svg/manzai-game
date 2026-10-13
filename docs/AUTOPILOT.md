@@ -28,6 +28,7 @@
 18. [x] 済 点検：swift test 84件 green（2026-10-13）
 19. [x] 済 お金の吸い込み口の材料：値段を上げた時の帯と所持金 → `money_items_neta_v1.md` §6-6
 20. [x] 済 周回ボーナスに相性を入れた時の曲線（m=0.25〜1）→ `dynasty_v2_research_v0.md` §10
+21. [x] 済 点検：swift test 84件 green・START_HERE の冒頭に AUTOPILOT への案内を追加（他の docs は全て索引済み）
 7. [x] 済 旧 `AllocationView.swift`（未使用・702行）を消す（RootView の目視フックは AbilityUpView に差し替え済み）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）

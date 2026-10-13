@@ -10,6 +10,7 @@ CLI（Mac上）で作業を引き継ぐときは、まずこの1枚を読む。�
 
 ## いまの状態
 
+- **作業キューは `docs/AUTOPILOT.md` 一か所**（2026-10-13〜。対話でも自走でも上から進める・判断待ちもそこに並ぶ）。
 - **設計完成・Swift実機検証も完了**（2026-07-04・Macの Swift 6.3.3 で `cd GameCore && swift test` が
   **17件すべてgreen**＝Python⇔Swiftの乱数列ビット一致を実機で証明。正典v2大改修の検証が完結した。
   ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行）。
