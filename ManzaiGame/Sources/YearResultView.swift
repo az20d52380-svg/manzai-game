@@ -135,6 +135,7 @@ struct YearResultView: View {
         if r.champion { return "優勝" }
         if r.bankrupt { return "夜逃げ" }
         if r.reachedFinal { return "決勝" }
+        if r.enteredGP == false { return "不出場" }
         if r.roundsPassed < names.count { return names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "敗退" }
         return "準決勝敗退"
     }
@@ -341,6 +342,7 @@ struct YearResultView: View {
         // 監査C-07: 「最後に通過した回戦」ではなく「敗れた回戦」を言う（3回戦で負けた人に「2回戦」と出さない）
         let names = session.config.calendar.gpRoundNames
         let n = o.roundsPassed
+        if notEnteredGP { return ("不出場", false) }
         if n < names.count { return (names[n].replacingOccurrences(of: "GP", with: "") + "敗退", n > 0) }
         return ("準決勝敗退", true)
     }
@@ -350,7 +352,15 @@ struct YearResultView: View {
         if o.champion { return "頂グランプリ制覇" }
         if o.bankrupt { return "所持金が尽きてキャリア終了" }
         if o.reachedFinal { return "決勝の舞台に立った" }
+        if notEnteredGP { return "エントリー費が払えず、頂グランプリに出られなかった" }
         return "頂グランプリ 到達段階"
+    }
+
+    /// GPに一度も出ていない年か（エントリー費が払えない＝WeekRunner の gpAlive=false）。出ていないのに「1回戦敗退」と出ていた。
+    /// その年の出来事ログ（年ごとにリセット）に1回戦の行が無く、1回戦も通っていない時だけ true。表示専用
+    private var notEnteredGP: Bool {
+        guard let o, o.roundsPassed == 0, let first = session.config.calendar.gpRoundNames.first else { return false }
+        return !session.log.contains { $0.contains(first) }
     }
 }
 

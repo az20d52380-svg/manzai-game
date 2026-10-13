@@ -751,6 +751,8 @@ final class GameSession {
         let champion: Bool
         let bankrupt: Bool
         let prize: Int
+        /// その年GPに出たか（エントリー費が払えず出られない年がある）。nil＝旧セーブ（出た扱い）。表示専用
+        var enteredGP: Bool? = nil
     }
 
     /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／結成 careerYears 年目の年末）
@@ -945,7 +947,9 @@ final class GameSession {
                     yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
                                                   reachedFinal: outcome.reachedFinal, champion: outcome.champion,
                                                   bankrupt: outcome.bankrupt,
-                                                  prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0)))
+                                                  prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0),
+                                                  enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
+                                                      || log.contains { $0.contains(config.calendar.gpRoundNames.first ?? "GP1回戦") }))
                 }
                 if outcome.champion {
                     // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）
