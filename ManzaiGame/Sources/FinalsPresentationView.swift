@@ -446,6 +446,14 @@ struct FinalsPresentationView: View {
         return hi.name == lo.name ? [hi] : [hi, lo]
     }
 
+    private var debugForcedComment: String? {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["MZ_PICKUP"]
+        #else
+        return nil
+        #endif
+    }
+
     private var commentsBeat: some View {
         let picks = commentPicks
         let i = min(commentStep, max(0, picks.count - 1))
@@ -453,7 +461,8 @@ struct FinalsPresentationView: View {
             Telop(text: "\(d.total)点", size: 30, color: Color(hex: 0xFFE07A)).monospacedDigit()
             if picks.indices.contains(i) {
                 let j = picks[i]
-                let text = FinalsJudgeTalk.comment(
+                // 目視用（DEBUG）: MZ_PICKUP=ボケ行 で講評を差し替え、司会の拾いの1拍を必ず出す
+                let text = debugForcedComment ?? FinalsJudgeTalk.comment(
                     judge: j.name, score: j.score, state: s, viaRevival: session.reachedFinalViaRevival,
                     high: i == 0, salt: j.score &+ session.year &* 7 &+ d.order &+ i)
                 mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0))
