@@ -49,7 +49,8 @@ struct S6bView: View {
             Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45)).padding(.bottom, Theme.Sp.s24)
         }
         .contentShape(Rectangle()).onTapGesture { advance(.montage) }
-        .onAppear { withAnimation(.easeInOut(duration: 0.8)) { counted = true } }
+        // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
+        .onAppear { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
     }
 
     // 会場カット（客電の粒＝客席の埋まり。規模で粒数）
