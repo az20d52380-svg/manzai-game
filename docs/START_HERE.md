@@ -93,3 +93,64 @@ cd GameCore && swift test
 
 - **お金とアイテム v1（2026-10-13・オーナー原則）**: `money_items_neta_v1.md`（アイテムで能力は上がらない／お金で伸びるのは喫茶店・カラオケ等の良い場所で練習した時だけ。練習の場所・有料の休み・お店の入れ替え・持ち物）。週メインの作り直しは `home_ui_v2_pawapro_v0.md`。
 - **パワプロ育成画面UI調査 v0（2026-10-12）**: `research_pawapro_success_ui_v0.md`（メイン/練習/能力アップ/お店/常時表示/1ターンの流れ＋ウマ娘。確認済みと未確認を分けた。§9＝移す時の要点7つ（コマンド5〜7個・練習画面に得るもの＋危険度を段階表現で・おまかせ割り振り 等）。§5・§6は実機確認が要る）
+
+## その他の文書（自動で集めた索引・2026-10-13 自走）
+上の索引に無い docs/*.md の一覧（見出し1行目）。古い版を含む。数値の正本は `canonical_vN_spec.md`。
+
+- `agency_fanbase_design_v0.md` — 事務所・冠番組・ファン層設計 v0 — タレント化のジレンマ
+- `art_order_sheet_v0.md` — アート発注書 v0（画像生成AI用プロンプト集）
+- `balance report v0.md` — バランス検証レポート v0（初回・実装前シミュレーション）
+- `booking_design_v0.md` — 予約仕事とバックれ・遅刻システム v0
+- `career_report_v0.md` — 10年キャリア検証レポート v0（本番想定・理想形バランス）
+- `career_report_v1.md` — 10年キャリア検証レポート v1（成長逓減の導入実験）
+- `champion_selection_v0.md` — 決勝敗北時の優勝者選出データ表 v0 —— champion selection（実装可能形）
+- `content_batch5_v0.md` — コンテンツ量産バッチ5 v0 — ファンレポ第2弾60本・モブコンビ名50組・雑談#51〜70
+- `content_inventory_plan_v0.md` — コンテンツ在庫計画表 v0 — 実数カウント・枯渇モデル・ホットスポット材料化
+- `dialogue_audit_v2.md` — 会話の点検 v2（2026-10-12・バナー基準）
+- `dialogue_batch2_v0.md` — 会話量産バッチ2 v0 — 日常・バイト・効果つきミニイベント
+- `dialogue_batch3_v0.md` — 会話量産バッチ3 v0 — 雑談50本体制・人物帳・験担ぎ・効果つき二択第2弾
+- `dialogue_batch4_v0.md` — 会話量産バッチ4 v0 — 日常雑談 #71〜110（中堅〜売れっ子・晩年帯の増補）
+- `dialogue_clarity_audit_v0.md` — 会話の分かりやすさ点検 v0（2026-10-12）
+- `dialogue_design_v0.md` — 会話・掛け合い設計 v0 — 相方「谷口」と週次フレーバー
+- `dialogue_rewrite_v3.md` — 会話の書き直し v3（2026-10-13・オーナー判断 2026-10-12「お笑いの要素なしの日常会話」）
+- `dynasty_design_v0.md` — 王者編（連覇モード）設計 v0 — 10連覇・飽きられ・返り咲き
+- `endgame_design_v0.md` — エンドゲーム設計提案 v0 — 「初回は勝てない、でも決勝の悔しさは味わえる」
+- `endgame_pity_scope_v0.md` — 裏天井（初回の保証弁）— 設計スコープ v0
+- `event_design_v0.md` — 突発イベント設計 v0 — 単発38種＋連鎖アーク3本＋季節催事
+- `event_design_v1_batch2.md` — 突発イベント第2弾 v1 — 変な仕事テーブル＋実話型＋王者編イベント
+- `exp_currency_redesign_v0.md` — 経験点システム パワプロ式5通貨 再設計 v0（正典v3・2026-08-02）
+- `fable_kickoff_prompt_v0.md` — Fable開始プロンプト（コピペ即用）
+- `fable_kickoff_prompt_v1.md` — Fable開始プロンプトv1（ラストイヤーの奇跡・コピペ即用）
+- `full_audit_v0.md` — manzai-game 全体監査 v0 — 値札つき指摘 67件
+- `fun_uiux_overhaul_v0.md` — 面白さとUI/UXの作り直し v0 — 実プレイ27週・他社23本・3方向比較
+- `gacha_report_v0.md` — ガチャ経済検証レポート v0 — 名鑑コンプ速度と採用レート
+- `gamecore_design.md` — GameCore 設計メモ v0
+- `guest_appearance_design_v0.md` — 客演・顔見せ設計 v0 — 初回キャリア中に「引いた相方」と世界で出会う
+- `handoff_2026-10-12.md` — 引き継ぎ（2026-10-12 夜・次のチャット用）
+- `improvement_proposals_v0.md` — ゲーム改善・修正提案 v0 — 優先度付き32項目
+- `item_design_v0.md` — アイテム設計 v0 — ゲーム内通貨・課金・金余り対策
+- `judge_comments_v1.md` — 審査員コメント量産 v1 — 実在講評の型分析と予選紙講評・決勝コメントの増量
+- `laugh_char_audit_v0.md` — 「笑」文字 repo横断監査 v0 — 執行材料（提案のみ・非適用）
+- `legal_risk_v0.md` — 法務リスク・チェックリスト v0（弁護士確認用・一次まとめ）
+- `market_research_v1.md` — 市場・価格リサーチ v1 — 育成SLG/お笑いゲームの市場・価格・課金モデル（業態判断の材料）
+- `meta_report_v0.md` — メタ周回検証レポート v0 — 周回ループ全体の実測と採用値
+- `money_items_neta_v0.md` — お金・アイテム・ネタ育て v0（2026-10-12 夜・決定ではない＝選択肢と推奨）
+- `mvp_ui_build_prompt_v0.md` — MVP UI実装＋コンテンツ配線 指示文 v0 — CLI(Mac)向け・コピペ即用
+- `mvp_ui_build_prompt_v1.md` — MVP更新 指示文 v1 — プレイテストfeedback反映・CLI(Mac)向け・コピペ即用
+- `neta_catalog_v0.md` — ネタカタログ v0 — 漫才の種類リサーチと題材リスト量産
+- `neta_system_design_v0.md` — ネタ資産システム プロトタイプ仕様 v0（周回版の目玉候補）
+- `neta_system_redesign_v1.md` — ネタ・システム 再設計 v1 —「作る → ライブで磨く → 持ちネタに貯まる → 大会で選ぶ」の持続ループ
+- `onboarding_design_v0.md` — オープニング〜1年目 オンボーディング設計 v0
+- `overhaul_v2_handoff.md` — 引き継ぎ：作り直し v2（2026-10-11 午後・②の途中）
+- `overnight_log_v0.md` — 夜間自律作業ログ / 朝の総括（2026-07-05 夜〜）
+- `partner_gacha_design_v0.md` — 相方システム設計 v0 — 「オーディション」型ガチャとレアリティ表
+- `pawapuro_core_research_v0.md` — パワプロ「サクセス」システムデザイン調査レポート（漫才師育成SLG向け）
+- `redteam_uiux_v0.md` — UI/UXレッドチームレビュー v0（2026-08-08）
+- `release_triage_verdict_v0.md` — 早期リリース トリアージ裁定 v0 — 三大論点の KEEP / CUT / DEFER
+- `rival_scripts_v0.md` — ライバル演出テキスト集 v0 — 4組×全場面
+- `roadmap_v1.md` — ロードマップ v1 — 拡張アイデア集v1.2の統合整理
+- `sellable_basics_research_v0.md` — 商用育成SLGの「ゲームらしさ」調査レポート — 漫才師育成SLG改修用
+- `talent_unlock_script_v0.md` — 才能解放 演出テキスト v0 — 敗北の夜に次への火を灯す全14本
+- `trophy_design_v0.md` — 実績・トロフィー設計 v0 —「才能解放20枠」＋「称号」
+- `trophy_design_v1.md` — 実績・トロフィー設計 v1 — 難易度別ポイント制（総枠30pt）
+- `trophy_flavor_v0.md` — トロフィー獲得演出・フレーバー文 v0 — 全22個＋実績デザイン則
