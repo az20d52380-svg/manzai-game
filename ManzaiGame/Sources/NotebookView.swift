@@ -260,7 +260,6 @@ struct NotebookView: View {
                 Text(NetaCatalog.displayName(neta.kata)).font(.maru(10.5)).foregroundStyle(Theme.inkDim)
                 nameLabel(neta)
                 Spacer(minLength: 4)
-                netaBadges(neta)
             }
             netaBar(label: "完成度", value: neta.polish, color: Theme.kataColor(neta.kata))
             netaBar(label: "客の反応", value: neta.buzz, color: Theme.gold)
@@ -273,10 +272,12 @@ struct NotebookView: View {
                         .background(Theme.card2, in: Capsule())
                 }
                 Spacer()
+                netaBadges(neta)   // 題名の行に置くと題名が切れた／札が2行に折れた→舞台の回数の行へ
             }
             if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
-                actionChip(isSelected ? "勝負ネタ" : "勝負ネタにする", active: !isSelected) {
+                // 選択中は「✓ 勝負ネタ中」（「勝負ネタ」だけだと押せない灰色に見えた）
+                actionChip(isSelected ? "✓ 勝負ネタ中" : "勝負ネタにする", active: !isSelected) {
                     session.selectNeta(neta.id)
                 }
                 actionChip("型を変える", active: true) {
@@ -338,6 +339,7 @@ struct NotebookView: View {
         HStack(spacing: 4) {
             if !neta.isDown {
                 Text("まだ人前でやっていない").font(.maru(9)).foregroundStyle(Theme.inkFaint)
+                    .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .overlay(Capsule().stroke(Theme.inkFaint, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
             }
