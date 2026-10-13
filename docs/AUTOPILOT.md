@@ -21,6 +21,7 @@
 11. [x] 済（3694f91） 王者編：式案 cfg_r2 の上で周回曲線（b2 §5）を v3 計測ボットで実測（`dynasty_v2_research_v0.md` §5 末尾「式案の上での周回曲線は未測」）→ 同 doc §5 に追記
 12. [x] 済（5f5056a） 王者編：「予選からの方が優勝回数が多い」の原因確認（同 doc §4）→ 同 doc に追記
 13. [x] 済 王者編：1年目の壁の内訳（§5「要確認」）→ `dynasty_v2_research_v0.md` §7
+14. [x] 済（a2479ba） 点検：swift test 84件 green・START_HERE の索引に無かった docs 57本を「その他の文書」に追加・dynasty §4 の済を付ける
 7. [x] 済 旧 `AllocationView.swift`（未使用・702行）を消す（RootView の目視フックは AbilityUpView に差し替え済み）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
