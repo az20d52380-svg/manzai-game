@@ -333,7 +333,7 @@ struct IntroFlowView: View {
     @State private var name = "あなたのコンビ"
     private enum Stage { case title, reminiscence, nameEntry, notif }
 
-    private let cards = [
+    static let cards = [
         // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた・語は1字も変えない）
         ReminiscenceCard(caption: "高校の教室。休み時間。",
                          mood: .noon,
@@ -356,7 +356,7 @@ struct IntroFlowView: View {
                 S1TitleView { withAnimation(.easeInOut(duration: 0.4)) { stage = .reminiscence } }
                     .transition(.opacity)
             case .reminiscence:
-                ReminiscencePlayer(cards: cards) { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } }
+                ReminiscencePlayer(cards: Self.cards) { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } }
                     .transition(.opacity)
             case .nameEntry:
                 NameEntryView { n in

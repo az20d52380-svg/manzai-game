@@ -36,6 +36,7 @@ struct RootView: View {
             case "settings": SettingsView(onClose: {})                     // S1b目視
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
+            case "intro": ReminiscencePlayer(cards: IntroFlowView.cards, onComplete: {}) // 導入の回想カード目視
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
