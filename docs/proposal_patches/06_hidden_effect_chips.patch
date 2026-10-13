@@ -1,0 +1,17 @@
+diff --git a/ManzaiGame/Sources/ChoiceEventOverlay.swift b/ManzaiGame/Sources/ChoiceEventOverlay.swift
+index 8a958b1..835ae27 100644
+--- a/ManzaiGame/Sources/ChoiceEventOverlay.swift
++++ b/ManzaiGame/Sources/ChoiceEventOverlay.swift
+@@ -228,7 +228,11 @@ struct ChoiceEventOverlay: View {
+         add("知名度", a.fame - b.fame, Theme.goldDeep)
+         add("体力", a.stamina - b.stamina, Theme.mentalDeep)
+         add("所持金", Double(a.money - b.money), Theme.moneyDeep)
+-        let all = (ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }).prefix(3)
++        // 数値に出ない効果（0012A・0016B・0023A＝dialogue_clarity_audit §5 ②）。言葉だけで出す・数値は出さない
++        if a.compatFreezeWeeks > b.compatFreezeWeeks { downs.append(("相性 しばらく伸びない", Theme.vermD)) }
++        if a.netaBoostWeeks > b.netaBoostWeeks { ups.append(("ネタの伸び ↑ しばらく", Theme.ideaDeep)) }
++        if let ga = a.growthBudget, let gb = b.growthBudget, ga < gb - 0.001 { downs.append(("今年の伸びしろ ↓", Theme.inkSub)) }
++        let all = (ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }).prefix(4)
+         guard !all.isEmpty else { return }
+         Sound.play(ups.isEmpty ? .pop : .grain)
+         withAnimation(Theme.Motion.emphSpring) {
