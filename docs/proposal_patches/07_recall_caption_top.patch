@@ -1,0 +1,23 @@
+diff --git a/ManzaiGame/Sources/IntroFlow.swift b/ManzaiGame/Sources/IntroFlow.swift
+index ee097f6..1a1272f 100644
+--- a/ManzaiGame/Sources/IntroFlow.swift
++++ b/ManzaiGame/Sources/IntroFlow.swift
+@@ -41,14 +41,15 @@ struct ReminiscencePlayer: View {
+                 .id("scene\(index)")
+                 .transition(.opacity)
+             VStack(spacing: 14) {
++                // ト書きを先に＝場面が先に分かる（選択イベントと同じ順）。▼送りは最後の吹き出しへ（判断待ち ②）
++                NarrationCard(text: card.caption, showCue: card.talk.isEmpty && card.line == nil)
+                 if !card.talk.isEmpty {
+                     ForEach(card.talk.indices, id: \.self) { i in
+-                        TalkBubble(advice: card.talk[i])
++                        TalkBubble(advice: card.talk[i], showCue: i == card.talk.count - 1)
+                     }
+                 } else if let line = card.line {
+-                    TalkBubble(advice: Advice(name: card.speaker, text: line), large: true)   // 回想の台詞は1枚に1つ＝決め台詞として大きく
++                    TalkBubble(advice: Advice(name: card.speaker, text: line), showCue: true, large: true)   // 回想の台詞は1枚に1つ＝決め台詞として大きく
+                 }
+-                NarrationCard(text: card.caption, showCue: true)
+             }
+             .id("cap\(index)")
+             .transition(.opacity)

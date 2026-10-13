@@ -1,0 +1,67 @@
+diff --git a/ManzaiGame/Sources/WeekMainView.swift b/ManzaiGame/Sources/WeekMainView.swift
+index bacd2f5..f00b1d0 100644
+--- a/ManzaiGame/Sources/WeekMainView.swift
++++ b/ManzaiGame/Sources/WeekMainView.swift
+@@ -75,6 +75,8 @@ struct WeekMainView: View {
+     @State private var openNetaWrite = false
+     /// 新しいネタの題名入力（nil＝入力欄を閉じている）。空欄で書く＝おまかせの題名
+     @State private var newNetaTitle: String?
++    /// 「書くネタ」を替える前の勝負ネタ（書き終えたら戻す＝書くネタと勝負ネタを分ける・判断待ち ②）。nil＝覚えていない
++    @State private var shoubuBeforeWrite: Int?
+     /// 「書くネタ」を替える一覧を開いているか
+     @State private var pickingNeta = false
+     /// 書いた直後に付ける題名（新ネタの id と題名）
+@@ -431,7 +433,7 @@ struct WeekMainView: View {
+             if let cat = openCat {
+                 // 下位一覧：戻る＋種類のカード（小さめ・2列）。実行したら4ボタンへ戻る
+                 HStack(spacing: 8) {
+-                    Button { withAnimation(Theme.Motion.appearQuick) { if pickingNeta { pickingNeta = false } else { openCat = nil; openNetaWrite = false; newNetaTitle = nil } } } label: {
++                    Button { withAnimation(Theme.Motion.appearQuick) { if pickingNeta { pickingNeta = false } else { openCat = nil; openNetaWrite = false; newNetaTitle = nil; restoreShoubu() } } } label: {
+                         Label("もどる", systemImage: "chevron.left").font(.maru(13, weight: .bold))
+                             .foregroundStyle(Theme.inkSub).padding(.horizontal, 10).padding(.vertical, 6)
+                             .background(Theme.card, in: Capsule())
+@@ -540,6 +542,7 @@ struct WeekMainView: View {
+         return VStack(spacing: 6) {
+             ForEach(session.activeNetas, id: \.id) { n in
+                 Button {
++                    if shoubuBeforeWrite == nil { shoubuBeforeWrite = session.selectedNeta?.id }
+                     session.selectNeta(n.id)
+                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = nil; pickingNeta = false }
+                 } label: {
+@@ -556,6 +559,7 @@ struct WeekMainView: View {
+             }
+             if session.activeNetas.count < cfg.netaActiveSlots {
+                 Button {
++                    if shoubuBeforeWrite == nil { shoubuBeforeWrite = session.selectedNeta?.id }
+                     session.selectNeta(nil)
+                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = ""; pickingNeta = false }
+                 } label: {
+@@ -587,9 +591,16 @@ struct WeekMainView: View {
+         .background(Theme.card2, in: RoundedRectangle(cornerRadius: 10))
+     }
+ 
++    /// 書かずに閉じた時：替える前の勝負ネタに戻す
++    private func restoreShoubu() {
++        if let keep = shoubuBeforeWrite, session.activeNetas.contains(where: { $0.id == keep }) { session.selectNeta(keep) }
++        shoubuBeforeWrite = nil
++    }
++
+     /// 場所を押した時：新しく書くなら題名を予約して、エンジンが新ネタを作るようにする
+     private func prepareNetaTarget() {
+         guard writeTarget == nil else { return }
++        if shoubuBeforeWrite == nil { shoubuBeforeWrite = session.selectedNeta?.id }
+         session.selectNeta(nil)
+         let t = (newNetaTitle ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+         if !t.isEmpty { pendingNetaTitle = (s.nextNetaID, t) }
+@@ -620,6 +631,11 @@ struct WeekMainView: View {
+                 if session.activeNetas.contains(where: { $0.id == p.id }) { session.renameNeta(p.id, to: p.title) }
+                 pendingNetaTitle = nil
+             }
++            // 書き終えたら、替える前の勝負ネタに戻す（元が無かった時は従来どおり書いたネタが勝負ネタ）
++            if let keep = shoubuBeforeWrite {
++                if session.activeNetas.contains(where: { $0.id == keep }) { session.selectNeta(keep) }
++                shoubuBeforeWrite = nil
++            }
+             withAnimation(Theme.Motion.appear) { pulledID = nil; openCat = nil; openNetaWrite = false; newNetaTitle = nil; pickingNeta = false }   // 実行したら4ボタンへ戻る
+         }
+     }

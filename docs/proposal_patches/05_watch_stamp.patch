@@ -1,0 +1,16 @@
+diff --git a/ManzaiGame/Sources/NotebookView.swift b/ManzaiGame/Sources/NotebookView.swift
+index 38534c2..1311a9a 100644
+--- a/ManzaiGame/Sources/NotebookView.swift
++++ b/ManzaiGame/Sources/NotebookView.swift
+@@ -187,8 +187,9 @@ struct NotebookView: View {
+                     // 合否ではないので「敗退」に混ぜない（監査§1-4-5・summarize と同じ三値）。
+                     // GP決勝の優勝行（"頂GP決勝 優勝 +…万"）は通過/敗退の語を含まない＝「休」に落ちていたので先に拾う。
+                     // 客席から観た決勝（"優勝「組名」（客席から）"）は自分の優勝ではないので従来どおり。
+-                    let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
+-                        : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休"))
++                    let mark = line.contains("客席") ? "観戦"   // 客席から観た決勝は休んだのではない（dialogue_clarity_audit §3 ②）
++                        : (line.contains("優勝") ? "優勝"
++                        : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")))
+                     HStack(spacing: 10) {
+                         Text(mark)
+                             .font(.maru(10)).foregroundStyle(.white)

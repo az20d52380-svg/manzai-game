@@ -1,0 +1,29 @@
+diff --git a/ManzaiGame/Sources/NetaSelectionView.swift b/ManzaiGame/Sources/NetaSelectionView.swift
+index 735fd09..9a67328 100644
+--- a/ManzaiGame/Sources/NetaSelectionView.swift
++++ b/ManzaiGame/Sources/NetaSelectionView.swift
+@@ -79,6 +79,12 @@ struct NetaPickRow: View {
+         }
+     }
+ 
++    /// GameEngine.netaScoreBonus の本体と同じ式（決勝2本目の減点は除く）がマイナスか
++    private func isRough(_ neta: Neta) -> Bool {
++        let c = session.config
++        return (neta.polish - 50) * c.netaScoreCoefComp + (neta.buzz - 50) * c.netaScoreCoefBuzz < 0
++    }
++
+     private func candidateRow(_ neta: Neta) -> some View {
+         let isThis = neta.id == selected?.id
+         let fits = requiredLength.map(neta.fits) ?? true
+@@ -93,6 +99,11 @@ struct NetaPickRow: View {
+                 if !fits {
+                     Text("尺△").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                 }
++                if isRough(neta) {   // かけると本番の点が下がるネタ（netaScoreBonus がマイナス）。数値は出さない
++                    Text("まだ粗い").font(.maru(.sub)).foregroundStyle(Theme.vermD)
++                        .padding(.horizontal, 6).padding(.vertical, 2)
++                        .background(Theme.verm.opacity(0.1), in: Capsule())
++                }
+                 Spacer()
+                 if isThis {
+                     Image(systemName: "checkmark").font(.system(size: 11)).foregroundStyle(Theme.verm)
