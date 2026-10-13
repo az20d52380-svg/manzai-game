@@ -275,7 +275,7 @@ struct WeekMainView: View {
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
-                        Text("経験点が残ってる ・ 能力アップで振ろう")
+                        Text("経験点が残ってる ・ 能力アップで使おう")
                             .font(.maru(9.5, weight: .bold)).foregroundStyle(Theme.gold)
                     } else if m.weeksLeft >= 6 {
                         Text(lullLine())
@@ -668,14 +668,14 @@ struct WeekMainView: View {
         let sub: String = {
             switch c {
             case .ネタを書く:
-                if gated { return s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め" }
+                if gated { return s.preoccupiedWeeks > 0 ? "今週は撮影" : "体力が足りない" }
                 if let n = session.selectedNeta { return "\(session.activeNetas.count)本 ・ 勝負ネタ「\(n.name)」" }
                 return session.activeNetas.isEmpty ? "まだネタがない。まず一本" : "\(session.activeNetas.count)本 書いた"
-            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "撮影で埋まる" : "谷口：今日は休め") : "合わせ・舞台 ほか"
+            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "今週は撮影" : "体力が足りない") : "合わせ・舞台 ほか"
             case .バイト: return "お金を稼ぐ"
             case .休む: return "体力を戻す"
             case .能力アップ:
-                if unspentBeforeStage { return "大会前に振っておこう" }
+                if unspentBeforeStage { return "大会前に経験点を使おう" }
                 return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で能力を上げる"
             case .お店: return "アイテムを買う"
             }
@@ -741,7 +741,7 @@ struct WeekMainView: View {
                 Text(v.desc).font(.maru(10.5)).foregroundStyle(Theme.inkSub).lineLimit(1)
             }
             if gated {
-                Text(preoccupied ? "撮影で埋まる" : "谷口：今日は休め").font(.maru(13, weight: .bold)).foregroundStyle(Theme.vermD)
+                Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(.maru(13, weight: .bold)).foregroundStyle(Theme.vermD)
             } else if !v.affordable {
                 Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
             } else if !compact, !effects.isEmpty {
@@ -1078,7 +1078,7 @@ struct WeekMainView: View {
                 session.fastForwardToYearEnd()
             } else {
                 yearEndArmed = true
-                showToast("もう一度押すと、年末まで休んで1年を閉じる。")
+                showToast("もう一度押すと、残りの週を休んで年末の結果へ進む。")
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
             }
         } label: {

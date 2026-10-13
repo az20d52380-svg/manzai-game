@@ -172,7 +172,7 @@ struct YearResultView: View {
             RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.yearStartState, config: session.config))
                 .frame(height: 210)
             HStack(spacing: 12) {
-                legendDot(Theme.inkFaint, "4月", dashed: true)
+                legendDot(Theme.inkFaint, "年初", dashed: true)
                 legendDot(Theme.verm, "現在", dashed: false)
             }
             .font(.maru(.sub)).foregroundStyle(Theme.inkSub)
@@ -226,7 +226,7 @@ struct YearResultView: View {
 
     private var totalsBlock: some View {
         HStack(spacing: 0) {
-            total("賞金 年計", session.totalPrize, yen: true)
+            total("今年の賞金", session.totalPrize, yen: true)
             Divider().frame(height: 30)
             total("知名度", Int(s.fame), yen: false)
             Divider().frame(height: 30)
