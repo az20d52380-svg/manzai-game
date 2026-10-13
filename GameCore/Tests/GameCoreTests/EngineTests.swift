@@ -58,6 +58,22 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(r.score, 50, accuracy: 1e-9)
     }
 
+    /// ハマった夜の印（表示専用）：2draw目が burstP 未満なら burst=true でスコアに burstBonus が乗る。乱数は常に2draw
+    func testPerformBurstFlag() {
+        let config = GameConfig()
+        let s = makeState(ability: 50, compat: 10, stamina: 100)
+        var hit = SeqRandom(values: [0.5, 0.0])
+        let a = GameEngine.perform(s, line: 0, config: config, rng: &hit)
+        XCTAssertTrue(a.burst)
+        XCTAssertEqual(a.score, 60 + config.burstBonus, accuracy: 1e-9)
+        XCTAssertEqual(hit.index, 2)
+        var miss = SeqRandom(values: [0.5, 0.99])
+        let b = GameEngine.perform(s, line: 0, config: config, rng: &miss)
+        XCTAssertFalse(b.burst)
+        XCTAssertEqual(b.score, 60, accuracy: 1e-9)
+        XCTAssertEqual(miss.index, 2)
+    }
+
     func testGrowthDecay() {
         var config = GameConfig()
         config.growthDecayD = 120

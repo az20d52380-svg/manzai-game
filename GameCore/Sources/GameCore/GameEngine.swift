@@ -160,11 +160,13 @@ public enum GameEngine {
     /// 乱数消費は常に2draw（出来ブレ→ハマ判定）——gen_golden.py の正典順序と同期
     public static func perform<R: RandomSource>(
         _ s: GameState, line: Double, config: GameConfig, rng: inout R
-    ) -> (passed: Bool, score: Double) {
+    ) -> (passed: Bool, score: Double, burst: Bool) {
         let b = blurWidth(mental: s.メンタル)
         var roll = rng.uniform(in: -b ... b)
+        var burst = false
         if config.burstP > 0, rng.nextUniform() < config.burstP {
             roll += config.burstBonus   // ハマった夜（正典v2・A案）
+            burst = true                // 表示専用（「見える運」canonical_v2 §1・fan_report_design §1）。判定・乱数には関与しない
         }
         var penalty = 0.0
         for entry in config.staminaPenalties where s.stamina < entry.below {
@@ -172,7 +174,7 @@ public enum GameEngine {
             break
         }
         let score = jitsuryoku(s, config: config) + s.compat + roll + penalty
-        return (score >= line, score)
+        return (score >= line, score, burst)
     }
 
     /// ネタのスコア寄与（Phase 1-a・Python: sim_career._neta_bonus ＋ 決勝2本制）。

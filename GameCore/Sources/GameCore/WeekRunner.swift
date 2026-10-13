@@ -16,13 +16,16 @@ public struct StageResult: Codable {
     /// 本番スコア − 実効ライン（負＝足りなかった分）。表示専用（負けの"距離"・監査E-03）。
     /// Optional＝旧セーブに無くても復号できる。乱数・判定には一切関与しない。
     public let margin: Double?
+    /// その本番が「ハマった夜」だったか。表示専用（見える運・canonical_v2 §1）。Optional＝旧セーブに無くても復号できる。
+    public let burst: Bool?
 
-    public init(name: String, passed: Bool, prize: Int, isStage: Bool = true, margin: Double? = nil) {
+    public init(name: String, passed: Bool, prize: Int, isStage: Bool = true, margin: Double? = nil, burst: Bool? = nil) {
         self.name = name
         self.passed = passed
         self.prize = prize
         self.isStage = isStage
         self.margin = margin
+        self.burst = burst
     }
 }
 
@@ -166,7 +169,7 @@ public struct WeekRunner<R: RandomSource> {
                 acted = true
                 weekResults.append(StageResult(name: spec.name, passed: result.passed,
                                                prize: result.passed ? spec.prize : 0,
-                                               margin: result.score - netaLine))
+                                               margin: result.score - netaLine, burst: result.burst))
             }
         }
         return proceed()
@@ -200,7 +203,7 @@ public struct WeekRunner<R: RandomSource> {
                 }
                 gpAlive = false
             }
-            weekResults.append(StageResult(name: name, passed: result.passed, prize: 0, margin: result.score - roundLine))
+            weekResults.append(StageResult(name: name, passed: result.passed, prize: 0, margin: result.score - roundLine, burst: result.burst))
         case .revival:
             revivalTried = true
             let revivalLine = cal.gpRevivalLine - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
@@ -210,7 +213,7 @@ public struct WeekRunner<R: RandomSource> {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 finalist = true
             }
-            weekResults.append(StageResult(name: "敗者復活", passed: result.passed, prize: 0, margin: result.score - revivalLine))
+            weekResults.append(StageResult(name: "敗者復活", passed: result.passed, prize: 0, margin: result.score - revivalLine, burst: result.burst))
         case .final:
             finalTried = true
             // 決勝のみの人気補正（機微・judge_design §10-F）。王者防衛のライン上書き時にも適用
@@ -220,7 +223,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
             acted = true
             weekResults.append(StageResult(name: "GP決勝", passed: result.passed,
-                                           prize: result.passed ? cal.gpPrize : 0, margin: result.score - effLine))
+                                           prize: result.passed ? cal.gpPrize : 0, margin: result.score - effLine, burst: result.burst))
             if result.passed {
                 state.money += cal.gpPrize
                 GameEngine.add(.知名度, cal.champFame, to: &state, config: config)
