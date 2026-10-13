@@ -52,9 +52,9 @@ struct SettingsView: View {
                         }
                         // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
                         Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
-                            .font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                            .font(.maru(10.5)).foregroundStyle(Theme.inkDim)
                             .padding(.top, Theme.Sp.s8)
-                        Text("\(AppInfo.displayName) v\(AppInfo.version)").font(.maru(9.5)).foregroundStyle(Theme.inkFaint)
+                        Text("\(AppInfo.displayName) v\(AppInfo.version)").font(.maru(10.5)).foregroundStyle(Theme.inkFaint)
                     }
                     .padding(Theme.Sp.s16)
                 }

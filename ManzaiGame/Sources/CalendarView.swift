@@ -102,7 +102,7 @@ struct CalendarView: View {
             }
             HStack(spacing: 4) { Circle().stroke(Theme.verm, lineWidth: 2).frame(width: 10, height: 10); Text("大会") }
         }
-        .font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+        .font(.maru(10.5)).foregroundStyle(Theme.inkDim)
     }
 
     private func showToast(_ t: String) {

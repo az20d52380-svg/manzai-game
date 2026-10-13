@@ -354,7 +354,7 @@ struct NotebookView: View {
     /// 完成度/手応えバー（0..100・数値併記）
     private func netaBar(label: String, value: Double, color: Color) -> some View {
         HStack(spacing: 8) {
-            Text(label).font(.maru(9.5)).foregroundStyle(Theme.inkDim).frame(width: 44, alignment: .leading)
+            Text(label).font(.maru(10.5)).foregroundStyle(Theme.inkDim).frame(width: 48, alignment: .leading)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.card)
@@ -405,7 +405,7 @@ struct NotebookView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(neta.name).font(.maru(12)).foregroundStyle(Theme.ink)
                 HStack(spacing: 6) {
-                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
+                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(10.5)).foregroundStyle(Theme.inkDim)
                     if revival {
                         Text("もう一度").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.cCompat)
                     }
