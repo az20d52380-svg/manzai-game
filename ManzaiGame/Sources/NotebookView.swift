@@ -10,13 +10,20 @@ import GameCore
 struct NotebookView: View {
     let session: GameSession
     var onClose: () -> Void
-    @State private var tab: Tab = .chikara
+    @State private var tab: Tab = NotebookView.initialTab
     /// 型変更ピッカーを開いているネタID（1つだけ開く・トグル）
     @State private var kataPickerFor: Int?
     /// 改名フィールドを開いているネタID
     @State private var renamingID: Int?
     @State private var renameDraft: String = ""
     private enum Tab { case chikara, kiroku, neta }
+
+    private static var initialTab: Tab {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { return .kiroku }   // 大会の記録の目視（MZ_UI=notebook と併用）
+        #endif
+        return .chikara
+    }
 
     private var s: GameState { session.state }
 
@@ -159,12 +166,15 @@ struct NotebookView: View {
                 ForEach(Array(session.log.enumerated()), id: \.offset) { _, line in
                     // 判ミニチュア（通過=verm/敗退=ink/休=inkDim）。療養週（summarize の mark="休"）は
                     // 合否ではないので「敗退」に混ぜない（監査§1-4-5・summarize と同じ三値）。
-                    let mark = line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")
+                    // GP決勝の優勝行（"頂GP決勝 優勝 +…万"）は通過/敗退の語を含まない＝「休」に落ちていたので先に拾う。
+                    // 客席から観た決勝（"優勝「組名」（客席から）"）は自分の優勝ではないので従来どおり。
+                    let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
+                        : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休"))
                     HStack(spacing: 10) {
                         Text(mark)
                             .font(.maru(10)).foregroundStyle(.white)
                             .frame(width: 40, height: 24)
-                            .background(mark == "通過" ? Theme.verm : (mark == "敗退" ? Theme.ink : Theme.inkDim),
+                            .background(mark == "通過" || mark == "優勝" ? Theme.verm : (mark == "敗退" ? Theme.ink : Theme.inkDim),
                                         in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
                         Text(line).font(.system(size: 12.5, design: .serif)).foregroundStyle(Theme.ink)
                         Spacer()

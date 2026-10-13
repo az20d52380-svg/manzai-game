@@ -1022,6 +1022,12 @@ final class GameSession {
         }
     }
 
+    /// DEBUG: ネタ帳「大会の記録」（MZ_UI=notebook MZ_TAB=kiroku）の目視用に、判の4種（通過/敗退/休/優勝）を踏む記録を積む。
+    func debugSeedKirokuLog() {
+        log = ["第12週: GP1回戦 通過", "第20週: GP2回戦 敗退", "第30週: 体調ダウン 休",
+               "第44週: 頂GP決勝 優勝「ひだまり座」（客席から）", "第44週: 頂GP決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
+    }
+
     /// DEBUG: ネタ帳（MZ_UI=neta）の目視用に持ちネタを積んだ開始状態。全状態（鉄板/おろし前/擦り切れ/保管庫）を
     /// 一画面で踏めるよう組む。数値は全て【仮】＝目視の都合だけ（水準確定はPhase 1・sim較正）。
     static func debugNetaState(config: GameConfig = GameConfig()) -> GameState {

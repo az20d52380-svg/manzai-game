@@ -32,6 +32,7 @@ struct RootView: View {
             #if DEBUG
             switch ProcessInfo.processInfo.environment["MZ_UI"] {
             case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
+                .onAppear { if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { session.debugSeedKirokuLog() } }
             case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
             case "settings": SettingsView(onClose: {})                     // S1b目視
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
