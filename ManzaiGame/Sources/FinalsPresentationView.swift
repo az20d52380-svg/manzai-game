@@ -606,8 +606,10 @@ struct FinalsPresentationView: View {
                         CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 40)
                             .overlay(Circle().stroke(shown ? (vote == d.selfDuelIndex ? Theme.gold : .white)
                                                            : .white.opacity(0.5), lineWidth: 2))
-                        Text(String(d.judges[i].name.prefix(2)))
+                        // 姓をそのまま出す（2文字で切ると天堂寺→「天堂」・神楽坂→「神楽」と別の語に読めた）
+                        Text(String(d.judges[i].name.split(separator: " ").first ?? Substring(d.judges[i].name)))
                             .font(.maru(12, weight: .bold)).foregroundStyle(Theme.sumi)
+                            .lineLimit(1).minimumScaleFactor(0.75)
                             .padding(.horizontal, 4).background(Theme.mekuri.opacity(0.9), in: Capsule())
                     }
                 }
