@@ -596,6 +596,8 @@ final class GameSession {
     ///    アクティブネタが1本も無ければ何もしない（まだ書いた ネタが無い＝最初の ネタ作り が先）。
     private func applyNetaWork(for action: WeekAction) {
         guard case .train(let t) = action, GameConfig.netaWriteTrainings.contains(t) || t == .ネタ見せ会 || t == .フリーライブ else { return }
+        // 体力ゲート・体調ダウン・お金不足で休みに差し替わった週はネタも進まない（休んだのに完成度が上がっていた）
+        guard runner.lastTrainingDone == t else { return }
         let placeGain = config.netaPlaceGain[t]   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
         switch t {
         case .ネタ作り, .喫茶店で書く, .ファミレスで書く:

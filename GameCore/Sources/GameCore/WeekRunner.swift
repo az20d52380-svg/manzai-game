@@ -68,6 +68,9 @@ public struct WeekRunner<R: RandomSource> {
     private let config: GameConfig
     private let finalLine: Double
     private var gpStage: Int
+    /// 直前の resolveAction で実際に行った練習（体力ゲート・体調ダウン・お金不足で休みに差し替わったら nil）。
+    /// 表示とネタの後段フック用（GameSession.applyNetaWork）。読むだけ＝式・乱数・golden に関与しない。中断セーブにも載せない
+    public private(set) var lastTrainingDone: Training? = nil
     private var gpEntryPaid = false   // エントリー費はその年最初に出る回戦で徴収
     private var gpAlive: Bool
     private var finalist: Bool
@@ -241,6 +244,7 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
         let offer = pendingOffer
         pendingOffer = nil
+        lastTrainingDone = nil
         var action = action
         if case .train = action, state.stamina < config.staminaGate {
             action = .rest(.完全休養)                    // 体力ゲート（谷口が止める）
@@ -266,7 +270,9 @@ public struct WeekRunner<R: RandomSource> {
                 GameEngine.applyRest(.完全休養, to: &state, config: config)
             }
         case .train(let t):
-            if !GameEngine.applyTraining(t, to: &state, config: config) {
+            if GameEngine.applyTraining(t, to: &state, config: config) {
+                lastTrainingDone = t
+            } else {
                 GameEngine.applyRest(.完全休養, to: &state, config: config)   // 払えなければ休む（Python同様）
             }
         case .job(let j):

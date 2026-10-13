@@ -88,4 +88,33 @@ final class PaidRestPlaceTests: XCTestCase {
     func testNetaWriteTrainingsSet() {
         XCTAssertEqual(GameConfig.netaWriteTrainings, [.ネタ作り, .喫茶店で書く, .ファミレスで書く])
     }
+
+    // MARK: 実際に行った練習（lastTrainingDone）
+
+    /// 払えた・体力がある＝行った練習が残る／お金不足・体力ゲートで休みに差し替わったら nil（ネタの後段フックの判定用）
+    func testLastTrainingDoneReflectsSubstitution() {
+        let config = GameConfig()
+        func runner(money: Int, stamina: Double) -> WeekRunner<SplitMix64> {
+            var s = GameState(config: config); s.money = money; s.stamina = stamina
+            return WeekRunner(state: s, year: 1, config: config, rng: SplitMix64(seed: 1))
+        }
+        var ok = runner(money: 100_000, stamina: 100)
+        _ = ok.resolveAction(.train(.喫茶店で書く))
+        XCTAssertEqual(ok.lastTrainingDone, .喫茶店で書く)
+
+        var broke = runner(money: 0, stamina: 100)
+        _ = broke.resolveAction(.train(.喫茶店で書く))
+        XCTAssertNil(broke.lastTrainingDone)
+
+        // 年初の初期化で体力は全回復するので、snapshot 経由で体力ゲート未満に下げてから復元する
+        var snap = runner(money: 100_000, stamina: 100).snapshot()
+        snap.state.stamina = config.staminaGate - 1
+        var tired = WeekRunner(restoring: snap, config: config)
+        _ = tired.resolveAction(.train(.ネタ作り))
+        XCTAssertNil(tired.lastTrainingDone)
+
+        var rest = runner(money: 100_000, stamina: 100)
+        _ = rest.resolveAction(.rest(.気分転換))
+        XCTAssertNil(rest.lastTrainingDone)
+    }
 }

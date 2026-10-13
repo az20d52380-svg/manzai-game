@@ -773,7 +773,7 @@ struct WeekMainView: View {
     /// カードごとの地色（アイコン地・縁）。色だけに頼らずアイコン＋名前でも区別する（§6-5）。
     private func cardTint(_ v: CommandVariant) -> Color {
         switch v.action {
-        case .train(.ネタ作り): return Theme.cIdea
+        case .train(.ネタ作り), .train(.喫茶店で書く), .train(.ファミレスで書く): return Theme.cIdea   // 書く場所は3つとも「ネタを書く」の色
         case .train(.ネタ合わせ): return Theme.cCompat
         case .train: return Theme.cExpr
         case .rest: return Theme.night
