@@ -160,6 +160,15 @@ final class NetaTests: XCTestCase {
         XCTAssertEqual(GameEngine.netaScoreBonus(s2, isFinal: false, config: config), 1.0, accuracy: 1e-9)
     }
 
+    /// 書いたばかりのネタ（完成度30・反応0＝Neta の初期値）を選ぶと補正はマイナス＝選ばない方が得（neta_bonus_remeasure_v0）
+    func testFreshNetaBonusIsNegative() {
+        let config = GameConfig()
+        let fresh = Neta(id: 0, name: "A", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1)
+        let s = stateWithSelected(polish: fresh.polish, buzz: fresh.buzz, config: config)
+        // (30-50)*0.04 + (0-50)*0.02 = -0.8 - 1.0 = -1.8
+        XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: false, config: config), -1.8, accuracy: 1e-9)
+    }
+
     func testNetaScoreBonusClamps() {
         var config = GameConfig(); config.netaScoreCoefComp = 0.2   // (100-50)*0.2=10 → ±5でクランプ
         let hi = stateWithSelected(polish: 100, buzz: 50, config: config)
