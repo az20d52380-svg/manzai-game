@@ -160,3 +160,4 @@ cd GameCore && swift test
 - `money_sink_research_v0.md` — 終盤のお金の使い道の型（他作品）と選択肢・2026-10-14
 - `handoff_2026-10-14b.md` — 引き継ぎ（2026-10-14 昼・対話の続き・絶対厳守ルール後）
 - `neta_bonus_remeasure_v0.md` — ネタ補正をアプリと同じ式で再計測（帯が大きく上がる・案と実測）・2026-10-14
+- `exp_currency_naming_research_v0.md` — 経験点と能力の名前の分け方（他作品の型・名前案）・2026-10-14

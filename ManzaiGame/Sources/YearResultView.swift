@@ -89,9 +89,8 @@ struct YearResultView: View {
             }
         }
         .padding(Theme.Sp.s16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
-        .hardShadow()
     }
 
     private func gradeChip(_ g: String, dim: Bool) -> some View {
@@ -124,9 +123,8 @@ struct YearResultView: View {
             }
             .padding(Theme.Sp.s16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+            .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
             .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
-            .hardShadow()
         }
     }
 

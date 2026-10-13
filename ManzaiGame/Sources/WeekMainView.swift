@@ -316,9 +316,8 @@ struct WeekMainView: View {
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
         .frame(width: 196)
-        .background(.white, in: RoundedRectangle(cornerRadius: 14))
+        .background(RoundedRectangle(cornerRadius: 14).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2.5))
-        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
     }
 
     /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分をオレンジで重ねる＝「押した週に何が動いたか」。
@@ -415,9 +414,8 @@ struct WeekMainView: View {
                 .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .frame(maxWidth: 250, alignment: .leading)
-                .background(.white, in: RoundedRectangle(cornerRadius: 12))
+                .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line, lineWidth: 2.5))
-                .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
         }
         .id(a.text)
         .transition(.opacity)
@@ -708,11 +706,10 @@ struct WeekMainView: View {
             }
             .padding(.horizontal, 12).padding(.vertical, 12)
             .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
-            .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+            .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(gated ? Color(hex: 0xF3EFE7) : Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
             .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
                 .stroke(gated ? Theme.line : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : tint.opacity(0.55),
                         lineWidth: (c == .能力アップ && unspentBeforeStage) ? 4.5 : 3))
-            .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
         }
         .buttonStyle(PressableStyle())
     }
@@ -766,11 +763,10 @@ struct WeekMainView: View {
         }
         .padding(.horizontal, 11).padding(.vertical, compact ? 8 : 10)
         .frame(maxWidth: .infinity, minHeight: compact ? nil : 92, maxHeight: compact ? .infinity : nil, alignment: .topLeading)
-        .background(gated ? Color(hex: 0xF3EFE7) : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(gated ? Color(hex: 0xF3EFE7) : Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
             .stroke(gated ? Theme.line : tint.opacity(compact ? 0.8 : 0.55),
                     style: StrokeStyle(lineWidth: 3, dash: dashed ? [6, 4] : [])))
-        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)   // ハード影＝チャンキー
         // 押せないカードは地と縁で言う（全体を薄くすると一番読ませたい「今日は休め」が1.8〜2.2:1まで落ちた）
     }
 

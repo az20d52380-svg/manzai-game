@@ -46,9 +46,8 @@ struct NetaPickRow: View {
             }
         }
         .padding(Theme.Sp.s12)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+        .background(RoundedRectangle(cornerRadius: Theme.Rad.btn).fill(Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
         .overlay(RoundedRectangle(cornerRadius: Theme.Rad.btn).stroke(Theme.lineStrong, lineWidth: 2))
-        .hardShadow()
     }
 
     @ViewBuilder private var currentSummary: some View {

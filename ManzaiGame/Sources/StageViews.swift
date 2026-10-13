@@ -202,9 +202,8 @@ struct TournamentEntryView: View {
                 Image(systemName: "chevron.right").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.inkSub)
             }
             .padding(.horizontal, 14).frame(maxWidth: .infinity, minHeight: 64)
-            .background(enabled ? Theme.card : Color(hex: 0xF3EFE7), in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+            .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(enabled ? Theme.card : Color(hex: 0xF3EFE7)).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
             .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(enabled ? Theme.verm.opacity(0.75) : Theme.line, lineWidth: 3))
-            .hardShadow()
         }
         .buttonStyle(PressableStyle(enabled: enabled))
         .disabled(!enabled)

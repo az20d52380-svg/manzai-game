@@ -67,9 +67,8 @@ struct TalkBubble: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 18).padding(.trailing, 26)
             .padding(.top, faceSize * 0.5 + 6).padding(.bottom, 16)
-            .background(.white, in: RoundedRectangle(cornerRadius: 14))
+            .background(RoundedRectangle(cornerRadius: 14).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2.5))
-            .hardShadow()
             .overlay(alignment: .bottomTrailing) {
                 if showCue { AdvanceCue(color: SpeakerStyle.tagColor(advice.name)).padding(10) }
             }
@@ -126,9 +125,8 @@ struct ChoiceCard: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, minHeight: 56)
                 .padding(.horizontal, 14)
-                .background(.white, in: RoundedRectangle(cornerRadius: 16))
+                .background(RoundedRectangle(cornerRadius: 16).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
                 .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.verm.opacity(0.85), lineWidth: 3))
-                .hardShadow()
         }
         .buttonStyle(PressableStyle())
     }
