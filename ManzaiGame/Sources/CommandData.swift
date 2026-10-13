@@ -85,7 +85,7 @@ enum CommandCatalog {
             let rests: [(Rest, String, String, String)] = [
                 (.完全休養, "家で寝る", "しっかり回復", "house.fill"),
                 (.気分転換, "気分転換", "少し回復", "cup.and.saucer.fill"),
-                (.相方と過ごす, "相方と過ごす", "少し回復・相性", "figure.2"),
+                (.相方と過ごす, "相方と過ごす", "少しだけ回復・相性", "figure.2"),
                 (.サウナ, "サウナ", "家よりよく休める", "thermometer.sun.fill"),
                 (.温泉に一泊, "温泉に一泊", "ほぼ全回復", "mountain.2.fill"),
             ]
