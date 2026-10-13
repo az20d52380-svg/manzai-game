@@ -382,6 +382,10 @@ final class GameSession {
     /// ツーカー帯初到達(一発・キャリア1回)。複数回呼ばれても保留が有れば再評価しない。
     private func evaluateChoiceEventFire() {
         guard pendingChoiceEvent == nil else { return }
+        #if DEBUG
+        // 目視用：MZ_NOEVENT=1 で選択イベントを発火させない（MZ_UI=grown が起動直後にイベントで隠れた）。本導線は不変
+        if ProcessInfo.processInfo.environment["MZ_NOEVENT"] != nil { return }
+        #endif
         if justLostStage, !didFireLostRehearsal {
             pendingChoiceEvent = .justLostRehearsal
             didFireLostRehearsal = true
