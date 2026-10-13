@@ -24,8 +24,8 @@ struct CalendarView: View {
                 header
                 summary
                 grid
+                legend   // 凡例は表のすぐ下（画面の一番下に離すと、どの印の説明か結びつきにくかった）
                 Spacer(minLength: 0)
-                legend
             }
             .padding(Theme.Sp.s16)
 
