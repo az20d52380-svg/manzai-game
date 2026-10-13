@@ -95,8 +95,9 @@ struct ShopView: View {
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 12)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .shadow(color: Theme.cmdShadow, radius: 0, y: 3)
+        // 影は背景の形だけに付ける（カード全体に掛けると中の文字にも影が付き、値札の白い数字が二重に見えた）
+        .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(Theme.card)
+            .shadow(color: Theme.cmdShadow, radius: 0, y: 3))
     }
 
     private func look(_ item: ShopItem) -> (String, Color) {
