@@ -69,7 +69,10 @@ struct NetaPickRow: View {
             .frame(minHeight: 32)
         } else {
             HStack {
-                Text("選んでいない").font(.maru(.body)).foregroundStyle(Theme.inkSub)
+                // 持ちネタが無い時は「選んでいない」でなく、無いと言う（選べる物があるように見えた）。
+                // ※「選ぶと有利」とは言わない：完成度・客の反応が50未満のネタは本番の点がマイナス（netaScoreBonus）
+                Text(session.activeNetas.isEmpty ? "持ちネタがない" : "選んでいない")
+                    .font(.maru(.body)).foregroundStyle(Theme.inkSub)
                 Spacer()
                 Image(systemName: expanded ? "chevron.up" : "chevron.down")
                     .font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.inkSub)
