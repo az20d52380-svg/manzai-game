@@ -1016,7 +1016,7 @@ struct WeekMainView: View {
     private func maybeShowVesselFullToast(_ full: Bool) {
         guard full, !vesselFullToastShown else { return }
         vesselFullToastShown = true
-        showToast("この年の器は、満ちた。")
+        showToast("今年の実力の伸びは、ここまで。来年また伸びる。")
     }
 
     // MARK: 導出（カードの伸び・弱点能力・次のマイルストン）
@@ -1065,8 +1065,8 @@ struct WeekMainView: View {
     /// 本番が遠い週の目標バナー2行目＝いまのネタの完成度（監査A-01: 中だるみ帯の副目標）
     private func lullLine() -> String {
         let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
-        guard let n = cur else { return "仕込みどき ・ まずはネタ作りから" }
-        return "仕込みどき ・ ネタ「\(n.name)」完成度 \(Int(n.polish))"
+        guard let n = cur else { return "大会まで間がある ・ まずはネタを書こう" }
+        return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish))/100"
     }
 
     /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）
