@@ -229,6 +229,7 @@ V2_POWER_W    = 0.7
 V2_POLISH_W   = 0.5
 V2_COEF_BUZZ  = 0.02
 V2_SECOND_MIN = 60.0
+V2_WRITE_GAIN = {"ネタ作り": V2_REVISE, "喫茶店で書く": 10.0, "ファミレスで書く": 12.0}
 
 def _neta_new():
     if NETA_V2:
@@ -270,12 +271,12 @@ def _neta_use(n, series):
 def _neta_on_train(s, arg):
     """稽古行動をネタ資産に接続（能力効果は従来どおり併存）"""
     if NETA_V2:
-        if arg == "ネタ作り":
+        if arg in V2_WRITE_GAIN:   # 家・喫茶店・ファミレスで書く（GameConfig.netaWriteTrainings／netaPlaceGain）
             if len(s.netas) < 2:
                 s.netas.append(_neta_new())
             else:
                 n = min(s.netas, key=lambda x: x["comp"])
-                n["comp"] = min(100.0, n["comp"] + V2_REVISE)
+                n["comp"] = min(100.0, n["comp"] + V2_WRITE_GAIN[arg])
         elif arg == "ネタ見せ会" and s.netas:
             _v2_live(s, max(s.netas, key=lambda x: x["comp"]), V2_LIVE_SHOW)
         elif arg == "フリーライブ" and s.netas:
