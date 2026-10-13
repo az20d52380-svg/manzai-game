@@ -121,6 +121,10 @@ public enum GameEngine {
 
     /// Python: do_rest
     public static func applyRest(_ r: Rest, to s: inout GameState, config: GameConfig) {
+        var r = r
+        if let cost = config.restCosts[r], cost > 0 {   // お金を払う休み：払えなければ完全休養（Python do_rest と同じ）
+            if s.money < cost { r = .完全休養 } else { s.money -= cost }
+        }
         guard let spec = config.rests[r] else { return }
         var recovery = spec.recovery
         if let t = s.sentoTickets, t > 0 {           // 銭湯の回数券（Item.swift）。未購入は nil＝恒等

@@ -84,10 +84,14 @@ enum CommandCatalog {
                 (.完全休養, "家で寝る", "しっかり回復", "house.fill"),
                 (.気分転換, "気分転換", "少し回復", "cup.and.saucer.fill"),
                 (.相方と過ごす, "相方と過ごす", "少し回復・相性", "figure.2"),
+                (.サウナ, "サウナ", "家よりよく休める", "thermometer.sun.fill"),
+                (.温泉に一泊, "温泉に一泊", "相方と行く・ほぼ全回復", "mountain.2.fill"),
             ]
             return rests.compactMap { r, name, desc, glyph in
                 guard config.rests[r] != nil else { return nil }
-                return CommandVariant(id: "rest_\(r)", name: name, desc: desc, glyph: glyph, action: .rest(r), isTrain: false)
+                let cost = config.restCosts[r] ?? 0
+                return CommandVariant(id: "rest_\(r)", name: name, desc: desc, glyph: glyph, action: .rest(r), isTrain: false,
+                                      affordable: cost <= 0 || money >= cost)
             }
         case .ネタを書く, .能力アップ, .お店:
             return []   // ネタを書く＝ネタの一覧（WeekMainView.netaWriteList）／能力アップ＝AbilityUpView

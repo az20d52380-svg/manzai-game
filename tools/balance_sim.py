@@ -394,7 +394,28 @@ def do_offer(s, offer):
         k, v = offer["ability"]; add(s, k, v)
     add(s, "stamina", offer["stam"])
 
+# --- お金を払う休み（money_items_neta_v1 §2・オーナー案 2026-10-12）【値は仮】---
+# Swift: Rest.サウナ/.温泉に一泊（GameConfig.rests/restCosts）と同値。既定では RESTS に入れない＝既存の基準不変。
+PAID_RESTS = {
+    "サウナ":     (80,  ("mental", 2)),
+    "温泉に一泊": (100, ("compat", 1)),
+}
+REST_COST = {"サウナ": 10_000, "温泉に一泊": 60_000}
+
+def enable_paid_rests(on=True):
+    for k, v in PAID_RESTS.items():
+        if on:
+            RESTS[k] = v
+        else:
+            RESTS.pop(k, None)
+
 def do_rest(s, name):
+    cost = REST_COST.get(name, 0)
+    if cost > 0:
+        if s.money < cost:          # 払えなければ家で寝る（Swift applyRest と同じ）
+            name = "完全休養"
+        else:
+            s.money -= cost
     rec, (k, v) = RESTS[name]
     t = getattr(s, "sento_tickets", None)
     if t:                                   # 銭湯の回数券（Item.swift 鏡像）
