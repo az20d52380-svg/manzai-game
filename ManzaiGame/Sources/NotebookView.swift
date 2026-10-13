@@ -197,7 +197,7 @@ struct NotebookView: View {
                     .font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkFaint)
             }
             if session.activeNetas.isEmpty {
-                Text("——まだ、ネタは無い。「ネタ作り」から始まる。")
+                Text("まだネタがない。「ネタを書く」から書こう。")
                     .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
                     .padding(.vertical, Theme.Sp.s8)
             } else {
@@ -211,8 +211,8 @@ struct NotebookView: View {
 
     private var archivedNetaSection: some View {
         VStack(alignment: .leading, spacing: Theme.Sp.s12) {
-            Text("保管庫").font(.maru(12)).foregroundStyle(Theme.inkDim)
-            Text("いつでも呼び戻せる。古いネタが今の客に効くこともある。")
+            Text("しまったネタ").font(.maru(12)).foregroundStyle(Theme.inkDim)
+            Text("いつでも出せる。前のネタが、また使えることもある。")
                 .font(.system(size: 11.5, design: .serif)).foregroundStyle(Theme.inkFaint)
             ForEach(session.archivedNetas) { neta in
                 archivedRow(neta)
@@ -234,10 +234,10 @@ struct NotebookView: View {
                 netaBadges(neta)
             }
             netaBar(label: "完成度", value: neta.polish, color: Theme.kataColor(neta.kata))
-            netaBar(label: "手応え", value: neta.buzz, color: Theme.gold)
+            netaBar(label: "客の反応", value: neta.buzz, color: Theme.gold)
             oroshiLine(neta)
             HStack(spacing: 8) {
-                Text("\(neta.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkFaint)
+                Text("舞台 \(neta.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkFaint)
                 ForEach(neta.lengthFit, id: \.self) { l in
                     Text(NetaCatalog.displayName(l)).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
                         .padding(.horizontal, 6).padding(.vertical, 2)
@@ -247,7 +247,7 @@ struct NotebookView: View {
             }
             if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
-                actionChip(isSelected ? "選択中" : "選ぶ", active: !isSelected) {
+                actionChip(isSelected ? "勝負ネタ" : "勝負ネタにする", active: !isSelected) {
                     session.selectNeta(neta.id)
                 }
                 actionChip("型を変える", active: true) {
@@ -255,7 +255,7 @@ struct NotebookView: View {
                         kataPickerFor = kataPickerFor == neta.id ? nil : neta.id
                     }
                 }
-                actionChip("退避", active: true) {
+                actionChip("しまう", active: true) {
                     withAnimation(Theme.Motion.exit) { session.retireNeta(neta.id) }
                 }
             }
@@ -308,12 +308,12 @@ struct NotebookView: View {
     @ViewBuilder private func netaBadges(_ neta: Neta) -> some View {
         HStack(spacing: 4) {
             if !neta.isDown {
-                Text("おろし前").font(.maru(9)).foregroundStyle(Theme.inkFaint)
+                Text("まだ人前でやっていない").font(.maru(9)).foregroundStyle(Theme.inkFaint)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .overlay(Capsule().stroke(Theme.inkFaint, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
             }
             if neta.isTeppan(config: session.config) {
-                Text("鉄板").font(.maru(9, weight: .bold)).foregroundStyle(Theme.goldD)
+                Text("自信作").font(.maru(9, weight: .bold)).foregroundStyle(Theme.goldD)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(Theme.gold.opacity(0.18), in: Capsule())
             }
@@ -376,12 +376,12 @@ struct NotebookView: View {
                 HStack(spacing: 6) {
                     Text(NetaCatalog.displayName(neta.kata)).font(.maru(9.5)).foregroundStyle(Theme.inkDim)
                     if revival {
-                        Text("再演").font(.maru(9, weight: .bold)).foregroundStyle(Theme.cCompat)
+                        Text("もう一度").font(.maru(9, weight: .bold)).foregroundStyle(Theme.cCompat)
                     }
                 }
             }
             Spacer()
-            actionChip("呼び戻す", active: !slotsFull) {
+            actionChip("出す", active: !slotsFull) {
                 withAnimation(Theme.Motion.appear) { session.recallNeta(neta.id) }
             }
         }

@@ -24,9 +24,9 @@ enum NetaCatalog {
     /// 尺の表示名
     static func displayName(_ l: NetaLength) -> String {
         switch l {
-        case .短尺: return "短尺"
-        case .中尺: return "中尺"
-        case .長尺: return "長尺"
+        case .短尺: return "短め"   // 2026-10-12 業界語→普通の言葉（オーナー「意味わからん」）
+        case .中尺: return "ふつう"
+        case .長尺: return "長め"
         }
     }
 
