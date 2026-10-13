@@ -276,10 +276,10 @@ struct WeekMainView: View {
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
                         Text("経験点が残ってる ・ 能力アップで使おう")
-                            .font(.maru(9.5, weight: .bold)).foregroundStyle(Theme.gold)
+                            .font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.gold)   // 9.5pt は小さすぎた
                     } else if m.weeksLeft >= 6 {
                         Text(lullLine())
-                            .font(.maru(9)).foregroundStyle(.white.opacity(0.65))
+                            .font(.maru(10.5)).foregroundStyle(.white.opacity(0.8))   // 9pt・白65%は小さく薄すぎた
                     }
                 }
                 .padding(.horizontal, 12).padding(.vertical, 5)
@@ -405,7 +405,7 @@ struct WeekMainView: View {
                 CharacterFace(spec: FaceCatalog.speaker(name), size: 52)
                     .overlay(Circle().stroke(.white, lineWidth: 2.5))
                     .shadow(color: Theme.ink.opacity(0.2), radius: 0, y: 2)
-                Text(name).font(.maru(9.5)).foregroundStyle(.white)
+                Text(name).font(.maru(11)).foregroundStyle(.white)
                     .padding(.horizontal, 7).padding(.vertical, 2)
                     .background(name == "谷口" ? Theme.verm : Color(hex: 0x4A7BE8), in: Capsule())
             }
