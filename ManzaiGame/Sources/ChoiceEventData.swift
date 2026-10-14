@@ -352,15 +352,15 @@ enum ChoiceEventData {
     )
 
     // MARK: 0012 谷口の耳寄りな話（確定発火・金欠帯・選択肢あり。proposals/0012 レッドチーム済み確定テキストを転記）
-    //   A の「相性成長3週停止」は compatFreeze(3)＝GameEngine.add(.コンビ相性) の inert ゲートで golden 不変。
+    //   A は所持金↑・体力↓（夜勤はしんどいが芸人は皆やっている＝相方と会えなくなる前提は置かない）。
 
     private static let taniguchiShortJob = ChoiceEventText(
         title: "短期バイトの話",
         setup: [
             Advice(name: nil, text: "稽古場。月末の昼。"),
             Advice(name: "谷口", text: "これ見て。倉庫の短期バイト、二人で入らへん？"),
-            Advice(name: "俺", text: "けっこう稼げるな。でも、毎日夜勤か"),
-            Advice(name: "谷口", text: "シフトもばらばらやから、しばらく会われへんようになるな"),
+            Advice(name: "俺", text: "けっこう稼げるな。でも、夜勤か"),
+            Advice(name: "谷口", text: "きついけど、二人なら続けられるやろ。稽古は昼にやろ"),
         ],
         choiceLabels: [
             "A": "二人で倉庫の夜勤に入る",
@@ -369,7 +369,7 @@ enum ChoiceEventData {
         afterChoice: [
             "A": [
                 Advice(name: "俺", text: "やろう。今は金が要る"),
-                Advice(name: "谷口", text: "決まりや。しばらく、すれ違いやな"),
+                Advice(name: "谷口", text: "決まりや。体は削れるけど、稼ぐで"),
             ],
             "B": [
                 Advice(name: "俺", text: "やめておこう。夜勤が続くのはきつい"),
