@@ -13,13 +13,19 @@ struct ChoiceEventText {
 }
 
 /// イベントの場面（見た目の作り直し v1 §4-1）。楽屋＝昼の稽古場／夕景＝夜の日常（暗紫は使わない・明るい暖色）
-enum EventScene { case keiko, dusk }
+enum EventScene { case keiko, dusk, gakuya, yakiniku, station, famires, office }
 
 enum ChoiceEventData {
     /// 場面の既定値。夜の出来事（前夜・飲み会・書けた夜・終電・負けた日）は夕景、他は昼の稽古場【仮】
     static func scene(for kind: ChoiceEventKind) -> EventScene {
         switch kind {
-        case .preTournamentEve, .brokeDrinkingInvite, .wroteOneTonight, .lastTrainReview, .justLostRehearsal:
+        // ト書きの場所が絵に出る（表示だけ）: 楽屋・焼肉屋・駅のホーム・ファミレス・事務所
+        case .lineupTop, .greenroomSilentTen: return .gakuya
+        case .senpaiMeishi: return .yakiniku
+        case .lastTrainReview: return .station
+        case .wroteOneTonight: return .famires
+        case .photoShootOffer: return .office
+        case .preTournamentEve, .brokeDrinkingInvite, .justLostRehearsal:
             return .dusk
         default:
             return .keiko
