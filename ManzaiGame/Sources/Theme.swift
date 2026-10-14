@@ -432,4 +432,9 @@ extension View {
 /// お金の表示（マイナスは「−¥912,000」。「¥-912,000」だと円記号の後ろに負号が来て読みにくかった）
 enum Yen {
     static func text(_ v: Int) -> String { v < 0 ? "−¥\((-v).formatted())" : "¥\(v.formatted())" }
+    /// 万円表記（小数1桁・整数なら小数なし）。例 25000→"2.5万"、150000→"15万"。賞金・費用ピルで共用
+    static func man(_ v: Int) -> String {
+        let m = Double(v) / 10000
+        return (m == m.rounded() ? String(Int(m)) : String(format: "%.1f", m)) + "万"
+    }
 }

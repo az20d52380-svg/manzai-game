@@ -46,7 +46,7 @@ struct S6bView: View {
                 Text("\(session.combiName)　最後の舞台").font(.maru(14, weight: .bold)).foregroundStyle(Theme.sumi.opacity(0.8))
                 VStack(spacing: 2) {
                     Text("残　金").font(.maru(11, weight: .bold)).tracking(4).foregroundStyle(Theme.inkDim)
-                    Text("¥\(counted ? 0 : max(0, s.money))")
+                    Text(Yen.text(counted ? 0 : max(0, s.money)))
                         .font(.maru(34, weight: .black)).monospacedDigit().foregroundStyle(Theme.curtain)
                         .contentTransition(.numericText())
                 }

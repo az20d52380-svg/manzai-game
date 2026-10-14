@@ -532,7 +532,7 @@ struct WeekMainView: View {
                 if let n = t {
                     HStack(spacing: 6) {
                         Text("「\(n.name)」").font(.maru(14, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
-                        Text("\(Self.netaStage(n.polish)) ・ 完成度 \(Int(n.polish))").font(.maru(10.5, weight: .bold))
+                        Text("\(Self.netaStage(n.polish)) ・ 完成度 \(Int(n.polish.rounded()))").font(.maru(10.5, weight: .bold))
                             .foregroundStyle(Theme.ideaDeep).lineLimit(1)
                     }
                 } else {
@@ -566,7 +566,7 @@ struct WeekMainView: View {
                         Text("「\(n.name)」").font(.maru(13.5, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
                         Text(Self.netaStage(n.polish)).font(.maru(10, weight: .bold)).foregroundStyle(Theme.ideaDeep)
                         Spacer()
-                        Text("完成度 \(Int(n.polish)) ・ 舞台 \(n.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkSub)
+                        Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkSub)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 9)
                     .background(n.id == writeTarget?.id ? Theme.cIdea.opacity(0.10) : Theme.card, in: RoundedRectangle(cornerRadius: 10))
@@ -869,8 +869,8 @@ struct WeekMainView: View {
         }
         // G1: 舞台に立つ週の知名度（押した週に必ず何かが残る・最大3枚の枠の中）
         let fd = session.lastFameDelta
-        if fd > 0.001 {
-            chips.append(BurstChip(id: chips.count, text: "知名度 +\(max(1, Int(fd.rounded())))", fg: .white, bg: Theme.goldDeep))
+        if Int(fd.rounded()) > 0 {
+            chips.append(BurstChip(id: chips.count, text: "知名度 +\(Int(fd.rounded()))", fg: .white, bg: Theme.goldDeep))
         }
         let sd = session.lastStaminaDelta
         if sd != 0 {
@@ -899,9 +899,7 @@ struct WeekMainView: View {
 
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
         let up = money > 0
-        let man = Double(abs(money)) / 10000
-        let txt = (man == man.rounded() ? String(Int(man)) : String(format: "%.1f", man))
-        return Text("\(up ? "+" : "-")¥\(txt)万")
+        return Text("\(up ? "+" : "-")¥\(Yen.man(abs(money)))")
             .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMoney : Theme.verm))
             .padding(.horizontal, 5).padding(.vertical, 2)
@@ -1058,15 +1056,15 @@ struct WeekMainView: View {
         // 手動の能力アップ：稽古で入る経験点を出す（パワプロの練習画面と同じ「何が貯まるか」）。大きい順に最大2つ
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
-        for (c, d) in gains {
-            out.append(CardEffect(text: "\(c) +\(max(1, AbilityUpView.points(d)))", color: Theme.currencyColor(c)))
+        for (c, d) in gains where AbilityUpView.points(d) > 0 {
+            out.append(CardEffect(text: "\(c) +\(AbilityUpView.points(d))", color: Theme.currencyColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: Theme.vermD)) }
         if let neta = netaEffect(v.action) { out.append(CardEffect(text: neta, color: Theme.ideaDeep)) }
         // G1: 舞台に立つ週は知名度が上がる＝押した週に必ず何かが残ることをカードで予告する
         let fd = after.fame - s.fame
-        if fd > 0.001 { out.append(CardEffect(text: "知名度 +\(max(1, Int(fd.rounded())))", color: Theme.goldDeep)) }
+        if Int(fd.rounded()) > 0 { out.append(CardEffect(text: "知名度 +\(Int(fd.rounded()))", color: Theme.goldDeep)) }
         return out
     }
 
@@ -1091,7 +1089,7 @@ struct WeekMainView: View {
     private func lullLine() -> String {
         let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
         guard let n = cur else { return "大会まで間がある ・ まずはネタを書こう" }
-        return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish))/100"
+        return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish.rounded()))/100"
     }
 
     /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）

@@ -175,7 +175,7 @@ struct NotebookView: View {
                 .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.5))
             Text("相性").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 74, alignment: .leading)
             inkBar(s.compat / cap, color: Theme.verm, height: 7)
-            Text("\(Int(s.compat))").font(.maru(20, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
+            Text("\(Int(s.compat.rounded()))").font(.maru(20, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
                 .frame(width: 36, alignment: .trailing)
         }
         .padding(.vertical, 9)
@@ -197,7 +197,7 @@ struct NotebookView: View {
                             .foregroundStyle(r.champion || r.reachedFinal ? Theme.goldDeep : Theme.ink)
                         Spacer()
                         if r.prize > 0 {
-                            Text("賞金 \(r.prize / 10000)万").font(.maru(11)).foregroundStyle(Theme.moneyDeep)
+                            Text("賞金 \(Yen.man(r.prize))").font(.maru(11)).foregroundStyle(Theme.moneyDeep)
                         }
                     }
                     .padding(.vertical, 2)

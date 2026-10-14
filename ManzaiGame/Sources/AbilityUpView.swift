@@ -105,7 +105,7 @@ struct AbilityUpView: View {
 
     /// 届かない時に見せる次の+1の値札（いまの残高を無視して1段の重さ×段数の目安）
     private func priceTag(_ a: Ability) -> [(ExpCurrency, Int)] {
-        GameEngine.nextStepCost(a, state: pv, config: cfg).map { ($0.currency, max(1, Self.points($0.amount))) }
+        GameEngine.nextStepCost(a, state: pv, config: cfg).map { ($0.currency, max(1, Self.points(pv[currency: $0.currency]) - Self.points(pv[currency: $0.currency] - $0.amount))) }
     }
 
     private func row(_ a: Ability) -> some View {

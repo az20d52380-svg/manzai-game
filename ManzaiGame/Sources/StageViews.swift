@@ -155,7 +155,7 @@ struct TournamentEntryView: View {
             HStack(spacing: 8) {
                 InfoPill(text: "第\(spec.week)週")
                 InfoPill(text: "通過ライン \(Int(spec.line)) ／ いまの実力 \(Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()))")
-                InfoPill(text: "賞金 \(spec.prize / 10000)万")
+                InfoPill(text: "賞金 \(Yen.man(spec.prize))")
             }
             .padding(.horizontal, 12)
 

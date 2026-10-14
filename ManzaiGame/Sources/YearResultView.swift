@@ -227,7 +227,7 @@ struct YearResultView: View {
         HStack(spacing: 0) {
             total("今年の賞金", session.totalPrize, yen: true)
             Divider().frame(height: 30)
-            total("知名度", Int(s.fame), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
+            total("知名度", Int(s.fame.rounded()), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
             Divider().frame(height: 30)
             total("最終所持金", s.money, yen: true)
         }
