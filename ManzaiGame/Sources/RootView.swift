@@ -102,7 +102,7 @@ struct RootView: View {
             if ui == "cards", session.week <= 1 {
                 // 0022 稽古ロック目視: preoccupiedWeeks>0 の開始状態＝WeekMainView(MZ_UI=cards)で稽古がグレー＋「今週は撮影」。
                 // compat 10（8-14帯＝0020[0-7]/0021[>=15]の確定発火を回避）＋高所持金（0012回避）で稽古グリッドが被らず見える。
-                var st = GameSession.debugMaxedState(); st.compat = 10; st.money = 500_000; st.preoccupiedWeeks = 1
+                var st = GameSession.debugMaxedState(); st.compat = 10; st.money = 500_000; st.preoccupiedWeeks = ProcessInfo.processInfo.environment["MZ_FREE"] != nil ? 0 : 1
                 session = GameSession(startState: st)
             }
             if ui == "neta" || ui == "netaentry", session.week <= 1 {

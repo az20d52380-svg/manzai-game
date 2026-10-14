@@ -1059,7 +1059,7 @@ struct WeekMainView: View {
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
         for (c, d) in gains {
-            out.append(CardEffect(text: "\(c) +\(max(1, Int(d.rounded())))", color: Theme.currencyColor(c)))
+            out.append(CardEffect(text: "\(c) +\(max(1, AbilityUpView.points(d)))", color: Theme.currencyColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: Theme.vermD)) }
