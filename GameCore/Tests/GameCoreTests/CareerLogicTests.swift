@@ -43,8 +43,9 @@ final class CareerLogicTests: XCTestCase {
         XCTAssertEqual(outcome.roundsPassed, 4)   // 準決勝は落ちている（復活経由）
         // 生活費11回(第4〜44週・優勝週の週末処理は走らない)＋エントリー費2,000＋優勝賞金
         XCTAssertEqual(s.money, 10_000_000 - 1_100_000 - 2_000 + 5_000_000)
-        // 知名度: 3 + 回戦通過3×4 + 復活3 + 優勝20
-        XCTAssertEqual(s.fame, 38, accuracy: 1e-9)
+        // 知名度（キュー62 案G）: 3 →回戦通過3×4・復活3（各 ×0.6×(1−f/80)²）→決勝進出 +30×(1−f/100)→優勝 +10（逓減なし）
+        // 期待値は Python 正典で算出（balance_sim.add ×5 → sim_career._fame_big → fame_champ）
+        XCTAssertEqual(s.fame, 47.466650503469026, accuracy: 1e-9)
     }
 
     func testSeedFinalAndLineOverride() {

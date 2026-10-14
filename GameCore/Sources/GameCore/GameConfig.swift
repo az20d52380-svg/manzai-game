@@ -257,7 +257,10 @@ public struct GameConfig {
     public var offerMoney = OfferSpec(name: "お金重視", income: 300_000, fame: 1, ability: nil, stamina: -20)
     public var offerExp   = OfferSpec(name: "経験重視", income: 150_000, fame: 3, ability: (.表現, 2), stamina: -20)
     /// (知名度がこの値未満, 発生率/週)
-    public var offerRates: [(fameBelow: Double, rate: Double)] = [(20, 0.05), (50, 0.15), (80, 0.30), (999, 0.50)]
+    public var offerRates: [(fameBelow: Double, rate: Double)] = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]   // 区切り 20/50/80→10/30/55（キュー62）
+    /// 知名度の「その他の伸び」（大会・回戦・オファー・イベント）＝×本値×(1−知名度/fameOtherCap)²（キュー62 案G）。Python: FAME_OTHER_MULT／FAME_OTHER_CAP
+    public var fameOtherMult = 0.6
+    public var fameOtherCap = 80.0
 
     // --- 本番スコア（Python: W_SENSE ほか・STAM_PEN） ---
     public var weightSense = 0.30
@@ -312,6 +315,9 @@ public struct GameConfig {
     public var netaSecondPenalty = 3.0
     /// 決勝2本目に求める最低完成度（これ未満は「2本目が弱い」扱い）
     public var netaSecondMinPolish = 60.0
+    /// 同じネタは飽きられる（キュー60 案D）：大会で掛けた年の数×本値を補正から引く・上限 netaTiredCap 段・寝かせても戻らない。Python: V2_TIRED_PEN／V2_TIRED_CAP
+    public var netaTiredPenalty = 1.0
+    public var netaTiredCap = 2
 
     // --- S6b 勇退エンディングの会場ランク（表示専用・golden非対象。全て【仮】） ---
     /// 残金帯4段階の閾値（0=町の劇場／1=ホール／2=アリーナ／3=ドーム）

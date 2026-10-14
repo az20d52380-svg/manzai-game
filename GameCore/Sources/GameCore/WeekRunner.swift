@@ -118,6 +118,10 @@ public struct WeekRunner<R: RandomSource> {
         }
         s.growthBudget = budget
         GameEngine.resetYearlyItems(&s)  // その年だけのアイテム効果と回数を消す（未購入は恒等）
+        // 同じネタは飽きられる（キュー60）：前の年に大会で掛けたネタは飽きが1段進む（乱数なし）。Python: run_career 年初
+        for i in s.netas.indices where s.netas[i].lastUsedTaikaiYear == year - 1 {
+            s.netas[i].tiredYears = min(config.netaTiredCap, (s.netas[i].tiredYears ?? 0) + 1)
+        }
         self.state = s
         self.year = year
         self.config = config
@@ -126,6 +130,13 @@ public struct WeekRunner<R: RandomSource> {
         self.gpAlive = !seedFinal
         self.finalist = seedFinal
         self.finalLine = finalLineOverride ?? config.calendar.gpFinalLine
+    }
+
+    /// 大会で選択中のネタを掛けた印（年初の飽きの判定用・乱数なし）。Python: _neta_use の used_y
+    private mutating func markNetaUsed() {
+        if let id = state.selectedNetaID, let i = state.netas.firstIndex(where: { $0.id == id }) {
+            state.netas[i].lastUsedTaikaiYear = year
+        }
     }
 
     /// 次の週を開始する（初回も含む）。年が終わっていれば yearDone を返し続ける
@@ -165,6 +176,7 @@ public struct WeekRunner<R: RandomSource> {
                 }
                 let netaLine = spec.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
                 let result = GameEngine.perform(state, line: netaLine, config: config, rng: &rng)
+                markNetaUsed()
                 if result.passed {
                     state.money += spec.prize
                     GameEngine.add(.知名度, spec.fame, to: &state, config: config)
@@ -193,12 +205,14 @@ public struct WeekRunner<R: RandomSource> {
             let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
             let roundLine = round.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
             let result = GameEngine.perform(state, line: roundLine, config: config, rng: &rng)
+            markNetaUsed()
             acted = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 gpStage += 1
                 if gpStage == cal.gpRounds.count {
                     finalist = true
+                    GameEngine.addFameBig(cal.fameFinalist, to: &state)   // 決勝進出（キュー62）
                 }
             } else {
                 if gpStage == cal.gpRounds.count - 1 {
@@ -211,10 +225,12 @@ public struct WeekRunner<R: RandomSource> {
             revivalTried = true
             let revivalLine = cal.gpRevivalLine - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
             let result = GameEngine.perform(state, line: revivalLine, config: config, rng: &rng)
+            markNetaUsed()
             acted = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 finalist = true
+                GameEngine.addFameBig(cal.fameFinalist, to: &state)
             }
             weekResults.append(StageResult(name: "敗者復活", passed: result.passed, prize: 0, margin: result.score - revivalLine, burst: result.burst))
         case .final:
@@ -224,12 +240,13 @@ public struct WeekRunner<R: RandomSource> {
             let effLine = finalLine - cal.fameFinalBonus * (state.fame - 50) / 50
                         - GameEngine.netaScoreBonus(state, isFinal: true, config: config)
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
+            markNetaUsed()
             acted = true
             weekResults.append(StageResult(name: "GP決勝", passed: result.passed,
                                            prize: result.passed ? cal.gpPrize : 0, margin: result.score - effLine, burst: result.burst))
             if result.passed {
                 state.money += cal.gpPrize
-                GameEngine.add(.知名度, cal.champFame, to: &state, config: config)
+                GameEngine.addFameRaw(cal.champFame, to: &state)   // 優勝は逓減なし（キュー62）
                 // runYear と同一: 優勝は即時リターン＝この週の週末処理（生活費）は走らない
                 let outcome = YearOutcome(champion: true, roundsPassed: gpStage, reachedFinal: true)
                 finished = outcome

@@ -48,7 +48,8 @@ public struct Neta: Codable, Identifiable, Equatable {
     public var isDown: Bool              // おろし済（初披露を経たか・v2 §1-B）。false=未おろし
     public var exposure: Double          // 露出度（大会で使うほど+。"広く知られた度"の表示のみ・非スコア・v2 §3-2補）
     public var record: [NetaStamp]       // 戦績スタンプ列（表示専用）
-    public var lastUsedTaikaiYear: Int?  // 同系統での連投目減り/再演肯定の判定に使う年（v2 §4-2）
+    public var lastUsedTaikaiYear: Int?  // 大会で最後に掛けた年（キュー60：年初の飽きの判定。v2 §4-2）
+    public var tiredYears: Int?          // 飽きの段（大会で掛けた年の数・上限 netaTiredCap・寝かせても戻らない）。Optional＝古いセーブ互換
 
     /// 新ネタ生成（polish=30 の初期状態）。lengthFit は正準順（NetaLength.allCases 順）に正規化してから保持。
     public init(id: Int, name: String, kata: NetaKata, lengthFit: [NetaLength], bornYear: Int) {
