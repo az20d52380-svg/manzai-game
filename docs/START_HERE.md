@@ -168,3 +168,4 @@ cd GameCore && swift test
 - `judge_final_vote_drafts_v0.md` — 最終決戦「一票の理由」の下書き（7人×2・判断待ち P7 の材料）・2026-10-14
 - `judge_opening_banter_drafts_v0.md` — 開幕の審査員の掛け合いの下書き（10組・判断待ち P8 の材料）・2026-10-14
 - `judge_order_hook_drafts_v0.md` — 出番の文脈フックの下書き（1番手・大トリ×7人×高/低・判断待ち P5 の材料）・2026-10-14
+- `fame_saturation_research_v0.md` — 知名度の張り付き対策の型（他作品・選択肢）・2026-10-14
