@@ -338,6 +338,7 @@ struct NotebookView: View {
     /// バッジ: おろし前（点線）／鉄板（金）
     @ViewBuilder private func netaBadges(_ neta: Neta) -> some View {
         HStack(spacing: 4) {
+            NetaTiredBadge(neta: neta)
             if !neta.isDown {
                 Text("まだ人前でやっていない").font(.maru(10.5)).foregroundStyle(Theme.inkFaint)
                     .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった

@@ -56,6 +56,7 @@ struct NetaPickRow: View {
                 Circle().fill(Theme.kataColor(neta.kata)).frame(width: 10, height: 10)
                 Text(neta.name).font(.maru(.body)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
                 Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                NetaTiredBadge(neta: neta)
                 if let requiredLength, !neta.fits(requiredLength) {
                     Text("尺が合わない").font(.maru(.sub)).foregroundStyle(Theme.vermD)
                         .padding(.horizontal, 6).padding(.vertical, 2)
@@ -93,6 +94,7 @@ struct NetaPickRow: View {
                 if !fits {
                     Text("尺△").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
                 }
+                NetaTiredBadge(neta: neta)
                 Spacer()
                 if isThis {
                     Image(systemName: "checkmark").font(.system(size: 11)).foregroundStyle(Theme.verm)
@@ -102,5 +104,22 @@ struct NetaPickRow: View {
             .background(isThis ? Theme.card2 : .clear, in: RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(PressableStyle())
+    }
+}
+
+/// 「飽きられてきた」札（表示専用）。tiredYears 1＝少し見飽きられた（墨）／2以上＝見飽きられた（朱）。nil/0 は何も出さない。
+struct NetaTiredBadge: View {
+    let neta: Neta
+    var body: some View {
+        let y = neta.tiredYears ?? 0
+        if y >= 1 {
+            let heavy = y >= 2
+            let c = heavy ? Theme.vermD : Theme.ink
+            Text(heavy ? "見飽きられた" : "少し見飽きられた")
+                .font(.maru(10.5, weight: .bold)).foregroundStyle(c)
+                .lineLimit(1).fixedSize()
+                .padding(.horizontal, 6).padding(.vertical, 2)
+                .overlay(Capsule().stroke(c, lineWidth: 1))
+        }
     }
 }
