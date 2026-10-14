@@ -60,11 +60,11 @@ struct FinalsPresentationView: View {
         #if DEBUG
         // 目視用: MZ_FMARGIN=点差 で決勝の結果を差し替える（負＝敗退。-2 なら最終決戦で惜敗、-20 なら1本目で敗退）
         if let m = Double(ProcessInfo.processInfo.environment["MZ_FMARGIN"] ?? ""), !spectator {
-            return FinalsData(state: s, champion: m > 0, margin: m, year: session.year)
+            return FinalsData(state: s, champion: m > 0, margin: m, year: session.year, selfName: session.combiName)
         }
         #endif
         return FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator,
-                          margin: spectator ? nil : margin, year: session.year)
+                          margin: spectator ? nil : margin, year: session.year, selfName: session.combiName)
     }
     /// 1組の表示名（自組は付けたコンビ名）
     private func displayName(_ e: FinalsEntry) -> String { e.isSelf ? session.combiName : e.name }
@@ -757,7 +757,7 @@ struct FinalsData {
 
     /// - margin: GameCore の決勝のスコアと実効ラインの差（正＝優勝）。順位をこの差に沿わせる＝見せ札が内部の結果と矛盾しない
     /// - year: 年ごとに決勝の顔ぶれと出順を変える（毎年同じ10組にしない）
-    init(state s: GameState, champion: Bool, spectator: Bool = false, margin: Double? = nil, year: Int = 1) {
+    init(state s: GameState, champion: Bool, spectator: Bool = false, margin: Double? = nil, year: Int = 1, selfName: String = "") {
         self.champion = champion
         // UI専用RNG（能力と年から決定的にseed＝再現可・GameCoreの乱数列に非干渉）
         var rng = SeededRng(seed: UInt64(bitPattern: Int64(
@@ -765,7 +765,7 @@ struct FinalsData {
             Int(s.華) &* 313 &+ Int(s.メンタル) &* 389 &+ Int(s.compat) &* 457 &+ year &* 7919 &+ 0x1F17)))
 
         // 今年の顔ぶれ（名簿から決定的に選ぶ。常連は毎年いるとは限らない）
-        var pool = FinalsData.npcNames
+        var pool = FinalsData.npcNames.filter { $0 != selfName }   // 自組と同じ名前のモブを並べない（プレイヤーが同名を付けた時）
         for i in stride(from: pool.count - 1, through: 1, by: -1) { pool.swapAt(i, rng.int(0...i)) }
         let npcCount = spectator ? 10 : 9
         let names = Array(pool.prefix(npcCount))
