@@ -309,6 +309,7 @@ struct NotebookView: View {
         if renamingID == neta.id {
             HStack(spacing: 6) {
                 TextField("題材名", text: $renameDraft)
+                    .onChange(of: renameDraft) { _, v in if v.count > 16 { renameDraft = String(v.prefix(16)) } }   // 新しく書く時の題名と同じ上限（長い名前で題名の行が崩れる）
                     .font(.maru(13)).foregroundStyle(Theme.ink)
                     .textFieldStyle(.plain)
                     .onSubmit { commitRename(neta.id) }
