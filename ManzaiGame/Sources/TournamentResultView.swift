@@ -9,6 +9,8 @@ struct TournamentResultView: View {
     let session: GameSession
     let summary: WeekSummary
 
+    @State private var revealedWave = false    // 波形（開示の最初＝判より先に笑いの形を見せる）
+    @State private var countProgress: Double = 0   // 得たものの数字カウントアップ 0→1
     @State private var revealed = false        // 判（押印）
     @State private var revealedReview = false  // 講評（判の0.4s後）
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
@@ -106,9 +108,11 @@ struct TournamentResultView: View {
 
                     // 舞台板の上＝読み物と出口（判の後に段階で出す）
                     VStack(spacing: 10) {
-                        if revealedReview {
+                        if revealedWave {
                             WaveformView(passed: r.passed, nearMiss: nearMiss(r), compact: true, burst: r.burst == true || debugForceFanReport)
                                 .transition(.opacity)
+                        }
+                        if revealedReview {
                             washi(text: review.text, judge: review.judge, passed: r.passed)
                                 .transition(.opacity.combined(with: .offset(y: 10)))
                         }
@@ -121,13 +125,23 @@ struct TournamentResultView: View {
                             HStack(spacing: 8) {
                                 if let line = displayLine {
                                     // G4: 入口と同じ2つを同じ大きさで再掲（大きくしない＝見込みに寄せない）
-                                    Text("通過ライン \(Int(line)) ／ いまの実力 \(currentPower)")
-                                        .font(.maru(.sub)).foregroundStyle(Theme.ink)
-                                        .padding(.horizontal, 10).padding(.vertical, 5)
-                                        .background(.white.opacity(0.92), in: Capsule())
+                                    HStack(spacing: 0) {
+                                        Text("通過ライン \(Int(line)) ／ いまの実力 ")
+                                        RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
+                                    }
+                                    .font(.maru(.sub)).foregroundStyle(r.passed ? Theme.paperInk : Theme.inkSub)
+                                    .padding(.horizontal, 10).padding(.vertical, 5)
+                                    .background(.white.opacity(0.92), in: Capsule())
                                 }
                                 if r.prize > 0 {
-                                    GainChip(text: "賞金 +\(r.prize / 10000)万", kind: .gain(Theme.moneyDeep))
+                                    // 通過＝金の縁の賞金札。数字がカウントアップする
+                                    RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
+                                        .font(.maru(20, weight: .heavy)).foregroundStyle(.white)
+                                        .padding(.horizontal, 16).padding(.vertical, 7)
+                                        .background(Theme.vermD, in: Capsule())
+                                        .overlay(Capsule().stroke(Theme.gold, lineWidth: 2.5))
+                                        .shadow(color: Theme.gold.opacity(0.55), radius: 10)
+                                        .fixedSize()
                                 }
                             }
                             .transition(.opacity)
@@ -167,6 +181,13 @@ struct TournamentResultView: View {
             }
         }
         .overlay {
+            // 判のあとも、タップで残りの段階（講評・得たもの）を一気に出せる。次へのボタンは出し切ってから
+            if revealed && !revealedRest && ceremonyDone {
+                Color.clear.contentShape(Rectangle())
+                    .onTapGesture { finishReveal() }
+            }
+        }
+        .overlay {
             if !ceremonyDone {
                 StageCeremony { ceremonyDone = true; beginReveal() }
                     .transition(.opacity)
@@ -188,6 +209,7 @@ struct TournamentResultView: View {
     /// 波形の余韻＋開示前の静止（溜め→開示の最小単位・§4-2a）→判→講評→残り。溜めは skipRequested で畳める。
     private func runReveal() async {
         let r = result
+        withAnimation(.easeOut(duration: 0.35)) { revealedWave = true }  // ①波形が先
         if r.passed { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
         await pause(0.9)
         if Task.isCancelled { return }
@@ -205,10 +227,22 @@ struct TournamentResultView: View {
         }
         try? await Task.sleep(nanoseconds: 400_000_000)                  // 判の解放は畳まない（0.4s は必ず見せる）
         if Task.isCancelled { return }
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { return }   // 目視用：判の直後で止める（段階の途中を撮る）
+        #endif
         withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
         try? await Task.sleep(nanoseconds: 600_000_000)
         if Task.isCancelled { return }
         withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
+        withAnimation(.easeOut(duration: r.passed ? 1.1 : 0.8)) { countProgress = 1 }   // ④数字がカウントアップ
+    }
+
+    /// タップで残りを一気に出す（数字は出し切った値で止める）
+    private func finishReveal() {
+        revealTask?.cancel()
+        withAnimation(.easeOut(duration: 0.2)) {
+            revealedWave = true; revealed = true; revealedReview = true; revealedRest = true; countProgress = 1
+        }
     }
 
     /// 指定秒だけ待つ。畳む要求か取り消しで即戻る。
@@ -222,16 +256,16 @@ struct TournamentResultView: View {
     /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=鈍色——色でなく重さの差（負けにも勝ちと同じ物量）。
     /// 敗退の地は暗転背景に溶けない鈍色（inkは闇と同化するため明度だけ上げる）。
     private func stamp(passed: Bool) -> some View {
-        let c = passed ? Theme.verm : Color(hex: 0x4E423C)   // 敗退は暖色の炭（舞台の光の中で沈まない・紫は使わない）
+        let c = passed ? Theme.verm : Color(hex: 0x3A322D)   // 敗退は墨（舞台の光の中で沈まない程度の明るさ・紫は使わない）
         return Text(stampLabel(passed: passed))
             .font(.maru(.display)).foregroundStyle(.white)
             .frame(width: 124, height: 124)
             .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 130),
                        in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(metal, lineWidth: 3).padding(5))   // 縁＝大会の格の金属色
+            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(passed ? Theme.gold : metal.opacity(0.55), lineWidth: passed ? 4 : 2).padding(5))   // 縁＝通過は金／敗退は静かな金属色
             .rotationEffect(.degrees(-4))
             .shadow(color: c.opacity(0.55), radius: 16, y: 8)
-            .scaleEffect(revealed ? 1 : 2.3)      // 高くから叩きつける（slamFire のシェイクと同時に着地）
+            .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))      // 通過は高くから叩きつける／敗退は低く静かに沈む（slamFire のシェイクと同時に着地）
             .opacity(revealed ? 1 : 0)
     }
 
@@ -349,5 +383,19 @@ enum ClimaxData {
         case "敗者復活": return revivalLoss
         default: return []
         }
+    }
+}
+
+/// 数字のカウントアップ用（value が 0→目標へ動く間、整数で刻む）。表示だけ。
+struct RollingNumberText: View, Animatable {
+    var value: Double
+    let prefix: String
+    let suffix: String
+    var animatableData: Double {
+        get { value }
+        set { value = newValue }
+    }
+    var body: some View {
+        Text("\(prefix)\(Int(value.rounded()))\(suffix)").monospacedDigit()
     }
 }
