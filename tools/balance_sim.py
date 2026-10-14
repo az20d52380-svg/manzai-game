@@ -77,7 +77,7 @@ JOBS = {
 # --- オファー（体力消費は仕様未定義→【仮】-20。種類の出現比は50/50【仮】） ---
 OFFER_MONEY = dict(name="お金重視", income=300_000, fame=1, ability=None,        stam=-20)
 OFFER_EXP   = dict(name="経験重視", income=150_000, fame=3, ability=("expr", 2), stam=-20)
-OFFER_RATES = [(20, 0.05), (50, 0.15), (80, 0.30), (999, 0.50)]  # (知名度がこの値未満, 発生率/週)
+OFFER_RATES = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]  # 区切り 20/50/80→10/30/55（キュー62・saturation §8）  # (知名度がこの値未満, 発生率/週)
 
 # --- 休む: (回復, 追加効果) ---
 RESTS = {
@@ -134,6 +134,9 @@ class S:
     champion: bool = False
     min_money: int = INIT_MONEY
 
+FAME_OTHER_MULT = 0.6    # 知名度のその他の伸びの倍率（キュー62 案G・2026-10-15）【仮】。Swift GameConfig.fameOtherMult
+FAME_OTHER_CAP  = 80.0   # その他の伸びが鈍っていく先【仮】。Swift GameConfig.fameOtherCap
+
 def clamp(v, lo, hi):
     return max(lo, min(hi, v))
 
@@ -149,6 +152,11 @@ def add(s, key, amt):
     elif key == "stamina":
         s.stamina = clamp(s.stamina + amt, 0, 100)
     elif key == "fame":
+        # キュー62 案G：その他の伸びは小さく・FAME_OTHER_CAP に近いほど鈍る（決勝進出・優勝は sim_career._fame_big／fame_champ）
+        # Swift GameEngine.add(.知名度) と同じ演算順。旧挙動は FAME_OTHER_MULT=1.0・FAME_OTHER_CAP=inf
+        if amt > 0:
+            d = max(0.0, 1 - s.fame / FAME_OTHER_CAP)
+            amt = amt * FAME_OTHER_MULT * (d * d)
         s.fame = clamp(s.fame + amt, 0, 100)
     else:
         # 能力5種: 成長逓減（正の上昇のみ）を掛けてから上限にクランプ

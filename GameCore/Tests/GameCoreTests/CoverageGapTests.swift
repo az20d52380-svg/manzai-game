@@ -124,7 +124,9 @@ final class CoverageGapTests: XCTestCase {
         let m0 = s.money, f0 = s.fame, e0 = s.表現
         GameEngine.applyOffer(cfg.offerMoney, to: &s, config: cfg)
         XCTAssertEqual(s.money, m0 + cfg.offerMoney.income)
-        XCTAssertEqual(s.fame, f0 + cfg.offerMoney.fame, accuracy: 1e-9)
+        // 知名度の伸びは「その他の伸び」＝×fameOtherMult×(1−知名度/fameOtherCap)²（キュー62 案G・GameEngine.add）
+        let d = max(0.0, 1 - f0 / cfg.fameOtherCap)
+        XCTAssertEqual(s.fame, f0 + cfg.offerMoney.fame * cfg.fameOtherMult * (d * d), accuracy: 1e-9)
         XCTAssertEqual(s.stamina, 80 + cfg.offerMoney.stamina, accuracy: 1e-9)
         XCTAssertEqual(s.表現, e0, accuracy: 1e-12)
         GameEngine.applyOffer(cfg.offerExp, to: &s, config: cfg)

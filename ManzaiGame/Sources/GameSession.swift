@@ -1076,6 +1076,9 @@ final class GameSession {
         var midway = Neta(id: 2, name: "婚活パーティー", kata: .華先行, lengthFit: [.短尺], bornYear: 1)
         midway.polish = 55; midway.buzz = 42; midway.stageCount = 3; midway.isDown = true
 
+        #if DEBUG
+        teppan.tiredYears = 2; midway.tiredYears = 1   // 飽きの札の目視用（fresh は nil＝札なし）
+        #endif
         s.netas = [teppan, fresh, midway]
         s.nextNetaID = 3
         s.selectedNetaID = 0
