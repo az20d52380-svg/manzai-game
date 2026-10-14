@@ -21,16 +21,37 @@ struct NotebookView: View {
     private static var initialTab: Tab {
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { return .kiroku }   // 大会の記録の目視（MZ_UI=notebook と併用）
+        if ProcessInfo.processInfo.environment["MZ_TAB"] == "neta" { return .neta }   // 持ちネタ帳の目視
         #endif
         return .chikara
     }
 
     private var s: GameState { session.state }
 
+    // 試作q70: 帳面の紙（生成り＋罫線＋左の赤い余白線）。色は週画面試作と同じ 墨・生成り・朱＋臙脂/金。
+    private static let paper = Color(hex: 0xF6ECD6)
+    private static let rule = Color(hex: 0xBFAE8A)
+
+    private var paperBackground: some View {
+        Canvas { ctx, size in
+            var y: CGFloat = 8
+            while y < size.height {
+                ctx.fill(Path(CGRect(x: 0, y: y, width: size.width, height: 1)), with: .color(Self.rule.opacity(0.55)))
+                y += 30
+            }
+            ctx.fill(Path(CGRect(x: 30, y: 0, width: 1.5, height: size.height)), with: .color(Theme.verm.opacity(0.45)))
+            ctx.fill(Path(CGRect(x: 34, y: 0, width: 0.8, height: size.height)), with: .color(Theme.verm.opacity(0.3)))
+        }
+        .background(Self.paper)
+        .ignoresSafeArea()
+    }
+
+    private var hairline: some View { Rectangle().fill(Theme.sumi.opacity(0.35)).frame(height: 1) }
+
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-            VStack(spacing: Theme.Sp.s16) {
+            paperBackground
+            VStack(spacing: 0) {
                 header
                 tabBar
                 ScrollView {
@@ -41,23 +62,28 @@ struct NotebookView: View {
                         case .neta: AnyView(netaPage)
                         }
                     }
-                    .padding(.horizontal, Theme.Sp.s16).padding(.bottom, Theme.Sp.s24)
+                    .padding(.leading, 44).padding(.trailing, Theme.Sp.s16).padding(.top, 14).padding(.bottom, Theme.Sp.s24)
                 }
             }
-            .padding(.top, Theme.Sp.s12)
         }
     }
 
     private var header: some View {
-        HStack {
-            Text("コンビの情報").font(.maru(20, weight: .heavy)).foregroundStyle(Theme.ink)
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text("ネタ帳").font(.maru(24, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
+            Text(session.combiName).font(.maru(12, weight: .bold)).foregroundStyle(Theme.goldLeafHi.opacity(0.8))
             Spacer()
-            Text(session.combiName).font(.maru(12)).foregroundStyle(Theme.inkDim)
             Button(action: onClose) {
-                Image(systemName: "xmark.circle.fill").font(.system(size: 24)).foregroundStyle(Theme.inkFaint)
+                Text("とじる").font(.maru(13, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                    .padding(.horizontal, 12).padding(.vertical, 5)
+                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1.2))
             }.buttonStyle(PressableStyle())
         }
-        .padding(.horizontal, Theme.Sp.s16)
+        .padding(.horizontal, Theme.Sp.s16).padding(.vertical, 10)
+        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
     }
 
     private var tabBar: some View {
@@ -66,14 +92,17 @@ struct NotebookView: View {
             tabButton("戦績", .kiroku)
             tabButton("持ちネタ", .neta)
         }
-        .padding(4).background(Theme.card2, in: Capsule()).padding(.horizontal, Theme.Sp.s24)
+        .padding(.leading, 34).padding(.trailing, Theme.Sp.s16).padding(.top, 8)
+        .overlay(alignment: .bottom) { hairline }
     }
 
     private func tabButton(_ label: String, _ t: Tab) -> some View {
         Button { withAnimation(Theme.Motion.appearQuick) { tab = t } } label: {
-            Text(label).font(.maru(13)).foregroundStyle(tab == t ? .white : Theme.inkDim)
+            Text(label).font(.maru(16, weight: .black)).foregroundStyle(tab == t ? Theme.sumi : Theme.inkSub)
                 .frame(maxWidth: .infinity).padding(.vertical, 8)
-                .background(tab == t ? Theme.verm : .clear, in: Capsule())
+                .overlay(alignment: .bottom) {
+                    Rectangle().fill(tab == t ? Theme.verm : .clear).frame(height: 4)
+                }
         }.buttonStyle(.plain)
     }
 
@@ -85,32 +114,28 @@ struct NotebookView: View {
         let budget = s.growthBudget ?? 0
         let full = budget > 0 && s.growthUsed >= budget * 0.98
         let exp = AbilityUpView.points(s.expTotal)
-        return VStack(spacing: 10) {
+        return VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("実力").font(.maru(14, weight: .bold)).foregroundStyle(Theme.inkSub)
-                Text("\(Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))").font(.maru(30, weight: .heavy))
-                    .monospacedDigit().foregroundStyle(Theme.ink)
+                Text("実力").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi)
+                Text("\(Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))").font(.maru(34, weight: .black))
+                    .monospacedDigit().foregroundStyle(Theme.curtain)
+                    .shadow(color: Theme.goldLeafHi, radius: 0, x: 1, y: 1)
                 Spacer()
                 if exp > 0 && !cfg.autoPourAllocation {
-                    Text("経験点 \(exp) 未使用").font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.goldDeep)
+                    Text("経験点 \(exp) 未使用").font(.maru(12, weight: .bold)).foregroundStyle(Theme.vermD)
                 }
             }
-            .padding(.horizontal, 14).padding(.vertical, 10)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-
-            VStack(spacing: 0) {
-                ForEach(Array(Ability.allCases.enumerated()), id: \.element) { i, a in
-                    if i > 0 { Divider().padding(.leading, 60) }
-                    abilityRow(a, cap: a == .メンタル ? cfg.mentalCap : cfg.abilityCap)
-                }
-                Divider().padding(.leading, 60)
-                compatRow
+            .padding(.vertical, 8)
+            hairline
+            ForEach(Array(Ability.allCases.enumerated()), id: \.element) { i, a in
+                abilityRow(a, cap: a == .メンタル ? cfg.mentalCap : cfg.abilityCap)
+                hairline.opacity(0.5)
             }
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-
+            compatRow
+            hairline
             if full {
                 Text("今年はもう、能力が伸びにくい（年が明けると戻る）。")
-                    .font(.maru(12)).foregroundStyle(Theme.inkSub)
+                    .font(.maru(12)).foregroundStyle(Theme.inkSub).padding(.top, 10)
             }
         }
     }
@@ -118,40 +143,42 @@ struct NotebookView: View {
     private func abilityRow(_ a: Ability, cap: Double) -> some View {
         let v = s[a]
         let g = Theme.rank(v)
-        return HStack(spacing: 12) {
-            Text(g).font(.maru(18, weight: .heavy)).foregroundStyle(.white)
-                .frame(width: 36, height: 36)
-                .background(Theme.gradeColor(g), in: RoundedRectangle(cornerRadius: 8))
-            Text("\(a)").font(.maru(15, weight: .bold)).foregroundStyle(Theme.ink).frame(width: 74, alignment: .leading)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.line)
-                    Capsule().fill(Theme.abilityColor(a)).frame(width: geo.size.width * Theme.rankProgress(v, cap: cap))
-                }
-            }.frame(height: 8)
-            Text("\(Int(v.rounded()))").font(.maru(17, weight: .heavy)).monospacedDigit().foregroundStyle(Theme.ink)
-                .frame(width: 34, alignment: .trailing)
+        return HStack(spacing: 10) {
+            Text(g).font(.maru(20, weight: .black)).foregroundStyle(Theme.curtain)
+                .frame(width: 34, height: 34)
+                .overlay(Rectangle().stroke(Theme.curtain, lineWidth: 1.5))
+            Text("\(a)").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 74, alignment: .leading)
+            inkBar(Theme.rankProgress(v, cap: cap), color: Theme.curtainLit, height: 7)
+            Text("\(Int(v.rounded()))").font(.maru(20, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
+                .frame(width: 36, alignment: .trailing)
         }
-        .padding(.horizontal, 12).padding(.vertical, 9)
+        .padding(.vertical, 9)
+    }
+
+    /// 墨の細い帯（角丸なし・1色）
+    private func inkBar(_ frac: Double, color: Color, height: CGFloat) -> some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Rectangle().fill(Self.rule.opacity(0.5))
+                Rectangle().fill(color).frame(width: geo.size.width * CGFloat(min(1, max(0, frac))))
+            }
+        }
+        .frame(height: height)
+        .overlay(Rectangle().stroke(Theme.sumi.opacity(0.5), lineWidth: 0.8))
     }
 
     private var compatRow: some View {
         let cap = session.config.compatCap
-        return HStack(spacing: 12) {
-            Image(systemName: "heart.fill").font(.system(size: 16, weight: .bold)).foregroundStyle(.white)
-                .frame(width: 36, height: 36)
-                .background(Theme.cCompat, in: RoundedRectangle(cornerRadius: 8))
-            Text("相性").font(.maru(15, weight: .bold)).foregroundStyle(Theme.ink).frame(width: 74, alignment: .leading)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.line)
-                    Capsule().fill(Theme.cCompat).frame(width: geo.size.width * CGFloat(min(1, s.compat / cap)))
-                }
-            }.frame(height: 8)
-            Text("\(Int(s.compat))").font(.maru(17, weight: .heavy)).monospacedDigit().foregroundStyle(Theme.ink)
-                .frame(width: 34, alignment: .trailing)
+        return HStack(spacing: 10) {
+            Text("相").font(.maru(20, weight: .black)).foregroundStyle(Theme.verm)
+                .frame(width: 34, height: 34)
+                .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.5))
+            Text("相性").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 74, alignment: .leading)
+            inkBar(s.compat / cap, color: Theme.verm, height: 7)
+            Text("\(Int(s.compat))").font(.maru(20, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
+                .frame(width: 36, alignment: .trailing)
         }
-        .padding(.horizontal, 12).padding(.vertical, 9)
+        .padding(.vertical, 9)
     }
 
     // MARK: きろく（大会履歴＋称号）
@@ -205,7 +232,6 @@ struct NotebookView: View {
             // 称号は周回メタ（未実装）の器＝実体が入るまで出さない（監査G-02: 【仮】の空欄を出荷画面に残さない）
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()
     }
 
     // MARK: ネタ（持ちネタ帳・正典: docs/neta_system_redesign_v2.md §5-3。表示専用＋純適用のみ・golden非対象）
@@ -217,14 +243,22 @@ struct NotebookView: View {
         }
     }
 
+    private func sectionTitle(_ s: String, trailing: String? = nil) -> some View {
+        VStack(spacing: 3) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(s).font(.maru(20, weight: .black)).foregroundStyle(Theme.sumi)
+                    .shadow(color: Theme.goldLeafHi.opacity(0.8), radius: 0, x: 1, y: 1)
+                Spacer()
+                if let trailing { Text(trailing).font(.maru(13, weight: .bold)).monospacedDigit().foregroundStyle(Theme.curtain) }
+            }
+            Rectangle().fill(Theme.sumi).frame(height: 2)
+            Rectangle().fill(Theme.sumi.opacity(0.5)).frame(height: 0.8)
+        }
+    }
+
     private var activeNetaSection: some View {
         VStack(alignment: .leading, spacing: Theme.Sp.s12) {
-            HStack {
-                Text("持ちネタ").font(.maru(12)).foregroundStyle(Theme.inkDim)
-                Spacer()
-                Text("\(session.activeNetas.count) / \(session.config.netaActiveSlots)")
-                    .font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkFaint)
-            }
+            sectionTitle("持ちネタ", trailing: "\(session.activeNetas.count) / \(session.config.netaActiveSlots)")
             if session.activeNetas.isEmpty {
                 Text("まだネタがない。「ネタを書く」から書こう。")
                     .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
@@ -232,52 +266,55 @@ struct NotebookView: View {
             } else {
                 ForEach(session.activeNetas) { neta in
                     netaCard(neta)
+                    hairline
                 }
             }
         }
-        .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()
     }
 
     private var archivedNetaSection: some View {
         VStack(alignment: .leading, spacing: Theme.Sp.s12) {
-            Text("しまったネタ").font(.maru(12)).foregroundStyle(Theme.inkDim)
+            sectionTitle("しまったネタ")
             Text("いつでも出せる。前のネタが、また使えることもある。")
-                .font(.system(size: 11.5, design: .serif)).foregroundStyle(Theme.inkFaint)
+                .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkSub)
             ForEach(session.archivedNetas) { neta in
                 archivedRow(neta)
             }
         }
-        .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e1()
     }
 
     // MARK: アクティブなネタ1枚（型・名前・バッジ・完成度/手応え・尺・操作）
 
     private func netaCard(_ neta: Neta) -> some View {
         let isSelected = session.selectedNeta?.id == neta.id
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                Circle().fill(Theme.kataColor(neta.kata)).frame(width: 8, height: 8)
-                Text(NetaCatalog.displayName(neta.kata)).font(.maru(10.5)).foregroundStyle(Theme.inkDim)
+        return VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .center, spacing: 8) {
                 nameLabel(neta)
                 Spacer(minLength: 4)
+                if isSelected {
+                    Text("勝負").font(.maru(13, weight: .black)).foregroundStyle(Theme.verm)
+                        .padding(.horizontal, 6).padding(.vertical, 1)
+                        .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.8))
+                        .rotationEffect(.degrees(-6))
+                }
             }
-            netaBar(label: "完成度", value: neta.polish, color: Theme.kataColor(neta.kata))
-            netaBar(label: "客の反応", value: neta.buzz, color: Theme.gold)
+            Text(NetaCatalog.displayName(neta.kata)).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.curtain)
+            netaBar(label: "完成度", value: neta.polish, color: Theme.curtainLit)
+            netaBar(label: "客の反応", value: neta.buzz, color: Theme.goldLeafMid)
             oroshiLine(neta)
             HStack(spacing: 8) {
-                Text("舞台 \(neta.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkFaint)
+                Text("舞台 \(neta.stageCount)回").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkSub)
                 ForEach(neta.lengthFit, id: \.self) { l in
-                    Text(NetaCatalog.displayName(l)).font(.maru(10.5)).foregroundStyle(Theme.inkDim)
-                        .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(Theme.card2, in: Capsule())
+                    Text(NetaCatalog.displayName(l)).font(.maru(11)).foregroundStyle(Theme.inkSub)
+                        .padding(.horizontal, 5).padding(.vertical, 1)
+                        .overlay(Rectangle().stroke(Theme.inkFaint, lineWidth: 0.8))
                 }
                 Spacer()
-                netaBadges(neta)   // 題名の行に置くと題名が切れた／札が2行に折れた→舞台の回数の行へ
+                netaBadges(neta)
             }
             if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
-                // 選択中は「✓ 勝負ネタ中」（「勝負ネタ」だけだと押せない灰色に見えた）
-                actionChip(isSelected ? "✓ 勝負ネタ中" : "勝負ネタにする", active: !isSelected) {
+                actionChip(isSelected ? "勝負ネタ中" : "勝負ネタにする", active: !isSelected) {
                     session.selectNeta(neta.id)
                 }
                 actionChip("型を変える", active: true) {
@@ -290,10 +327,7 @@ struct NotebookView: View {
                 }
             }
         }
-        .padding(Theme.Sp.s12)
-        .background(Theme.card2, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.btn)
-            .stroke(isSelected ? Theme.verm.opacity(0.55) : .clear, lineWidth: 1.5))
+        .padding(.vertical, Theme.Sp.s8)
     }
 
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
@@ -310,7 +344,7 @@ struct NotebookView: View {
             HStack(spacing: 6) {
                 TextField("題材名", text: $renameDraft)
                     .onChange(of: renameDraft) { _, v in if v.count > 16 { renameDraft = String(v.prefix(16)) } }   // 新しく書く時の題名と同じ上限（長い名前で題名の行が崩れる）
-                    .font(.maru(13)).foregroundStyle(Theme.ink)
+                    .font(.maru(17, weight: .black)).foregroundStyle(Theme.sumi)
                     .textFieldStyle(.plain)
                     .onSubmit { commitRename(neta.id) }
                 Button { commitRename(neta.id) } label: {
@@ -323,8 +357,8 @@ struct NotebookView: View {
                 renamingID = neta.id
             } label: {
                 HStack(spacing: 4) {
-                    Text(neta.name).font(.maru(13)).foregroundStyle(Theme.ink).lineLimit(1)
-                    Image(systemName: "pencil").font(.system(size: 9)).foregroundStyle(Theme.inkFaint)
+                    Text(neta.name).font(.maru(18, weight: .black)).foregroundStyle(Theme.sumi).lineLimit(1)
+                    Image(systemName: "pencil").font(.system(size: 11)).foregroundStyle(Theme.inkSub)
                 }
             }.buttonStyle(.plain)
         }
@@ -339,15 +373,15 @@ struct NotebookView: View {
     @ViewBuilder private func netaBadges(_ neta: Neta) -> some View {
         HStack(spacing: 4) {
             if !neta.isDown {
-                Text("まだ人前でやっていない").font(.maru(10.5)).foregroundStyle(Theme.inkFaint)
+                Text("まだ人前でやっていない").font(.maru(11)).foregroundStyle(Theme.inkSub)
                     .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
-                    .padding(.horizontal, 6).padding(.vertical, 2)
-                    .overlay(Capsule().stroke(Theme.inkFaint, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
+                    .padding(.horizontal, 5).padding(.vertical, 1)
+                    .overlay(Rectangle().stroke(Theme.inkSub, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
             }
             if neta.isTeppan(config: session.config) {
-                Text("自信作").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.goldD)
-                    .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(Theme.gold.opacity(0.18), in: Capsule())
+                Text("自信作").font(.maru(11.5, weight: .black)).foregroundStyle(Theme.goldD)
+                    .padding(.horizontal, 5).padding(.vertical, 1)
+                    .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1.4))
             }
         }
     }
@@ -355,15 +389,10 @@ struct NotebookView: View {
     /// 完成度/手応えバー（0..100・数値併記）
     private func netaBar(label: String, value: Double, color: Color) -> some View {
         HStack(spacing: 8) {
-            Text(label).font(.maru(10.5)).foregroundStyle(Theme.inkDim).frame(width: 48, alignment: .leading)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.card)
-                    Capsule().fill(color).frame(width: geo.size.width * CGFloat(min(1, max(0, value / 100))))
-                }
-            }.frame(height: 6)
-            Text("\(Int(value.rounded()))").font(.maru(10)).monospacedDigit().foregroundStyle(Theme.inkFaint)
-                .frame(minWidth: 20, alignment: .trailing).fixedSize()
+            Text(label).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.inkSub).frame(width: 60, alignment: .leading)
+            inkBar(value / 100, color: color, height: 6)
+            Text("\(Int(value.rounded()))").font(.maru(13, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
+                .frame(minWidth: 24, alignment: .trailing).fixedSize()
         }
     }
 
@@ -387,10 +416,10 @@ struct NotebookView: View {
 
     private func actionChip(_ label: String, active: Bool, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(label).font(.maru(10.5)).foregroundStyle(active ? Theme.verm : Theme.inkFaint)
-                .padding(.horizontal, 10).padding(.vertical, 5)
-                .background(Theme.card, in: Capsule())
-                .overlay(Capsule().stroke(active ? Theme.verm.opacity(0.4) : Theme.line, lineWidth: 1))
+            Text(label).font(.maru(12, weight: .black)).foregroundStyle(active ? Theme.sumi : Theme.inkFaint)
+                .padding(.horizontal, 9).padding(.vertical, 5)
+                .overlay(Rectangle().stroke(active ? Theme.sumi : Theme.line, lineWidth: 1.2))
+                .overlay(alignment: .leading) { Rectangle().fill(active ? Theme.verm : Theme.line).frame(width: 3) }
         }
         .buttonStyle(PressableStyle())
         .disabled(!active)
@@ -402,13 +431,12 @@ struct NotebookView: View {
         let revival = neta.isRevival(currentYear: session.year, config: session.config)
         let slotsFull = session.activeNetas.count >= session.config.netaActiveSlots
         HStack(spacing: 8) {
-            Circle().fill(Theme.kataColor(neta.kata)).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 2) {
-                Text(neta.name).font(.maru(12)).foregroundStyle(Theme.ink)
+                Text(neta.name).font(.maru(15, weight: .black)).foregroundStyle(Theme.sumi)
                 HStack(spacing: 6) {
-                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(10.5)).foregroundStyle(Theme.inkDim)
+                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(11)).foregroundStyle(Theme.inkSub)
                     if revival {
-                        Text("もう一度").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.cCompat)
+                        Text("もう一度").font(.maru(11, weight: .black)).foregroundStyle(Theme.verm)
                     }
                 }
             }
@@ -418,6 +446,6 @@ struct NotebookView: View {
             }
         }
         .padding(.vertical, 6)
-        Divider()
+        hairline
     }
 }

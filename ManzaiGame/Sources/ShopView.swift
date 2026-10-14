@@ -16,36 +16,63 @@ struct ShopView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            noren
             ScrollView {
-                VStack(spacing: 10) {
-                    ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
+                VStack(spacing: 0) {
+                    ForEach(session.config.shopLineup, id: \.self) { row($0); shelfBoard }   // 能力に効く品は売らない（原則 2026-10-12）
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.center)
-                        .font(.maru(11)).foregroundStyle(Theme.inkSub).padding(.top, 4)
+                        .font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkSub).padding(.top, 14)
                 }
                 .padding(.horizontal, 16).padding(.bottom, 20)
             }
         }
-        .background(LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        .background(Color(hex: 0xF3E6C8).ignoresSafeArea())   // 試作q70: 商店街の店先（生成りの壁）
         .onAppear { if visitStart == nil { visitStart = session.state } }
     }
 
+    /// 試作q70: 臙脂の帯（店の看板）。決勝の幕・週画面の帯と同じ臙脂＋金。
     private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("お店").font(.maru(22, weight: .heavy)).foregroundStyle(Theme.ink)
-                Text("所持金 \(Yen.text(session.state.money))").font(.maru(13, weight: .bold))
-                    .monospacedDigit().foregroundStyle(Theme.moneyDeep)
-            }
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text("お店").font(.maru(28, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
+            Text("所持金 \(Yen.text(session.state.money))").font(.maru(14, weight: .black))
+                .monospacedDigit().foregroundStyle(Theme.goldLeafHi.opacity(0.9))
             Spacer()
             Button(action: onClose) {
-                Text("とじる").font(.maru(14, weight: .bold)).foregroundStyle(.white)
-                    .padding(.horizontal, 16).padding(.vertical, 8)
-                    .background(Theme.verm, in: Capsule())
+                Text("とじる").font(.maru(13, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                    .padding(.horizontal, 12).padding(.vertical, 5)
+                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1.2))
             }
             .buttonStyle(PressableStyle())
         }
-        .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 10)
+        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 10)
+        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+    }
+
+    /// のれん: 看板の下に垂れる布（切れ込み入り）
+    private var noren: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<6, id: \.self) { i in
+                Rectangle()
+                    .fill(LinearGradient(colors: [Theme.curtain, Theme.curtainShade], startPoint: .top, endPoint: .bottom))
+                    .frame(height: 26)
+                    .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+            }
+        }
+        .padding(.horizontal, 10)
+    }
+
+    /// 棚板（品と品のあいだ）
+    private var shelfBoard: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(Theme.boardsLit).frame(height: 5)
+            Rectangle().fill(Theme.boardsDark).frame(height: 3)
+        }
+        .padding(.horizontal, -16)
+        .padding(.bottom, 4)
     }
 
     private func price(_ item: ShopItem) -> Int { session.config.items[item]?.price ?? 0 }
@@ -53,51 +80,71 @@ struct ShopView: View {
     private func row(_ item: ShopItem) -> some View {
         let spec = session.config.items[item]
         let ok = GameEngine.canBuy(item, state: session.state, config: session.config)
-        let (glyph, tint) = look(item)
         let limit = limitText(item, spec)
-        return HStack(spacing: 12) {
-            Image(systemName: glyph).font(.system(size: 20, weight: .bold)).foregroundStyle(.white)
-                .frame(width: 46, height: 46)
-                .background(ok ? tint : Theme.inkFaint, in: RoundedRectangle(cornerRadius: 11))
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.rawValue).font(.maru(15, weight: .bold)).foregroundStyle(ok ? Theme.ink : Theme.inkSub)
+        let big = price(item) >= 100_000   // 高い品は名前も値札も大きく（安い品との重みの差）
+        return HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(item.rawValue).font(.maru(big ? 24 : 19, weight: .black))
+                    .foregroundStyle(ok ? Theme.sumi : Theme.inkSub)
+                    .shadow(color: ok ? Theme.goldLeafHi.opacity(0.8) : .clear, radius: 0, x: 1, y: 1)
                     .lineLimit(1).minimumScaleFactor(0.8)
-                Text(spec?.summary ?? "").font(.maru(11.5)).foregroundStyle(Theme.inkSub)
+                Text(spec?.summary ?? "").font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkSub)
                     .fixedSize(horizontal: false, vertical: true)
                 if !limit.isEmpty {
-                    Text(limit).font(.maru(10.5, weight: .bold)).foregroundStyle(tint)
+                    Text(limit).font(.maru(11.5, weight: .black)).foregroundStyle(Theme.verm)
                         .padding(.horizontal, 6).padding(.vertical, 1)
-                        .overlay(Capsule().stroke(tint.opacity(0.7), lineWidth: 1.2))
+                        .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.5))
+                        .rotationEffect(.degrees(-3))
+                        .padding(.top, 2)
                 }
             }
             Spacer(minLength: 0)
-            VStack(alignment: .trailing, spacing: 6) {
-                Button { buy(item) } label: {
-                    Text("¥\(price(item).formatted())").font(.maru(13, weight: .heavy)).monospacedDigit()
-                        .foregroundStyle(ok ? .white : Theme.inkSub)
-                        .padding(.horizontal, 12).padding(.vertical, 9)
-                        .background(ok ? Theme.verm : Theme.line, in: Capsule())
-                }
-                .buttonStyle(PressableStyle(enabled: ok)).disabled(!ok)
+            VStack(alignment: .trailing, spacing: 8) {
+                Button { buy(item) } label: { priceTag(item, ok: ok, big: big) }
+                    .buttonStyle(PressableStyle(enabled: ok)).disabled(!ok)
                 let n = purchases.filter { $0 == item }.count
                 if n > 0 {
                     Button { undo(item) } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.uturn.backward").font(.system(size: 10, weight: .bold))
-                            Text(n > 1 ? "戻す（\(n)個）" : "戻す").font(.maru(11.5, weight: .bold))
-                        }
-                        .foregroundStyle(Theme.inkSub)
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .overlay(Capsule().stroke(Theme.inkFaint, lineWidth: 1.2))
+                        Text(n > 1 ? "戻す（\(n)個）" : "戻す").font(.maru(12, weight: .black))
+                            .foregroundStyle(Theme.sumi)
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.2))
                     }
                     .buttonStyle(PressableStyle())
                 }
             }
         }
-        .padding(.horizontal, 12).padding(.vertical, 12)
-        // 影は背景の形だけに付ける（カード全体に掛けると中の文字にも影が付き、値札の白い数字が二重に見えた）
-        .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(Theme.card)
-            .shadow(color: Theme.cmdShadow, radius: 0, y: 3))
+        .padding(.vertical, big ? 20 : 14)
+    }
+
+    /// 値札: 紙の短冊（左上を斜めに落とし、ひもの穴）。押せる品は朱の縁、高い品は金の二重縁。
+    private func priceTag(_ item: ShopItem, ok: Bool, big: Bool) -> some View {
+        let ink = ok ? Theme.curtain : Theme.inkSub
+        return Text("¥\(price(item).formatted())").font(.maru(big ? 22 : 17, weight: .black)).monospacedDigit()
+            .foregroundStyle(ink)
+            .padding(.leading, 22).padding(.trailing, 12).padding(.vertical, big ? 12 : 9)
+            .background(TagShape().fill(ok ? Color(hex: 0xFFF8E6) : Color(hex: 0xE6DEC9)))
+            .overlay(TagShape().stroke(ok ? Theme.verm : Theme.line, lineWidth: 2))
+            .overlay {
+                if big && ok { TagShape().stroke(Theme.goldLeafMid, lineWidth: 1).padding(3) }
+            }
+            .overlay(alignment: .leading) {
+                Circle().stroke(ink.opacity(0.7), lineWidth: 1.5).frame(width: 7, height: 7).padding(.leading, 9)
+            }
+    }
+
+    private struct TagShape: Shape {
+        func path(in r: CGRect) -> Path {
+            var p = Path()
+            let c: CGFloat = 12
+            p.move(to: CGPoint(x: r.minX + c, y: r.minY))
+            p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.minX + c, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.minX, y: r.midY))
+            p.closeSubpath()
+            return p
+        }
     }
 
     private func look(_ item: ShopItem) -> (String, Color) {
