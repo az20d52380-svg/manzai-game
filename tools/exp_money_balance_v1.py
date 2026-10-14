@@ -39,6 +39,12 @@ ITEMS = [("衣装(ステージ)", 300_000), ("小道具セット", 150_000), ("�
 SCEN["J バイト×0.75＋生活費×1.5＋値段×3"] = dict(job=0.75, offer=0.75, living=1.5, price=3)
 SCEN["K G＋アイテム6種"] = dict(job=0.75, offer=0.75, living=1.5, items=ITEMS)
 SCEN["L バイト×0.8＋生活費×1.4＋アイテム6種"] = dict(job=0.8, offer=0.8, living=1.4, items=ITEMS)
+_L = dict(job=0.8, offer=0.8, living=1.4, items=ITEMS)
+SCEN["L1 L＋有料効果×0.7"] = dict(_L, eff=0.7)
+SCEN["L2 L＋有料効果×0.5"] = dict(_L, eff=0.5)
+SCEN["L3 L＋値段×1.5"] = dict(_L, price=1.5)
+SCEN["L4 生活費×1.6＋有料効果×0.7"] = dict(job=1, living=1.6, eff=0.7, items=ITEMS)
+SCEN["L5 L＋有料効果×0.6"] = dict(_L, eff=0.6)
 SCEN["H アイテム6種(支出のみ)"] = dict(items=ITEMS)
 SCEN["I バイト×0.75＋値段×3＋アイテム6種"] = dict(job=0.75, offer=0.75, price=3, items=ITEMS)
 
