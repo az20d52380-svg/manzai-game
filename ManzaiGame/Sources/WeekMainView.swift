@@ -88,6 +88,7 @@ struct WeekMainView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            stageHeaderBand
             sceneZone
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             commandZone
@@ -208,11 +209,28 @@ struct WeekMainView: View {
 
     // MARK: 立ち絵シーン（左上の実力/相性バー・心の声）
 
+    /// 試作: 舞台の臙脂＋金の共通ヘッダー帯（決勝の幕と同じ色）。
+    private var stageHeaderBand: some View {
+        HStack(spacing: 10) {
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Text("\(session.year)年目　第\(session.week)週")
+                .font(.maru(15, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 6)
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+    }
+
     private var sceneZone: some View {
         sceneBackground
             .background(Color(hex: 0xFFFBF0).ignoresSafeArea(edges: .top))   // ステータスバー裏も稽古場の白
             // 上端中央の目標バナー（2行になる週がある）の下に置く＝重ならない
-            .overlay(alignment: .topLeading) { statBars.padding(.leading, 12).padding(.top, 56) }
+            .overlay(alignment: .topLeading) { statBars.padding(.leading, 12).padding(.top, 50) }
             .overlay(alignment: .bottomLeading) {
                 // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
                 if let b = beatAdvice {
@@ -307,17 +325,18 @@ struct WeekMainView: View {
         let jitsuFill = budget > 0 ? min(1, s.growthUsed / budget) : 0
         let compatFill = min(1, max(0, s.compat / cfg.compatCap))
         return VStack(alignment: .leading, spacing: 7) {
-            statBar(name: "実力", glyph: "sparkles", color: Theme.cSense,
+            statBar(name: "実力", glyph: "sparkles", color: Theme.curtainLit,
                     value: GameEngine.jitsuryoku(s, config: cfg), fill: jitsuFill,
                     gainFill: budget > 0 ? lastJitsuryokuGain / budget : 0)
-            statBar(name: "相性", glyph: "heart.fill", color: Theme.cCompat,
+            statBar(name: "相性", glyph: "heart.fill", color: Theme.curtainLit,
                     value: s.compat, fill: compatFill,
                     gainFill: max(0, session.lastCompatGain) / cfg.compatCap)
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
-        .frame(width: 196)
-        .background(RoundedRectangle(cornerRadius: 14).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2.5))
+        .frame(width: 214)
+        .background(Color(hex: 0xFBF3E2).opacity(0.94))
+        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+        .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 0.8).padding(3))
     }
 
     /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分をオレンジで重ねる＝「押した週に何が動いたか」。
@@ -326,11 +345,7 @@ struct WeekMainView: View {
         let full = fill >= 0.999
         let shown = gainsVisible && session.lastDeltaWeek == session.week ? min(gainFill, fill) : 0
         return HStack(spacing: 7) {
-            ZStack {
-                Circle().fill(color).frame(width: 22, height: 22)
-                Image(systemName: glyph).font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
-            }
-            Text(name).font(.maru(11)).foregroundStyle(Theme.ink).fixedSize()
+            Text(name).font(.maru(13, weight: .black)).foregroundStyle(Theme.sumi).fixedSize()
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack(alignment: .leading) {
@@ -346,8 +361,9 @@ struct WeekMainView: View {
                 .animation(.easeOut(duration: 0.6), value: fill)
                 .animation(.easeOut(duration: 0.3), value: shown)
             }
-            .frame(height: 11)
-            Text("\(Int(value.rounded()))").font(.maru(15)).monospacedDigit().foregroundStyle(Theme.ink)
+            .frame(height: 8)
+            Text("\(Int(value.rounded()))").font(.maru(26, weight: .black)).monospacedDigit().foregroundStyle(Theme.curtain)
+                .shadow(color: Theme.goldLeafHi, radius: 0, x: 1, y: 1)
                 .frame(minWidth: 26, alignment: .trailing).fixedSize()   // 3桁でも切れない（旧 width 26 は「100」で溢れた）
                 .contentTransition(.numericText())
                 .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
@@ -694,23 +710,19 @@ struct WeekMainView: View {
                 if c == .ネタを書く { openNetaWrite = true }
             }
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Image(systemName: c.glyph).font(.system(size: 15, weight: .bold)).foregroundStyle(.white)
-                        .frame(width: 30, height: 30)
-                        .background(gated ? Theme.inkFaint : tint, in: RoundedRectangle(cornerRadius: 8))
-                    Text(c.rawValue).font(.maru(18)).foregroundStyle(gated ? Theme.inkSub : Theme.ink)
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold)).foregroundStyle(Theme.inkFaint)
-                }
+            let big = (c == .ネタを書く || c == .練習)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(c.rawValue).font(.maru(big ? 26 : 19, weight: .black))
+                    .foregroundStyle(gated ? Theme.inkFaint : Theme.sumi)
+                    .shadow(color: gated ? .clear : Theme.goldLeafHi.opacity(0.8), radius: 0, x: 1, y: 1)
                 Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
             }
-            .padding(.horizontal, 12).padding(.vertical, 12)
-            .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
-            .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(gated ? Color(hex: 0xF3EFE7) : Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
-                .stroke(gated ? Theme.line : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : tint.opacity(0.55),
-                        lineWidth: (c == .能力アップ && unspentBeforeStage) ? 4.5 : 3))
+            .padding(.horizontal, 14).padding(.vertical, big ? 14 : 9)
+            .frame(maxWidth: .infinity, minHeight: big ? 84 : 62, alignment: .leading)
+            .background(Rectangle().fill(gated ? Color(hex: 0xEFE8DA) : Color(hex: 0xFBF3E2)))
+            .overlay(alignment: .leading) { Rectangle().fill(gated ? Theme.line : Theme.verm).frame(width: 5) }
+            .overlay(Rectangle().stroke(gated ? Theme.line : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : Theme.sumi,
+                                        lineWidth: (c == .能力アップ && unspentBeforeStage) ? 3.5 : 1.5))
         }
         .buttonStyle(PressableStyle())
     }
@@ -913,7 +925,7 @@ struct WeekMainView: View {
             HStack(spacing: 12) {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text("\(session.year)年目").font(.maru(11)).foregroundStyle(.white.opacity(0.7))
-                    Text("\(session.week)週").font(.maru(19)).foregroundStyle(.white)
+                    Text("\(session.week)週").font(.maru(24, weight: .black)).foregroundStyle(Theme.goldLeafHi)
                         .contentTransition(.numericText())
                 }
                 .fixedSize()
@@ -933,7 +945,8 @@ struct WeekMainView: View {
             }
         }
         .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 12)
-        .background(Theme.botbarDark.ignoresSafeArea(edges: .bottom))
+        .background(Theme.curtainShade.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
     }
 
     private func menuButton(_ glyph: String, _ label: String, action: @escaping () -> Void) -> some View {
