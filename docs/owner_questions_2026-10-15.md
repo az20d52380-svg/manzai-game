@@ -12,6 +12,7 @@
 5. 能力アップ画面の見やすさ → `proposal_q65_ability_up_v0.md`（`proposal_shots/q65_*`）
 6. 週のメイン画面を「AIっぽくない」見た目に → `proposal_q70_week_main_v0.md`（`q70_week_*`）
 7. 大会結果を段階的に見せる → `proposal_q70_result_v0.md`（`q70_result_*`・実装はブランチ worktree-agent-afa362d58fc5f1572 の 06ff80f）
+7b. ネタ帳とショップを「AIっぽくない」見た目に → `proposal_q70_neta_shop_v0.md`（`q70_neta_*`・`q70_shop_*`・ブランチ 1bf0c62）
 8. 以前からの表示の小さな直し6本（`docs/proposal_patches/`）→ 1本ずつ前後スクショで
 
 ## C. 物語・会話
