@@ -22,6 +22,7 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
     /// 「引き抜き」実行中のカードid（(B)版: フェード0.12s→実行。多重タップ防止を兼ねる）。
@@ -150,7 +151,7 @@ struct WeekMainView: View {
         .onChange(of: session.pendingChoiceEvent) { _, kind in
             if kind == nil { showEvent = false } else { syncEventPresentation() }
         }
-        .onAppear { syncEventPresentation() }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
@@ -193,10 +194,11 @@ struct WeekMainView: View {
             withAnimation(Theme.Motion.exit) { weekStampVisible = false }
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
+        .onChange(of: session.year) { _, _ in maybeShowTiredNotice() }
         .onChange(of: session.week) { _, _ in banterIndex = 0 }   // 掛け合いの読み位置は週頭でリセット
         .task(id: toast) {
             if let t = toast {
-                try? await Task.sleep(nanoseconds: t.count > 20 ? 2_600_000_000 : 1_400_000_000)
+                try? await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)
                 toast = nil
             }
         }
@@ -1026,6 +1028,14 @@ struct WeekMainView: View {
     }
 
     private func showToast(_ t: String) { toast = t }
+
+    /// 年初の週に1回だけ：前の年の大会で使って飽きが進んだネタを事実だけ知らせる（表示のみ）。
+    private func maybeShowTiredNotice() {
+        guard session.year >= 2, session.week <= 1, tiredNoticeYear != session.year,
+              let n = session.activeNetas.first(where: { ($0.tiredYears ?? 0) >= 1 }) else { return }
+        tiredNoticeYear = session.year
+        showToast("『\(n.name)』は客に見飽きられてきた。新しいネタを書くと元どおり。")
+    }
 
     /// §4 満了トーストを「この年1回だけ」出す（onChange の二経路から呼ばれても多重発火しない）。
     private func maybeShowVesselFullToast(_ full: Bool) {

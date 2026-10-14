@@ -227,7 +227,7 @@ struct YearResultView: View {
         HStack(spacing: 0) {
             total("今年の賞金", session.totalPrize, yen: true)
             Divider().frame(height: 30)
-            total("知名度", Int(s.fame), yen: false)
+            total("知名度", Int(s.fame), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
             Divider().frame(height: 30)
             total("最終所持金", s.money, yen: true)
         }
@@ -236,12 +236,15 @@ struct YearResultView: View {
         .e1()
     }
 
-    private func total(_ k: String, _ v: Int, yen: Bool) -> some View {
+    private func total(_ k: String, _ v: Int, yen: Bool, delta: Int? = nil) -> some View {
         VStack(spacing: 3) {
             CountUpText(value: v, yen: yen)
                 .font(.maru(.title)).foregroundStyle(v < 0 ? Theme.vermD : Theme.ink)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(k).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+            if let delta, delta > 0 {
+                Text("（+\(delta)）").font(.maru(12, weight: .bold)).foregroundStyle(Theme.goldDeep)
+            }
         }
         .frame(maxWidth: .infinity)
     }

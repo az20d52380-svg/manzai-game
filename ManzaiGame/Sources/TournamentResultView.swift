@@ -149,6 +149,14 @@ struct TournamentResultView: View {
                                         .shadow(color: Theme.gold.opacity(0.55), radius: 10)
                                         .fixedSize()
                                 }
+                                if session.lastDeltaWeek == summary.week, session.lastFameDelta >= 0.5 {
+                                    // 知名度の増えた分（数字のみ・表示専用）
+                                    Text("知名度 \(Int(summary.state.fame.rounded()))（+\(Int(session.lastFameDelta.rounded()))）")
+                                        .font(.maru(12, weight: .bold)).foregroundStyle(Theme.paperInk)
+                                        .padding(.horizontal, 10).padding(.vertical, 4)
+                                        .background(.white.opacity(0.92), in: Capsule())
+                                        .fixedSize()
+                                }
                             }
                             .transition(.opacity)
                             Button {
