@@ -24,4 +24,5 @@
 
 ## D. 以前からの残り（`decision_brief_2026-10-14.md` の順）
 12. 書くネタと勝負ネタを分けるか／途中からやり直す導線（試作あり `proposal_settings_restart_v0.md`・`settings_*`・ブランチ 7919770）／選択イベントの背景を場所ごとに（試作あり `proposal_event_backgrounds_v0.md`・`ev_bg_*`・ブランチ 5ddc14b）／観客の声の出し方（試作あり `proposal_fan_report_v0.md`・`fan_*`・ブランチ 431f07f）／客席から観た決勝の判を「観戦」に
+12b. 実測で見つかった点（`stuck_and_exploit_check_v0.md`）：ふつうに遊べば詰まない・抜け道も無い。ただし①バイトをほとんどせず練習ばかりだと夜逃げしやすい（借金後にバイトに切り替えれば戻れる）②相性が誰でも最後は上限20に着く。どちらも直し方2案ずつ。
 13. 経験点の数字をパワプロのように大きくする（キュー66・上が全部終わってから）→ 材料 `pawapro_ability_up_research_v0.md`
