@@ -248,11 +248,13 @@ FAME_V62        = False
 FAME_OTHER_MULT = 1.0
 FAME_DIM_POW    = 2.0
 FAME_FINALIST   = 0.0
+FAME_OTHER_CAP  = 100.0  # 案G：その他の伸びが鈍っていく先（80＝決勝に出ないままでは80で頭打ち）
+FAME_CHAMP_FLAT = False  # 案G：優勝は逓減なしの +FAME_CHAMP（2回目の優勝で100に届く形）
 _B_ADD = B.add
 
 def _add_v62(s, key, amt):
     if FAME_V62 and key == "fame" and amt > 0:
-        amt = amt * FAME_OTHER_MULT * (1 - s.fame / 100) ** FAME_DIM_POW
+        amt = amt * FAME_OTHER_MULT * max(0.0, 1 - s.fame / FAME_OTHER_CAP) ** FAME_DIM_POW
     _B_ADD(s, key, amt)
 
 B.add = _add_v62   # OFF の時は素通し（従来と同一）
@@ -534,7 +536,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 acted = True
                 if ok:
                     s.money += GP_PRIZE
-                    if FAME_V62:
+                    if FAME_V62 and FAME_CHAMP_FLAT:
+                        _B_ADD(s, "fame", FAME_CHAMP)
+                    elif FAME_V62:
                         _fame_big(s, FAME_CHAMP)
                     else:
                         B.add(s, "fame", FAME_CHAMP)

@@ -18,7 +18,7 @@
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
 
 ## 中断中（未コミットの変更が作業ツリーにある）
-- （なし）
+- 2026-10-15 5時間枠61%で待機：動いていた物＝①審査員コメント書き直し（opus・worktree・終わったら cherry-pick→swift test）②週メイン画面の試作（sonnet・worktree・案なので main に入れず docs と shots だけ取り込む）③試算 exp_q60_62.py 案G（結果 scratchpad/q6062G.txt）。次＝キュー60/62 の案をまとめて `docs/q60_q62_proposal_v0.md`（推奨：飽きD×知名度・他×0.6・決勝+30）→オーナーに聞く。
 - （講評の調査は済：9adeebf）
 ## キュー（上から）
 70. [ ] 【オーナー指示 2026-10-15「ゲームのUIUXがAIっぽすぎる」】売れているスマホゲーム・育成ゲーム（ウマ娘・パワプロ・アイドル系・モンスト等）のUI/UXをリサーチ（sonnet）→今の画面の「AIっぽさ」（文字だらけ・均一なカード・角丸の箱の羅列・演出の無さ等）を目視で棚卸し（sonnet・MZ_UI フック）→やってて楽しい UI/UX の案（画面ごと・変更前後のスクショ）→オーナーに見せる。`docs/uiux_not_ai_research_v0.md`・`docs/uiux_not_ai_proposal_v0.md`。

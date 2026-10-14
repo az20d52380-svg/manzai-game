@@ -16,14 +16,11 @@ OFFER_NOW = list(B.OFFER_RATES)
 OFFER_NEW = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]
 D = dict(V2_TIRED_PEN=1.0, V2_TIRED_CAP=2)
 CONFIGS = [
-    ("今（飽きなし・知名度いま）", dict(), OFFER_NOW),
-    ("飽きD", D, OFFER_NOW),
-    ("飽きD・書き替えボット", dict(D, V2_TIRED_NEW=True), OFFER_NOW),
-    ("飽きD＋知名度 他×0.6・決勝+30・優勝+30", dict(D, FAME_V62=True, FAME_OTHER_MULT=0.6, FAME_FINALIST=30.0, FAME_CHAMP=30), OFFER_NEW),
-    ("飽きD＋知名度 他×1.0・決勝+30・優勝+30", dict(D, FAME_V62=True, FAME_OTHER_MULT=1.0, FAME_FINALIST=30.0, FAME_CHAMP=30), OFFER_NEW),
-    ("飽きD＋知名度 他×0.6・決勝+40・優勝+40", dict(D, FAME_V62=True, FAME_OTHER_MULT=0.6, FAME_FINALIST=40.0, FAME_CHAMP=40), OFFER_NEW),
-]
-KEYS = ("V2_TIRED_PEN", "V2_TIRED_CAP", "V2_TIRED_NEW", "FAME_V62", "FAME_OTHER_MULT", "FAME_FINALIST", "FAME_CHAMP")
+    (f"飽きD＋知名度G 他×{m}・頭打ち{cap}・決勝+30・優勝+{c}（逓減なし）",
+     dict(D, FAME_V62=True, FAME_OTHER_MULT=m, FAME_OTHER_CAP=float(cap), FAME_FINALIST=30.0, FAME_CHAMP=c, FAME_CHAMP_FLAT=True), OFFER_NEW)
+    for m, cap, c in ((0.6, 80, 10), (1.0, 80, 10), (0.6, 70, 15))]
+
+KEYS = ("V2_TIRED_PEN", "V2_TIRED_CAP", "V2_TIRED_NEW", "FAME_V62", "FAME_OTHER_MULT", "FAME_FINALIST", "FAME_CHAMP", "FAME_OTHER_CAP", "FAME_CHAMP_FLAT")
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
