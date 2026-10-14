@@ -11,14 +11,20 @@ struct SettingsView: View {
     var onQuitRun: (() -> Void)? = nil
     @AppStorage("vol_bgm") private var bgm: Double = 0.7
     @AppStorage("vol_se") private var se: Double = 0.8
-    @State private var quitArmed = false
+    /// 0=通常 1=確認1段目 2=確認2段目
+    @State private var restartStep = 0
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            Color(hex: 0xFBF3E2).ignoresSafeArea()
             VStack(spacing: 0) {
                 grabber
                 header
+                    .onAppear {
+                        #if DEBUG
+                        if let n = Int(ProcessInfo.processInfo.environment["MZ_STEP"] ?? "") { restartStep = n }
+                        #endif
+                    }
                 ScrollView {
                     VStack(spacing: Theme.Sp.s12) {
                         section("音量") {
@@ -36,23 +42,11 @@ struct SettingsView: View {
                             }
                         }
                         if let onQuitRun {
-                            section("このキャリア") {
-                                Button {
-                                    if quitArmed { onQuitRun() } else { quitArmed = true }
-                                } label: {
-                                    HStack {
-                                        Text(quitArmed ? "もう一度押すと、ここまでの記録を消してタイトルへ戻る"
-                                                       : "やめてタイトルへ戻る")
-                                            .font(.maru(13)).foregroundStyle(quitArmed ? Theme.verm : Theme.ink)
-                                        Spacer()
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                            }
+                            section("このキャリア") { restartBlock(onQuitRun) }
                         }
                         // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
                         Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
-                            .font(.maru(10.5)).foregroundStyle(Theme.inkDim)
+                            .font(.maru(10.5)).foregroundStyle(Theme.inkSub)
                             .padding(.top, Theme.Sp.s8)
                         Text("\(AppInfo.displayName) v\(AppInfo.version)").font(.maru(10.5)).foregroundStyle(Theme.inkFaint)
                     }
@@ -62,38 +56,84 @@ struct SettingsView: View {
         }
     }
 
-    private var grabber: some View {
-        Capsule().fill(Theme.inkFaint).frame(width: 40, height: 5).padding(.top, 10).padding(.bottom, 4)
-    }
+    private var grabber: some View { Color.clear.frame(height: 6) }
 
+    /// 臙脂＋金の帯（週のメイン画面と同じ色）。寄席文字風の見出し。
     private var header: some View {
-        HStack {
-            Text("設定").font(.maru(16)).foregroundStyle(Theme.ink)
-            Spacer()
-            Button(action: onClose) { Image(systemName: "xmark.circle.fill").font(.system(size: 24)).foregroundStyle(Theme.inkFaint) }
-                .buttonStyle(PressableStyle())
-                .accessibilityLabel("閉じる")
-        }.padding(.horizontal, Theme.Sp.s16).padding(.bottom, Theme.Sp.s8)
+        HStack(spacing: 10) {
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Text("設定").font(.maru(22, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Button(action: onClose) {
+                Text("閉じる").font(.maru(12, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1))
+            }
+            .buttonStyle(PressableStyle())
+            .accessibilityLabel("閉じる")
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.maru(11)).foregroundStyle(Theme.inkDim)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi)
             VStack(spacing: 8) { content() }
-                .padding(Theme.Sp.s16).background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e1()
+                .padding(Theme.Sp.s16)
+                .background(Color(hex: 0xFBF3E2))
+                .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 5) }
+                .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+        }
+    }
+
+    /// 最初からやり直す（確認2段・セーブは onQuitRun＝GameSession.abandonRun が消してタイトルへ戻す）
+    @ViewBuilder
+    private func restartBlock(_ onQuitRun: @escaping () -> Void) -> some View {
+        if restartStep == 0 {
+            Button { restartStep = 1 } label: {
+                HStack {
+                    Text("最初からやり直す").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(restartStep == 1 ? "最初からやり直しますか？\n今のコンビの記録は消えます。"
+                                      : "本当に消しますか？\nもとには戻せません。")
+                    .font(.maru(14, weight: .black)).foregroundStyle(restartStep == 1 ? Theme.sumi : Theme.vermD)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 10) {
+                    Button { restartStep = 0 } label: {
+                        Text("やめる").font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+                    }
+                    Button { if restartStep == 1 { restartStep = 2 } else { onQuitRun() } } label: {
+                        Text(restartStep == 1 ? "やり直す" : "消して最初から").font(.maru(14, weight: .black)).foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(restartStep == 1 ? Theme.verm : Theme.curtain)
+                            .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1.5))
+                    }
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
     private func sliderRow(_ label: String, value: Binding<Double>) -> some View {
         HStack(spacing: 12) {
-            Text(label).font(.maru(13)).foregroundStyle(Theme.ink).frame(width: 44, alignment: .leading)
+            Text(label).font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 44, alignment: .leading)
             Slider(value: value, in: 0...1).tint(Theme.verm)
-            Text("\(Int(value.wrappedValue * 100))").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkDim).frame(width: 30, alignment: .trailing)
+            Text("\(Int(value.wrappedValue * 100))").font(.maru(12, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi).frame(width: 30, alignment: .trailing)
         }
     }
 
     private func linkRow(_ label: String) -> some View {
-        HStack { Text(label).font(.maru(13)).foregroundStyle(Theme.ink); Spacer()
+        HStack { Text(label).font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi); Spacer()
             Image(systemName: "arrow.up.right.square").font(.system(size: 13)).foregroundStyle(Theme.inkFaint) }
     }
 }

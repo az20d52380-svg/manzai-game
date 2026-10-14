@@ -34,7 +34,7 @@ struct RootView: View {
             case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
                 .onAppear { if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { session.debugSeedKirokuLog() } }
             case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
-            case "settings": SettingsView(onClose: {})                     // S1b目視
+            case "settings": SettingsView(onClose: {}, onQuitRun: ProcessInfo.processInfo.environment["MZ_STEP"] != nil ? {} : nil)   // S1b目視（MZ_STEP=0/1/2 で確認の段へ）
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "intro": ReminiscencePlayer(cards: IntroFlowView.cards, onComplete: {}) // 導入の回想カード目視
