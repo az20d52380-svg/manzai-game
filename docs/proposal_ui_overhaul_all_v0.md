@@ -31,3 +31,9 @@ fda314d 提案q65: 能力アップ画面の見やすさ（押せる＋/押せな
 
 ## §4 スクショ
 docs/proposal_shots/all_week / all_allocate / all_neta / all_event / all_settings / all_result .png
+
+## §5 残りの項目の対応（済）
+- 済 能力アップのカード本体を罫線パネル（生成り面＋墨の罫＋朱の左帯・Theme/AbilityUpView の mzPanel）に。
+- 済 イベント画面の下半分の無地ピンクを生成りの地に。
+- 済 画面の地の決まり＝生成り（Theme.kinari）＋上部の臙脂の帯。週メイン・能力アップ・ネタ帳・設定・イベント・年間結果に適用（旧 bgGradient は導入・舞台系の画面に残る）。
+- 撮り直し: all_week / all_allocate / all_neta / all_event。GameCore 124 tests green。
