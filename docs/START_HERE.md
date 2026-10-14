@@ -132,6 +132,7 @@ cd GameCore && swift test
 - `improvement_proposals_v0.md` — ゲーム改善・修正提案 v0 — 優先度付き32項目
 - `item_design_v0.md` — アイテム設計 v0 — ゲーム内通貨・課金・金余り対策
 - `judge_comments_v1.md` — 審査員コメント量産 v1 — 実在講評の型分析と予選紙講評・決勝コメントの増量
+- `judge_comment_rewrite_v1.md` — 審査員コメント書き直し v1（2026-10-15）— 具体物の差し込み（型ごとの言い方の表）・7人の声の固定・前後比較。正本は GameCore/JudgeTalk.swift
 - `laugh_char_audit_v0.md` — 「笑」文字 repo横断監査 v0 — 執行材料（提案のみ・非適用）
 - `legal_risk_v0.md` — 法務リスク・チェックリスト v0（弁護士確認用・一次まとめ）
 - `market_research_v1.md` — 市場・価格リサーチ v1 — 育成SLG/お笑いゲームの市場・価格・課金モデル（業態判断の材料）
