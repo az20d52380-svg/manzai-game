@@ -165,3 +165,4 @@ cd GameCore && swift test
 - `decision_brief_2026-10-14.md` — 判断待ちの並べ直し（聞く順・推奨・材料）・2026-10-14
 - `review_swift_2026-10-14.md` — 直近の Swift 差分の不具合点検（sonnet・2026-10-14）
 - `proposal_patches/README.md` — 判断待ちの推奨どおりの差分（当てるだけ・本線は未適用）
+- `judge_final_vote_drafts_v0.md` — 最終決戦「一票の理由」の下書き（7人×2・判断待ち P7 の材料）・2026-10-14
