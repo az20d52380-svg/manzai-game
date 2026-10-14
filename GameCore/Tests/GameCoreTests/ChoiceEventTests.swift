@@ -252,6 +252,10 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertEqual(r.state.netas[0].polish, 30 + config.netaReviseGain, accuracy: 1e-9, "ブースト0では素の上昇")
     }
 
+    func test0023_isRetiredFromWeeklyPool() {
+        XCTAssertFalse(ChoiceEventKind.regularEmployment.isWeeklyRandom, "0023 は廃止＝週次抽選に入らない")
+    }
+
     // MARK: 0023 成長天井減算（growthCeiling）— budget を縮める／nil no-op／0下限／実成長が縛られる
 
     func test0023_growthCeilingReducesBudgetClampsAtZeroAndNilIsNoOp() {

@@ -22,7 +22,9 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     case greenroomSilentTen  // 0027: 楽屋で無言の十分（噛み合い帯 相性8-14・選択肢なしフレーバー）
     case lastTrainReview     // 0014: 終電までの反省会（前座帯 知名度<20・選択肢あり）
     case luckyThirdLine      // 0029: 三行目を一度で（好調帯 体力80+・連敗なし・大会前・選択肢なしフレーバー）
-    case regularEmployment   // 0023: 正社員の話（バイト多数×金欠<10万・選択肢あり・段階1のみ）
+    // 0023: 正社員の話。オーナー決定(2026-10-15)で廃止＝抽選から外した（isWeeklyRandom=false）。
+    // ただし ChoiceEventKind は Codable で中断セーブ(firedWeeklyEvents/pendingChoiceEvent)に載るため、ケースを消すと古いセーブが読めない＝ケースと本文は互換のため残す。
+    case regularEmployment
     case wroteOneTonight     // 0016: 書けた一本（持ちネタあり＝一本まとまった夜・選択肢あり・翌週バフはPhase2）
     case photoShootOffer     // 0022: 撮られる仕事（知名度20-50・選択肢あり。popup2択化で rollOffer 非依存＝golden不変）
 
@@ -30,7 +32,7 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     public var isWeeklyRandom: Bool {
         switch self {
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .regularEmployment, .wroteOneTonight, .photoShootOffer:
+             .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer:
             return true
         default:
             return false

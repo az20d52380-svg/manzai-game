@@ -472,8 +472,6 @@ final class GameSession {
             // 0029: 連敗していない＋大会が視界（2-4週前）＝好調が"負けの反動"に読まれない帯（lossStreak/次マイルストンを要する）
             guard lossStreak == 0, let m = nextMilestoneForEvent() else { return false }
             return (2...4).contains(m.week - week)
-        case .regularEmployment:
-            return jobCount >= 8   // 0023: バイトを重ねた金欠中盤【仮】。UI層カウンタ
         default:
             return true
         }
@@ -553,8 +551,10 @@ final class GameSession {
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .regularEmployment, .wroteOneTonight, .photoShootOffer:
+             .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
+        case .regularEmployment:
+            break   // 0023 廃止（抽選外）。古いセーブの保留中イベント互換のためケースだけ残す
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）
         case .taniguchiShortJob:

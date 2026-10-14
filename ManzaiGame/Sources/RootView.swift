@@ -124,7 +124,6 @@ struct RootView: View {
                 case "0027": kind = .greenroomSilentTen
                 case "0014": kind = .lastTrainReview
                 case "0029": kind = .luckyThirdLine
-                case "0023": kind = .regularEmployment
                 case "0016": kind = .wroteOneTonight
                 case "0012": kind = .taniguchiShortJob
                 case "0022": kind = .photoShootOffer
