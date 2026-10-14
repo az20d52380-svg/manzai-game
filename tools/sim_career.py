@@ -229,7 +229,38 @@ V2_POWER_W    = 0.7
 V2_POLISH_W   = 0.5
 V2_COEF_BUZZ  = 0.02
 V2_SECOND_MIN = 60.0
+# 2026-10-15 オーナー決定（キュー60）：同じネタを毎年使うと飽きられる＝前の年に大会で掛けたネタは年初に buzz −D（同じ年の中では減らない）
+V2_YEAR_STALE = 0.0   # D【仮】。0＝従来どおり
+V2_TIRED_PEN  = 0.0   # 案B【仮】：大会で掛けた年の数×P を補正から引く（ライブでは戻らない＝客が覚えている）。0＝無し
+V2_TIRED_CAP  = 99    # 案C：飽きの段の上限（3＝最大 −3P）
+V2_TIRED_REST_YEARS = 0  # 案E：この年数続けて掛けなかったら飽きが全部戻る（寝かせた再演・0＝無し）
+V2_TIRED_REST = False # 案C：前の年に掛けなかったネタは飽きが1段戻る（寝かせると戻る＝再演）
+V2_TIRED_NEW  = False # 案B のボット：書く時、飽きられたネタ（使った年≥1）があれば新ネタに書き替える（実プレイヤーの「新ネタを書く」の近似）
 V2_WRITE_GAIN = {"ネタ作り": V2_REVISE, "喫茶店で書く": 10.0, "ファミレスで書く": 12.0}
+
+# ============================================================
+# 知名度 v62（2026-10-15 オーナー決定・キュー62・既定OFF＝golden 非対象）
+# 「徐々に上がる。決勝に行けば1年目でも一気に上がる。他は甘くない。100＝優勝を重ねた大御所」
+# その他の伸び（大会・回戦・オファー・イベント）＝×FAME_OTHER_MULT×(1−知名度/100)^FAME_DIM_POW
+# 決勝進出 +FAME_FINALIST・優勝 +FAME_CHAMP は ×(1−知名度/100)（1回の優勝では100に届かない）
+# ============================================================
+FAME_V62        = False
+FAME_OTHER_MULT = 1.0
+FAME_DIM_POW    = 2.0
+FAME_FINALIST   = 0.0
+_B_ADD = B.add
+
+def _add_v62(s, key, amt):
+    if FAME_V62 and key == "fame" and amt > 0:
+        amt = amt * FAME_OTHER_MULT * (1 - s.fame / 100) ** FAME_DIM_POW
+    _B_ADD(s, key, amt)
+
+B.add = _add_v62   # OFF の時は素通し（従来と同一）
+
+def _fame_big(s, amt):
+    """決勝進出・優勝の伸び（v62 のみ・逓減は1乗）"""
+    if FAME_V62 and amt > 0:
+        _B_ADD(s, "fame", amt * (1 - s.fame / 100))
 
 def _neta_new():
     if NETA_V2:
@@ -245,7 +276,7 @@ def _v2_live(s, n, polish_gain):
 def _neta_bonus(n, series):
     if NETA_V2:
         bonus = (n["comp"] - 50) * NETA_COEF_COMP + (n["buzz"] - 50) * V2_COEF_BUZZ
-        return max(-NETA_CLAMP, min(NETA_CLAMP, bonus))
+        return max(-NETA_CLAMP, min(NETA_CLAMP, bonus)) - V2_TIRED_PEN * n.get("tired", 0)
     comp_part = (n["comp"] - 50) * NETA_COEF_COMP
     if series in n["used"]:
         comp_part *= 0.5   # 同一大会系統への再投入は完成度補正半減（審査員は覚えている）
@@ -264,7 +295,8 @@ def _neta_pick(s, series, rng):
 
 def _neta_use(n, series):
     if NETA_V2:
-        return   # Swift の大会は buzz/polish を動かさない（netaScoreBonus は読むだけ）
+        n["used_y"] = True   # 年初の飽き（V2_YEAR_STALE）用の印だけ。大会は buzz/polish を動かさない
+        return
     n["used"].add(series)
     n["fresh"] = max(0.0, n["fresh"] + NETA_USE_FRESH)
 
@@ -272,8 +304,11 @@ def _neta_on_train(s, arg):
     """稽古行動をネタ資産に接続（能力効果は従来どおり併存）"""
     if NETA_V2:
         if arg in V2_WRITE_GAIN:   # 家・喫茶店・ファミレスで書く（GameConfig.netaWriteTrainings／netaPlaceGain）
+            tired = [x for x in s.netas if x.get("tired", 0) >= 1]
             if len(s.netas) < 2:
                 s.netas.append(_neta_new())
+            elif V2_TIRED_NEW and tired:
+                s.netas[s.netas.index(max(tired, key=lambda x: x["tired"]))] = _neta_new()
             else:
                 n = min(s.netas, key=lambda x: x["comp"])
                 n["comp"] = min(100.0, n["comp"] + V2_WRITE_GAIN[arg])
@@ -467,6 +502,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     gp_stage += 1
                     if gp_stage == len(GP_ROUNDS):
                         finalist = True
+                        _fame_big(s, FAME_FINALIST)
                 else:
                     if RUN_BOREDOM is not None:      # 「同一回戦で連続」のみ数える
                         for k in list(RUN_BOREDOM):
@@ -490,6 +526,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     if RUN_TRACK is not None:
                         RUN_TRACK["revival_pass"] = True
                     finalist = True
+                    _fame_big(s, FAME_FINALIST)
             if finalist:                             # 決勝（人気補正＝機微はここだけ効く）
                 eff_line = line_final + upset - FAME_FINAL_BONUS * (s.fame - 50) / 50
                 eff_line += _neta_line_adj(s, f"GP決勝{year}", rng, final=True)
@@ -497,7 +534,10 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 acted = True
                 if ok:
                     s.money += GP_PRIZE
-                    B.add(s, "fame", FAME_CHAMP)
+                    if FAME_V62:
+                        _fame_big(s, FAME_CHAMP)
+                    else:
+                        B.add(s, "fame", FAME_CHAMP)
                     _track_pass(s)
                     if RUN_TRACK is not None:
                         entered = RUN_TRACK.get("year_entered", [])
@@ -592,6 +632,18 @@ def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     best_stage, ever_final = 0, False
     prev_stage = 0
     for year in range(1, YEARS + 1):
+        if NETA_V2 and (V2_YEAR_STALE or V2_TIRED_PEN) and getattr(s, "netas", None):
+            for n in s.netas:   # 年初：前の年に大会で掛けたネタは飽きられる（乱数なし）
+                if n.pop("used_y", False):
+                    n["buzz"] = max(0.0, n["buzz"] - V2_YEAR_STALE)
+                    n["tired"] = min(V2_TIRED_CAP, n.get("tired", 0) + 1)
+                    n["rest"] = 0
+                elif V2_TIRED_REST and n.get("tired", 0) > 0:
+                    n["tired"] -= 1
+                elif V2_TIRED_REST_YEARS and n.get("tired", 0) > 0:
+                    n["rest"] = n.get("rest", 0) + 1
+                    if n["rest"] >= V2_TIRED_REST_YEARS:
+                        n["tired"], n["rest"] = 0, 0
         won, stage, finalist = run_year(pol, s, year, rng, gp_seed=(prev_stage >= 3))
         prev_stage = stage
         best_stage = max(best_stage, stage)
