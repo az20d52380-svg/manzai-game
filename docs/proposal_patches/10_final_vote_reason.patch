@@ -1,0 +1,44 @@
+diff --git a/ManzaiGame/Sources/FinalsPresentationView.swift b/ManzaiGame/Sources/FinalsPresentationView.swift
+index 6f09a37..4280c32 100644
+--- a/ManzaiGame/Sources/FinalsPresentationView.swift
++++ b/ManzaiGame/Sources/FinalsPresentationView.swift
+@@ -614,6 +614,12 @@ struct FinalsPresentationView: View {
+                     }
+                 }
+             }
++            // 出揃ったら、優勝組に入れた審査員のうち最後にめくった1人が理由を1文（判断待ち P7 推奨(b)）
++            if revealVotes == 7, let i = (0..<7).last(where: { d.voteOrder[$0] == d.winnerIndex }),
++               let reason = FinalsVoteReason.line(judge: d.judges[i].name, salt: session.year) {
++                TalkBubble(advice: Advice(name: d.judges[i].name, text: reason), faceSize: 40)
++                    .transition(.opacity)
++            }
+             VStack(spacing: 4) {
+                 Telop(text: revealVotes < 7 ? "タップで札をめくる（\(revealVotes)/7）" : "——開票、出揃った。",
+                       size: 14, color: revealVotes < 7 ? Theme.houseLight : Color(hex: 0xFFE07A))
+diff --git a/ManzaiGame/Sources/FinalsTalk.swift b/ManzaiGame/Sources/FinalsTalk.swift
+index 0f236fb..744319f 100644
+--- a/ManzaiGame/Sources/FinalsTalk.swift
++++ b/ManzaiGame/Sources/FinalsTalk.swift
+@@ -222,3 +222,22 @@ enum FinalsJudgeTalk {
+         ],
+     ]
+ }
++
++// MARK: 最終決戦の一票の理由（判断待ち P7 推奨(b)＝1人だけ1文・比較型・judge_final_vote_drafts_v0）
++
++enum FinalsVoteReason {
++    /// 優勝組に入れた審査員の1文。選び方は salt 剰余＝乱数非消費
++    static func line(judge: String, salt: Int) -> String? {
++        guard let pool = lines[judge], !pool.isEmpty else { return nil }
++        return pool[((salt % pool.count) + pool.count) % pool.count]
++    }
++    private static let lines: [String: [String]] = [
++        "天堂寺 銀郎": ["どっちも上手い。最後の一言で、腹が座っとったのはこっちや。", "同じ間でも、こっちは待てとった。それだけの差や。"],
++        "花園 千代": ["二人の顔が、二本目の方がずっとよう見えたんよ。", "ネタの出来は互角やわ。最後は、この二人が好きかどうかやった。"],
++        "卯月 走太": ["構成の完成度は向こう。ただ、一本目からの積み上げがこっちは効いてました。", "理屈で言うと互角です。最後の一分の跳ね方で、こっちに入れました。"],
++        "白波 剛": ["熱が最後まで落ちなかったのは、こっちだった！", "上手さなら向こうだ。でも俺は、こっちの声に持っていかれた！"],
++        "目白 慧": ["仕込みの回収が、こちらは一つも漏れていませんでした。", "設計は両方正しい。客席を最後まで離さなかったのはこちらです。"],
++        "神楽坂 とんぼ": ["緩めるところで、ちゃんと緩めてた。勘ですが、そこです。", "どちらもいい噺でした。帰り道に思い出すのは、こっちの方ですな。"],
++        "音羽 ルリ": ["出てきた瞬間に、客席の顔が明るくなったのはこっち。", "どっちも好き。でも明日、名前を言えるのはこっちのコンビ。"],
++    ]
++}
