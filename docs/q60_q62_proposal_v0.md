@@ -40,3 +40,6 @@
 
 ## 4. 決まった後の手順（規律A）
 Python（sim_career の既定値を決定値に）→ GameCore（GameConfig・年初処理・Neta に使った年の記録（Optional で古いセーブ互換）・知名度の加算）→ gen_golden → swift test を1コミット。
+
+## 5. 実装の準備（2026-10-15・オーナー確認待ち）
+推奨（飽きD＋知名度G 他×0.6）を規律Aどおり入れたコミットを **ブランチ `q60-62-impl`（bff0c29）** に置いた（main 未反映）。swift test 105 green・golden 再生成・同期チェック OK・アプリのビルド OK。オーナーが推奨どおりなら main に取り込むだけ。別の案なら GameConfig／sim_career の値を変えて golden を作り直す。
