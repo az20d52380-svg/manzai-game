@@ -454,6 +454,13 @@ struct FinalsPresentationView: View {
         #endif
     }
 
+    /// 講評に差し込む本番の材料（1本目のネタ・出順・ハマった夜・敗者復活経由・コンビの状態）。表示専用。
+    private var judgeScene: JudgeTalk.Scene {
+        let burst = session.pendingResult?.results.last(where: { $0.name == "GP決勝" })?.burst ?? false
+        return JudgeTalk.Scene.from(state: s, neta: session.selectedNeta, config: session.config, year: session.year,
+                                    burst: burst, order: d.order, viaRevival: session.reachedFinalViaRevival)
+    }
+
     private var commentsBeat: some View {
         let picks = commentPicks
         let i = min(commentStep, max(0, picks.count - 1))
@@ -462,15 +469,15 @@ struct FinalsPresentationView: View {
             if picks.indices.contains(i) {
                 let j = picks[i]
                 // 目視用（DEBUG）: MZ_PICKUP=ボケ行 で講評を差し替え、司会の拾いの1拍を必ず出す
-                let text = debugForcedComment ?? FinalsJudgeTalk.comment(
-                    judge: j.name, score: j.score, state: s, viaRevival: session.reachedFinalViaRevival,
-                    high: i == 0, salt: j.score &+ session.year &* 7 &+ d.order &+ i)
+                let salt = j.score &+ session.year &* 7 &+ d.order &+ i
+                let c = FinalsJudgeTalk.comment(judge: j.name, score: j.score, high: i == 0, scene: judgeScene, salt: salt)
+                let text = debugForcedComment ?? c.text
                 mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0))
                 TalkBubble(advice: Advice(name: j.name, text: text))
                     .id(j.name)
                     .transition(.opacity.combined(with: .offset(y: 8)))
                 // 審査員のボケ行なら、司会が拾う1拍（r6 §5-4・P3）
-                if let p = FinalsMC.pickup(after: text) {
+                if let p = debugForcedComment.map({ FinalsMC.pickup(after: $0, scene: judgeScene, salt: salt) }) ?? c.pickup {
                     mcBubble(p.mc)
                     if let reply = p.reply {
                         TalkBubble(advice: Advice(name: j.name, text: reply))

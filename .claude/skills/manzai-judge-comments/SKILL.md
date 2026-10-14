@@ -21,7 +21,7 @@ manzai-drama-voice の基調3行に加え、講評固有の1行を自分の言�
 - **予選紙講評**（審査員名非表示・紙の1行）か、**決勝コメント**（顔付き7審査員・署名あり）か。
 - スコア帯: E(〜49)/D(50-69)/C(70-84)/B(85-94)/A(95〜)。`final.B`=好調・褒め主体、`final.D`=厳しめ。**B帯が最大の枯渇ホットスポット**——増やすならまずB。
 - 状態フック（最大1つ発火）: 体力<30（後半失速）／メンタル<40（緊張・目泳ぎ）／相性≥18（掛け合い称賛）が実装済み。華≥90／敗者復活経由／同回戦3年連続は**設計のみ・コード未実装**（正本 judge_design_v0）。**依頼にフック指定がなければ、フックなしの一般帯として書く**（勝手に状態を仮定しない）。
-- 実装先はUI層。**予選の紙講評＝`ManzaiGame/Sources/JudgeData.swift`**、**決勝の顔付きコメント＝`ManzaiGame/Sources/FinalsTalk.swift`**（`FinalsJudgeTalk.lines`＝帯×審査員のプール・`hook`＝状態フック・`lowOnly`＝最低点の側だけの行／`FinalsMC.pickup`＝審査員のボケ行を司会が拾う1拍）。決勝の帯は表示点で A95〜／B91〜94／C87〜90／D〜86。選定はどちらもsalt剰余＝乱数非消費（GameCore・golden に触れない）。台帳は `docs/judge_comments_v1.md`。
+- 実装先（2026-10-15 v1 移行）: **文面と差し込みは `GameCore/Sources/GameCore/JudgeTalk.swift`**（`bandLines`＝帯×審査員／`sceneLines`＝出順・ハマった夜・再演・おろしたて・鉄板／`hookLines`＝状態フック／`Paper`＝予選の紙／`vocab`＝型ごとの具体物の言い方）。**新しい行は必ず {入り}{中}{一言}{締め}{題} のどれかを含める**（具体物の差し込み・`JudgeTalkTests` が検査）。決勝の帯は表示点で A95〜／B91〜94／C87〜90／D〜86。選定は salt の混ぜ＝乱数非消費（golden に触れない）。比較と規則: `docs/judge_comment_rewrite_v1.md`。旧の `JudgeData.swift`／`FinalsTalk.swift` は窓口だけ。
 
 ### STEP 2 — 審査員を選び、人格を読む
 
