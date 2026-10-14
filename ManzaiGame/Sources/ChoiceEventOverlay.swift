@@ -410,12 +410,12 @@ struct PlaceScene: View {
                 .position(x: w * 0.90, y: horizon / 2)
             VStack(spacing: 2) {
                 Text("えき").font(.system(size: 20, weight: .black)).foregroundStyle(Theme.ink)
-                Rectangle().fill(Theme.verm).frame(height: 4)
+                Rectangle().fill(Theme.verm).frame(width: 64, height: 4)
             }
             .padding(.horizontal, 18).padding(.vertical, 6)
             .background(Color(hex: 0xFFF8EA), in: RoundedRectangle(cornerRadius: 4))
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.ink.opacity(0.6), lineWidth: 2))
-            .position(x: w * 0.5, y: h * 0.30)
+            .position(x: w * 0.5, y: h * 0.40)
             Rectangle().fill(Color(hex: 0xE6B422)).frame(height: 7)
                 .position(x: w / 2, y: horizon + (h - horizon) * 0.78)
             Rectangle().fill(Theme.ink.opacity(0.55)).frame(height: h * 0.05)
@@ -426,7 +426,7 @@ struct PlaceScene: View {
                 .fill(LinearGradient(colors: [Color(hex: 0x1F2A4A), Color(hex: 0x3B3A66)], startPoint: .top, endPoint: .bottom))
                 .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color(hex: 0xE8D9B8), lineWidth: 4))
                 .overlay(Rectangle().fill(Color(hex: 0xE8D9B8)).frame(width: 4))
-                .frame(width: w * 0.60, height: h * 0.32).position(x: w * 0.5, y: h * 0.30)
+                .frame(width: w * 0.60, height: h * 0.24).position(x: w * 0.5, y: h * 0.42)
             ForEach(0..<3, id: \.self) { i in
                 VStack(spacing: 0) {
                     Rectangle().fill(Color.black.opacity(0.6)).frame(width: 2, height: h * 0.05)
