@@ -31,7 +31,7 @@
 |---|---|---|
 | 10 | 王者編：全員15年か10年＋延長／連覇の抑え／周回1年目優勝 | (A)+(C)・相性を周回ボーナスに（dynasty_v2 §8〜§12）※ネタ込みで測り直しが要る（15年・決勝+8 で初回優勝 12→24%＝neta_bonus §8） |
 | 11 | ファンレポの本来の形（判の前に2〜4枚） | ② 判の前に2〜4枚（fan_report_design §1） |
-| 12 | 審査員の講評 P2 話者数・P5 出番の文脈・P7 一票の理由・P8 開幕の掛け合い | r6 §7・r6c §6・P7 の下書き＝`judge_final_vote_drafts_v0.md`・P8 の下書き＝`judge_opening_banter_drafts_v0.md` |
+| 12 | 審査員の講評 P2 話者数・P5 出番の文脈・P7 一票の理由・P8 開幕の掛け合い | r6 §7・r6c §6・P7 の下書き＝`judge_final_vote_drafts_v0.md`・P8 の下書き＝`judge_opening_banter_drafts_v0.md`・P5 の下書き＝`judge_order_hook_drafts_v0.md` |
 | 13 | 経験点の名前が能力と似ている | ③ 改名（案：ネタ種・ことば帳・間・見せ場・場数）＝`exp_currency_naming_research_v0.md` |
 | 14 | 途中で最初からやり直す導線 | ② 設定に「最初からやり直す」（確認2段） |
 | 15 | 選択イベントの背景が場所と合わない | ② 場所ごとの小物を StageScene に |
