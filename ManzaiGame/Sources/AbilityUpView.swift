@@ -108,6 +108,9 @@ struct AbilityUpView: View {
         let gained = Int(v.rounded()) - Int(base[a].rounded())
         let next = nextPlusOne(a)
         let tag = next?.cost ?? priceTag(a)
+        let cap = a == .メンタル ? cfg.mentalCap : cfg.abilityCap
+        let nextG = Self.nextGrade(v, cap: cap)
+        let canTap = next != nil
         return HStack(spacing: 10) {
             Text(grade).font(.maru(20, weight: .heavy)).foregroundStyle(.white)
                 .frame(width: 40, height: 40)
@@ -116,25 +119,44 @@ struct AbilityUpView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(a)").font(.maru(15, weight: .bold)).foregroundStyle(Theme.ink)
                     Text("\(Int(v.rounded()))").font(.maru(18, weight: .heavy)).monospacedDigit().foregroundStyle(Theme.ink)
+                        .contentTransition(.numericText())
+                        .scaleEffect(gained > 0 ? 1.12 : 1, anchor: .leading)
                     if gained > 0 {
                         Text("+\(gained)").font(.maru(13, weight: .heavy)).foregroundStyle(Theme.moneyDeep)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                    Spacer(minLength: 0)
+                    if let g = nextG {
+                        Text("次の\(g.name)まで あと\(g.remain)").font(.maru(11, weight: .bold)).foregroundStyle(Theme.inkSub)
+                    } else {
+                        Text("最高の等級").font(.maru(11, weight: .bold)).foregroundStyle(Theme.inkSub)
                     }
                 }
                 GeometryReader { g in
                     ZStack(alignment: .leading) {
                         Capsule().fill(Theme.line)
                         Capsule().fill(Theme.abilityColor(a))
-                            .frame(width: g.size.width * Theme.rankProgress(v, cap: a == .メンタル ? cfg.mentalCap : cfg.abilityCap))
+                            .frame(width: g.size.width * Theme.rankProgress(v, cap: cap))
                     }
                 }
                 .frame(height: 6)
                 HStack(spacing: 4) {
+                    Text("必要").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.inkSub).lineLimit(1).fixedSize()
                     ForEach(tag, id: \.0) { c, n in
-                        let short = Self.points(pv[currency: c]) < n
-                        Text("\(c) \(n)").font(.maru(10.5, weight: .bold))
-                            .foregroundStyle(short ? Theme.inkFaint : Theme.currencyColor(c))
-                            .padding(.horizontal, 5).padding(.vertical, 1)
-                            .overlay(Capsule().stroke(short ? Theme.line : Theme.currencyColor(c), lineWidth: 1.2))
+                        let have = Self.points(pv[currency: c])
+                        let lack = n - have
+                        HStack(spacing: 3) {
+                            Text("\(c) \(n)").font(.maru(10.5, weight: .heavy)).lineLimit(1).fixedSize()
+                            if lack > 0 {
+                                Text("あと\(lack)").font(.maru(10.5, weight: .bold)).lineLimit(1).fixedSize()
+                            } else {
+                                Image(systemName: "checkmark").font(.system(size: 10, weight: .black))
+                            }
+                        }
+                        .foregroundStyle(lack > 0 ? Theme.ink : Theme.moneyDeep)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(lack > 0 ? Theme.line : Theme.moneyDeep.opacity(0.12), in: Capsule())
+                        .overlay(Capsule().stroke(lack > 0 ? Theme.lineStrong : Theme.moneyDeep, lineWidth: 1.2))
                     }
                 }
             }
@@ -142,17 +164,31 @@ struct AbilityUpView: View {
             Button {
                 guard let n = next?.steps else { return }
                 Haptics.tick()
-                taps += Array(repeating: a, count: n)
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                    taps += Array(repeating: a, count: n)
+                }
             } label: {
-                Image(systemName: "plus").font(.system(size: 18, weight: .heavy)).foregroundStyle(.white)
-                    .frame(width: 46, height: 46)
-                    .background(next == nil ? Theme.inkFaint : Theme.abilityColor(a), in: Circle())
+                Image(systemName: "plus").font(.system(size: 20, weight: .black))
+                    .foregroundStyle(canTap ? Color.white : Theme.inkSub)
+                    .frame(width: 48, height: 48)
+                    .background(canTap ? Theme.abilityColor(a) : Theme.card, in: Circle())
+                    .overlay(Circle().stroke(canTap ? Theme.ink.opacity(0.85) : Theme.lineStrong,
+                                             style: StrokeStyle(lineWidth: canTap ? 2 : 1.5, dash: canTap ? [] : [3, 3])))
+                    .shadow(color: canTap ? Theme.ink.opacity(0.85) : .clear, radius: 0, y: 3)
             }
-            .buttonStyle(PressableStyle(enabled: next != nil))
-            .disabled(next == nil)
+            .buttonStyle(PressableStyle(enabled: canTap))
+            .disabled(!canTap)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .animation(.spring(response: 0.3, dampingFraction: 0.55), value: gained)
+    }
+
+    /// 次の等級の名前と、そこまでの能力値（表示だけ）。最高等級なら nil
+    static func nextGrade(_ v: Double, cap: Double) -> (name: String, remain: Int)? {
+        guard let i = Theme.rankBounds.lastIndex(where: { v >= $0 }), i + 1 < Theme.rankBounds.count else { return nil }
+        let hi = Theme.rankBounds[i + 1]
+        return (Theme.rank(hi), max(1, Int((hi - v).rounded(.up))))
     }
 
     private var footer: some View {
