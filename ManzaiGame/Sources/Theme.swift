@@ -425,3 +425,8 @@ extension View {
     /// 週メインのチャンキーな面のハード影（真下・ぼかし0）
     func hardShadow(_ y: CGFloat = 3) -> some View { shadow(color: Theme.cmdShadow, radius: 0, y: y) }
 }
+
+/// お金の表示（マイナスは「−¥912,000」。「¥-912,000」だと円記号の後ろに負号が来て読みにくかった）
+enum Yen {
+    static func text(_ v: Int) -> String { v < 0 ? "−¥\((-v).formatted())" : "¥\(v.formatted())" }
+}

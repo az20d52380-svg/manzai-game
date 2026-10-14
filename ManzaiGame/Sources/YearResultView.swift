@@ -382,7 +382,7 @@ struct CountUpText: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Text(yen ? "¥\(shown.formatted())" : "\(shown)")
+        Text(yen ? Yen.text(shown) : "\(shown)")
             .monospacedDigit()
             .contentTransition(.numericText())
             .task(id: value) {

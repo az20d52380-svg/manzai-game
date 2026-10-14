@@ -918,7 +918,7 @@ struct WeekMainView: View {
                 .fixedSize()
                 staminaGauge
                 Spacer(minLength: 4)
-                Text("¥\(s.money.formatted())").font(.maru(15)).monospacedDigit()
+                Text(Yen.text(s.money)).font(.maru(15)).monospacedDigit()
                     .foregroundStyle(s.money < 0 ? Theme.verm : .white)
                     .lineLimit(1).minimumScaleFactor(0.7)
                     .contentTransition(.numericText())            // 収支が動くと数字が繰る

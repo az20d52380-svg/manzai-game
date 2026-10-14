@@ -34,7 +34,7 @@ struct ShopView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("お店").font(.maru(22, weight: .heavy)).foregroundStyle(Theme.ink)
-                Text("所持金 ¥\(session.state.money.formatted())").font(.maru(13, weight: .bold))
+                Text("所持金 \(Yen.text(session.state.money))").font(.maru(13, weight: .bold))
                     .monospacedDigit().foregroundStyle(Theme.moneyDeep)
             }
             Spacer()
