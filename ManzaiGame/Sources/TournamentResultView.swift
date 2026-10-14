@@ -203,6 +203,8 @@ struct TournamentResultView: View {
                                 .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
                         }
                     }
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Color.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 12))   // 明るい舞台/カードの上でも「タップで次へ」を読めるように
                 }
                 .padding(.horizontal, 18).padding(.bottom, 34)
                 .transition(.opacity)
