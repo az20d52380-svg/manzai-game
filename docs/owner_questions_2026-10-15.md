@@ -13,6 +13,7 @@
 6. 週のメイン画面を「AIっぽくない」見た目に → `proposal_q70_week_main_v0.md`（`q70_week_*`）
 7. 大会結果を段階的に見せる → `proposal_q70_result_v0.md`（`q70_result_*`・実装はブランチ worktree-agent-afa362d58fc5f1572 の 06ff80f）
 7b. ネタ帳とショップを「AIっぽくない」見た目に → `proposal_q70_neta_shop_v0.md`（`q70_neta_*`・`q70_shop_*`・ブランチ 1bf0c62）
+7c. カレンダーとエンディング → `proposal_q70_calendar_ending_v0.md`（`q70_cal_*`・`q70_end_*`・ブランチ c7ffa31）
 8. 以前からの表示の小さな直し6本＋実プレイ点検の5本（11 札を隠す／12 持ちネタ無しで出場する時の注意／13 波形の見出し／14 イベントの「タップで次へ」／15 決勝で1位との差）（`docs/proposal_patches/`・`proposal_shots/p11〜p15`）→ 1本ずつ前後スクショで
 
 ## C. 物語・会話
