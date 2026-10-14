@@ -36,18 +36,24 @@ struct AbilityUpView: View {
         .background(LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
     }
 
+    /// 臙脂＋金の帯（週のメイン・設定と同じ色）。
     private var header: some View {
-        HStack {
-            Text("能力アップ").font(.maru(22, weight: .heavy)).foregroundStyle(Theme.ink)
-            Spacer()
+        HStack(spacing: 10) {
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Text("能力アップ").font(.maru(20, weight: .black)).foregroundStyle(Theme.goldLeafHi).fixedSize()
+                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
             Button(action: close) {
-                Text("とじる").font(.maru(14, weight: .bold)).foregroundStyle(.white)
-                    .padding(.horizontal, 16).padding(.vertical, 8)
-                    .background(Theme.verm, in: Capsule())
+                Text("とじる").font(.maru(12, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1))
             }
             .buttonStyle(PressableStyle())
         }
-        .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 10)
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+        .padding(.bottom, 10)
     }
 
     /// 持っている経験点（5種）
