@@ -138,6 +138,7 @@ struct TournamentResultView: View {
                                     .font(.maru(.sub)).foregroundStyle(r.passed ? Theme.paperInk : Theme.inkSub)
                                     .padding(.horizontal, 10).padding(.vertical, 5)
                                     .background(.white.opacity(0.92), in: Capsule())
+                                    .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
                                 }
                                 if r.prize > 0 {
                                     // 通過＝金の縁の賞金札。数字がカウントアップする
@@ -149,16 +150,16 @@ struct TournamentResultView: View {
                                         .shadow(color: Theme.gold.opacity(0.55), radius: 10)
                                         .fixedSize()
                                 }
-                                if session.lastDeltaWeek == summary.week, session.lastFameDelta >= 0.5 {
-                                    // 知名度の増えた分（数字のみ・表示専用）
-                                    Text("知名度 \(Int(summary.state.fame.rounded()))（+\(Int(session.lastFameDelta.rounded()))）")
-                                        .font(.maru(12, weight: .bold)).foregroundStyle(Theme.paperInk)
-                                        .padding(.horizontal, 10).padding(.vertical, 4)
-                                        .background(.white.opacity(0.92), in: Capsule())
-                                        .fixedSize()
-                                }
                             }
                             .transition(.opacity)
+                            if session.lastResultFameDelta >= 0.5 {
+                                // 知名度の増えた分（数字のみ・表示専用）
+                                Text("知名度 \(Int(summary.state.fame.rounded()))（+\(Int(session.lastResultFameDelta.rounded()))）")
+                                    .font(.maru(12, weight: .bold)).foregroundStyle(Theme.paperInk)
+                                    .padding(.horizontal, 10).padding(.vertical, 4)
+                                    .background(.white.opacity(0.92), in: Capsule())
+                                    .fixedSize()
+                            }
                             Button {
                                 if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ

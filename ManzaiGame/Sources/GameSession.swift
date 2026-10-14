@@ -38,6 +38,8 @@ final class GameSession {
     private(set) var lastStaminaDelta = 0
     /// Beat2 獲得チップ用の知名度の増分（表示専用・golden非対象）。舞台に立つ週の「押した→残った」を見せる（G1）
     private(set) var lastFameDelta: Double = 0
+    /// 大会結果画面の知名度の増分（decideTournament 経由・表示専用・golden非対象）
+    private(set) var lastResultFameDelta: Double = 0
     /// 上記の増減が属する週。View は lastDeltaWeek == week の時だけバーストを出す＝大会画面を
     /// 挟んで戻った時に古い増減が再生される事故を防ぐ（表示ゲートのみ・golden非対象）。
     private(set) var lastDeltaWeek = -1
@@ -210,8 +212,10 @@ final class GameSession {
 
     /// 大会週の回答（travel=nil は見送り）
     func decideTournament(_ travel: Travel?) {
+        let fameBefore = state.fame
         phase = runner.resolveTournament(travel: travel)
         pump()
+        lastResultFameDelta = state.fame - fameBefore   // 表示専用（大会結果画面の「知名度 +n」札）
         saveNow()
     }
 
