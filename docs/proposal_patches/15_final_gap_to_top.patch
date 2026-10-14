@@ -1,0 +1,14 @@
+diff --git a/ManzaiGame/Sources/FinalsPresentationView.swift b/ManzaiGame/Sources/FinalsPresentationView.swift
+index 06ccc6f..103bcac 100644
+--- a/ManzaiGame/Sources/FinalsPresentationView.swift
++++ b/ManzaiGame/Sources/FinalsPresentationView.swift
+@@ -417,6 +417,9 @@ struct FinalsPresentationView: View {
+                     if !seated {
+                         Text("敗退").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                     }
++                    if rank > 0, let top = rows.first?.total {
++                        Text("−\(top - e.total)").font(.maru(.sub)).monospacedDigit().foregroundStyle(Theme.inkSub)
++                    }
+                     Text("\(e.total)").font(.maru(.body)).monospacedDigit().foregroundStyle(Theme.sumi)
+                 }
+                 .padding(.horizontal, 12).padding(.vertical, 4)

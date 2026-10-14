@@ -1,0 +1,17 @@
+diff --git a/ManzaiGame/Sources/StageViews.swift b/ManzaiGame/Sources/StageViews.swift
+index b36c8c7..30d8a4d 100644
+--- a/ManzaiGame/Sources/StageViews.swift
++++ b/ManzaiGame/Sources/StageViews.swift
+@@ -164,6 +164,12 @@ struct TournamentEntryView: View {
+                         selected: session.selectedNeta, onSelect: { session.selectNeta($0) })
+                 .padding(.horizontal, 20)
+ 
++            if session.selectedNeta == nil {
++                Text("持ちネタがないまま出ると、まず勝てません。「見送る」で戻ってネタを書こう")
++                    .font(.maru(.sub)).foregroundStyle(Theme.verm)
++                    .multilineTextAlignment(.center).padding(.horizontal, 24)
++            }
++
+             Spacer(minLength: 8)
+             VStack(spacing: 10) {
+                 let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める

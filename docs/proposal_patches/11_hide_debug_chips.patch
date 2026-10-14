@@ -1,0 +1,20 @@
+diff --git a/ManzaiGame/Sources/RootView.swift b/ManzaiGame/Sources/RootView.swift
+index cebbd01..a395052 100644
+--- a/ManzaiGame/Sources/RootView.swift
++++ b/ManzaiGame/Sources/RootView.swift
+@@ -216,9 +216,14 @@ struct RootView: View {
+     #if DEBUG
+     /// DEBUG限定の導線（本番導線は不変）。🏆=優勝まで自動／💪=能力マックスで第1週から手動プレイ（無双体験の実験用）。
+     private var debugButton: some View {
+-        VStack(spacing: 6) {
++        let env = ProcessInfo.processInfo.environment
++        return Group {
++            if env["MZ_SMOKE"] == nil && env["MZ_UI"] == nil {   // 目視フック中は舞台に重ねない（画面の読み違いを防ぐ）
++                VStack(spacing: 6) {
+             Button { forceChampion() } label: { debugChip("🏆優勝") }
+             Button { forceMaxedPlay() } label: { debugChip("💪無双") }
++                }
++            }
+         }
+         .padding(.top, 120).padding(.trailing, 10)
+     }

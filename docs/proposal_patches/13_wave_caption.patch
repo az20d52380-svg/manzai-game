@@ -1,0 +1,12 @@
+diff --git a/ManzaiGame/Sources/TournamentResultView.swift b/ManzaiGame/Sources/TournamentResultView.swift
+index 7e23cf4..e4c1ec7 100644
+--- a/ManzaiGame/Sources/TournamentResultView.swift
++++ b/ManzaiGame/Sources/TournamentResultView.swift
+@@ -107,6 +107,7 @@ struct TournamentResultView: View {
+                     // 舞台板の上＝読み物と出口（判の後に段階で出す）
+                     VStack(spacing: 10) {
+                         if revealedReview {
++                            Text("会場の反応").font(.maru(.sub)).foregroundStyle(.white.opacity(0.85))
+                             WaveformView(passed: r.passed, nearMiss: nearMiss(r), compact: true, burst: r.burst == true || debugForceFanReport)
+                                 .transition(.opacity)
+                             washi(text: review.text, judge: review.judge, passed: r.passed)
