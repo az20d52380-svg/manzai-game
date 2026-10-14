@@ -18,7 +18,7 @@ struct S6bView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            LinearGradient(colors: [Theme.curtain, Theme.curtainShade], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
             switch phase {
             case .kougyou: kougyou.transition(.opacity)
             case .montage:
@@ -38,15 +38,32 @@ struct S6bView: View {
     private var kougyou: some View {
         VStack(spacing: Theme.Sp.s24) {
             Spacer()
-            Text("最後の舞台。").font(.maru(14)).foregroundStyle(.white.opacity(0.7))
-            // 通帳様式の残金→0
-            Text("¥\(counted ? 0 : max(0, s.money))")
-                .font(.maru(30)).monospacedDigit().foregroundStyle(Theme.gold)
-                .contentTransition(.numericText())
-            venue.frame(height: 150)
-            Text(venueName).font(.maru(16)).foregroundStyle(.white)
+            // 名ビラ＝生成りの紙に墨の寄席文字。金の二重縁
+            VStack(spacing: 14) {
+                Text("千秋楽").font(.maru(52, weight: .black)).tracking(8).foregroundStyle(Theme.sumi)
+                    .shadow(color: Theme.goldLeafHi, radius: 0, x: 2, y: 2)
+                Rectangle().fill(Theme.verm).frame(height: 3).padding(.horizontal, 24)
+                Text("\(session.combiName)　最後の舞台").font(.maru(14, weight: .bold)).foregroundStyle(Theme.sumi.opacity(0.8))
+                VStack(spacing: 2) {
+                    Text("残　金").font(.maru(11, weight: .bold)).tracking(4).foregroundStyle(Theme.inkDim)
+                    Text("¥\(counted ? 0 : max(0, s.money))")
+                        .font(.maru(34, weight: .black)).monospacedDigit().foregroundStyle(Theme.curtain)
+                        .contentTransition(.numericText())
+                }
+                Text(venueName).font(.maru(22, weight: .black)).tracking(3).foregroundStyle(.white)
+                    .padding(.horizontal, 22).padding(.vertical, 6)
+                    .background(Theme.verm)
+                    .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+            }
+            .padding(.vertical, 28).padding(.horizontal, 20)
+            .frame(maxWidth: .infinity)
+            .background(Color(hex: 0xFBF3E2))
+            .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 3))
+            .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1).padding(7))
+            .padding(.horizontal, 28)
+            venue.frame(height: 110)
             Spacer()
-            Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45)).padding(.bottom, Theme.Sp.s24)
+            Text("タップで進む").font(.maru(11)).foregroundStyle(Theme.goldLeafHi.opacity(0.8)).padding(.bottom, Theme.Sp.s24)
         }
         .contentShape(Rectangle()).onTapGesture { advance(.montage) }
         // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
@@ -61,7 +78,7 @@ struct S6bView: View {
             ForEach(0..<rows, id: \.self) { _ in
                 HStack(spacing: 4) {
                     ForEach(0..<cols, id: \.self) { _ in
-                        Circle().fill(Theme.gold.opacity(0.55)).frame(width: 3, height: 3)
+                        Circle().fill(Theme.goldLeafHi.opacity(0.7)).frame(width: 3, height: 3)
                     }
                 }
             }

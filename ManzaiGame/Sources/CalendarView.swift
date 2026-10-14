@@ -19,15 +19,17 @@ struct CalendarView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-            VStack(spacing: Theme.Sp.s12) {
+            LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            VStack(spacing: 0) {
                 header
-                summary
-                grid
-                legend   // 凡例は表のすぐ下（画面の一番下に離すと、どの印の説明か結びつきにくかった）
-                Spacer(minLength: 0)
+                VStack(spacing: Theme.Sp.s12) {
+                    summary
+                    grid
+                    legend   // 凡例は表のすぐ下
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, Theme.Sp.s16).padding(.top, Theme.Sp.s12)
             }
-            .padding(Theme.Sp.s16)
 
             if let toast {
                 Text(toast).font(.maru(12)).foregroundStyle(.white)
@@ -40,36 +42,54 @@ struct CalendarView: View {
         .onAppear { breathe = true }
     }
 
+    /// 劇場の香盤表の見出し＝臙脂の帯＋金の罫線（週のメイン画面と同じ色）。
     private var header: some View {
-        HStack {
-            Text("年間カレンダー").font(.maru(16)).foregroundStyle(Theme.ink)
-            Spacer()
+        HStack(spacing: 10) {
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Text("年間香盤").font(.maru(22, weight: .black)).tracking(4).foregroundStyle(Theme.goldLeafHi)
+                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
+            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
             Button(action: onClose) {
-                Image(systemName: "xmark.circle.fill").font(.system(size: 24)).foregroundStyle(Theme.inkFaint)
+                Image(systemName: "xmark").font(.system(size: 14, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                    .frame(width: 34, height: 34)
+                    .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1))
             }.buttonStyle(PressableStyle())
         }
+        .padding(.horizontal, 14).padding(.top, 54).padding(.bottom, 8)
+        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
     }
 
     private var summary: some View {
-        Text("\(session.combiName) ・ \(session.year)年目 ・ 第\(session.week)週 ・ 賞金 ¥\(session.totalPrize.formatted())")
-            .font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkDim)
+        VStack(spacing: 4) {
+            Text("\(session.combiName)").font(.maru(17, weight: .black)).foregroundStyle(Theme.sumi)
+            Text("\(session.year)年目 ・ 第\(session.week)週 ・ 賞金 ¥\(session.totalPrize.formatted())")
+                .font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkDim)
+        }
     }
 
-    // 12行(月)×4列(週)
+    // 12行(月)×4列(週)＝罫線だけの番付表
     private var grid: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 0) {
             ForEach(0..<12, id: \.self) { row in
-                HStack(spacing: 8) {
-                    Text(monthLabel(row)).font(.maru(10)).monospacedDigit()
-                        .foregroundStyle(Theme.inkDim).frame(width: 34, alignment: .leading)
+                HStack(spacing: 0) {
+                    Text(monthLabel(row)).font(.maru(14, weight: .black)).monospacedDigit()
+                        .foregroundStyle(Theme.sumi).frame(width: 40)
+                        .frame(maxHeight: .infinity)
+                        .background(Color(hex: 0xEFE3C8))
+                        .overlay(alignment: .trailing) { Rectangle().fill(Theme.sumi).frame(width: 1) }
                     ForEach(0..<4, id: \.self) { col in
                         cell(week: row * 4 + col + 1)
+                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(Theme.line).frame(width: 0.6) } }
                     }
                 }
+                .frame(height: 38)
+                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(Theme.line).frame(height: 0.6) } }
             }
         }
-        .padding(Theme.Sp.s16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()
+        .background(Color(hex: 0xFBF3E2))
+        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+        .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 0.8).padding(3).allowsHitTesting(false))
     }
 
     @ViewBuilder private func cell(week w: Int) -> some View {
@@ -77,18 +97,21 @@ struct CalendarView: View {
         let isPast = w < session.week
         let isTournament = isTournamentWeek(w)
         ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isPast ? Theme.card2 : Color.white.opacity(0.4))
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(isCurrent ? Theme.verm : Theme.line, lineWidth: isCurrent ? 1.5 : 1))
             if isTournament {
-                Circle().stroke(Theme.verm, lineWidth: 2).frame(width: 16, height: 16)   // 大会週=朱の丸印
+                Rectangle().fill(isPast ? Theme.vermD.opacity(0.55) : Theme.verm)   // 大会週＝朱の色面
+                Text(tournamentLabel(w)).font(.maru(15, weight: .black)).tracking(1)
+                    .foregroundStyle(.white)
+                    .shadow(color: Theme.curtainShade.opacity(0.7), radius: 0, x: 1, y: 1)
             } else if isPast, let cat = session.categoryLog[w] {
-                Circle().fill(cat.color).frame(width: 8, height: 8)                        // 過去週=カテゴリ色ドット
+                Text(cat.label.prefix(1)).font(.maru(13, weight: .black))   // 過去週＝やった事の頭文字（稽/バ/回）
+                    .foregroundStyle(Theme.sumi.opacity(0.65))
+            }
+            if isCurrent {
+                Rectangle().stroke(Theme.goldLeafHi, lineWidth: 3).padding(1)   // 現在週＝金の栞
+                Rectangle().stroke(Theme.sumi, lineWidth: 1.5)
             }
         }
-        .frame(maxWidth: .infinity).frame(height: 30)
-        .scaleEffect(isCurrent && breathe ? 1.02 : 1)
-        .animation(isCurrent ? .easeInOut(duration: 2).repeatForever(autoreverses: true) : .default, value: breathe)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onLongPressGesture(minimumDuration: 0.3) {
             if isPast { showToast("第\(w)週 \(session.categoryLog[w]?.label ?? "——")。") }
@@ -96,13 +119,24 @@ struct CalendarView: View {
     }
 
     private var legend: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             ForEach([BandCategory.keiko, .baito, .kaifuku], id: \.label) { cat in
-                HStack(spacing: 4) { Circle().fill(cat.color).frame(width: 7, height: 7); Text(cat.label) }
+                HStack(spacing: 4) {
+                    Text(cat.label.prefix(1)).font(.maru(12, weight: .black)).foregroundStyle(Theme.sumi)
+                        .frame(width: 20, height: 20).overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1))
+                    Text(cat.label)
+                }
             }
-            HStack(spacing: 4) { Circle().stroke(Theme.verm, lineWidth: 2).frame(width: 10, height: 10); Text("大会") }
+            HStack(spacing: 4) { Rectangle().fill(Theme.verm).frame(width: 20, height: 20); Text("大会") }
+            HStack(spacing: 4) { Rectangle().stroke(Theme.goldLeafHi, lineWidth: 3).frame(width: 20, height: 20); Text("今週") }
         }
-        .font(.maru(10.5)).foregroundStyle(Theme.inkDim)
+        .font(.maru(11, weight: .bold)).foregroundStyle(Theme.sumi)
+    }
+
+    private func tournamentLabel(_ w: Int) -> String {
+        if w == cal.gpFinalWeek { return "決勝" }
+        if cal.gpRounds.contains(where: { $0.week == w }) { return "GP" }
+        return "大会"
     }
 
     private func showToast(_ t: String) {
