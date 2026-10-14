@@ -377,7 +377,8 @@ struct WeekMainView: View {
         adviceBox(DialogueData.innerVoice(state: s, lossStreak: session.lossStreak,
                                           justPassed: session.justPassedStage, justLost: session.justLostStage,
                                           nextMilestone: nextMilestone(), weakAbility: weakAbility(),
-                                          week: session.year &* 131 &+ session.week))   // 年も混ぜる＝毎年同じ週に同じ行にしない
+                                          week: session.year &* 131 &+ session.week,
+                                          picker: session.picker(key: session.year &* 131 &+ session.week)))   // 年も混ぜる／直近の行は避ける＝毎年同じ週に同じ行にしない
     }
 
     /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
@@ -605,7 +606,7 @@ struct WeekMainView: View {
         if showBeat {
             lastBeatWeek[v.id] = session.week
             withAnimation(.easeOut(duration: 0.18)) {
-                beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week)
+                beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week, picker: session.picker())
             }
         }
         withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }

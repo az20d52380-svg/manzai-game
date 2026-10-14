@@ -16,6 +16,23 @@ enum BanterBand { case plain, lull, eve, streak, broke, afterPass }
 
 enum DialogueData {
 
+    /// 「直近に出た文を避ける」選び方の差し込み口。(場面名, 候補数, salt) → 候補の番号。nil なら従来どおり salt の剰余。
+    /// 乱数は使わない（salt の剰余とずらしだけ）。直近の記録は GameSession が持つ。
+    typealias Picker = (_ scene: String, _ count: Int, _ salt: Int) -> Int
+
+    /// 直近 recent に含まれない番号を、salt の剰余の位置から順にずらして探す。全部が直近なら剰余の位置のまま。
+    static func indexAvoiding(count: Int, salt: Int, recent: [Int]) -> Int {
+        guard count > 0 else { return 0 }
+        let start = ((salt % count) + count) % count
+        for d in 0..<count {
+            let i = (start + d) % count
+            if !recent.contains(i) { return i }
+        }
+        return start
+    }
+    /// 場面ごとに覚える直近の件数＝文の数の半分（1本だけなら0）。
+    static func recentLimit(count: Int) -> Int { count / 2 }
+
     // MARK: 週頭（行動前）の状態駆動モノローグ
 
     /// 週頭（行動選択前）の一般セリフ。状態・状況・先週の結果だけに紐づける。
@@ -24,25 +41,26 @@ enum DialogueData {
     /// week: 選択の salt（呼び出し側は 年×131＋週）。選択は週で回す＝同じ状態で週を迎えても連続で同じ行にならない（監査D-03）。
     static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
                            nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String,
-                           week: Int = 0) -> Advice {
+                           week: Int = 0, picker: Picker? = nil) -> Advice {
         if state.recoveryWeeks > 0 {   // 療養中は全てに優先（体の異常＝Fable13§2）
-            return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks))
+            return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks, scene: "mono.recovering", picker))
         }
         if state.stamina < 25 {
-            return Advice(name: "俺", text: pick(lowStamina, salt: week))
+            return Advice(name: "俺", text: pick(lowStamina, salt: week, scene: "mono.lowStamina", picker))
         }
         if state.money < 30_000 {
-            return Advice(name: "俺", text: pick(lowMoney, salt: week))
+            return Advice(name: "俺", text: pick(lowMoney, salt: week, scene: "mono.lowMoney", picker))
         }
         // 負けた翌週の一言（温度事故の停止）＝連敗プールより先。lossStreakで単発/反復を分ける（0003・Fable13便）。
         if justLost {
-            return Advice(name: "俺", text: pick(lossStreak >= 2 ? justLostRepeat : justLostSingle, salt: Int(state.fame) &+ lossStreak))
+            return Advice(name: "俺", text: pick(lossStreak >= 2 ? justLostRepeat : justLostSingle, salt: Int(state.fame) &+ lossStreak &+ week,
+                                                scene: lossStreak >= 2 ? "mono.justLostRepeat" : "mono.justLostSingle", picker))
         }
         if lossStreak >= 2 {
-            return Advice(name: "俺", text: pick(losing, salt: lossStreak))
+            return Advice(name: "俺", text: pick(losing, salt: lossStreak &+ week, scene: "mono.losing", picker))
         }
         if justPassed {
-            return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame)))
+            return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame) &+ week, scene: "mono.passed", picker))
         }
         if let m = nextMilestone, m.weeksLeft == 2 {   // 1週前は掛け合い/平常に譲る（最頻出の単一行の間引き・監査D-04）
             // 弱点が無い（全能力ほぼ同値）週は弱点句を省く（監査B-03）
@@ -50,9 +68,9 @@ enum DialogueData {
                                                                : "そろそろ\(m.name)か。\(weakAbility)、あと少し上げておきたい。")
         }
         if let m = nextMilestone, m.weeksLeft >= 6 {   // 本番が遠い週（週16-26の空白帯等）は仕込みの声
-            return Advice(name: "俺", text: pick(midseason, salt: week))
+            return Advice(name: "俺", text: pick(midseason, salt: week, scene: "mono.midseason", picker))
         }
-        return Advice(name: "俺", text: pick(平常, salt: week))
+        return Advice(name: "俺", text: pick(平常, salt: week, scene: "mono.plain", picker))
     }
 
     // 主人公「俺」は標準語（方言なし）。ツッコミ体質・心配性・計算屋の色は残す。
@@ -129,8 +147,9 @@ enum DialogueData {
     // 帯×プール×salt=週番号の決定的回転。1本=2〜3行（話者交互）。本文は manzai-drama-voice Skill を通す。
     // 返り値 nil=その帯の在庫なし（View は独白へフォールバック）。
 
-    static func banter(band: BanterBand, salt: Int) -> [Advice]? {
+    static func banter(band: BanterBand, salt: Int, picker: Picker? = nil) -> [Advice]? {
         guard let pools = banterPools[band], !pools.isEmpty else { return nil }
+        if let picker { return pools[picker("banter.\(band)", pools.count, salt)] }
         return pools[((salt % pools.count) + pools.count) % pools.count]
     }
     // 相方は谷口固定（MVP・関西弁）。2周目ガチャ相方の実装時は相方分岐に差し替える（ChoiceEventData と同じ扱い）。
@@ -193,8 +212,9 @@ enum DialogueData {
     // 話者は俺（独白）を基本に、相方が絡む行動（ネタ合わせ/相方と過ごす等）は谷口の生声を混ぜる。
     // プールの拡充は manzai-drama-voice Skill を通す（ここの本文を勝手に増やさない）。
 
-    static func reaction(variantID: String, salt: Int) -> Advice {
+    static func reaction(variantID: String, salt: Int, picker: Picker? = nil) -> Advice {
         let pool = reactionPools[variantID] ?? [Advice(name: "俺", text: "よし、いくか。")]
+        if let picker { return pool[picker("reaction.\(variantID)", pool.count, salt)] }
         return pool[((salt % pool.count) + pool.count) % pool.count]
     }
     // 新規行はSkill採点済（全○）。相方名は焼き込まない（「谷口と、ネタ抜きで飯でも。」は既存・既知として残置）。
@@ -250,8 +270,15 @@ enum DialogueData {
         ],
     ]
 
-    private static func pick(_ pool: [String], salt: Int) -> String {
-        pool.isEmpty ? "" : pool[((salt % pool.count) + pool.count) % pool.count]
+    private static func pick(_ pool: [String], salt: Int, scene: String? = nil, _ picker: Picker? = nil) -> String {
+        guard !pool.isEmpty else { return "" }
+        if let scene, let picker { return pool[picker(scene, pool.count, salt)] }
+        return pool[((salt % pool.count) + pool.count) % pool.count]
+    }
+    /// 年末の独白など外部から使う用（直近避けつき）。
+    static func choose(_ pool: [String], salt: Int, scene: String, picker: Picker?) -> String? {
+        guard !pool.isEmpty else { return nil }
+        return pick(pool, salt: salt, scene: scene, picker)
     }
 
     // MARK: ネタおろし（初披露＝Neta.isDown:false→true の瞬間・正典 docs/neta_system_redesign_v2.md §3-2補2）

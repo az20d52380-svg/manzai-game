@@ -81,6 +81,27 @@ final class GameSession {
     /// 週頭の掛け合い（俺⇄谷口の短い会話・タップ送り）。nil=この週は独白。行動すると失効。
     /// 発火はUI専用乱数（uiEventRng）＝runnerの乱数列に非干渉＝golden不変。イベント発火週は譲る。
     private(set) var weekBanter: [Advice]?
+    /// 場面ごとの「直近に出した文の番号」（直近避け用・表示専用・乱数非消費・golden非対象。セーブには載せない）。
+    @ObservationIgnored private var recentPicks: [String: [Int]] = [:]
+    /// 同じ key（週など）での再描画では同じ番号を返すための記憶（body の再評価で記録が進まないように）。
+    @ObservationIgnored private var stablePicks: [String: (key: Int, idx: Int)] = [:]
+    /// 直近に出た文を避けた番号を返す。key が同じ間は同じ番号（View の再評価対策）。
+    func pickIndex(scene: String, count: Int, salt: Int, key: Int? = nil) -> Int {
+        guard count > 0 else { return 0 }
+        if let key, let s = stablePicks[scene], s.key == key, s.idx < count { return s.idx }
+        var recent = recentPicks[scene] ?? []
+        let idx = DialogueData.indexAvoiding(count: count, salt: salt, recent: recent)
+        recent.append(idx)
+        let limit = DialogueData.recentLimit(count: count)
+        if recent.count > limit { recent.removeFirst(recent.count - limit) }
+        recentPicks[scene] = recent
+        if let key { stablePicks[scene] = (key, idx) }
+        return idx
+    }
+    /// pickIndex を DialogueData.Picker の形にしたもの。
+    func picker(key: Int? = nil) -> DialogueData.Picker {
+        { [self] scene, count, salt in pickIndex(scene: scene, count: count, salt: salt, key: key) }
+    }
     /// 掛け合いの1週1回抽選ガード（pump 複数回呼びでの二重抽選＝UI乱数の余分消費を防ぐ・イベント抽選と同型）
     private var lastBanterRollWeek = -1
     /// 優勝が確定した瞬間。ここが true の間は「勝ち版」決勝演出を出す（S4ボードの前）
@@ -452,7 +473,7 @@ final class GameSession {
         let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
         guard uiEventRng.nextUniform() < rate else { return }
         // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
-        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week)   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない
+        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker())   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
     }
 
     /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。
@@ -800,6 +821,7 @@ final class GameSession {
         justLostStage = false
         justOroshiNeta = nil
         weekBanter = nil
+        recentPicks = [:]; stablePicks = [:]
         pendingChoiceEvent = nil
         lastEventRollWeek = -1
         lastBanterRollWeek = -1

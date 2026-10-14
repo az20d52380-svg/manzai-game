@@ -263,25 +263,26 @@ struct YearResultView: View {
     private func yearEndLine() -> String? {
         guard let o else { return nil }
         var pool: [String]
+        var scene = "yearEnd"
         if o.bankrupt {
-            pool = Self.yeBankrupt                                               // 貧乏年
+            scene += ".bankrupt"; pool = Self.yeBankrupt                                               // 貧乏年
         } else if session.careerOver && !o.champion && !o.reachedFinal && s.compat < 10 {
             // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】）。終わり方の語彙なので、
             // キャリアの区切りの年末だけ（翌年へ続く年末に出すと「最後だった」と矛盾する）
-            pool = Self.yeDissolution
+            scene += ".dissolution"; pool = Self.yeDissolution
         } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
-            pool = Self.yeLeap                                                    // 躍進年
+            scene += ".leap"; pool = Self.yeLeap                                                    // 躍進年
         } else {
-            pool = Self.yeStall                                                  // 停滞年
+            scene += ".stall"; pool = Self.yeStall                                                  // 停滞年
         }
         // 1年目には「去年」「今年も」が無い（不具合 2026-10-12）。前年を前提にする行を外し、1年目用の行を足す。
         if session.year <= 1 {
-            if pool == Self.yeStall { pool = Self.yeFirstStall }
-            else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap }
+            if pool == Self.yeStall { pool = Self.yeFirstStall; scene += ".first" }
+            else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap; scene += ".first" }
         }
-        guard !pool.isEmpty else { return nil }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
-        return pool[((salt % pool.count) + pool.count) % pool.count]
+        // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
+        return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
     }
 
     // yearEnd.* 逐語（voice_corpus_v0 §4-3＋§8・calibration 0be8a11）。独白(俺)・標準語。相方固有名を含む行は除外。
