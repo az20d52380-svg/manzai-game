@@ -130,11 +130,7 @@ struct ChoiceEventOverlay: View {
     }
 
     private var background: some View {
-        switch scene {
-        case .keiko: return LinearGradient(colors: [Theme.bgTop, Theme.bg2, Theme.bgBottom], startPoint: .top, endPoint: .bottom)
-        case .dusk, .yakiniku, .station, .famires: return LinearGradient(colors: [Color(hex: 0xFCE3CF), Color(hex: 0xF4D2C4)], startPoint: .top, endPoint: .bottom)
-        case .gakuya, .office: return LinearGradient(colors: [Theme.bgTop, Theme.bg2, Theme.bgBottom], startPoint: .top, endPoint: .bottom)
-        }
+        Theme.kinari   // 画面の地は生成りに統一（場所の色味は上の場面の絵が担う）
     }
 
     // MARK: 下＝読み物

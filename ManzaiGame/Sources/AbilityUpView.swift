@@ -33,7 +33,7 @@ struct AbilityUpView: View {
             }
             footer
         }
-        .background(LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        .background(Theme.kinari.ignoresSafeArea())
     }
 
     /// 臙脂＋金の帯（週のメイン・設定と同じ色）。
@@ -68,7 +68,7 @@ struct AbilityUpView: View {
                         .background(Theme.currencyColor(c), in: Capsule())
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 8)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
+                .mzPanel()
             }
         }
         .padding(.top, 2)
@@ -88,7 +88,7 @@ struct AbilityUpView: View {
             Text("経験点で能力を上げる").font(.maru(11)).foregroundStyle(Theme.inkSub)
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .mzPanel()
     }
 
     /// 次の+1 に要る経験点（通貨ごと）と段数。nil＝届かない
@@ -186,7 +186,7 @@ struct AbilityUpView: View {
             .disabled(!canTap)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .mzPanel()
         .animation(.spring(response: 0.3, dampingFraction: 0.55), value: gained)
     }
 
@@ -202,7 +202,7 @@ struct AbilityUpView: View {
             Button { taps.removeAll() } label: {
                 Text("もどす").font(.maru(15, weight: .bold)).foregroundStyle(taps.isEmpty ? Theme.inkFaint : Theme.inkSub)
                     .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                    .background(Theme.kinariPanel).overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
             }
             .buttonStyle(PressableStyle(enabled: !taps.isEmpty)).disabled(taps.isEmpty)
             Button {
@@ -211,18 +211,26 @@ struct AbilityUpView: View {
             } label: {
                 Text("おまかせ").font(.maru(16, weight: .heavy)).foregroundStyle(.white)
                     .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                    .shadow(color: Theme.vermD, radius: 0, y: 3)
+                    .background(Theme.verm).overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
             }
             .buttonStyle(PressableStyle())
         }
         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
-        .background(Theme.bg2)
+        .background(Theme.kinari)
     }
 
     /// とじる＝確定（押した段をそのまま反映。何も押していなければ閉じるだけ）
     private func close() {
         if !taps.isEmpty { _ = session.allocate(taps) }
         onClose()
+    }
+}
+
+extension View {
+    /// 罫線パネル: 生成りの面＋墨の罫＋朱の左帯（設定・ショップと同じ）
+    func mzPanel() -> some View {
+        self.background(Theme.kinariPanel)
+            .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 4) }
+            .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
     }
 }

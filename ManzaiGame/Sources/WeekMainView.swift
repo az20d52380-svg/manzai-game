@@ -95,7 +95,7 @@ struct WeekMainView: View {
             botbar
         }
         // パワプロ・サクセスの文法＝日常パートは明るくポップ（暗転は本番系画面の語彙）。
-        .background(Theme.bgGradient.ignoresSafeArea())
+        .background(Theme.kinari.ignoresSafeArea())
         .fullScreenCover(isPresented: $showNotebook) {
             NotebookView(session: session) { showNotebook = false }   // S5 ネタ帳
         }

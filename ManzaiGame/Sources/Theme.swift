@@ -62,6 +62,9 @@ enum Theme {
     static let staminaWarn = Color(hex: 0xF2A93B)             // 体力ゲージ 警告（<50・黄）
     static let staminaCrit = Color(hex: 0xE8402C)             // 体力ゲージ 危険（<20・赤＝staminaGate可視化）
 
+    /// 画面の地の決まり: 生成り（kinari）＋上部の臙脂の帯（curtain）。パネルは kinariPanel＋墨の罫＋朱の左帯。
+    static let kinari = Color(hex: 0xFBF3E2)
+    static let kinariPanel = Color(hex: 0xFFFAEC)
     static let bgGradient = LinearGradient(
         colors: [bgTop, bg2, bgBottom],
         startPoint: .top, endPoint: .bottom)

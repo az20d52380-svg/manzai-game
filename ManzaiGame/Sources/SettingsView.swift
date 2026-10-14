@@ -16,7 +16,7 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: 0xFBF3E2).ignoresSafeArea()
+            Theme.kinari.ignoresSafeArea()
             VStack(spacing: 0) {
                 grabber
                 header

@@ -39,7 +39,7 @@ struct YearResultView: View {
             .padding(.horizontal, Theme.Sp.s24).padding(.vertical, Theme.Sp.s32)
             .frame(maxWidth: .infinity)
         }
-        .background(Theme.bgGradient.ignoresSafeArea())
+        .background(Theme.kinari.ignoresSafeArea())
         .overlay {
             // 優勝の年だけ、判と同時に金の紙吹雪（年に1度の祝い）
             ParticleBurst(trigger: confettiFire, colors: [Theme.gold, Theme.verm, .white, Color(hex: 0xFFE07A)],

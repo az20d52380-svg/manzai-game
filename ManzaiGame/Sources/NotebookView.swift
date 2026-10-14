@@ -29,7 +29,7 @@ struct NotebookView: View {
     private var s: GameState { session.state }
 
     // 試作q70: 帳面の紙（生成り＋罫線＋左の赤い余白線）。色は週画面試作と同じ 墨・生成り・朱＋臙脂/金。
-    private static let paper = Color(hex: 0xF6ECD6)
+    private static let paper = Theme.kinari
     private static let rule = Color(hex: 0xBFAE8A)
 
     private var paperBackground: some View {
