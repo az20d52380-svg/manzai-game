@@ -12,6 +12,7 @@
 - 目視：直近の自走で入った画面（iPhone 17・MZ_UI フック・各1枚 scale 0.5）→崩れは直す
 - テスト：GameCore の未カバーの所に swift test を足す（式・golden は触らない）
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
+- 実測の決まり（2026-10-14〜）：帯を測る時は、ネタ無し（これまで）に加えて**ネタ込み**（`sim_career.NETA_ON=True, NETA_V2=True`＝アプリと同じ式）も併記する。ネタ無しだけだとアプリの帯より低く出る（`neta_bonus_remeasure_v0.md`）
 - UI/UX：各画面を目視して分かりにくさ・崩れ・余白・文字の詰まりを直す（表示だけ・数値不変）
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
