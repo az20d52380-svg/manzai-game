@@ -37,3 +37,4 @@ docs/proposal_shots/all_week / all_allocate / all_neta / all_event / all_setting
 - 済 イベント画面の下半分の無地ピンクを生成りの地に。
 - 済 画面の地の決まり＝生成り（Theme.kinari）＋上部の臙脂の帯。週メイン・能力アップ・ネタ帳・設定・イベント・年間結果に適用（旧 bgGradient は導入・舞台系の画面に残る）。
 - 撮り直し: all_week / all_allocate / all_neta / all_event。GameCore 124 tests green。
+- 済 導入（回想カード）＝場所の短冊（臙脂＋金罫）・□■□の印・台詞は話者の四角い札＋罫で区切る行・読み物欄は生成り＋墨の罫。通知＝許諾画面を臙脂の帯＋罫線パネル、トースト/大会予告の札を角の札（臙脂の影地＋朱の左帯）に。撮り直し: all_intro / all_notif（ui-overhaul-preview 2c057f9）。
