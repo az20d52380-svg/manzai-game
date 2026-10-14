@@ -23,10 +23,21 @@ struct TournamentResultView: View {
     @State private var skipRequested = false
     /// 開演の儀が終わったか（儀式の相 → 開示列の順・X4-11：覆いの下で開示が先に終わらない）
     @State private var ceremonyDone = false
+    /// 判の前に流す観客の声（fan_report_design §1）。shown=いま見えている枚数／tap=タップで送った回数／active=声の相か
+    @State private var fanShown = 0
+    @State private var fanTap = 0
+    @State private var fanActive = false
 
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
     private var result: StageResult { summary.results.last! }
+    /// 判の前に流す観客の声（2〜4枚）。点数は出さない・乱数非消費（salt の剰余）
+    private var fanVoices: [String] {
+        let r = result
+        return FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
+                                    burst: r.burst == true || debugForceFanReport,
+                                    salt: summary.year * 131 + summary.week)
+    }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
     private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
@@ -117,11 +128,6 @@ struct TournamentResultView: View {
                                 .transition(.opacity.combined(with: .offset(y: 10)))
                         }
                         if revealedRest {
-                            if r.burst == true || debugForceFanReport {   // ハマった夜は必ず痕跡を残す（見える運・canonical_v2 §1）
-                                fanReportCard(FanReportData.burst(name: session.combiName,
-                                                                  salt: summary.year * 131 + summary.week))
-                                    .transition(.opacity.combined(with: .offset(y: 8)))
-                            }
                             HStack(spacing: 8) {
                                 if let line = displayLine {
                                     // G4: 入口と同じ2つを同じ大きさで再掲（大きくしない＝見込みに寄せない）
@@ -177,7 +183,29 @@ struct TournamentResultView: View {
             // 判が出るまでは画面のどこを叩いても溜めを畳んで判へ飛ぶ（K6・初回から）
             if !revealed {
                 Color.clear.contentShape(Rectangle())
-                    .onTapGesture { skipRequested = true }
+                    .onTapGesture { if fanActive { fanTap += 1 } else { skipRequested = true } }   // 声の相は1枚ずつ送る
+            }
+        }
+        .overlay(alignment: .bottom) {
+            // 判の前の観客の声（タップで次の1枚／「飛ばす」で判へ）。判が出たら消える
+            if fanActive && !revealed {
+                VStack(spacing: 8) {
+                    ForEach(Array(fanVoices.prefix(fanShown).enumerated()), id: \.offset) { _, t in
+                        fanReportCard(t).transition(.opacity.combined(with: .offset(y: 10)))
+                    }
+                    HStack {
+                        Text("タップで次へ").font(.maru(.sub)).foregroundStyle(.white.opacity(0.9))
+                        Spacer()
+                        Button { skipRequested = true } label: {
+                            Text("飛ばす ▶").font(.maru(.sub)).foregroundStyle(.white)
+                                .padding(.horizontal, 12).padding(.vertical, 5)
+                                .background(Theme.vermD, in: Capsule())
+                                .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                        }
+                    }
+                }
+                .padding(.horizontal, 18).padding(.bottom, 34)
+                .transition(.opacity)
             }
         }
         .overlay {
@@ -213,6 +241,8 @@ struct TournamentResultView: View {
         if r.passed { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
         await pause(0.9)
         if Task.isCancelled { return }
+        await runFanVoices()                                             // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
+        if Task.isCancelled { return }
         if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
         await pause(0.7)
         if Task.isCancelled { return }
@@ -243,6 +273,24 @@ struct TournamentResultView: View {
         withAnimation(.easeOut(duration: 0.2)) {
             revealedWave = true; revealed = true; revealedReview = true; revealedRest = true; countProgress = 1
         }
+    }
+
+    /// 観客の声を1枚ずつ出す。各枚は約2.4秒で自動送り、タップで即次へ、「飛ばす」で判へ。最後の1枚の後も同じ間を置く。
+    private func runFanVoices() async {
+        let n = fanVoices.count
+        guard n > 0, !skipRequested else { return }
+        withAnimation(.easeOut(duration: 0.2)) { fanActive = true }
+        for i in 1...n {
+            withAnimation(.easeOut(duration: 0.3)) { fanShown = i }
+            Sound.play(.cursor)
+            let t0 = fanTap
+            for _ in 0..<48 {   // 2.4秒
+                if skipRequested || Task.isCancelled || fanTap != t0 { break }
+                try? await Task.sleep(nanoseconds: 50_000_000)
+            }
+            if skipRequested || Task.isCancelled { break }
+        }
+        withAnimation(.easeOut(duration: 0.2)) { fanActive = false }
     }
 
     /// 指定秒だけ待つ。畳む要求か取り消しで即戻る。
