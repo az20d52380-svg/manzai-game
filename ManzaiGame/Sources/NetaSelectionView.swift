@@ -55,10 +55,10 @@ struct NetaPickRow: View {
             HStack(spacing: 8) {
                 Circle().fill(Theme.kataColor(neta.kata)).frame(width: 10, height: 10)
                 Text(neta.name).font(.maru(.body)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-                Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub).lineLimit(1).fixedSize()
                 NetaTiredBadge(neta: neta)
                 if let requiredLength, !neta.fits(requiredLength) {
-                    Text("尺が合わない").font(.maru(.sub)).foregroundStyle(Theme.vermD)
+                    Text("尺が合わない").font(.maru(.sub)).foregroundStyle(Theme.vermD).lineLimit(1).fixedSize()
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(Theme.verm.opacity(0.1), in: Capsule())
                 }
@@ -90,7 +90,7 @@ struct NetaPickRow: View {
             HStack(spacing: 8) {
                 Circle().fill(Theme.kataColor(neta.kata)).frame(width: 9, height: 9)
                 Text(neta.name).font(.maru(.body)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-                Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub).lineLimit(1).fixedSize()
                 if !fits {
                     Text("尺△").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
                 }
