@@ -38,24 +38,29 @@ struct ReminiscencePlayer: View {
         VStack(spacing: 0) {
             ReminiscenceScene(mood: card.mood, together: card.together)
                 .frame(maxHeight: .infinity)
+                .overlay(alignment: .topLeading) { PlaceTag(text: card.caption).padding(.top, 54).padding(.leading, 16) }
+                .overlay(alignment: .topTrailing) { PageMark(index: index, count: cards.count).padding(.top, 58).padding(.trailing, 16) }
                 .id("scene\(index)")
                 .transition(.opacity)
-            VStack(spacing: 14) {
+            // 下＝生成りの読み物欄。上に墨の罫・台詞は札＋本文の行（同じ形の白カードを積まない）
+            VStack(alignment: .leading, spacing: 0) {
                 if !card.talk.isEmpty {
                     ForEach(card.talk.indices, id: \.self) { i in
-                        TalkBubble(advice: card.talk[i])
+                        IntroLine(advice: card.talk[i], large: false, showCue: i == card.talk.count - 1)
+                        if i < card.talk.count - 1 { Rectangle().fill(Theme.paperEdge).frame(height: 1) }
                     }
                 } else if let line = card.line {
-                    TalkBubble(advice: Advice(name: card.speaker, text: line), large: true)   // 回想の台詞は1枚に1つ＝決め台詞として大きく
+                    IntroLine(advice: Advice(name: card.speaker, text: line), large: true, showCue: true)   // 決め台詞は1枚に1つ＝大きく
                 }
-                NarrationCard(text: card.caption, showCue: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 30)
+            .background(Theme.kinari.ignoresSafeArea(edges: .bottom))
+            .overlay(alignment: .top) { Rectangle().fill(Theme.sumi).frame(height: 2.5) }
             .id("cap\(index)")
             .transition(.opacity)
-            .padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 30)
         }
-        .background(LinearGradient(colors: ReminiscenceScene.colors(card.mood), startPoint: .top, endPoint: .bottom)
-                        .ignoresSafeArea())
+        .background(Theme.kinari.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture {
             Sound.play(.cursor)
@@ -65,6 +70,59 @@ struct ReminiscencePlayer: View {
                 onComplete()
             }
         }
+    }
+}
+
+/// 場所・時間の短冊（臙脂の地に生成りの寄席文字風・金の細罫）。地の文はここに出す。
+private struct PlaceTag: View {
+    let text: String
+    var body: some View {
+        Text(text).font(.maru(16, weight: .black)).foregroundStyle(Theme.kinari)
+            .padding(.horizontal, 14).padding(.vertical, 7)
+            .background(Theme.curtain, in: RoundedRectangle(cornerRadius: 3))
+            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.gold, lineWidth: 1.5))
+            .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 4) }
+    }
+}
+
+/// 何枚目か（□■□）。数字ではなく印で。
+private struct PageMark: View {
+    let index: Int
+    let count: Int
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<count, id: \.self) { i in
+                Rectangle().fill(i == index ? Theme.curtain : Color.clear)
+                    .frame(width: 11, height: 11)
+                    .overlay(Rectangle().stroke(Theme.curtain, lineWidth: 1.5))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// 台詞の1行＝話者の札（四角・朱/紺）＋本文。枠なし・行間は罫。
+private struct IntroLine: View {
+    let advice: Advice
+    let large: Bool
+    var showCue: Bool = false
+    private var name: String { advice.name ?? "俺" }
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(name).font(.maru(13, weight: .heavy)).foregroundStyle(.white)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(SpeakerStyle.tagColor(advice.name), in: RoundedRectangle(cornerRadius: 2))
+                .frame(minWidth: 44)
+                .fixedSize()
+            Text(advice.text)
+                .font(large ? .maru(24, weight: .heavy) : .maru(.body))
+                .lineSpacing(4).foregroundStyle(Theme.sumi)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if showCue { AdvanceCue(color: Theme.curtain).padding(.top, 8) }
+        }
+        .padding(.vertical, large ? 16 : 11)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(name)、\(advice.text)")
     }
 }
 
@@ -91,24 +149,17 @@ struct ReminiscenceScene: View {
                 // 窓（教室・廊下の窓／宵は灯りのついた窓）
                 HStack(spacing: 12) {
                     ForEach(0..<3, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 6)
+                        RoundedRectangle(cornerRadius: 3)
                             .fill(LinearGradient(colors: windowColors, startPoint: .top, endPoint: .bottom))
-                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(.white.opacity(0.45), lineWidth: 5))
+                            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.sumi.opacity(0.55), lineWidth: 3))
                     }
                 }
                 .frame(width: w * 0.80, height: h * 0.36)
                 .position(x: w / 2, y: h * 0.32)
-                // 床と、窓から床へ落ちる光
+                // 床
                 LinearGradient(colors: floorColors, startPoint: .top, endPoint: .bottom)
                     .frame(height: h - floorTop)
                     .position(x: w / 2, y: floorTop + (h - floorTop) / 2)
-                Rectangle()
-                    .fill(LinearGradient(colors: [Color.white.opacity(mood == .eve ? 0.10 : 0.28), .clear],
-                                         startPoint: .top, endPoint: .bottom))
-                    .frame(width: w * 0.5, height: h - floorTop)
-                    .rotationEffect(.degrees(-18))
-                    .position(x: w * 0.42, y: floorTop + (h - floorTop) * 0.5)
-                    .blur(radius: 6)
                 // 二人
                 ManzaiFigure(height: figH * 0.9, tilt: together ? 2.2 : 0, accent: Color(hex: 0x2E55B0), breathe: 3.1,
                              bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
@@ -278,34 +329,43 @@ struct NotificationPromptView: View {
     @AppStorage("notif_snooze_until") private var snoozeUntil: Double = 0
 
     var body: some View {
-        ZStack {
-            LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-            VStack(spacing: Theme.Sp.s24) {
-                Spacer()
-                VStack(spacing: Theme.Sp.s16) {
-                    Text("大会の開演前に、\nお知らせします。")
-                        .font(.maru(17)).lineSpacing(6).multilineTextAlignment(.center).foregroundStyle(Theme.ink)
-                    Text("また続きをやりに来られるように。")
-                        .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkDim)
-                }
-                .padding(Theme.Sp.s24).frame(maxWidth: .infinity)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card)).e2()
-                .padding(.horizontal, Theme.Sp.s24)
-
-                VStack(spacing: Theme.Sp.s12) {
-                    Button(action: allow) {
-                        Text("知らせてもらう").font(.maru(16)).foregroundStyle(.white)
-                            .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s16)
-                            .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                    }.buttonStyle(PressableStyle())
-                    Button(action: later) {
-                        Text("あとで").font(.maru(14)).foregroundStyle(Theme.inkDim)
-                    }.buttonStyle(PressableStyle())
-                }
-                .padding(.horizontal, Theme.Sp.s32)
-                Spacer()
+        VStack(spacing: 0) {
+            // 臙脂の帯＋寄席文字風の見出し（週メイン・設定と同じ）
+            Text("お知らせ").font(.maru(24, weight: .black)).foregroundStyle(Theme.kinari)
+                .frame(maxWidth: .infinity).padding(.top, 64).padding(.bottom, 16)
+                .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
+                .overlay(alignment: .bottom) { Rectangle().fill(Theme.gold).frame(height: 2) }
+            Spacer()
+            // 読み物の欄（押せない物はカードにしない＝墨の罫と朱の左帯だけ）
+            VStack(alignment: .leading, spacing: Theme.Sp.s12) {
+                Text("大会の開演前に、\nお知らせします。")
+                    .font(.maru(22, weight: .heavy)).lineSpacing(6).foregroundStyle(Theme.sumi)
+                Text("また続きをやりに来られるように。")
+                    .font(.maru(.body)).foregroundStyle(Theme.inkSub)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 20).padding(.trailing, 16).padding(.vertical, Theme.Sp.s16)
+            .background(Theme.kinariPanel)
+            .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 5) }
+            .overlay(alignment: .top) { Rectangle().fill(Theme.sumi).frame(height: 1.5) }
+            .overlay(alignment: .bottom) { Rectangle().fill(Theme.sumi).frame(height: 1.5) }
+            .padding(.horizontal, Theme.Sp.s24)
+            Spacer()
+            VStack(spacing: Theme.Sp.s16) {
+                Button(action: allow) {
+                    Text("知らせてもらう").font(.maru(.title)).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
+                        .shadow(color: Theme.vermD, radius: 0, y: 3)
+                }.buttonStyle(PressableStyle())
+                Button(action: later) {
+                    Text("あとで").font(.maru(.body)).foregroundStyle(Theme.inkSub)
+                        .underline().frame(minHeight: 44)
+                }.buttonStyle(PressableStyle())
+            }
+            .padding(.horizontal, Theme.Sp.s32).padding(.bottom, Theme.Sp.s32)
         }
+        .background(Theme.kinari.ignoresSafeArea())
     }
 
     /// 再表示すべきか（未回答 かつ スヌーズ期限切れ）。IntroFlow から使う。

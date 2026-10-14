@@ -301,8 +301,8 @@ struct WeekMainView: View {
                     }
                 }
                 .padding(.horizontal, 12).padding(.vertical, 5)
-                .background(Theme.pillDark, in: Capsule())
-                .overlay(Capsule().stroke((m.weeksLeft <= 3 ? Theme.verm : Theme.gold).opacity(0.55), lineWidth: 1))
+                .background(Theme.curtainShade.opacity(0.9), in: RoundedRectangle(cornerRadius: 3))
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke((m.weeksLeft <= 3 ? Theme.verm : Theme.gold).opacity(0.7), lineWidth: 1))
             }
             .buttonStyle(PressableStyle())
         }
@@ -1011,10 +1011,15 @@ struct WeekMainView: View {
 
     @ViewBuilder private var toastBar: some View {
         if let toast {
-            Text(toast).font(.maru(12)).foregroundStyle(.white)
-                .padding(.horizontal, 16).padding(.vertical, 9)
-                .background(Theme.pillDark, in: Capsule())
+            Text(toast).font(.maru(13, weight: .bold)).foregroundStyle(Theme.kinari)
+                .multilineTextAlignment(.leading)
+                .padding(.leading, 18).padding(.trailing, 14).padding(.vertical, 10)
+                .background(Theme.curtainShade, in: RoundedRectangle(cornerRadius: 3))
+                .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 4) }
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.gold.opacity(0.7), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 3))
                 .e1()
+                .padding(.horizontal, 24)
                 .padding(.bottom, 78)   // 最下帯の上+16pt（§3-5）
                 .transition(.move(edge: .bottom).combined(with: .opacity))
         }
