@@ -21,25 +21,25 @@
 - 直し方の案：年初の飽き加算を `archivedNetas` にも回す（乱数なし・golden非経路）。または retire/recall 時に判定する。
 - 決めが要る：「しまって寝かせたら飽きが戻る」を許すかどうかは決定①で「戻らない」と決まっているので、直すだけでよい（不要）。
 
-**A-3 [中] 勝利演出の途中でアプリを閉じると優勝が消える**
+**A-3 【済 9b5fcaa】[中] 勝利演出の途中でアプリを閉じると優勝が消える**
 - ManzaiGame/Sources/GameSession.swift:889-897（saveNow：`winFinale` なら保存を削除）
 - 何が起きる：決勝に勝った直後の演出中（winFinale=true）に終了すると、セーブは消され、再起動は新規。優勝＝勇退エンディングを見ずに最初から。
 - 直し方の案：優勝の位相では「年末S6の入口」で保存を残す（エンディング後に削除）。
 - 決めが要る：不要。
 
-**A-4 [中] 復元時にバランス更新が一部だけ古いまま残る**
+**A-4 【済 dcfa26d】[中] 復元時にバランス更新が一部だけ古いまま残る**
 - WeekRunner.swift:537（`finalLine = snap.finalLine`）、保存済み `pendingSpec`（TournamentSpec の line/prize ごと保存）、`pendingOffer`
 - 何が起きる：config は毎回新しいのに、決勝ライン・保留中の大会（ライン・賞金）・保留中のオファー（収入）は保存時の値で動く。今回のお金L（オファー×0.8）や知名度Gの更新をまたいだセーブは、その週だけ古い値。
 - 直し方の案：復元時に `finalLine` を config から取り直す／pendingSpec を `calendar.tournament(inWeek:)` で引き直す。
 - 決めが要る：不要（影響は更新直後の1週のみ）。
 
-**A-5 [中] 復元後に前回の決勝の差（lastFinalMargin）などが空**
+**A-5 【済 fb27941】[中] 復元後に前回の決勝の差（lastFinalMargin）などが空**
 - GameSession.swift:195-213（restoring に lastFinalMargin／lastGains／lastDeltaWeek を戻していない）、SaveData に無い
 - 何が起きる：年末画面（S6）で中断して再開すると、決勝の「あと◯点」の表示が出ない可能性。`yearStartState` が nil の旧セーブは `GameState(config:)`＝初期値に落ちるので、2年目以降だと「この年で育ったもの」の差分が過大に出る。
 - 直し方の案：`weekResults` から margin を引き直す（986行と同じ手）。yearStartState nil の時は表示を出さない。
 - 決めが要る：不要。
 
-**A-6 [中] 新規フィールドの規約が人頼み（テスト網に無い）**
+**A-6 【済 f68057d】[中] 新規フィールドの規約が人頼み（テスト網に無い）**
 - GameCore/Sources/GameCore/GameState.swift:5-10（規約はコメントのみ）、GameCore/Tests に ManzaiGame 側の SaveData 復号テストが無い（CodableTests は GameState／Snapshot まで）
 - 何が起きる：SaveData（GameSession.swift:842）に非Optional を足すと旧セーブが全部復号失敗→「壊れたセーブは退避して新規」（GameSession.swift:930）＝プレイヤーの進行が消える。気付く手段が無い。
 - 直し方の案：旧版 SaveData の JSON 固定サンプルを fixtures に置き、復号できることをテストにする。
@@ -60,7 +60,7 @@
 - WeekRunner.swift（resolveAuto .final：優勝で即 `.yearDone`）／コメントで意図は明記（runYear と同一）。
 - 何が起きる：47週目で優勝した年は、47週の生活費ぶん（47は4で割れないので実害なし）。48週が4の倍数なので最終週の生活費は決勝後に払われない年が出るが、優勝＝勇退なので影響なし。記録のみ。
 
-**A-10 [小] 療養週に銭湯の回数券が黙って減る**
+**A-10 【済 9b119d1】[小] 療養週に銭湯の回数券が黙って減る**
 - WeekRunner.swift proceed()（療養で `applyRest(.完全休養)`）→GameEngine.swift applyRest（sentoTickets 消費）
 - プレイヤーが選んでいない休みで回数券が1回減る。直し方の案：療養週は回数券を使わない。決めが要る：要る（意図か）。
 
@@ -72,7 +72,7 @@
 - 直し方の案：①-50万で谷口が止める演出（強制せず勧める＝穴A案A2）②正典側を「2段」に書き直す。
 - 決めが要る：要る（①か②）。
 
-**B-2 [中] START_HERE.md が古い**
+**B-2 【済 d6bc250】[中] START_HERE.md が古い**
 - docs/START_HERE.md:11-28（「17件すべてgreen」「次にやること」）。現在は 126 件 green（AUTOPILOT 132行）。索引に canonical_v3 相当（経験点5通貨・お金L・知名度G）への導線が無く、正典は canonical_v2_spec.md のまま。
 - 直し方の案：「いまの状態」を AUTOPILOT への1行に置換し、正典v2＋後続決定の差分表を1枚足す。
 - 決めが要る：不要。
@@ -83,7 +83,7 @@
 - 直し方の案：金欠線を `livingCost` 基準（例：livingCost 未満）にする。
 - 決めが要る：要る（イベントの発火帯＝体感に効く）。
 
-**B-4 [小] ショップの文言が config とずれる余地**
+**B-4 【済 4c6ca71】[小] ショップの文言が config とずれる余地**
 - ManzaiGame/Sources/ShopView.swift:136（"4回ぶん" が直書き。config.itemSentoTickets=4 と今は一致）。
 - 直し方の案：`config.itemSentoTickets` から出す。決めが要る：不要。
 
@@ -101,11 +101,11 @@
 - 直し方の案：正式名「頂グランプリ」と略称「GP」の使い分けを1つ決め、表示用の名前定数を一本化。内部名 "GP決勝" は結果判定で使うので変えない（別に表示名を持つ）。
 - 決めが要る：要る（正式表記）。
 
-**C-2 [小] 空白・記号**
+**C-2 【済 5cc880a】[小] 空白・記号**
 - WeekMainView.swift:278「経験点が残ってる ・ 能力アップで使おう」（「・」の前後に空白。他は詰める）。
 - 直し方の案：「経験点が残ってる。能力アップで使おう」。決めが要る：不要。
 
-**C-3 [小] 講評データの重複文**
+**C-3 【済 4218fb2】[小] 講評データの重複文**
 - GameCore/Sources/GameCore/JudgeTalk.swift:498/523（「後ろの席まで届いていた。{中}だけ、前の席止まりだった。」）、505/538（「磨かれた{入り}。…」）、507/527（「間の取り方が場面ごとに違う。…」）が2つのプールに同一文。210/329 の「粗を探す気で座った。粗がなかった。」も重複。
 - 何が起きる：同じ決勝で別の審査員が同じ文を言う可能性。直し方の案：重複を別の言い回しにする（講評の採点ゲートに通す）。決めが要る：不要。
 
