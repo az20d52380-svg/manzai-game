@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+【注 2026-10-15】ブランチ q60-62-impl 以降は知名度の逓減が balance_sim.add に移り、ここの C.FAME_OTHER_MULT 等の差し替えは効かない（結果は docs/q60_q62_proposal_v0.md に記録済み）。
 キュー62 知名度（2026-10-15 オーナー決定）の試算：徐々に上がる＋決勝で一気に＋他は小さく逓減。
 使い方: python3 exp_fame62.py [キャリア数]（既定300）。数値は全て【仮】。ネタ無し／ネタ込み（NETA_V2）を併記。
 """

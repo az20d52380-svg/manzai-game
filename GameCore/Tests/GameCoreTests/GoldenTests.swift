@@ -34,16 +34,16 @@ final class GoldenTests: XCTestCase {
     let script: [(act: Act, exp: Expected)] = [
         (.train(.ネタ作り),     Expected(money: 300000, stamina: 80, fame: 3, sense: 10, idea: 11.254305555555556, expr: 10, chara: 10, mental: 10, compat: 5)),
         (.train(.ネタ合わせ),   Expected(money: 300000, stamina: 60, fame: 3, sense: 10, idea: 11.254305555555556, expr: 10, chara: 10, mental: 10, compat: 6)),
-        (.train(.フリーライブ),     Expected(money: 300000, stamina: 30, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 10, compat: 6)),
-        (.job(.標準),           Expected(money: 280000, stamina: 10, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 10, compat: 6)),
-        (.rest(.完全休養),      Expected(money: 280000, stamina: 70, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 11.833333333333334, compat: 6)),
-        (.train(.ネタ見せ会),     Expected(money: 200000, stamina: 40, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
-        (.train(.ランニング・サウナ), Expected(money: 120000, stamina: 30, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
-        (.job(.キツい),         Expected(money: 140000, stamina: 0, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
-        (.rest(.相方と過ごす),  Expected(money: 140000, stamina: 20, fame: 4, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
-        (.train(.ネタ作り),     Expected(money: 140000, stamina: 0, fame: 4, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
-        (.job(.楽),             Expected(money: 180000, stamina: 0, fame: 4, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
-        (.rest(.気分転換),      Expected(money: 80000, stamina: 35, fame: 4, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 13.306803703703705, compat: 7)),
+        (.train(.フリーライブ),     Expected(money: 300000, stamina: 30, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 10, compat: 6)),
+        (.job(.標準),           Expected(money: 280000, stamina: 10, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 10, compat: 6)),
+        (.rest(.完全休養),      Expected(money: 280000, stamina: 70, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 11.833333333333334, compat: 6)),
+        (.train(.ネタ見せ会),     Expected(money: 200000, stamina: 40, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
+        (.train(.ランニング・サウナ), Expected(money: 120000, stamina: 30, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
+        (.job(.キツい),         Expected(money: 140000, stamina: 0, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
+        (.rest(.相方と過ごす),  Expected(money: 140000, stamina: 20, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
+        (.train(.ネタ作り),     Expected(money: 140000, stamina: 0, fame: 3.55584375, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
+        (.job(.楽),             Expected(money: 180000, stamina: 0, fame: 3.55584375, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
+        (.rest(.気分転換),      Expected(money: 80000, stamina: 35, fame: 3.55584375, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 13.306803703703705, compat: 7)),
     ]
 
     func testTwelveWeekScriptMatchesPython() {

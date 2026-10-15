@@ -93,6 +93,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     gp_stage += 1
                     if gp_stage == len(C.GP_ROUNDS):
                         finalist = True
+                        C._fame_big(s, C.FAME_FINALIST)   # 決勝進出の知名度（キュー62）
                 else:
                     if gp_stage == len(C.GP_ROUNDS) - 1:
                         revival = True
@@ -105,13 +106,14 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 if ok:
                     B.add(s, "fame", C.GP_ROUND_FAME)
                     finalist = True
+                    C._fame_big(s, C.FAME_FINALIST)
             if finalist:
                 eff_line = C.GP_FINAL_LINE - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
                 ok, _ = B.perform(s, eff_line, rng)
                 acted = True
                 if ok:
                     s.money += C.GP_PRIZE
-                    B.add(s, "fame", C.FAME_CHAMP)
+                    C.fame_champ(s)
                     return True, gp_stage
 
         if not acted:

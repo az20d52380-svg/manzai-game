@@ -52,8 +52,25 @@ public enum GameEngine {
         case .体力:
             s.stamina = clamp(s.stamina + amount, 0, 100)
         case .知名度:
-            s.fame = clamp(s.fame + amount, 0, 100)
+            // キュー62 案G：その他の伸びは小さく・80に近いほど鈍る（決勝進出・優勝は addFameBig／addFameRaw）。Python: _add_v62
+            var amt = amount
+            if amt > 0 {
+                let d = max(0.0, 1 - s.fame / config.fameOtherCap)
+                amt = amt * config.fameOtherMult * (d * d)
+            }
+            s.fame = clamp(s.fame + amt, 0, 100)
         }
+    }
+
+    /// 決勝進出の知名度（×(1−知名度/100)）。Python: _fame_big
+    public static func addFameBig(_ amount: Double, to s: inout GameState) {
+        guard amount > 0 else { return }
+        s.fame = clamp(s.fame + amount * (1 - s.fame / 100), 0, 100)
+    }
+
+    /// 優勝の知名度（逓減なし）。Python: fame_champ（FAME_CHAMP_FLAT）
+    public static func addFameRaw(_ amount: Double, to s: inout GameState) {
+        s.fame = clamp(s.fame + amount, 0, 100)
     }
 
     /// Python: jitsuryoku(s)
@@ -188,6 +205,7 @@ public enum GameEngine {
         var bonus = (neta.polish - 50) * config.netaScoreCoefComp
                   + (neta.buzz - 50) * config.netaScoreCoefBuzz
         bonus = max(-config.netaScoreClamp, min(config.netaScoreClamp, bonus))
+        bonus -= config.netaTiredPenalty * Double(neta.tiredYears ?? 0)   // 同じネタは飽きられる（キュー60）。Python: _neta_bonus
         if isFinal {
             let second = s.selectedNetaID2.flatMap { sid in s.netas.first(where: { $0.id == sid }) }
             if second == nil || second!.polish < config.netaSecondMinPolish {

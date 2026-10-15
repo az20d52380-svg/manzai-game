@@ -68,7 +68,7 @@ FAME_FINAL_BONUS = 1.5  # 決勝のみの人気補正【確定・機微】: 実�
 GP_ROUND_FAME = 3    # GP各回戦通過の知名度上昇【仮】
 FAME_SMALL    = 5    # 小規模大会 通過+5【仮】
 FAME_MID      = 10   # 中規模大会 通過+10【仮】
-FAME_CHAMP    = 20   # グランプリ優勝+20【仮】
+FAME_CHAMP    = 10   # グランプリ優勝+10（逓減なし＝2回目の優勝で100）【仮】キュー62 案G（q60_q62_proposal_v0 §2）
 
 # ------------------------------------------------------------
 # その他の大会カレンダー（毎年開催・全て架空名・全て【仮】）
@@ -231,8 +231,8 @@ V2_COEF_BUZZ  = 0.02
 V2_SECOND_MIN = 60.0
 # 2026-10-15 オーナー決定（キュー60）：同じネタを毎年使うと飽きられる＝前の年に大会で掛けたネタは年初に buzz −D（同じ年の中では減らない）
 V2_YEAR_STALE = 0.0   # D【仮】。0＝従来どおり
-V2_TIRED_PEN  = 0.0   # 案B【仮】：大会で掛けた年の数×P を補正から引く（ライブでは戻らない＝客が覚えている）。0＝無し
-V2_TIRED_CAP  = 99    # 案C：飽きの段の上限（3＝最大 −3P）
+V2_TIRED_PEN  = 1.0   # 案B【仮】：大会で掛けた年の数×P を補正から引く（ライブでは戻らない＝客が覚えている）。0＝無し
+V2_TIRED_CAP  = 2     # 案C：飽きの段の上限（3＝最大 −3P）
 V2_TIRED_REST_YEARS = 0  # 案E：この年数続けて掛けなかったら飽きが全部戻る（寝かせた再演・0＝無し）
 V2_TIRED_REST = False # 案C：前の年に掛けなかったネタは飽きが1段戻る（寝かせると戻る＝再演）
 V2_TIRED_NEW  = False # 案B のボット：書く時、飽きられたネタ（使った年≥1）があれば新ネタに書き替える（実プレイヤーの「新ネタを書く」の近似）
@@ -241,28 +241,29 @@ V2_WRITE_GAIN = {"ネタ作り": V2_REVISE, "喫茶店で書く": 10.0, "ファ�
 # ============================================================
 # 知名度 v62（2026-10-15 オーナー決定・キュー62・既定OFF＝golden 非対象）
 # 「徐々に上がる。決勝に行けば1年目でも一気に上がる。他は甘くない。100＝優勝を重ねた大御所」
-# その他の伸び（大会・回戦・オファー・イベント）＝×FAME_OTHER_MULT×(1−知名度/100)^FAME_DIM_POW
+# その他の伸び（大会・回戦・オファー・イベント）＝×FAME_OTHER_MULT×(1−知名度/FAME_OTHER_CAP)²（balance_sim.add）
 # 決勝進出 +FAME_FINALIST・優勝 +FAME_CHAMP は ×(1−知名度/100)（1回の優勝では100に届かない）
 # ============================================================
-FAME_V62        = False
-FAME_OTHER_MULT = 1.0
-FAME_DIM_POW    = 2.0
-FAME_FINALIST   = 0.0
-FAME_OTHER_CAP  = 100.0  # 案G：その他の伸びが鈍っていく先（80＝決勝に出ないままでは80で頭打ち）
-FAME_CHAMP_FLAT = False  # 案G：優勝は逓減なしの +FAME_CHAMP（2回目の優勝で100に届く形）
-_B_ADD = B.add
+FAME_V62        = True   # 2026-10-15 採用（キュー62 案G）。その他の伸びの逓減は balance_sim.add（FAME_OTHER_MULT/CAP）に移した
+FAME_FINALIST   = 30.0
+FAME_CHAMP_FLAT = True   # 優勝は逓減なしの +FAME_CHAMP（2回目の優勝で100に届く形）
 
-def _add_v62(s, key, amt):
-    if FAME_V62 and key == "fame" and amt > 0:
-        amt = amt * FAME_OTHER_MULT * max(0.0, 1 - s.fame / FAME_OTHER_CAP) ** FAME_DIM_POW
-    _B_ADD(s, key, amt)
+def _fame_raw(s, amt):
+    s.fame = B.clamp(s.fame + amt, 0, 100)
 
-B.add = _add_v62   # OFF の時は素通し（従来と同一）
+def fame_champ(s):
+    """優勝の知名度（Swift WeekRunner .final と鏡像）"""
+    if FAME_V62 and FAME_CHAMP_FLAT:
+        _fame_raw(s, FAME_CHAMP)
+    elif FAME_V62:
+        _fame_big(s, FAME_CHAMP)
+    else:
+        B.add(s, "fame", FAME_CHAMP)
 
 def _fame_big(s, amt):
     """決勝進出・優勝の伸び（v62 のみ・逓減は1乗）"""
     if FAME_V62 and amt > 0:
-        _B_ADD(s, "fame", amt * (1 - s.fame / 100))
+        _fame_raw(s, amt * (1 - s.fame / 100))
 
 def _neta_new():
     if NETA_V2:
@@ -536,12 +537,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 acted = True
                 if ok:
                     s.money += GP_PRIZE
-                    if FAME_V62 and FAME_CHAMP_FLAT:
-                        _B_ADD(s, "fame", FAME_CHAMP)
-                    elif FAME_V62:
-                        _fame_big(s, FAME_CHAMP)
-                    else:
-                        B.add(s, "fame", FAME_CHAMP)
+                    fame_champ(s)
                     _track_pass(s)
                     if RUN_TRACK is not None:
                         entered = RUN_TRACK.get("year_entered", [])

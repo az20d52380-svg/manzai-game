@@ -77,7 +77,8 @@ public struct CalendarConfig {
     public var gpRoundFame = 3.0      // 回戦通過の知名度【仮】
     public var fameFinalBonus = 1.5   // 決勝のみの人気補正【機微】: 実効ライン = ライン − 本値×(知名度−50)/50
     public var gpPrize = 5_000_000    // 優勝賞金（表示1,000万の半分・手元）【仮】
-    public var champFame = 20.0
+    public var champFame = 10.0      // 優勝の知名度（逓減なし＝2回目の優勝で100・キュー62 案G）【仮】。Python: FAME_CHAMP・fame_champ
+    public var fameFinalist = 30.0   // 決勝進出の知名度（×(1−知名度/100)・1年目でも一気に）【仮】。Python: FAME_FINALIST・_fame_big
 
     /// エントリー費（全大会・GP共通。実在の賞レース準拠 2,000円【正典v2】。Python: GP_ENTRY_FEE）
     /// 大会: 払えなければ不出場。GP: 1回戦週に払えなければその年は出場不可（夜逃げ寸前だけが踏む）

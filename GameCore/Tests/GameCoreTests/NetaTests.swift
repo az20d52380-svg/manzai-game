@@ -139,6 +139,33 @@ final class NetaTests: XCTestCase {
         return s
     }
 
+    // MARK: キュー60 同じネタは飽きられる（Python: sim_career 年初の used_y→tired・_neta_bonus）
+
+    func testTiredNetaLosesBonusAcrossYearsAndCaps() {
+        let config = GameConfig()   // netaTiredPenalty=1・netaTiredCap=2
+        var s = stateWithSelected(polish: 100, buzz: 50, config: config)   // 素の補正 +2.0
+        s.netas[0].lastUsedTaikaiYear = 1
+        var r = WeekRunner(state: s, year: 2, config: config, rng: FixedRandom(value: 0.5))
+        XCTAssertEqual(r.state.netas[0].tiredYears, 1)   // 前の年に掛けた＝1段
+        XCTAssertEqual(GameEngine.netaScoreBonus(r.state, isFinal: false, config: config), 1.0, accuracy: 1e-9)
+        var s2 = r.state; s2.netas[0].lastUsedTaikaiYear = 2
+        r = WeekRunner(state: s2, year: 3, config: config, rng: FixedRandom(value: 0.5))
+        var s3 = r.state; s3.netas[0].lastUsedTaikaiYear = 3
+        r = WeekRunner(state: s3, year: 4, config: config, rng: FixedRandom(value: 0.5))
+        XCTAssertEqual(r.state.netas[0].tiredYears, 2)   // 上限2段で止まる
+        // 寝かせても戻らない（前の年に掛けていない年初でも段は残る）
+        r = WeekRunner(state: r.state, year: 6, config: config, rng: FixedRandom(value: 0.5))
+        XCTAssertEqual(r.state.netas[0].tiredYears, 2)
+        XCTAssertEqual(GameEngine.netaScoreBonus(r.state, isFinal: false, config: config), 0.0, accuracy: 1e-9)
+    }
+
+    func testFreshNetaHasNoTiredness() {
+        let config = GameConfig()
+        let r = WeekRunner(state: stateWithSelected(polish: 100, buzz: 50, config: config), year: 2, config: config, rng: FixedRandom(value: 0.5))
+        XCTAssertNil(r.state.netas[0].tiredYears)   // 大会で掛けていない＝古いセーブと同じ nil
+        XCTAssertEqual(GameEngine.netaScoreBonus(r.state, isFinal: false, config: config), 2.0, accuracy: 1e-9)
+    }
+
     func testNetaScoreBonusZeroWhenUnselected() {
         let config = GameConfig()
         var s = GameState(config: config)
