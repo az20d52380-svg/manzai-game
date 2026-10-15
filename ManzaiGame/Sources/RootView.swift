@@ -223,7 +223,7 @@ struct RootView: View {
             content
                 .overlay(alignment: .topTrailing) {
                     #if DEBUG
-                    if ProcessInfo.processInfo.environment["MZ_NOCHIP"] == nil { debugButton }   // 目視用: MZ_NOCHIP=1 で DEBUG チップを隠す
+                    if ProcessInfo.processInfo.environment["MZ_NOCHIP"] == nil, !(session.finished && showEnding) { debugButton }   // 目視用: MZ_NOCHIP=1 で DEBUG チップを隠す
                     #endif
                 }
         } else {
