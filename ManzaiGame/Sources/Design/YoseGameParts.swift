@@ -37,9 +37,9 @@ struct YoseVitalMoneyBar: View {
     var body: some View {
         HStack(spacing: 12) {
             HStack(spacing: 6) {
-                Text("体力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                Text("体力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin).fixedSize()
                 YoseGauge(value: Double(stamina), total: Double(maxStamina), fill: staminaColor, height: 12)
-                    .frame(width: 76)
+                    .frame(width: fame == nil ? 76 : 60)   // 知名度も並ぶ黒帯では、ラベルを潰さないよう少し短く
                 (Text("\(stamina)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                 + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu))
                     .lineLimit(1).fixedSize()

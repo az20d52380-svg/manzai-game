@@ -114,7 +114,7 @@ struct ChoiceEventOverlay: View {
 
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
-            .frame(height: 220)
+            .frame(height: 260)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
                 HStack(spacing: 6) {
@@ -208,8 +208,11 @@ struct ChoiceEventOverlay: View {
         VStack(spacing: 10) {
             if hasMore {
                 // タップで進むことを示す（下半分が空いて「選択肢が消えた」と迷わない）
-                Text("画面をタップして次へ ▶").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                // 押せる木札（画面のどこをタップしても進む＝この札は同じ動作・進み方は変えない）
+                Button { advance() } label: {
+                    Text("タップして次へ ▶").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(YoseButtonStyle(.secondary))
             }
             if footerReady {
                 if chosenID == nil, setupDone {
