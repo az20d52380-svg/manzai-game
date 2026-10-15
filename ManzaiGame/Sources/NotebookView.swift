@@ -89,7 +89,7 @@ struct NotebookView: View {
                 Text("コンビの名札").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     .frame(maxWidth: .infinity).padding(.vertical, 5).background(YoseColor.enji)
                     .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
-                ForEach(Array([("コンビ名", session.combiName), ("相方", "谷口"), ("いま", "\(session.year)年目　第\(session.week)週")].enumerated()), id: \.offset) { i, row in
+                ForEach(Array([("コンビ名", session.combiName), ("相方", "谷口"), ("いま", "\(session.year)年目　第\(session.week)週"), ("知名度", "\(Int(s.fame.rounded()))"), ("所持金", "¥\(s.money.formatted())")].enumerated()), id: \.offset) { i, row in
                     VStack(spacing: 0) {
                         if i > 0 { Rectangle().fill(YoseColor.kiDark.opacity(0.5)).frame(height: 1).padding(.horizontal, 14) }
                         HStack(spacing: 12) {
