@@ -69,7 +69,7 @@ struct S6bView: View {
                     HStack(spacing: 10) {
                         VStack(spacing: 0) {
                             Text("所持金").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                            Text(Yen.text(max(0, s.money))).font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                            Text(Yen.text(max(0, s.money))).font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                                 .lineLimit(1).minimumScaleFactor(0.6)
                         }
                         Image(systemName: "arrowtriangle.right.fill").font(.system(size: 14)).foregroundStyle(YoseColor.shu)
@@ -80,6 +80,9 @@ struct S6bView: View {
                                 .contentTransition(.numericText())
                         }
                     }
+                    .padding(.vertical, 6).padding(.horizontal, 14)
+                    .background(YoseColor.ki.opacity(0.55))
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                 }
             }
             .padding(.vertical, 24).padding(.horizontal, 20)
@@ -92,7 +95,8 @@ struct S6bView: View {
             Spacer(minLength: 0)
             Button { advance(.montage) } label: { Text("最後の舞台へ上がる ▶") }
                 .buttonStyle(YoseButtonStyle(.primary))
-                .padding(.horizontal, 20).padding(.bottom, 28)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(-5).allowsHitTesting(false))   // 暗い背景でも最後の1タップの輪郭が立つ金縁
+                .padding(.horizontal, 24).padding(.bottom, 30)
         }
         // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
         .onAppear { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
