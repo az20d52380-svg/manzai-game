@@ -159,6 +159,15 @@ final class NetaTests: XCTestCase {
         XCTAssertEqual(GameEngine.netaScoreBonus(r.state, isFinal: false, config: config), 0.0, accuracy: 1e-9)
     }
 
+    func testArchivedNetaStillGetsTired() {   // 全体監査 A-2：しまって翌年に戻しても飽きは進む
+        let config = GameConfig()
+        var s = stateWithSelected(polish: 100, buzz: 50, config: config)
+        s.netas[0].lastUsedTaikaiYear = 1
+        s.archivedNetas = [s.netas.removeFirst()]
+        let r = WeekRunner(state: s, year: 2, config: config, rng: FixedRandom(value: 0.5))
+        XCTAssertEqual(r.state.archivedNetas[0].tiredYears, 1)
+    }
+
     func testFreshNetaHasNoTiredness() {
         let config = GameConfig()
         let r = WeekRunner(state: stateWithSelected(polish: 100, buzz: 50, config: config), year: 2, config: config, rng: FixedRandom(value: 0.5))

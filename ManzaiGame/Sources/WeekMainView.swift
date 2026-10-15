@@ -331,7 +331,7 @@ struct WeekMainView: View {
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
-                        Text("！ 経験点が残ってる ・ 能力アップで使おう ！")
+                        Text("経験点が残ってる。能力アップで使おう")
                             .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                             .frame(maxWidth: .infinity).padding(.vertical, 3)
                             .background(YoseColor.shu)

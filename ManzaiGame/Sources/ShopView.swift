@@ -114,7 +114,7 @@ struct ShopView: View {
         case .中古のICレコーダー: return s.hasRecorder == true ? "持っている" : "一度だけ"
         case .銭湯の回数券:
             if let t = s.sentoTickets, t > 0 { return "のこり\(t)回" }
-            return "4回ぶん"
+            return "\(session.config.itemSentoTickets)回ぶん"
         default:
             guard let lim = spec?.yearlyLimit else { return "" }
             let used = s.itemCounts?[item.rawValue] ?? 0

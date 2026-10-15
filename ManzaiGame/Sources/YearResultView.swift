@@ -28,7 +28,7 @@ struct YearResultView: View {
                 // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
                 VStack(spacing: 12) {
                     reachStamp.stagger(1, appear)
-                    gradeLadder.stagger(2, appear)
+                    if session.hasYearStart { gradeLadder.stagger(2, appear) }
                     totalsBlock.stagger(3, appear)
                     historyBlock.stagger(3, appear)
                     eventsBlock.stagger(4, appear)
@@ -194,7 +194,7 @@ struct YearResultView: View {
     private var radarBlock: some View {
         VStack(spacing: 4) {
             sectionLabel("年初と現在").frame(maxWidth: .infinity, alignment: .leading)
-            RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.yearStartState, config: session.config))
+            RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.hasYearStart ? session.yearStartState : s, config: session.config))
                 .frame(height: 210)
             HStack(spacing: 12) {
                 legendDot(YoseColor.haiSumi, "年初", dashed: true)

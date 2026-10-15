@@ -129,6 +129,8 @@ final class GameSession {
     var year: Int { runner.year }
     /// この年の4月（年初）の状態。年末の「この1年で育ったもの」とレーダーの4月線の基準（表示専用・golden非対象）
     private(set) var yearStartState: GameState
+    /// 年初の状態が実際に分かっているか。旧セーブ(yearStartState なし・2年目以降)の復元後は false＝「育ったもの」の差分を出さない（A-5）
+    private(set) var hasYearStart = true
     /// 1年＝1行の記録（年末の「これまで」と勇退エンディングの年表に使う・表示専用・golden非対象）
     private(set) var yearHistory: [YearRecord] = []
     let combiName: String              // S1で入力（表示専用・golden非対象）
@@ -195,11 +197,18 @@ final class GameSession {
         self.week = save.runner.week
         // 複数年（v3）: 旧セーブ（1年完結時代）には無い＝1年目の新規と同じ基準に落とす
         self.yearStartState = save.yearStartState ?? GameState(config: cfg)
+        self.hasYearStart = save.yearStartState != nil || save.runner.year <= 1
+        // A-5: 復元で空になる決勝の点差は、保存された週内結果から引き直す（986行付近と同じ手）
+        self.lastFinalMargin = save.runner.weekResults.last(where: { $0.name == "GP決勝" })?.margin
         self.yearHistory = save.yearHistory ?? []
         if case .yearDone(let o) = save.phase {
             // 年末の画面（S6）で中断した＝翌年へ進む前。年末の結果をそのまま出し直す
             self.outcome = o
-            self.finished = true
+            if o.champion {
+                self.winFinale = true      // A-3: 勝利演出の途中で閉じた＝演出から出し直す（「次へ」で S4）
+            } else {
+                self.finished = true
+            }
         }
         self.pendingResult = save.pendingResult
         self.log = save.log
@@ -944,7 +953,7 @@ final class GameSession {
         // QA自動走行で実プレイのセーブを潰さない（MZ_ALLOWSAVE=1 は中断→再開の目視用に、あえて書く）
         if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
-        guard !winFinale, !abandoned, !(finished && careerOver) else {
+        guard !abandoned, !(finished && careerOver) else {   // A-3: 勝利演出中(winFinale)も保存する。acknowledgeWin(finished=true)で消える
             UserDefaults.standard.removeObject(forKey: Self.saveKey)
             return
         }
@@ -1194,6 +1203,26 @@ final class GameSession {
             case .freeAction:         choose(.job(.標準))   // 稼いで破産回避（能力は既にマックス）
             case .gpRound, .gpRevival, .gpFinal: advanceAuto()
             default: return
+            }
+        }
+    }
+
+    /// DEBUG: 今の年を年末（finished）まで自動プレイ（翌年へは進まない）
+    func debugAdvanceToYearEnd() {
+        var steps = 0
+        while !finished, !winFinale, steps < 600 {
+            steps += 1
+            if watchingFinal { finishWatchingFinal(winner: "—"); continue }
+            if pendingChoiceEvent != nil { dismissChoiceEvent(); continue }
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .tournamentDecision: decideTournament(.新幹線)
+            case .freeAction:
+                if state.money < 250_000 { choose(.job(.標準)) }
+                else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
+                else { choose(.rest(.完全休養)) }
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: steps = 600
             }
         }
     }

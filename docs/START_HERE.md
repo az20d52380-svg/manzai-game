@@ -11,11 +11,20 @@ CLI（Mac上）で作業を引き継ぐときは、まずこの1枚を読む。�
 ## いまの状態
 
 - **作業キューは `docs/AUTOPILOT.md` 一か所**（2026-10-13〜。対話でも自走でも上から進める・判断待ちもそこに並ぶ）。
-- **設計完成・Swift実機検証も完了**（2026-07-04・Macの Swift 6.3.3 で `cd GameCore && swift test` が
-  **17件すべてgreen**＝Python⇔Swiftの乱数列ビット一致を実機で証明。正典v2大改修の検証が完結した。
-  ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行）。
-- バランスは「正典v2」に移行済み（`docs/canonical_v2_spec.md` が正本）。旧ドキュメントの数値は
-  「正典v2移行」バナーつきの履歴。設計結論は有効、数値だけ読み替える。
+- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **128件 green**（2026-10-15 時点・
+  増えていく。赤いまま push しない）＋ `python3 tools/check_golden_sync.py`（Python⇔Swift golden 同期）。
+  ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行。
+- バランスの正本は `docs/canonical_v2_spec.md`（正典v2）**＋下の「後続決定の差分」**。正典v2の本文を読む時は差分表で数値を読み替える。
+
+### 正典v2 → 現在の差分（2026-10-15 時点・詳細は AUTOPILOT の済と各 docs）
+| 項目 | 現在 | 根拠 |
+|---|---|---|
+| お金（決定④L） | バイト収入×0.8（96,000/64,000/32,000）・オファー 240,000/120,000・生活費 14万(4週ごと)・夜逃げ −100万 | GameConfig.swift・`money_balance_v1.md` |
+| ネタの飽き（決定①D） | 前年に大会で使ったネタは年初に不利（tiredCap=2・penalty=1・使った年の数だけ） | `q60_q62_proposal_v0.md` |
+| 知名度（決定②G） | 決勝・優勝の伸びは維持、他は×0.6・逓減（物差し：100＝優勝を重ねた大御所） | 同上・`saturation_check_v0.md` |
+| 経験点・通貨 | 経験点は通貨別（5通貨）で能力に振る手動方式 | GameEngine.swift |
+| ショップ | 能力に効く品は売らない原則。回数券は config.itemSentoTickets 回 | GameConfig.swift・`items_more_v0.md` |
+| 未実装（正典v2のうち） | 借金の「督促」段（B-1・オーナー判断待ち） | `audit_all_v1.md` |
 - 直近でレッドチーム3視点レビュー実施（`docs/red_team_v0.md`）。指摘された「壊れていた旧テスト2本」は
   v2仕様に書き直し済み、シード制のテスト配線・golden出力の自動化も対応済み。
 
@@ -57,6 +66,7 @@ cd GameCore && swift test
 - 検証: `human_calibration_v0.md`（借金バグ発見）/ `rule_holes_v0.md`（生活ルール）/ `red_team_v0.md`
 - UI/演出: `ui_design_v0.md` / `finals_direction_v0.md` / `fan_report_design_v0.md` / `onboarding_script_v0.md`
 - 決勝敗北時の優勝者・ライバル: `champion_selection_v1.md`（正典・選出ロジック）/ `relationship_champions_v0.md`（絆＋優勝時セリフ）/ `relationship_archetype_variants_v0.md`（後輩/先輩/同期を毎周別の型に）/ `name_generator_v0.md`（コンビ名生成）/ `rival_design_v0.md`（4組の役柄テンプレ）/ `partner_finals_reactions_v0.md`（相方別の袖反応・非谷口は関西弁にしない）
+- **周回後（クリア後）の案（キュー79・2026-10-15）**: `postgame_ideas_v0.md`（他ゲームの周回調査＋相方を選ぶ/引き継ぎ/解放/やり込みの3つの束A小・B中・C大＋推奨B・決定はオーナー）
 - 導入の回想の出会い方（キュー63・案）: `intro_meeting_variants_v0.md`（同級生/養成所/バイト先/解散後の4型・ト書きの位置・オーナー質問）
 - キャラ: `partner_characters_v0.md`（相方・男6/女4＝得意能力6軸を網羅）/ `character_archetypes_v0.md`（22類型×口調×得意能力・後輩/先輩の量産型）/ `partner_finals_reactions_v0.md`（相方別の袖反応）/ `judge_design_v0.md`（審査員7名）
 - **審査員の"好み"研究（2026-07-17）**: `judge_preference_research_v0.md`（`judge_design_v0.md`の背景研究＝実在賞レースの採点作法だけをWeb調査で分解し架空7審査員へ翻案。**核心の誤解を正す＝審査トレンドは年で変わらない・各審査員が年をまたいで一貫した固有の物差しを持つ・年で変わるのは"パネルの配合"だけ**［用語を"審査トレンド"→"審査パネルの配合"に締める］。§1=採点作法の実測個人差［点差の大小/加点減点/甘辛/尺厳密/情の肩入れが年をまたいで安定］／§2=好みの7類型T1-T7＝既存7軸と1対1・**T5変わり者好きは独立枠を置かず卯月[新規性◎]と神楽坂[型破り◎/×]に内包**／§3=多軸で割れるからパネルが豊か＝"一番ウケた組が負ける"はドラマの燃料／§5=**ネタ型×好みの相性表**［◎○△×・王道しゃべくり/関係性/伏線回収/リターン型/非定型実験/瞬発/華先行×T1-T7・どの型にも◎が1つ＝勝ち筋担保］／§7=judge_design全審査員への接地確認表。**全て研究材料であり判定式に相性を乗せる提案ではない＝相性をスコアに乗せるかは judge_design §0 のオーナー決定・`replayability_research_v0.md` §7 の未決に属す（規律C-8）。実名/実在言い回し借用ゼロ・golden非干渉・数値は全て【仮】**）
@@ -173,4 +183,4 @@ cd GameCore && swift test
 - `fame_saturation_research_v0.md` — 知名度の張り付き対策の型（他作品・選択肢）・2026-10-14
 - `handoff_2026-10-15.md` — 引き継ぎ（2026-10-15・オーナー決定3件＝ネタ/お金/知名度・次の手順）
 - `NEW_CHAT_PROMPT.md` — 新チャットの起動手順（止まらない・自動再開・トークン節約・質問の仕方）・2026-10-15
-- `choice_events_others_v1.md` — 相方以外の人との選択肢イベント9本（後輩・先輩ほか・0041〜0049）の設計と採点・2026-10-15
+- `choice_events_others_v1.md` — 相方以外の人との選択肢イベント9本（後輩・先輩ほか・0041〜0049。実装は preview-all）の設計と採点・2026-10-15

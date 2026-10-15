@@ -41,7 +41,7 @@ final class WeekRunnerGoldenTests: XCTestCase {
 
     func testThreeYearsMatchRunYearGolden() {
         let config = GameConfig()
-        var rng = SplitMix64(seed: 424242)
+        var rng = SplitMix64(seed: 424243)
         var policy = GoldenPolicy()
         var s = GameState(config: config)
         let golden = CareerGoldenTests()

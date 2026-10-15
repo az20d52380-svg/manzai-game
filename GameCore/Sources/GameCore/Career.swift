@@ -24,12 +24,24 @@ public struct YearOutcome: Codable {
     public let roundsPassed: Int    // 通過したGP回戦数 0〜5
     public let reachedFinal: Bool   // 決勝の舞台に立ったか（敗者復活経由含む）
     public let bankrupt: Bool       // 夜逃げ（-100万未満）でキャリア終了したか【正典v2】
+    public let dissolved: Bool      // 途中解散（すれ違いゲージ）でキャリア終了したか
 
-    public init(champion: Bool, roundsPassed: Int, reachedFinal: Bool, bankrupt: Bool = false) {
+    public init(champion: Bool, roundsPassed: Int, reachedFinal: Bool, bankrupt: Bool = false, dissolved: Bool = false) {
         self.champion = champion
         self.roundsPassed = roundsPassed
         self.reachedFinal = reachedFinal
         self.bankrupt = bankrupt
+        self.dissolved = dissolved
+    }
+
+    private enum CodingKeys: String, CodingKey { case champion, roundsPassed, reachedFinal, bankrupt, dissolved }
+    public init(from decoder: Decoder) throws {   // 古いセーブ（dissolved なし）も読める
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        champion = try c.decode(Bool.self, forKey: .champion)
+        roundsPassed = try c.decode(Int.self, forKey: .roundsPassed)
+        reachedFinal = try c.decode(Bool.self, forKey: .reachedFinal)
+        bankrupt = try c.decodeIfPresent(Bool.self, forKey: .bankrupt) ?? false
+        dissolved = try c.decodeIfPresent(Bool.self, forKey: .dissolved) ?? false
     }
 }
 

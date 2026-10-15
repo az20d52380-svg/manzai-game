@@ -137,14 +137,14 @@ public enum GameEngine {
     }
 
     /// Python: do_rest
-    public static func applyRest(_ r: Rest, to s: inout GameState, config: GameConfig) {
+    public static func applyRest(_ r: Rest, to s: inout GameState, config: GameConfig, useTicket: Bool = true) {
         var r = r
         if let cost = config.restCosts[r], cost > 0 {   // お金を払う休み：払えなければ完全休養（Python do_rest と同じ）
             if s.money < cost { r = .完全休養 } else { s.money -= cost }
         }
         guard let spec = config.rests[r] else { return }
         var recovery = spec.recovery
-        if let t = s.sentoTickets, t > 0 {           // 銭湯の回数券（Item.swift）。未購入は nil＝恒等
+        if useTicket, let t = s.sentoTickets, t > 0 {           // 銭湯の回数券（Item.swift）。未購入は nil＝恒等
             recovery += config.itemSentoRecovery
             s.sentoTickets = t - 1
         }
@@ -218,6 +218,25 @@ public enum GameEngine {
     /// 週末処理（Python: run_year 末尾）。生活費は livingInterval 週ごと。
     /// 正典v2: 所持金<0なら生活苦（体力・メンタル減）、夜逃げライン未満で true（キャリア終了）を返す
     @discardableResult
+    /// 途中解散のすれ違いゲージ（週末・生活費と夜逃げ判定の後）。乱数なし。解散なら true。Python: sim_career.rift_weekend
+    public static func applyRiftWeekEnd(year: Int, to s: inout GameState, config: GameConfig) -> Bool {
+        guard config.riftOn else { return false }
+        var r = s.rift ?? 0
+        if s.compat > (s.riftWeekStartCompat ?? s.compat) {
+            r = max(0, r - config.riftHeal)
+        } else {
+            r = min(100, r + config.riftGain * (config.compatCap - s.compat) / config.compatCap)
+        }
+        if r >= config.riftWarn && s.riftWarned != true { s.riftWarned = true }
+        if year < 2 { r = min(r, 99) }
+        s.rift = r
+        if r >= 100 && s.riftWarned == true {
+            s.dissolved = true
+            return true
+        }
+        return false
+    }
+
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
             s.money -= config.livingCost

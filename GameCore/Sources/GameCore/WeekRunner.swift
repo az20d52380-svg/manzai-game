@@ -122,6 +122,10 @@ public struct WeekRunner<R: RandomSource> {
         for i in s.netas.indices where s.netas[i].lastUsedTaikaiYear == year - 1 {
             s.netas[i].tiredYears = min(config.netaTiredCap, (s.netas[i].tiredYears ?? 0) + 1)
         }
+        // しまったネタも同じく進める（しまって寝かせても飽きは戻らない＝決定①。全体監査 A-2）。Python には保管庫が無いので golden 非経路
+        for i in s.archivedNetas.indices where s.archivedNetas[i].lastUsedTaikaiYear == year - 1 {
+            s.archivedNetas[i].tiredYears = min(config.netaTiredCap, (s.archivedNetas[i].tiredYears ?? 0) + 1)
+        }
         self.state = s
         self.year = year
         self.config = config
@@ -152,6 +156,7 @@ public struct WeekRunner<R: RandomSource> {
         }
         acted = false
         weekResults = []
+        state.riftWeekStartCompat = state.compat   // 途中解散：この週に相性が上がったか（乱数なし）
         section = .tournament
         revivalTried = false
         finalTried = false
@@ -347,7 +352,7 @@ public struct WeekRunner<R: RandomSource> {
                 let offer = GameEngine.rollOffer(state: state, config: config, rng: &rng)
                 if state.recoveryWeeks > 0 {
                     state.recoveryWeeks -= 1                 // 療養中（オファーは受けられない・runYearと同一順序）
-                    GameEngine.applyRest(.完全休養, to: &state, config: config)
+                    GameEngine.applyRest(.完全休養, to: &state, config: config, useTicket: false)   // A-10: 選んでいない療養週は回数券を使わない
                     weekResults.append(StageResult(name: "療養", passed: false, prize: 0, isStage: false))
                 } else {
                     pendingOffer = offer
@@ -368,6 +373,11 @@ public struct WeekRunner<R: RandomSource> {
         // 週末処理（生活費→生活苦→夜逃げ判定）→ 週の結果
         if GameEngine.applyWeekEnd(week: week, to: &state, config: config) {
             let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true)
+            finished = outcome
+            return .yearDone(outcome)
+        }
+        if GameEngine.applyRiftWeekEnd(year: year, to: &state, config: config) {
+            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, dissolved: true)
             finished = outcome
             return .yearDone(outcome)
         }
@@ -534,7 +544,8 @@ extension WeekRunner where R: Codable {
         self.rng = snap.rng
         self.year = snap.year
         self.config = config
-        self.finalLine = snap.finalLine
+        // A-4: バランス更新が古いセーブに固定化されないよう、決勝ライン・保留中の大会/オファーは config から取り直す
+        self.finalLine = config.calendar.gpFinalLine
         self.gpStage = snap.gpStage
         self.gpAlive = snap.gpAlive
         self.finalist = snap.finalist
@@ -544,8 +555,16 @@ extension WeekRunner where R: Codable {
         self.section = snap.section
         self.acted = snap.acted
         self.weekResults = snap.weekResults
-        self.pendingSpec = snap.pendingSpec
-        self.pendingOffer = snap.pendingOffer
+        if snap.pendingSpec != nil {
+            self.pendingSpec = config.calendar.tournament(inWeek: snap.week) ?? snap.pendingSpec
+        } else {
+            self.pendingSpec = nil
+        }
+        if let o = snap.pendingOffer {
+            self.pendingOffer = [config.offerMoney, config.offerExp].first { $0.name == o.name } ?? o
+        } else {
+            self.pendingOffer = nil
+        }
         self.pendingAuto = snap.pendingAuto
         self.revivalTried = snap.revivalTried
         self.finalTried = snap.finalTried

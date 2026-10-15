@@ -42,7 +42,7 @@ final class CareerLogicTests: XCTestCase {
         XCTAssertFalse(outcome.bankrupt)
         XCTAssertEqual(outcome.roundsPassed, 4)   // 準決勝は落ちている（復活経由）
         // 生活費11回(第4〜44週・優勝週の週末処理は走らない)＋エントリー費2,000＋優勝賞金
-        XCTAssertEqual(s.money, 10_000_000 - 1_100_000 - 2_000 + 5_000_000)
+        XCTAssertEqual(s.money, 10_000_000 - 1_540_000 - 2_000 + 5_000_000)   // 生活費14万×11回（お金の調整L 2026-10-16）
         // 知名度（キュー62 案G）: 3 →回戦通過3×4・復活3（各 ×0.6×(1−f/80)²）→決勝進出 +30×(1−f/100)→優勝 +10（逓減なし）
         // 期待値は Python 正典で算出（balance_sim.add ×5 → sim_career._fame_big → fame_champ）
         XCTAssertEqual(s.fame, 47.466650503469026, accuracy: 1e-9)
@@ -96,9 +96,9 @@ final class CareerLogicTests: XCTestCase {
         // 第12週の大阪大会は「エントリー費2,000+バス代1万」が払えず不参加→自由週として処理される。
         // GPも第30週時点で赤字のためエントリー費が払えず今年は不出場【正典v2】
         let outcome = GameCareer.runYear(state: &s, year: 1, config: config, policy: &policy, rng: &rng)
-        // 収入ゼロのまま生活費が積もり、第44週の支払いで-100万を割って夜逃げ（第45週以降は走らない）
+        // 収入ゼロのまま生活費（14万）が積もり、第32週の支払いで-100万を割って夜逃げ（第33週以降は走らない）
         XCTAssertTrue(outcome.bankrupt)
         XCTAssertEqual(outcome.roundsPassed, 0)
-        XCTAssertEqual(s.money, 5_000 - 1_100_000)   // 生活費11回で夜逃げライン超え・大会費用の形跡なし
+        XCTAssertEqual(s.money, 5_000 - 1_120_000)   // 生活費14万×8回で夜逃げライン超え・大会費用の形跡なし
     }
 }

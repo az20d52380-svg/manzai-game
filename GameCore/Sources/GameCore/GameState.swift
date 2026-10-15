@@ -59,6 +59,14 @@ public struct GameState: Codable {
     /// UI層イベント（GameSession）が設定し、週送りで1ずつ減る。★golden不変: gen_golden はイベント非発火＝
     /// 常に0＝ゲートは恒等 no-op（GameEngine.add / balance_sim.add の inert ゲートで golden 期待値バイト一致を実証）。
     public var compatFreezeWeeks = 0
+    /// 途中解散のすれ違いゲージ 0〜100（nil＝古いセーブ＝0扱い）。乱数なし・golden の行には出ない
+    public var rift: Double?
+    /// 予告（rift≥riftWarn の初回）を出したか。アプリ側が予告イベントを出す合図
+    public var riftWarned: Bool?
+    /// 週頭の相性（この週に相性が上がったかの判定用）
+    public var riftWeekStartCompat: Double?
+    /// 途中解散でキャリアが終わったか
+    public var dissolved: Bool?
 
     /// ネタ合わせ（磨き）の効果ブースト週（0016 書けた一本＝寝かせた効果）。>0 の間は applyNetaRevise の
     /// polish 上昇に config.netaBoostMult を掛ける。UI層イベント（GameSession）が設定し、週送りで1ずつ減る。
