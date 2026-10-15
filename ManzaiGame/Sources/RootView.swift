@@ -30,6 +30,16 @@ struct RootView: View {
     var body: some View {
         Group {
             #if DEBUG
+            if let bg = ProcessInfo.processInfo.environment["MZ_BG"], let place = EventPlace(rawValue: bg) {
+                // 背景の目視: MZ_BG=<keikoba|station|apartment|gakuya|train|park|famires|sento|theater|kissaten|office>&MZ_BGTIME=<morning|day|evening|night>
+                // （env は & 区切りでなく別々に渡す）。背景だけを全画面（高さ220の舞台を縦に並べず中央に1枚）
+                let time = EventTimeOfDay(rawValue: ProcessInfo.processInfo.environment["MZ_BGTIME"] ?? "day") ?? .day
+                ZStack {
+                    YoseColor.kinari.ignoresSafeArea()
+                    EventStageBackdropView(backdrop: EventBackdrop(place, time)).frame(height: 220)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                }
+            } else {
             switch ProcessInfo.processInfo.environment["MZ_UI"] {
             case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
                 .onAppear { if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { session.debugSeedKirokuLog() } }
@@ -45,6 +55,7 @@ struct RootView: View {
             case "catalog": YoseCatalogView()                               // デザイン部品見本
             case "frame": StageFramePreview(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
+            }
             }
             #else
             mainFlow

@@ -19,6 +19,7 @@ struct ChoiceEventOverlay: View {
 
     private var text: ChoiceEventText { ChoiceEventData.text(for: kind) }
     private var scene: EventScene { ChoiceEventData.scene(for: kind) }
+    private var backdrop: EventBackdrop { EventBackdrop.forEvent(kind) }
 
     /// セットアップの何行目まで表示済みか。setup.count に達したら選択肢ボタンを出す。
     @State private var setupShown = 1
@@ -108,8 +109,20 @@ struct ChoiceEventOverlay: View {
     // MARK: 上＝題の札＋場面
 
     private var sceneHeader: some View {
-        EventSceneView(scene: scene)
+        EventStageBackdropView(backdrop: backdrop)
             .frame(height: 220)
+            .overlay(alignment: .topLeading) {
+                // 場所・時間帯の木札（背景が何色でも読める）
+                HStack(spacing: 6) {
+                    Text(backdrop.place.label).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    Rectangle().fill(YoseColor.sumi).frame(width: 1, height: 10)
+                    Text(backdrop.time.label).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.enji)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .yoseKifuda()
+                .padding(.top, 10).padding(.leading, 14)
+                .allowsHitTesting(false)
+            }
             .overlay(alignment: .topTrailing) {
                 // 選んだ結果＝二人の頭上に効果チップ（伸び＝濃い色の塗り／減り＝白地で祝わない）
                 VStack(alignment: .trailing, spacing: 6) {
