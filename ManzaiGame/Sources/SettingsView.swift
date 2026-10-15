@@ -4,6 +4,7 @@
 // 動かない項目（購入を復元・通知・データ管理・利用規約）は監査G-02で撤去。課金/通知を実装する時に戻す。
 
 import SwiftUI
+import GameCore
 
 struct SettingsView: View {
     var onClose: () -> Void
@@ -14,6 +15,7 @@ struct SettingsView: View {
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
     @State private var showEndingBook = false
+    @State private var showGlossary = false
 
     var body: some View {
         ZStack {
@@ -34,6 +36,10 @@ struct SettingsView: View {
                             Rectangle().fill(YoseColor.kiDark).frame(height: 1)
                             volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
+                        }
+                        section("遊び方") {
+                            Button { showGlossary = true } label: { linkRow("用語集") }
+                                .buttonStyle(.plain)
                         }
                         section("記録") {
                             Button { showEndingBook = true } label: { linkRow("エンディング図鑑") }
@@ -72,6 +78,7 @@ struct SettingsView: View {
             if restartStep > 0, onQuitRun != nil { restartModal }
         }
         .fullScreenCover(isPresented: $showEndingBook) { EndingGalleryView { showEndingBook = false } }
+        .fullScreenCover(isPresented: $showGlossary) { GlossaryView { showGlossary = false } }
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
@@ -176,5 +183,73 @@ enum AppInfo {
     static let privacyPolicyURL: URL? = nil
     static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+    }
+}
+
+
+/// 用語集（設定内）。事実だけを1語1〜2行。数値は GameConfig の既定値に合わせて書く（変えたらここも直す）。
+struct GlossaryView: View {
+    var onClose: () -> Void
+
+    private struct Group: Identifiable { let title: String; let rows: [(String, String)]; var id: String { title } }
+    private static let groups: [Group] = [
+        Group(title: "強さ", rows: [
+            ("実力", "コンビの強さ。センス・発想・表現・華の4つから決まる。大会の通過ラインと比べられる。"),
+            ("相性", "二人の息の合い方。実力に足されて数えられる。"),
+            ("体力", "行動すると減り、休むと戻る。低いと稽古ができず、体調を崩して休むことがある。"),
+            ("経験点", "練習やネタ書きでたまる5種の粒。閃き・語彙・間合い・存在感・胆力。能力アップで使う。"),
+            ("能力", "センス・発想・表現・華・メンタル。経験点で上がる。メンタルは、本番の出来のばらつきを小さくする。"),
+        ]),
+        Group(title: "ネタ", rows: [
+            ("完成度", "ネタの仕上がり（0〜100）。ネタ書きで上がる。低いネタは本番の点が下がる。"),
+            ("飽き", "同じネタを大会で使い続けると、客に見飽きられて本番の点が下がる。新しいネタを書くと元どおり。"),
+        ]),
+        Group(title: "暮らし", rows: [
+            ("知名度", "どれだけ知られているか（0〜100）。舞台に立つと上がる。決勝では高いほど通過ラインが少し下がる。"),
+            ("所持金と生活費", "バイトや賞金で増える。\(GameConfig().livingInterval)週に1度、週の終わりに\(GameConfig().livingCost / 10_000)万円の生活費が引かれる。"),
+            ("借金と夜逃げ", "お金が足りないと借金になる。借金が\(-GameConfig().bankruptLine / 10_000)万円を超えると夜逃げになり、芸人は続けられない。"),
+        ]),
+        Group(title: "コンビ", rows: [
+            ("すれ違い", "相性が上がらない週が続くとたまる。途中で予告が出る。たまりきるとコンビは解散する。"),
+        ]),
+        Group(title: "大会", rows: [
+            ("通過ライン", "大会ごとの数字。実力（相性をふくむ）がこれを超えるほど通過しやすい。"),
+            ("決勝", "頂グランプリの最後の舞台（第\(GameConfig().calendar.gpFinalWeek)週）。ネタは1本目と2本目を選べる。"),
+            ("エンディング図鑑", "キャリアの終わり方の記録。見た結末が並び、あとから読み返せる。"),
+        ]),
+    ]
+
+    var body: some View {
+        ZStack {
+            YoseColor.kinari.ignoresSafeArea()
+            VStack(spacing: 0) {
+                YoseHeaderBar(title: "用語集", closeAction: onClose)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        ForEach(Self.groups) { g in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(spacing: 8) {
+                                    Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)
+                                    Text(g.title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                                }
+                                VStack(alignment: .leading, spacing: 12) {
+                                    ForEach(g.rows, id: \.0) { r in
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(r.0).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                                            Text(r.1).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+                                    }
+                                }
+                                .padding(YoseMetrics.padH + 2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .yoseHarigami()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
+                }
+            }
+        }
     }
 }
