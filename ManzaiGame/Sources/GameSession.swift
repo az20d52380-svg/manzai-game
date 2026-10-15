@@ -1298,3 +1298,132 @@ final class GameSession {
         return "第\(s.week)週: " + parts.joined(separator: " / ")
     }
 }
+
+#if DEBUG
+// MARK: QA自己点検（MZ_SMOKE=selftest で RootView.task から呼ぶ・標準出力に [ST] 行だけ出す・実プレイ非経路）
+extension GameSession {
+    /// 区切り（careerOver）まで自動プレイ。止まったら nil。firedKinds に出た選択肢イベントを集計
+    static func debugSelfPlay(_ s: GameSession, pick: Int = 0, kinds: inout [String: Int], maxSteps: Int = 40000) -> String? {
+        var steps = 0
+        while steps < maxSteps {
+            steps += 1
+            if s.winFinale { s.acknowledgeWin(); continue }
+            if s.finished { if s.careerOver { return nil }; s.startNextYear(); continue }
+            if s.watchingFinal { s.finishWatchingFinal(winner: "—"); continue }
+            if let k = s.pendingChoiceEvent {
+                kinds["\(k)", default: 0] += 1
+                let cs = s.availableEventChoices()
+                if !cs.isEmpty { s.applyEventChoice(cs[min(pick, cs.count - 1)].id) }
+                s.dismissChoiceEvent(); continue
+            }
+            if s.pendingResult != nil { s.acknowledgeResult(); continue }
+            switch s.phase {
+            case .tournamentDecision: s.decideTournament(.新幹線)
+            case .freeAction:
+                if s.state.money < 250_000 { s.choose(.job(.標準)) }
+                else if s.state.stamina >= 45 { s.choose(.train(.ネタ作り)) }
+                else { s.choose(.rest(.完全休養)) }
+            case .gpRound, .gpRevival, .gpFinal: s.advanceAuto()
+            default: return "STUCK phase=\(s.phase) y=\(s.year) w=\(s.week)"
+            }
+        }
+        return "STUCK steps y=\(s.year) w=\(s.week) phase=\(s.phase)"
+    }
+
+    static func debugSelfTest() {
+        func line(_ s: String) { fputs("[ST] \(s)\n", stderr) }
+        var kinds: [String: Int] = [:]
+        func report(_ label: String, _ s: GameSession, _ stuck: String?) {
+            let o = s.outcome
+            let e = s.endingID
+            if let e { EndingBook.record(e, partner: Names.partner) }
+            line("\(label): y=\(s.year) w=\(s.week) champ=\(o?.champion ?? false) bank=\(o?.bankrupt ?? false) diss=\(o?.dissolved ?? false) compat=\(s.state.compat) money=\(s.state.money) rift=\(s.state.rift ?? -1) ending=#\(e?.number ?? 0) \(stuck ?? "ok")")
+        }
+        UserDefaults.standard.removeObject(forKey: EndingBook.key)
+        // 1 夜逃げ
+        do { var st = GameState(config: GameConfig()); st.compat = 10; st.money = GameConfig().bankruptLine + 5000
+             let s = GameSession(startState: st); var k = [String: Int]()
+             var steps = 0
+             while !s.finished, steps < 500 { steps += 1
+                 if s.pendingChoiceEvent != nil { s.dismissChoiceEvent(); continue }
+                 if s.pendingResult != nil { s.acknowledgeResult(); continue }
+                 switch s.phase { case .tournamentDecision: s.decideTournament(nil); case .freeAction: s.choose(.rest(.完全休養)); case .gpRound, .gpRevival, .gpFinal: s.advanceAuto(); default: steps = 500 } }
+             _ = k; k = [:]
+             report("#1 nightEscape", s, s.finished ? nil : "STUCK") }
+        // 2 解散（既定bot・シード数本）
+        for seed in [424242, 1, 2, 3] as [UInt64] {
+            let s = GameSession(seed: seed); let r = debugSelfPlay(s, kinds: &kinds); report("#2 dissolve seed=\(seed)", s, r)
+        }
+        // 2b 解散（rift を直接上げる）
+        do { var st = GameState(config: GameConfig()); st.compat = 4; st.money = 500_000; st.rift = 97; st.riftWarned = true
+             let s = GameSession(startState: st); let r = debugSelfPlay(s, kinds: &kinds); report("#2b rift97", s, r) }
+        // 7/8 優勝
+        for c in [19.0, 10.0] {
+            var st = GameSession.debugMaxedState(); st.compat = c
+            let s = GameSession(startState: st); s.debugAdvanceToChampionFinale(); s.acknowledgeWin()
+            report("champ compat=\(c)", s, s.finished ? nil : "STUCK")
+        }
+        // 10年完走（相性上限・能力マックス）／能力なし
+        for (n, mk) in [("maxed", true), ("plain", false)] {
+            var st = mk ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 20; st.money = 800_000
+            if mk { st.センス = 60; st.発想 = 60; st.表現 = 60; st.華 = 60 }
+            let s = GameSession(startState: st); let r = debugSelfPlay(s, kinds: &kinds); report("10y \(n) compat20", s, r)
+        }
+        // 10年完走（riftOn=false で解散を外す）: 能力・相性を変えて #3〜#6 に到達するか
+        for (n, ab, c) in [("weak c5", 20.0, 5.0), ("weak c20", 20.0, 20.0), ("mid c5", 70.0, 5.0), ("mid c20", 70.0, 20.0), ("high c5", 95.0, 5.0)] {
+            var cfg = GameConfig(); cfg.riftOn = false
+            var st = GameState(config: cfg); st.センス = ab; st.発想 = ab; st.表現 = ab; st.華 = ab; st.メンタル = ab; st.compat = c; st.money = 800_000
+            let s = GameSession(config: cfg, startState: st); var k = [String: Int](); let r = debugSelfPlay(s, kinds: &k, maxSteps: 60000)
+            report("10y norift \(n)", s, r)
+        }
+        // 判定表（#3〜#6）
+        let o = YearOutcome(champion: false, roundsPassed: 2, reachedFinal: false)
+        let rec = { (f: Bool) in GameSession.YearRecord(year: 1, roundsPassed: 1, reachedFinal: f, champion: false, bankrupt: false, prize: 0) }
+        for (f, c) in [(false, 5.0), (false, 16.0), (true, 5.0), (true, 16.0)] {
+            line("judge finals=\(f) compat=\(c) -> #\(EndingID.judge(outcome: o, compat: c, history: [rec(f)], year: 10, careerYears: 10)?.number ?? 0)")
+        }
+        line("book=\(EndingBook.load().keys.map { $0.number }.sorted())")
+        // 0050 予告（rift 49 開始・compat 低）
+        for pick in [0, 1] {
+            var st = GameState(config: GameConfig()); st.compat = 3; st.money = 500_000; st.rift = 49
+            let s = GameSession(startState: st); var seen = false; var steps = 0
+            while steps < 3000, !s.finished { steps += 1
+                if s.pendingChoiceEvent == .riftWarning {
+                    let before = s.state.rift ?? 0
+                    let cs = s.availableEventChoices(); s.applyEventChoice(cs[min(pick, cs.count - 1)].id)
+                    line("0050 fired y=\(s.year) w=\(s.week) choices=\(cs.map { $0.id }) pick=\(pick) rift \(before)->\(s.state.rift ?? -1) stamina=\(s.state.stamina) choice=\(s.riftWarnChoice ?? "-")")
+                    s.dismissChoiceEvent(); seen = true; break }
+                if s.pendingChoiceEvent != nil { s.dismissChoiceEvent(); continue }
+                if s.pendingResult != nil { s.acknowledgeResult(); continue }
+                switch s.phase { case .tournamentDecision: s.decideTournament(.新幹線); case .freeAction: s.choose(.rest(.完全休養)); case .gpRound, .gpRevival, .gpFinal: s.advanceAuto(); default: steps = 3000 } }
+            if !seen { line("0050 NOT FIRED pick=\(pick) rift=\(s.state.rift ?? -1) warned=\(s.state.riftWarned ?? false)") }
+        }
+        // 週次抽選（0041〜0049）を多シードで集計
+        var wk: [String: Int] = [:]
+        for seed in 1...60 {
+            var st = GameState(config: GameConfig()); st.compat = 20; st.money = 300_000
+            let s = GameSession(seed: UInt64(seed) &* 7919, startState: st); var k = [String: Int]()
+            _ = debugSelfPlay(s, kinds: &k, maxSteps: 12000)
+            for (a, b) in k { wk[a, default: 0] += b }
+        }
+        line("weekly kinds over 60 seeds: " + wk.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: " "))
+        // 古いセーブ
+        do { var st = GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
+             let s = GameSession(startState: st); s.debugAdvanceYears(1); s.saveNow()
+             if let d = UserDefaults.standard.data(forKey: "manzai.save.v1"), var o = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
+                 for k in ["version", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName", "didFireRiftWarn", "riftWarnChoice", "didFireLostRehearsal", "didFirePassFork", "didFireEve", "didWatchFinal"] { o.removeValue(forKey: k) }
+                 if var r = o["runner"] as? [String: Any], var stt = r["state"] as? [String: Any] {
+                     for k in ["rift", "riftWarned", "riftWeekStartCompat", "dissolved"] { stt.removeValue(forKey: k) }
+                     r["state"] = stt; o["runner"] = r
+                 }
+                 UserDefaults.standard.set(try! JSONSerialization.data(withJSONObject: o), forKey: "manzai.save.v1")
+                 let l = GameSession.loadedOrNew()
+                 line("oldsave restored=\(l.isRestored) y=\(l.year) w=\(l.week) broken=\(UserDefaults.standard.data(forKey: "manzai.save.v1.broken") != nil)")
+                 var k2 = [String: Int](); let r2 = debugSelfPlay(l, kinds: &k2, maxSteps: 3000); line("oldsave play: \(r2 ?? "ok") y=\(l.year)")
+             } else { line("oldsave: no save written") }
+             UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); UserDefaults.standard.removeObject(forKey: "manzai.save.v1.broken") }
+        UserDefaults.standard.removeObject(forKey: EndingBook.key)
+        line("DONE")
+    }
+}
+#endif
