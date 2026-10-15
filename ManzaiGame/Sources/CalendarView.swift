@@ -19,22 +19,20 @@ struct CalendarView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            YoseColor.kinari.ignoresSafeArea()
             VStack(spacing: 0) {
-                header
-                VStack(spacing: Theme.Sp.s12) {
+                YoseHeaderBar(title: "年間香盤", closeAction: onClose)
+                VStack(spacing: 10) {
                     summary
                     grid
                     legend   // 凡例は表のすぐ下
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, Theme.Sp.s16).padding(.top, Theme.Sp.s12)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12)
             }
 
             if let toast {
-                Text(toast).font(.maru(12)).foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(Theme.pillDark, in: Capsule())
+                YoseToast(message: toast)
                     .frame(maxHeight: .infinity, alignment: .bottom).padding(.bottom, 40)
                     .transition(.opacity)
             }
@@ -42,29 +40,11 @@ struct CalendarView: View {
         .onAppear { breathe = true }
     }
 
-    /// 劇場の香盤表の見出し＝臙脂の帯＋金の罫線（週のメイン画面と同じ色）。
-    private var header: some View {
-        HStack(spacing: 10) {
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
-            Text("年間香盤").font(.maru(22, weight: .black)).tracking(4).foregroundStyle(Theme.goldLeafHi)
-                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
-            Button(action: onClose) {
-                Image(systemName: "xmark").font(.system(size: 14, weight: .black)).foregroundStyle(Theme.goldLeafHi)
-                    .frame(width: 34, height: 34)
-                    .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1))
-            }.buttonStyle(PressableStyle())
-        }
-        .padding(.horizontal, 14).padding(.top, 54).padding(.bottom, 8)
-        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
-    }
-
     private var summary: some View {
         VStack(spacing: 4) {
-            Text("\(session.combiName)").font(.maru(17, weight: .black)).foregroundStyle(Theme.sumi)
+            Text("\(session.combiName)").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
             Text("\(session.year)年目 ・ 第\(session.week)週 ・ 賞金 ¥\(session.totalPrize.formatted())")
-                .font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkDim)
+                .font(YoseFont.number(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
     }
 
@@ -73,23 +53,24 @@ struct CalendarView: View {
         VStack(spacing: 0) {
             ForEach(0..<12, id: \.self) { row in
                 HStack(spacing: 0) {
-                    Text(monthLabel(row)).font(.maru(14, weight: .black)).monospacedDigit()
-                        .foregroundStyle(Theme.sumi).frame(width: 40)
+                    Text(monthLabel(row)).font(YoseFont.number(14, weight: .black))
+                        .foregroundStyle(YoseColor.sumi).frame(width: 42)
                         .frame(maxHeight: .infinity)
-                        .background(Color(hex: 0xEFE3C8))
-                        .overlay(alignment: .trailing) { Rectangle().fill(Theme.sumi).frame(width: 1) }
+                        .background(YoseColor.ki)
+                        .overlay(alignment: .trailing) { Rectangle().fill(YoseColor.sumi).frame(width: 2) }
                     ForEach(0..<4, id: \.self) { col in
                         cell(week: row * 4 + col + 1)
-                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(Theme.lineStrong.opacity(0.4)).frame(width: 0.6) } }
+                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(YoseColor.kiDark).frame(width: 1) } }
                     }
                 }
-                .frame(height: 38)
-                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(Theme.lineStrong.opacity(0.4)).frame(height: 0.6) } }
+                .frame(height: 40)
+                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(YoseColor.kiDark).frame(height: row % 3 == 2 ? 1.5 : 1) } }
             }
         }
-        .background(Color(hex: 0xFBF3E2))
-        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
-        .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 0.8).padding(3).allowsHitTesting(false))
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
+        .padding(.bottom, 3)
     }
 
     @ViewBuilder private func cell(week w: Int) -> some View {
@@ -98,20 +79,30 @@ struct CalendarView: View {
         let isTournament = isTournamentWeek(w)
         ZStack {
             if isTournament {
-                Rectangle().fill(isPast ? Theme.vermD.opacity(0.55) : Theme.verm)   // 大会週＝朱の色面
-                Text(tournamentLabel(w)).font(.maru(15, weight: .black)).tracking(1)
-                    .foregroundStyle(.white)
-                    .shadow(color: Theme.curtainShade.opacity(0.7), radius: 0, x: 1, y: 1)
+                Rectangle().fill(isPast ? YoseColor.shu.opacity(0.55) : YoseColor.shu)   // 大会週＝朱の色面
+                VStack(spacing: 0) {
+                    Text(tournamentName(w)).font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                    Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, 2)
             } else if isPast, let cat = session.categoryLog[w] {
-                Text(cat.label.prefix(1)).font(.maru(13, weight: .black))   // 過去週＝やった事の頭文字（稽/バ/回）
-                    .foregroundStyle(Theme.sumi.opacity(0.65))
+                Text(cat.label.prefix(1)).font(YoseFont.gothic(13, weight: .heavy))   // 過去週＝やった事の頭文字（稽/バ/回）
+                    .foregroundStyle(YoseColor.haiSumi)
             }
             if isCurrent {
-                Rectangle().stroke(Theme.goldLeafHi, lineWidth: 3).padding(1)   // 現在週＝金の栞
-                Rectangle().stroke(Theme.sumi, lineWidth: 1.5)
+                Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).padding(1)   // 現在週＝金の栞
+                Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .topLeading) {
+            if isCurrent {
+                Text("今週").font(YoseFont.gothic(9, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
+                    .padding(.horizontal, 3).background(YoseColor.kuroUrushi)
+            }
+        }
         .contentShape(Rectangle())
         .onLongPressGesture(minimumDuration: 0.3) {
             if isPast { showToast("第\(w)週 \(session.categoryLog[w]?.label ?? "——")。") }
@@ -119,24 +110,35 @@ struct CalendarView: View {
     }
 
     private var legend: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             ForEach([BandCategory.keiko, .baito, .kaifuku], id: \.label) { cat in
                 HStack(spacing: 4) {
-                    Text(cat.label.prefix(1)).font(.maru(12, weight: .black)).foregroundStyle(Theme.sumi)
-                        .frame(width: 20, height: 20).overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1))
+                    Text(cat.label.prefix(1)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        .frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     Text(cat.label)
                 }
             }
-            HStack(spacing: 4) { Rectangle().fill(Theme.verm).frame(width: 20, height: 20); Text("大会") }
-            HStack(spacing: 4) { Rectangle().stroke(Theme.goldLeafHi, lineWidth: 3).frame(width: 20, height: 20); Text("今週") }
+            HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
+            HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
         }
-        .font(.maru(11, weight: .bold)).foregroundStyle(Theme.sumi)
+        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .yoseKifuda()
     }
 
     private func tournamentLabel(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "決勝" }
         if cal.gpRounds.contains(where: { $0.week == w }) { return "GP" }
         return "大会"
+    }
+
+    /// 上段に出す大会の略称（どの大会か）。春新人賞A→春新人A／大阪戎コンクール→大阪戎 など
+    private func tournamentName(_ w: Int) -> String {
+        if w == cal.gpFinalWeek { return "頂GP" }
+        if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return cal.gpRoundNames[i] }
+        guard let n = cal.tournament(inWeek: w)?.name else { return "" }
+        return n.replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }
 
     private func showToast(_ t: String) {
