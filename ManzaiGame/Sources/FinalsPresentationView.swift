@@ -885,7 +885,7 @@ struct FinalsPresentationView: View {
                         .padding(.horizontal, 10).padding(.vertical, 3)
                         .background(YoseColor.kuroUrushi)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
-                    YoseSpeechBox(speaker: "谷口", text: "……なあ、腹減ったな", roleLabel: "相方")
+                    YoseSpeechBox(speaker: "谷口", text: "……ほんまに、勝ったんやな", roleLabel: "相方")
                 }
             } else if spectator {
                 YoseNarration(text: "客席の照明が上がる前に、二人で席を立った。")
