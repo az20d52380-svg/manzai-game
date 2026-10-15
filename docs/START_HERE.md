@@ -11,11 +11,20 @@ CLI（Mac上）で作業を引き継ぐときは、まずこの1枚を読む。�
 ## いまの状態
 
 - **作業キューは `docs/AUTOPILOT.md` 一か所**（2026-10-13〜。対話でも自走でも上から進める・判断待ちもそこに並ぶ）。
-- **設計完成・Swift実機検証も完了**（2026-07-04・Macの Swift 6.3.3 で `cd GameCore && swift test` が
-  **17件すべてgreen**＝Python⇔Swiftの乱数列ビット一致を実機で証明。正典v2大改修の検証が完結した。
-  ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行）。
-- バランスは「正典v2」に移行済み（`docs/canonical_v2_spec.md` が正本）。旧ドキュメントの数値は
-  「正典v2移行」バナーつきの履歴。設計結論は有効、数値だけ読み替える。
+- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **128件 green**（2026-10-15 時点・
+  増えていく。赤いまま push しない）＋ `python3 tools/check_golden_sync.py`（Python⇔Swift golden 同期）。
+  ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行。
+- バランスの正本は `docs/canonical_v2_spec.md`（正典v2）**＋下の「後続決定の差分」**。正典v2の本文を読む時は差分表で数値を読み替える。
+
+### 正典v2 → 現在の差分（2026-10-15 時点・詳細は AUTOPILOT の済と各 docs）
+| 項目 | 現在 | 根拠 |
+|---|---|---|
+| お金（決定④L） | バイト収入×0.8（96,000/64,000/32,000）・オファー 240,000/120,000・生活費 14万(4週ごと)・夜逃げ −100万 | GameConfig.swift・`money_balance_v1.md` |
+| ネタの飽き（決定①D） | 前年に大会で使ったネタは年初に不利（tiredCap=2・penalty=1・使った年の数だけ） | `q60_q62_proposal_v0.md` |
+| 知名度（決定②G） | 決勝・優勝の伸びは維持、他は×0.6・逓減（物差し：100＝優勝を重ねた大御所） | 同上・`saturation_check_v0.md` |
+| 経験点・通貨 | 経験点は通貨別（5通貨）で能力に振る手動方式 | GameEngine.swift |
+| ショップ | 能力に効く品は売らない原則。回数券は config.itemSentoTickets 回 | GameConfig.swift・`items_more_v0.md` |
+| 未実装（正典v2のうち） | 借金の「督促」段（B-1・オーナー判断待ち） | `audit_all_v1.md` |
 - 直近でレッドチーム3視点レビュー実施（`docs/red_team_v0.md`）。指摘された「壊れていた旧テスト2本」は
   v2仕様に書き直し済み、シード制のテスト配線・golden出力の自動化も対応済み。
 
