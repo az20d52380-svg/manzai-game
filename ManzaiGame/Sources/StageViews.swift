@@ -263,6 +263,14 @@ struct StagePreludeView: View {
         VStack(spacing: 14) {
             EntryHeader(tag: "頂 グランプリ", name: title)
 
+            // ゲームが持っている事実だけ：通過ライン▶いまの実力（審査傾向のような元データの無い物は置かない・％なし）
+            if let line = nominalLine {
+                LineBoard(week: session.week, line: line,
+                          power: Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()),
+                          stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
+                    .padding(.horizontal, YoseMetrics.screenMargin)
+            }
+
             // 今夜かけるネタ（v2 §4-1補/§4-2・golden非干渉）
             VStack(spacing: 10) {
                 NetaPickRow(session: session, title: isFinal ? "決勝・1本目" : "今夜かけるネタ",
@@ -275,14 +283,6 @@ struct StagePreludeView: View {
                 }
             }
             .padding(.horizontal, YoseMetrics.screenMargin)
-
-            // ゲームが持っている事実だけ：通過ライン▶いまの実力（審査傾向のような元データの無い物は置かない・％なし）
-            if let line = nominalLine {
-                LineBoard(week: session.week, line: line,
-                          power: Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()),
-                          stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
-                    .padding(.horizontal, YoseMetrics.screenMargin)
-            }
 
             Spacer(minLength: 8)
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
