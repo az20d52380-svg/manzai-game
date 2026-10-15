@@ -371,7 +371,7 @@ struct TournamentResultView: View {
                 .background(YoseColor.ki.opacity(0.35))
             }
         }
-        .yoseHarigami()
+        .yoseHarigami(isFeatured: r.passed)   // 突破・賞金の下段を主役に（講評の貼り紙は普通の枠）
         .padding(.bottom, 2)
     }
 
@@ -417,7 +417,7 @@ struct TournamentResultView: View {
                 .fixedSize(horizontal: false, vertical: true)   // 講評は最後まで出す（切らない）
         }
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .yoseHarigami(isFeatured: passed)
+        .yoseHarigami()
         .padding(.bottom, 2)
     }
 
