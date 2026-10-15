@@ -280,51 +280,114 @@ struct ReminiscenceScene: View {
 
 struct S1TitleView: View {
     var onStart: () -> Void
-    @State private var lit = false     // 照明輪→ロゴの順で灯る
+    @State private var lit = false
     @State private var showSettings = false
+
+    private static let crowd: [(CGFloat, CGFloat)] = [   // (幅, 高さ)＝ばらつかせた観客席の影
+        (34, 40), (22, 52), (40, 36), (28, 56), (36, 44), (24, 38), (42, 54), (30, 42), (26, 50), (38, 36), (32, 48), (24, 56)
+    ]
 
     var body: some View {
         ZStack {
-            // 開演前の舞台＝いつか立つ舞台の光の中に二人（見た目の作り直し v1 §6 I1・暗い紫と隠れた二人をやめる）
-            StageFrame(mode: .preshow, performers: true, floorTop: 0.60)
-            VStack(spacing: Theme.Sp.s16) {
-                Spacer().frame(height: 128)
-                // ロゴ（仮）
-                VStack(spacing: 6) {
-                    Telop(text: AppInfo.displayName, size: 46, color: Color(hex: 0xFFF3D6))
-                        .shadow(color: Theme.gold.opacity(lit ? 0.6 : 0), radius: 18)
-                    Telop(text: "――漫才師、育成。", size: 15, color: Theme.houseLight)
+            // 定式幕（黒・柿・萌葱の縦縞）
+            HStack(spacing: 0) {
+                ForEach(0..<9, id: \.self) { i in
+                    [YoseColor.kuroUrushi, YoseColor.shu, YoseColor.tokiwa][i % 3]
                 }
-                .opacity(lit ? 1 : 0)
-                .animation(.easeInOut(duration: 0.8).delay(0.4), value: lit)
-
-                Spacer()
-
-                Button(action: onStart) {
-                    Text("はじめる").font(.maru(.title)).foregroundStyle(Theme.onGold)
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                        .background(Theme.gold, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.btn).stroke(.white.opacity(0.8), lineWidth: 2))
-                        .shadow(color: Theme.goldD, radius: 0, y: 4)
-                }
-                .buttonStyle(PressableStyle())
-                .padding(.horizontal, Theme.Sp.s32)
-                .padding(.bottom, 92)   // 客席の頭の列より上＝二人を隠さない
-                .opacity(lit ? 1 : 0).animation(.easeOut(duration: 0.5).delay(0.9), value: lit)
             }
+            .ignoresSafeArea()
+            .overlay(Rectangle().fill(YoseColor.kuroUrushi.opacity(0.25)).ignoresSafeArea())
+            VStack(spacing: 0) {
+                Spacer().frame(height: 118)
+                signboard
+                Spacer(minLength: 12)
+                stageTableau
+                Spacer(minLength: 12)
+                Button(action: onStart) {
+                    Text("はじめる").font(YoseFont.gothic(20, weight: .heavy))
+                        .frame(maxWidth: .infinity, minHeight: 58)
+                }
+                .buttonStyle(YoseButtonStyle(.primary))
+                .padding(.horizontal, 32)
+                .padding(.bottom, 20)
+                crowdBand
+            }
+            .opacity(lit ? 1 : 0).animation(.easeOut(duration: 0.5), value: lit)
         }
         .overlay(alignment: .topTrailing) {
-            Button { showSettings = true } label: {   // Quietの歯車 → S1b設定
-                Image(systemName: "gearshape.fill").font(.system(size: 18)).foregroundStyle(.white.opacity(0.85))
-                    .frame(width: 44, height: 44)
+            Button { showSettings = true } label: {
+                Image(systemName: "gearshape.fill").font(.system(size: 18, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                    .frame(width: 40, height: 40)
+                    .background(YoseColor.ki)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
             }
-            .buttonStyle(PressableStyle()).padding(.top, 44).padding(.trailing, 28)
+            .padding(.top, 64).padding(.trailing, 14)
             .accessibilityLabel("設定")
         }
         .sheet(isPresented: $showSettings) { SettingsView { showSettings = false } }
         .onAppear { lit = true }
     }
+
+    /// 寄席大看板（黒漆＋金枠＋朱の内枠）
+    private var signboard: some View {
+        VStack(spacing: 8) {
+            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(44, weight: .black),
+                             fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 2, dropShadowY: 3)
+            Text("――漫才師、育成。").font(YoseFont.mincho(16)).foregroundStyle(YoseColor.kin)
+        }
+        .frame(maxWidth: .infinity).padding(.vertical, 22)
+        .background(YoseColor.kuroUrushi)
+        .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5).padding(6))
+        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 4))
+        .padding(.horizontal, 24)
+    }
+
+    /// 上手・下手のめくり台＋中央のサンパチマイク
+    private var stageTableau: some View {
+        HStack(alignment: .bottom, spacing: 26) {
+            mekuri(YoseColor.shu, "漫才")
+            VStack(spacing: 0) {
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 20, height: 34)
+                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 6, height: 96)
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 54, height: 8)
+                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+            }
+            mekuri(YoseColor.kin, "四分")
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func mekuri(_ band: Color, _ label: String) -> some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(band).frame(height: 14)
+            VStack(spacing: 4) {
+                ForEach(Array(label), id: \.self) { Text(String($0)).font(YoseFont.mincho(30)).foregroundStyle(YoseColor.sumi) }
+            }
+            .frame(maxHeight: .infinity)
+        }
+        .frame(width: 68, height: 150)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
+    }
+
+    /// 観客席（#181210 単色・高さ幅をばらす・金枠なし）
+    private var crowdBand: some View {
+        HStack(alignment: .bottom, spacing: 3) {
+            ForEach(Self.crowd.indices, id: \.self) { i in
+                Rectangle().fill(Color(hex: 0x181210)).frame(width: Self.crowd[i].0, height: Self.crowd[i].1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .bottom).frame(height: 56, alignment: .bottom)
+        .clipped()
+        .background(Color(hex: 0x181210).frame(height: 14), alignment: .bottom)
+        .ignoresSafeArea(edges: .bottom)
+    }
 }
+
 
 // MARK: コンビ名入力（ネタ帳見開き）
 
