@@ -255,6 +255,7 @@ struct AbilityUpView: View {
                     .foregroundStyle(canUndo ? YoseColor.sumi : YoseColor.disabledText)
                     .frame(width: minusW, height: 46)
                     .background(Rectangle().fill(canUndo ? YoseColor.washi : YoseColor.ginNezu))
+                    .overlay { if !canUndo { YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4).clipped() } }
                     .overlay(Rectangle().stroke(canUndo ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canUndo ? 2 : 1.5))
                     .shadow(color: canUndo ? YoseColor.sumi : .clear, radius: 0, y: 2)
             }
@@ -270,6 +271,7 @@ struct AbilityUpView: View {
             .foregroundStyle(canTap ? YoseColor.kinari : YoseColor.disabledText)
             .frame(width: plusW - minusW - 2, height: 46)
             .background(Rectangle().fill(canTap ? YoseColor.shu : YoseColor.ginNezu))
+            .overlay { if !canTap { YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4).clipped() } }
             .overlay(Rectangle().stroke(canTap ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canTap ? 2 : 1.5))
             .shadow(color: canTap ? YoseColor.sumi : .clear, radius: 0, y: 2)
             .frame(width: plusW, height: 46, alignment: .trailing)   // 左の minusW＋隙間は［−］の場所（常に固定）
