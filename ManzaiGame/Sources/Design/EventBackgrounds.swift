@@ -950,8 +950,8 @@ private struct SentoBackdrop: View {
             let w = geo.size.width, h = geo.size.height, tileY = h * 0.56, floorY = h * 0.76
             ZStack {
                 // 上部：銭湯の富士山ペンキ絵（山にも墨枠）
-                Color(hex: 0xCBE4EE)
-                FujiShape(tileY: tileY).fill(Color(hex: 0x3B668C))
+                (time == .night ? Color(hex: 0x4A5F82) : Color(hex: 0xCBE4EE))
+                FujiShape(tileY: tileY).fill(time == .night ? Color(hex: 0x2A4468) : Color(hex: 0x3B668C))
                 FujiCapShape().fill(YoseColor.washi)
                 FujiCapShape().stroke(YoseColor.sumi, lineWidth: 1.5)
                 FujiShape(tileY: tileY).stroke(YoseColor.sumi, lineWidth: 2)
@@ -984,12 +984,37 @@ private struct SentoBackdrop: View {
                 Rectangle().fill(YoseColor.sumi).frame(height: 2).position(x: w / 2, y: floorY)
                 HStack(spacing: 32) {
                     ForEach(0..<2, id: \.self) { _ in
-                        Rectangle().fill(YoseColor.kinBright).frame(width: 32, height: 14)
-                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                        SentoBucketShape().fill(YoseColor.kinBright).frame(width: 34, height: 14)
+                            .overlay(SentoBucketShape().stroke(YoseColor.sumi, lineWidth: 2))
                     }
                 }
                 .position(x: w / 2, y: floorY + 14)
+                // 鏡の下のカラン（蛇口）
+                HStack(spacing: 60) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        Rectangle().fill(YoseColor.ginNezu).frame(width: 10, height: 5)
+                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
+                    }
+                }
+                .position(x: w / 2, y: floorY - 7)
 
+                if time == .night {
+                    // 夜：電球色の乗算フィルター＋上部の紺の暗転＋天井灯2つ（昼の青白い自然光と明確に分ける）
+                    Color(hex: 0xD9822B).opacity(0.28).blendMode(.multiply)
+                    VStack(spacing: 0) {
+                        LinearGradient(colors: [Color(hex: 0x1E293B).opacity(0.45), .clear], startPoint: .top, endPoint: .bottom).frame(height: 60)
+                        Spacer()
+                    }
+                    ForEach([w * 0.16, w * 0.84], id: \.self) { lx in
+                        RadialGradient(colors: [YoseColor.kinBright.opacity(0.7), .clear], center: .center, startRadius: 2, endRadius: 46)
+                            .frame(width: 92, height: 92).position(x: lx, y: 18).blendMode(.screen)
+                        Circle().fill(YoseColor.kinBright).frame(width: 14, height: 14)
+                            .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5)).position(x: lx, y: 14)
+                    }
+                    // 湯船から立ち上る湯気（夜は高く濃く）
+                    LinearGradient(colors: [.clear, Color.white.opacity(0.40)], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 90).position(x: w / 2, y: floorY - 45)
+                }
                 // 湯気（夜は濃いめ＝営業中の明るさ）
                 ForEach(0..<3, id: \.self) { i in
                     Ellipse().fill(Color.white.opacity(time == .night ? 0.34 : 0.22))
@@ -998,6 +1023,16 @@ private struct SentoBackdrop: View {
                 }
             }
         }
+    }
+}
+
+/// 銭湯の湯桶（上が広い逆台形）
+private struct SentoBucketShape: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.minY)); p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX - 4, y: r.maxY)); p.addLine(to: CGPoint(x: r.minX + 4, y: r.maxY)); p.closeSubpath()
+        return p
     }
 }
 
