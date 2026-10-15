@@ -117,10 +117,12 @@ struct YoseYearTurnCurtainView: View {
                 HStack(spacing: 0) {
                     curtainPanel
                         .frame(width: geo.size.width / 2)
+                        .overlay(alignment: .trailing) { curtainSeam(leading: false) }
                         .offset(x: curtainClosed ? 0 : -geo.size.width / 2 - 10)
 
                     curtainPanel
                         .frame(width: geo.size.width / 2)
+                        .overlay(alignment: .leading) { curtainSeam(leading: true) }
                         .offset(x: curtainClosed ? 0 : geo.size.width / 2 + 10)
                 }
             }
@@ -167,21 +169,23 @@ struct YoseYearTurnCurtainView: View {
             Rectangle().fill(YoseColor.shu).frame(height: 10)
                 .overlay(Rectangle().fill(YoseColor.kinBright).frame(width: 30, height: 3))
                 .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("結成").font(YoseFont.mincho(24)).foregroundStyle(YoseColor.sumi)
-                Text("\(year)")
-                    .font(YoseFont.mincho(92))
+            VStack(spacing: 0) {
+                Text("結成").font(YoseFont.mincho(20)).tracking(6).foregroundStyle(YoseColor.sumi)
+                Text(Self.kanjiNumber(year))
+                    .font(YoseFont.mincho(year >= 10 ? 76 : 112))
                     .foregroundStyle(YoseColor.sumi)
-                Text("年目").font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.5)
+                    .padding(.vertical, -4)
+                Text("年目").font(YoseFont.mincho(30)).tracking(8).foregroundStyle(YoseColor.shu)
             }
-            .padding(.top, 10)
+            .padding(.top, 8).padding(.bottom, 8)
             Rectangle().fill(YoseColor.sumi.opacity(0.2)).frame(height: 1).padding(.horizontal, 22)
             Text(caption)
                 .font(YoseFont.gothic(13, weight: .heavy)).tracking(2)
                 .foregroundStyle(YoseColor.haiSumi)
                 .padding(.vertical, 9)
         }
-        .frame(width: 270)
+        .frame(width: 196)
         .background(YoseColor.washi)
         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 3))
         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1).padding(6))
@@ -264,8 +268,8 @@ struct YoseYearTurnCurtainView: View {
                     accent: YoseColor.sumi
                 )
                 metricKifuda(
-                    label: "勝負ネタ",
-                    valueText: "\(summary.netaCount)本",
+                    label: "所持金",
+                    valueText: Self.compactYen(summary.money),
                     accent: YoseColor.sumi
                 )
             }
@@ -306,6 +310,19 @@ struct YoseYearTurnCurtainView: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 6)
         .yoseKifuda(showNail: true)
+    }
+
+    // 左右の幕が中央でぶつかる合わせ目（黒い重なり影＋縦の金縁）
+    private func curtainSeam(leading: Bool) -> some View {
+        HStack(spacing: 0) {
+            if !leading { Spacer(minLength: 0) }
+            if leading { Rectangle().fill(YoseColor.kinBright).frame(width: 2) }
+            LinearGradient(colors: [.black.opacity(leading ? 0.85 : 0), .black.opacity(leading ? 0 : 0.85)], startPoint: .leading, endPoint: .trailing)
+                .frame(width: 8)
+            if !leading { Rectangle().fill(YoseColor.kinBright).frame(width: 2) }
+            if leading { Spacer(minLength: 0) }
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: - 引き幕（定式幕）パネル
@@ -390,6 +407,14 @@ struct YoseYearTurnCurtainView: View {
         hasTriggeredStart = true
         UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
         onStartNewYear()
+    }
+
+    static func kanjiNumber(_ n: Int) -> String {
+        let d = ["〇","一","二","三","四","五","六","七","八","九"]
+        if n < 10 { return d[max(0, n)] }
+        if n == 10 { return "十" }
+        if n < 20 { return "十" + d[n - 10] }
+        return String(n).map { d[Int(String($0)) ?? 0] }.joined()
     }
 
     private static func compactYen(_ yen: Int) -> String {
