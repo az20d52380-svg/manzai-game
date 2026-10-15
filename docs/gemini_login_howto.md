@@ -1,5 +1,7 @@
 # Gemini CLI を AI Pro のアカウントでつなぎ直す手順（2026-10-15）
 
+> **【結果 2026-10-15】この道は使えない**：Google ログイン自体は通るが「個人向け Gemini CLI は終了・Antigravity へ移って」と断られる。設定は APIキー（無料枠）に戻した。無料で使えるのは gemini-3.8-flash / 3.5-flash。Argon・3.1 Pro は API キーに支払い情報を登録した時だけ（owner_questions E-1）。
+
 いま：CLI は「APIキー（無料枠）」でつながっている → AI Pro の特典が効いていない。Argon は無料枠が0なので使えなかった。
 
 ## ログアウト→ログイン（ターミナルで上から）
