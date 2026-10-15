@@ -13,6 +13,7 @@ struct SettingsView: View {
     @AppStorage("vol_se") private var se: Double = 0.8
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
+    @State private var showEndingBook = false
 
     var body: some View {
         ZStack {
@@ -32,6 +33,10 @@ struct SettingsView: View {
                             Rectangle().fill(YoseColor.kiDark).frame(height: 1)
                             volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
+                        }
+                        section("記録") {
+                            Button { showEndingBook = true } label: { linkRow("エンディング図鑑") }
+                                .buttonStyle(.plain)
                         }
                         // 監査G-02: 押しても何も起きない項目（購入を復元・通知・データ管理・利用規約）は撤去。
                         // プライバシーポリシーは審査5.1.1でアプリ内リンクが必須＝URLが決まり次第 AppInfo に入れる。
@@ -62,6 +67,7 @@ struct SettingsView: View {
             }
             if restartStep > 0, onQuitRun != nil { restartModal }
         }
+        .fullScreenCover(isPresented: $showEndingBook) { EndingGalleryView { showEndingBook = false } }
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
