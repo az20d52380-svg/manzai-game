@@ -89,7 +89,7 @@ struct AbilityUpView: View {
                         .frame(width: 42, height: 46)
                         .background(HexEmblem().fill(Self.emblemFill(grade)))
                         .overlay(HexEmblem().fill(LinearGradient(colors: [.white.opacity(0.25), .clear], startPoint: .top, endPoint: .center)))   // 金属の光沢
-                        .overlay(HexEmblem().stroke(grade == "A" ? Color(hex: 0xF1C40F) : Theme.sumi, lineWidth: 2))
+                        .overlay(HexEmblem().stroke(Self.emblemRim(grade), lineWidth: 2))
                         .shadow(color: .black.opacity(0.35), radius: 0, y: 2)
                     GeometryReader { g in
                         let prog = Theme.rankProgress(v, cap: cap)
@@ -116,18 +116,25 @@ struct AbilityUpView: View {
     /// ランクの色（墓石に見えないよう、G/F=真鍮・E/D=青銅・A=朱＋金枠・S=黄金）
     static func emblemFill(_ g: String) -> AnyShapeStyle {
         switch g {
-        case "S": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xF39C12), Color(hex: 0xF1C40F)], startPoint: .top, endPoint: .bottom))
-        case "A": return AnyShapeStyle(Color(hex: 0xC0392B))
-        case "B": return AnyShapeStyle(Color(hex: 0xD97724))
-        case "C": return AnyShapeStyle(Color(hex: 0x2E583C))
-        case "D", "E": return AnyShapeStyle(Color(hex: 0x4A6572))
-        default: return AnyShapeStyle(Color(hex: 0x8A7F73))
+        // 全ランク同じ文法（メタリックのグラデ＋縁）。F/E=鉄・D/C=青銅・B/A=赤金・S=紫紺のプラチナ
+        case "S": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x5B4B9A), Color(hex: 0x2A2060)], startPoint: .top, endPoint: .bottom))
+        case "A": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xD4452F), Color(hex: 0x962012)], startPoint: .top, endPoint: .bottom))
+        case "B": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xE0932E), Color(hex: 0xB06418)], startPoint: .top, endPoint: .bottom))
+        case "C", "D": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x8D6350), Color(hex: 0x4E342E)], startPoint: .top, endPoint: .bottom))
+        default: return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x5A5A5A), Color(hex: 0x2C2C2C)], startPoint: .top, endPoint: .bottom))
+        }
+    }
+    /// ランクの縁色（鉄=銀・青銅=銅・金=金・S=薄紫の白金）
+    static func emblemRim(_ g: String) -> Color {
+        switch g {
+        case "S": return Color(hex: 0xC9BDF2)
+        case "A", "B": return Color(hex: 0xF1C40F)
+        case "C", "D": return Color(hex: 0xC8875A)
+        default: return Color(hex: 0xB8BEC4)
         }
     }
     static func emblemText(_ g: String) -> Color {
         switch g {
-        case "S": return Color(hex: 0x1C1917)
-        case "G", "F": return Color(hex: 0x3A342C)
         default: return .white
         }
     }
@@ -135,10 +142,11 @@ struct AbilityUpView: View {
     /// 現在の経験点（5種）＝見出し＋5列。下の行の費用列と同じ幅でそろえる
     private var expRow: some View {
         HStack(spacing: colGap) {
-            Text("現在の\n経験点").font(.maru(13, weight: .heavy)).foregroundStyle(Theme.gold)
-                .multilineTextAlignment(.center)
+            Text("所持\nポイント").font(.maru(12, weight: .heavy)).foregroundStyle(Color(hex: 0x4A2E1A))
+                .multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.8)
                 .frame(width: nameW + colGap + plusW + 6).frame(maxHeight: .infinity)
-                .background(Theme.curtain)
+                .background(Color(hex: 0xE0C9A6))   // 軽い木札（重い臙脂の塊をやめる）
+                .overlay(alignment: .trailing) { Rectangle().fill(Theme.sumi.opacity(0.35)).frame(width: 1) }
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 3) {
                     Text(Theme.currencyChar(c)).font(.maru(16, weight: .black)).foregroundStyle(.white)
@@ -180,8 +188,9 @@ struct AbilityUpView: View {
             Spacer()
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
-        .background(Color(hex: 0x231F20))
-        .overlay(Rectangle().stroke(Color(hex: 0xD4AF37), lineWidth: 1.5))   // 金縁の番付札
+        .background(Color(hex: 0x1C1412))   // 黒漆（画面の臙脂に馴染む）
+        .overlay(alignment: .top) { Rectangle().fill(Color(hex: 0xD4AF37).opacity(0.6)).frame(height: 0.5) }
+        .overlay(alignment: .bottom) { Rectangle().fill(Color(hex: 0xD4AF37).opacity(0.6)).frame(height: 0.5) }   // 極細の金線
         .animation(.easeOut(duration: 0.25), value: after)
     }
 
@@ -294,26 +303,29 @@ struct AbilityUpView: View {
 
     private var footer: some View {
         let active = !taps.isEmpty
-        return HStack(spacing: 8) {
-            subBtn("戻る", w: 60, fg: Theme.ink, bg: Color(hex: 0xE8E2D2), stroke: Theme.sumi.opacity(0.6), enabled: true) { onClose() }   // 反映せずに閉じる
-            subBtn("リセット", w: 60, fg: active ? Theme.ink : Theme.inkFaint, bg: Color(hex: 0xE8E2D2), stroke: Theme.sumi.opacity(0.6), enabled: active) { taps.removeAll() }
-            subBtn("おまかせ", w: 80, fg: Theme.verm, bg: Color(hex: 0xF5F0E1), stroke: Theme.verm, enabled: true) {
-                taps = session.recommendedAllocation(); Haptics.tick()
+        return GeometryReader { geo in
+            let unit = (geo.size.width - 24) / 5.2   // 戻る:リセット:おまかせ:確定 ＝ 1:1:1.2:2
+            HStack(spacing: 8) {
+                subBtn("戻る", w: unit, fg: Theme.ink, bg: Color(hex: 0xE8E2D2), stroke: Theme.sumi.opacity(0.6), enabled: true) { onClose() }   // 反映せずに閉じる
+                subBtn("リセット", w: unit, fg: active ? Theme.ink : Theme.inkFaint, bg: Color(hex: 0xE8E2D2), stroke: Theme.sumi.opacity(0.6), enabled: active) { taps.removeAll() }
+                    .opacity(active ? 1 : 0.4)
+                subBtn("おまかせ", w: unit * 1.2, fg: Theme.verm, bg: Color(hex: 0xF5F0E1), stroke: Theme.verm, enabled: true) {
+                    taps = session.recommendedAllocation(); Haptics.tick()
+                }
+                // 主役：確定（金枠は同じ矩形の内側・光は小さく隣へ漏らさない）
+                Button { confirm() } label: {
+                    Text("確定").font(.maru(20, weight: .heavy)).foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
+                        .frame(width: unit * 2, height: 46)
+                        .background(LinearGradient(colors: [Color(hex: 0xB83A2A), Color(hex: 0x8A1F13)], startPoint: .top, endPoint: .bottom))
+                        .overlay(Rectangle().strokeBorder(Color(hex: 0xE5C158), lineWidth: 1.5))
+                        .overlay(Rectangle().strokeBorder(Color(hex: 0xFFD700), lineWidth: 2).opacity(active ? (pulse ? 1 : 0.2) : 0))   // 上げている間だけ金枠が呼吸
+                        .shadow(color: Color(hex: 0xFFD700).opacity(active ? (pulse ? 0.5 : 0) : 0), radius: 3)
+                }
+                .buttonStyle(PressableStyle())
             }
-            // 主役：確定
-            Button { confirm() } label: {
-                Text("確定").font(.maru(20, weight: .heavy)).foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
-                    .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(LinearGradient(colors: [Color(hex: 0xC0392B), Color(hex: 0x8A1F13)], startPoint: .top, endPoint: .bottom))
-                    .overlay(Rectangle().strokeBorder(Color(hex: 0xE5C158), lineWidth: 1.5))
-                    .overlay(Rectangle().strokeBorder(Color(hex: 0xE5C158), lineWidth: 3).opacity(active ? (pulse ? 1 : 0.15) : 0))   // 上げている間だけ金の光がゆっくり呼吸する
-                    .shadow(color: Color(hex: 0xE5C158).opacity(active ? (pulse ? 0.8 : 0.1) : 0), radius: 8)
-                    .shadow(color: Color(hex: 0x6A1207), radius: 0, y: 3)
-            }
-            .frame(minWidth: 130)
-            .buttonStyle(PressableStyle())
         }
+        .frame(height: 46)
         .padding(.horizontal, 12).padding(.top, 10).padding(.bottom, 12)
         .background(Theme.kinari)
         .onAppear { withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { pulse = true } }
@@ -323,7 +335,7 @@ struct AbilityUpView: View {
         Button(action: action) {
             Text(t).font(.maru(14, weight: .heavy)).foregroundStyle(fg)
                 .lineLimit(1).minimumScaleFactor(0.7)
-                .frame(width: w, height: 44)
+                .frame(width: w, height: 46)
                 .background(bg).overlay(Rectangle().stroke(stroke, lineWidth: 1))
         }
         .buttonStyle(PressableStyle(enabled: enabled)).disabled(!enabled)
