@@ -55,6 +55,13 @@ struct CalendarView: View {
     // 12行(月)×4列(週)＝罫線だけの番付表
     private var grid: some View {
         VStack(spacing: 0) {
+            // 週の見出し行（横の4マス＝1か月4週であることを示す）
+            HStack(spacing: 0) {
+                Text("月").frame(width: 42)
+                ForEach(1...4, id: \.self) { n in Text("第\(n)週").frame(maxWidth: .infinity) }
+            }
+            .font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+            .frame(height: 24).background(YoseColor.kuroUrushi)
             ForEach(0..<12, id: \.self) { row in
                 HStack(spacing: 0) {
                     Text(monthLabel(row)).font(YoseFont.number(14, weight: .black))
@@ -64,11 +71,11 @@ struct CalendarView: View {
                         .overlay(alignment: .trailing) { Rectangle().fill(YoseColor.sumi).frame(width: 2) }
                     ForEach(0..<4, id: \.self) { col in
                         cell(week: row * 4 + col + 1)
-                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(YoseColor.kiDark).frame(width: 1) } }
+                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(YoseColor.kiDark).frame(width: 1.5) } }
                     }
                 }
-                .frame(height: 40)
-                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(YoseColor.kiDark).frame(height: row % 3 == 2 ? 1.5 : 1) } }
+                .frame(height: 43)
+                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(YoseColor.kiDark).frame(height: row % 3 == 2 ? 2 : 1) } }
             }
         }
         .background(YoseColor.washi)
@@ -92,14 +99,14 @@ struct CalendarView: View {
                 }
                 .padding(.horizontal, 2)
             } else if isPast, let cat = session.categoryLog[w] {
-                Text(cat.label.prefix(1)).font(YoseFont.gothic(13, weight: .heavy))   // 過去週＝やった事の頭文字（稽/バ/回）
+                Text(cat.label.prefix(1)).font(YoseFont.gothic(14, weight: .heavy))   // 過去週＝やった事の頭文字（稽/バ/回）
                     .foregroundStyle(YoseColor.sumi.opacity(0.75))
-                    .frame(width: 24, height: 24)
+                    .frame(width: 26, height: 26)
                     .background(catTint(cat).opacity(0.28))   // 小判子（種別で薄く色分け）
-                    .overlay(Rectangle().stroke(catTint(cat).opacity(0.7), lineWidth: 1))
+                    .overlay(Rectangle().stroke(catTint(cat).opacity(0.8), lineWidth: 1.5))
             }
             if isCurrent {
-                Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).padding(1)   // 現在週＝金の栞
+                Rectangle().stroke(YoseColor.kinBright, lineWidth: 4).padding(1)   // 現在週＝金の栞
                 Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)
             }
         }
