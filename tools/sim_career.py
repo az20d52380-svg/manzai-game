@@ -150,7 +150,9 @@ EVENT_TABLE = [
 # 既定OFF（golden・既存実測は不変）。ONにすると既存プール(EVENT_TABLE 18種)に9種が加わり、同じ12%抽選の一様選択に入る
 # （発火帯に入っていない／発火済みの引きは不発＝総発火数は増えない）。選択はボット共通の方針（OTHERS_CHOICE）。
 OTHERS_ON = False
-OTHERS_EVENTS = ["kouhai", "senpai", "crew", "postcard", "douki", "inventory", "homecoming", "fan", "ticket"]
+OTHERS_EVENTS = ["kouhai", "senpai", "crew", "postcard", "douki", "inventory", "homecoming", "fan", "ticket",
+                 # 第2束 0051〜0057（docs/choice_events_more_v1.md・2026-10-16）
+                 "festival", "tv", "renovation", "classmate", "fever", "notebook", "yearend"]
 def _others_fireable(k, s, week, year, honban_ahead):
     """honban_ahead: 次の本番(大会・GP回戦)までの週数（無ければ99）。jobs=この年までのバイト回数"""
     jobs = getattr(s, "_jobs", 0)
@@ -163,6 +165,14 @@ def _others_fireable(k, s, week, year, honban_ahead):
     if k == "homecoming":return week >= 38 and honban_ahead >= 3
     if k == "fan":       return s.fame >= 15
     if k == "ticket":    return s.fame < 30
+    # 第2束 0051〜0057（第1週=4月・4週で1か月）
+    if k == "festival":  return 14 <= week <= 20 and s.stamina >= 40 and honban_ahead >= 2
+    if k == "tv":        return week >= 20 and s.fame < 30
+    if k == "renovation":return week >= 12 and s.fame < 40
+    if k == "classmate": return week >= 10 and s.fame >= 5
+    if k == "fever":     return week >= 6 and s.stamina < 50
+    if k == "notebook":  return week >= 10 and bool(getattr(s, "netas", None))
+    if k == "yearend":   return 33 <= week <= 36
     return False
 def _others_apply(s, k):
     """ボット共通の方針: 余裕(お金5万+/体力50+)があれば人の方（A）へ、なければ B。効果はChoiceEvent.swiftの値"""
@@ -192,6 +202,28 @@ def _others_apply(s, k):
     elif k == "ticket":
         if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "stamina", -10)
         elif s.money >= 6000: s.money -= 6000; B.add(s, "expr", 1)
+    # 第2束 0051〜0057（効果は ChoiceEvent.swift と同値。方針は同じ「余裕があれば人・外の方（A）」）
+    elif k == "festival":
+        if s.stamina >= 55: s.money += 12_000; B.add(s, "fame", 1); B.add(s, "stamina", -15)
+        else: B.add(s, "stamina", 10); B.add(s, "mental", 1)
+    elif k == "tv":
+        if s.stamina >= 50 or s.money < 1000: B.add(s, "sense", 1); B.add(s, "mental", -1)
+        else: B.add(s, "stamina", 10); B.add(s, "mental", 1); s.money -= 1000
+    elif k == "renovation":
+        if s.money >= 50_000 and s.stamina >= 50: B.add(s, "fame", 2); s.money -= 8000; B.add(s, "stamina", -10)
+        else: B.add(s, "expr", 1); B.add(s, "stamina", -5)
+    elif k == "classmate":
+        if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "mental", 1); B.add(s, "stamina", -10)
+        else: B.add(s, "compat", 1); B.add(s, "stamina", 5)
+    elif k == "fever":
+        if s.money >= 2000: B.add(s, "compat", 2); s.money -= 2000; B.add(s, "stamina", -5)
+        else: B.add(s, "expr", 1)
+    elif k == "notebook":
+        if s.stamina >= 50 and s.money >= 1500: B.add(s, "mental", 1); B.add(s, "stamina", -10); s.money -= 1500
+        else: B.add(s, "idea", 1); B.add(s, "mental", -1)
+    elif k == "yearend":
+        if s.money >= 50_000: B.add(s, "sense", 1); B.add(s, "fame", 1); s.money -= 5000; B.add(s, "stamina", -10)
+        elif s.money >= 1500: B.add(s, "compat", 1); B.add(s, "mental", 1); s.money -= 1500
 
 def _honban_ahead(week):
     ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
