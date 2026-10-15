@@ -149,7 +149,8 @@ struct AbilityUpView: View {
         let next = nextPlusOne(a)
         let tag = next?.cost ?? priceTag(a)
         let canTap = next != nil
-        return HStack(spacing: 4) {
+        let steps = next?.steps
+        let content = HStack(spacing: 4) {
             HStack(spacing: 4) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(a)").font(.maru(15, weight: .heavy)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.8)
@@ -163,7 +164,7 @@ struct AbilityUpView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                plusButton(a, canTap: canTap, steps: next?.steps)
+                plusMark(canTap: canTap)
             }
             .frame(width: leadW - 4)
             ForEach(ExpCurrency.allCases, id: \.self) { c in
@@ -182,30 +183,30 @@ struct AbilityUpView: View {
         .overlay(alignment: .leading) { Rectangle().fill(Theme.abilityColor(a)).frame(width: 4) }
         .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
         .animation(.spring(response: 0.3, dampingFraction: 0.55), value: gained)
-    }
-
-    /// 大きな＋ボタン（押せる＝朱の立体／足りない＝灰で形は残す）
-    private func plusButton(_ a: Ability, canTap: Bool, steps: Int?) -> some View {
-        Button {
+        .contentShape(Rectangle())
+        return Button {
             guard let n = steps else { return }
             Haptics.tick()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
                 taps += Array(repeating: a, count: n)
             }
-        } label: {
-            Image(systemName: "plus").font(.system(size: 24, weight: .black))
-                .foregroundStyle(canTap ? Color.white : Theme.inkFaint)
-                .frame(width: 50, height: 50)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(canTap ? LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom)
-                                     : LinearGradient(colors: [Theme.line, Theme.lineStrong.opacity(0.5)], startPoint: .top, endPoint: .bottom))
-                )
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(canTap ? Theme.sumi : Theme.lineStrong, lineWidth: 1.5))
-                .shadow(color: canTap ? Theme.sumi.opacity(0.85) : Theme.lineStrong.opacity(0.6), radius: 0, y: 3)
-        }
-        .buttonStyle(PressableStyle(enabled: canTap))
+        } label: { content }
+        .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
         .disabled(!canTap)
+    }
+
+    /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
+    private func plusMark(canTap: Bool) -> some View {
+        Image(systemName: "plus").font(.system(size: 24, weight: .black))
+            .foregroundStyle(canTap ? Color.white : Theme.inkFaint)
+            .frame(width: 50, height: 50)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(canTap ? LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom)
+                                 : LinearGradient(colors: [Theme.line, Theme.lineStrong.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+            )
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(canTap ? Theme.sumi : Theme.lineStrong, lineWidth: 1.5))
+            .shadow(color: canTap ? Theme.sumi.opacity(0.85) : Theme.lineStrong.opacity(0.6), radius: 0, y: 3)
     }
 
     /// 次の等級の名前と、そこまでの能力値（表示だけ）。最高等級なら nil
