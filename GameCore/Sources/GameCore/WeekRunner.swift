@@ -122,6 +122,10 @@ public struct WeekRunner<R: RandomSource> {
         for i in s.netas.indices where s.netas[i].lastUsedTaikaiYear == year - 1 {
             s.netas[i].tiredYears = min(config.netaTiredCap, (s.netas[i].tiredYears ?? 0) + 1)
         }
+        // しまったネタも同じく進める（しまって寝かせても飽きは戻らない＝決定①。全体監査 A-2）。Python には保管庫が無いので golden 非経路
+        for i in s.archivedNetas.indices where s.archivedNetas[i].lastUsedTaikaiYear == year - 1 {
+            s.archivedNetas[i].tiredYears = min(config.netaTiredCap, (s.archivedNetas[i].tiredYears ?? 0) + 1)
+        }
         self.state = s
         self.year = year
         self.config = config
