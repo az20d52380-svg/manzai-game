@@ -35,37 +35,42 @@ struct ReminiscencePlayer: View {
 
     var body: some View {
         let card = cards[safe: index] ?? cards[0]
+        let lines: [Advice] = !card.talk.isEmpty ? card.talk
+            : (card.line.map { [Advice(name: card.speaker, text: $0)] } ?? [])
         VStack(spacing: 0) {
-            ReminiscenceScene(mood: card.mood, together: card.together)
-                .frame(maxHeight: .infinity)
-                .overlay(alignment: .topLeading) { PlaceTag(text: card.caption).padding(.top, 54).padding(.leading, 16) }
-                .overlay(alignment: .topTrailing) { PageMark(index: index, count: cards.count).padding(.top, 58).padding(.trailing, 16) }
-                .id("scene\(index)")
-                .transition(.opacity)
-            // 下＝生成りの読み物欄。上に墨の罫・台詞は札＋本文の行（同じ形の白カードを積まない）
-            VStack(alignment: .leading, spacing: 0) {
-                if !card.talk.isEmpty {
-                    ForEach(card.talk.indices, id: \.self) { i in
-                        IntroLine(advice: card.talk[i], large: false, showCue: i == card.talk.count - 1)
-                        if i < card.talk.count - 1 { Rectangle().fill(Theme.paperEdge).frame(height: 1) }
-                    }
-                } else if let line = card.line {
-                    IntroLine(advice: Advice(name: card.speaker, text: line), large: true, showCue: true)   // 決め台詞は1枚に1つ＝大きく
+            YoseHeaderBar(title: "はじまりの話", subtitle: "\(index + 1) / \(cards.count)")
+            ZStack(alignment: .topLeading) {
+                RecallPicture(mood: card.mood, together: card.together)
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14)
+                    .id("scene\(index)")
+                HStack(alignment: .top) {
+                    RecallPlaceTag(text: card.caption)
+                    Spacer(minLength: 8)
+                    RecallPageMark(index: index, count: cards.count)
+                }
+                .padding(.horizontal, YoseMetrics.screenMargin + 8).padding(.top, 22)
+            }
+            .frame(maxHeight: .infinity)
+            // 台詞＝過去の行は薄い台本行・今の行はめくり名札＋貼り紙の吹き出し
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(lines.indices.dropLast(), id: \.self) { i in
+                    RecallScriptRow(advice: lines[i])
+                }
+                if let last = lines.last {
+                    YoseSpeechBox(speaker: last.name ?? "俺", text: last.text)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 30)
-            .background(Theme.kinari.ignoresSafeArea(edges: .bottom))
-            .overlay(alignment: .top) { Rectangle().fill(Theme.sumi).frame(height: 2.5) }
+            .frame(minHeight: 150, alignment: .bottom)
+            .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 26)
             .id("cap\(index)")
             .transition(.opacity)
         }
-        .background(Theme.kinari.ignoresSafeArea())
+        .background(YoseColor.kinari.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture {
             Sound.play(.cursor)
             if index + 1 < cards.count {
-                withAnimation(.easeInOut(duration: 0.18)) { index += 1 }   // 紙めくりクロスフェード
+                withAnimation(.easeInOut(duration: 0.18)) { index += 1 }
             } else {
                 onComplete()
             }
@@ -73,58 +78,138 @@ struct ReminiscencePlayer: View {
     }
 }
 
-/// 場所・時間の短冊（臙脂の地に生成りの寄席文字風・金の細罫）。地の文はここに出す。
-private struct PlaceTag: View {
+/// 場所・時間の札（直角・臙脂地・左に金の縦帯・墨枠・下影）
+private struct RecallPlaceTag: View {
     let text: String
     var body: some View {
-        Text(text).font(.maru(16, weight: .black)).foregroundStyle(Theme.kinari)
-            .padding(.horizontal, 14).padding(.vertical, 7)
-            .background(Theme.curtain, in: RoundedRectangle(cornerRadius: 3))
-            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.gold, lineWidth: 1.5))
-            .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 4) }
+        Text(text).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+            .padding(.horizontal, 12).padding(.vertical, 6).padding(.leading, 4)
+            .background(YoseColor.enji)
+            .overlay(alignment: .leading) { Rectangle().fill(YoseColor.kin).frame(width: 4) }
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+            .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
     }
 }
 
-/// 何枚目か（□■□）。数字ではなく印で。
-private struct PageMark: View {
+/// 何枚目か（直角の印）
+private struct RecallPageMark: View {
     let index: Int
     let count: Int
     var body: some View {
         HStack(spacing: 5) {
             ForEach(0..<count, id: \.self) { i in
-                Rectangle().fill(i == index ? Theme.curtain : Color.clear)
-                    .frame(width: 11, height: 11)
-                    .overlay(Rectangle().stroke(Theme.curtain, lineWidth: 1.5))
+                Rectangle().fill(i == index ? YoseColor.shu : YoseColor.ginNezu)
+                    .frame(width: 10, height: 10)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
             }
         }
+        .padding(.top, 8)
         .accessibilityHidden(true)
     }
 }
 
-/// 台詞の1行＝話者の札（四角・朱/紺）＋本文。枠なし・行間は罫。
-private struct IntroLine: View {
+/// 過去の台詞（台本行・薄く）
+private struct RecallScriptRow: View {
     let advice: Advice
-    let large: Bool
-    var showCue: Bool = false
-    private var name: String { advice.name ?? "俺" }
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(name).font(.maru(13, weight: .heavy)).foregroundStyle(.white)
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(SpeakerStyle.tagColor(advice.name), in: RoundedRectangle(cornerRadius: 2))
+        let name = advice.name ?? "俺"
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(name).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                .padding(.horizontal, 6).padding(.vertical, 2)
+                .background(name == "谷口" ? YoseColor.shu : YoseColor.kuroUrushi)
                 .frame(minWidth: 44)
-                .fixedSize()
-            Text(advice.text)
-                .font(large ? .maru(24, weight: .heavy) : .maru(.body))
-                .lineSpacing(4).foregroundStyle(Theme.sumi)
+            Text(advice.text).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            if showCue { AdvanceCue(color: Theme.curtain).padding(.top, 8) }
         }
-        .padding(.vertical, large ? 16 : 11)
+        .opacity(0.7)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(name)、\(advice.text)")
     }
 }
+
+/// 回想の挿絵額縁（二重墨枠・夕景の面＋格子窓＋床＋二人の名札）。人の絵は描かず、めくり名札で二人を表す。
+private struct RecallPicture: View {
+    let mood: DuskMood
+    let together: Bool
+
+    private var sky: [Color] {
+        switch mood {
+        case .noon: return [YoseColor.washiFeatured, YoseColor.ki]
+        case .after: return [YoseColor.ki, YoseColor.kin.opacity(0.65)]
+        case .eve: return [YoseColor.kiDark, YoseColor.shu.opacity(0.55)]
+        }
+    }
+    private var floorColor: Color {
+        switch mood {
+        case .noon: return YoseColor.kiDark
+        case .after: return YoseColor.kiDark.opacity(0.9)
+        case .eve: return YoseColor.haiSumi
+        }
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            let floorH = h * 0.30
+            ZStack(alignment: .bottom) {
+                LinearGradient(colors: sky, startPoint: .top, endPoint: .bottom)
+                // 格子窓
+                HStack(spacing: 10) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        ZStack {
+                            Rectangle().fill(mood == .eve ? YoseColor.kinBright.opacity(0.8) : YoseColor.washiFeatured)
+                            Rectangle().fill(YoseColor.sumi).frame(width: 2)
+                            Rectangle().fill(YoseColor.sumi).frame(height: 2)
+                        }
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
+                    }
+                }
+                .frame(width: w * 0.78, height: h * 0.30)
+                .frame(maxHeight: .infinity, alignment: .top).padding(.top, h * 0.14)
+                // 床
+                Rectangle().fill(floorColor).frame(height: floorH)
+                    .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
+                // 二人の名札
+                HStack(alignment: .bottom, spacing: together ? 18 : w * 0.34) {
+                    RecallNameBoard(name: "俺", band: YoseColor.kuroUrushi, height: min(150, h * 0.46))
+                    RecallNameBoard(name: "谷口", band: YoseColor.shu, height: min(176, h * 0.52))
+                }
+                .padding(.bottom, floorH * 0.28)
+            }
+            .clipped()
+        }
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
+        .padding(4)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
+        .padding(.bottom, 3)
+    }
+}
+
+/// 寄席のめくり風の縦名札
+private struct RecallNameBoard: View {
+    let name: String
+    let band: Color
+    let height: CGFloat
+    var body: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(band).frame(height: 14)
+                .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
+            VStack(spacing: 2) {
+                ForEach(Array(name), id: \.self) { ch in
+                    Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                }
+            }
+            .frame(maxHeight: .infinity)
+        }
+        .frame(width: 56, height: height)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
+    }
+}
+
 
 /// 回想の場面: 夕景の色＋窓の光＋床＋色付きの二人（俺＝青・谷口＝朱）。
 struct ReminiscenceScene: View {
