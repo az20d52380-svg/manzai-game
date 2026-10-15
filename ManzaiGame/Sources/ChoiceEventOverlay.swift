@@ -114,7 +114,8 @@ struct ChoiceEventOverlay: View {
 
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
-            .frame(height: 280)
+            .frame(height: footerReady && !session.availableEventChoices().isEmpty ? 262 : 320)   // 選択肢の帯が出る間は読み物の欄を広げる
+            .animation(Theme.Motion.appear, value: footerReady)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
                 HStack(spacing: 6) {
@@ -190,7 +191,7 @@ struct ChoiceEventOverlay: View {
                 if cue { AdvanceCue(color: YoseColor.shu) }
             }
             .padding(.leading, 20).padding(.trailing, 12).padding(.vertical, 12)
-            .frame(minHeight: 56, alignment: .leading)
+            .frame(minHeight: 72, alignment: .leading)
             // ト書き板：木札色の薄い地・墨の枠・左端に隙間なしの臙脂の帯（台詞の吹き出しと形で区別）
             .background(YoseColor.ki.opacity(0.45))
             .overlay(alignment: .leading) { Rectangle().fill(YoseColor.enji).frame(width: 6) }

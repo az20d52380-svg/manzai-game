@@ -364,7 +364,7 @@ private struct EventGlowLayer: View {
                     let x0 = w / 2 - 159 + CGFloat(i) * 54, base = h * 0.68 - 24 + 31
                     ForEach(0..<2, id: \.self) { col in
                         let dx = x0 + 14 + CGFloat(col) * 18
-                        if abs(dx - w * 0.16) > 14 && abs(dx - w * 0.84) > 14 {
+                        if abs(dx - w * 0.30) > 14 && abs(dx - w * 0.84) > 14 {
                             ForEach(0..<2, id: \.self) { row in
                                 Rectangle().fill(YoseColor.kinBright.opacity(0.75)).frame(width: 6, height: 3)
                                     .position(x: dx, y: base - hs[i] + 10 + CGFloat(row) * 12)
@@ -573,7 +573,7 @@ private struct StationBackdrop: View {
                 .position(x: w / 2, y: floorY - 24)
 
                 // ホーム屋根と鉄骨柱
-                ForEach([w * 0.16, w * 0.84], id: \.self) { px in
+                ForEach([w * 0.30, w * 0.84], id: \.self) { px in
                     Rectangle().fill(Color(hex: 0x6A7076)).frame(width: 16, height: floorY)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                         .position(x: px, y: floorY / 2)
@@ -589,14 +589,18 @@ private struct StationBackdrop: View {
                 // 中央：吊り下げ駅名標（「なんば」）
                 StationSign().position(x: w / 2, y: 56)
 
-                // ホームのベンチ（2席）
-                HStack(spacing: 6) {
-                    ForEach(0..<2, id: \.self) { _ in
-                        Rectangle().fill(YoseColor.ki).frame(width: 36, height: 22)
-                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                // ホームのベンチ（背もたれ・座面・脚の1脚。ビルの手前・床の線の上に座る）
+                VStack(spacing: 0) {
+                    Rectangle().fill(YoseColor.ki).frame(width: 84, height: 10)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    Rectangle().fill(YoseColor.kiDark).frame(width: 84, height: 7)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    HStack(spacing: 60) {
+                        Rectangle().fill(YoseColor.sumi).frame(width: 4, height: 10)
+                        Rectangle().fill(YoseColor.sumi).frame(width: 4, height: 10)
                     }
                 }
-                .position(x: w * 0.5, y: floorY - 11)
+                .position(x: w * 0.54, y: floorY - 13)
 
                 // アスファルト床と黄色い点字ブロック
                 Rectangle().fill(Color(hex: 0x6E7073))
