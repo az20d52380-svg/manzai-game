@@ -401,7 +401,10 @@ struct StageLowerBand: View {
             if let left { Text(left).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin) }
             Text(name).font(YoseFont.mincho(16)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.7)
             Spacer(minLength: 6)
-            YoseTag(text: tag, style: .outlineKin)
+            Text(tag).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                .padding(.horizontal, 8).frame(height: 24)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                .fixedSize()
         }
         .padding(.trailing, 14).padding(.top, 0)
         .frame(height: 50, alignment: .center)
@@ -444,18 +447,21 @@ struct StageTelopBelt: View {
 /// 舞台袖のめくり（木の台＋白和紙＋縦書きの名）。
 struct StageMakuri: View {
     let name: String
+    /// 舞台中央に立てる大判（字24pt・幅52pt）。既定は舞台袖の小判
+    var big = false
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 1) {
                 ForEach(Array(name.enumerated()), id: \.offset) { _, c in
-                    Text(String(c)).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.sumi)
+                    Text(String(c)).font(YoseFont.mincho(big ? 24 : 17)).foregroundStyle(YoseColor.sumi)
                 }
             }
-            .padding(.vertical, 8).frame(width: 34)
+            .padding(.vertical, big ? 12 : 8).frame(width: big ? 52 : 34)
             .background(YoseColor.washiFeatured)
-            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-            Rectangle().fill(YoseColor.kiDark).frame(width: 6, height: 40)       // 脚
-            Rectangle().fill(YoseColor.sumi).frame(width: 40, height: 5)           // 台
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: big ? 2 : 1.5))
+            .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: big ? 3 : 0) }
+            Rectangle().fill(YoseColor.kiDark).frame(width: big ? 8 : 6, height: big ? 34 : 40)       // 脚
+            Rectangle().fill(YoseColor.sumi).frame(width: big ? 56 : 40, height: 5)           // 台
         }
     }
 }
