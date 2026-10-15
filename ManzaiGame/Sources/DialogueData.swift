@@ -256,7 +256,7 @@ enum DialogueData {
             [Advice(name: "俺", text: "次の本番まで、体を作っておこう"),
              Advice(name: "谷口", text: "せやな。毎朝、近所を走ることにするわ")],
             [Advice(name: "谷口", text: "おとんの誕生日やねん。何送ったらええと思う"),
-             Advice(name: "俺", text: "靴下でいいんじゃないか。毎日使うし")],
+             Advice(name: "俺", text: "電話してやれよ。それがいちばん喜ぶ")],
             [Advice(name: "谷口", text: "先輩の引っ越し、手伝い頼まれてん"),
              Advice(name: "俺", text: "行ってこい。こっちは一人で書いておく")],
         ],

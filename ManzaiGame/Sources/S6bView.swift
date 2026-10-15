@@ -130,7 +130,7 @@ struct S6bView: View {
         [
             ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。",
                              talk: [Advice(name: "俺", text: "終電なくなった。今日はここで寝る"),
-                                    Advice(name: "谷口", text: "ええよ。毛布、一枚しかないけどな")]),
+                                    Advice(name: "谷口", text: "ええよ。押し入れに毛布ある")]),
             ReminiscenceCard(caption: "大会の帰り。夜の電車。",
                              talk: [Advice(name: "谷口", text: "終電、間に合うてよかったな"),
                                     Advice(name: "俺", text: "ああ。来年も、また出よう")]),
