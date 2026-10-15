@@ -462,6 +462,7 @@ final class GameSession {
             didFireLostRehearsal = true
         } else if lossStreak >= 3, !styleTalkDone {
             pendingChoiceEvent = .styleTalk
+            styleTalkDone = true   // 出した時点で一発化（選ばず閉じても連敗中は毎週出ない。通過で再武装）。GameCore非経路
         } else if justPassedStage, !didFirePassFork, let m = nextMilestoneForEvent(), m.week - week >= 3, state.stamina >= 15 {
             pendingChoiceEvent = .justPassedFork
             didFirePassFork = true
