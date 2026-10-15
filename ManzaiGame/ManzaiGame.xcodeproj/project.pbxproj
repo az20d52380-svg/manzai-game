@@ -21,6 +21,7 @@
 		20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */; };
 		21E800CFC18797B54C85B120 /* StageScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1F087A453470E4CF970A6B /* StageScene.swift */; };
 		23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */; };
+		25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */; };
 		2643395E9DDCAF2BA532E57B /* se_grain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */; };
 		274A09C6852CB442400DAE49 /* se_taiko.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */; };
 		290A540EAC4D4FD7912614B4 /* se_tada.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */; };
@@ -100,6 +101,7 @@
 		08B86D882DE6689C655ADD0C /* FanReportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanReportData.swift; sourceTree = "<group>"; };
 		0B56CF2CC9552602E05AC67B /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseCatalog.swift; sourceTree = "<group>"; };
+		117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalsBroadcastIntro.swift; sourceTree = "<group>"; };
 		16007007DF00D086ECC94A4C /* EndingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndingViews.swift; sourceTree = "<group>"; };
 		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		2479B3303C35A9B094342137 /* se_cursor.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cursor.mp3; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */,
 				16007007DF00D086ECC94A4C /* EndingViews.swift */,
 				08B86D882DE6689C655ADD0C /* FanReportData.swift */,
+				117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */,
 				599065030751D5F2DB350459 /* FinalsPresentationView.swift */,
 				5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */,
 				D47D421441D548D881226B2E /* FontLoader.swift */,
@@ -456,6 +459,7 @@
 				D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */,
 				557A44DC9CC271F9216143B1 /* EventBackgrounds.swift in Sources */,
 				7929C910D01A177FA32BE25C /* FanReportData.swift in Sources */,
+				25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */,
 				B5FF297729B861895AB02480 /* FinalsPresentationView.swift in Sources */,
 				877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */,
 				53DD57D26963633913018B7A /* FontLoader.swift in Sources */,

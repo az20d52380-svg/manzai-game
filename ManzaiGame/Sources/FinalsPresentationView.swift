@@ -44,6 +44,9 @@ struct FinalsPresentationView: View {
     @State private var burstFire = 0       // 決着の紙吹雪バースト
     /// 開演の儀が終わったか（決勝の入りの儀式・L11）
     @State private var ceremonyDone = false
+    /// 番組導入（煽りV→タイトル→審査員席→進出組）が終わったか。終わると開演の儀へ
+    @State private var introDone = false
+    @State private var introStart: FinalsIntroStage = .vtr
     /// 銀の紙吹雪（他組の優勝・自組の決勝敗退）
     @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
@@ -172,8 +175,17 @@ struct FinalsPresentationView: View {
         .onLongPressGesture(minimumDuration: 0.5) { if ceremonyDone { fastForwardBeat() } }
         .overlay {
             if !ceremonyDone {
-                StageCeremony { ceremonyDone = true }
+                if !introDone {
+                    FinalsBroadcastIntro(combiName: session.combiName, year: session.year, spectator: spectator,
+                                         finalists: d.entries.map { (name: displayName($0), isSelf: $0.isSelf) },
+                                         startStage: introStart) {
+                        withAnimation(.easeOut(duration: 0.3)) { introDone = true }
+                    }
                     .transition(.opacity)
+                } else {
+                    StageCeremony { ceremonyDone = true }
+                        .transition(.opacity)
+                }
             }
         }
         .onAppear {
@@ -186,7 +198,10 @@ struct FinalsPresentationView: View {
             }
             #if DEBUG
             // 目視用: MZ_FIN=pre/open/board/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
-            switch ProcessInfo.processInfo.environment["MZ_FIN"] {
+            let fin = ProcessInfo.processInfo.environment["MZ_FIN"] ?? ""
+            if let st = FinalsIntroStage.debug(fin) { introStart = st }   // MZ_FIN=vtr/title/judges/finalists で番組導入の各場面へ
+            else if !fin.isEmpty { introDone = true }                     // 他の MZ_FIN は導入を飛ばして直行
+            switch fin {
             case "lot": beat = .lot
             case "pre": beat = .preceding; shown = max(0, d.order - 1)
             case "open": beat = .open; revealedJudges = 5
