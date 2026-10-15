@@ -63,283 +63,211 @@ struct YoseRankUpOverlay: View {
         self.onDismiss = onDismiss
     }
 
+    @State private var flash: Double = 0
+    @State private var burstTrigger = 0
+    private var isTopRank: Bool { primary?.toRank == "S" }
+
     var body: some View {
         if let main = primary {
             ZStack {
-                // 背景暗転（どこをタップしても1回で即座に閉じる）
-                Color.black.opacity(cardAppeared ? 0.65 : 0.0)
+                // 暗転（夜の舞台）。どこをタップしても1回で閉じる
+                Color(hex: 0x0B0807).opacity(cardAppeared ? 0.88 : 0.0)
                     .ignoresSafeArea()
 
-                VStack(spacing: 14) {
-                    // 昇格貼り紙カード本体
+                // 新ランク着地で点る加算発光の後光（Sランクは大きく強く＋紙吹雪）
+                RankUpHalo(strong: isTopRank)
+                    .opacity(badgeLanded ? 1 : 0)
+                    .blendMode(.plusLighter)
+                    .allowsHitTesting(false)
+                    .ignoresSafeArea()
+
+                VStack(spacing: 16) {
                     VStack(spacing: 0) {
                         headerStrip
                         joshikimakuStripe
                         mainContent(for: main)
                     }
                     .background(YoseColor.washi)
-                    .clipShape(RoundedRectangle(cornerRadius: 2))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 1)
-                            .stroke(YoseColor.kin, lineWidth: 1)
-                            .padding(3)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 2)
-                            .stroke(YoseColor.sumi, lineWidth: 2.5)
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(YoseColor.sumi)
-                            .offset(y: 4)
-                    )
+                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(4))
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 3))
+                    .background(Rectangle().fill(Color.black).offset(y: 5))
                     .offset(y: shakeOffset)
-                    .scaleEffect(cardAppeared ? 1.0 : 0.88)
+                    .scaleEffect(cardAppeared ? 1.0 : 0.86)
                     .opacity(cardAppeared ? 1.0 : 0.0)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 22)
 
-                    // タップ案内
                     Text("画面をタップして閉じる ▶")
                         .font(YoseFont.gothic(12, weight: .bold))
-                        .foregroundStyle(YoseColor.kinari.opacity(0.9))
-                        .opacity(cardAppeared ? 1.0 : 0.0)
+                        .foregroundStyle(YoseColor.kinari.opacity(0.75))
+                        .opacity(stamped && cardAppeared ? 1.0 : 0.0)
                 }
+
+                if isTopRank && badgeLanded {
+                    YoseConfettiView(isActive: true, pieceCount: 70).allowsHitTesting(false).ignoresSafeArea()
+                }
+
+                Color(hex: 0xFFF2C4).opacity(flash).blendMode(.plusLighter)
+                    .ignoresSafeArea().allowsHitTesting(false)
             }
             .contentShape(Rectangle())
-            .onTapGesture {
-                dismissImmediately()
-            }
-            .task {
-                await runSequence(for: main)
-            }
+            .onTapGesture { dismissImmediately() }
+            .task { await runSequence(for: main) }
         }
     }
 
-    // MARK: - 上部見出し＆定式幕ストリップ
+    // MARK: - 上部見出し（黒漆ヘッダー＋定式幕ストリップ）
 
     private var headerStrip: some View {
         HStack(spacing: 8) {
             Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 24, height: 1.5)
-            Rectangle().fill(YoseColor.kin).frame(width: 5, height: 5).rotationEffect(.degrees(45))
+            Rectangle().fill(YoseColor.kinBright).frame(width: 6, height: 6).rotationEffect(.degrees(45))
             Text("番 付 昇 格")
-                .font(YoseFont.gothic(18, weight: .heavy))
-                .tracking(2)
-                .foregroundStyle(YoseColor.kin)
-                .shadow(color: YoseColor.kuroUrushi, radius: 0, x: 0, y: 1.5)
-            Rectangle().fill(YoseColor.kin).frame(width: 5, height: 5).rotationEffect(.degrees(45))
+                .font(YoseFont.mincho(22))
+                .tracking(4)
+                .foregroundStyle(
+                    LinearGradient(colors: [Color(hex: 0xFFF8D6), YoseColor.kinBright, Color(hex: 0xB8861B)], startPoint: .top, endPoint: .bottom)
+                )
+                .shadow(color: .black, radius: 0, x: 0, y: 2)
+            Rectangle().fill(YoseColor.kinBright).frame(width: 6, height: 6).rotationEffect(.degrees(45))
             Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 24, height: 1.5)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 42)
-        .background(YoseColor.enji)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(YoseColor.kin).frame(height: 1.5)
-        }
+        .frame(height: 46)
+        .background(Color.black)
+        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
     }
 
     private var joshikimakuStripe: some View {
-        GeometryReader { geo in
-            let colors: [Color] = [
-                YoseColor.kuroUrushi,
-                YoseColor.shu,
-                YoseColor.tokiwa,
-                YoseColor.kuroUrushi,
-                YoseColor.shu,
-                YoseColor.tokiwa
-            ]
-            HStack(spacing: 0) {
-                ForEach(0..<18, id: \.self) { i in
-                    Rectangle()
-                        .fill(colors[i % colors.count])
-                }
+        HStack(spacing: 0) {
+            ForEach(0..<18, id: \.self) { i in
+                Rectangle().fill([YoseColor.kuroUrushi, YoseColor.shu, YoseColor.tokiwa][i % 3])
             }
         }
         .frame(height: 8)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(YoseColor.sumi).frame(height: 1.5)
-        }
+        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 1.5) }
     }
 
     // MARK: - 主役ランク昇格エリア
 
+    private func rankTablet(_ rank: String, size: CGFloat, glyph: CGFloat, bright: Bool) -> some View {
+        Text(rank)
+            .font(YoseFont.mincho(glyph))
+            .foregroundStyle(bright
+                ? AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xFFFBE6), YoseColor.kinBright, Color(hex: 0xB8861B)], startPoint: .top, endPoint: .bottom))
+                : AnyShapeStyle(YoseColor.haiSumi))
+            .shadow(color: .black, radius: 0, x: 0, y: bright ? 4 : 2)
+            .frame(width: size, height: size)
+            .background(ZStack { bright ? Color(hex: 0x1A1210) : YoseColor.kinari; if bright { Self.rankColor(rank).opacity(0.38) } })
+            .overlay(Rectangle().stroke(bright ? YoseColor.kinBright : YoseColor.sumi.opacity(0.5), lineWidth: bright ? 3 : 1.5).padding(bright ? 0 : 0))
+            .overlay(Rectangle().stroke(bright ? YoseColor.kin : YoseColor.sumi, lineWidth: 1).padding(5))
+            .background(Rectangle().fill(bright ? Color.black : YoseColor.sumi.opacity(0.35)).offset(y: bright ? 5 : 2))
+    }
+
     private func mainContent(for item: RankUpItem) -> some View {
-        VStack(spacing: 14) {
-            // 1. 能力名バッジ（色弱対応の1文字紋章＋能力名）
+        VStack(spacing: 16) {
             HStack(spacing: 8) {
                 Text(item.abilityShort)
                     .font(YoseFont.gothic(13, weight: .black))
                     .foregroundStyle(YoseColor.kinari)
-                    .frame(width: 24, height: 24)
+                    .frame(width: 26, height: 26)
                     .background(item.abilityColor)
+                    
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-
                 Text("\(item.abilityName)のランクが上がった！")
-                    .font(YoseFont.gothic(16, weight: .heavy))
+                    .font(YoseFont.gothic(17, weight: .heavy))
                     .foregroundStyle(YoseColor.sumi)
             }
-            .padding(.top, 4)
+            .padding(.top, 8)
 
-            // 2. 旧ランク木札 ▶ 新ランク大木札 ＋ 朱印スタンプ
             ZStack(alignment: .topTrailing) {
-                HStack(spacing: 18) {
-                    // 旧ランク札 (48×48pt)
-                    VStack(spacing: 2) {
-                        Text("旧")
-                            .font(YoseFont.gothic(10, weight: .bold))
-                            .foregroundStyle(YoseColor.haiSumi)
-                        Text(item.fromRank)
-                            .font(YoseFont.gothic(24, weight: .black))
-                            .foregroundStyle(YoseColor.kinari)
-                            .frame(width: 48, height: 48)
-                            .background(Self.rankColor(item.fromRank).opacity(0.75))
-                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-                            .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+                HStack(spacing: 8) {
+                    VStack(spacing: 4) {
+                        Text("旧").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        rankTablet(item.fromRank, size: 50, glyph: 28, bright: false)
                     }
-
-                    // 昇格矢印（3連シェブロンブロック）
                     HStack(spacing: 3) {
                         ForEach(0..<3, id: \.self) { i in
                             Image(systemName: "play.fill")
-                                .font(.system(size: i == 2 ? 18 : 13, weight: .black))
+                                .font(.system(size: i == 2 ? 20 : 14, weight: .black))
                                 .foregroundStyle(i == 2 ? YoseColor.shu : YoseColor.kin)
+                                .opacity(badgeLanded ? 1 : 0.25)
                         }
                     }
-                    .padding(.top, 14)
-
-                    // 新ランク大木札 (72×72pt + 角火花エフェクト)
-                    VStack(spacing: 2) {
-                        Text("新ランク")
-                            .font(YoseFont.gothic(11, weight: .heavy))
-                            .foregroundStyle(YoseColor.shu)
-
+                    .padding(.top, 16)
+                    VStack(spacing: 4) {
+                        Text("新ランク").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
                         ZStack {
-                            // 四隅の金火花（外部画像なし・純粋矩形）
-                            ForEach(0..<4, id: \.self) { corner in
-                                let angle = Double(corner) * 90.0 + 45.0
-                                Rectangle()
-                                    .fill(YoseColor.kinBright)
-                                    .frame(width: 6, height: 6)
-                                    .offset(y: badgeLanded ? -54 : -24)
-                                    .opacity(badgeLanded ? 0.0 : 1.0)
-                                    .rotationEffect(.degrees(angle))
-                                    .animation(.easeOut(duration: 0.32), value: badgeLanded)
-                            }
-
-                            Text(item.toRank)
-                                .font(YoseFont.gothic(40, weight: .black))
-                                .foregroundStyle(YoseColor.kinari)
-                                .shadow(color: YoseColor.kuroUrushi, radius: 0, x: 0, y: 2)
-                                .frame(width: 72, height: 72)
-                                .background(Self.rankColor(item.toRank))
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(YoseColor.kinBright, lineWidth: 2)
-                                        .padding(3)
-                                )
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(YoseColor.sumi, lineWidth: 2.5)
-                                )
-                                .background(
-                                    Rectangle()
-                                        .fill(YoseColor.sumi)
-                                        .offset(y: 3)
-                                )
-                                .scaleEffect(badgeLanded ? 1.0 : 1.75)
+                            Rectangle().fill(YoseColor.kinari).overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.35), lineWidth: 1.5))
+                                .frame(width: 100, height: 100)
+                                .opacity(badgeLanded ? 0 : 1)
+                            Text("？").font(YoseFont.mincho(44)).foregroundStyle(YoseColor.sumi.opacity(0.25))
+                                .opacity(badgeLanded ? 0 : 1)
+                            rankTablet(item.toRank, size: 100, glyph: 68, bright: true)
+                                .scaleEffect(badgeLanded ? 1.0 : 2.3)
                                 .opacity(badgeLanded ? 1.0 : 0.0)
+                        }
+                        .overlay {
+                            YoseBurstParticles(trigger: burstTrigger, count: 28,
+                                               colors: [YoseColor.kinBright, Color.white, YoseColor.shu, YoseColor.kin],
+                                               radius: 120, duration: 0.7)
+                                .frame(width: 240, height: 240).allowsHitTesting(false)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
 
-                // 右上叩きつけ朱印『昇格』
                 YoseHankoStamp(text: "昇格", isSquare: false, angle: -8)
                     .modifier(YoseStampImpactModifier(isStamped: stamped))
-                    .offset(x: -6, y: -4)
+                    .scaleEffect(1.1).offset(x: 6, y: 18)
             }
 
-            // 3. 能力値と実力の計器ボックス（木札カード）
+            // 能力値と実力（白和紙の木札で暗い地から浮かせる）
             HStack(spacing: 0) {
-                // 左：能力値推移
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(item.abilityName)
-                        .font(YoseFont.gothic(12, weight: .heavy))
-                        .foregroundStyle(YoseColor.haiSumi)
-                    Text("\(item.beforeValue)")
-                        .font(YoseFont.number(18, weight: .heavy))
-                        .foregroundStyle(YoseColor.haiSumi)
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 11, weight: .black))
-                        .foregroundStyle(YoseColor.shu)
-                    Text("\(shownValue)")
-                        .font(YoseFont.number(24, weight: .black))
-                        .foregroundStyle(YoseColor.sumi)
+                    Text(item.abilityName).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                    Text("\(item.beforeValue)").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                    Image(systemName: "arrow.right").font(.system(size: 11, weight: .black)).foregroundStyle(YoseColor.shu)
+                    Text(stamped ? "\(shownValue)" : "？？").font(YoseFont.number(26, weight: .black)).foregroundStyle(YoseColor.sumi)
                         .contentTransition(.numericText(value: Double(shownValue)))
                 }
                 .frame(maxWidth: .infinity)
-
-                Rectangle()
-                    .fill(YoseColor.kiDark)
-                    .frame(width: 1.5, height: 28)
-
-                // 右：コンビ実力合計
+                Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 28)
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text("実力")
-                        .font(YoseFont.gothic(11, weight: .heavy))
-                        .foregroundStyle(YoseColor.enji)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 1)
-                        .background(YoseColor.enji.opacity(0.12))
+                    Text("実力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                        .padding(.horizontal, 4).padding(.vertical, 1)
                         .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
-
-                    Text("\(totalPower)")
-                        .font(YoseFont.number(22, weight: .black))
-                        .foregroundStyle(YoseColor.sumi)
-
-                    if powerDelta > 0 {
-                        Text("+\(powerDelta)")
-                            .font(YoseFont.number(13, weight: .heavy))
-                            .foregroundStyle(YoseColor.shu)
+                    Text(stamped ? "\(totalPower)" : "\(totalPower - powerDelta)").font(YoseFont.number(22, weight: .black)).foregroundStyle(YoseColor.sumi)
+                        .contentTransition(.numericText(value: Double(stamped ? totalPower : totalPower - powerDelta)))
+                    if powerDelta > 0 && stamped {
+                        Text("+\(powerDelta)").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.shu)
                     }
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 10)
-            .yoseKifuda()
+            .padding(.vertical, 9).padding(.horizontal, 10)
+            .background(YoseColor.kinari)
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+            .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
 
-            // 4. 連続・同時昇格ストリップ（2個以上同時に上がった時のみ1画面に統合表示）
             if !subItems.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("同時昇格")
-                        .font(YoseFont.gothic(11, weight: .heavy))
-                        .foregroundStyle(YoseColor.haiSumi)
-
+                    Text("同時昇格").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                     HStack(spacing: 6) {
                         ForEach(subItems) { sub in
                             HStack(spacing: 4) {
-                                Text(sub.abilityShort)
-                                    .font(YoseFont.gothic(10, weight: .black))
-                                    .foregroundStyle(YoseColor.kinari)
-                                    .frame(width: 18, height: 18)
-                                    .background(sub.abilityColor)
-                                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
-
-                                Text("\(sub.fromRank)▶\(sub.toRank)")
-                                    .font(YoseFont.gothic(13, weight: .black))
-                                    .foregroundStyle(YoseColor.shu)
+                                Text(sub.abilityShort).font(YoseFont.gothic(10, weight: .black)).foregroundStyle(YoseColor.kinari)
+                                    .frame(width: 18, height: 18).background(sub.abilityColor)
+                                Text("\(sub.fromRank)▶\(sub.toRank)").font(YoseFont.gothic(13, weight: .black)).foregroundStyle(YoseColor.shu)
                             }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(YoseColor.washi)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(YoseColor.kinari)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-                            .background(Rectangle().fill(YoseColor.sumi).offset(y: 1.5))
                         }
                         Spacer(minLength: 0)
                     }
                 }
-                .padding(.top, 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .opacity(stamped ? 1 : 0).offset(y: stamped ? 0 : 8)
             }
         }
         .padding(16)
@@ -359,38 +287,35 @@ struct YoseRankUpOverlay: View {
             return
         }
 
-        // 0.00s: カード出現
-        withAnimation(.easeOut(duration: 0.12)) {
-            cardAppeared = true
-        }
+        // 0.00s: 暗転＋カード出現（新ランクはまだ「？」＝溜め）
+        withAnimation(.easeOut(duration: 0.14)) { cardAppeared = true }
 
-        // 0.08s: 新ランク木札の着地
-        try? await Task.sleep(nanoseconds: 80_000_000)
+        // 0.34s: 白金フラッシュ＋新ランク木札の叩きつけ＋火花
+        try? await Task.sleep(nanoseconds: 340_000_000)
         guard !isDismissed else { return }
-        withAnimation(.spring(response: 0.24, dampingFraction: 0.58)) {
-            badgeLanded = true
-        }
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        flash = 0.26
+        withAnimation(.easeOut(duration: 0.3)) { flash = 0 }
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { badgeLanded = true }
+        burstTrigger += 1
+        withAnimation(.linear(duration: 0.04)) { shakeOffset = 6 }
+        try? await Task.sleep(nanoseconds: 45_000_000)
+        withAnimation(.linear(duration: 0.05)) { shakeOffset = -4 }
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        withAnimation(.linear(duration: 0.05)) { shakeOffset = 0 }
 
-        // 0.18s: 朱印叩きつけ ＋ 画面微振動 ＋ Haptics ＋ 数値ジャンプ
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        // 0.55s: 朱印『昇格』＋数値更新
+        try? await Task.sleep(nanoseconds: 120_000_000)
         guard !isDismissed else { return }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) {
-            stamped = true
-        }
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) {
-            shownValue = item.afterValue
-        }
-
-        // 叩きつけの物理シェイク (y: +3 -> -2 -> 0)
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { stamped = true }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) { shownValue = item.afterValue }
         withAnimation(.linear(duration: 0.04)) { shakeOffset = 3 }
-        try? await Task.sleep(nanoseconds: 40_000_000)
-        withAnimation(.linear(duration: 0.04)) { shakeOffset = -2 }
-        try? await Task.sleep(nanoseconds: 40_000_000)
-        withAnimation(.linear(duration: 0.04)) { shakeOffset = 0 }
+        try? await Task.sleep(nanoseconds: 45_000_000)
+        withAnimation(.linear(duration: 0.05)) { shakeOffset = 0 }
 
-        // 1.45s: 自動クローズ
-        try? await Task.sleep(nanoseconds: 1_190_000_000)
+        // 余韻のあと自動クローズ（タップで即閉じ）
+        try? await Task.sleep(nanoseconds: 1_300_000_000)
         guard !isDismissed else { return }
         dismissImmediately()
     }
@@ -418,6 +343,38 @@ struct YoseRankUpOverlay: View {
         case "E": return YoseColor.expTan
         case "F": return Color(hex: 0x5A6B7C)
         default:  return YoseColor.haiSumi
+        }
+    }
+}
+
+
+/// ランクアップ着地の後光：黒地に加算合成する黄金ラジアル＋不均一な光条（外周ほど消える・中央は空洞）
+private struct RankUpHalo: View {
+    let strong: Bool
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
+            let t = tl.date.timeIntervalSinceReferenceDate
+            Canvas { ctx, size in
+                let c = CGPoint(x: size.width / 2, y: size.height * 0.46)
+                let maxR = max(size.width, size.height) * (strong ? 0.8 : 0.42)
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - maxR, y: c.y - maxR, width: maxR * 2, height: maxR * 2)),
+                         with: .radialGradient(Gradient(colors: [YoseColor.kinBright.opacity(strong ? 0.55 : 0.30), YoseColor.shu.opacity(0.12), .clear]),
+                                               center: c, startRadius: 10, endRadius: maxR))
+                guard strong else { return }
+                let n = 26
+                for i in 0..<n {
+                    let a = Double(i) / Double(n) * 2 * .pi + t * 0.05
+                    let half = (i % 3 == 0) ? 0.05 : 0.016
+                    let len = maxR * ((i % 3 == 0) ? 1.0 : 0.7)
+                    var p = Path()
+                    p.move(to: c)
+                    p.addLine(to: CGPoint(x: c.x + cos(a - half) * len, y: c.y + sin(a - half) * len))
+                    p.addLine(to: CGPoint(x: c.x + cos(a + half) * len, y: c.y + sin(a + half) * len))
+                    p.closeSubpath()
+                    ctx.fill(p, with: .radialGradient(Gradient(colors: [.clear, YoseColor.kinBright.opacity(0.28), .clear]),
+                                                      center: c, startRadius: maxR * 0.2, endRadius: len))
+                }
+            }
         }
     }
 }
