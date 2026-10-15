@@ -353,9 +353,11 @@ struct WeekMainView: View {
         return VStack(alignment: .leading, spacing: 5) {
             statBar(name: "実力", value: GameEngine.jitsuryoku(s, config: cfg), fill: jitsuFill,
                     gainFill: budget > 0 ? lastJitsuryokuGain / budget : 0)
+            if openCat == nil {   // 下位一覧を開いている間は舞台が狭いので実力だけ
             Rectangle().fill(YoseColor.kiDark).frame(height: 1)
             statBar(name: "相性", value: s.compat, fill: compatFill,
                     gainFill: max(0, session.lastCompatGain) / cfg.compatCap, big: false)
+            }
         }
         .padding(.horizontal, 8).padding(.top, 9).padding(.bottom, 7)
         .frame(width: 112)
@@ -506,11 +508,11 @@ struct WeekMainView: View {
     /// ネタを書く＝場所の一覧（家／喫茶店／ファミレス）＋上に「書くネタ」（替える・新しく書く＋題名）
     private var netaWriteList: some View {
         let cfg = session.config
-        return VStack(spacing: 7) {
+        return VStack(spacing: 8) {
             netaTargetBar
             if pickingNeta { netaPicker }
             if newNetaTitle != nil || (writeTarget == nil && !pickingNeta) { netaTitleField }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 8) {
                 ForEach(CommandCatalog.netaPlaces(config: cfg, money: s.money)) { v in
                     actionCard(v, compact: true, dashed: false)
                 }
@@ -520,50 +522,53 @@ struct WeekMainView: View {
 
     private var netaTargetBar: some View {
         let t = writeTarget
-        return HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("書くネタ").font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.inkSub)
+        return HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("磨くネタ").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                 if let n = t {
+                    Text("「\(n.name)」").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
                     HStack(spacing: 6) {
-                        Text("「\(n.name)」").font(.maru(14, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
-                        Text("\(Self.netaStage(n.polish)) ・ 完成度 \(Int(n.polish.rounded()))").font(.maru(10.5, weight: .bold))
-                            .foregroundStyle(Theme.ideaDeep).lineLimit(1)
+                        YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 8, showTicks: false).frame(width: 80)
+                        Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(14, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                        Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
                     }
                 } else {
-                    Text("新しいネタ").font(.maru(14, weight: .bold)).foregroundStyle(Theme.ideaDeep)
+                    Text("新しいネタ").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.enji)
                 }
             }
             Spacer(minLength: 4)
             if !session.activeNetas.isEmpty {
                 Button { withAnimation(Theme.Motion.appearQuick) { pickingNeta.toggle() } } label: {
-                    Text(pickingNeta ? "とじる" : "替える").font(.maru(12, weight: .bold)).foregroundStyle(Theme.ideaDeep)
-                        .padding(.horizontal, 12).padding(.vertical, 6)
-                        .overlay(Rectangle().stroke(Theme.cIdea.opacity(0.7), lineWidth: 1.5))
+                    Text(pickingNeta ? "とじる" : "替える").font(YoseFont.gothic(13, weight: .heavy))
                 }
-                .buttonStyle(PressableStyle())
+                .buttonStyle(YoseButtonStyle(.secondary))
+                .frame(width: 84)
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(Theme.card, in: Rectangle())
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseKifuda()
     }
 
     /// 書くネタを替える（持ちネタ＋新しく書く）。選ぶだけ（週は進まない・乱数なし）
     private var netaPicker: some View {
         let cfg = session.config
-        return VStack(spacing: 6) {
+        return VStack(spacing: 8) {
             ForEach(session.activeNetas, id: \.id) { n in
+                let sel = n.id == writeTarget?.id
                 Button {
                     session.selectNeta(n.id)
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = nil; pickingNeta = false }
                 } label: {
                     HStack(spacing: 8) {
-                        Text("「\(n.name)」").font(.maru(13.5, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
-                        Text(Self.netaStage(n.polish)).font(.maru(10, weight: .bold)).foregroundStyle(Theme.ideaDeep)
+                        Text("「\(n.name)」").font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi).lineLimit(1)
+                        Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                         Spacer()
-                        Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkSub)
+                        Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 9)
-                    .background(n.id == writeTarget?.id ? Theme.cIdea.opacity(0.10) : Theme.card, in: Rectangle())
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .yoseHarigami(isFeatured: sel)
                 }
                 .buttonStyle(PressableStyle())
             }
@@ -574,13 +579,15 @@ struct WeekMainView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "plus").font(.system(size: 12, weight: .heavy))
-                        Text("新しく書く").font(.maru(13.5, weight: .bold))
+                        Text("新しく書く").font(YoseFont.gothic(14, weight: .heavy))
                         Spacer()
-                        Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本").font(.maru(10.5)).foregroundStyle(Theme.inkSub)
+                        Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                     }
-                    .foregroundStyle(Theme.ideaDeep)
+                    .foregroundStyle(YoseColor.enji)
                     .padding(.horizontal, 12).padding(.vertical, 9)
-                    .overlay(Rectangle().stroke(Theme.cIdea.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .yoseHarigami()
+                    .overlay(Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5))
                 }
                 .buttonStyle(PressableStyle())
             }
@@ -590,14 +597,17 @@ struct WeekMainView: View {
     /// 新しいネタの題名（空欄＝おまかせ）。オーナー 2026-10-12「タイトル決めとかこっちでかけるように」
     private var netaTitleField: some View {
         HStack(spacing: 8) {
-            Text("題名").font(.maru(11, weight: .bold)).foregroundStyle(Theme.inkSub)
+            Image(systemName: "pencil").font(.system(size: 14, weight: .heavy)).foregroundStyle(YoseColor.enji)
+            Text("題名").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
             TextField(NetaCatalog.autoName(forID: s.nextNetaID),
                       text: Binding(get: { newNetaTitle ?? "" }, set: { newNetaTitle = String($0.prefix(16)) }))
-                .font(.maru(15, weight: .bold)).foregroundStyle(Theme.ink)
+                .font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi)
                 .submitLabel(.done)
         }
-        .padding(.horizontal, 12).padding(.vertical, 9)
-        .background(Theme.card2, in: Rectangle())
+        .padding(.horizontal, 12).frame(height: 42)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+        .padding(.bottom, 2)
     }
 
     /// 場所を押した時：新しく書くなら題名を予約して、エンジンが新ネタを作るようにする
@@ -1059,11 +1069,11 @@ struct WeekMainView: View {
         switch t {
         case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
             let gain = cfg.netaPlaceGain[t] ?? cfg.netaReviseGain
-            return writeTarget != nil ? "ネタ +\(Int(gain))" : "新ネタ"
+            return writeTarget != nil ? "完成度 +\(Int(gain))" : "新ネタ"
         case .ネタ見せ会 where !s.netas.isEmpty:
-            return "ネタ +\(Int(cfg.netaLivePolishShow))"
+            return "完成度 +\(Int(cfg.netaLivePolishShow))"
         case .フリーライブ where !s.netas.isEmpty:
-            return "ネタ +\(Int(cfg.netaLivePolishFree))"
+            return "完成度 +\(Int(cfg.netaLivePolishFree))"
         default:
             return nil
         }
