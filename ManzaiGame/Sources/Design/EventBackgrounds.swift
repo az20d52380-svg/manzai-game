@@ -373,6 +373,13 @@ private struct EventGlowLayer: View {
             halo(w / 2, 50, 120, YoseColor.kinBright, 0.28)
         case .keikoba, .uketsuke:
             halo(w / 2, 6, 200, Color(hex: 0xFFF1C8), 0.30)
+            if place == .keikoba {
+                // 夜の稽古場：蛍光灯がホワイトボードと長机を照らす
+                halo(w * 0.52, 84, 120, Color(hex: 0xFFF6DA), 0.40)
+                halo(w * 0.5, h * 0.68 + 20, 100, Color(hex: 0xFFE9B0), 0.22)
+                Rectangle().fill(Color(hex: 0xFFFBEA)).frame(width: 110, height: 5)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)).position(x: w * 0.52, y: 28)
+            }
             if place == .uketsuke {
                 // 夜の受付：看板とカウンター手元を暖色のスポットで照らす
                 halo(w * 0.55, 100, 140, YoseColor.kinBright, 0.34)
@@ -438,11 +445,16 @@ private struct KeikobaBackdrop: View {
                     .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
                     .position(x: w / 2, y: 18)
 
+                // 天井の蛍光灯
+                Rectangle().fill(YoseColor.washi).frame(width: 110, height: 5)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    .position(x: w * 0.52, y: 28)
+
                 // 左：高窓
                 ZStack {
                     Rectangle().fill(time == .night ? Color(hex: 0x1E293B) : Color(hex: 0xD8E8F0))
-                    Rectangle().fill(YoseColor.sumi).frame(width: 2)
-                    Rectangle().fill(YoseColor.sumi).frame(height: 2)
+                    Rectangle().fill(time == .night ? Color(hex: 0x3A3F47) : YoseColor.sumi).frame(width: 2)
+                    Rectangle().fill(time == .night ? Color(hex: 0x3A3F47) : YoseColor.sumi).frame(height: 2)
                 }
                 .frame(width: 64, height: 54).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                 .position(x: 54, y: 68)
