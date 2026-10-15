@@ -538,7 +538,8 @@ extension WeekRunner where R: Codable {
         self.rng = snap.rng
         self.year = snap.year
         self.config = config
-        self.finalLine = snap.finalLine
+        // A-4: バランス更新が古いセーブに固定化されないよう、決勝ライン・保留中の大会/オファーは config から取り直す
+        self.finalLine = config.calendar.gpFinalLine
         self.gpStage = snap.gpStage
         self.gpAlive = snap.gpAlive
         self.finalist = snap.finalist
@@ -548,8 +549,16 @@ extension WeekRunner where R: Codable {
         self.section = snap.section
         self.acted = snap.acted
         self.weekResults = snap.weekResults
-        self.pendingSpec = snap.pendingSpec
-        self.pendingOffer = snap.pendingOffer
+        if snap.pendingSpec != nil {
+            self.pendingSpec = config.calendar.tournament(inWeek: snap.week) ?? snap.pendingSpec
+        } else {
+            self.pendingSpec = nil
+        }
+        if let o = snap.pendingOffer {
+            self.pendingOffer = [config.offerMoney, config.offerExp].first { $0.name == o.name } ?? o
+        } else {
+            self.pendingOffer = nil
+        }
         self.pendingAuto = snap.pendingAuto
         self.revivalTried = snap.revivalTried
         self.finalTried = snap.finalTried
