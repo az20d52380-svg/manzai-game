@@ -285,20 +285,17 @@ struct AbilityUpView: View {
 
     private var footer: some View {
         let active = !taps.isEmpty
-        return GeometryReader { geo in
-            let unit = (geo.size.width - 24) / 5.2   // 戻る:リセット:おまかせ:確定 ＝ 1:1:1.2:2
-            HStack(spacing: 8) {
-                Button { onClose() } label: { Text("戻る").lineLimit(1).minimumScaleFactor(0.7) }   // 反映せずに閉じる
-                    .buttonStyle(YoseButtonStyle(.secondary)).frame(width: unit)
-                Button { taps.removeAll() } label: { Text("リセット").lineLimit(1).minimumScaleFactor(0.7) }
-                    .buttonStyle(YoseButtonStyle(.secondary)).frame(width: unit).disabled(!active)
-                Button { taps = session.recommendedAllocation(); Haptics.tick() } label: { Text("おまかせ").lineLimit(1).minimumScaleFactor(0.7) }
-                    .buttonStyle(YoseButtonStyle(.secondary)).frame(width: unit * 1.2)
-                Button { confirm() } label: { Text("確定").padding(.trailing, active ? 34 : 0) }
-                    .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "未確定" : nil)).frame(width: unit * 2)
-            }
-            .font(YoseFont.gothic(14, weight: .heavy))
+        return HStack(spacing: 8) {
+            Button { onClose() } label: { Text("戻る").lineLimit(1).minimumScaleFactor(0.85) }   // 反映せずに閉じる
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
+            Button { taps.removeAll() } label: { Text("リセット").lineLimit(1).minimumScaleFactor(0.85) }
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48).disabled(!active)
+            Button { taps = session.recommendedAllocation(); Haptics.tick() } label: { Text("おまかせ").lineLimit(1).minimumScaleFactor(0.85) }
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
+            Button { confirm() } label: { Text("確定").padding(.trailing, active ? 34 : 0) }
+                .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "未確定" : nil)).frame(maxWidth: .infinity, minHeight: 48)
         }
+        .font(YoseFont.gothic(14, weight: .heavy))
         .frame(height: 52)
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 12)
         .background(YoseColor.kinari)
