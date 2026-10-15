@@ -91,34 +91,28 @@ struct TournamentResultView: View {
                 StageFrame(mode: revealed && !r.passed ? .loser : .lit, floorTop: 0.52)
                     .animation(.easeInOut(duration: 0.4), value: revealed)
 
-                VStack(spacing: 0) {
-                    // 一文字幕の上に大会名（GP系は頂グランプリの札）
-                    VStack(spacing: 4) {
-                        if !isMidTournament {
-                            Text("頂 グランプリ").font(.maru(.sub)).foregroundStyle(.white)
-                                .padding(.horizontal, 14).padding(.vertical, 2)
-                                .background(Theme.vermD, in: Rectangle())
-                                .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1))
-                        }
-                        Telop(text: r.name, size: 24)
-                        Text("第\(summary.week)週 ・ 本番").font(.maru(.sub)).foregroundStyle(Theme.houseLight)
-                    }
-                    .padding(.horizontal, 22).padding(.vertical, 8)
-                    .background(Theme.sumi.opacity(0.92))                       // 看板＝墨の木札
-                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 2))
-                    .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
-                    .padding(.top, 46)
+                // 判の前：客席のウケの波形（床に置く木札。勝敗は出さない・波の形だけ）
+                if !revealed {
+                    waveBoard(passed: r.passed, nearMiss: nearMiss(r), burst: r.burst == true)
+                        .position(x: geo.size.width / 2, y: geo.size.height * 0.575)
+                        .opacity(revealedWave ? 1 : 0)
+                        .transition(.opacity)
+                }
 
-                    // 判（大会名のすぐ下・二人の頭の上）＋一言のテロップ
+                VStack(spacing: 0) {
+                    // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
+                    StageSign(title: r.name, subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
+                        .padding(.top, 8)
+
+                    // 結果額縁（大会名のすぐ下・二人の頭の上）＋一言の墨帯
                     VStack(spacing: 10) {
-                        stamp(passed: r.passed)
+                        verdictPlate(passed: r.passed)
                         if revealed {
-                            Telop(text: r.passed ? "——どっと沸いた！" : missLine(r), size: 20,
-                                  color: r.passed ? Color(hex: 0xFFE07A) : .white)
+                            StageTelopBelt(text: r.passed ? "——どっと沸いた！" : missLine(r))
                                 .transition(.opacity)
                         }
                     }
-                    .padding(.top, 2)
+                    .padding(.top, 14)
 
                     Spacer(minLength: 0)
 
@@ -129,76 +123,19 @@ struct TournamentResultView: View {
                                 .transition(.opacity.combined(with: .offset(y: 10)))
                         }
                         if revealedRest {
-                            // 1枚の精算木札（通過ライン／実力・賞金・知名度を整列。審査員の点数は出さない）
-                            VStack(spacing: 8) {
-                                if let line = displayLine {
-                                    HStack(alignment: .lastTextBaseline, spacing: 8) {
-                                        Text("通過ライン \(Int(line))").font(.system(size: 11, weight: .medium, design: .rounded)).foregroundStyle(Theme.inkSub)
-                                        Spacer(minLength: 0)
-                                        HStack(spacing: 0) {
-                                            Text("実力 ").font(.maru(14, weight: .bold))
-                                            RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
-                                                .font(.system(size: 36, weight: .heavy, design: .rounded))
-                                        }
-                                        .foregroundStyle(r.passed ? Color(hex: 0xBD3A2B) : Theme.inkSub)
-                                        if r.passed {
-                                            Text("突破").font(.maru(12, weight: .black)).foregroundStyle(Color(hex: 0xBD3A2B))
-                                                .padding(.horizontal, 5).padding(.vertical, 2)
-                                                .overlay(Rectangle().stroke(Color(hex: 0xBD3A2B), lineWidth: 1.5))
-                                                .rotationEffect(.degrees(-5))
-                                        }
-                                    }
-                                    .lineLimit(1).minimumScaleFactor(0.8)
-                                }
-                                HStack(spacing: 10) {
-                                    if r.prize > 0 {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "circle.circle.fill").font(.system(size: 14))
-                                            RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
-                                        }
-                                        .font(.maru(17, weight: .heavy)).foregroundStyle(Theme.goldD)
-                                        .padding(.horizontal, 10).padding(.vertical, 3)
-                                        .background(Color(hex: 0xF1C40F).opacity(0.2))
-                                        .overlay(Rectangle().stroke(Color(hex: 0xD4AC0D), lineWidth: 1))
-                                    }
-                                    if session.lastResultFameDelta >= 0.5 {
-                                        HStack(spacing: 3) {
-                                            Text("知名度 \(Int(summary.state.fame.rounded()))")
-                                            Image(systemName: "arrow.up.right").font(.system(size: 12, weight: .black))
-                                            Text("+\(Int(session.lastResultFameDelta.rounded()))")
-                                        }
-                                        .font(.maru(15, weight: .black)).foregroundStyle(Color(hex: 0xD35400))
-                                    }
-                                }
-                                .fixedSize()
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10).padding(.horizontal, 12)
-                            .background {
-                                RoundedRectangle(cornerRadius: 4).fill(Color(hex: 0xFAF6EE))
-                                    .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
-                            }
-                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.sumi, lineWidth: 1.5))
-                            .transition(.opacity)
+                            settlementCard(r)
+                                .transition(.opacity)
                             Button {
                                 if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
-                                Text("次へ 進む ▶").font(.maru(18, weight: .black)).foregroundStyle(.white)
-                                    .frame(maxWidth: .infinity, minHeight: 52)
-                                    .background(Theme.verm, in: Rectangle())
-                                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
-                                    .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
+                                Text("次へ 進む ▶")
                             }
-                            .buttonStyle(PressableStyle())
-                            .frame(maxWidth: .infinity)
-                            .scaleEffect(ctaPulse ? 1.02 : 1.0)
-                            .onAppear { withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { ctaPulse = true } }
-                            .padding(.horizontal, 24)
+                            .buttonStyle(YoseButtonStyle(.primary))
                             .transition(.opacity)
                         }
                     }
-                    .padding(.horizontal, 18).padding(.bottom, 22)
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 18)
                 }
             }
         }
@@ -208,7 +145,7 @@ struct TournamentResultView: View {
         .overlay {
             // 通過の紙吹雪（判と同時に舞う・敗退は降らない＝静けさが重さ）。色は大会の格（銅/銀）
             ParticleBurst(trigger: confettiFire,
-                          colors: [metal, Theme.gold, .white, Theme.verm],
+                          colors: [YoseColor.kinBright, YoseColor.kin, YoseColor.washi, YoseColor.shu],
                           style: .confetti, count: 44,
                           origin: UnitPoint(x: 0.5, y: 0.40))
         }
@@ -226,23 +163,24 @@ struct TournamentResultView: View {
             // 判の前の観客の声（タップで次の1枚／「飛ばす」で判へ）。判が出たら消える
             if fanActive && !revealed {
                 VStack(spacing: 8) {
+                    Text("客席アンケート").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        .frame(width: 140, height: 26).yoseKifuda()
                     ForEach(Array(fanVoices.prefix(fanShown).enumerated()), id: \.offset) { _, t in
                         fanReportCard(t).transition(.opacity.combined(with: .offset(y: 10)))
                     }
-                    HStack {
-                        Text("タップで次へ").font(.maru(.sub)).foregroundStyle(.white.opacity(0.9))
-                        Spacer()
-                        Button { skipRequested = true } label: {
-                            Text("飛ばす ▶").font(.maru(.sub)).foregroundStyle(.white)
-                                .padding(.horizontal, 12).padding(.vertical, 5)
-                                .background(Theme.vermD, in: Rectangle())
-                                .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1))
+                    HStack(spacing: 10) {
+                        HStack(spacing: 4) {
+                            YoseOutlinedText(text: "タップで次へ", font: YoseFont.gothic(13, weight: .heavy), fill: YoseColor.kinari,
+                                             outlineColor: YoseColor.sumi, outlineWidth: 1.5, dropShadowY: 1)
+                            YoseAdvanceCue(color: YoseColor.shu)
                         }
+                        Spacer()
+                        Button("飛ばす ▶") { skipRequested = true }
+                            .buttonStyle(YoseButtonStyle(.secondary))
+                            .frame(width: 104)
                     }
-                    .padding(.horizontal, 12).padding(.vertical, 6)
-                    .background(Color.black.opacity(0.6), in: Rectangle())   // 明るい舞台/カードの上でも「タップで次へ」を読めるように
                 }
-                .padding(.horizontal, 18).padding(.bottom, 34)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 18)
                 .transition(.opacity)
             }
         }
@@ -344,21 +282,96 @@ struct TournamentResultView: View {
         }
     }
 
-    /// 判（§3-5）: 角判rStamp・縁2pt。通過=verm／敗退=鈍色——色でなく重さの差（負けにも勝ちと同じ物量）。
-    /// 敗退の地は暗転背景に溶けない鈍色（inkは闇と同化するため明度だけ上げる）。
-    private func stamp(passed: Bool) -> some View {
-        let c = passed ? Theme.verm : Color(hex: 0x3A322D)   // 敗退は墨（舞台の光の中で沈まない程度の明るさ・紫は使わない）
-        return Text(stampLabel(passed: passed))
-            .font(.maru(.display)).foregroundStyle(.white)
-            .frame(width: 106, height: 106)
-            .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 130),
-                       in: Rectangle())
-            .overlay(Rectangle().stroke(passed ? Theme.gold : metal.opacity(0.55), lineWidth: passed ? 4 : 2).padding(5))   // 縁＝通過は金／敗退は静かな金属色
-            .overlay(Rectangle().stroke(passed ? Theme.gold.opacity(0.8) : .clear, lineWidth: 1.2).padding(12))   // 金の二重線
-            .rotationEffect(.degrees(-4))
-            .shadow(color: .black.opacity(0.55), radius: 0, y: 6)
-            .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))      // 通過は高くから叩きつける／敗退は低く静かに沈む（slamFire のシェイクと同時に着地）
+    /// 結果額縁（押印の演出）。通過/優勝＝黒漆＋金＋朱／敗退＝銀鼠＋墨の重い枠。語は stampLabel（判定は不変）。
+    /// 通過は高くから叩きつける／敗退は低く静かに沈む（slamFire のシェイクと同時に着地）。
+    private func verdictPlate(passed: Bool) -> some View {
+        StageVerdictPlate(text: stampLabel(passed: passed), lost: !passed)
+            .scaleEffect(1.15)
+            .padding(.vertical, 6)
+            .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))
             .opacity(revealed ? 1 : 0)
+    }
+
+    /// 客席のウケの波形（24本の縦スリット。通過＝後半へ育ってオチで跳ねる／敗退＝低く疎ら・惜しいほど後半が立つ）
+    private func waveBoard(passed: Bool, nearMiss: Double, burst: Bool) -> some View {
+        let n = 24
+        func level(_ k: Int) -> Double {
+            let x = Double(k) / Double(n - 1)
+            let jitter = 0.5 + 0.5 * abs(sin(Double(k) * 2.3 + 1.1))
+            let surge = burst ? exp(-pow((x - 0.45) / 0.10, 2)) * 0.7 : 0
+            let a: Double
+            if passed { a = 0.16 + 0.5 * x + exp(-pow((x - 0.83) / 0.08, 2)) * 0.95 + surge }
+            else { a = 0.10 + 0.30 * nearMiss * x + 0.06 * sin(x * 8) + surge }
+            return min(1, a) * (0.55 + 0.45 * jitter)
+        }
+        return VStack(spacing: 6) {
+            HStack {
+                Text("客席のウケ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                Spacer()
+                Text("ツカミ").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Spacer()
+                Text("中盤").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Spacer()
+                Text("オチ").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            }
+            HStack(alignment: .bottom, spacing: 3) {
+                ForEach(0..<n, id: \.self) { k in
+                    let v = level(k)
+                    Rectangle().fill(v > 0.85 ? YoseColor.kinBright : (passed ? YoseColor.shu : YoseColor.haiSumi))
+                        .frame(height: max(4, 54 * v))
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .frame(height: 56, alignment: .bottom)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .yoseKifuda()
+        .padding(.horizontal, YoseMetrics.screenMargin + 6)
+    }
+
+    /// 結果・精算の2段貼り紙（上段：通過ライン▶実力＋突破判子／下段：賞金・知名度）。審査員の点数は出さない
+    private func settlementCard(_ r: StageResult) -> some View {
+        let hasPrize = r.prize > 0
+        let hasFame = session.lastResultFameDelta >= 0.5
+        return VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                if let line = displayLine {
+                    VStack(spacing: 0) {
+                        Text("通過ライン").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                        Text("\(Int(line))").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
+                    }
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: 16, weight: .black)).foregroundStyle(YoseColor.shu)
+                }
+                VStack(spacing: 0) {
+                    Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                    RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
+                        .font(YoseFont.numHero).foregroundStyle(r.passed ? YoseColor.shu : YoseColor.haiSumi)
+                }
+                if r.passed && displayLine != nil { YoseHankoStamp(text: "突破", angle: -8) }
+            }
+            .frame(maxWidth: .infinity).padding(.vertical, 10)
+            if hasPrize || hasFame {
+                Rectangle().fill(YoseColor.kiDark).frame(height: 1)
+                HStack(spacing: 10) {
+                    if hasPrize {
+                        RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
+                            .font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(YoseColor.kin.opacity(0.2))
+                            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                    }
+                    if hasFame {
+                        Text("知名度 \(Int(summary.state.fame.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                        YoseTag(text: "↑ +\(Int(session.lastResultFameDelta.rounded()))", style: .outlineShu)
+                    }
+                }
+                .frame(maxWidth: .infinity).padding(.vertical, 8)
+                .background(YoseColor.ki.opacity(0.35))
+            }
+        }
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
     /// DEBUG限定の目視フック：MZ_FANREPORT=1 でハマった夜でなくてもカードを出す（表示だけ・判定不変）
@@ -370,55 +383,41 @@ struct TournamentResultView: View {
         #endif
     }
 
-    /// 観客の一言（架空SNS）。紙講評＝審査員の声と見分けがつくよう、白カード＋SNS名の小札で出す
+    /// 観客の一言（架空SNS）。審査員の講評と見分けがつくよう、貼り紙＋SNS名の角札で出す
     private func fanReportCard(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
-                Image(systemName: "bubble.left.fill").font(.system(size: 10, weight: .bold))
-                Text("\(FanReportData.sns)・観客の声").font(.maru(10.5, weight: .bold))
-            }
-            .foregroundStyle(Theme.inkSub)
-            Text(text).font(.maru(13, weight: .bold)).foregroundStyle(Theme.ink)
+        VStack(alignment: .leading, spacing: 5) {
+            YoseTag(text: "\(FanReportData.sns)・観客の声", style: .outlineSumi)
+            Text(text).font(YoseFont.mincho(14)).lineSpacing(4).foregroundStyle(YoseColor.sumi)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(Rectangle().fill(.white.opacity(0.94)))
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
+    /// 審査講評の貼り紙（審査員1人・点数は出さない）。左上に黒漆の名札、右に講評印
     private func washi(text: String, judge: String, passed: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                CharacterFace(spec: FaceCatalog.judge(judge), size: 40)
-                    .overlay(Circle().stroke(Theme.gold, lineWidth: 2))
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(spacing: 5) {
-                        Text("審査講評").font(.maru(.sub)).foregroundStyle(Theme.sealName)
-                        Text("印").font(.maru(9, weight: .black)).foregroundStyle(Theme.verm)
-                            .frame(width: 15, height: 15).overlay(Rectangle().stroke(Theme.verm, lineWidth: 1))
-                    }
-                    Text("審査員　\(judge)").font(.maru(.sub)).foregroundStyle(Theme.sealName)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Text("審査講評").font(YoseFont.captionBold).foregroundStyle(YoseColor.kin)
+                    Text(judge).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.kinari)
                 }
+                .padding(.horizontal, 10).frame(height: 26)
+                .background(YoseColor.kuroUrushi)
                 Spacer(minLength: 8)
-                Text(passed ? "秀" : "惜").font(.maru(24, weight: .black))   // 落款風の講評印（中央の判と同じ語を繰り返さない）
-                    .foregroundStyle(passed ? Theme.verm : Color(hex: 0x4E423C))
-                    .frame(width: 44, height: 44)
-                    .overlay(Rectangle().stroke(passed ? Theme.verm : Color(hex: 0x4E423C), lineWidth: 2.5))
-                    .rotationEffect(.degrees(-8))
+                YoseHankoStamp(text: passed ? "秀" : "惜", isSquare: true, angle: -6).scaleEffect(0.85)
             }
             Text(text)
-                .font(.maru(.bodyMedium)).lineSpacing(TypeStep.bodyMedium.lineSpacing)
-                .foregroundStyle(Theme.paperInk)
+                .font(YoseFont.dialogueBody).lineSpacing(6)
+                .foregroundStyle(YoseColor.sumi)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)   // 講評は最後まで出す（切らない）
         }
-        .padding(18)
-        .background {   // 影は紙の板だけに落とす（文字に影を掛けない＝二重に見えない）
-            Rectangle().fill(LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom))
-                .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
-        }
-        .overlay(alignment: .leading) { Rectangle().fill(Theme.vermD).frame(width: 5) }
-        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 2))
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .yoseHarigami(isFeatured: passed)
+        .padding(.bottom, 2)
     }
 
     // MARK: ⑪ 山場（敗者復活で散る）のタップ送りオーバーレイ（Fable doc02）
@@ -430,9 +429,9 @@ struct TournamentResultView: View {
                 .frame(maxHeight: .infinity)
             Group {
                 if let sp = page.speaker {
-                    TalkBubble(advice: Advice(name: sp, text: page.text), showCue: !isLast)
+                    YoseSpeechBox(speaker: sp, text: page.text, roleLabel: sp == "谷口" ? "相方" : nil)
                 } else {
-                    NarrationCard(text: page.text, showCue: !isLast)
+                    YoseNarration(text: page.text)
                 }
             }
             .id(i)

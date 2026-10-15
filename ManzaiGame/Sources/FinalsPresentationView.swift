@@ -374,7 +374,7 @@ struct FinalsPresentationView: View {
         VStack(spacing: 10) {
             Spacer(minLength: 20)
             if let neta = session.selectedNeta {
-                Telop(text: "「\(neta.name)」", size: 22, color: .white)
+                YTelop(text: "「\(neta.name)」", size: 22)
                     .lineLimit(1).minimumScaleFactor(0.6)
             }
             Spacer(minLength: 200)
