@@ -128,6 +128,9 @@ struct FinalsPresentationView: View {
                         if beat == .open && revealedJudges < 7 {
                             YTelop(text: "タップで1人ずつ発表", size: 13)
                         }
+                        if (beat == .preceding && shown < d.order - 1) || (beat == .board && shown < d.entries.count) {
+                            YTelop(text: "タップで次の組へ", size: 13)
+                        }
                         YoseAdvanceCue()
                     }
                 }
