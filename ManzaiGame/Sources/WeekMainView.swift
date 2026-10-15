@@ -455,16 +455,21 @@ struct WeekMainView: View {
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
-                        Text("今は体力が満タン").font(YoseFont.captionBold).foregroundStyle(YoseColor.shu)
+                        YoseTag(text: "今は体力が満タン", style: .outlineShu)
                     }
                 }
                 if openNetaWrite {
                     netaWriteList.transition(.move(edge: .trailing).combined(with: .opacity))
                 } else {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: cat == .バイト ? 1 : 2), spacing: 8) {
-                        ForEach(CommandCatalog.cards(cat, config: session.config, money: s.money)) { v in
-                            actionCard(v, compact: true, dashed: false, wide: cat == .バイト)
+                    let cardList = CommandCatalog.cards(cat, config: session.config, money: s.money)
+                    let lastAlone = cat != .バイト && cardList.count > 2 && cardList.count % 2 == 1   // 奇数枚の最後は2列ぶち抜き（空きマスを作らない）
+                    VStack(spacing: 8) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: cat == .バイト ? 1 : 2), spacing: 8) {
+                            ForEach(lastAlone ? Array(cardList.dropLast()) : cardList) { v in
+                                actionCard(v, compact: true, dashed: false, wide: cat == .バイト)
+                            }
                         }
+                        if lastAlone, let v = cardList.last { actionCard(v, compact: true, dashed: false) }
                     }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
@@ -992,7 +997,7 @@ struct WeekMainView: View {
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.shu))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.shu).opacity(0.1))
-            .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.shu), lineWidth: 1))
+            .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.shu), lineWidth: 1.5))
     }
 
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
@@ -1002,7 +1007,7 @@ struct WeekMainView: View {
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.sumi))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa.opacity(0.12) : YoseColor.ginNezu.opacity(0.5)))
-            .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.haiSumi), lineWidth: 1))
+            .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.haiSumi), lineWidth: 1.5))
     }
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
