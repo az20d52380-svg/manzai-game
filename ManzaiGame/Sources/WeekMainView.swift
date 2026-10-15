@@ -234,35 +234,24 @@ struct WeekMainView: View {
 
     // MARK: 立ち絵シーン（左上の実力/相性バー・心の声）
 
-    /// 試作: 舞台の臙脂＋金の共通ヘッダー帯（決勝の幕と同じ色）。
+    /// 共通ヘッダー帯（YoseHeaderBar・臙脂は上端まで）。
     private var stageHeaderBand: some View {
-        HStack(spacing: 10) {
-            Rectangle().fill(Theme.gold).frame(height: 1).frame(maxWidth: .infinity)
-            Text("\(session.year)年目　第\(session.week)週")
-                .font(.maru(15, weight: .black)).foregroundStyle(Theme.gold)
-                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Rectangle().fill(Theme.gold).frame(height: 1).frame(maxWidth: .infinity)
-        }
-        .padding(.horizontal, 14).padding(.vertical, 6)
-        .frame(maxWidth: .infinity)
-        .background(
-            Theme.curtain.ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.gold).frame(height: 2) }
+        YoseHeaderBar(title: "\(session.year)年目　第\(session.week)週")
     }
 
     private var sceneZone: some View {
         sceneBackground
             .background(Color(hex: 0xFFFBF0).ignoresSafeArea(edges: .top))   // ステータスバー裏も稽古場の白
             // 上端中央の目標バナー（2行になる週がある）の下に置く＝重ならない
-            .overlay(alignment: .topTrailing) { statBars.padding(.trailing, 10).padding(.top, 10) }
+            .overlay(alignment: .topTrailing) { statBars.padding(.trailing, YoseMetrics.screenMargin).padding(.top, 8) }
             .overlay(alignment: .bottomLeading) {
                 // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
                 if let b = beatAdvice {
-                    adviceBox(b).padding(14)
+                    adviceBox(b).padding(YoseMetrics.screenMargin)
                 } else if let lines = session.weekBanter, !lines.isEmpty {
-                    banterBox(lines).padding(14)
+                    banterBox(lines).padding(YoseMetrics.screenMargin)
                 } else {
-                    monoBox.padding(14)
+                    monoBox.padding(YoseMetrics.screenMargin)
                 }
             }
             .overlay {
@@ -305,18 +294,18 @@ struct WeekMainView: View {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill").font(.system(size: 11))
-                            .foregroundStyle(hot ? Color(hex: 0xFF8A70) : Theme.gold)
+                            .foregroundStyle(hot ? YoseColor.shu : YoseColor.kin)
                         if m.weeksLeft <= 0 {
                             Text("\(m.name)　今週！")
-                                .font(.maru(16, weight: .black)).foregroundStyle(Theme.gold)
+                                .font(YoseFont.gothic(16, weight: .black)).foregroundStyle(YoseColor.kinBright)
                                 .lineLimit(1).minimumScaleFactor(0.8)
                         } else {
                             HStack(alignment: .lastTextBaseline, spacing: 2) {
-                                Text("\(m.name) まで あと").font(.maru(15, weight: .black)).foregroundStyle(Theme.gold)
-                                Text("\(m.weeksLeft)").font(.maru(24, weight: .black)).monospacedDigit()
-                                    .foregroundStyle(Color(hex: 0xF1C40F))   // 山吹＝締め切り感
+                                Text("\(m.name) まで あと").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                                Text("\(m.weeksLeft)").font(YoseFont.number(24, weight: .black))
+                                    .foregroundStyle(YoseColor.kinBright)
                                     .contentTransition(.numericText())
-                                Text("週").font(.maru(15, weight: .black)).foregroundStyle(Theme.gold)
+                                Text("週").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kin)
                             }
                             .lineLimit(1).minimumScaleFactor(0.8)
                         }
@@ -324,22 +313,20 @@ struct WeekMainView: View {
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
                         Text("経験点が残ってる ・ 能力アップで使おう")
-                            .font(.maru(11, weight: .bold)).foregroundStyle(Theme.gold)
+                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinBright)
                     } else if m.weeksLeft >= 6 {
                         Text(lullLine())
-                            .font(.maru(11)).foregroundStyle(.white.opacity(0.85)).lineLimit(1).minimumScaleFactor(0.85)
+                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.85)).lineLimit(1).minimumScaleFactor(0.85)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(Color(hex: 0x3E1F18))
-                .overlay(Rectangle().stroke(Color(hex: 0xC1A550), lineWidth: 1.5))
-                // 巻物の軸：両端に金の飾り爪
-                .overlay(alignment: .leading) { Rectangle().fill(Color(hex: 0xC1A550)).frame(width: 5).padding(.vertical, -2).offset(x: -2) }
-                .overlay(alignment: .trailing) { Rectangle().fill(Color(hex: 0xC1A550)).frame(width: 5).padding(.vertical, -2).offset(x: 2) }
+                .background(YoseColor.kuroUrushi)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
             }
             .buttonStyle(PressableStyle())
-            .padding(.horizontal, 8).padding(.top, 6).padding(.bottom, 2)
+            .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 4)
             .background(Color(hex: 0xFFFBF0))
         }
     }
@@ -360,54 +347,40 @@ struct WeekMainView: View {
         let budget = s.growthBudget ?? 0
         let jitsuFill = budget > 0 ? min(1, s.growthUsed / budget) : 0
         let compatFill = min(1, max(0, s.compat / cfg.compatCap))
-        // 縦長の木札（90x110）。実力は特大・相性はその下。能力5本の内訳はネタ帳で見る。
-        return VStack(alignment: .leading, spacing: 4) {
-            statBar(name: "実力", glyph: "sparkles", color: Theme.verm,
-                    value: GameEngine.jitsuryoku(s, config: cfg), fill: jitsuFill,
+        // 直角の木札（幅96）。実力は特大・相性はその下。能力5本の内訳はネタ帳で見る。
+        return VStack(alignment: .leading, spacing: 5) {
+            statBar(name: "実力", value: GameEngine.jitsuryoku(s, config: cfg), fill: jitsuFill,
                     gainFill: budget > 0 ? lastJitsuryokuGain / budget : 0)
-            Rectangle().fill(Color(hex: 0x2B2B2B).opacity(0.25)).frame(height: 1)
-            statBar(name: "相性", glyph: "heart.fill", color: Theme.verm,
-                    value: s.compat, fill: compatFill,
+            Rectangle().fill(YoseColor.kiDark).frame(height: 1)
+            statBar(name: "相性", value: s.compat, fill: compatFill,
                     gainFill: max(0, session.lastCompatGain) / cfg.compatCap, big: false)
         }
-        .padding(.horizontal, 8).padding(.vertical, 8)
-        .frame(width: 90, height: 110)
-        .background(RoundedRectangle(cornerRadius: 6).fill(Color(hex: 0xE0C9A6)))
-        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
-        .shadow(color: Color(hex: 0x5B3A1A).opacity(0.35), radius: 4, x: 1, y: 3)
+        .padding(.horizontal, 8).padding(.top, 9).padding(.bottom, 7)
+        .frame(width: 112)
+        .yoseKifuda(showNail: true)
     }
 
-    /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分をオレンジで重ねる＝「押した週に何が動いたか」。
-    /// 満ちたら縁が金（旧ピルの上限到達と同じ文法）。色＋アイコン＋名前で区別（§6-5）。
-    private func statBar(name: String, glyph: String, color: Color, value: Double, fill: Double, gainFill: Double, big: Bool = true) -> some View {
-        let full = fill >= 0.999
+    /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分を朱で重ねる＝「押した週に何が動いたか」。
+    private func statBar(name: String, value: Double, fill: Double, gainFill: Double, big: Bool = true) -> some View {
         let shown = gainsVisible && session.lastDeltaWeek == session.week ? min(gainFill, fill) : 0
-        return VStack(alignment: .leading, spacing: 1) {
-            Text(name).font(.maru(11, weight: .black)).foregroundStyle(Color(hex: 0x2B2B2B).opacity(0.75)).fixedSize()
-            Text("\(Int(value.rounded()))").font(.system(size: big ? 30 : 22, weight: .heavy, design: .rounded)).monospacedDigit()
-                .foregroundStyle(Color(hex: 0x2B2B2B))
-                .lineLimit(1).minimumScaleFactor(0.7)
-                .contentTransition(.numericText())
-                .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
-                .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
+        return VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(name).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                    .padding(.horizontal, 4).padding(.vertical, 1)
+                    .background(YoseColor.enji.opacity(0.12))
+                    .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
+                    .fixedSize()
+                Spacer(minLength: 0)
+                Text("\(Int(value.rounded()))").font(YoseFont.number(big ? 28 : 18, weight: .black))
+                    .foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                    .contentTransition(.numericText())
+                    .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
+                    .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
+            }
             // 空の時は出さない（年初で器がまだ空＝何も表さない枠はバグに見える）。伸びたら現れる。
             if fill > 0.001 || shown > 0 {
-            GeometryReader { geo in
-                let w = geo.size.width
-                ZStack(alignment: .leading) {
-                    Rectangle().fill(Color(hex: 0xEFE3CC))
-                    Rectangle().fill(Color(hex: 0xC0392B)).frame(width: w * fill)
-                    Rectangle().fill(Theme.gainOrange)
-                        .frame(width: w * shown)
-                        .offset(x: w * (fill - shown))
-                        .opacity(shown > 0 ? 1 : 0)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 3))
-                .overlay(RoundedRectangle(cornerRadius: 3).stroke(full ? Theme.gold : Color(hex: 0x8D6E63), lineWidth: full ? 2 : 1))
-                .animation(.easeOut(duration: 0.6), value: fill)
-                .animation(.easeOut(duration: 0.3), value: shown)
-            }
-            .frame(height: 6)
+                YoseGauge(value: fill, total: 1, fill: shown > 0 ? YoseColor.shu : YoseColor.enji, height: 8, showTicks: false)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -442,11 +415,6 @@ struct WeekMainView: View {
     private func banterBox(_ lines: [Advice]) -> some View {
         let i = min(banterIndex, lines.count - 1)
         return adviceBox(lines[i])
-            .overlay(alignment: .bottomTrailing) {
-                if i < lines.count - 1 {
-                    BounceArrow().padding(6)
-                }
-            }
             .contentShape(Rectangle())
             .onTapGesture {
                 if i < lines.count - 1 { withAnimation(.easeOut(duration: 0.18)) { banterIndex += 1 } }
@@ -454,39 +422,11 @@ struct WeekMainView: View {
     }
 
     private func adviceBox(_ a: Advice) -> some View {
-        // パワプロ・サクセス式の会話: 顔グラ＋名前タブ＋白地チャンキーの台詞ボックス。
+        // 寄席のめくり名札＋明朝の貼り紙セリフ枠（YoseSpeechBox）。
         let name = a.name ?? "俺"
-        return HStack(alignment: .bottom, spacing: 8) {
-            VStack(spacing: 3) {
-                // 寄席の名札：木札枠の正方形＋名前は座布団色の帯
-                CharacterFace(spec: FaceCatalog.speaker(name), size: 52)
-                    .frame(width: 52, height: 52)
-                    .background(Color(hex: 0xFDFBF7))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color(hex: 0x2B2B2B), lineWidth: 2))
-                    .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 2)
-                Text(name).font(.maru(11, weight: .black)).foregroundStyle(.white)
-                    .frame(width: 56)
-                    .padding(.vertical, 2)
-                    .background(name == "谷口" ? Theme.verm : Color(hex: 0x2A4B7C), in: Rectangle())
-                    .overlay(Rectangle().stroke(Color(hex: 0x2B2B2B), lineWidth: 1))
-            }
-            Text(a.text)
-                .font(.custom("HiraMinProN-W6", size: 15)).lineSpacing(3)
-                .foregroundStyle(Theme.ink)
-                .padding(.horizontal, 12).padding(.vertical, 10)
-                .frame(maxWidth: 250, alignment: .leading)
-                .background(Rectangle().fill(Color(hex: 0xFDFBF7)).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-                .overlay(Rectangle().stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
-                .overlay(alignment: .bottomLeading) {
-                    // しっぽ：谷口の名札へ向ける
-                    BubbleTail().fill(Color(hex: 0xFDFBF7))
-                        .overlay(BubbleTail().stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
-                        .frame(width: 10, height: 14).offset(x: -8, y: -12)
-                }
-        }
-        .id(a.text)
-        .transition(.opacity)
+        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : nil)
+            .id(a.text)
+            .transition(.opacity)
     }
 
     // MARK: 行動カード（常設4枚 2×2＋条件付きの小カード。タップ＝即実行・ゲート/¥不足は toast で無効化）
@@ -519,7 +459,7 @@ struct WeekMainView: View {
                 }
             } else {
                 // 6つを同じ大きさの2×3（オーナー 2026-10-12「視認性悪いからアイテムショップもここに」）
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 6) {
                     ForEach(CommandCategory.allCases) { c in categoryTile(c) }
                 }
                 .transition(.move(edge: .leading).combined(with: .opacity))
@@ -533,7 +473,7 @@ struct WeekMainView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 12).padding(.top, 10).padding(.bottom, 8)
+        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 6)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
         .animation(Theme.Motion.appearQuick, value: extras.map(\.id))
     }
@@ -727,8 +667,6 @@ struct WeekMainView: View {
 
     /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは経験点の振り分け画面（AllocationView）
     private func categoryTile(_ c: CommandCategory) -> some View {
-        let tint: Color = { switch c { case .ネタを書く: return Theme.cIdea; case .練習: return Theme.cExpr; case .バイト: return Theme.cMoney
-                                      case .休む: return Theme.night; case .能力アップ: return Theme.gold; case .お店: return Theme.cChara } }()
         let ready = c == .能力アップ && expGrains > 0
         let gated = (c == .練習 || c == .ネタを書く) && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let sub: String = {
@@ -760,41 +698,40 @@ struct WeekMainView: View {
                 if c == .ネタを書く { openNetaWrite = true }
             }
         } label: {
-            let big = (c == .ネタを書く || c == .練習)
-            let stamp: WaIcon.Kind? = { switch c { case .バイト: return .koban; case .休む: return .zabuton
-                                          case .能力アップ: return .sensu; case .お店: return .noren; default: return nil } }()
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    if let stamp { WaIcon(kind: stamp).opacity(gated ? 0.45 : 1) }   // 和の単色図形（小判・座布団・扇子・暖簾）
-                    Text(c.rawValue).font(.maru(big ? 26 : 20, weight: .heavy))
-                        .foregroundStyle(gated ? Color(hex: 0x2B2B2B).opacity(0.45) : Color(hex: 0x2B2B2B))
+            let stamp: String? = { switch c { case .ネタを書く: return "square.and.pencil"; case .練習: return "figure.stand"
+                                          case .バイト: return "yensign.circle.fill"; case .休む: return "moon.zzz.fill"
+                                          case .能力アップ: return "arrow.up.forward.circle.fill"; case .お店: return "bag.fill" } }()
+            let urgent = c == .能力アップ && unspentBeforeStage
+            VStack(spacing: 3) {
+                HStack(spacing: 7) {
+                    if let stamp { Image(systemName: stamp).font(.system(size: 17, weight: .black)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.enji) }
+                    Text(c.rawValue).font(YoseFont.gothic(20, weight: .heavy))
+                        .foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
                 if !sub.isEmpty {
-                    Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
+                    Text(sub).font(YoseFont.gothic(11, weight: .bold))
+                        .foregroundStyle(gated ? YoseColor.shu : ready ? YoseColor.kinText : YoseColor.haiSumi)
+                        .lineLimit(1).minimumScaleFactor(0.8)
                 }
             }
-            .padding(.horizontal, 14).padding(.vertical, big ? 14 : 9)
-            .frame(maxWidth: .infinity, minHeight: big ? 84 : 62, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 3).fill(Color(hex: 0xF7F3E8))
-                .shadow(color: Color(hex: 0xC8BFA8), radius: 0, x: 0, y: 3))
-            .overlay(RoundedRectangle(cornerRadius: 3).stroke((c == .能力アップ && unspentBeforeStage) ? Theme.gold : Color(hex: 0x2B2B2B),
-                                        lineWidth: (c == .能力アップ && unspentBeforeStage) ? 3 : 1.5))
-            .overlay { if gated { RoundedRectangle(cornerRadius: 3).fill(Color.black.opacity(0.08)) } }
-            .overlay {
-                // 選べない札は暗くせず、赤い千社札テープを斜めに貼って「今週は無理」を絵で言う
+            .frame(maxWidth: .infinity)
+            .overlay(alignment: .topTrailing) {
+                if urgent { YoseTag(text: "大会前", style: .outlineShu).offset(x: 4, y: -10) }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                // 選べない札は、判子で「今週は無理」を言う
                 if gated {
                     Text(s.preoccupiedWeeks > 0 ? "出張中" : "休演")
-                        .font(.system(size: 12, weight: .heavy)).tracking(2).foregroundStyle(.white)
-                        .padding(.horizontal, 14).padding(.vertical, 4)
-                        .background(Color(hex: 0xA62B1E))
-                        .rotationEffect(.degrees(-10))
-                        .shadow(color: .black.opacity(0.3), radius: 0, x: 1, y: 1)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).padding(.trailing, 8).padding(.bottom, 8)
+                        .font(YoseFont.gothic(12, weight: .black)).tracking(2).foregroundStyle(YoseColor.kinari)
+                        .padding(.horizontal, 10).padding(.vertical, 3)
+                        .background(YoseColor.shu)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                        .rotationEffect(.degrees(-8)).offset(x: 6, y: 10)
                 }
             }
         }
-        .buttonStyle(PressableStyle())
+        .buttonStyle(YoseButtonStyle(.command))
     }
 
     /// カードの顔: アイコン＋名前／伸び（実力 ↑・相性 +N・ネタ +N）／コスト（所持金・体力）。
@@ -988,49 +925,31 @@ struct WeekMainView: View {
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
 
-    /// 最下帯（2026-10-12 作り直し・オーナー「アイテムとかの下のUIUXまだ悪い」）：
-    /// 上段＝年週・体力・所持金（いつも見る数字）／下段＝名前付きのメニュー4つ（日程・コンビ・お店・設定）。
+    /// 最下帯：上段＝体力ゲージ・所持金（YoseVitalMoneyBar）／下段＝日程・コンビ・設定（YoseFooterTabBar）。
     /// 大会までの週は上の目標バナーと重複するので外した。
     private var botbar: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 12) {
-                staminaGauge
-                Spacer(minLength: 4)
-                Text(Yen.text(s.money)).font(.maru(17, weight: .black)).monospacedDigit()
-                    .foregroundStyle(s.money < 0 ? Color(hex: 0xFF8A70) : Color(hex: 0xC1A550))
-                    .lineLimit(1).minimumScaleFactor(0.7)
-                    .contentTransition(.numericText())            // 収支が動くと数字が繰る
-                    .punch(on: s.money, peak: 1.18)               // ＋跳ねる（ジュース核）
-                    .animation(.easeOut(duration: 0.4), value: s.money)
-            }
-            HStack(spacing: 6) {
-                menuButton("calendar", "日程") { showCalendar = true }              // S4 カレンダー
-                menuButton("person.2.fill", "コンビ") { showNotebook = true }       // S5 コンビの情報（旧ネタ帳）
-                menuButton("gearshape.fill", "設定") { showSettings = true }        // 音量・この年をやめる（監査G-04）
-            }
+        VStack(spacing: 0) {
+            YoseVitalMoneyBar(stamina: Int(s.stamina.rounded()), maxStamina: 100, money: s.money,
+                              staminaColor: s.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
+                .opacity(gaugeFlash ? 0.5 : 1)
+                .onChange(of: staminaZone) { old, new in
+                    guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
+                    Task {
+                        for _ in 0..<(new == 0 ? 2 : 1) {
+                            withAnimation(.easeIn(duration: 0.15)) { gaugeFlash = true }
+                            try? await Task.sleep(nanoseconds: 150_000_000)
+                            withAnimation(.easeOut(duration: 0.15)) { gaugeFlash = false }
+                            try? await Task.sleep(nanoseconds: 150_000_000)
+                        }
+                    }
+                }
+            YoseFooterTabBar(items: [
+                YoseFooterItem(title: "日程", symbol: "calendar") { showCalendar = true },              // S4 カレンダー
+                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { showNotebook = true },       // S5 コンビの情報（旧ネタ帳）
+                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { showSettings = true },        // 音量・この年をやめる（監査G-04）
+            ])
         }
-        .padding(.horizontal, 14).padding(.top, 8).padding(.bottom, 10)
-        .background(Color(hex: 0x2D1E18).ignoresSafeArea(edges: .bottom))   // ダークウッドのトレイ
-        .overlay(alignment: .top) { Rectangle().fill(Theme.gold).frame(height: 2) }
-    }
-
-    private func menuButton(_ glyph: String, _ label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label).font(.maru(16, weight: .black))
-                .foregroundStyle(Color(hex: 0x2B2B2B))
-                .frame(maxWidth: .infinity, minHeight: 40)
-                .background(Color(hex: 0xFDFBF7))
-                .overlay(Rectangle().stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
-                .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
-        }
-        .buttonStyle(PressableStyle())
-        .accessibilityLabel(label)
-    }
-
-    private var staminaColor: Color {
-        if s.stamina < 20 { return Theme.staminaCrit }      // 危険（赤・staminaGate可視化）
-        if s.stamina < 50 { return Theme.staminaWarn }      // 警告（黄）
-        return Theme.cMental                                // 好調（緑）
+        .background(YoseColor.kuroUrushi.ignoresSafeArea(edges: .bottom))
     }
 
     /// 体力の3段ゾーン（2=緑/1=黄/0=赤）。閾値は黄50未満・赤20未満（第1便§0裁定①）。
@@ -1038,57 +957,6 @@ struct WeekMainView: View {
         if s.stamina < 20 { return 0 }
         if s.stamina < 50 { return 1 }
         return 2
-    }
-
-    /// 体力＝5つの提灯（20ごとに1つ点灯）。40以下は朱色で脈打つ。数字は「いま / 100」。
-    private var staminaGauge: some View {
-        let lit = Int(ceil(max(0, min(100, s.stamina)) / 20))
-        let pinch = s.stamina <= 40
-        let col = pinch ? Color(hex: 0xD9381E) : Color(hex: 0x4CAF50)
-        return HStack(spacing: 8) {
-            HStack(spacing: 4) {
-                ForEach(0..<5, id: \.self) { i in
-                    lantern(on: i < lit, color: col, pulse: pinch && i < lit)
-                }
-            }
-            .opacity(gaugeFlash ? 0.25 : 1)
-            .animation(.easeOut(duration: 0.3), value: lit)
-            .onChange(of: staminaZone) { old, new in
-                guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
-                Task {
-                    for _ in 0..<(new == 0 ? 2 : 1) {
-                        withAnimation(.easeIn(duration: 0.15)) { gaugeFlash = true }
-                        try? await Task.sleep(nanoseconds: 150_000_000)
-                        withAnimation(.easeOut(duration: 0.15)) { gaugeFlash = false }
-                        try? await Task.sleep(nanoseconds: 150_000_000)
-                    }
-                }
-            }
-            Text("\(Int(s.stamina.rounded())) / 100").font(.maru(14, weight: .bold)).monospacedDigit()
-                .lineLimit(1).minimumScaleFactor(0.7)
-                .foregroundStyle(.white).fixedSize()
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("体力 \(Int(s.stamina.rounded()))")
-    }
-
-    private func lantern(on: Bool, color: Color, pulse: Bool) -> some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20, paused: !pulse)) { ctx in
-            let a = pulse ? 0.65 + 0.35 * sin(ctx.date.timeIntervalSinceReferenceDate * 5) : 1
-            // 提灯: 上下の張木（黒）＋角丸の胴＋和紙の縦ハイライト。消灯は煤けた灰。
-            VStack(spacing: 0) {
-                Rectangle().fill(Color(hex: 0x1C1917)).frame(width: 14, height: 2).overlay(Rectangle().stroke(.white.opacity(0.3), lineWidth: 0.5))
-                RoundedRectangle(cornerRadius: 4).fill(on ? AnyShapeStyle(RadialGradient(colors: [.white.opacity(0.85), color, color], center: .center, startRadius: 0, endRadius: 11)) : AnyShapeStyle(Color(hex: 0x333333).opacity(0.5)))
-                    .frame(width: 16, height: 20)
-                    .overlay(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 1).fill(.white.opacity(on ? 0.4 : 0.08)).frame(width: 3, height: 13).padding(.leading, 3)   // 和紙の透け
-                    }
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(on ? Color.white.opacity(0.5) : Color.white.opacity(0.18), lineWidth: 1))
-                    .shadow(color: on ? color.opacity(0.8 * a) : .clear, radius: pulse ? 5 : 2)
-                    .opacity(on ? a : 1)
-                Rectangle().fill(Color(hex: 0x1C1917)).frame(width: 14, height: 2).overlay(Rectangle().stroke(.white.opacity(0.3), lineWidth: 0.5))
-            }
-        }
     }
 
     // MARK: トースト

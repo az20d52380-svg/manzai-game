@@ -32,15 +32,17 @@ struct YoseVitalMoneyBar: View {
     let money: Int
     var fame: Int? = nil
     var fameDelta: Int? = nil
+    var staminaColor: Color = YoseColor.tokiwa
 
     var body: some View {
         HStack(spacing: 12) {
             HStack(spacing: 6) {
                 Text("体力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
-                YoseGauge(value: Double(stamina), total: Double(maxStamina), fill: YoseColor.tokiwa, height: 12)
-                    .frame(width: 96)
-                Text("\(stamina)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-                + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu)
+                YoseGauge(value: Double(stamina), total: Double(maxStamina), fill: staminaColor, height: 12)
+                    .frame(width: 76)
+                (Text("\(stamina)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu))
+                    .lineLimit(1).fixedSize()
             }
             Spacer(minLength: 0)
             if let fame {
