@@ -211,7 +211,7 @@ public struct GameConfig {
     public var mentalCap = 100.0
 
     // --- 生活費（Python: LIVING_COST / LIVING_INTERVAL） ---
-    public var livingCost = 100_000
+    public var livingCost = 140_000
     public var livingInterval = 4
 
     // --- 稽古（Python: TRAININGS）。正典v3: main/subは能力でなく経験点通貨を発行する（.currency）。
@@ -236,9 +236,9 @@ public struct GameConfig {
 
     // --- バイト（Python: JOBS） ---
     public var jobs: [Job: (income: Int, stamina: Double)] = [
-        .キツい: (income: 120_000, stamina: -30),
-        .標準:   (income: 80_000,  stamina: -20),
-        .楽:     (income: 40_000,  stamina: -10),
+        .キツい: (income: 96_000, stamina: -30),
+        .標準:   (income: 64_000, stamina: -20),
+        .楽:     (income: 32_000, stamina: -10),
     ]
 
     // --- 休む（Python: RESTS） ---
@@ -254,8 +254,8 @@ public struct GameConfig {
     public var restCosts: [Rest: Int] = [.サウナ: 10_000, .温泉に一泊: 60_000]
 
     // --- オファー（Python: OFFER_MONEY / OFFER_EXP / OFFER_RATES） ---
-    public var offerMoney = OfferSpec(name: "お金重視", income: 300_000, fame: 1, ability: nil, stamina: -20)
-    public var offerExp   = OfferSpec(name: "経験重視", income: 150_000, fame: 3, ability: (.表現, 2), stamina: -20)
+    public var offerMoney = OfferSpec(name: "お金重視", income: 240_000, fame: 1, ability: nil, stamina: -20)
+    public var offerExp   = OfferSpec(name: "経験重視", income: 120_000, fame: 3, ability: (.表現, 2), stamina: -20)
     /// (知名度がこの値未満, 発生率/週)
     public var offerRates: [(fameBelow: Double, rate: Double)] = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]   // 区切り 20/50/80→10/30/55（キュー62）
     /// 知名度の「その他の伸び」（大会・回戦・オファー・イベント）＝×本値×(1−知名度/fameOtherCap)²（キュー62 案G）。Python: FAME_OTHER_MULT／FAME_OTHER_CAP

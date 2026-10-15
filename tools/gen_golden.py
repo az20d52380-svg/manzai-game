@@ -166,7 +166,7 @@ def swift_row(year, week, snap):
     return f"        ({year}, {week}, {money}, {vals}),"
 
 def main():
-    seed = 424242
+    seed = 424243
     rng = SplitMix64(seed)
     s = B.S()
     print(f"// gen_golden.py seed={seed} / 正典v2: 準決{C.GP_ROUNDS[-1][1]} 決勝{C.GP_FINAL_LINE} 復活{C.GP_REVIVAL_LINE} "
