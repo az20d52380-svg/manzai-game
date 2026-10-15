@@ -24,10 +24,15 @@ struct StageScene: View {
 
                 // 2) 壁の飾り: 寄席ポスター（右壁・場所の説明を最小の小道具で）。
                 //    ※窓は廃止＝左上はピル列の席・白い矩形が UI と衝突して事故る。光は画面外左上からの光帯で語る。
-                posterCard
-                    .frame(width: w * 0.115, height: h * 0.14)
-                    .rotationEffect(.degrees(2))
-                    .position(x: w * 0.60, y: h * 0.27)   // 右上の木札（実力/相性）に被らない席へ
+                //    長押（なげし）を1本通し、千社札風の縦札を紐で吊るして壁に定着させる。
+                Rectangle().fill(Color(hex: 0x8D6E63)).frame(width: w, height: 8)
+                    .overlay(alignment: .bottom) { Rectangle().fill(Color(hex: 0x5D4037).opacity(0.5)).frame(height: 1.5) }
+                    .position(x: w / 2, y: h * 0.19)
+                VStack(spacing: 0) {
+                    HStack(spacing: 18) { Rectangle().fill(Color(hex: 0x5D4037)).frame(width: 1.5, height: 10); Rectangle().fill(Color(hex: 0x5D4037)).frame(width: 1.5, height: 10) }
+                    posterCard.frame(width: 28, height: 64)
+                }
+                .position(x: w * 0.60, y: h * 0.19 + 4 + 37)
 
                 // 4) 板張りの床（明るい木・消失点パース）
                 floorBoards(width: w, height: h - horizon, vanishX: micX)
@@ -54,7 +59,8 @@ struct StageScene: View {
                 DustField(centerX: micX - w * 0.06, spread: w * 0.30)
                     .allowsHitTesting(false)
 
-                // 8) センターマイク＋漫才師2人（カラー・呼吸）
+                // 8) センターマイク＋漫才師2人（カラー・呼吸）。主役感のため1.15倍（足元中央を支点）
+                Group {
                 CenterMic(height: figH * 0.78)
                     .position(x: micX, y: footY - figH * 0.39)
                 ManzaiFigure(height: figH * 0.90, tilt: 2.2, accent: Color(hex: 0x2E55B0),
@@ -67,6 +73,8 @@ struct StageScene: View {
                              bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
                              headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
                     .position(x: micX + figH * 0.54, y: footY - figH * 0.50)
+                }
+                .scaleEffect(1.15, anchor: UnitPoint(x: micX / w, y: footY / h))
             }
         }
     }
@@ -74,14 +82,13 @@ struct StageScene: View {
     /// 寄席ポスター（朱地に白抜き・小道具）
     private var posterCard: some View {
         VStack(spacing: 2) {
-            Text("寄").font(.system(size: 22, weight: .black)).foregroundStyle(.white)
-            Text("席").font(.system(size: 22, weight: .black)).foregroundStyle(.white)
+            Text("寄").font(.system(size: 20, weight: .black)).foregroundStyle(Color(hex: 0x1C1917))
+            Text("席").font(.system(size: 20, weight: .black)).foregroundStyle(Color(hex: 0x1C1917))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom),
-                    in: RoundedRectangle(cornerRadius: 4))
-        .overlay(RoundedRectangle(cornerRadius: 4).stroke(.white.opacity(0.7), lineWidth: 2).padding(3))
-        .shadow(color: Theme.ink.opacity(0.15), radius: 4, y: 3)
+        .background(Color(hex: 0xFFFBF0))
+        .overlay(Rectangle().stroke(Color(hex: 0x1C1917), lineWidth: 2))
+        .shadow(color: Theme.ink.opacity(0.15), radius: 3, y: 2)
     }
 
     /// 板張りの床: 明るい木＋消失点へ収束する目地。

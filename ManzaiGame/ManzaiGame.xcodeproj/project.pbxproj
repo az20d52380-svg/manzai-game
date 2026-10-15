@@ -35,6 +35,7 @@
 		5179064A2B5912376290FD3B /* AbilityUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6B90BFC5A4AED3BFE09913 /* AbilityUpView.swift */; };
 		53DD57D26963633913018B7A /* FontLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47D421441D548D881226B2E /* FontLoader.swift */; };
 		54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */; };
+		59987E59328228E8608387EF /* WaIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E034762E4A6192639CA2DCF /* WaIcons.swift */; };
 		5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915FB4D3357203506A4F5A67 /* IntroFlow.swift */; };
 		5DB922218F668B8CC8DDF60E /* se_taiko2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */; };
 		6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D08F932A4334F422E73881 /* JudgeData.swift */; };
@@ -90,6 +91,7 @@
 		318839C80DE7D3B33B89A595 /* se_don.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_don.mp3; sourceTree = "<group>"; };
 		32A860D27554F188BD2E3F64 /* se_fanfare.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_fanfare.mp3; sourceTree = "<group>"; };
 		3B1F087A453470E4CF970A6B /* StageScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageScene.swift; sourceTree = "<group>"; };
+		3E034762E4A6192639CA2DCF /* WaIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaIcons.swift; sourceTree = "<group>"; };
 		51C23F3FD0E280B988905E04 /* se_laugh_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_laugh_small.mp3; sourceTree = "<group>"; };
 		534D89327D384D6F43FDC17F /* se_pop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_pop.mp3; sourceTree = "<group>"; };
 		584B31B6D7B7B692F33CC50E /* StageViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageViews.swift; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 				1B5B0AD382326CD111BFDE10 /* TalkParts.swift */,
 				E7C2B6670FC11321C4559DCB /* Theme.swift */,
 				A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */,
+				3E034762E4A6192639CA2DCF /* WaIcons.swift */,
 				B18155352CE011A350B1DEC6 /* WeekMainView.swift */,
 				A274A5E67200827BEBFC258E /* YearResultView.swift */,
 			);
@@ -416,6 +419,7 @@
 				1D5713E40EEA45D0B98E861B /* TalkParts.swift in Sources */,
 				E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */,
 				E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */,
+				59987E59328228E8608387EF /* WaIcons.swift in Sources */,
 				11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */,
 				AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */,
 			);

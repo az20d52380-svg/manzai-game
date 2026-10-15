@@ -338,10 +338,9 @@ struct WeekMainView: View {
         }
         .padding(.horizontal, 8).padding(.vertical, 8)
         .frame(width: 90, height: 110)
-        .background(Color(hex: 0xE8D8BA))
-        .overlay(Rectangle().stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
-        .overlay(alignment: .top) { Circle().fill(Color(hex: 0x2B2B2B).opacity(0.55)).frame(width: 5, height: 5).offset(y: 4) }   // 吊り穴
-        .shadow(color: .black, radius: 0, x: 2, y: 2)
+        .background(RoundedRectangle(cornerRadius: 6).fill(Color(hex: 0xE0C9A6)))
+        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
+        .shadow(color: Color(hex: 0x5B3A1A).opacity(0.35), radius: 4, x: 1, y: 3)
     }
 
     /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分をオレンジで重ねる＝「押した週に何が動いたか」。
@@ -360,15 +359,15 @@ struct WeekMainView: View {
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack(alignment: .leading) {
-                    Rectangle().fill(color.opacity(0.16))
-                    Rectangle().fill(color).frame(width: w * fill)
+                    Rectangle().fill(Color(hex: 0xEFE3CC))
+                    Rectangle().fill(Color(hex: 0xC0392B)).frame(width: w * fill)
                     Rectangle().fill(Theme.gainOrange)
                         .frame(width: w * shown)
                         .offset(x: w * (fill - shown))
                         .opacity(shown > 0 ? 1 : 0)
                 }
-                .clipShape(Rectangle())
-                .overlay(Rectangle().stroke(full ? Theme.gold : color.opacity(0.5), lineWidth: full ? 2 : 1))
+                .clipShape(RoundedRectangle(cornerRadius: 3))
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke(full ? Theme.gold : Color(hex: 0x8D6E63), lineWidth: full ? 2 : 1))
                 .animation(.easeOut(duration: 0.6), value: fill)
                 .animation(.easeOut(duration: 0.3), value: shown)
             }
@@ -727,15 +726,11 @@ struct WeekMainView: View {
             }
         } label: {
             let big = (c == .ネタを書く || c == .練習)
-            let stamp: String? = { switch c { case .バイト: return "yensign"; case .休む: return "moon.zzz.fill"
-                                          case .能力アップ: return "arrow.up.forward"; case .お店: return "bag.fill"; default: return nil } }()
+            let stamp: WaIcon.Kind? = { switch c { case .バイト: return .koban; case .休む: return .zabuton
+                                          case .能力アップ: return .sensu; case .お店: return .noren; default: return nil } }()
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    if let stamp {   // 判子風アイコン（朱の角判）
-                        Image(systemName: stamp).font(.system(size: 13, weight: .black)).foregroundStyle(.white)
-                            .frame(width: 26, height: 26).background(tint.opacity(0.9), in: RoundedRectangle(cornerRadius: 3))
-                            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color(hex: 0x2B2B2B).opacity(0.6), lineWidth: 1))
-                    }
+                    if let stamp { WaIcon(kind: stamp).opacity(gated ? 0.45 : 1) }   // 和の単色図形（小判・座布団・扇子・暖簾）
                     Text(c.rawValue).font(.maru(big ? 26 : 20, weight: .heavy))
                         .foregroundStyle(gated ? Color(hex: 0x2B2B2B).opacity(0.45) : Color(hex: 0x2B2B2B))
                         .lineLimit(1).minimumScaleFactor(0.8)
@@ -1014,7 +1009,7 @@ struct WeekMainView: View {
     private var staminaGauge: some View {
         let lit = Int(ceil(max(0, min(100, s.stamina)) / 20))
         let pinch = s.stamina <= 40
-        let col = pinch ? Color(hex: 0xD9381E) : Color(hex: 0x2E583C)
+        let col = pinch ? Color(hex: 0xD9381E) : Color(hex: 0x4CAF50)
         return HStack(spacing: 8) {
             HStack(spacing: 4) {
                 ForEach(0..<5, id: \.self) { i in
@@ -1048,7 +1043,7 @@ struct WeekMainView: View {
             // 提灯: 上下の張木（黒）＋角丸の胴＋和紙の縦ハイライト。消灯は煤けた灰。
             VStack(spacing: 0) {
                 Rectangle().fill(Color(hex: 0x1C1917)).frame(width: 14, height: 2).overlay(Rectangle().stroke(.white.opacity(0.3), lineWidth: 0.5))
-                RoundedRectangle(cornerRadius: 4).fill(on ? color : Color(hex: 0x4A453E))
+                RoundedRectangle(cornerRadius: 4).fill(on ? AnyShapeStyle(RadialGradient(colors: [.white.opacity(0.85), color, color], center: .center, startRadius: 0, endRadius: 11)) : AnyShapeStyle(Color(hex: 0x333333).opacity(0.5)))
                     .frame(width: 16, height: 20)
                     .overlay(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 1).fill(.white.opacity(on ? 0.4 : 0.08)).frame(width: 3, height: 13).padding(.leading, 3)   // 和紙の透け
