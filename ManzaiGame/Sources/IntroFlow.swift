@@ -60,7 +60,7 @@ struct ReminiscencePlayer: View {
                     YoseSpeechBox(speaker: last.name ?? "俺", text: last.text)
                 }
             }
-            .frame(minHeight: 150, alignment: .bottom)
+            .frame(minHeight: 112, alignment: .bottom)
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 26)
             .id("cap\(index)")
             .transition(.opacity)
@@ -114,12 +114,11 @@ private struct RecallScriptRow: View {
     var body: some View {
         let name = advice.name ?? "俺"
         HStack(alignment: .firstTextBaseline, spacing: 0) {
-            Text("\(name)「\(advice.text)」").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.haiSumi)
+            Text("\(name)「\(advice.text)」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 10)
-                .overlay(alignment: .leading) { Rectangle().fill(YoseColor.kiDark).frame(width: 2) }
+                .overlay(alignment: .leading) { Rectangle().fill(YoseColor.shu).frame(width: 2) }
         }
-        .opacity(0.7)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(name)、\(advice.text)")
     }
@@ -158,16 +157,6 @@ private struct RecallPicture: View {
                             LinearGradient(colors: mood == .eve ? [YoseColor.kinBright.opacity(0.8), YoseColor.shu.opacity(0.35)]
                                            : [Color(hex: 0xE8C590).opacity(0.85), YoseColor.washiFeatured],
                                            startPoint: .top, endPoint: .bottom)
-                            // 校舎と雲のシルエット
-                            VStack(spacing: 0) {
-                                Capsule().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 26, height: 7).offset(x: -8, y: 12)
-                                Spacer(minLength: 0)
-                                HStack(alignment: .bottom, spacing: 2) {
-                                    Rectangle().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 14, height: 18)
-                                    Rectangle().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 20, height: 30)
-                                    Rectangle().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 12, height: 14)
-                                }
-                            }
                             Rectangle().fill(YoseColor.sumi).frame(width: 2)
                             Rectangle().fill(YoseColor.sumi).frame(height: 2)
                         }
