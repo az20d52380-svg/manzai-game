@@ -351,7 +351,7 @@ public struct WeekRunner<R: RandomSource> {
                 let offer = GameEngine.rollOffer(state: state, config: config, rng: &rng)
                 if state.recoveryWeeks > 0 {
                     state.recoveryWeeks -= 1                 // 療養中（オファーは受けられない・runYearと同一順序）
-                    GameEngine.applyRest(.完全休養, to: &state, config: config)
+                    GameEngine.applyRest(.完全休養, to: &state, config: config, useTicket: false)   // A-10: 選んでいない療養週は回数券を使わない
                     weekResults.append(StageResult(name: "療養", passed: false, prize: 0, isStage: false))
                 } else {
                     pendingOffer = offer
