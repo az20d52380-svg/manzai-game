@@ -242,14 +242,41 @@ struct EndingArt: View {
         }
     }
 
-    // #7 勇退（仕様に絵の指定なし＝既存 S6b の定式幕の語彙で、幕だけ）
+    // #7 勇退：楽屋の壁に掛けた二着の衣装（ハンガーラック）・床に残った紙吹雪・ハリウッドミラーの電球
     private func championRetire(_ w: CGFloat, _ h: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
-            HStack(spacing: 0) {
-                ForEach(0..<9, id: \.self) { i in Rectangle().fill(i % 3 == 0 ? YoseColor.kuroUrushi : (i % 3 == 1 ? YoseColor.shu : YoseColor.tokiwa)) }
+            LinearGradient(colors: [Color(hex: 0x2A2230), Color(hex: 0x4A3A3E)], startPoint: .top, endPoint: .bottom)
+            Rectangle().fill(Color(hex: 0x2B2024)).frame(width: w, height: h * 0.26).offset(y: h * 0.74)               // 床
+            // ミラーの電球（上辺に並ぶ）
+            ForEach(0..<9, id: \.self) { i in
+                Circle().fill(YoseColor.kinBright).frame(width: w * 0.03, height: w * 0.03)
+                    .shadow(color: YoseColor.kinBright.opacity(0.7), radius: 6)
+                    .offset(x: w * (0.14 + 0.09 * CGFloat(i)), y: h * 0.07)
             }
-            Rectangle().fill(YoseColor.kin).frame(width: w, height: max(3, h * 0.025)).offset(y: h * 0.06)
-            LinearGradient(colors: [.clear, .black.opacity(0.35)], startPoint: .top, endPoint: .bottom)
+            // ハンガーラックの横棒
+            Rectangle().fill(YoseColor.kin).frame(width: w * 0.62, height: max(3, h * 0.014)).offset(x: w * 0.19, y: h * 0.22)
+            Rectangle().fill(YoseColor.kin).frame(width: max(3, h * 0.014), height: h * 0.54).offset(x: w * 0.19, y: h * 0.22)
+            Rectangle().fill(YoseColor.kin).frame(width: max(3, h * 0.014), height: h * 0.54).offset(x: w * 0.81, y: h * 0.22)
+            // 二着の衣装（紋付の黒と朱の羽織）
+            ForEach(0..<2, id: \.self) { i in
+                let x = w * (i == 0 ? 0.32 : 0.56)
+                Path { p in
+                    p.move(to: CGPoint(x: x + w * 0.06, y: h * 0.22)); p.addLine(to: CGPoint(x: x + w * 0.06, y: h * 0.27))
+                }.stroke(YoseColor.kin, lineWidth: 2)
+                Path { p in
+                    p.move(to: CGPoint(x: x + w * 0.06, y: h * 0.27))
+                    p.addLine(to: CGPoint(x: x + w * 0.0, y: h * 0.33)); p.addLine(to: CGPoint(x: x + w * 0.0, y: h * 0.62))
+                    p.addLine(to: CGPoint(x: x + w * 0.12, y: h * 0.62)); p.addLine(to: CGPoint(x: x + w * 0.12, y: h * 0.33)); p.closeSubpath()
+                }.fill(i == 0 ? YoseColor.kuroUrushi : YoseColor.shu)
+                Circle().fill(YoseColor.kinari.opacity(0.85)).frame(width: w * 0.022, height: w * 0.022).offset(x: x + w * 0.049, y: h * 0.4)   // 紋
+            }
+            // 床の紙吹雪
+            ForEach(0..<26, id: \.self) { i in
+                let colors: [Color] = [YoseColor.shu, YoseColor.kinBright, YoseColor.washi, YoseColor.tokiwa]
+                Rectangle().fill(colors[i % 4]).frame(width: w * 0.022, height: w * 0.012)
+                    .rotationEffect(.degrees(Double((i * 53) % 180)))
+                    .offset(x: w * (0.05 + 0.9 * CGFloat((i * 37) % 26) / 26), y: h * (0.78 + 0.18 * CGFloat((i * 11) % 7) / 7))
+            }
         }
     }
 
