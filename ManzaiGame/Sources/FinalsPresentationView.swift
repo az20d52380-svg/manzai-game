@@ -661,6 +661,8 @@ struct FinalsPresentationView: View {
                         .frame(maxWidth: .infinity).frame(height: 84)
                         .background(ZStack { YoseColor.ki; YoseColor.kiDark.opacity(0.55) })
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("暫定\(rank + 1)位、空席")
                     }
                 }
             }
@@ -719,6 +721,8 @@ struct FinalsPresentationView: View {
         .overlay { if e.isSelf { Rectangle().stroke(YoseColor.shu, lineWidth: 2.5) } }
         .overlay { if fresh { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5) } }
         .shadow(color: fresh ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)   // se_rank_slide_heavy（席が入れ替わる）
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("暫定\(rank + 1)位、\(displayName(e))、\(e.total)点" + (e.isSelf ? "、あなたたち" : "") + (fresh ? "、いま席に入った" : ""))
     }
 
     // MARK: 司会の吹き出し（決勝の進行役）
@@ -1057,6 +1061,8 @@ struct FinalsPresentationView: View {
                 .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1.5).padding(3))
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.65), value: shown)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(shown ? "票札、\(voteName)に一票" + (forUs ? "（あなたたち）" : "") : "封をした票札、まだ開いていない")
     }
 
     // MARK: Beat 4 — 優勝発表（3組から名前をコール）

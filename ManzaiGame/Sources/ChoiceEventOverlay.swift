@@ -178,6 +178,7 @@ struct ChoiceEventOverlay: View {
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
             .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
             .fixedSize()
+            .accessibilityLabel(c.text.replacingOccurrences(of: " ↑", with: "が上がった").replacingOccurrences(of: " ↓", with: "が下がった"))
     }
 
     // MARK: 下＝読み物

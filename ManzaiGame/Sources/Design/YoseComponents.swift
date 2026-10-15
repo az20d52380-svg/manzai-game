@@ -242,6 +242,16 @@ struct YoseHankoStamp: View {
             .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1).padding(2.5))
             .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 2))
             .rotationEffect(.degrees(angle))
+            .accessibilityLabel(Self.spoken(text))
+    }
+    /// 判子の読み上げ（点数・順位・勝敗の判を日本語で意味が通る形に）
+    static func spoken(_ t: String) -> String {
+        if t == "封" { return "封の判" }
+        if t == "秀" { return "秀の判、通過" }
+        if t == "惜" { return "惜の判、惜しくも敗退" }
+        if Int(t) != nil { return "\(t)点の判" }
+        if t.hasPrefix("暫定") { return "\(t)の判" }
+        return "\(t)の判子"
     }
 }
 
