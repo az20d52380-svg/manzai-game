@@ -249,20 +249,20 @@ struct StagePreludeView: View {
                                 onSelect: { session.selectNeta2($0) })
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, YoseMetrics.screenMargin)
 
             Spacer(minLength: 8)
+            YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
+                              staminaColor: session.state.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
             Button {
                 session.advanceAuto()
             } label: {
-                Text("本番へ ▶").font(.maru(.title)).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: 56)
-                    .background(Theme.verm, in: RoundedRectangle(cornerRadius: 14))
-                    .shadow(color: Theme.vermD, radius: 0, y: 4)
+                Text("本番へ ▶").font(YoseFont.gothic(18, weight: .heavy))
+                    .frame(maxWidth: .infinity, minHeight: 54)
             }
-            .buttonStyle(PressableStyle()).padding(.horizontal, 32).padding(.bottom, 24)
+            .buttonStyle(YoseButtonStyle(.primary)).padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.bgGradient.ignoresSafeArea())
+        .background(YoseColor.kinari.ignoresSafeArea())
     }
 }

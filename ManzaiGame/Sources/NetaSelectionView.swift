@@ -18,11 +18,10 @@ struct NetaPickRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(title).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                Text(title).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                 Spacer()
                 if let requiredLength {
-                    Text("この舞台は\(NetaCatalog.displayName(requiredLength))")
-                        .font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                    YoseTag(text: "この舞台は\(NetaCatalog.displayName(requiredLength))", style: .outlineSumi)
                 }
             }
             Button {
@@ -34,7 +33,7 @@ struct NetaPickRow: View {
             if expanded {
                 VStack(spacing: 6) {
                     if session.activeNetas.isEmpty {
-                        Text("——まだ、ネタは無い。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
+                        Text("——まだ、ネタは無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)
                     } else {
                         ForEach(session.activeNetas) { neta in
                             candidateRow(neta)
@@ -45,63 +44,73 @@ struct NetaPickRow: View {
                 .transition(.opacity)
             }
         }
-        .padding(Theme.Sp.s12)
-        .background(RoundedRectangle(cornerRadius: Theme.Rad.btn).fill(Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.btn).stroke(Theme.lineStrong, lineWidth: 2))
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseHarigami(isFeatured: true)
+    }
+
+    private var changeLabel: some View {
+        Text(expanded ? "とじる ▲" : "変更 ▼").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            .padding(.horizontal, 8).padding(.vertical, 5)
+            .background(YoseColor.ki).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+    }
+
+    private func tags(_ neta: Neta) -> some View {
+        HStack(spacing: 6) {
+            YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
+            NetaTiredBadge(neta: neta)
+            if let requiredLength, !neta.fits(requiredLength) {
+                YoseTag(text: "尺が合わない", style: .outlineShu)
+            }
+            Spacer(minLength: 0)
+        }
     }
 
     @ViewBuilder private var currentSummary: some View {
         if let neta = selected {
-            HStack(spacing: 8) {
-                Circle().fill(Theme.kataColor(neta.kata)).frame(width: 10, height: 10)
-                Text(neta.name).font(.maru(.body)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-                Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub).lineLimit(1).fixedSize()
-                NetaTiredBadge(neta: neta)
-                if let requiredLength, !neta.fits(requiredLength) {
-                    Text("尺が合わない").font(.maru(.sub)).foregroundStyle(Theme.vermD).lineLimit(1).fixedSize()
-                        .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(Theme.verm.opacity(0.1), in: Capsule())
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 10) {
+                    Text(neta.name).font(YoseFont.netaTitle).foregroundStyle(YoseColor.sumi)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                    Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
+                        .lineLimit(1).fixedSize()
+                    Spacer(minLength: 0)
+                    changeLabel
                 }
-                Spacer()
-                Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.inkSub)
+                tags(neta)
             }
-            .frame(minHeight: 32)
         } else {
             HStack {
                 // 持ちネタが無い時は「選んでいない」でなく、無いと言う（選べる物があるように見えた）。
                 // ※「選ぶと有利」とは言わない：完成度・客の反応が50未満のネタは本番の点がマイナス（netaScoreBonus）
                 Text(session.activeNetas.isEmpty ? "持ちネタがない" : "選んでいない")
-                    .font(.maru(.body)).foregroundStyle(Theme.inkSub)
+                    .font(YoseFont.netaTitle).foregroundStyle(YoseColor.haiSumi)
                 Spacer()
-                Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.inkSub)
+                changeLabel
             }
         }
     }
 
     private func candidateRow(_ neta: Neta) -> some View {
         let isThis = neta.id == selected?.id
-        let fits = requiredLength.map(neta.fits) ?? true
         return Button {
             onSelect(neta.id)
             withAnimation(Theme.Motion.appearQuick) { expanded = false }
         } label: {
-            HStack(spacing: 8) {
-                Circle().fill(Theme.kataColor(neta.kata)).frame(width: 9, height: 9)
-                Text(neta.name).font(.maru(.body)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-                Text(NetaCatalog.displayName(neta.kata)).font(.maru(.sub)).foregroundStyle(Theme.inkSub).lineLimit(1).fixedSize()
-                if !fits {
-                    Text("尺△").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 10) {
+                    Text(neta.name).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.sumi)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                    Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
+                        .lineLimit(1).fixedSize()
+                    Spacer(minLength: 0)
+                    if isThis { YoseTag(text: "選択中", style: .outlineShu) }
                 }
-                NetaTiredBadge(neta: neta)
-                Spacer()
-                if isThis {
-                    Image(systemName: "checkmark").font(.system(size: 11)).foregroundStyle(Theme.verm)
-                }
+                tags(neta)
             }
             .padding(.horizontal, 8).padding(.vertical, 8).frame(minHeight: 44)
-            .background(isThis ? Theme.card2 : .clear, in: RoundedRectangle(cornerRadius: 8))
+            .background(isThis ? YoseColor.ki.opacity(0.55) : YoseColor.ki.opacity(0.18))
+            .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1))
         }
         .buttonStyle(PressableStyle())
     }
@@ -113,13 +122,8 @@ struct NetaTiredBadge: View {
     var body: some View {
         let y = neta.tiredYears ?? 0
         if y >= 1 {
-            let heavy = y >= 2
-            let c = heavy ? Theme.vermD : Theme.ink
-            Text(heavy ? "見飽きられた" : "少し見飽きられた")
-                .font(.maru(10.5, weight: .bold)).foregroundStyle(c)
+            YoseTag(text: y >= 2 ? "見飽きられた" : "少し見飽きられた", style: y >= 2 ? .outlineShu : .outlineSumi)
                 .lineLimit(1).fixedSize()
-                .padding(.horizontal, 6).padding(.vertical, 2)
-                .overlay(Capsule().stroke(c, lineWidth: 1))
         }
     }
 }
