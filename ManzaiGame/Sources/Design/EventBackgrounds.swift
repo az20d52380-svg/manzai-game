@@ -369,8 +369,8 @@ private struct EventGlowLayer: View {
         case .sento:
             halo(w / 2, 20, 260, Color(hex: 0xFFC870), 0.28)
         case .yakiniku:
-            halo(w / 2, h * 0.72 - 6, 80, Color(hex: 0xFF5A2A), 0.45)
-            halo(w / 2, 30, 110, YoseColor.kinBright, 0.3)
+            halo(w / 2, h * 0.72 - 14, 84, Color(hex: 0xFF6B2B), 0.5)
+            halo(w / 2, 50, 120, YoseColor.kinBright, 0.28)
         case .keikoba, .uketsuke:
             halo(w / 2, 6, 200, Color(hex: 0xFFF1C8), 0.30)
             if place == .uketsuke {
@@ -1209,7 +1209,7 @@ private struct YakinikuBackdrop: View {
                 // 壁の品書き札（縦長の木札3枚）
                 HStack(spacing: 8) {
                     ForEach(0..<3, id: \.self) { i in
-                        Rectangle().fill(YoseColor.washi).frame(width: 22, height: 54)
+                        Rectangle().fill(YoseColor.ki).frame(width: 22, height: 54)
                             .overlay(Rectangle().fill(i == 0 ? YoseColor.shu : YoseColor.sumi).frame(width: 4, height: 34))
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     }
@@ -1217,7 +1217,7 @@ private struct YakinikuBackdrop: View {
                 .position(x: 80, y: 80)
                 HStack(spacing: 8) {
                     ForEach(0..<3, id: \.self) { i in
-                        Rectangle().fill(YoseColor.washi).frame(width: 22, height: 54)
+                        Rectangle().fill(YoseColor.ki).frame(width: 22, height: 54)
                             .overlay(Rectangle().fill(i == 2 ? YoseColor.shu : YoseColor.sumi).frame(width: 4, height: 34))
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     }
@@ -1231,17 +1231,17 @@ private struct YakinikuBackdrop: View {
 
                 // 天井から降りる排煙ダクト（黒い筒＋つば）
                 ZStack(alignment: .bottom) {
-                    Rectangle().fill(Color(hex: 0x3A3632)).frame(width: 28, height: 84)
+                    Rectangle().fill(Color(hex: 0x3A3632)).frame(width: 28, height: 110)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                     Rectangle().fill(Color(hex: 0x4A453F)).frame(width: 52, height: 9)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                 }
-                .frame(width: 52, height: 84)
-                .position(x: w / 2, y: 30 + 42)
+                .frame(width: 52, height: 110)
+                .position(x: w / 2, y: 30 + 42 - 13)
 
                 // 手前：木のテーブルと七輪ロースター（炭火のスリット）・皿の肉
                 ZStack {
-                    Rectangle().fill(Color(hex: 0x8C583A)).frame(width: 270, height: 26)
+                    Rectangle().fill(Color(hex: 0x8C583A)).frame(width: 340, height: 26)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                     // 七輪（黒漆の台＋炭火のスリット）
                     Rectangle().fill(Color(hex: 0x1E1916)).frame(width: 74, height: 24).offset(y: -25)
@@ -1261,6 +1261,10 @@ private struct YakinikuBackdrop: View {
                     }
                 }
                 .position(x: w / 2, y: tableY + 12)
+                // テーブルの前板と中央の太い脚（天板を床まで接地させる）
+                Rectangle().fill(Color(hex: 0x6E4630)).frame(width: 340, height: max(0, h - (tableY + 25)))
+                    .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
+                    .position(x: w / 2, y: (tableY + 25) + max(0, h - (tableY + 25)) / 2)
             }
         }
     }
