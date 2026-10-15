@@ -30,6 +30,7 @@ struct ReminiscenceCard: Identifiable {
 
 struct ReminiscencePlayer: View {
     let cards: [ReminiscenceCard]
+    var title: String = "はじまりの話"
     var onComplete: () -> Void
     @State private var index = 0
 
@@ -38,7 +39,7 @@ struct ReminiscencePlayer: View {
         let lines: [Advice] = !card.talk.isEmpty ? card.talk
             : (card.line.map { [Advice(name: card.speaker, text: $0)] } ?? [])
         VStack(spacing: 0) {
-            YoseHeaderBar(title: "はじまりの話", subtitle: "\(index + 1) / \(cards.count)")
+            YoseHeaderBar(title: title, subtitle: "\(index + 1) / \(cards.count)")
             ZStack(alignment: .topLeading) {
                 RecallPicture(mood: card.mood, together: card.together)
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14)

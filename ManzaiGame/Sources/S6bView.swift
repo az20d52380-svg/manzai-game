@@ -9,6 +9,8 @@ import GameCore
 
 struct S6bView: View {
     let session: GameSession
+    var kougyouOnly = false    // #5 十年で区切り：①引退興行だけ（あとは endings_spec の場面へ）
+    var finishLabel = "また、幕が上がる ▶"
     var onFinish: () -> Void   // 緞帳→S1顔合わせ（MVPはもう一度＝新周回）
 
     @State private var phase: Phase = .kougyou
@@ -103,7 +105,7 @@ struct S6bView: View {
             .background(alignment: .bottom) { Rectangle().fill(YoseColor.kuroUrushi).offset(y: 5) }
             .padding(.horizontal, 20)
             Spacer(minLength: 0)
-            Button { advance(.montage) } label: { Text("最後の舞台へ上がる ▶") }
+            Button { if kougyouOnly { onFinish() } else { advance(.montage) } } label: { Text("最後の舞台へ上がる ▶") }
                 .buttonStyle(YoseButtonStyle(.primary))
                 .padding(.horizontal, 14).padding(.bottom, 30)
         }
@@ -194,7 +196,7 @@ struct S6bView: View {
                 .font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.8)).opacity(burned ? 1 : 0)
             Spacer()
             Button(action: onFinish) {
-                Text("また、幕が上がる ▶").font(.maru(16)).foregroundStyle(.white)
+                Text(finishLabel).font(.maru(16)).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s16)
                     .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
             }.buttonStyle(PressableStyle()).padding(.horizontal, Theme.Sp.s32).padding(.bottom, 50)

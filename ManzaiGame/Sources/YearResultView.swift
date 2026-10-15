@@ -11,7 +11,7 @@ import GameCore
 struct YearResultView: View {
     let session: GameSession
     var onRestart: () -> Void
-    var onEnding: (() -> Void)? = nil   // 優勝時のみ: 勇退エンディング(S6b)へ
+    var onEnding: (() -> Void)? = nil   // キャリアの区切り（全エンド）: エンディングへ
     var onNextYear: (() -> Void)? = nil // キャリアが続く年末のみ: 翌年へ
 
     private var s: GameState { session.state }
@@ -158,6 +158,7 @@ struct YearResultView: View {
     static func reachLabel(_ r: GameSession.YearRecord, names: [String]) -> String {
         if r.champion { return "優勝" }
         if r.bankrupt { return "夜逃げ" }
+        if r.dissolved == true { return "解散" }
         if r.reachedFinal { return "決勝" }
         if r.enteredGP == false { return "不出場" }
         if r.roundsPassed < names.count { return names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "敗退" }
@@ -308,9 +309,9 @@ struct YearResultView: View {
         var scene = "yearEnd"
         if o.bankrupt {
             scene += ".bankrupt"; pool = Self.yeBankrupt                                               // 貧乏年
-        } else if session.careerOver && !o.champion && !o.reachedFinal && s.compat < 10 {
-            // 解散年（相性が最後まで低い＝袂を分かつ・統合設計1-α・閾値【仮】）。終わり方の語彙なので、
-            // キャリアの区切りの年末だけ（翌年へ続く年末に出すと「最後だった」と矛盾する）
+        } else if o.dissolved {
+            // 解散年（途中解散のすれ違いゲージ＝outcome.dissolved・endings_spec §2）。#2 解散の前置き（明日、事務所に行く）。
+            // 以前は「最終年・決勝なし・相性10未満」で出ていたが #3 あきらめと話が食い違うため条件を付け替えた
             scene += ".dissolution"; pool = Self.yeDissolution
         } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
             scene += ".leap"; pool = Self.yeLeap                                                    // 躍進年
@@ -364,7 +365,7 @@ struct YearResultView: View {
 
     private var restartButton: some View {
         Button(action: onNextYear ?? onEnding ?? onRestart) {
-            Text(onNextYear != nil ? "\(session.year + 1)年目へ ▶" : onEnding != nil ? "勇退エンディングへ ▶" : "もう一度")
+            Text(onNextYear != nil ? "\(session.year + 1)年目へ ▶" : onEnding != nil ? "エンディングへ ▶" : "もう一度")
         }
         .buttonStyle(YoseButtonStyle(.primary))
     }
@@ -383,6 +384,7 @@ struct YearResultView: View {
         guard let o else { return ("——", false) }
         if o.champion { return ("優勝", true) }
         if o.bankrupt { return ("夜逃げ", false) }
+        if o.dissolved { return ("解散", false) }
         if o.reachedFinal { return ("決勝", true) }
         // 監査C-07: 「最後に通過した回戦」ではなく「敗れた回戦」を言う（3回戦で負けた人に「2回戦」と出さない）
         let names = session.config.calendar.gpRoundNames
@@ -396,6 +398,7 @@ struct YearResultView: View {
         guard let o else { return "" }
         if o.champion { return "頂グランプリ制覇" }
         if o.bankrupt { return "所持金が尽きてキャリア終了" }
+        if o.dissolved { return "すれ違いが続き、コンビを解散した" }
         if o.reachedFinal { return "決勝の舞台に立った" }
         if notEnteredGP { return "エントリー費が払えず、頂グランプリに出られなかった" }
         return "頂グランプリ 到達段階"

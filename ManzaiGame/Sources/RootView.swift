@@ -7,7 +7,7 @@ import GameCore
 struct RootView: View {
     @State private var session: GameSession
     @State private var started: Bool     // S1初回フロー完了で true（本編開始）
-    @State private var showEnding = false // 優勝→S6b勇退エンディング
+    @State private var showEnding = false // キャリアの区切り→エンディング（8種・endings_spec）
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -15,7 +15,7 @@ struct RootView: View {
         // QAスモーク（MZ_SMOKE/MZ_UI）はセーブを読まず従来どおり固定シードの新規から＝決定的なまま。
         // saveNow 側も同条件でガード済み＝QA走行が実プレイのセーブを潰さない。
         let env = ProcessInfo.processInfo.environment
-        if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil {
+        if env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil || env["MZ_ENDING"] != nil {
             _session = State(initialValue: GameSession())
             _started = State(initialValue: false)   // .task が true にする
             return
@@ -40,7 +40,10 @@ struct RootView: View {
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                 }
             } else {
-            if let fx = ProcessInfo.processInfo.environment["MZ_FX"] { YoseFXPreview(kind: fx) }   // 演出の単独再生（MZ_FX=rankup/yearturn/burst/pass/champion/cutin/streak）
+            if let n = Int(ProcessInfo.processInfo.environment["MZ_ENDING"] ?? ""), let id = EndingID.from(number: n) {
+                // エンディング直接再生: MZ_ENDING=1..8（記録しない）。#5/#7/#8 の S6b 用に .task が優勝データを用意する
+                EndingFlowView(session: session, ending: id, record: false, onFinish: {})
+            } else if let fx = ProcessInfo.processInfo.environment["MZ_FX"] { YoseFXPreview(kind: fx) }   // 演出の単独再生（MZ_FX=rankup/yearturn/burst/pass/champion/cutin/streak）
             else {
             switch ProcessInfo.processInfo.environment["MZ_UI"] {
             case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
@@ -54,6 +57,7 @@ struct RootView: View {
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
             case "intro_title", "intro_name": IntroFlowView { _, _, _ in }          // タイトル／名前決めの目視
+            case "endingbook": EndingGalleryView(onClose: {})               // エンディング図鑑の目視（MZ_BOOKSEEN=1,3,7 で見た扱いの見本）
             case "catalog": YoseCatalogView()                               // デザイン部品見本
             case "frame": StageFramePreview(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
@@ -68,7 +72,9 @@ struct RootView: View {
             #if DEBUG
             let smoke = ProcessInfo.processInfo.environment["MZ_SMOKE"]
             let ui = ProcessInfo.processInfo.environment["MZ_UI"]
-            if smoke != nil || ui != nil { started = true }   // スモーク/UI確認時はS1を飛ばす
+            let endingHook = ProcessInfo.processInfo.environment["MZ_ENDING"] != nil
+            if smoke != nil || ui != nil || endingHook { started = true }
+            if endingHook, session.week <= 1 { forceChampion() }   // S6b（#5/#7/#8）用の優勝データ。1〜4・6 の場面は session 不要   // スモーク/UI確認時はS1を飛ばす
             // 複数年の目視: MZ_YEARS=n で n 年ぶん自動で年末→翌年へ進めてから、他のフックを掛ける
             if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
                 session.debugAdvanceYears(n)
@@ -238,15 +244,17 @@ struct RootView: View {
                                    onFinishSpectating: { session.finishWatchingFinal(winner: $0) })
         } else if session.finished {
             if showEnding {
-                S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
-                    session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName, myName: session.myName, partnerName: session.partnerName)
-                    showEnding = false
+                if let ending = session.endingID {
+                    EndingFlowView(session: session, ending: ending) {                 // 場面→一枚絵→図鑑に記録→もう一度(=新周回)
+                        session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName, myName: session.myName, partnerName: session.partnerName)
+                        showEnding = false
+                    }
                 }
             } else {
                 YearResultView(session: session,
                                onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max),
                                                                   combiName: session.combiName, myName: session.myName, partnerName: session.partnerName) },
-                               onEnding: session.outcome?.champion == true ? { showEnding = true } : nil,
+                               onEnding: session.endingID != nil ? { showEnding = true } : nil,
                                onNextYear: session.careerOver ? nil : { session.startNextYear() })
             }
         } else if let result = session.pendingResult {

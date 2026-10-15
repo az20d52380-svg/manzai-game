@@ -966,7 +966,7 @@ final class GameSession {
         #if DEBUG
         let env = ProcessInfo.processInfo.environment
         // QA自動走行で実プレイのセーブを潰さない（MZ_ALLOWSAVE=1 は中断→再開の目視用に、あえて書く）
-        if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
+        if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil || env["MZ_ENDING"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
         guard !abandoned, !(finished && careerOver) else {   // A-3: 勝利演出中(winFinale)も保存する。acknowledgeWin(finished=true)で消える
             UserDefaults.standard.removeObject(forKey: Self.saveKey)
