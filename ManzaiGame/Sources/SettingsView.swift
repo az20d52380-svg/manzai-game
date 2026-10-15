@@ -41,11 +41,8 @@ struct SettingsView: View {
                             }
                         }
                         if let onQuitRun {
-                            section("このキャリア") { restartBlock(onQuitRun) }
+                            careerSection(onQuitRun)
                         }
-                    }
-                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
-                }
             // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
             VStack(spacing: 4) {
                 Text("権利表記・バージョン").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
@@ -57,8 +54,11 @@ struct SettingsView: View {
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity).padding(12).frame(minHeight: 64)
-            .yoseKifuda()
-            .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 16)
+            .yoseKifuda(showNail: true)
+            .padding(.top, 14)
+                    }
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
+                }
             }
             if restartStep > 0, onQuitRun != nil { restartModal }
         }
@@ -80,8 +80,28 @@ struct SettingsView: View {
     /// 最初からやり直す（確認2段・セーブは onQuitRun＝GameSession.abandonRun が消してタイトルへ戻す）
     @ViewBuilder
     private func restartBlock(_ onQuitRun: @escaping () -> Void) -> some View {
-        Button { restartStep = 1 } label: { Text("最初からやり直す").foregroundStyle(YoseColor.shu) }
-            .buttonStyle(YoseButtonStyle(.secondary))
+        Button { restartStep = 1 } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 14, weight: .black))
+                Text("最初からやり直す")
+            }
+            .foregroundStyle(YoseColor.shu)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(YoseButtonStyle(.secondary))
+        .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 2).padding(3).allowsHitTesting(false))   // 壊す操作の重み
+    }
+
+    /// 「このキャリア」：外の貼り紙枠は付けず、注意書きとボタンだけを直に置く（二重枠をやめる）
+    private func careerSection(_ onQuitRun: @escaping () -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)
+                Text("このキャリア").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+            }
+            Text("※いまのコンビの進行データが初期化されます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            restartBlock(onQuitRun)
+        }
     }
 
     /// 確認は画面を暗くして中央のモーダルに（「やめる」は二重の意味になるので取りやめは「もどる」）
@@ -108,8 +128,8 @@ struct SettingsView: View {
         HStack(spacing: 8) {
             Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi).frame(width: 36, alignment: .leading)
             Button { step(value, -0.1) } label: { Text("−").font(YoseFont.gothic(18, weight: .black)) }
-                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 44).disabled(value.wrappedValue <= 0.001)
-            YoseGauge(value: value.wrappedValue, total: 1, fill: YoseColor.shu, height: 16, showTicks: false)
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 40).disabled(value.wrappedValue <= 0.001)
+            YoseGauge(value: value.wrappedValue, total: 1, fill: YoseColor.shu, height: 18, showTicks: false)
                 .overlay { GeometryReader { geo in
                     HStack(spacing: 0) { ForEach(1..<10, id: \.self) { _ in Spacer(); Rectangle().fill(YoseColor.sumi.opacity(0.3)).frame(width: 1) }; Spacer() }
                         .allowsHitTesting(false)
@@ -120,8 +140,8 @@ struct SettingsView: View {
                         })
                 } }
             Button { step(value, 0.1) } label: { Text("＋").font(YoseFont.gothic(18, weight: .black)) }
-                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 44).disabled(value.wrappedValue >= 0.999)
-            Text("\(Int((value.wrappedValue * 100).rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 40).disabled(value.wrappedValue >= 0.999)
+            Text("\(Int((value.wrappedValue * 100).rounded()))").font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .frame(width: 36, alignment: .trailing)
         }
     }
