@@ -34,6 +34,7 @@ struct NotebookView: View {
 
     private var paperBackground: some View {
         Canvas { ctx, size in
+            if tab == .neta { return }   // ネタ帳タブ: 罫線・余白線を廃して生成り一色（短冊を置く台）
             var y: CGFloat = 8
             while y < size.height {
                 ctx.fill(Path(CGRect(x: 0, y: y, width: size.width, height: 1)), with: .color(Self.rule.opacity(0.55)))
@@ -62,7 +63,7 @@ struct NotebookView: View {
                         case .neta: AnyView(netaPage)
                         }
                     }
-                    .padding(.leading, 44).padding(.trailing, Theme.Sp.s16).padding(.top, 14).padding(.bottom, Theme.Sp.s24)
+                    .padding(.leading, tab == .neta ? Theme.Sp.s16 : 44).padding(.trailing, Theme.Sp.s16).padding(.top, 14).padding(.bottom, Theme.Sp.s24)
                 }
             }
         }
@@ -298,8 +299,9 @@ struct NotebookView: View {
                         .modifier(StampShake())
                 }
             }
-            Text(NetaCatalog.displayName(neta.kata)).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.curtain)
-            netaBar(label: "完成度", value: neta.polish, color: Theme.curtainLit)
+            Text(NetaCatalog.displayName(neta.kata)).font(.maru(9, weight: .bold)).foregroundStyle(.white)
+                .padding(.horizontal, 6).padding(.vertical, 2).background(Theme.verm)
+            netaBar(label: "完成度", value: neta.polish, color: Theme.verm)
             netaBar(label: "客の反応", value: neta.buzz, color: Theme.gold)
             oroshiLine(neta)
             HStack(spacing: 8) {
@@ -314,7 +316,7 @@ struct NotebookView: View {
             }
             if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
-                actionChip(isSelected ? "勝負ネタ中" : "勝負ネタにする", active: !isSelected) {
+                actionChip(isSelected ? "勝負ネタ中" : "勝負ネタにする", active: !isSelected, primary: true) {
                     session.selectNeta(neta.id)
                 }
                 actionChip("型を変える", active: true) {
@@ -328,10 +330,10 @@ struct NotebookView: View {
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(Theme.kinariPanel)
-        .overlay(alignment: .leading) { Rectangle().fill(isSelected ? Theme.verm : Theme.sumi).frame(width: 5) }
-        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.8))
-        .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
+        .background(Color(hex: 0xFAF6E9))
+        .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.sumi, lineWidth: 1.5))
+        .clipShape(RoundedRectangle(cornerRadius: 2))
+        .shadow(color: Theme.sumi.opacity(0.12), radius: 0, x: 2, y: 3)
     }
 
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
@@ -361,8 +363,9 @@ struct NotebookView: View {
                 renamingID = neta.id
             } label: {
                 HStack(spacing: 4) {
-                    Text(neta.name).font(.maru(18, weight: .black)).foregroundStyle(Theme.sumi).lineLimit(1)
-                    Image(systemName: "pencil").font(.system(size: 11)).foregroundStyle(Theme.inkSub)
+                    Text(neta.name).font(.system(size: 20, weight: .heavy, design: .serif)).foregroundStyle(Theme.sumi).lineLimit(1)
+                    Text("改").font(.maru(9, weight: .bold)).foregroundStyle(Theme.inkSub)
+                        .frame(width: 15, height: 15).overlay(Circle().stroke(Theme.inkFaint, lineWidth: 0.8))
                 }
             }.buttonStyle(.plain)
         }
@@ -395,9 +398,16 @@ struct NotebookView: View {
     private func netaBar(label: String, value: Double, color: Color) -> some View {
         HStack(spacing: 8) {
             Text(label).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.inkSub).frame(width: 60, alignment: .leading)
-            inkBar(value / 100, color: color, height: 10)
-            Text("\(Int(value.rounded()))").font(.maru(13, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
-                .frame(minWidth: 24, alignment: .trailing).fixedSize()
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Rectangle().fill(Theme.sumi.opacity(0.08))
+                    Rectangle().fill(color).frame(width: geo.size.width * CGFloat(min(1, max(0, value / 100))))
+                }
+            }
+            .frame(height: 14)
+            Text("\(Int(value.rounded()))").font(.system(size: 22, weight: .black, design: .rounded)).monospacedDigit()
+                .foregroundStyle(color == Theme.gold ? Theme.goldD : color)
+                .frame(minWidth: 34, alignment: .trailing).fixedSize()
         }
     }
 
@@ -419,12 +429,19 @@ struct NotebookView: View {
         .transition(.opacity)
     }
 
-    private func actionChip(_ label: String, active: Bool, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label).font(.maru(12, weight: .black)).foregroundStyle(active ? Theme.sumi : Theme.inkFaint)
-                .padding(.horizontal, 9).padding(.vertical, 5)
+    private func actionChip(_ label: String, active: Bool, primary: Bool = false, _ action: @escaping () -> Void) -> some View {
+        Button {
+            #if canImport(UIKit)
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #endif
+            action()
+        } label: {
+            Text(label).font(.maru(primary ? 14 : 12, weight: .black))
+                .foregroundStyle(primary && active ? Color.white : (active ? Theme.sumi : Theme.inkFaint))
+                .padding(.horizontal, primary ? 14 : 10)
+                .frame(height: primary ? 36 : 32)
+                .background(primary && active ? Theme.verm : (active ? Color.white : Color.clear))
                 .overlay(Rectangle().stroke(active ? Theme.sumi : Theme.line, lineWidth: 1.2))
-                .overlay(alignment: .leading) { Rectangle().fill(active ? Theme.verm : Theme.line).frame(width: 3) }
         }
         .buttonStyle(PressableStyle())
         .disabled(!active)
