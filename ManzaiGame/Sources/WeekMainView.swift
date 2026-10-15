@@ -825,7 +825,7 @@ struct WeekMainView: View {
             if case .acceptOffer = v.action {
                 Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(1)   // オファー名（既存の OfferSpec.name）
             } else if !dashed, !gated {
-                Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
+                Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(row ? 1 : 2).fixedSize(horizontal: false, vertical: true)
             }
             if gated {
                 Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
@@ -851,15 +851,22 @@ struct WeekMainView: View {
         }
         return Group {
             if row {
-                // 奇数枚の最後（全幅）: 左に名前・説明、右に効果と消費を右寄せで束ねる（右半分を空けない）
-                HStack(alignment: .center, spacing: 8) {
+                // 奇数枚の最後（全幅）: 上段に名前・説明、下段に効果と消費を1行で（右だけが混まない2段）
+                VStack(alignment: .leading, spacing: 7) {
                     body
-                    Spacer(minLength: 4)
-                    VStack(alignment: .trailing, spacing: 4) {
-                        if !effects.isEmpty { HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } } }
+                    ViewThatFits(in: .horizontal) {
                         HStack(spacing: 4) {
+                            ForEach(effects, id: \.text) { effectPill($0).fixedSize() }
+                            Spacer(minLength: 4)
                             if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
                             if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } }
+                            HStack(spacing: 4) {
+                                if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
+                                if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                            }
                         }
                     }
                 }
