@@ -270,17 +270,20 @@ struct WeekMainView: View {
                 // Beat2 獲得バースト: 立ち絵の頭上に獲得チップが立ち上る（触れない・入力遮断なし）。
                 // 人形の大型化に合わせ頭上へ逃がす（頭に被ると谷口が首なしに見える）。
                 burstOverlay
-                    .padding(.trailing, 36).padding(.bottom, 150)   // 谷口の頭のすぐ上（旧262＝寄席ポスターに重なっていた）
+                    .padding(.trailing, 50).padding(.bottom, 206)   // 谷口のめくりの頭の上（名前の字に被せない）
                     .allowsHitTesting(false)
             }
-            .overlay {
+            .overlay(alignment: .top) {
                 // 週送りスタンプ: 週が明けた瞬間に「第N週」が一拍だけ立つ（Beat2 の前座・触れない）。
+                // 黒漆の横札＋金枠（YoseToast と同じ語彙）。めくり札・マイクに被らない舞台の上段に掲げる。
                 if weekStampVisible {
                     Text("第\(session.week)週")
-                        .font(.maru(21)).tracking(6).foregroundStyle(Theme.ink.opacity(0.88))
-                        .padding(.horizontal, 18).padding(.vertical, 8)
-                        .background(.white.opacity(0.88), in: Rectangle())
-                        .e1()
+                        .font(YoseFont.gothic(16, weight: .heavy)).tracking(6).foregroundStyle(YoseColor.kin)
+                        .padding(.horizontal, 18).padding(.vertical, 7)
+                        .background(YoseColor.kuroUrushi)
+                        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(2))
+                        .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+                        .padding(.top, 14)
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.82).combined(with: .opacity),
                             removal: .opacity))
@@ -914,7 +917,7 @@ struct WeekMainView: View {
         // 伸びは山吹金の札＋墨2pt枠＋ハード影。「新ネタ」だけは朱の判子で叩きつける（ぼかし影・紫は使わない）。
         Group {
             if chip.text == "新ネタ" {
-                YoseHankoStamp(text: "新ネタ", isSquare: true).scaleEffect(1.15)
+                YoseHankoStamp(text: "新ネタ", isSquare: true).rotationEffect(.degrees(-8))
                     .shadow(color: YoseColor.sumi.opacity(0.35), radius: 0, x: 0, y: 2)
             } else {
                 Text(chip.text).font(YoseFont.gothic(17, weight: .black)).foregroundStyle(YoseColor.sumi)
@@ -929,14 +932,14 @@ struct WeekMainView: View {
     /// 体力の減りは体力ゲージの直上に黒漆の札で（祝わない・どのゲージが減ったか視線が繋がる）
     @ViewBuilder private var burstCostOverlay: some View {
         if let chip = burstChips.first(where: { !$0.up }) {
-            Text(chip.text).font(YoseFont.gothic(17, weight: .black)).foregroundStyle(YoseColor.kinari)
-                .padding(.horizontal, 12).padding(.vertical, 6)
+            Text(chip.text).font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.kinari)
+                .padding(.horizontal, 10).padding(.vertical, 4)
                 .background(YoseColor.kuroUrushi)
                 .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5))
                 .opacity(burstVisible ? 1 : 0)
-                .offset(y: burstVisible ? -14 : 0)
+                .offset(y: burstVisible ? 0 : 10)
                 .animation(.spring(response: 0.28, dampingFraction: 0.7), value: burstVisible)
-                .padding(.leading, YoseMetrics.screenMargin).padding(.bottom, 104)
+                .padding(.leading, 172).padding(.bottom, 80)   // 体力ゲージの右隣＝ボタンに被らない黒帯の空き
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 .allowsHitTesting(false)
         }
