@@ -81,6 +81,14 @@ struct RootView: View {
             if (ui == "grown" || ui == "notebook"), session.week <= 1 {
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
+            if ui == "yearend", session.week <= 1 {
+                // 年末リザルト本体の目視: 通常は最後まで自動で進め、客席観戦の決勝を観終えた扱いにして年末総決算へ。MZ_MODE=champion は優勝版
+                if ProcessInfo.processInfo.environment["MZ_MODE"] == "champion" { forceChampion(); session.acknowledgeWin() }
+                else {
+                    session.debugPlayToEnd()
+                    if session.watchingFinal { session.finishWatchingFinal(winner: "（見本）"); session.debugPlayToEnd() }
+                }
+            }
             if ui == "prestage", session.week <= 1 {
                 // 大会前の振り忘れの知らせの目視：最初の大会（春新人賞A）の1週前まで練習で進める
                 if let w = session.nextStage?.week {
