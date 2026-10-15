@@ -39,6 +39,14 @@ struct YearResultView: View {
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 14)
                 .frame(maxWidth: .infinity)
             }
+            .overlay(alignment: .bottom) {   // まだ下に続く合図（見出しがフッターで切れて見えない）
+                VStack(spacing: 0) {
+                    LinearGradient(colors: [YoseColor.kinari.opacity(0), YoseColor.kinari], startPoint: .top, endPoint: .bottom).frame(height: 22)
+                    Text("▼ 下にも続きます").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                        .frame(maxWidth: .infinity).padding(.bottom, 3).background(YoseColor.kinari)
+                }
+                .allowsHitTesting(false)
+            }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 6)
@@ -97,7 +105,7 @@ struct YearResultView: View {
                         .frame(width: 54, alignment: .leading).lineLimit(1).minimumScaleFactor(0.7)
                     gradeChip(from, dim: true)
                     Image(systemName: "arrowtriangle.right.fill").font(.system(size: 9)).foregroundStyle(YoseColor.shu)
-                    gradeChip(to, dim: false)
+                    gradeChip(to, dim: !up, up: up)
                     YoseGauge(value: Theme.rankProgress(s[a], cap: cap), total: 1, fill: abilityColor(a), height: 12)
                     Text(up ? "↑" : " ").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.shu).frame(width: 14)
                 }
@@ -113,11 +121,11 @@ struct YearResultView: View {
     }
 
     /// 等級の角章（開始時は薄く・いまは濃く。Sだけ消金の地）
-    private func gradeChip(_ g: String, dim: Bool) -> some View {
+    private func gradeChip(_ g: String, dim: Bool, up: Bool = false) -> some View {
         Text(g).font(YoseFont.gothic(15, weight: .black))
-            .foregroundStyle(g == "S" ? YoseColor.sumi : (dim ? YoseColor.haiSumi : YoseColor.kinari))
+            .foregroundStyle(g == "S" ? YoseColor.sumi : (dim && !up ? YoseColor.haiSumi : YoseColor.kinari))
             .frame(width: 28, height: 24)
-            .background(g == "S" ? YoseColor.kin : (dim ? YoseColor.ginNezu : YoseColor.enji))
+            .background(g == "S" ? YoseColor.kin : (up ? YoseColor.shu : (dim ? YoseColor.ginNezu : YoseColor.enji)))   // 上がった行だけ朱。変わらない行は鈍色
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
     }
 
