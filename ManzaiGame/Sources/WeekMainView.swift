@@ -549,27 +549,35 @@ struct WeekMainView: View {
 
     private var netaTargetBar: some View {
         let t = writeTarget
-        return HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("磨くネタ").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                if let n = t {
-                    Text("「\(n.name)」").font(YoseFont.mincho(19)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
-                    HStack(spacing: 6) {
-                        YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 12, showTicks: true).frame(width: 96)
-                        Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.shu)
-                        Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("磨くネタ").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                    if let n = t {
+                        Text("「\(n.name)」").font(YoseFont.mincho(19)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
+                    } else {
+                        Text("新しいネタ").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.enji)
                     }
-                } else {
-                    Text("新しいネタ").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.enji)
+                }
+                Spacer(minLength: 4)
+                if !session.activeNetas.isEmpty {
+                    Button { withAnimation(Theme.Motion.appearQuick) { pickingNeta.toggle() } } label: {
+                        Text(pickingNeta ? "とじる" : "替える").font(YoseFont.gothic(13, weight: .heavy))
+                    }
+                    .buttonStyle(YoseButtonStyle(.secondary))
+                    .frame(width: 84)
                 }
             }
-            Spacer(minLength: 4)
-            if !session.activeNetas.isEmpty {
-                Button { withAnimation(Theme.Motion.appearQuick) { pickingNeta.toggle() } } label: {
-                    Text(pickingNeta ? "とじる" : "替える").font(YoseFont.gothic(13, weight: .heavy))
+            if let n = t {
+                HStack(spacing: 8) {
+                    YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 12, showTicks: true).frame(width: 130)
+                    Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.shu).fixedSize()
+                    Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.sumi)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1))
+                        .fixedSize()
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(YoseButtonStyle(.secondary))
-                .frame(width: 84)
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
