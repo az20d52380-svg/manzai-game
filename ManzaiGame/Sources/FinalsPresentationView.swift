@@ -412,6 +412,11 @@ struct FinalsPresentationView: View {
     private func standingsList(n: Int, newest: FinalsEntry?) -> some View {
         let rows = standings(n)
         return VStack(spacing: 5) {
+            // 見出し帯：上の「今出た組」札と同じ名前が並んでも、これは席の表だと分かる
+            Text("暫定順位（上位3組が最終決戦へ）").font(YoseFont.captionBold).foregroundStyle(YoseColor.kin)
+                .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12).frame(height: 26)
+                .background(YoseColor.kuroUrushi)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
             ForEach(Array(rows.enumerated()), id: \.element.order) { rank, e in
                 let seated = rank < 3
                 HStack(spacing: 10) {
@@ -427,6 +432,20 @@ struct FinalsPresentationView: View {
                 .padding(.horizontal, 12).padding(.vertical, 4)
                 .yoseHarigami(isFeatured: seated)
                 .opacity(seated || e.isSelf ? 1 : 0.62)
+            }
+            // まだ埋まっていない席は空の札で見せる（3つの椅子を争うと一目で分かる）
+            ForEach(rows.count..<max(rows.count, 3), id: \.self) { rank in
+                HStack(spacing: 10) {
+                    Text("\(rank + 1)").font(YoseFont.number(18, weight: .black))
+                        .foregroundStyle(YoseColor.haiSumi).frame(width: 28)
+                    Text("ーーー").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.haiSumi)
+                    Spacer(minLength: 4)
+                    Text("空席").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 4)
+                .frame(height: 34)
+                .background(YoseColor.ki)
+                .overlay(Rectangle().stroke(YoseColor.haiSumi, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
             }
         }
         .padding(.bottom, 2)

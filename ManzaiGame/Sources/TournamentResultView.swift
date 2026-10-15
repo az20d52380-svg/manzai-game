@@ -166,8 +166,8 @@ struct TournamentResultView: View {
                 VStack(spacing: 8) {
                     Text("客席アンケート").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                         .frame(width: 140, height: 26).yoseKifuda()
-                    ForEach(Array(fanVoices.prefix(fanShown).enumerated()), id: \.offset) { _, t in
-                        fanReportCard(t).transition(.opacity.combined(with: .offset(y: 10)))
+                    ForEach(Array(fanVoices.prefix(fanShown).enumerated()), id: \.offset) { i, t in
+                        fanReportCard(t, showTag: i == 0).transition(.opacity.combined(with: .offset(y: 10)))
                     }
                     HStack(spacing: 10) {
                         HStack(spacing: 4) {
@@ -385,9 +385,9 @@ struct TournamentResultView: View {
     }
 
     /// 観客の一言（架空SNS）。審査員の講評と見分けがつくよう、貼り紙＋SNS名の角札で出す
-    private func fanReportCard(_ text: String) -> some View {
+    private func fanReportCard(_ text: String, showTag: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 5) {
-            YoseTag(text: "\(FanReportData.sns)・観客の声", style: .outlineSumi)
+            if showTag { YoseTag(text: "\(FanReportData.sns)・観客の声", style: .outlineSumi) }
             Text(text).font(YoseFont.mincho(14)).lineSpacing(4).foregroundStyle(YoseColor.sumi)
                 .fixedSize(horizontal: false, vertical: true)
         }
