@@ -107,6 +107,8 @@ RUN_TRACK = None
 EVENTS_ON   = False
 RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（run_careerが管理）
 EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
+EVENT_DRAW_FILTER = False   # True=Swift同様「発火帯に入っていて未発火の候補」だけから一様に引く（既定OFF＝従来の34種一様＋不発）
+EVENT_FORCE = {}            # {others種名: 週 or (開始週,終了週)}。その週（窓内の最初の自由週）に未発火・発火帯ならロール無しで確定発火（既定空＝従来どおり）
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
 DEBT_LIFE_PEN  = (-10, -3)   # 【正典v2】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦
 RIFT_ON        = True       # 途中解散（すれ違いゲージ）docs/dissolution_rift_spec_v1.md【仮】
@@ -702,7 +704,24 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         if EVENTS_ON:
             if week in SEASONAL:
                 _apply_event(s, SEASONAL[week])
-            if not acted and rng.random() < EVENT_RATE:
+            forced = False
+            if EVENT_FORCE and not acted and OTHERS_ON and RUN_EVENTS_FIRED is not None:
+                for fk, fw in EVENT_FORCE.items():
+                    fi = len(EVENT_TABLE) + OTHERS_EVENTS.index(fk)
+                    if (week == fw if isinstance(fw, int) else fw[0] <= week <= fw[1]) and fi not in RUN_EVENTS_FIRED and _others_fireable(fk, s, week, year, _honban_ahead(week)) \
+                            and not (EVENT_FIRE_CAP is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP):
+                        RUN_EVENTS_FIRED.add(fi); _others_apply(s, fk); forced = True; break
+            if EVENT_DRAW_FILTER and not forced and not acted and RUN_EVENTS_FIRED is not None and rng.random() < EVENT_RATE:
+                if EVENT_FIRE_CAP is None or len(RUN_EVENTS_FIRED) < EVENT_FIRE_CAP:
+                    cands = [i for i in range(len(EVENT_TABLE) + (len(OTHERS_EVENTS) if OTHERS_ON else 0))
+                             if i not in RUN_EVENTS_FIRED and (i < len(EVENT_TABLE) or
+                                 _others_fireable(OTHERS_EVENTS[i - len(EVENT_TABLE)], s, week, year, _honban_ahead(week)))]
+                    if cands:
+                        idx = cands[min(int(rng.random() * len(cands)), len(cands) - 1)]
+                        RUN_EVENTS_FIRED.add(idx)
+                        if idx >= len(EVENT_TABLE): _others_apply(s, OTHERS_EVENTS[idx - len(EVENT_TABLE)])
+                        else: _apply_event(s, EVENT_TABLE[idx])
+            elif not EVENT_DRAW_FILTER and not forced and not acted and rng.random() < EVENT_RATE:
                 # 同一イベントは同一キャリアで原則1回（event_design_v0 §頻度設計）。全消化後は発生しない
                 # EVENT_FIRE_CAP: プール何種でも効果発火は通算この回数まで（超過分はフレーバー表示のみ想定）
                 idx = int(rng.random() * (len(EVENT_TABLE) + (len(OTHERS_EVENTS) if OTHERS_ON else 0)))
