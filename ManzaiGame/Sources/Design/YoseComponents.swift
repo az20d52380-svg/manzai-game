@@ -289,10 +289,10 @@ struct YoseSpeechBox: View {
         HStack(alignment: .bottom, spacing: 8) {
             VStack(spacing: 2) {
                 if let roleLabel {
-                    Text(roleLabel).font(YoseFont.gothic(9, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                    Text(roleLabel).font(.system(size: Font.mzScaled(9, cap: 1.1), weight: .heavy)).foregroundStyle(YoseColor.kin)
                         .padding(.horizontal, 4).padding(.vertical, 1).background(YoseColor.kuroUrushi)
                 }
-                Text(speaker).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.kinari)
+                Text(speaker).font(.custom("HiraMinProN-W6", fixedSize: Font.mzScaled(15, cap: 1.1))).foregroundStyle(YoseColor.kinari)
                     .padding(.horizontal, 8).padding(.vertical, 6).frame(minWidth: 58)
                     .background(YoseColor.shu)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
@@ -300,7 +300,7 @@ struct YoseSpeechBox: View {
             .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
 
             HStack(alignment: .bottom, spacing: 6) {
-                Text(text).font(YoseFont.mincho(15)).lineSpacing(5).foregroundStyle(YoseColor.sumi)
+                Text(text).font(.custom("HiraMinProN-W6", fixedSize: Font.mzScaled(15, cap: 1.1))).lineSpacing(5).foregroundStyle(YoseColor.sumi)   // 吹き出しは舞台に重なるので拡大は1.1倍まで（長い行が3行になって名札に被らない）
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if showCue {
                     Image(systemName: "arrowtriangle.down.fill").font(.system(size: Font.mzScaled(10))).accessibilityHidden(true)

@@ -236,9 +236,9 @@ enum Haptics {
 /// 未登録/失敗時は system 丸ゴにフォールバック（見た目が劣化するだけで壊れない）。
 extension Font {
     /// 文字サイズの追従（上限つき）：端末の文字サイズに合わせて拡大し、レイアウトが崩れないよう最大1.35倍で止める。
-    static func mzScaled(_ size: CGFloat) -> CGFloat {
+    static func mzScaled(_ size: CGFloat, cap: CGFloat = 1.35) -> CGFloat {
         let s = UIFontMetrics(forTextStyle: .body).scaledValue(for: size)
-        return min(max(s, size), size * 1.35)
+        return min(max(s, size), size * cap)
     }
 }
 
