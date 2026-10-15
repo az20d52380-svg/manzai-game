@@ -118,16 +118,12 @@ struct TournamentResultView: View {
                                 .transition(.opacity)
                         }
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 2)
 
                     Spacer(minLength: 0)
 
                     // 舞台板の上＝読み物と出口（判の後に段階で出す）
                     VStack(spacing: 10) {
-                        if revealedWave {
-                            WaveformView(passed: r.passed, nearMiss: nearMiss(r), compact: true, burst: r.burst == true || debugForceFanReport)
-                                .transition(.opacity)
-                        }
                         if revealedReview {
                             washi(text: review.text, judge: review.judge, passed: r.passed)
                                 .transition(.opacity.combined(with: .offset(y: 10)))
@@ -136,26 +132,42 @@ struct TournamentResultView: View {
                             // 1枚の精算木札（通過ライン／実力・賞金・知名度を整列。審査員の点数は出さない）
                             VStack(spacing: 8) {
                                 if let line = displayLine {
-                                    HStack(alignment: .firstTextBaseline, spacing: 14) {
-                                        Text("通過ライン \(Int(line))").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                                    HStack(alignment: .lastTextBaseline, spacing: 8) {
+                                        Text("通過ライン \(Int(line))").font(.system(size: 11, weight: .medium, design: .rounded)).foregroundStyle(Theme.inkSub)
+                                        Spacer(minLength: 0)
                                         HStack(spacing: 0) {
-                                            Text("実力 ")
+                                            Text("実力 ").font(.maru(14, weight: .bold))
                                             RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
+                                                .font(.system(size: 36, weight: .heavy, design: .rounded))
                                         }
-                                        .font(.maru(22, weight: .black)).foregroundStyle(r.passed ? Theme.paperInk : Theme.inkSub)
+                                        .foregroundStyle(r.passed ? Color(hex: 0xBD3A2B) : Theme.inkSub)
+                                        if r.passed {
+                                            Text("突破").font(.maru(12, weight: .black)).foregroundStyle(Color(hex: 0xBD3A2B))
+                                                .padding(.horizontal, 5).padding(.vertical, 2)
+                                                .overlay(Rectangle().stroke(Color(hex: 0xBD3A2B), lineWidth: 1.5))
+                                                .rotationEffect(.degrees(-5))
+                                        }
                                     }
                                     .lineLimit(1).minimumScaleFactor(0.8)
                                 }
                                 HStack(spacing: 10) {
                                     if r.prize > 0 {
-                                        RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
-                                            .font(.maru(17, weight: .heavy)).foregroundStyle(Theme.goldD)
-                                            .padding(.horizontal, 10).padding(.vertical, 3)
-                                            .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "circle.circle.fill").font(.system(size: 14))
+                                            RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
+                                        }
+                                        .font(.maru(17, weight: .heavy)).foregroundStyle(Theme.goldD)
+                                        .padding(.horizontal, 10).padding(.vertical, 3)
+                                        .background(Color(hex: 0xF1C40F).opacity(0.2))
+                                        .overlay(Rectangle().stroke(Color(hex: 0xD4AC0D), lineWidth: 1))
                                     }
                                     if session.lastResultFameDelta >= 0.5 {
-                                        Text("知名度 \(Int(summary.state.fame.rounded())) ▲\(Int(session.lastResultFameDelta.rounded()))")
-                                            .font(.maru(15, weight: .black)).foregroundStyle(Color(hex: 0x2F7A3E))
+                                        HStack(spacing: 3) {
+                                            Text("知名度 \(Int(summary.state.fame.rounded()))")
+                                            Image(systemName: "arrow.up.right").font(.system(size: 12, weight: .black))
+                                            Text("+\(Int(session.lastResultFameDelta.rounded()))")
+                                        }
+                                        .font(.maru(15, weight: .black)).foregroundStyle(Color(hex: 0xD35400))
                                     }
                                 }
                                 .fixedSize()
@@ -189,6 +201,9 @@ struct TournamentResultView: View {
                     .padding(.horizontal, 18).padding(.bottom, 22)
                 }
             }
+        }
+        .overlay {
+            if r.passed && revealed { RisingGlow().allowsHitTesting(false).transition(.opacity) }
         }
         .overlay {
             // 通過の紙吹雪（判と同時に舞う・敗退は降らない＝静けさが重さ）。色は大会の格（銅/銀）
@@ -335,7 +350,7 @@ struct TournamentResultView: View {
         let c = passed ? Theme.verm : Color(hex: 0x3A322D)   // 敗退は墨（舞台の光の中で沈まない程度の明るさ・紫は使わない）
         return Text(stampLabel(passed: passed))
             .font(.maru(.display)).foregroundStyle(.white)
-            .frame(width: 124, height: 124)
+            .frame(width: 106, height: 106)
             .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 130),
                        in: Rectangle())
             .overlay(Rectangle().stroke(passed ? Theme.gold : metal.opacity(0.55), lineWidth: passed ? 4 : 2).padding(5))   // 縁＝通過は金／敗退は静かな金属色
@@ -481,5 +496,29 @@ struct RollingNumberText: View, Animatable {
     }
     var body: some View {
         Text("\(prefix)\(Int(value.rounded()))\(suffix)").monospacedDigit()
+    }
+}
+
+
+/// 歓声の熱気＝金と白の光粒が下からふわっと立ち上る（床の折れ線の代わり）
+private struct RisingGlow: View {
+    var body: some View {
+        TimelineView(.animation) { tl in
+            Canvas { ctx, size in
+                let t = tl.date.timeIntervalSinceReferenceDate
+                for i in 0..<26 {
+                    let seed = Double(i) * 12.9898
+                    let x = (sin(seed) * 0.5 + 0.5) * size.width
+                    let speed = 0.06 + (cos(seed * 1.7) * 0.5 + 0.5) * 0.08
+                    let ph = (t * speed + Double(i) * 0.137).truncatingRemainder(dividingBy: 1)
+                    let y = size.height * (1.02 - ph)
+                    let r = 1.5 + (sin(seed * 3.1) * 0.5 + 0.5) * 2.5
+                    let a = sin(ph * .pi) * 0.7
+                    let c = i % 3 == 0 ? Color.white : Color(hex: 0xFFE07A)
+                    ctx.fill(Path(ellipseIn: CGRect(x: x + sin(t + seed) * 8, y: y, width: r * 2, height: r * 2)), with: .color(c.opacity(a)))
+                }
+            }
+        }
+        .ignoresSafeArea()
     }
 }
