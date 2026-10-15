@@ -28,82 +28,31 @@ struct NotebookView: View {
 
     private var s: GameState { session.state }
 
-    // 試作q70: 帳面の紙（生成り＋罫線＋左の赤い余白線）。色は週画面試作と同じ 墨・生成り・朱＋臙脂/金。
-    private static let paper = Theme.kinari
     private static let rule = Color(hex: 0xBFAE8A)
-
-    private var paperBackground: some View {
-        Canvas { ctx, size in
-            if tab == .neta { return }   // ネタ帳タブ: 罫線・余白線を廃して生成り一色（短冊を置く台）
-            var y: CGFloat = 8
-            while y < size.height {
-                ctx.fill(Path(CGRect(x: 0, y: y, width: size.width, height: 1)), with: .color(Self.rule.opacity(0.55)))
-                y += 30
-            }
-            ctx.fill(Path(CGRect(x: 30, y: 0, width: 1.5, height: size.height)), with: .color(Theme.verm.opacity(0.45)))
-            ctx.fill(Path(CGRect(x: 34, y: 0, width: 0.8, height: size.height)), with: .color(Theme.verm.opacity(0.3)))
-        }
-        .background(Self.paper)
-        .ignoresSafeArea()
-    }
-
     private var hairline: some View { Rectangle().fill(Theme.sumi.opacity(0.35)).frame(height: 1) }
 
+    private var tabIndex: Binding<Int> {
+        Binding(get: { tab == .chikara ? 0 : (tab == .kiroku ? 1 : 2) },
+                set: { tab = [Tab.chikara, .kiroku, .neta][$0] })
+    }
+
     var body: some View {
-        ZStack {
-            paperBackground
-            VStack(spacing: 0) {
-                header
-                tabBar
-                ScrollView {
-                    Group {
-                        switch tab {
-                        case .chikara: AnyView(chikaraPage)
-                        case .kiroku: AnyView(kirokuPage)
-                        case .neta: AnyView(netaPage)
-                        }
+        VStack(spacing: 0) {
+            YoseHeaderBar(title: "ネタ帳", subtitle: session.combiName, closeAction: onClose)
+            YoseTopTabBar(tabs: ["能力", "戦績", "持ちネタ"], selectedIndex: tabIndex)
+                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
+            ScrollView {
+                Group {
+                    switch tab {
+                    case .chikara: AnyView(chikaraPage)
+                    case .kiroku: AnyView(kirokuPage)
+                    case .neta: AnyView(netaPage)
                     }
-                    .padding(.leading, tab == .neta ? Theme.Sp.s16 : 44).padding(.trailing, Theme.Sp.s16).padding(.top, 14).padding(.bottom, Theme.Sp.s24)
                 }
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14).padding(.bottom, 24)
             }
         }
-    }
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text("ネタ帳").font(.maru(24, weight: .black)).foregroundStyle(Theme.gold)
-                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Text(session.combiName).font(.maru(12, weight: .bold)).foregroundStyle(Theme.gold.opacity(0.8))
-            Spacer()
-            Button(action: onClose) {
-                Text("とじる").font(.maru(13, weight: .black)).foregroundStyle(Theme.gold)
-                    .padding(.horizontal, 12).padding(.vertical, 5)
-                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.2))
-            }.buttonStyle(PressableStyle())
-        }
-        .padding(.horizontal, Theme.Sp.s16).padding(.vertical, 10)
-        .background(Theme.curtain.ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.gold).frame(height: 2) }
-    }
-
-    private var tabBar: some View {
-        HStack(spacing: 0) {
-            tabButton("能力", .chikara)
-            tabButton("戦績", .kiroku)
-            tabButton("持ちネタ", .neta)
-        }
-        .padding(.leading, 34).padding(.trailing, Theme.Sp.s16).padding(.top, 8)
-        .overlay(alignment: .bottom) { hairline }
-    }
-
-    private func tabButton(_ label: String, _ t: Tab) -> some View {
-        Button { withAnimation(Theme.Motion.appearQuick) { tab = t } } label: {
-            Text(label).font(.maru(16, weight: .black)).foregroundStyle(tab == t ? Theme.sumi : Theme.inkSub)
-                .frame(maxWidth: .infinity).padding(.vertical, 8)
-                .overlay(alignment: .bottom) {
-                    Rectangle().fill(tab == t ? Theme.verm : .clear).frame(height: 4)
-                }
-        }.buttonStyle(.plain)
+        .background(YoseColor.kinari.ignoresSafeArea())
     }
 
     // MARK: 能力（パワプロの選手情報式・2026-10-12 オーナー「ちから/きろく/ネタも意味わからん」）
@@ -114,28 +63,25 @@ struct NotebookView: View {
         let budget = s.growthBudget ?? 0
         let full = budget > 0 && s.growthUsed >= budget * 0.98
         let exp = AbilityUpView.points(s.expTotal)
-        return VStack(spacing: 0) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("実力").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi)
-                Text("\(Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))").font(.maru(34, weight: .black))
-                    .monospacedDigit().foregroundStyle(Theme.curtain)
-                    .shadow(color: Theme.gold, radius: 0, x: 1, y: 1)
-                Spacer()
-                if exp > 0 && !cfg.autoPourAllocation {
-                    Text("経験点 \(exp) 未使用").font(.maru(12, weight: .bold)).foregroundStyle(Theme.vermD)
+        return VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                YosePowerBadge(power: Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))
+                compatBadge
+                Spacer(minLength: 0)
+            }
+            .padding(.bottom, 4)
+            if exp > 0 && !cfg.autoPourAllocation {
+                HStack {
+                    YoseTag(text: "経験点 \(exp) 未使用", style: .outlineShu)
+                    Spacer()
                 }
             }
-            .padding(.vertical, 8)
-            hairline
-            ForEach(Array(Ability.allCases.enumerated()), id: \.element) { i, a in
+            ForEach(Array(Ability.allCases.enumerated()), id: \.element) { _, a in
                 abilityRow(a, cap: a == .メンタル ? cfg.mentalCap : cfg.abilityCap)
-                hairline.opacity(0.5)
             }
-            compatRow
-            hairline
             if full {
                 Text("今年はもう、能力が伸びにくい（年が明けると戻る）。")
-                    .font(.maru(12)).foregroundStyle(Theme.inkSub).padding(.top, 10)
+                    .font(YoseFont.mincho(13)).foregroundStyle(YoseColor.haiSumi).padding(.top, 6)
             }
         }
     }
@@ -144,15 +90,31 @@ struct NotebookView: View {
         let v = s[a]
         let g = Theme.rank(v)
         return HStack(spacing: 10) {
-            Text(g).font(.maru(20, weight: .black)).foregroundStyle(Theme.curtain)
+            Text(g).font(YoseFont.gothic(18, weight: .black)).foregroundStyle(YoseColor.kinBright)
                 .frame(width: 34, height: 34)
-                .overlay(Rectangle().stroke(Theme.curtain, lineWidth: 1.5))
-            Text("\(a)").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 74, alignment: .leading)
-            inkBar(Theme.rankProgress(v, cap: cap), color: Theme.curtainLit, height: 7)
-            Text("\(Int(v.rounded()))").font(.maru(20, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
-                .frame(width: 36, alignment: .trailing)
+                .background(YoseColor.enji)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1).padding(-1))
+            Text("\(a)").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .frame(width: 64, alignment: .leading).lineLimit(1).minimumScaleFactor(0.8)
+            YoseGauge(value: Theme.rankProgress(v, cap: cap), total: 1, fill: YoseColor.shu, height: 12)
+            Text("\(Int(v.rounded()))").font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
+                .frame(width: 48, alignment: .trailing)
         }
-        .padding(.vertical, 9)
+        .padding(.horizontal, 10).frame(height: 58)
+        .yoseHarigami()
+    }
+
+    private var compatBadge: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text("相性").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .padding(.horizontal, 4).padding(.vertical, 1)
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
+            Text("\(Int(s.compat.rounded()))").font(YoseFont.number(24, weight: .black)).foregroundStyle(YoseColor.shu)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .yoseKifuda()
     }
 
     /// 墨の細い帯（角丸なし・1色）
@@ -167,71 +129,114 @@ struct NotebookView: View {
         .overlay(Rectangle().stroke(Theme.sumi.opacity(0.5), lineWidth: 0.8))
     }
 
-    private var compatRow: some View {
-        let cap = session.config.compatCap
-        return HStack(spacing: 10) {
-            Text("相").font(.maru(20, weight: .black)).foregroundStyle(Theme.verm)
-                .frame(width: 34, height: 34)
-                .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.5))
-            Text("相性").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 74, alignment: .leading)
-            inkBar(s.compat / cap, color: Theme.verm, height: 7)
-            Text("\(Int(s.compat.rounded()))").font(.maru(20, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
-                .frame(width: 36, alignment: .trailing)
-        }
-        .padding(.vertical, 9)
-    }
-
     // MARK: きろく（大会履歴＋称号）
 
+    private struct LogEntry: Hashable { let week: String; let title: String; let mark: String; let prize: Int }
+
+    private var logEntries: [LogEntry] {
+        var out: [LogEntry] = []
+        var prev = ""
+        for line in session.log where line != prev {
+            prev = line
+            let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
+                : (line.contains("客席") ? "観戦"
+                    : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")))
+            var week = "", body = line
+            if let r = line.range(of: ": ") { week = String(line[..<r.lowerBound]); body = String(line[r.upperBound...]) }
+            var prize = 0
+            var rest = body
+            if let re = try? NSRegularExpression(pattern: "\\+(\\d+)万") {
+                for m in re.matches(in: body, range: NSRange(body.startIndex..., in: body)) {
+                    if let r = Range(m.range(at: 1), in: body) { prize += Int(body[r]) ?? 0 }
+                }
+                rest = re.stringByReplacingMatches(in: body, range: NSRange(body.startIndex..., in: body), withTemplate: "")
+                    .trimmingCharacters(in: .whitespaces)
+            }
+            out.append(LogEntry(week: week, title: rest, mark: mark, prize: prize))
+        }
+        return out
+    }
+
     private var kirokuPage: some View {
-        VStack(alignment: .leading, spacing: Theme.Sp.s12) {
+        let entries = logEntries
+        let played = entries.filter { ["通過", "敗退", "優勝"].contains($0.mark) }.count
+        let wins = entries.filter { $0.mark == "優勝" }.count + session.yearHistory.filter { $0.champion }.count
+        let total = entries.reduce(0) { $0 + $1.prize } + session.yearHistory.reduce(0) { $0 + $1.prize / 10000 }
+        return VStack(alignment: .leading, spacing: 10) {
+            // 通算戦績（3カラム木札）
+            HStack(spacing: 0) {
+                kirokuStat("大会出場", "\(played)", "回")
+                Rectangle().fill(YoseColor.kiDark).frame(width: 1).padding(.vertical, 8)
+                kirokuStat("優勝", "\(wins)", "回")
+                Rectangle().fill(YoseColor.kiDark).frame(width: 1).padding(.vertical, 8)
+                kirokuStat("獲得賞金", "\(total)", "万")
+            }
+            .frame(height: 64).frame(maxWidth: .infinity).yoseKifuda()
+            .padding(.bottom, 2)
             // これまでの年（出来事ログは年ごとに消えるので、2年目以降は前の年が見えなかった）。年の記録＝yearHistory
             if !session.yearHistory.isEmpty {
-                Text("これまでの頂グランプリ").font(.maru(12)).foregroundStyle(Theme.inkDim)
+                Text("これまでの頂グランプリ").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                 ForEach(session.yearHistory, id: \.year) { r in
+                    let win = r.champion
                     HStack(spacing: 10) {
-                        Text("\(r.year)年目").font(.maru(12)).monospacedDigit().foregroundStyle(Theme.inkSub)
-                            .frame(width: 44, alignment: .leading)
+                        Text("\(r.year)年目").font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
+                            .frame(width: 52, alignment: .leading)
                         Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
-                            .font(.maru(13, weight: .bold))
-                            .foregroundStyle(r.champion || r.reachedFinal ? Theme.goldDeep : Theme.ink)
-                        Spacer()
+                            .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         if r.prize > 0 {
-                            Text("賞金 \(Yen.man(r.prize))").font(.maru(11)).foregroundStyle(Theme.moneyDeep)
+                            Text("+\(Yen.man(r.prize))").font(YoseFont.number(15)).foregroundStyle(YoseColor.shu)
                         }
                     }
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, 12).padding(.vertical, 10)
+                    .yoseHarigami(isFeatured: win || r.reachedFinal)
                 }
-                Divider().padding(.vertical, 4)
             }
-            Text(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会").font(.maru(12)).foregroundStyle(Theme.inkDim)
-            if session.log.isEmpty {
-                Text("——まだ、舞台の記録はない。").font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
-                    .padding(.vertical, Theme.Sp.s8)
+            Text(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会")
+                .font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+            if entries.isEmpty {
+                Text("――まだ、舞台の記録はない。").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
+                    .padding(.vertical, 8)
             } else {
-                ForEach(Array(session.log.enumerated()), id: \.offset) { _, line in
-                    // 判ミニチュア（通過=verm/敗退=ink/休=inkDim）。療養週（summarize の mark="休"）は
-                    // 合否ではないので「敗退」に混ぜない（監査§1-4-5・summarize と同じ三値）。
-                    // GP決勝の優勝行（"頂GP決勝 優勝 +…万"）は通過/敗退の語を含まない＝「休」に落ちていたので先に拾う。
-                    // 客席から観た決勝（"優勝「組名」（客席から）"）は自分の優勝ではないので従来どおり。
-                    let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
-                        : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休"))
+                ForEach(Array(entries.enumerated()), id: \.offset) { _, e in
                     HStack(spacing: 10) {
-                        Text(mark)
-                            .font(.maru(10)).foregroundStyle(.white)
-                            .frame(width: 40, height: 24)
-                            .background(mark == "通過" || mark == "優勝" ? Theme.verm : (mark == "敗退" ? Theme.ink : Theme.inkDim),
-                                        in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
-                        Text(line).font(.system(size: 12.5, design: .serif)).foregroundStyle(Theme.ink)
-                        Spacer()
+                        Text(e.week.replacingOccurrences(of: "第", with: "").replacingOccurrences(of: "週", with: "週"))
+                            .font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
+                            .frame(width: 44, alignment: .leading)
+                        Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if e.prize > 0 {
+                            Text("+¥\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
+                        }
+                        kirokuMark(e.mark)
                     }
-                    .padding(.vertical, 4)
-                    Divider()
+                    .padding(.horizontal, 12).padding(.vertical, 10)
+                    .yoseHarigami(isFeatured: e.mark == "優勝")
                 }
             }
             // 称号は周回メタ（未実装）の器＝実体が入るまで出さない（監査G-02: 【仮】の空欄を出荷画面に残さない）
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func kirokuStat(_ label: String, _ value: String, _ unit: String) -> some View {
+        VStack(spacing: 2) {
+            Text(label).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(value).font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
+                Text(unit).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder private func kirokuMark(_ mark: String) -> some View {
+        switch mark {
+        case "優勝": YoseHankoStamp(text: "優勝", angle: -4)
+        case "通過": YoseTag(text: "通過", style: .solidEnji)
+        case "敗退": YoseTag(text: "敗退", style: .outlineSumi)
+        default: YoseTag(text: mark, style: .outlineSumi)
+        }
     }
 
     // MARK: ネタ（持ちネタ帳・正典: docs/neta_system_redesign_v2.md §5-3。表示専用＋純適用のみ・golden非対象）
