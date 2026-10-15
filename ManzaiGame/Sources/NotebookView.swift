@@ -203,12 +203,13 @@ struct NotebookView: View {
                         Text(e.week.replacingOccurrences(of: "第", with: "").replacingOccurrences(of: "週", with: "週"))
                             .font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 44, alignment: .leading)
+                        Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 24)
                         Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
                             Text("+¥\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
                         }
-                        kirokuMark(e.mark)
+                        kirokuMark(e.mark).frame(minWidth: 46)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .yoseHarigami(isFeatured: e.mark == "優勝")
