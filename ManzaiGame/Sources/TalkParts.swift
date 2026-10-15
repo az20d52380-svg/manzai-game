@@ -83,7 +83,7 @@ struct TalkBubble: View {
             }
             .padding(.top, faceSize * 0.5)   // かぶせた顔の分だけ上に余白
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(name)、\(advice.text)")
+            .accessibilityLabel("\(Names.show(name))、\(Names.show(advice.text))")
     }
 }
 

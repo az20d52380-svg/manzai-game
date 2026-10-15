@@ -1103,7 +1103,7 @@ struct FinalsPresentationView: View {
             // 余韻（文言は既存のまま・地の文と台詞を分けただけ）
             if d.champion {
                 VStack(alignment: .leading, spacing: 0) {   // ト書きは吹き出しの上辺に結合して1つの塊に
-                    Text("谷口が、そっと耳打ちした。").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.kinari)
+                    Text(Names.show("谷口が、そっと耳打ちした。")).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).padding(.vertical, 3)
                         .background(YoseColor.kuroUrushi)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))

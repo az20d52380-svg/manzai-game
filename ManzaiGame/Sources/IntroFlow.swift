@@ -122,14 +122,14 @@ private struct RecallScriptRow: View {
     var body: some View {
         let name = advice.name ?? "俺"
         HStack(alignment: .firstTextBaseline, spacing: 0) {
-            Text("\(name)「\(advice.text)」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi.opacity(0.85))
+            Text(verbatim: "\(Names.show(name))「\(Names.show(advice.text))」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi.opacity(0.85))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 12).padding(.vertical, 4)
                 .background(YoseColor.ki.opacity(0.35))
                 .overlay(alignment: .leading) { Rectangle().fill(YoseColor.shu).frame(width: 3) }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(name)、\(advice.text)")
+        .accessibilityLabel("\(Names.show(name))、\(Names.show(advice.text))")
     }
 }
 
