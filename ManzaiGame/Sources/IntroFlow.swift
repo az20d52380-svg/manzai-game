@@ -340,7 +340,7 @@ struct S1TitleView: View {
                         .frame(maxWidth: .infinity, minHeight: 58)
                 }
                 .buttonStyle(YoseButtonStyle(.primary))
-                .padding(.horizontal, 32)
+                .padding(.horizontal, YoseMetrics.screenMargin)
                 .padding(.bottom, 20)
                 crowdBand
             }
@@ -365,7 +365,7 @@ struct S1TitleView: View {
     private var signboard: some View {
         VStack(spacing: 8) {
             YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(48, weight: .black),
-                             fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 2, dropShadowY: 3)
+                             fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 2.5, dropShadowY: 3)
             Text("――漫才師、育成。").font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinBright)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 22)
@@ -373,7 +373,7 @@ struct S1TitleView: View {
         .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5).padding(6))
         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3))
         .background(Rectangle().fill(YoseColor.sumi).offset(y: 4))
-        .padding(.horizontal, 24)
+        .padding(.horizontal, YoseMetrics.screenMargin)
     }
 
     /// 上手・下手のめくり台＋中央のサンパチマイク
@@ -431,7 +431,9 @@ struct S1TitleView: View {
         }
         .frame(maxWidth: .infinity, alignment: .bottom).frame(height: 56, alignment: .bottom)
         .clipped()
-        .background(Color(hex: 0x181210).frame(height: 14), alignment: .bottom)
+        .background(alignment: .bottom) {   // 客席の影の下は画面の下端まで黒漆で塗る（定式幕を貫通させない）
+            Color(hex: 0x181210).frame(height: 14).background(Color(hex: 0x181210).ignoresSafeArea(edges: .bottom))
+        }
         .ignoresSafeArea(edges: .bottom)
     }
 }
