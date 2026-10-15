@@ -227,7 +227,7 @@ private struct RecallNameBoard: View {
             Rectangle().fill(band).frame(height: 14)
                 .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
             VStack(spacing: 2) {
-                ForEach(Array(name), id: \.self) { ch in
+                ForEach(Array(Names.show(name).enumerated()), id: \.offset) { _, ch in
                     Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
                 }
             }
