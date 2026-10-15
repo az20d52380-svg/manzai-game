@@ -298,6 +298,11 @@ struct NotebookView: View {
                         .rotationEffect(.degrees(-6))
                         .modifier(StampShake())
                 }
+                if renamingID != neta.id {
+                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color(hex: 0xB0A898))   // カード右端＝触れる（名前タップで改名）
+                        .onTapGesture { renameDraft = neta.name; renamingID = neta.id }
+                }
             }
             Text(NetaCatalog.displayName(neta.kata)).font(.maru(9, weight: .bold)).foregroundStyle(.white)
                 .padding(.horizontal, 6).padding(.vertical, 2).background(Theme.verm)
@@ -306,10 +311,11 @@ struct NotebookView: View {
             oroshiLine(neta)
             HStack(spacing: 8) {
                 Text("舞台 \(neta.stageCount)回").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkSub)
-                ForEach(neta.lengthFit, id: \.self) { l in
-                    Text(NetaCatalog.displayName(l)).font(.maru(11)).foregroundStyle(Theme.inkSub)
-                        .padding(.horizontal, 5).padding(.vertical, 1)
-                        .overlay(Rectangle().stroke(Theme.inkFaint, lineWidth: 0.8))
+                if !neta.lengthFit.isEmpty {
+                    Text(neta.lengthFit.map { NetaCatalog.displayName($0) }.joined(separator: " / "))   // 尺タグは1つのカプセルに統合
+                        .font(.maru(11)).foregroundStyle(Theme.sumi).lineLimit(1)
+                        .padding(.horizontal, 8).padding(.vertical, 2)
+                        .background(Color(hex: 0xEAE5D8), in: Capsule())
                 }
                 Spacer()
                 netaBadges(neta)
@@ -317,9 +323,7 @@ struct NotebookView: View {
             if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
                 if isSelected {
-                    Label("勝負ネタ設定中", systemImage: "checkmark.seal.fill")   // 押せないボタンを置かない
-                        .font(.maru(13, weight: .black)).foregroundStyle(Theme.verm)
-                        .frame(height: 36)
+                    EmptyView()   // 勝負ネタ状態は右上の「真剣勝負」印だけで伝える
                 } else {
                     actionChip("勝負ネタにする", active: true, primary: true) {
                         session.selectNeta(neta.id)
@@ -371,8 +375,6 @@ struct NotebookView: View {
             } label: {
                 HStack(spacing: 4) {
                     Text(neta.name).font(.system(size: 20, weight: .heavy, design: .serif)).foregroundStyle(Theme.sumi).lineLimit(1)
-                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0xA09080))   // 触れる＝名前から編集へ（丸「改」を廃止）
                 }
             }.buttonStyle(.plain)
         }
@@ -391,12 +393,12 @@ struct NotebookView: View {
                 Text("まだ人前でやっていない").font(.maru(11)).foregroundStyle(Theme.inkSub)
                     .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(Color(hex: 0xE8E2D2), in: RoundedRectangle(cornerRadius: 2))   // 点線枠をやめ、墨のべた小帯に
+                    .overlay(Capsule().stroke(Theme.inkFaint, lineWidth: 1))   // 状態印は楕円の落款風に統一
             }
             if neta.isTeppan(config: session.config) {
                 Text("自信作").font(.maru(11.5, weight: .black)).foregroundStyle(Theme.goldD)
                     .padding(.horizontal, 5).padding(.vertical, 1)
-                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.4))
+                    .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
             }
         }
     }
@@ -447,8 +449,8 @@ struct NotebookView: View {
                 .foregroundStyle(primary && active ? Color.white : (active ? Theme.sumi : Theme.inkFaint))
                 .padding(.horizontal, primary ? 14 : 10)
                 .frame(height: primary ? 36 : 32)
-                .background(primary && active ? Theme.verm : (active ? Color.white : Color.clear))
-                .overlay(Rectangle().stroke(active ? Theme.sumi : Theme.line, lineWidth: 1.2))
+                .background(primary && active ? Theme.verm : (active ? Color(hex: 0xE8DFC8) : Color.clear), in: RoundedRectangle(cornerRadius: 4))
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(primary ? Theme.sumi : Color(hex: 0xD0C4A8), lineWidth: primary ? 1.2 : 0.5))
         }
         .buttonStyle(PressableStyle())
         .disabled(!active)
