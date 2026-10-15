@@ -139,6 +139,13 @@ struct ChoiceEventOverlay: View {
                 .padding(.top, 12).padding(.trailing, 14)
                 .allowsHitTesting(false)
             }
+            .overlay(alignment: .bottomTrailing) {
+                // 調子のいい日の朱印（選んだ結果のチップが出たら譲る）
+                if kind == .luckyThirdLine, effectChips.isEmpty {
+                    YoseHankoStamp(text: "好調", isSquare: true, angle: -8)
+                        .padding(.bottom, 16).padding(.trailing, 16).allowsHitTesting(false)
+                }
+            }
             .overlay { moodOverlay.allowsHitTesting(false) }
             .overlay(alignment: .bottom) {
                 VStack(spacing: 0) {   // 場面と読み物の境（二重線）
