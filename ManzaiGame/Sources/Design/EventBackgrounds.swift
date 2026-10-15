@@ -303,6 +303,17 @@ private struct EventGlowLayer: View {
         case .kissaten:
             halo(w / 2, 48, 120, Color(hex: 0xFFB042), 0.5)
             halo(w / 2, 150, 90, Color(hex: 0xFFB042), 0.22)
+            if night {
+                // 夜はステンドグラスの傘そのものを減光の上に描き直して灯す
+                ZStack {
+                    HStack(spacing: 0) {
+                        Rectangle().fill(YoseColor.enji); Rectangle().fill(YoseColor.kinBright); Rectangle().fill(Color(hex: 0xD96B27))
+                    }
+                    .clipShape(TrapezoidShape(topInset: 18))
+                    TrapezoidShape(topInset: 18).stroke(YoseColor.sumi, lineWidth: 2)
+                }
+                .frame(width: 56, height: 22).brightness(0.12).position(x: w / 2, y: 36)
+            }
         case .famires:
             halo(w / 2, 40, 110, YoseColor.kinBright, 0.45)
             Path { p in
@@ -1161,8 +1172,8 @@ private struct KissatenBackdrop: View {
                     ForEach(0..<2, id: \.self) { _ in
                         ZStack {
                             Rectangle().fill(time == .night ? Color(hex: 0x24304A) : Color(hex: 0xF5D799))
-                            Rectangle().fill(YoseColor.sumi).frame(width: 2)
-                            Rectangle().fill(YoseColor.sumi).frame(height: 2)
+                            Rectangle().fill(time == .night ? Color(hex: 0x4A3B32) : YoseColor.sumi).frame(width: 2.5)
+                            Rectangle().fill(time == .night ? Color(hex: 0x4A3B32) : YoseColor.sumi).frame(height: 2.5)
                         }
                         .frame(width: 72, height: 68)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
@@ -1189,7 +1200,7 @@ private struct KissatenBackdrop: View {
                 // 手前：純喫茶のテーブル（天板に消金の縁・脚つき）とカップ＆ソーサー・クリームソーダ
                 ZStack {
                     Rectangle().fill(Color(hex: 0x3D2214)).frame(width: 14, height: 40).offset(y: 30)
-                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5).offset(y: 30))
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2).offset(y: 30))
                     Rectangle().fill(Color(hex: 0x965A38)).frame(width: 220, height: 20)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                         .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 1).padding(.horizontal, 2).padding(.top, 2) }
