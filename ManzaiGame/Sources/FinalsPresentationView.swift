@@ -108,8 +108,8 @@ struct FinalsPresentationView: View {
             // 下半分の座布団（観客の頭・床の茶色を黒漆で沈め、ボタンの土台にする）
             VStack(spacing: 0) {
                 Spacer()
-                LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: YoseColor.kuroUrushi.opacity(0.88), location: 0.3),
-                                       .init(color: YoseColor.kuroUrushi, location: 0.58)], startPoint: .top, endPoint: .bottom)   // ボタンと黒帯の間に客の頭を挟まない
+                LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: YoseColor.kuroUrushi.opacity(0.92), location: 0.16),
+                                       .init(color: YoseColor.kuroUrushi, location: 0.36)], startPoint: .top, endPoint: .bottom)   // ボタンと黒帯の間に客の頭を挟まない
                     .frame(height: 170)
             }
             .ignoresSafeArea().allowsHitTesting(false)
@@ -119,7 +119,8 @@ struct FinalsPresentationView: View {
             if let n = centerMakuriName {   // 出番の組のめくり札（無人の舞台に立てる・人形は増やさない）
                 GeometryReader { geo in
                     StageMakuri(name: n, big: true).id(n)
-                        .position(x: geo.size.width / 2, y: geo.size.height * (beat == .comments ? 0.45 : 0.665))
+                        .scaleEffect(beat == .open && n.count > 4 ? 0.82 : 1)   // 開票中は合計箱の下に収める
+                        .position(x: geo.size.width / 2, y: geo.size.height * (beat == .comments ? 0.45 : (beat == .open ? 0.70 : 0.665)))
                         .transition(.opacity)
                 }
                 .allowsHitTesting(false)
@@ -248,6 +249,7 @@ struct FinalsPresentationView: View {
         case .preceding where shown >= 1 && shown <= 5: return displayName(d.entries[shown - 1])
         case .board where boardAuto && shown >= 1 && shown <= 5 && shown < d.entries.count: return displayName(d.entries[shown - 1])
         case .comments: return session.combiName
+        case .open: return session.combiName   // 開票中も舞台に自組のめくり札（無人の床を見せない）
         default: return nil
         }
     }
@@ -469,7 +471,7 @@ struct FinalsPresentationView: View {
                 .lineLimit(1).minimumScaleFactor(0.6)
             Spacer(minLength: 6)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(e.total)").font(YoseFont.number(32, weight: .black)).foregroundStyle(YoseColor.sumi)
+                Text("\(e.total)").font(YoseFont.number(36, weight: .black)).foregroundStyle(YoseColor.sumi)
                     .contentTransition(.numericText())
                 Text("点").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
@@ -477,6 +479,7 @@ struct FinalsPresentationView: View {
         .padding(.horizontal, 14).padding(.vertical, 8)
 
         .yoseHarigami(isFeatured: e.isSelf)
+        .overlay(alignment: .leading) { Rectangle().fill(YoseColor.enji).frame(width: 6) }   // 「いま出た組」の左帯
         .id(e.order)
         .transition(.scale(scale: 0.9).combined(with: .opacity))
     }
@@ -694,7 +697,7 @@ struct FinalsPresentationView: View {
         }
         .foregroundStyle(dim ? YoseColor.ginNezu : YoseColor.kinari)
         .frame(maxWidth: .infinity).frame(height: 34)
-        .background(dim ? YoseColor.haiSumi : YoseColor.kuroUrushi)
+        .background(dim ? YoseColor.kuroUrushi.opacity(0.85) : YoseColor.kuroUrushi)
     }
 
     private func judgeFace(_ j: JudgeScore, kata: NetaKata?, height: CGFloat) -> some View {
@@ -711,11 +714,12 @@ struct FinalsPresentationView: View {
         .padding(.top, 6).padding(.bottom, 6).padding(.horizontal, 3)
         .frame(maxWidth: .infinity).frame(height: height, alignment: .top)
         .yoseHarigami(isFeatured: j.score >= 95)
+        .overlay { if j.score >= 95 { Rectangle().fill(YoseColor.kin.opacity(0.16)).allowsHitTesting(false) } }   // 高得点札は金地
     }
 
     private func judgeBack(_ j: JudgeScore, height: CGFloat) -> some View {
         VStack(spacing: 4) {
-            Text("？").font(YoseFont.gothic(26, weight: .heavy)).foregroundStyle(YoseColor.haiSumi).frame(height: 34)
+            Text("？").font(YoseFont.gothic(28, weight: .black)).foregroundStyle(YoseColor.haiSumi).frame(height: 34)
             judgeNamePlate(j.name, dim: true)
         }
         .padding(.top, 6).padding(.horizontal, 3)

@@ -454,15 +454,16 @@ struct StageMakuri: View {
         VStack(spacing: 0) {
             VStack(spacing: 1) {
                 ForEach(Array(name.enumerated()), id: \.offset) { _, c in
-                    Text(String(c)).font(YoseFont.mincho(big ? 24 : 17)).foregroundStyle(YoseColor.sumi)
+                    Text(String(c)).font(YoseFont.mincho(big ? 26 : 17)).foregroundStyle(YoseColor.sumi)
                 }
             }
-            .padding(.vertical, big ? 12 : 8).frame(width: big ? 52 : 34)
+            .padding(.vertical, big ? 14 : 8).frame(width: big ? 64 : 34)
             .background(YoseColor.washiFeatured)
-            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: big ? 2 : 1.5))
+            .overlay { if big { Rectangle().stroke(YoseColor.kin, lineWidth: 1).padding(3) } }
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: big ? 2.5 : 1.5))
             .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: big ? 3 : 0) }
-            Rectangle().fill(YoseColor.kiDark).frame(width: big ? 8 : 6, height: big ? 34 : 40)       // 脚
-            Rectangle().fill(YoseColor.sumi).frame(width: big ? 56 : 40, height: 5)           // 台
+            Rectangle().fill(YoseColor.kiDark).frame(width: big ? 9 : 6, height: big ? 30 : 40)       // 脚
+            Rectangle().fill(YoseColor.sumi).frame(width: big ? 68 : 40, height: 5)           // 台
         }
     }
 }
