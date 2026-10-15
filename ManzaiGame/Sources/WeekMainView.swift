@@ -452,7 +452,7 @@ struct WeekMainView: View {
                     .buttonStyle(YoseButtonStyle(.secondary))
                     .frame(width: 92)
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
-                    Rectangle().fill(YoseColor.kiDark).frame(height: 1.5)
+                    Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
                         Text("今は体力が満タン").font(YoseFont.captionBold).foregroundStyle(YoseColor.shu)
                     }
@@ -819,6 +819,12 @@ struct WeekMainView: View {
         .frame(maxWidth: .infinity, minHeight: wide ? 70 : nil, maxHeight: wide ? nil : .infinity, alignment: .topLeading)
         .background(gated ? YoseColor.ginNezu.opacity(0.6) : Color.clear)
         .yoseHarigami()
+        .overlay(alignment: .leading) {
+            // 左端の種別帯（無料＝朱／有料＝金）。一覧のカードだけ
+            if compact && !wide && !gated {
+                Rectangle().fill(moneyDelta < 0 ? YoseColor.kin : YoseColor.shu).frame(width: 5).padding(.vertical, 2).padding(.leading, 2)
+            }
+        }
         .overlay {
             if dashed && !gated {
                 Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5)
@@ -966,7 +972,8 @@ struct WeekMainView: View {
             .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.shu))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.shu).opacity(0.12))
+            .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.shu).opacity(0.1))
+            .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.shu), lineWidth: 1))
     }
 
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
@@ -975,7 +982,8 @@ struct WeekMainView: View {
             .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.sumi))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.sumi).opacity(0.12))
+            .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa.opacity(0.12) : YoseColor.ginNezu.opacity(0.5)))
+            .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.haiSumi), lineWidth: 1))
     }
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
