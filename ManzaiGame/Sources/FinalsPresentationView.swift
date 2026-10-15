@@ -105,6 +105,25 @@ struct FinalsPresentationView: View {
                 ConfettiView().ignoresSafeArea().allowsHitTesting(false)
             }
 
+            // 下半分の座布団（観客の頭・床の茶色を黒漆で沈め、ボタンの土台にする）
+            VStack(spacing: 0) {
+                Spacer()
+                LinearGradient(colors: [.clear, YoseColor.kuroUrushi.opacity(0.82)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 170)
+            }
+            .ignoresSafeArea().allowsHitTesting(false)
+            if spectator {   // 観戦の年は舞台を少し暗めに（自分は立てなかった夜）
+                Rectangle().fill(Color.black.opacity(0.22)).ignoresSafeArea().allowsHitTesting(false)
+            }
+            if let n = centerMakuriName {   // 出番の組のめくり札（無人の舞台に立てる・人形は増やさない）
+                GeometryReader { geo in
+                    StageMakuri(name: n, big: true).id(n)
+                        .position(x: geo.size.width / 2, y: geo.size.height * (beat == .comments ? 0.45 : 0.665))
+                        .transition(.opacity)
+                }
+                .allowsHitTesting(false)
+            }
+
             VStack(spacing: 10) {
                 broadcastTitle
 
@@ -122,17 +141,11 @@ struct FinalsPresentationView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                if beat < .result, !(beat == .duel && revealVotes < 7) {
-                    // 送りの合図は▼1種（K4）。採点だけ「1人ずつ」と添える
-                    VStack(spacing: 4) {
-                        if beat == .open && revealedJudges < 7 {
-                            YTelop(text: "タップで1人ずつ発表", size: 13)
-                        }
-                        if (beat == .preceding && shown < d.order - 1) || (beat == .board && shown < d.entries.count) {
-                            YTelop(text: "タップで次の組へ", size: 13)
-                        }
-                        YoseAdvanceCue()
-                    }
+                if beat < .result, beat != .perform, !(beat == .duel && revealVotes < 7) {
+                    // 送りは下部固定の朱の主ボタン1つ（画面のどこをタップしても進む仕様は不変・押し場所を見せるだけ）
+                    Button { if ceremonyDone { advance() } } label: { Text(advanceLabel) }
+                        .buttonStyle(YoseButtonStyle(.primary))
+                        .padding(.bottom, 6)
                 }
             }
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 62)
@@ -203,8 +216,39 @@ struct FinalsPresentationView: View {
 
     /// 番組タイトル（黒×金の中継グラフィック）
     private var broadcastTitle: some View {
-        StageSign(title: "頂 グランプリ", subtitle: spectator ? "客席から観戦中" : nil, tag: "決勝", outlined: true)
-            .padding(.horizontal, -4)
+        VStack(spacing: 6) {
+            StageSign(title: "頂 グランプリ", subtitle: spectator ? "客席から観戦中" : nil, tag: "決勝", outlined: true)
+                .padding(.horizontal, -4)
+            if spectator {
+                Text("※ 予選敗退のため、客席から決勝を観戦しています")
+                    .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                    .frame(maxWidth: .infinity).frame(height: 26).background(YoseColor.enji)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+            }
+        }
+    }
+
+    /// 下部の主ボタンの文言（押すと画面タップと同じ advance）
+    private var advanceLabel: String {
+        switch beat {
+        case .preceding: return shown < d.order - 1 ? "次の組を見る ▶" : "出順を決める ▶"
+        case .lot: return "舞台へ ▶"
+        case .perform: return ""
+        case .open: return revealedJudges < 7 ? "審査員の得点をめくる（\(min(7, revealedJudges + 1))/7）▶" : "講評へ ▶"
+        case .comments: return commentStep < commentPicks.count - 1 ? "次の講評へ ▶" : "順位ボードへ ▶"
+        case .board: return !boardAuto ? "後の組を見る ▶" : (shown < d.entries.count ? "次の組を見る ▶" : "最終決戦へ 進む ▶")
+        case .duel: return "優勝発表へ ▶"
+        case .result: return ""
+        }
+    }
+    /// 舞台中央に立てる出番の組のめくり札（先の組・ボード進行中・講評中の自組）。無ければ nil
+    private var centerMakuriName: String? {
+        switch beat {
+        case .preceding where shown >= 1 && shown <= 5: return displayName(d.entries[shown - 1])
+        case .board where boardAuto && shown >= 1 && shown <= 5 && shown < d.entries.count: return displayName(d.entries[shown - 1])
+        case .comments: return session.combiName
+        default: return nil
+        }
     }
 
     /// 下部テロップ帯（コンビ名・M-1の下三分）。今が何番手かを常に出す
@@ -345,18 +389,34 @@ struct FinalsPresentationView: View {
             .yoseKifuda(showNail: true)
             .overlay(RoundedRectangle(cornerRadius: YoseMetrics.radius).stroke(YoseColor.kin, lineWidth: 1.5).padding(6))
             .padding(.horizontal, 20)
-            Spacer(minLength: 130)
-            // 全10組の出順番付（自組だけ朱枠の特別札）
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
+            Spacer(minLength: 96)
+            // 全10組の出順番付（縦長の木札・2段×5列。自組だけ朱枠＋「あなた」の朱判）
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 7), count: 5), spacing: 8) {
                 ForEach(slots, id: \.order) { e in
-                    VStack(spacing: 1) {
-                        Text("\(e.order)").font(YoseFont.number(15, weight: .black))
+                    VStack(spacing: 2) {
+                        Text("\(e.order)").font(YoseFont.number(17, weight: .black))
                             .foregroundStyle(e.isSelf ? YoseColor.shu : YoseColor.enji)
-                        Text(displayName(e)).font(YoseFont.mincho(11)).foregroundStyle(YoseColor.sumi)
-                            .lineLimit(1).minimumScaleFactor(0.5)
+                        let chars = Array(displayName(e)).map(String.init)
+                        let half = (chars.count + 1) / 2
+                        let cols: [[String]] = chars.count > 5 ? [Array(chars.prefix(half)), Array(chars.dropFirst(half))] : [chars]
+                        HStack(alignment: .top, spacing: 1) {   // 長い名は2列（右の列から読む縦書き）
+                            ForEach(Array(cols.enumerated()), id: \.offset) { _, col in
+                                VStack(spacing: 0) {
+                                    ForEach(Array(col.enumerated()), id: \.offset) { _, c in
+                                        Text(c).font(YoseFont.mincho(12)).foregroundStyle(YoseColor.sumi)
+                                    }
+                                }
+                            }
+                        }
+                        .environment(\.layoutDirection, .rightToLeft)
+                        Spacer(minLength: 0)
+                        if e.isSelf { Text("あなた").font(YoseFont.gothic(9, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                            .frame(maxWidth: .infinity).padding(.vertical, 2).background(YoseColor.shu) }
                     }
-                    .frame(maxWidth: .infinity).frame(height: 40)
-                    .yoseHarigami(isFeatured: e.isSelf)
+                    .padding(.top, 9).padding(.horizontal, 2)
+                    .frame(maxWidth: .infinity).frame(height: 98)
+                    .yoseKifuda(showNail: true)
+                    .overlay { if e.isSelf { Rectangle().stroke(YoseColor.shu, lineWidth: 2.5) } }
                 }
             }
             mcBubble(FinalsMC.call(order: d.order, name: session.combiName))
@@ -398,14 +458,23 @@ struct FinalsPresentationView: View {
     /// 今出た1組の札（出順・名前・合計）。自組は朱枠の特別札
     private func nowCard(_ e: FinalsEntry) -> some View {
         HStack(spacing: 10) {
-            YoseTag(text: "\(e.order)番目", style: .solidEnji)
+            VStack(spacing: 3) {
+                YoseTag(text: "\(e.order)番目", style: .solidEnji)
+                if let r = (standings(shown).firstIndex { $0.order == e.order }).map({ $0 + 1 }), r <= 3 {
+                    YoseTag(text: "暫定\(r)位", style: .outlineShu)
+                }
+            }
             Text(displayName(e)).font(YoseFont.mincho(22)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Spacer(minLength: 6)
-            Text("\(e.total)").font(YoseFont.number(32, weight: .black)).foregroundStyle(YoseColor.sumi)
-                .contentTransition(.numericText())
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text("\(e.total)").font(YoseFont.number(32, weight: .black)).foregroundStyle(YoseColor.sumi)
+                    .contentTransition(.numericText())
+                Text("点").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            }
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
+
         .yoseHarigami(isFeatured: e.isSelf)
         .id(e.order)
         .transition(.scale(scale: 0.9).combined(with: .opacity))
@@ -424,9 +493,11 @@ struct FinalsPresentationView: View {
                 let seated = rank < 3
                 if rank == 3 {
                     Text("▲ ここまで最終決戦進出（上位3組） ▲").font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari)
-                        .frame(maxWidth: .infinity).frame(height: 20)
-                        .background(YoseColor.shu)
-                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                        .frame(maxWidth: .infinity).frame(height: 24)
+                        .background(YoseColor.enji)
+                        .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
+                        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
+                        .padding(.horizontal, -4)
                 }
                 HStack(spacing: 10) {
                     Text("\(rank + 1)").font(YoseFont.number(18, weight: .black))
@@ -440,7 +511,7 @@ struct FinalsPresentationView: View {
                 }
                 .padding(.horizontal, 12).padding(.vertical, 4)
                 .yoseHarigami(isFeatured: seated)
-                .overlay { if !seated && !e.isSelf { Rectangle().fill(YoseColor.ginNezu.opacity(0.6)).allowsHitTesting(false) } }
+                .overlay { if !seated && !e.isSelf { Rectangle().fill(YoseColor.ginNezu.opacity(0.6)).overlay(Rectangle().stroke(YoseColor.haiSumi, lineWidth: 1.5)).allowsHitTesting(false) } }
             }
             // まだ埋まっていない席は空の札で見せる（3つの椅子を争うと一目で分かる）
             ForEach(rows.count..<max(rows.count, 3), id: \.self) { rank in
@@ -453,16 +524,16 @@ struct FinalsPresentationView: View {
                 }
                 .padding(.horizontal, 12).padding(.vertical, 4)
                 .frame(height: 34)
-                .background(YoseColor.ki)
-                .overlay(Rectangle().stroke(YoseColor.haiSumi, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
+                .background(ZStack { YoseColor.ki; YoseColor.kiDark.opacity(0.55) })
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
             }
         }
         .padding(.bottom, 2)
     }
 
     // MARK: 司会の吹き出し（決勝の進行役）
-    private func mcBubble(_ text: String) -> some View {
-        YoseSpeechBox(speaker: family(FinalsMC.name), text: text, roleLabel: "司会")
+    private func mcBubble(_ text: String, cue: Bool = true) -> some View {
+        YoseSpeechBox(speaker: family(FinalsMC.name), text: text, roleLabel: "司会", showCue: cue)
             .transition(.opacity)
     }
     /// 名前札には姓だけ（「鳴海 ジョー」→「鳴海」）
@@ -493,8 +564,8 @@ struct FinalsPresentationView: View {
                                     burst: burst, order: d.order, viaRevival: session.reachedFinalViaRevival)
     }
 
-    private func judgeBox(_ j: JudgeScore, text: String) -> some View {
-        YoseSpeechBox(speaker: family(j.name), text: text, roleLabel: "審査員・\(j.score)点")
+    private func judgeBox(_ j: JudgeScore, text: String, cue: Bool = true) -> some View {
+        YoseSpeechBox(speaker: family(j.name), text: text, roleLabel: "審査員", showCue: cue)
             .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "\(j.score)", isSquare: true, angle: 6).scaleEffect(0.8).offset(x: 4, y: -22) }
             .padding(.top, 14)
     }
@@ -526,13 +597,14 @@ struct FinalsPresentationView: View {
                 let salt = j.score &+ session.year &* 7 &+ d.order &+ i
                 let c = FinalsJudgeTalk.comment(judge: j.name, score: j.score, high: i == 0, scene: judgeScene, salt: salt)
                 let text = debugForcedComment ?? c.text
-                mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0))
+                Spacer(minLength: 0)
+                mcBubble(FinalsMC.askJudge(j.name, score: j.score, high: i == 0), cue: false)
                 judgeBox(j, text: text)
                     .id(j.name)
                     .transition(.opacity.combined(with: .offset(y: 8)))
                 // 審査員のボケ行なら、司会が拾う1拍（r6 §5-4・P3）
                 if let p = debugForcedComment.map({ FinalsMC.pickup(after: $0, scene: judgeScene, salt: salt) }) ?? c.pickup {
-                    mcBubble(p.mc)
+                    mcBubble(p.mc, cue: false)
                     if let reply = p.reply {
                         judgeBox(j, text: reply)
                     }
@@ -563,10 +635,17 @@ struct FinalsPresentationView: View {
             .background(YoseColor.kuroUrushi)
             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
             .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
-            let cols = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
-            LazyVGrid(columns: cols, spacing: 10) {
-                ForEach(Array(d.judges.enumerated()), id: \.offset) { i, j in
-                    judgeCard(j, shown: i < revealedJudges, kata: kata)
+            let cw = (UIScreen.main.bounds.width - YoseMetrics.screenMargin * 2 - 24) / 4
+            VStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    ForEach(0..<4, id: \.self) { i in
+                        judgeCard(d.judges[i], shown: i < revealedJudges, kata: kata).frame(width: cw)
+                    }
+                }
+                HStack(spacing: 8) {   // 2段目の3枚は中央に（下の合計箱と軸を揃える）
+                    ForEach(4..<min(7, d.judges.count), id: \.self) { i in
+                        judgeCard(d.judges[i], shown: i < revealedJudges, kata: kata).frame(width: cw)
+                    }
                 }
             }
             // 合計の電光計器箱（黒漆＋二重金枠）。7人目が開くまで伏せる
@@ -577,7 +656,7 @@ struct FinalsPresentationView: View {
                         .foregroundStyle(allShown ? YoseColor.kinBright : YoseColor.haiSumi)
                         .contentTransition(.numericText())
                         .punch(on: allShown, peak: 1.2)   // 7人目が開いた瞬間に初めて合計がドンと出る
-                    Text(allShown ? "/ 700" : "……").font(YoseFont.number(14, weight: .bold)).foregroundStyle(YoseColor.ginNezu)
+                    Text(allShown ? "/ 700" : "点").font(allShown ? YoseFont.number(14, weight: .bold) : YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.ginNezu)
                 }
             }
             .frame(width: 240, height: 76)
@@ -672,6 +751,8 @@ struct FinalsPresentationView: View {
         return VStack(spacing: 14) {
             if revealVotes == 0 { mcBubble(FinalsMC.startVoting) }
 
+            Text("4票先取で優勝").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                .shadow(color: YoseColor.sumi, radius: 0, x: 0, y: 1)
             // 3組の得票番付（自組・最多得票は朱枠の特別札・下に過半数4マス）
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { k in
@@ -702,7 +783,6 @@ struct FinalsPresentationView: View {
             if revealVotes < 7 {
                 Button { advance() } label: { Text("次の審査員札をめくる（\(revealVotes)/7）▶") }
                     .buttonStyle(YoseButtonStyle(.primary))
-                    .frame(width: 300)
             } else {
                 YTelop(text: "——開票、出揃った。", size: 16, color: YoseColor.kinBright)
             }
@@ -747,12 +827,13 @@ struct FinalsPresentationView: View {
             .minimumScaleFactor(0.5)
             .foregroundStyle(forUs ? YoseColor.kinari : YoseColor.sumi)
             .padding(.vertical, 4)
-            .frame(maxWidth: .infinity).frame(height: 116, alignment: .top)
+            .frame(maxWidth: .infinity).frame(height: 150, alignment: .top)
             .background(forUs ? YoseColor.shu : YoseColor.washi)
         } back: {
-            Text("？").font(YoseFont.gothic(20, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
-                .frame(maxWidth: .infinity).frame(height: 116)
-                .background(YoseColor.kiDark)
+            YoseHankoStamp(text: "封", isSquare: true, angle: 0).scaleEffect(0.8)
+                .frame(maxWidth: .infinity).frame(height: 150)
+                .background(YoseColor.ki)
+                .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1.5).padding(3))
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.65), value: shown)
     }
@@ -763,7 +844,7 @@ struct FinalsPresentationView: View {
         let names = duelNames
         let winnerName = names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
         return VStack(spacing: 12) {
-            mcBubble(FinalsMC.announceWinner)
+            mcBubble(FinalsMC.announceWinner, cue: !d.champion)
             // 優勝額縁（黒漆＋金＋朱の枠・左に特大の朱印）。他組の優勝は銀鼠の地
             HStack(spacing: 14) {
                 YoseHankoStamp(text: "優勝", isSquare: true, angle: -4).scaleEffect(1.35)
@@ -771,9 +852,14 @@ struct FinalsPresentationView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("頂グランプリ 今年の優勝").font(YoseFont.gothic(12, weight: .heavy))
                         .foregroundStyle(d.champion ? YoseColor.kin : YoseColor.sumi)
-                    Text(winnerName).font(YoseFont.mincho(26))
-                        .foregroundStyle(d.champion ? YoseColor.kinari : YoseColor.sumi)
-                        .lineLimit(1).minimumScaleFactor(0.5)
+                    if d.champion {
+                        YoseOutlinedText(text: winnerName, font: YoseFont.mincho(28), fill: YoseColor.kinBright,
+                                         outlineColor: YoseColor.kuroUrushi, outlineWidth: 2, dropShadowY: 2)
+                            .lineLimit(1).minimumScaleFactor(0.5)
+                    } else {
+                        Text(winnerName).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                            .lineLimit(1).minimumScaleFactor(0.5)
+                    }
                 }
                 Spacer(minLength: 0)
             }
@@ -781,17 +867,19 @@ struct FinalsPresentationView: View {
             .frame(maxWidth: .infinity)
             .background(d.champion ? YoseColor.kuroUrushi : YoseColor.ginNezu)
             .overlay(Rectangle().stroke(d.champion ? YoseColor.kin : YoseColor.sumi, lineWidth: 3))
-            .overlay(Rectangle().stroke(d.champion ? YoseColor.shu : YoseColor.haiSumi, lineWidth: 1.5).padding(6))
+            .overlay(Rectangle().stroke(d.champion ? YoseColor.kin : YoseColor.haiSumi, lineWidth: 1).padding(6))
+            .overlay(Rectangle().stroke(d.champion ? YoseColor.shu : YoseColor.haiSumi, lineWidth: 1.5).padding(10))
             .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: 4) }
             .padding(.bottom, 4)
             .scaleEffect(celebrate || !d.champion ? 1 : 1.25)
             Spacer(minLength: 0)
             // 余韻（文言は既存のまま・地の文と台詞を分けただけ）
             if d.champion {
-                VStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: 0) {   // ト書きは吹き出しの上辺に結合して1つの塊に
                     Text("谷口が、そっと耳打ちした。").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).padding(.vertical, 3)
                         .background(YoseColor.kuroUrushi)
+                        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
                     YoseSpeechBox(speaker: "谷口", text: "……なあ、腹減ったな", roleLabel: "相方")
                 }
             } else if spectator {
