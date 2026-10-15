@@ -26,6 +26,8 @@ struct ReminiscenceCard: Identifiable {
     var talk: [Advice] = []
     /// 二人の立ち位置（true＝並ぶ／false＝離れている）
     var together: Bool = true
+    /// 場面のト書きの場所・時間帯（あればイベント用の背景を使う。nil は従来の共通の室内絵）
+    var backdrop: EventBackdrop? = nil
 }
 
 struct ReminiscencePlayer: View {
@@ -46,7 +48,7 @@ struct ReminiscencePlayer: View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: title, subtitle: "\(index + 1) / \(cards.count)")
             ZStack(alignment: .topLeading) {
-                RecallPicture(mood: card.mood, together: card.together)
+                RecallPicture(mood: card.mood, together: card.together, backdrop: card.backdrop)
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14)
                     .id("scene\(index)")
                 HStack(alignment: .top) {
@@ -134,6 +136,7 @@ private struct RecallScriptRow: View {
 private struct RecallPicture: View {
     let mood: DuskMood
     let together: Bool
+    var backdrop: EventBackdrop? = nil
 
     private var sky: [Color] {
         switch mood {
@@ -157,6 +160,9 @@ private struct RecallPicture: View {
             let w = geo.size.width, h = geo.size.height
             let floorH = h * 0.30
             ZStack(alignment: .bottom) {
+                if let backdrop {
+                    EventStageBackdropView(backdrop: backdrop).frame(width: w, height: h)
+                } else {
                 LinearGradient(colors: sky, startPoint: .top, endPoint: .bottom)
                 // 格子窓
                 HStack(spacing: 10) {
@@ -188,6 +194,15 @@ private struct RecallPicture: View {
                     RecallDesk(); RecallDesk()
                 }
                 .padding(.bottom, floorH * 0.04)
+                }
+                if backdrop != nil {
+                    // 二人の名札（背景の手前）
+                    HStack(alignment: .bottom, spacing: together ? 18 : w * 0.34) {
+                        RecallNameBoard(name: "俺", band: YoseColor.kuroUrushi, height: min(150, h * 0.46))
+                        RecallNameBoard(name: "谷口", band: YoseColor.shu, height: min(176, h * 0.52))
+                    }
+                    .padding(.bottom, h * 0.06)
+                }
             }
             .clipped()
         }

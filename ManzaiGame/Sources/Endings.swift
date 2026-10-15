@@ -65,7 +65,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         case .championPair: "頂に立ち、二人は近くにいた"
         }
     }
-    /// 一枚絵のキャプション（#7 は仕様に無い＝空）
+    /// 一枚絵のキャプション（#7 は仕様に無いため追記・docs/endings_spec_v1.md に反映する）
     var caption: String {
         switch self {
         case .nightEscape: "始発は五時十二分に出た。"
@@ -74,7 +74,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         case .keptGoing: "来年の一月の欄に、もう二人の名前が書いてあった。"
         case .tenYearsClose: "十年分の行が、全部埋まった。"
         case .tenYearsTrue: "十一年目の一月も、同じ劇場の出番から始まる。"
-        case .championRetire: ""
+        case .championRetire: "二着の衣装は、掛けたまま楽屋に残した。"
         case .championPair: "トロフィーは、二人の間の席に置いた。"
         }
     }
@@ -101,17 +101,17 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
     /// 場面カード（S6b を通る #5・#7・#8 は S6b の後／前に付く分だけ。#7 は無し）。
     /// riftChoice＝予告で選んだもの（"A"/"B"/nil）。#2 場面1 の最後の一行が変わる
     func cards(riftChoice: String? = nil) -> [ReminiscenceCard] {
-        func c(_ caption: String, mood: DuskMood = .eve, together: Bool = true, _ talk: [(String, String)]) -> ReminiscenceCard {
-            ReminiscenceCard(caption: caption, mood: mood, talk: talk.map { Advice(name: $0.0, text: $0.1) }, together: together)
+        func c(_ caption: String, mood: DuskMood = .eve, together: Bool = true, bg: EventBackdrop? = nil, _ talk: [(String, String)]) -> ReminiscenceCard {
+            ReminiscenceCard(caption: caption, mood: mood, talk: talk.map { Advice(name: $0.0, text: $0.1) }, together: together, backdrop: bg)
         }
         switch self {
         case .nightEscape:
             return [
-                c("深夜二時。俺のアパート。", mood: .night, [("谷口", "電話出えへんから来たで。電気、止まってるやん"), ("俺", "払えるあてがない。朝までにここを出る"),
+                c("深夜二時。俺のアパート。", mood: .night, bg: EventBackdrop(.apartment,.night), [("谷口", "電話出えへんから来たで。電気、止まってるやん"), ("俺", "払えるあてがない。朝までにここを出る"),
                                         ("谷口", "ほんまに行くんか。どこ行くん"), ("俺", "田舎に戻る。親戚の畑で働かせてもらう")]),
-                c("午前四時。アパートの前。", mood: .night, [("谷口", "荷物、それだけか"), ("俺", "段ボール二つ。残りは置いていく"),
+                c("午前四時。アパートの前。", mood: .night, bg: EventBackdrop(.apartment,.night), [("谷口", "荷物、それだけか"), ("俺", "段ボール二つ。残りは置いていく"),
                                         ("谷口", "借金、少しなら俺も払えるで"), ("俺", "いい。それはお前の分じゃない")]),
-                c("始発の前。駅のホーム。", mood: .night, together: false, [("谷口", "着いたら連絡してな。絶対やで"), ("俺", "わかった。向こうの番号もあとで送る")]),
+                c("始発の前。駅のホーム。", mood: .night, together: false, bg: EventBackdrop(.station,.night), [("谷口", "着いたら連絡してな。絶対やで"), ("俺", "わかった。向こうの番号もあとで送る")]),
             ]
         case .breakup:
             var first: [(String, String)] = [("谷口", "今日は俺から話あるねん。座って聞いてくれるか"), ("俺", "うん。聞く"),
@@ -119,45 +119,45 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
             if riftChoice == "A" { first.append(("谷口", "前に話した夜のこと、ちゃんと覚えてるで")) }
             else if riftChoice == "B" { first.append(("谷口", "前に一回、言いかけたんやけどな")) }
             return [
-                c("夜。谷口の部屋。", mood: .night, together: false, first),
-                c("翌日の昼。事務所の応接室。", mood: .noon, [("真壁", "あなたたちが決めたなら、止めません。書類はこちらで出します"),
+                c("夜。谷口の部屋。", mood: .night, together: false, bg: EventBackdrop(.apartment,.night), first),
+                c("翌日の昼。事務所の応接室。", mood: .noon, bg: EventBackdrop(.office,.day), [("真壁", "あなたたちが決めたなら、止めません。書類はこちらで出します"),
                                                     ("俺", "お願いします。今月の劇場の出番までは出ます"), ("谷口", "俺もそれは出ますわ")]),
-                c("最後の出番の後。劇場の楽屋口。", together: false, [("谷口", "ロッカーの鍵、二本とも返しといたで"), ("俺", "ありがとう。お前はこれからどうする"),
+                c("最後の出番の後。劇場の楽屋口。", together: false, bg: EventBackdrop(.gakuya,.evening), [("谷口", "ロッカーの鍵、二本とも返しといたで"), ("俺", "ありがとう。お前はこれからどうする"),
                                                           ("谷口", "しばらくは工場のバイト増やすわ。そっちは"), ("俺", "まだ決めてない。決めたら連絡する")]),
             ]
         case .gaveUp:
             return [
-                c("十二月の終わり。俺のアパート。", [("谷口", "来年のグランプリの申し込み、締め切り来週やで"), ("俺", "出さない。今年で終わりにする"), ("谷口", "……そうか。十年やもんな")]),
-                c("年明け。バイト先の休憩室。", mood: .noon, [("布施店長", "……昼のシフト、一人辞めたんだよ。お前、来月から入れるか"),
+                c("十二月の終わり。俺のアパート。", bg: EventBackdrop(.apartment,.evening), [("谷口", "来年のグランプリの申し込み、締め切り来週やで"), ("俺", "出さない。今年で終わりにする"), ("谷口", "……そうか。十年やもんな")]),
+                c("年明け。バイト先の休憩室。", mood: .noon, bg: EventBackdrop(.office,.day), [("布施店長", "……昼のシフト、一人辞めたんだよ。お前、来月から入れるか"),
                                                     ("俺", "入ります。夜はもう空けなくていいので"), ("布施店長", "……じゃあ名札、作り直しとく。遅れんなよ")]),
-                c("三月。駅の改札前。", mood: .after, together: false, [("谷口", "俺、地元の役所の試験、受かってん。来週帰るわ"),
+                c("三月。駅の改札前。", mood: .after, together: false, bg: EventBackdrop(.station,.day), [("谷口", "俺、地元の役所の試験、受かってん。来週帰るわ"),
                                                           ("俺", "よかったな。向こうでも体に気をつけて"), ("谷口", "お前もな。たまには電話してや")]),
             ]
         case .keptGoing:
             return [
-                c("年末。小さな劇場の楽屋。", [("谷口", "来年のグランプリ、また出すやろ"), ("俺", "出す。申し込みは俺がやっておく"), ("谷口", "ほな、来年もよろしく頼むわ")]),
-                c("同じ夜。劇場の事務室。", mood: .night, [("支配人", "来年も月一で出とけ。同じ曜日や"), ("俺", "はい。お願いします"), ("谷口", "最前列のおばちゃん、来年も来てくれるかな")]),
-                c("終電の前。駅までの道。", [("谷口", "バイト、来年も今のとこで続けるわ"), ("俺", "俺も。土日だけは空けてもらう"), ("谷口", "ほな、また一年、同じ感じでいこか")]),
+                c("年末。小さな劇場の楽屋。", bg: EventBackdrop(.gakuya,.evening), [("谷口", "来年のグランプリ、また出すやろ"), ("俺", "出す。申し込みは俺がやっておく"), ("谷口", "ほな、来年もよろしく頼むわ")]),
+                c("同じ夜。劇場の事務室。", mood: .night, bg: EventBackdrop(.office,.night), [("支配人", "来年も月一で出とけ。同じ曜日や"), ("俺", "はい。お願いします"), ("谷口", "最前列のおばちゃん、来年も来てくれるかな")]),
+                c("終電の前。駅までの道。", bg: EventBackdrop(.park,.night), [("谷口", "バイト、来年も今のとこで続けるわ"), ("俺", "俺も。土日だけは空けてもらう"), ("谷口", "ほな、また一年、同じ感じでいこか")]),
             ]
         case .tenYearsClose:
             return [
-                c("十二月。事務所の会議室。", mood: .noon, [("真壁", "来年も続けるなら、枠は取ります。どうしますか"), ("俺", "今年で区切ります。二人で話して決めました"),
+                c("十二月。事務所の会議室。", mood: .noon, bg: EventBackdrop(.office,.day), [("真壁", "来年も続けるなら、枠は取ります。どうしますか"), ("俺", "今年で区切ります。二人で話して決めました"),
                                                     ("谷口", "決勝に出られたんは、ほんまにありがたかったです")]),
-                c("一月。最後の単独ライブの日。", [("谷口", "客席、思ったより埋まってるで"), ("俺", "来てくれた人に、帰りにちゃんと挨拶しよう")]),
-                c("終演の後。劇場の前。", mood: .after, [("谷口", "俺、テレビの裏方の仕事、紹介してもろてん"), ("俺", "そうか。俺は春から運送の会社で働く"),
+                c("一月。最後の単独ライブの日。", bg: EventBackdrop(.theater,.evening), [("谷口", "客席、思ったより埋まってるで"), ("俺", "来てくれた人に、帰りにちゃんと挨拶しよう")]),
+                c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.theater,.evening), [("谷口", "俺、テレビの裏方の仕事、紹介してもろてん"), ("俺", "そうか。俺は春から運送の会社で働く"),
                                                  ("谷口", "ほな、どっちも朝早いな。たまに飯行こ")]),
             ]
         case .tenYearsTrue:
             return [
-                c("年末。最初に二人で出た劇場。", [("谷口", "ここ、最初に二人で出たとこやな"), ("俺", "うん。今日の出番、ここで頼んだ")]),
-                c("出番の前。舞台の袖。", [("谷口", "十年、ずっと隣におったな"), ("俺", "そうだな。出番、そろそろだ"), ("谷口", "せやな。ほな行こか")]),
-                c("終演の後。劇場の前。", mood: .after, [("谷口", "来年のグランプリ、もう一回決勝行こな"), ("俺", "行こう。一月から週二で練習を入れる"),
+                c("年末。最初に二人で出た劇場。", bg: EventBackdrop(.theater,.evening), [("谷口", "ここ、最初に二人で出たとこやな"), ("俺", "うん。今日の出番、ここで頼んだ")]),
+                c("出番の前。舞台の袖。", bg: EventBackdrop(.theater,.evening), [("谷口", "十年、ずっと隣におったな"), ("俺", "そうだな。出番、そろそろだ"), ("谷口", "せやな。ほな行こか")]),
+                c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.theater,.night), [("谷口", "来年のグランプリ、もう一回決勝行こな"), ("俺", "行こう。一月から週二で練習を入れる"),
                                                  ("谷口", "よっしゃ。体だけは壊さんとこな")]),
             ]
         case .championRetire:
             return []   // 既存の S6bView のまま（新しい文章なし）
         case .championPair:
-            return [c("翌朝。ファミレスの前。", mood: .after, [("谷口", "明日から、ちょっと休もか"), ("俺", "うん。休んで、それから次のことを二人で決めよう"),
+            return [c("翌朝。ファミレスの前。", mood: .after, bg: EventBackdrop(.famires,.morning), [("谷口", "明日から、ちょっと休もか"), ("俺", "うん。休んで、それから次のことを二人で決めよう"),
                                                        ("谷口", "ほな、来週また連絡するわ")])]
         }
     }
