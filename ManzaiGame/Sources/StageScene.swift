@@ -18,6 +18,7 @@ struct StageScene: View {
             let micX = w * 0.62               // センターマイクの立ち位置（左下は台詞の席なので右寄り）
             let footY = h * 0.84           // 二人の足元（下端の吹き出し・カードに隠れない高さ）
             let figH = max(130, h * 0.27)     // 人物は画面比で決める
+            let showActors = !compact || h >= 260   // 下位一覧でも高さに余裕があれば（バイト等）めくり札を出す
 
             ZStack {
                 // 1) 稽古場の壁（明るいクリーム・上ほど白）
@@ -64,7 +65,7 @@ struct StageScene: View {
                     .allowsHitTesting(false)
 
                 // 8) センターマイク＋二人のめくり札（俺＝黒帯・谷口＝朱帯）。人は図形で描かない（ぼかし影も敷かない）
-                if !compact {
+                if showActors {
                     Group {
                         CenterMic(height: figH * 0.78)
                             .position(x: micX, y: footY - figH * 0.39)
