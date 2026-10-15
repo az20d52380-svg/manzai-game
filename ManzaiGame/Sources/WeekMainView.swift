@@ -141,7 +141,7 @@ struct WeekMainView: View {
         .fullScreenCover(isPresented: $showAllocation) {
             AbilityUpView(session: session) { showAllocation = false }
         }
-        .sheet(isPresented: $showShop) {
+        .fullScreenCover(isPresented: $showShop) {
             ShopView(session: session) { showShop = false }
         }
         .sheet(isPresented: $showSettings) {

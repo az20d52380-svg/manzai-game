@@ -15,64 +15,33 @@ struct ShopView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
+            YoseHeaderBar(title: "お店", closeAction: onClose)
+            YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money)
             noren
             ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(session.config.shopLineup, id: \.self) { row($0); shelfBoard }   // 能力に効く品は売らない（原則 2026-10-12）
+                VStack(spacing: 10) {
+                    ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.center)
-                        .font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkSub).padding(.top, 14)
+                        .font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).padding(.top, 8)
                 }
-                .padding(.horizontal, 16).padding(.bottom, 20)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 24)
             }
         }
-        .background(Color(hex: 0xF3E6C8).ignoresSafeArea())   // 試作q70: 商店街の店先（生成りの壁）
+        .background(YoseColor.kinari.ignoresSafeArea())
         .onAppear { if visitStart == nil { visitStart = session.state } }
     }
 
-    /// 試作q70: 臙脂の帯（店の看板）。決勝の幕・週画面の帯と同じ臙脂＋金。
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text("お店").font(.maru(28, weight: .black)).foregroundStyle(Theme.goldLeafHi)
-                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Text("所持金 \(Yen.text(session.state.money))").font(.maru(14, weight: .black))
-                .monospacedDigit().foregroundStyle(Theme.goldLeafHi.opacity(0.9))
-            Spacer()
-            Button(action: onClose) {
-                Text("とじる").font(.maru(13, weight: .black)).foregroundStyle(Theme.goldLeafHi)
-                    .padding(.horizontal, 12).padding(.vertical, 5)
-                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1.2))
-            }
-            .buttonStyle(PressableStyle())
-        }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 10)
-        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom)
-            .ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
-    }
-
-    /// のれん: 看板の下に垂れる布（切れ込み入り）
+    /// のれん: 帯の下に垂れる布（臙脂の6枚・金の裾）
     private var noren: some View {
         HStack(spacing: 3) {
-            ForEach(0..<6, id: \.self) { i in
-                Rectangle()
-                    .fill(LinearGradient(colors: [Theme.curtain, Theme.curtainShade], startPoint: .top, endPoint: .bottom))
-                    .frame(height: 26)
-                    .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+            ForEach(0..<6, id: \.self) { _ in
+                Rectangle().fill(YoseColor.enji).frame(height: 18)
+                    .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
             }
         }
         .padding(.horizontal, 10)
-    }
-
-    /// 棚板（品と品のあいだ）
-    private var shelfBoard: some View {
-        VStack(spacing: 0) {
-            Rectangle().fill(Theme.boardsLit).frame(height: 5)
-            Rectangle().fill(Theme.boardsDark).frame(height: 3)
-        }
-        .padding(.horizontal, -16)
-        .padding(.bottom, 4)
+        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 1.5).offset(y: 1) }
     }
 
     private func price(_ item: ShopItem) -> Int { session.config.items[item]?.price ?? 0 }
@@ -82,81 +51,36 @@ struct ShopView: View {
         let ok = GameEngine.canBuy(item, state: session.state, config: session.config)
         let limit = limitText(item, spec)
         let big = price(item) >= 100_000   // 高い品は名前も値札も大きく（安い品との重みの差）
-        return HStack(alignment: .center, spacing: 12) {
+        let n = purchases.filter { $0 == item }.count
+        return HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.rawValue).font(.maru(big ? 24 : 19, weight: .black))
-                    .foregroundStyle(ok ? Theme.sumi : Theme.inkSub)
-                    .shadow(color: ok ? Theme.goldLeafHi.opacity(0.8) : .clear, radius: 0, x: 1, y: 1)
+                Text(item.rawValue).font(YoseFont.gothic(big ? 20 : 17, weight: .heavy))
+                    .foregroundStyle(ok ? YoseColor.sumi : YoseColor.disabledText)
                     .lineLimit(1).minimumScaleFactor(0.8)
-                Text(spec?.summary ?? "").font(.maru(12, weight: .bold)).foregroundStyle(Theme.inkSub)
+                Text(spec?.summary ?? "").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .fixedSize(horizontal: false, vertical: true)
-                if !limit.isEmpty {
-                    Text(limit).font(.maru(11.5, weight: .black)).foregroundStyle(Theme.verm)
-                        .padding(.horizontal, 6).padding(.vertical, 1)
-                        .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.5))
-                        .rotationEffect(.degrees(-3))
-                        .padding(.top, 2)
-                }
+                if !limit.isEmpty { YoseTag(text: limit, style: .outlineShu) }
             }
             Spacer(minLength: 0)
-            VStack(alignment: .trailing, spacing: 8) {
-                Button { buy(item) } label: { priceTag(item, ok: ok, big: big) }
-                    .buttonStyle(PressableStyle(enabled: ok)).disabled(!ok)
-                let n = purchases.filter { $0 == item }.count
+            VStack(alignment: .trailing, spacing: 6) {
+                Button { buy(item) } label: {
+                    Text("¥\(price(item).formatted())").font(YoseFont.number(big ? 20 : 17, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .buttonStyle(YoseButtonStyle(big && ok ? .primary : .secondary))
+                .frame(width: 118)
+                .disabled(!ok)
                 if n > 0 {
                     Button { undo(item) } label: {
-                        Text(n > 1 ? "戻す（\(n)個）" : "戻す").font(.maru(12, weight: .black))
-                            .foregroundStyle(Theme.sumi)
-                            .padding(.horizontal, 10).padding(.vertical, 4)
-                            .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.2))
+                        Text(n > 1 ? "戻す（\(n)個）" : "戻す").font(YoseFont.gothic(13, weight: .heavy))
                     }
-                    .buttonStyle(PressableStyle())
+                    .buttonStyle(YoseButtonStyle(.secondary))
+                    .frame(width: 118)
                 }
             }
         }
-        .padding(.vertical, big ? 20 : 14)
-    }
-
-    /// 値札: 紙の短冊（左上を斜めに落とし、ひもの穴）。押せる品は朱の縁、高い品は金の二重縁。
-    private func priceTag(_ item: ShopItem, ok: Bool, big: Bool) -> some View {
-        let ink = ok ? Theme.curtain : Theme.inkSub
-        return Text("¥\(price(item).formatted())").font(.maru(big ? 22 : 17, weight: .black)).monospacedDigit()
-            .foregroundStyle(ink)
-            .padding(.leading, 22).padding(.trailing, 12).padding(.vertical, big ? 12 : 9)
-            .background(TagShape().fill(ok ? Color(hex: 0xFFF8E6) : Color(hex: 0xE6DEC9)))
-            .overlay(TagShape().stroke(ok ? Theme.verm : Theme.line, lineWidth: 2))
-            .overlay {
-                if big && ok { TagShape().stroke(Theme.goldLeafMid, lineWidth: 1).padding(3) }
-            }
-            .overlay(alignment: .leading) {
-                Circle().stroke(ink.opacity(0.7), lineWidth: 1.5).frame(width: 7, height: 7).padding(.leading, 9)
-            }
-    }
-
-    private struct TagShape: Shape {
-        func path(in r: CGRect) -> Path {
-            var p = Path()
-            let c: CGFloat = 12
-            p.move(to: CGPoint(x: r.minX + c, y: r.minY))
-            p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-            p.addLine(to: CGPoint(x: r.minX + c, y: r.maxY))
-            p.addLine(to: CGPoint(x: r.minX, y: r.midY))
-            p.closeSubpath()
-            return p
-        }
-    }
-
-    private func look(_ item: ShopItem) -> (String, Color) {
-        switch item {
-        case .栄養ドリンク: return ("bolt.fill", Theme.cMental)
-        case .銭湯の回数券: return ("drop.fill", Theme.night)
-        case .中古のICレコーダー: return ("recordingtape", Theme.cIdea)
-        case .新幹線回数券: return ("tram.fill", Theme.cSense)
-        case .ネタ作家の勉強会: return ("book.fill", Theme.cIdea)
-        case .ボイトレ短期集中: return ("waveform", Theme.cExpr)
-        case .稽古場の年契約: return ("building.2.fill", Theme.gold)
-        }
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, big ? 14 : 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseHarigami()
     }
 
     private func buy(_ item: ShopItem) {
