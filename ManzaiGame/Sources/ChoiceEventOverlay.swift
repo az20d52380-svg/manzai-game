@@ -55,7 +55,7 @@ struct ChoiceEventOverlay: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            YoseHeaderBar(title: text.title)
+            YoseHeaderBar(title: text.title, subtitle: "\(session.year)年目 第\(session.week)週 ・ 日常イベント")
             sceneHeader
             ScrollViewReader { proxy in
                 ScrollView {
@@ -114,7 +114,7 @@ struct ChoiceEventOverlay: View {
 
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
-            .frame(height: 260)
+            .frame(height: 280)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
                 HStack(spacing: 6) {
@@ -182,10 +182,12 @@ struct ChoiceEventOverlay: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if cue { AdvanceCue(color: YoseColor.shu) }
             }
-            .padding(.leading, 18).padding(.trailing, 12).padding(.vertical, 12)
-            .frame(minHeight: 88, alignment: .leading)   // 1行でも3行でも枠が縮まない
-            .yoseHarigami()
-            .overlay(alignment: .leading) { Rectangle().fill(YoseColor.enji).frame(width: 4).padding(.vertical, 6).padding(.leading, 6) }
+            .padding(.leading, 20).padding(.trailing, 12).padding(.vertical, 12)
+            .frame(minHeight: 56, alignment: .leading)
+            // ト書き板：木札色の薄い地・墨の枠・左端に隙間なしの臙脂の帯（台詞の吹き出しと形で区別）
+            .background(YoseColor.ki.opacity(0.45))
+            .overlay(alignment: .leading) { Rectangle().fill(YoseColor.enji).frame(width: 6) }
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
         } else {
             YoseSpeechBox(speaker: a.name ?? "俺", text: a.text, showCue: cue)
         }
@@ -210,9 +212,9 @@ struct ChoiceEventOverlay: View {
                 // タップで進むことを示す（下半分が空いて「選択肢が消えた」と迷わない）
                 // 押せる木札（画面のどこをタップしても進む＝この札は同じ動作・進み方は変えない）
                 Button { advance() } label: {
-                    Text("タップして次へ ▶").frame(maxWidth: .infinity)
+                    Text("次へ 進む ▶").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(YoseButtonStyle(.secondary))
+                .buttonStyle(YoseButtonStyle(.primary))
             }
             if footerReady {
                 if chosenID == nil, setupDone {

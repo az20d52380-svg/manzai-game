@@ -1272,6 +1272,15 @@ private struct YakinikuBackdrop: View {
                 .frame(width: 52, height: 110)
                 .position(x: w / 2, y: 30 + 42 - 13)
 
+                // ロースターから排煙ダクトへ立ち上る煙（薄い2本）
+                ForEach([-5.0, 6.0], id: \.self) { dx in
+                    Path { p in
+                        let x0 = w / 2 + CGFloat(dx)
+                        p.move(to: CGPoint(x: x0, y: tableY - 26))
+                        p.addCurve(to: CGPoint(x: x0 - 2, y: 104), control1: CGPoint(x: x0 + 10, y: tableY - 50), control2: CGPoint(x: x0 - 12, y: 130))
+                    }
+                    .stroke(YoseColor.haiSumi.opacity(0.28), lineWidth: 2.5)
+                }
                 // 手前：木のテーブルと七輪ロースター（炭火のスリット）・皿の肉
                 ZStack {
                     Rectangle().fill(Color(hex: 0x8C583A)).frame(width: 340, height: 26)
