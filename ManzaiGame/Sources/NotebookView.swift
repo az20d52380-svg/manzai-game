@@ -70,20 +70,19 @@ struct NotebookView: View {
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text("ネタ帳").font(.maru(24, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+            Text("ネタ帳").font(.maru(24, weight: .black)).foregroundStyle(Theme.gold)
                 .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Text(session.combiName).font(.maru(12, weight: .bold)).foregroundStyle(Theme.goldLeafHi.opacity(0.8))
+            Text(session.combiName).font(.maru(12, weight: .bold)).foregroundStyle(Theme.gold.opacity(0.8))
             Spacer()
             Button(action: onClose) {
-                Text("とじる").font(.maru(13, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                Text("とじる").font(.maru(13, weight: .black)).foregroundStyle(Theme.gold)
                     .padding(.horizontal, 12).padding(.vertical, 5)
-                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1.2))
+                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.2))
             }.buttonStyle(PressableStyle())
         }
         .padding(.horizontal, Theme.Sp.s16).padding(.vertical, 10)
-        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom)
-            .ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+        .background(Theme.curtain.ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.gold).frame(height: 2) }
     }
 
     private var tabBar: some View {
@@ -119,7 +118,7 @@ struct NotebookView: View {
                 Text("実力").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi)
                 Text("\(Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))").font(.maru(34, weight: .black))
                     .monospacedDigit().foregroundStyle(Theme.curtain)
-                    .shadow(color: Theme.goldLeafHi, radius: 0, x: 1, y: 1)
+                    .shadow(color: Theme.gold, radius: 0, x: 1, y: 1)
                 Spacer()
                 if exp > 0 && !cfg.autoPourAllocation {
                     Text("経験点 \(exp) 未使用").font(.maru(12, weight: .bold)).foregroundStyle(Theme.vermD)
@@ -247,7 +246,7 @@ struct NotebookView: View {
         VStack(spacing: 3) {
             HStack(alignment: .firstTextBaseline) {
                 Text(s).font(.maru(20, weight: .black)).foregroundStyle(Theme.sumi)
-                    .shadow(color: Theme.goldLeafHi.opacity(0.8), radius: 0, x: 1, y: 1)
+                    .shadow(color: Theme.gold.opacity(0.8), radius: 0, x: 1, y: 1)
                 Spacer()
                 if let trailing { Text(trailing).font(.maru(13, weight: .bold)).monospacedDigit().foregroundStyle(Theme.curtain) }
             }
@@ -265,8 +264,7 @@ struct NotebookView: View {
                     .padding(.vertical, Theme.Sp.s8)
             } else {
                 ForEach(session.activeNetas) { neta in
-                    netaCard(neta)
-                    hairline
+                    netaCard(neta).padding(.bottom, 4)
                 }
             }
         }
@@ -292,15 +290,17 @@ struct NotebookView: View {
                 nameLabel(neta)
                 Spacer(minLength: 4)
                 if isSelected {
-                    Text("勝負").font(.maru(13, weight: .black)).foregroundStyle(Theme.verm)
-                        .padding(.horizontal, 6).padding(.vertical, 1)
-                        .overlay(Rectangle().stroke(Theme.verm, lineWidth: 1.8))
+                    Text("真剣勝負").font(.maru(14, weight: .black)).foregroundStyle(Theme.verm)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .overlay(Rectangle().stroke(Theme.verm, lineWidth: 2.2))
+                        .overlay(Rectangle().stroke(Theme.verm.opacity(0.5), lineWidth: 0.8).padding(3))
                         .rotationEffect(.degrees(-6))
+                        .modifier(StampShake())
                 }
             }
             Text(NetaCatalog.displayName(neta.kata)).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.curtain)
             netaBar(label: "完成度", value: neta.polish, color: Theme.curtainLit)
-            netaBar(label: "客の反応", value: neta.buzz, color: Theme.goldLeafMid)
+            netaBar(label: "客の反応", value: neta.buzz, color: Theme.gold)
             oroshiLine(neta)
             HStack(spacing: 8) {
                 Text("舞台 \(neta.stageCount)回").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkSub)
@@ -327,7 +327,11 @@ struct NotebookView: View {
                 }
             }
         }
-        .padding(.vertical, Theme.Sp.s8)
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(Theme.kinariPanel)
+        .overlay(alignment: .leading) { Rectangle().fill(isSelected ? Theme.verm : Theme.sumi).frame(width: 5) }
+        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.8))
+        .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
     }
 
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
@@ -382,7 +386,7 @@ struct NotebookView: View {
             if neta.isTeppan(config: session.config) {
                 Text("自信作").font(.maru(11.5, weight: .black)).foregroundStyle(Theme.goldD)
                     .padding(.horizontal, 5).padding(.vertical, 1)
-                    .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1.4))
+                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.4))
             }
         }
     }
@@ -391,7 +395,7 @@ struct NotebookView: View {
     private func netaBar(label: String, value: Double, color: Color) -> some View {
         HStack(spacing: 8) {
             Text(label).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.inkSub).frame(width: 60, alignment: .leading)
-            inkBar(value / 100, color: color, height: 6)
+            inkBar(value / 100, color: color, height: 10)
             Text("\(Int(value.rounded()))").font(.maru(13, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi)
                 .frame(minWidth: 24, alignment: .trailing).fixedSize()
         }
@@ -448,5 +452,16 @@ struct NotebookView: View {
         }
         .padding(.vertical, 6)
         hairline
+    }
+}
+
+
+/// 判子の押印：表示時に「ドンッ」と一度だけ震える（Haptics 連動は呼び出し元の操作側）。
+struct StampShake: ViewModifier {
+    @State private var t: CGFloat = 0
+    func body(content: Content) -> some View {
+        content
+            .modifier(ShakeEffect(travel: 3, animatableData: t))
+            .onAppear { withAnimation(.linear(duration: 0.3)) { t = 1 } }
     }
 }

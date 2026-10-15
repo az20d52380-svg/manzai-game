@@ -18,33 +18,33 @@ extension Color {
 
 enum Theme {
     // 背景・地色
-    static let bg1 = Color(hex: 0xFFF4E6)
-    static let bg2 = Color(hex: 0xFFE6CF)
-    static let bgTop = Color(hex: 0xFFF7EC)
-    static let bgBottom = Color(hex: 0xFFDDBE)
-    static let card = Color.white
-    static let card2 = Color(hex: 0xFFF9F0)
-    static let line = Color(hex: 0xF1E6D6)
-    static let cmdShadow = Color(hex: 0xEADFCF)
+    static let bg1 = Color(hex: 0xF5F0E1)
+    static let bg2 = Color(hex: 0xF5F0E1)
+    static let bgTop = Color(hex: 0xF5F0E1)
+    static let bgBottom = Color(hex: 0xEBE3CC)
+    static let card = Color(hex: 0xFAF6E9)
+    static let card2 = Color(hex: 0xEFE8D3)
+    static let line = Color(hex: 0x2B2B2B)
+    static let cmdShadow = Color.black.opacity(0.40)
 
     // 文字
-    static let ink = Color(hex: 0x2C2740)
-    static let inkDim = Color(hex: 0x8E86A0)
-    static let inkFaint = Color(hex: 0xB9B2C6)
+    static let ink = Color(hex: 0x2B2B2B)
+    static let inkDim = Color(hex: 0x9E9E9E)
+    static let inkFaint = Color(hex: 0x9E9E9E)
 
     // アクセント
-    static let verm = Color(hex: 0xE8402C)     // 朱（谷口の枠・つぎへ・相性）
-    static let vermD = Color(hex: 0xC22E1D)
-    static let gold = Color(hex: 0xF6B301)
-    static let goldD = Color(hex: 0xE09A00)
+    static let verm = Color(hex: 0xBD3C28)     // 朱（谷口の枠・つぎへ・相性）
+    static let vermD = Color(hex: 0x7D221E)
+    static let gold = Color(hex: 0xC1A550)
+    static let goldD = Color(hex: 0x9A802F)
 
     // 能力色（mockup準拠）
     static let cSense = Color(hex: 0x3B8BFF)   // センス
     static let cIdea = Color(hex: 0x8B5CF6)    // 発想
     static let cExpr = Color(hex: 0xFF7A2F)    // 表現
     static let cChara = Color(hex: 0xFF5C93)   // 華
-    static let cMental = Color(hex: 0x22B07A)  // メンタル
-    static let cCompat = Color(hex: 0xE8402C)  // 相性
+    static let cMental = Color(hex: 0x2E583C)  // メンタル
+    static let cCompat = Color(hex: 0xBD3C28)  // 相性
     static let cMoney = Color(hex: 0x77CC99)   // お金（バイト等）
 
     // 経験点通貨5種の色（正典v3・能力色と意図的に別系統＝「同じ色じゃない」ことが一目で分かる配色。全て【仮】）
@@ -57,14 +57,14 @@ enum Theme {
     // v8育成メイン用パレット（全て【仮】）
     static let gainOrange = Color(hex: 0xFF8A1E)              // 実行時の「+N」オレンジ
     static let night = Color(hex: 0x3D5A80)                   // 回復カードのドット地色
-    static let pillDark = Color(hex: 0x241C33, alpha: 0.82)   // 立ち絵上のダークピル/戻る/トースト地色
-    static let botbarDark = Color(hex: 0x2A2440)              // 最下部の帯（年週/大会まで/体力/所持金）
+    static let pillDark = Color(hex: 0x2B2B2B, alpha: 0.88)   // 立ち絵上のダークピル/戻る/トースト地色
+    static let botbarDark = Color(hex: 0x2B2B2B)              // 最下部の帯（年週/大会まで/体力/所持金）
     static let staminaWarn = Color(hex: 0xF2A93B)             // 体力ゲージ 警告（<50・黄）
-    static let staminaCrit = Color(hex: 0xE8402C)             // 体力ゲージ 危険（<20・赤＝staminaGate可視化）
+    static let staminaCrit = Color(hex: 0xBD3C28)             // 体力ゲージ 危険（<20・赤＝staminaGate可視化）
 
     /// 画面の地の決まり: 生成り（kinari）＋上部の臙脂の帯（curtain）。パネルは kinariPanel＋墨の罫＋朱の左帯。
-    static let kinari = Color(hex: 0xFBF3E2)
-    static let kinariPanel = Color(hex: 0xFFFAEC)
+    static let kinari = Color(hex: 0xF5F0E1)
+    static let kinariPanel = Color(hex: 0xFAF6E9)
     static let bgGradient = LinearGradient(
         colors: [bgTop, bg2, bgBottom],
         startPoint: .top, endPoint: .bottom)
@@ -183,10 +183,10 @@ extension Theme {
 
     /// Radius: rPill=カプセル（Capsuleで表現）／card=16／btn=12／board=12／sheet=24／stamp=4（角判）
     enum Rad {
-        static let card: CGFloat = 16
-        static let btn: CGFloat = 12
-        static let board: CGFloat = 12
-        static let sheet: CGFloat = 24
+        static let card: CGFloat = 3
+        static let btn: CGFloat = 3
+        static let board: CGFloat = 3
+        static let sheet: CGFloat = 4
         static let stamp: CGFloat = 4
     }
 
@@ -209,9 +209,9 @@ struct InkShadow: ViewModifier {
     let level: Int
     func body(content: Content) -> some View {
         switch level {
-        case 1: content.shadow(color: Theme.ink.opacity(0.08), radius: 3, y: 1)   // 浮き紙・吹き出し
-        case 2: content.shadow(color: Theme.ink.opacity(0.10), radius: 10, y: 3)  // カード・ボタン
-        default: content.shadow(color: Theme.ink.opacity(0.16), radius: 24, y: 8) // シート・決勝ボード
+        case 1: content.shadow(color: .black.opacity(0.40), radius: 0, y: 2)
+        case 2: content.shadow(color: .black.opacity(0.40), radius: 0, y: 3)
+        default: content.shadow(color: .black.opacity(0.40), radius: 0, y: 4)
         }
     }
 }
@@ -260,10 +260,8 @@ struct PressableStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed && enabled
         configuration.label
-            .scaleEffect(pressed ? scale : 1)
-            .brightness(pressed ? -0.10 : 0)
-            .animation(pressed ? .easeOut(duration: Theme.Motion.press)
-                               : .spring(response: 0.25, dampingFraction: 0.6),
+            .offset(y: pressed ? 2 : 0)
+            .animation(.easeOut(duration: Theme.Motion.press),
                        value: pressed)
             .onChange(of: pressed) { _, now in
                 // 商用最低ライン「全タップに音」（sellable_basics_research §4）。押下の瞬間に軽いクリック。
@@ -317,19 +315,19 @@ struct CurrencyBadge: View {
 extension Theme {
     // --- 楽屋（昼）: 週メインのクリーム3色版（bgGradient）＋白カード＋太縁＋ハード影 ---
     /// 補助文字（白 6.46:1・bg2 5.37:1）。inkDim/inkFaint は文字に使わない（罫線・無効面だけ）
-    static let inkSub = Color(hex: 0x625A78)
+    static let inkSub = Color(hex: 0x555050)
     /// 3:1 以上が要る縁（選択肢カード・入力欄・体力減チップの縁）
-    static let lineStrong = Color(hex: 0x9C8E7A)
+    static let lineStrong = Color(hex: 0x7A7466)
     /// 紙（講評・地の文・めくり以外の読み物）
-    static let paperTop = Color(hex: 0xFDFBF4)
-    static let paperBottom = Color(hex: 0xF6EEDC)
+    static let paperTop = Color(hex: 0xF8F3E4)
+    static let paperBottom = Color(hex: 0xF1EAD3)
     static let paperEdge = Color(hex: 0xE6D9BE)
     static let paperInk = Color(hex: 0x33301F)
     /// 紙の上の署名・見出し（7.2:1・旧 A98B52 2.8:1 の置き換え）
     static let sealName = Color(hex: 0x6E5020)
     /// めくり札の白紙と墨
     static let mekuri = Color(hex: 0xFFFDF6)
-    static let sumi = Color(hex: 0x1E1A2B)
+    static let sumi = Color(hex: 0x2B2B2B)
     /// 話者の色（俺＝青・谷口＝朱）。名前札の地は濃い版（白字 4.5:1 以上）
     static let cOre = Color(hex: 0x4A7BE8)
     static let cOreDeep = Color(hex: 0x3566D6)
@@ -344,7 +342,7 @@ extension Theme {
     static let charaDeep = Color(hex: 0xC21F5B)
     static let mentalDeep = Color(hex: 0x147650)
     static let moneyDeep = Color(hex: 0x2A7447)
-    static let goldDeep = Color(hex: 0x845F00)
+    static let goldDeep = Color(hex: 0x6E5A1C)
 
     static func abilityDeep(_ a: Ability) -> Color {
         switch a {
@@ -367,9 +365,9 @@ extension Theme {
     /// 客席の闇（暖黒・純黒禁止）。旧 B2 案の 140D18 は紫寄りなので採らない
     static let house = Color(hex: 0x1A100C)
     /// 一文字幕・袖幕・緞帳（臙脂）
-    static let curtain = Color(hex: 0x5B1A12)
-    static let curtainLit = Color(hex: 0x8E2A1C)
-    static let curtainShade = Color(hex: 0x3A0F0B)
+    static let curtain = Color(hex: 0x7D221E)
+    static let curtainLit = Color(hex: 0x9A2E26)
+    static let curtainShade = Color(hex: 0x4F1512)
     /// 光の芯（house 比 17:1）と、その外の金→朱
     static let spotCore = Color(hex: 0xFFF3D6)
     static let spotMid = gold.opacity(0.55)
@@ -379,8 +377,8 @@ extension Theme {
     static let boardsDark = Color(hex: 0x4A3020)
     /// 光を返す金の面（金屏風）。採点中は暗い2段、最明部は自組の優勝の瞬間だけ
     static let goldLeafLo = Color(hex: 0x6E5426)
-    static let goldLeafMid = Color(hex: 0xA07E36)
-    static let goldLeafHi = Color(hex: 0xD9B45A)
+    static let goldLeafMid = Color(hex: 0xC1A550)
+    static let goldLeafHi = Color(hex: 0xD6BC6A)
     /// 客電の粒・笑った客席の縁
     static let houseLight = Color(hex: 0xFFE3A0)
     /// 下三分テロップの地（暖黒）

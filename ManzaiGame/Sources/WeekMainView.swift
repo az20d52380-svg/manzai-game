@@ -214,18 +214,17 @@ struct WeekMainView: View {
     /// 試作: 舞台の臙脂＋金の共通ヘッダー帯（決勝の幕と同じ色）。
     private var stageHeaderBand: some View {
         HStack(spacing: 10) {
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Rectangle().fill(Theme.gold).frame(height: 1).frame(maxWidth: .infinity)
             Text("\(session.year)年目　第\(session.week)週")
-                .font(.maru(15, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                .font(.maru(15, weight: .black)).foregroundStyle(Theme.gold)
                 .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Rectangle().fill(Theme.gold).frame(height: 1).frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 14).padding(.vertical, 6)
         .frame(maxWidth: .infinity)
         .background(
-            LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+            Theme.curtain.ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.gold).frame(height: 2) }
     }
 
     private var sceneZone: some View {
@@ -268,7 +267,7 @@ struct WeekMainView: View {
                     Text("第\(session.week)週")
                         .font(.maru(21)).tracking(6).foregroundStyle(Theme.ink.opacity(0.88))
                         .padding(.horizontal, 18).padding(.vertical, 8)
-                        .background(.white.opacity(0.88), in: Capsule())
+                        .background(.white.opacity(0.88), in: Rectangle())
                         .e1()
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.82).combined(with: .opacity),
@@ -303,8 +302,8 @@ struct WeekMainView: View {
                     }
                 }
                 .padding(.horizontal, 12).padding(.vertical, 5)
-                .background(Theme.curtainShade.opacity(0.9), in: RoundedRectangle(cornerRadius: 3))
-                .overlay(RoundedRectangle(cornerRadius: 3).stroke((m.weeksLeft <= 3 ? Theme.verm : Theme.gold).opacity(0.7), lineWidth: 1))
+                .background(Theme.curtainShade.opacity(0.9), in: Rectangle())
+                .overlay(Rectangle().stroke((m.weeksLeft <= 3 ? Theme.verm : Theme.gold).opacity(0.7), lineWidth: 1))
             }
             .buttonStyle(PressableStyle())
         }
@@ -336,9 +335,10 @@ struct WeekMainView: View {
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
         .frame(width: 214)
-        .background(Color(hex: 0xFBF3E2).opacity(0.94))
-        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
-        .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 0.8).padding(3))
+        .background(Theme.kinariPanel)
+        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 2))
+        .overlay(Rectangle().stroke(Theme.gold, lineWidth: 0.8).padding(4))
+        .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
     }
 
     /// 1本のバー。週送りの直後（gainsVisible）だけ、この週に伸びた分をオレンジで重ねる＝「押した週に何が動いたか」。
@@ -351,21 +351,21 @@ struct WeekMainView: View {
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack(alignment: .leading) {
-                    Capsule().fill(color.opacity(0.14))
-                    Capsule().fill(color).frame(width: w * fill)
+                    Rectangle().fill(color.opacity(0.14))
+                    Rectangle().fill(color).frame(width: w * fill)
                     Rectangle().fill(Theme.gainOrange)
                         .frame(width: w * shown)
                         .offset(x: w * (fill - shown))
                         .opacity(shown > 0 ? 1 : 0)
                 }
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(full ? Theme.gold : color.opacity(0.5), lineWidth: full ? 2 : 1))
+                .clipShape(Rectangle())
+                .overlay(Rectangle().stroke(full ? Theme.gold : color.opacity(0.5), lineWidth: full ? 2 : 1))
                 .animation(.easeOut(duration: 0.6), value: fill)
                 .animation(.easeOut(duration: 0.3), value: shown)
             }
             .frame(height: 8)
             Text("\(Int(value.rounded()))").font(.maru(26, weight: .black)).monospacedDigit().foregroundStyle(Theme.curtain)
-                .shadow(color: Theme.goldLeafHi, radius: 0, x: 1, y: 1)
+                .shadow(color: Theme.gold, radius: 0, x: 1, y: 1)
                 .frame(minWidth: 26, alignment: .trailing).fixedSize()   // 3桁でも切れない（旧 width 26 は「100」で溢れた）
                 .contentTransition(.numericText())
                 .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
@@ -426,15 +426,15 @@ struct WeekMainView: View {
                     .shadow(color: Theme.ink.opacity(0.2), radius: 0, y: 2)
                 Text(name).font(.maru(11)).foregroundStyle(.white)
                     .padding(.horizontal, 7).padding(.vertical, 2)
-                    .background(name == "谷口" ? Theme.verm : Color(hex: 0x4A7BE8), in: Capsule())
+                    .background(name == "谷口" ? Theme.verm : Color(hex: 0x4A7BE8), in: Rectangle())
             }
             Text(a.text)
                 .font(.system(size: 13.5, weight: .medium)).lineSpacing(3)
                 .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .frame(maxWidth: 250, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 12).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line, lineWidth: 2.5))
+                .background(Rectangle().fill(Theme.kinariPanel).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
+                .overlay(Rectangle().stroke(Theme.line, lineWidth: 2.5))
         }
         .id(a.text)
         .transition(.opacity)
@@ -453,7 +453,7 @@ struct WeekMainView: View {
                     Button { withAnimation(Theme.Motion.appearQuick) { if pickingNeta { pickingNeta = false } else { openCat = nil; openNetaWrite = false; newNetaTitle = nil } } } label: {
                         Label("もどる", systemImage: "chevron.left").font(.maru(13, weight: .bold))
                             .foregroundStyle(Theme.inkSub).padding(.horizontal, 10).padding(.vertical, 6)
-                            .background(Theme.card, in: Capsule())
+                            .background(Theme.card, in: Rectangle())
                     }.buttonStyle(PressableStyle())
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(.maru(16, weight: .heavy)).foregroundStyle(Theme.ink)
                     Spacer()
@@ -544,13 +544,13 @@ struct WeekMainView: View {
                 Button { withAnimation(Theme.Motion.appearQuick) { pickingNeta.toggle() } } label: {
                     Text(pickingNeta ? "とじる" : "替える").font(.maru(12, weight: .bold)).foregroundStyle(Theme.ideaDeep)
                         .padding(.horizontal, 12).padding(.vertical, 6)
-                        .overlay(Capsule().stroke(Theme.cIdea.opacity(0.7), lineWidth: 1.5))
+                        .overlay(Rectangle().stroke(Theme.cIdea.opacity(0.7), lineWidth: 1.5))
                 }
                 .buttonStyle(PressableStyle())
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        .background(Theme.card, in: Rectangle())
     }
 
     /// 書くネタを替える（持ちネタ＋新しく書く）。選ぶだけ（週は進まない・乱数なし）
@@ -569,7 +569,7 @@ struct WeekMainView: View {
                         Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(.maru(10.5)).monospacedDigit().foregroundStyle(Theme.inkSub)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 9)
-                    .background(n.id == writeTarget?.id ? Theme.cIdea.opacity(0.10) : Theme.card, in: RoundedRectangle(cornerRadius: 10))
+                    .background(n.id == writeTarget?.id ? Theme.cIdea.opacity(0.10) : Theme.card, in: Rectangle())
                 }
                 .buttonStyle(PressableStyle())
             }
@@ -586,7 +586,7 @@ struct WeekMainView: View {
                     }
                     .foregroundStyle(Theme.ideaDeep)
                     .padding(.horizontal, 12).padding(.vertical, 9)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.cIdea.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])))
+                    .overlay(Rectangle().stroke(Theme.cIdea.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])))
                 }
                 .buttonStyle(PressableStyle())
             }
@@ -603,7 +603,7 @@ struct WeekMainView: View {
                 .submitLabel(.done)
         }
         .padding(.horizontal, 12).padding(.vertical, 9)
-        .background(Theme.card2, in: RoundedRectangle(cornerRadius: 10))
+        .background(Theme.card2, in: Rectangle())
     }
 
     /// 場所を押した時：新しく書くなら題名を予約して、エンジンが新ネタを作るようにする
@@ -716,14 +716,14 @@ struct WeekMainView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(c.rawValue).font(.maru(big ? 26 : 19, weight: .black))
                     .foregroundStyle(gated ? Theme.inkFaint : Theme.sumi)
-                    .shadow(color: gated ? .clear : Theme.goldLeafHi.opacity(0.8), radius: 0, x: 1, y: 1)
+                    .shadow(color: gated ? .clear : Theme.gold.opacity(0.8), radius: 0, x: 1, y: 1)
                 Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
             }
             .padding(.horizontal, 14).padding(.vertical, big ? 14 : 9)
             .frame(maxWidth: .infinity, minHeight: big ? 84 : 62, alignment: .leading)
             .background(Rectangle().fill(gated ? Color(hex: 0xEFE8DA) : Color(hex: 0xFBF3E2)))
-            .overlay(alignment: .leading) { Rectangle().fill(gated ? Theme.line : Theme.verm).frame(width: 5) }
-            .overlay(Rectangle().stroke(gated ? Theme.line : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : Theme.sumi,
+            .overlay(alignment: .leading) { Rectangle().fill(gated ? Theme.lineStrong.opacity(0.4) : Theme.verm).frame(width: 5) }
+            .overlay(Rectangle().stroke(gated ? Theme.lineStrong.opacity(0.4) : (c == .能力アップ && unspentBeforeStage) ? Theme.gold : Theme.sumi,
                                         lineWidth: (c == .能力アップ && unspentBeforeStage) ? 3.5 : 1.5))
         }
         .buttonStyle(PressableStyle())
@@ -742,7 +742,7 @@ struct WeekMainView: View {
                 Image(systemName: v.glyph)
                     .font(.system(size: compact ? 11 : 13, weight: .bold)).foregroundStyle(.white)
                     .frame(width: compact ? 22 : 26, height: compact ? 22 : 26)
-                    .background(gated ? Theme.inkFaint : tint, in: RoundedRectangle(cornerRadius: 7))
+                    .background(gated ? Theme.inkFaint : tint, in: Rectangle())
                 Text(v.name).font(.maru(compact ? 13 : 15)).foregroundStyle(gated ? Theme.inkSub : Theme.ink)
                     .lineLimit(1).minimumScaleFactor(0.8)
                 if case .acceptOffer = v.action {
@@ -778,10 +778,13 @@ struct WeekMainView: View {
         }
         .padding(.horizontal, 11).padding(.vertical, compact ? 8 : 10)
         .frame(maxWidth: .infinity, minHeight: compact ? nil : 92, maxHeight: compact ? .infinity : nil, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(gated ? Color(hex: 0xF3EFE7) : Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card)
-            .stroke(gated ? Theme.line : tint.opacity(compact ? 0.8 : 0.55),
+        .background(Rectangle().fill(gated ? Color(hex: 0xF3EFE7) : Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
+        .overlay(Rectangle()
+            .stroke(gated ? Theme.lineStrong.opacity(0.4) : tint.opacity(compact ? 0.8 : 0.55),
                     style: StrokeStyle(lineWidth: 3, dash: dashed ? [6, 4] : [])))
+        .overlay(alignment: .topTrailing) {
+            if !gated { DogEar(size: 16).fill(Theme.sumi.opacity(0.85)).frame(width: 16, height: 16) }   // 貼り紙の折れ角
+        }
         // 押せないカードは地と縁で言う（全体を薄くすると一番読ませたい「今日は休め」が1.8〜2.2:1まで落ちた）
     }
 
@@ -802,8 +805,8 @@ struct WeekMainView: View {
         Text(e.text).font(.maru(12, weight: .heavy)).foregroundStyle(e.color)
             .lineLimit(1).minimumScaleFactor(0.8)
             .padding(.horizontal, 6).padding(.vertical, 2)
-            .background(e.color.opacity(0.10), in: Capsule())
-            .overlay(Capsule().stroke(e.color.opacity(0.7), lineWidth: 1.5))
+            .background(e.color.opacity(0.10), in: Rectangle())
+            .overlay(Rectangle().stroke(e.color.opacity(0.7), lineWidth: 1.5))
     }
 
     // MARK: Beat2 獲得バースト（この週の行動で入ったものが立ち絵の頭上に立ち上る）
@@ -825,8 +828,8 @@ struct WeekMainView: View {
         // パワプロの「＋経験点ドン」＝でかく・白縁・ハード影（小さくつつましい獲得表示は手応えが死ぬ）。
         Text(chip.text).font(.maru(17, weight: .black)).foregroundStyle(chip.fg)
             .padding(.horizontal, 12).padding(.vertical, 6)
-            .background(chip.bg, in: Capsule())
-            .overlay(Capsule().stroke(chip.up ? .white : Theme.lineStrong, lineWidth: 2))
+            .background(chip.bg, in: Rectangle())
+            .overlay(Rectangle().stroke(chip.up ? .white : Theme.lineStrong, lineWidth: 2))
             .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
     }
 
@@ -903,7 +906,7 @@ struct WeekMainView: View {
             .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMoney : Theme.verm))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Capsule())
+            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Rectangle())
     }
 
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
@@ -912,7 +915,7 @@ struct WeekMainView: View {
             .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? .white : (up ? Theme.cMental : Theme.inkDim))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Capsule())
+            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Rectangle())
     }
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
@@ -925,7 +928,7 @@ struct WeekMainView: View {
             HStack(spacing: 12) {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text("\(session.year)年目").font(.maru(11)).foregroundStyle(.white.opacity(0.7))
-                    Text("\(session.week)週").font(.maru(24, weight: .black)).foregroundStyle(Theme.goldLeafHi)
+                    Text("\(session.week)週").font(.maru(24, weight: .black)).foregroundStyle(Theme.gold)
                         .contentTransition(.numericText())
                 }
                 .fixedSize()
@@ -945,19 +948,18 @@ struct WeekMainView: View {
             }
         }
         .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 12)
-        .background(Theme.curtainShade.ignoresSafeArea(edges: .bottom))
-        .overlay(alignment: .top) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+        .background(Theme.sumi.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(Theme.gold).frame(height: 2) }
     }
 
     private func menuButton(_ glyph: String, _ label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 3) {
-                Image(systemName: glyph).font(.system(size: 16, weight: .semibold))
-                Text(label).font(.maru(10.5, weight: .bold))
-            }
-            .foregroundStyle(.white.opacity(0.9))
-            .frame(maxWidth: .infinity, minHeight: 46)
-            .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            Text(label).font(.maru(16, weight: .black))
+                .foregroundStyle(Theme.kinari)
+                .frame(maxWidth: .infinity, minHeight: 46)
+                .background(Theme.sumi)
+                .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
+                .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
         }
         .buttonStyle(PressableStyle())
         .accessibilityLabel(label)
@@ -980,8 +982,8 @@ struct WeekMainView: View {
         HStack(spacing: 5) {
             Text("体力").font(.maru(10)).foregroundStyle(.white.opacity(0.8)).fixedSize()
             ZStack(alignment: .leading) {
-                Capsule().fill(.white.opacity(0.16))
-                Capsule()
+                Rectangle().fill(.white.opacity(0.16))
+                Rectangle()
                     .fill(LinearGradient(colors: [staminaColor.opacity(0.82), staminaColor], startPoint: .top, endPoint: .bottom))
                     .frame(width: 96 * CGFloat(max(0, min(100, s.stamina)) / 100))
                     .shadow(color: staminaColor.opacity(0.6), radius: 3)
@@ -1014,10 +1016,10 @@ struct WeekMainView: View {
             Text(toast).font(.maru(13, weight: .bold)).foregroundStyle(Theme.kinari)
                 .multilineTextAlignment(.leading)
                 .padding(.leading, 18).padding(.trailing, 14).padding(.vertical, 10)
-                .background(Theme.curtainShade, in: RoundedRectangle(cornerRadius: 3))
+                .background(Theme.curtainShade, in: Rectangle())
                 .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 4) }
-                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.gold.opacity(0.7), lineWidth: 1))
-                .clipShape(RoundedRectangle(cornerRadius: 3))
+                .overlay(Rectangle().stroke(Theme.gold.opacity(0.7), lineWidth: 1))
+                .clipShape(Rectangle())
                 .e1()
                 .padding(.horizontal, 24)
                 .padding(.bottom, 78)   // 最下帯の上+16pt（§3-5）
@@ -1109,13 +1111,13 @@ struct WeekMainView: View {
             HStack(spacing: 7) {
                 Image(systemName: "forward.end.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(.white)
                     .frame(width: 22, height: 22)
-                    .background(Theme.inkDim, in: RoundedRectangle(cornerRadius: 7))
+                    .background(Theme.inkDim, in: Rectangle())
                 Text(yearEndArmed ? "もう一度" : "年末へ").font(.maru(13)).foregroundStyle(Theme.inkDim).lineLimit(1)
             }
             .padding(.horizontal, 11).padding(.vertical, 8)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(Theme.card2, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, style: StrokeStyle(lineWidth: 3, dash: [6, 4])))
+            .background(Theme.card2, in: Rectangle())
+            .overlay(Rectangle().stroke(Theme.line, style: StrokeStyle(lineWidth: 3, dash: [6, 4])))
         }
         .buttonStyle(PressableStyle())
     }
@@ -1154,4 +1156,18 @@ private struct BurstChip: Identifiable {
     let bg: Color
     /// 伸び（祝う）か、減り（祝わない＝白地＋縁）か
     var up: Bool = true
+}
+
+
+/// 貼り紙の折れ角（右上の三角）
+struct DogEar: Shape {
+    var size: CGFloat
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: r.maxX - size, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + size))
+        p.closeSubpath()
+        return p
+    }
 }

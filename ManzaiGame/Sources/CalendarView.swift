@@ -80,11 +80,11 @@ struct CalendarView: View {
                         .overlay(alignment: .trailing) { Rectangle().fill(Theme.sumi).frame(width: 1) }
                     ForEach(0..<4, id: \.self) { col in
                         cell(week: row * 4 + col + 1)
-                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(Theme.line).frame(width: 0.6) } }
+                            .overlay(alignment: .leading) { if col > 0 { Rectangle().fill(Theme.lineStrong.opacity(0.4)).frame(width: 0.6) } }
                     }
                 }
                 .frame(height: 38)
-                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(Theme.line).frame(height: 0.6) } }
+                .overlay(alignment: .bottom) { if row < 11 { Rectangle().fill(Theme.lineStrong.opacity(0.4)).frame(height: 0.6) } }
             }
         }
         .background(Color(hex: 0xFBF3E2))

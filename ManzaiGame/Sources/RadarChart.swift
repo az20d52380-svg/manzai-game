@@ -135,7 +135,7 @@ struct ActionBreakdownBand: View {
             HStack(spacing: 1) {
                 ForEach(1...max(1, weeks), id: \.self) { w in
                     Rectangle()
-                        .fill(categoryByWeek[w]?.color ?? Theme.line)
+                        .fill(categoryByWeek[w]?.color ?? Theme.lineStrong.opacity(0.4))
                         .frame(maxWidth: .infinity)
                 }
             }

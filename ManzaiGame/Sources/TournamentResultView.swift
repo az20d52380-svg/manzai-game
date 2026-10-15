@@ -96,13 +96,17 @@ struct TournamentResultView: View {
                         if !isMidTournament {
                             Text("頂 グランプリ").font(.maru(.sub)).foregroundStyle(.white)
                                 .padding(.horizontal, 14).padding(.vertical, 2)
-                                .background(Theme.vermD, in: Capsule())
-                                .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                                .background(Theme.vermD, in: Rectangle())
+                                .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1))
                         }
                         Telop(text: r.name, size: 24)
                         Text("第\(summary.week)週 ・ 本番").font(.maru(.sub)).foregroundStyle(Theme.houseLight)
                     }
-                    .padding(.top, 50)
+                    .padding(.horizontal, 22).padding(.vertical, 8)
+                    .background(Theme.sumi.opacity(0.92))                       // 看板＝墨の木札
+                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 2))
+                    .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
+                    .padding(.top, 46)
 
                     // 判（大会名のすぐ下・二人の頭の上）＋一言のテロップ
                     VStack(spacing: 10) {
@@ -137,17 +141,17 @@ struct TournamentResultView: View {
                                     }
                                     .font(.maru(.sub)).foregroundStyle(r.passed ? Theme.paperInk : Theme.inkSub)
                                     .padding(.horizontal, 10).padding(.vertical, 5)
-                                    .background(.white.opacity(0.92), in: Capsule())
+                                    .background(Theme.kinariPanel, in: Rectangle())
                                     .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
                                 }
                                 if r.prize > 0 {
                                     // 通過＝金の縁の賞金札。数字がカウントアップする
                                     RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
-                                        .font(.maru(20, weight: .heavy)).foregroundStyle(.white)
+                                        .font(.maru(20, weight: .heavy)).foregroundStyle(Theme.kinari)
                                         .padding(.horizontal, 16).padding(.vertical, 7)
-                                        .background(Theme.vermD, in: Capsule())
-                                        .overlay(Capsule().stroke(Theme.gold, lineWidth: 2.5))
-                                        .shadow(color: Theme.gold.opacity(0.55), radius: 10)
+                                        .background(Theme.vermD, in: Rectangle())
+                                        .overlay(Rectangle().stroke(Theme.gold, lineWidth: 2.5))
+                                        .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
                                         .fixedSize()
                                 }
                             }
@@ -157,7 +161,7 @@ struct TournamentResultView: View {
                                 Text("知名度 \(Int(summary.state.fame.rounded()))（+\(Int(session.lastResultFameDelta.rounded()))）")
                                     .font(.maru(12, weight: .bold)).foregroundStyle(Theme.paperInk)
                                     .padding(.horizontal, 10).padding(.vertical, 4)
-                                    .background(.white.opacity(0.92), in: Capsule())
+                                    .background(Theme.kinariPanel, in: Rectangle())
                                     .fixedSize()
                             }
                             Button {
@@ -166,8 +170,8 @@ struct TournamentResultView: View {
                             } label: {
                                 Text("次へ ▶").font(.maru(.body)).foregroundStyle(.white)
                                     .frame(maxWidth: .infinity, minHeight: 52)
-                                    .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                                    .shadow(color: Theme.vermD, radius: 0, y: 3)
+                                    .background(Theme.verm, in: Rectangle())
+                                    .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
                             }
                             .buttonStyle(PressableStyle())
                             .padding(.horizontal, 24)
@@ -208,12 +212,12 @@ struct TournamentResultView: View {
                         Button { skipRequested = true } label: {
                             Text("飛ばす ▶").font(.maru(.sub)).foregroundStyle(.white)
                                 .padding(.horizontal, 12).padding(.vertical, 5)
-                                .background(Theme.vermD, in: Capsule())
-                                .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                                .background(Theme.vermD, in: Rectangle())
+                                .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1))
                         }
                     }
                     .padding(.horizontal, 12).padding(.vertical, 6)
-                    .background(Color.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 12))   // 明るい舞台/カードの上でも「タップで次へ」を読めるように
+                    .background(Color.black.opacity(0.6), in: Rectangle())   // 明るい舞台/カードの上でも「タップで次へ」を読めるように
                 }
                 .padding(.horizontal, 18).padding(.bottom, 34)
                 .transition(.opacity)
@@ -320,10 +324,10 @@ struct TournamentResultView: View {
             .font(.maru(.display)).foregroundStyle(.white)
             .frame(width: 124, height: 124)
             .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 130),
-                       in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.stamp).stroke(passed ? Theme.gold : metal.opacity(0.55), lineWidth: passed ? 4 : 2).padding(5))   // 縁＝通過は金／敗退は静かな金属色
+                       in: Rectangle())
+            .overlay(Rectangle().stroke(passed ? Theme.gold : metal.opacity(0.55), lineWidth: passed ? 4 : 2).padding(5))   // 縁＝通過は金／敗退は静かな金属色
             .rotationEffect(.degrees(-4))
-            .shadow(color: c.opacity(0.55), radius: 16, y: 8)
+            .shadow(color: .black.opacity(0.40), radius: 0, y: 5)
             .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))      // 通過は高くから叩きつける／敗退は低く静かに沈む（slamFire のシェイクと同時に着地）
             .opacity(revealed ? 1 : 0)
     }
@@ -350,7 +354,7 @@ struct TournamentResultView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.94)))
+        .background(Rectangle().fill(.white.opacity(0.94)))
     }
 
     private func washi(text: String, judge: String, passed: Bool) -> some View {
@@ -365,7 +369,7 @@ struct TournamentResultView: View {
                 Spacer(minLength: 8)
                 Text(stampLabel(passed: passed)).font(.maru(.sub)).foregroundStyle(.white)
                     .frame(width: 46, height: 46)
-                    .background(passed ? Theme.verm : Color(hex: 0x4E423C), in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
+                    .background(passed ? Theme.verm : Color(hex: 0x4E423C), in: Rectangle())
                     .rotationEffect(.degrees(-4))
             }
             Text(text)
@@ -376,9 +380,9 @@ struct TournamentResultView: View {
         }
         .padding(18)
         .background(LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom),
-                    in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.paperEdge, lineWidth: 1))
-        .shadow(color: Color(hex: 0x785014, alpha: 0.3), radius: 14, y: 8)
+                    in: Rectangle())
+        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 2))
+        .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
     }
 
     // MARK: ⑪ 山場（敗者復活で散る）のタップ送りオーバーレイ（Fable doc02）

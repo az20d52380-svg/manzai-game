@@ -12,6 +12,8 @@ struct AbilityUpView: View {
     let onClose: () -> Void
     /// この画面で押した段の並び（pourStep を順に再生＝見積もりと確定が同じ）
     @State private var taps: [Ability] = []
+    /// ＋を押した行が一瞬「金」に光る
+    @State private var flash: Ability? = nil
 
     private var cfg: GameConfig { session.config }
     private var base: GameState { session.state }
@@ -43,14 +45,14 @@ struct AbilityUpView: View {
     /// 臙脂＋金の帯（週のメイン・設定と同じ色）。
     private var header: some View {
         HStack(spacing: 10) {
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
-            Text("能力アップ").font(.maru(20, weight: .black)).foregroundStyle(Theme.goldLeafHi).fixedSize()
+            Rectangle().fill(Theme.gold).frame(height: 1).frame(maxWidth: .infinity)
+            Text("能力アップ").font(.maru(20, weight: .black)).foregroundStyle(Theme.gold).fixedSize()
                 .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
+            Rectangle().fill(Theme.gold).frame(height: 1).frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
+        .background(Theme.curtain.ignoresSafeArea(edges: .top))
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.gold).frame(height: 2) }
         .padding(.bottom, 10)
     }
 
@@ -65,10 +67,11 @@ struct AbilityUpView: View {
                     Text("\(a)").font(.maru(11, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.8)
                     Text(grade).font(.maru(20, weight: .heavy)).foregroundStyle(.white)
                         .frame(width: 36, height: 30)
-                        .background(Theme.gradeColor(grade), in: RoundedRectangle(cornerRadius: 7))
+                        .background(Theme.gradeColor(grade))
+                        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
                     GeometryReader { g in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(Theme.line)
+                            Capsule().fill(Theme.card2)
                             Capsule().fill(Theme.abilityColor(a)).frame(width: g.size.width * Theme.rankProgress(v, cap: cap))
                         }
                     }
@@ -88,15 +91,17 @@ struct AbilityUpView: View {
     /// 現在の経験点（5種）＝見出し＋5列。下の行の費用列と同じ幅でそろえる
     private var expRow: some View {
         HStack(spacing: 4) {
-            Text("現在の\n経験点").font(.maru(13, weight: .heavy)).foregroundStyle(Theme.goldLeafHi)
+            Text("現在の\n経験点").font(.maru(13, weight: .heavy)).foregroundStyle(Theme.gold)
                 .multilineTextAlignment(.center)
                 .frame(width: leadW).frame(maxHeight: .infinity)
                 .background(Theme.curtain)
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 3) {
-                    Text("\(c)").font(.maru(10.5, weight: .bold)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.8)
-                        .padding(.horizontal, 5).padding(.vertical, 1)
-                        .background(Theme.currencyColor(c), in: Capsule())
+                    Text(Theme.currencyChar(c)).font(.maru(16, weight: .black)).foregroundStyle(Theme.kinari)
+                        .frame(width: 26, height: 26)
+                        .background(Theme.currencyColor(c), in: Circle())
+                        .overlay(Circle().stroke(Theme.sumi, lineWidth: 1.5))
+                        .accessibilityLabel("\(c)")
                     Text("\(Self.points(pv[currency: c]))").font(.maru(22, weight: .heavy)).monospacedDigit()
                         .foregroundStyle(Theme.ink).minimumScaleFactor(0.7).lineLimit(1)
                 }
@@ -175,11 +180,11 @@ struct AbilityUpView: View {
                     .foregroundStyle(n == nil ? Theme.inkFaint.opacity(0.7) : (n! > have ? Theme.vermD : Theme.ink))
                     .minimumScaleFactor(0.7).lineLimit(1)
                     .frame(maxWidth: .infinity, minHeight: 40)
-                    .background(n == nil ? Theme.line.opacity(0.5) : (n! > have ? Theme.verm.opacity(0.12) : Theme.line.opacity(0.9)))
+                    .background(n == nil ? Theme.card2.opacity(0.5) : (n! > have ? Theme.verm.opacity(0.12) : Theme.card2.opacity(0.9)))
             }
         }
         .padding(.leading, 8).padding(.trailing, 6).padding(.vertical, 8)
-        .background(Theme.kinariPanel)
+        .background(flash == a ? Theme.gold : Theme.kinariPanel)
         .overlay(alignment: .leading) { Rectangle().fill(Theme.abilityColor(a)).frame(width: 4) }
         .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
         .animation(.spring(response: 0.3, dampingFraction: 0.55), value: gained)
@@ -187,9 +192,11 @@ struct AbilityUpView: View {
         return Button {
             guard let n = steps else { return }
             Haptics.tick()
+            flash = a
             withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
                 taps += Array(repeating: a, count: n)
             }
+            Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(.easeOut(duration: 0.25)) { flash = nil } }
         } label: { content }
         .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
         .disabled(!canTap)
@@ -198,15 +205,15 @@ struct AbilityUpView: View {
     /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
     private func plusMark(canTap: Bool) -> some View {
         Image(systemName: "plus").font(.system(size: 24, weight: .black))
-            .foregroundStyle(canTap ? Color.white : Theme.inkFaint)
+            .foregroundStyle(canTap ? Theme.kinari : Theme.inkFaint)
             .frame(width: 50, height: 50)
             .background(
-                RoundedRectangle(cornerRadius: 10)
+                Rectangle()
                     .fill(canTap ? LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom)
-                                 : LinearGradient(colors: [Theme.line, Theme.lineStrong.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+                                 : LinearGradient(colors: [Theme.card2, Theme.lineStrong.opacity(0.5)], startPoint: .top, endPoint: .bottom))
             )
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(canTap ? Theme.sumi : Theme.lineStrong, lineWidth: 1.5))
-            .shadow(color: canTap ? Theme.sumi.opacity(0.85) : Theme.lineStrong.opacity(0.6), radius: 0, y: 3)
+            .overlay(Rectangle().stroke(canTap ? Theme.sumi : Theme.lineStrong, lineWidth: 1.5))
+            .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
     }
 
     /// 次の等級の名前と、そこまでの能力値（表示だけ）。最高等級なら nil
@@ -219,11 +226,11 @@ struct AbilityUpView: View {
     private var footer: some View {
         HStack(spacing: 8) {
             footBtn("戻る", fg: Theme.ink, bg: Theme.kinariPanel, enabled: true) { onClose() }   // 反映せずに閉じる
-            footBtn("リセット", fg: taps.isEmpty ? Theme.inkFaint : Theme.ink, bg: Theme.line, enabled: !taps.isEmpty) { taps.removeAll() }
-            footBtn("おまかせ", fg: .white, bg: Theme.verm, enabled: true) {
+            footBtn("リセット", fg: taps.isEmpty ? Theme.inkFaint : Theme.ink, bg: Theme.card2, enabled: !taps.isEmpty) { taps.removeAll() }
+            footBtn("おまかせ", fg: Theme.kinari, bg: Theme.verm, enabled: true) {
                 taps = session.recommendedAllocation(); Haptics.tick()
             }
-            footBtn("確定", fg: Theme.goldLeafHi, bg: Theme.curtain, enabled: true) { confirm() }
+            footBtn("確定", fg: Theme.gold, bg: Theme.curtain, enabled: true) { confirm() }
         }
         .padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 12)
         .background(Theme.kinari)
