@@ -146,32 +146,101 @@ struct FinalsBroadcastIntro: View {
     }
 
     /// 審査員席（場面2）。並びは採点開票・票めくりの7枠と同じ＝右端が天堂寺。点灯ごとに se_spot_light_on。
+    /// 設計 §1 場面2 の絵：席札7連＋頭上のピンスポット＋金縁の審査員デスク（名札）＋紹介中の木札クローズアップ。
     private var judgesView: some View {
         let cur = min(step, 7) - 1
-        return VStack(spacing: 18) {
+        return VStack(spacing: 0) {
             Text("審査員席  7名・1人100点満点").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin)
-            HStack(spacing: 5) {
-                ForEach(0..<7, id: \.self) { i in
-                    let on = step > i
-                    let parts = judges[i].split(separator: " ").map(String.init)
-                    VStack(spacing: 2) {
-                        Text(parts[0]).font(YoseFont.mincho(13)).lineLimit(1).minimumScaleFactor(0.5)
-                        Text(parts.count > 1 ? parts[1] : "").font(YoseFont.mincho(9)).lineLimit(1).minimumScaleFactor(0.5)
+                .padding(.bottom, 14)
+            ZStack(alignment: .top) {
+                // 背景の幕（席の後ろ）
+                LinearGradient(colors: [Color(hex: 0x2A1612), Color(hex: 0x120D0B)], startPoint: .top, endPoint: .bottom)
+                    .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
+                    .overlay(alignment: .top) {   // 幕の縁飾り
+                        HStack(spacing: 0) { ForEach(0..<14, id: \.self) { _ in
+                            Circle().fill(YoseColor.kin.opacity(0.7)).frame(width: 5, height: 5).frame(maxWidth: .infinity) } }
+                            .padding(.top, 6)
                     }
-                    .foregroundStyle(on ? YoseColor.sumi : YoseColor.haiSumi)
-                    .frame(maxWidth: .infinity).frame(height: 78)
-                    .background(on ? YoseColor.washi : YoseColor.kuroUrushi.opacity(0.8))
-                    .overlay(Rectangle().stroke(on ? YoseColor.kin : YoseColor.haiSumi.opacity(0.4), lineWidth: on ? 2 : 1))
-                    .overlay(alignment: .top) { if on && i == cur { Rectangle().fill(YoseColor.kinBright).frame(height: 4) } }
-                    .scaleEffect(i == cur ? 1.12 : 1)
-                    .zIndex(i == cur ? 1 : 0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: step)
+                    .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.5), lineWidth: 1))
+                VStack(spacing: 0) {
+                    HStack(alignment: .bottom, spacing: 5) {
+                        ForEach(0..<7, id: \.self) { i in
+                            let on = step > i
+                            let isCur = i == cur
+                            VStack(spacing: 0) {
+                                // 頭上のピンスポット
+                                ZStack(alignment: .top) {
+                                    Capsule().fill(on ? YoseColor.kinBright : YoseColor.haiSumi.opacity(0.5)).frame(width: 14, height: 6)
+                                    if isCur {
+                                        JudgeSpotCone()
+                                            .fill(LinearGradient(colors: [YoseColor.kinBright.opacity(0.75), YoseColor.kinBright.opacity(0.05)],
+                                                                 startPoint: .top, endPoint: .bottom))
+                                            .padding(.top, 5).blendMode(.screen)
+                                    }
+                                }
+                                .frame(height: 100)
+                                // 席札（顔）
+                                CharacterFace(spec: FaceCatalog.judge(judges[i]), size: 42)
+                                    .brightness(on ? 0 : -0.75).opacity(on ? 1 : 0.55)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 140)
+                                    .background(on ? YoseColor.washi : YoseColor.kuroUrushi.opacity(0.85))
+                                    .overlay(Rectangle().stroke(on ? YoseColor.kin : YoseColor.haiSumi.opacity(0.4), lineWidth: on ? 2 : 1))
+                                    .shadow(color: isCur ? YoseColor.kinBright.opacity(0.8) : .clear, radius: 10)
+                                    .scaleEffect(isCur ? 1.12 : 1, anchor: .bottom)
+                                    .zIndex(isCur ? 1 : 0)
+                            }
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: step)
+                        }
+                    }
+                    .padding(.horizontal, 6)
+                    // 審査員デスク（天板＋前面の名札）
+                    VStack(spacing: 0) {
+                        Rectangle().fill(LinearGradient(colors: [Color(hex: 0x5A3A22), Color(hex: 0x3A2414)], startPoint: .top, endPoint: .bottom))
+                            .frame(height: 12)
+                            .overlay(alignment: .top) { Rectangle().fill(YoseColor.kinBright).frame(height: 2) }
+                        HStack(spacing: 5) {
+                            ForEach(0..<7, id: \.self) { i in
+                                let on = step > i
+                                let parts = judges[i].split(separator: " ").map(String.init)
+                                VStack(spacing: 1) {
+                                    Text(parts[0]).font(YoseFont.mincho(13)).lineLimit(1).minimumScaleFactor(0.5)
+                                    Text(parts.count > 1 ? parts[1] : "").font(YoseFont.mincho(10)).lineLimit(1).minimumScaleFactor(0.5)
+                                }
+                                .foregroundStyle(on ? YoseColor.sumi : YoseColor.haiSumi)
+                                .frame(maxWidth: .infinity).frame(height: 46)
+                                .background(on ? YoseColor.kinari : YoseColor.kuroUrushi.opacity(0.7))
+                                .overlay(Rectangle().stroke(on ? YoseColor.kin : YoseColor.haiSumi.opacity(0.35), lineWidth: 1))
+                            }
+                        }
+                        .padding(.horizontal, 6).padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(LinearGradient(colors: [Color(hex: 0x3A2414), Color(hex: 0x1C110A)], startPoint: .top, endPoint: .bottom))
+                        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
+                    }
+                    .padding(.top, -2)
+                    Spacer(minLength: 0)
                 }
             }
-            if cur >= 0 {
-                Text(judges[cur]).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.kinari).id(cur)
+            .frame(height: 100 + 140 + 12 + 66 + 26)
+            // 紹介中の審査員の木札
+            Group {
+                if cur >= 0 {
+                    VStack(spacing: 4) {
+                        Text("審査員").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kin)
+                        Text(judges[cur]).font(YoseFont.mincho(34)).foregroundStyle(YoseColor.kinari).tracking(2)
+                    }
+                    .padding(.vertical, 14).frame(maxWidth: .infinity)
+                    .background(YoseColor.kuroUrushi)
+                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
+                    .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.5), lineWidth: 1).padding(5))
+                    .id(cur)
                     .transition(.asymmetric(insertion: .opacity, removal: .identity))   // 前の名前と重ならない
-            } else { Text(" ").font(YoseFont.mincho(26)) }
+                } else {
+                    Color.clear
+                }
+            }
+            .frame(height: 110).padding(.top, 26)
         }
         .animation(.easeOut(duration: 0.2), value: step)
     }
@@ -220,6 +289,7 @@ struct FinalsBroadcastIntro: View {
                 .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 44).background(YoseColor.washi)
         }
         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+        .transaction { $0.animation = nil }   // 名前の入れ替わりで前後の文字が重なって「?」に見えるのを防ぐ
     }
 
     // MARK: 背景（金粉・サーチライト）
@@ -338,6 +408,16 @@ enum FinalsSeen {
 }
 
 /// 全場面に常設する「LIVE 生放送」ヘッダー（§4-7）。左＝LIVE札、中＝いまの場面名、右＝出番。
+/// 審査員席のピンスポット（上が細く下が広い台形）
+struct JudgeSpotCone: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: r.midX - r.width * 0.12, y: r.minY)); p.addLine(to: CGPoint(x: r.midX + r.width * 0.12, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX + 4, y: r.maxY)); p.addLine(to: CGPoint(x: r.minX - 4, y: r.maxY)); p.closeSubpath()
+        return p
+    }
+}
+
 struct FinalsLiveBar: View {
     let scene: String
     var trailing: String? = nil
