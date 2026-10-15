@@ -213,3 +213,75 @@ private struct YoseToastModifier: ViewModifier {
 extension View {
     func yoseToast(_ message: Binding<String?>) -> some View { modifier(YoseToastModifier(message: message)) }
 }
+
+// MARK: 初回だけの短い説明（⑪モーダルの一種・UserDefaults で一度きり・タップで閉じる）
+/// 初めて遊ぶ人向けの一言説明の「見た」記録。キーは "mz.hint.<key>"。`？` から開き直す時は記録を見ない。
+enum OneTimeHint {
+    static func isDone(_ key: String) -> Bool { UserDefaults.standard.bool(forKey: "mz.hint.\(key)") }
+    static func markDone(_ key: String) { UserDefaults.standard.set(true, forKey: "mz.hint.\(key)") }
+    /// DEBUG の目視・スモーク（MZ_UI / MZ_SMOKE）では出さない（他の目視を邪魔しない）。MZ_HINT=1 で強制表示。
+    static var suppressedForDebug: Bool {
+        #if DEBUG
+        let e = ProcessInfo.processInfo.environment
+        if e["MZ_HINT"] != nil { return false }
+        return e["MZ_UI"] != nil || e["MZ_SMOKE"] != nil || e["MZ_ENDING"] != nil
+        #else
+        return false
+        #endif
+    }
+}
+
+struct HintSpec: Identifiable, Equatable {
+    let key: String
+    let title: String
+    let rows: [Row]
+    var note: String? = nil
+    var id: String { key }
+    struct Row: Equatable { let term: String; let text: String }
+}
+
+/// 用語＋ひとこと説明を並べたモーダル。ボタンは「わかった」1つだけ（押すまで他は触れない＝1画面1回きり）。
+struct HintModal: View {
+    let spec: HintSpec
+    let onClose: () -> Void
+    var body: some View {
+        YoseModal(title: spec.title, primaryTitle: "わかった", primaryAction: onClose, cancelTitle: nil) {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(spec.rows, id: \.term) { r in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(r.term).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .frame(minWidth: 56)
+                            .background(YoseColor.enji)
+                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                        Text(r.text).font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                if let n = spec.note {
+                    Text(n).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+}
+
+/// 用語の小さな「？」ボタン（押すと説明を開き直す）。44pt の当たり判定。
+struct HintMarkButton: View {
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Text("？").font(YoseFont.gothic(15, weight: .black)).foregroundStyle(YoseColor.sumi)
+                .frame(width: 26, height: 26)
+                .background(YoseColor.kinari)
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("説明を見る")
+    }
+}

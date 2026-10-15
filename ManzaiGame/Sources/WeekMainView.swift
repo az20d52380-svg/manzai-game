@@ -23,6 +23,7 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    @State private var hint: HintSpec?       // 初回だけの短い説明（初週・生活費の前の週。`？` からも開く）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
@@ -160,6 +161,11 @@ struct WeekMainView: View {
                 }
             }
         }
+        .overlay {
+            if let h = hint {
+                HintModal(spec: h) { OneTimeHint.markDone(h.key); hint = nil }
+            }
+        }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
@@ -184,9 +190,14 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { showEvent = false; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice() } } else { syncEventPresentation() }
+            if kind == nil { showEvent = false; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
-        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowDebtNotice() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowDebtNotice(); try? await Task.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .task(id: session.week) {
+            // 初回だけの説明（初週／最初の生活費の前の週）。獲得バースト・イベントが落ち着いてから。
+            try? await Task.sleep(nanoseconds: 2_200_000_000)
+            maybeShowFirstHints()
+        }
         .task(id: session.week) {
             // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
@@ -259,6 +270,10 @@ struct WeekMainView: View {
             .background(Color(hex: 0xFFFBF0).ignoresSafeArea(edges: .top))   // ステータスバー裏も稽古場の白
             // 上端中央の目標バナー（2行になる週がある）の下に置く＝重ならない
             .overlay(alignment: .topTrailing) { statBars.padding(.trailing, YoseMetrics.screenMargin).padding(.top, 8) }
+            .overlay(alignment: .topLeading) {
+                HintMarkButton { hint = Self.firstWeekHint }   // 用語の「？」（初回の説明を開き直す）
+                    .padding(.leading, YoseMetrics.screenMargin - 10).padding(.top, 0)
+            }
             .overlay(alignment: .bottomLeading) {
                 // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
                 if openCat != nil && beatAdvice == nil {
@@ -1141,6 +1156,39 @@ struct WeekMainView: View {
         case 1: debtNotice = "生活費が払えず、借金になった。借金が100万を越えると、芸人を続けられない。"
         case 2: debtNotice = "借金が50万を越えた。あと50万で、芸人を続けられなくなる。バイトに専念すれば、まだ立て直せる。"
         default: debtNotice = "借金が80万を越えた。あと20万で終わりだ。今すぐバイトに専念すれば、まだ間に合う。"
+        }
+    }
+
+    // MARK: 初めて遊ぶ人への一言説明（初回だけ）
+
+    static var firstWeekHint: HintSpec {
+        HintSpec(key: "firstWeek", title: "はじめに", rows: [
+            .init(term: "実力", text: "コンビの強さ。大会では「通過ライン」に届くほど勝ち上がれる。"),
+            .init(term: "相性", text: "二人の息の合い方。相方と合わせたり、休んだりで上がる。"),
+            .init(term: "体力", text: "行動すると減る。休むと戻る。"),
+            .init(term: "経験点", text: "練習やネタ書きでたまる。「能力アップ」で使うと実力が伸びる。"),
+        ], note: "上の黒い帯は、次の大会までの週数。左上の「？」でいつでも読み返せる。")
+    }
+
+    private func livingHint() -> HintSpec {
+        let c = session.config
+        return HintSpec(key: "living", title: "生活費", rows: [
+            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに\(c.livingCost / 10_000)万円が引かれる。今週がその週。"),
+            .init(term: "借金", text: "お金が足りないと、足りない分が借金になる。"),
+        ])
+    }
+
+    /// 初回だけ出す短い説明（初週＝実力/相性/体力/経験点、最初の生活費の週＝引き落とし）。他の知らせと重ねない。
+    private func maybeShowFirstHints() {
+        guard !OneTimeHint.suppressedForDebug, hint == nil, debtNotice == nil, toast == nil,
+              session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil,
+              !showAllocation, !showShop, !showNotebook, !showCalendar, !showSettings,
+              case .freeAction = session.phase, session.year == 1 else { return }
+        if !OneTimeHint.isDone("firstWeek"), session.week <= 1 {
+            hint = Self.firstWeekHint
+        } else if !OneTimeHint.isDone("living"), session.week >= session.config.livingInterval,
+                  session.week % session.config.livingInterval == 0 {
+            hint = livingHint()
         }
     }
 

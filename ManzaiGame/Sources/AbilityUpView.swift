@@ -29,6 +29,7 @@ struct AbilityUpView: View {
     private let minusW: CGFloat = 34
     private let colGap: CGFloat = 6
     @State private var pulse = false
+    @State private var hint: HintSpec?   // 初めて開いた時だけの説明（`？` で読み返せる）
     @State private var bumped: Ability? = nil
 
     /// 和の五色（閃・語・間・存・胆）＝正本 §2 の経験点5色
@@ -45,6 +46,9 @@ struct AbilityUpView: View {
     var body: some View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "能力アップ")
+                .overlay(alignment: .trailing) {
+                    HintMarkButton { hint = Self.hintSpec }.padding(.trailing, 6).padding(.top, 20)
+                }
             ScrollView {
                 VStack(spacing: 10) {
                     rankStrip
@@ -56,9 +60,25 @@ struct AbilityUpView: View {
             footer
         }
         .background(YoseColor.kinari.ignoresSafeArea())
+        .overlay { if let h = hint { HintModal(spec: h) { OneTimeHint.markDone(h.key); hint = nil } } }
+        .task {
+            if !OneTimeHint.suppressedForDebug, !OneTimeHint.isDone(Self.hintSpec.key) {
+                try? await Task.sleep(nanoseconds: 450_000_000)
+                hint = Self.hintSpec
+            }
+        }
         #if DEBUG
         .task { if ProcessInfo.processInfo.environment["MZ_TAPS"] != nil { try? await Task.sleep(nanoseconds: 1_500_000_000); taps = [.センス, .発想, .センス] } }   // 目視用: ＋を押した後の状態
         #endif
+    }
+
+    static var hintSpec: HintSpec {
+        HintSpec(key: "abilityUp", title: "能力アップ", rows: [
+            .init(term: "経験点", text: "練習やネタ書きでたまる。閃・語・間・存・胆の数字が、いま持っている分。"),
+            .init(term: "＋", text: "能力の「＋」で経験点を使うと、その能力が上がり、実力が伸びる。"),
+            .init(term: "おまかせ", text: "迷ったら「おまかせ」。自動で割り振る。「確定」を押すまで決まらない。"),
+            .init(term: "ランク", text: "G、F……と上がっていく。「Fまで5」は、Fに上がるまでの残り。"),
+        ])
     }
 
     /// いちばん上：能力ごとのランクと次のランクまでのゲージ
