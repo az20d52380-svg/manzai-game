@@ -373,7 +373,7 @@ struct YoseBigSuccessCutIn: View {
         .overlay(alignment: .bottom) { VStack(spacing: 2) { Rectangle().fill(YoseColor.kin).frame(height: 1); Rectangle().fill(YoseColor.kinBright).frame(height: 3) } }
         .overlay(alignment: .trailing) {
             YoseHankoStamp(text: "大成功", isSquare: false, angle: -8)
-                .scaleEffect(stamped ? 1.2 : 2.6).opacity(stamped ? 1 : 0)
+                .scaleEffect(stamped ? 1.5 : 3.0).opacity(stamped ? 1 : 0)
                 .padding(.trailing, sw * 0.125 + 18)
         }
         .background(alignment: .trailing) {
