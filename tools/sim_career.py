@@ -109,6 +109,11 @@ RUN_EVENTS_FIRED = None   # set() を差すとキャリア内1回制になる（
 EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
 DEBT_LIFE_PEN  = (-10, -3)   # 【正典v2】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦
+RIFT_ON        = True       # 途中解散（すれ違いゲージ）docs/dissolution_rift_spec_v1.md【仮】
+RIFT_GAIN      = 1.5        # 相性が上がらなかった週の増え方 ×(上限−相性)/上限
+RIFT_HEAL      = 3.0        # 相性が上がった週の減り方
+RIFT_WARN      = 50.0       # 初めて越えた週末に予告（アプリ側の選択肢イベント）
+RIFT_RESPOND   = False      # 実測用：予告に「向き合う」で応えるボット（rift −30・体力 −10）
 BANKRUPT_LINE  = -1_000_000   # 【正典v2】夜逃げライン: 下回ったらキャリア強制終了（rule_holes_v0 §2）
 INJURY_ON      = True   # 【正典v2】低体力のキツいバイトに体調ダウン抽選（稽古はゲートで先に止まる）（rule_holes_v0。ゲーム内表記は「喉をやられた」「腰にきた」等——漫才師にケガという語は使わない）
 INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとダウン抽選
@@ -435,6 +440,23 @@ def enter_tournament(s, pol, t, rng):
             RUN_BOREDOM.clear()   # 飽きられ解除(b): 他大会での優勝＝再評価（dynasty §3-2）
     return True, ok
 
+def rift_weekend(s, year, compat0):
+    """途中解散のすれ違いゲージ（週末・生活費の後）。乱数なし。解散なら True。Swift: GameEngine.applyRiftWeekEnd"""
+    r = getattr(s, "rift", 0.0)
+    if s.compat > compat0:
+        r = max(0.0, r - RIFT_HEAL)
+    else:
+        r = min(100.0, r + RIFT_GAIN * (B.COMPAT_CAP - s.compat) / B.COMPAT_CAP)
+    if r >= RIFT_WARN and not getattr(s, "rift_warned", False):
+        s.rift_warned = True
+        if RIFT_RESPOND:
+            r = max(0.0, r - 30.0)
+            B.add(s, "stamina", -10)
+    if year < 2:
+        r = min(r, 99.0)
+    s.rift = r
+    return r >= 100.0 and getattr(s, "rift_warned", False)
+
 def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False):
     """1年48週。(優勝したか, 通過した回戦数0〜5, 決勝に立ったか) を返す。
     seed_final=True で王者シード（予選免除・決勝直行）。final_line で決勝ラインを上書き（王者編の飽きられ用）。
@@ -470,6 +492,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
 
     for week in range(1, B.WEEKS + 1):
         acted = False
+        compat0 = s.compat   # 途中解散：この週に相性が上がったか（乱数なし）
 
         # --- その他の大会（出場資格があり交通費が払えるなら出る） ---
         t = TOURNAMENTS.get(week)
@@ -616,6 +639,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
             if BANKRUPT_LINE is not None and s.money < BANKRUPT_LINE:
                 s._bankrupt = True         # 破産: キャリア強制終了【実験・既定OFF】
                 return False, gp_stage, finalist
+        if RIFT_ON and rift_weekend(s, year, compat0):
+            s._dissolved = True            # 途中解散: キャリア終了（夜逃げの後に判定）
+            return False, gp_stage, finalist
         s.min_money = min(s.min_money, s.money)
 
     return False, gp_stage, finalist
@@ -648,7 +674,7 @@ def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
         prev_stage = stage
         best_stage = max(best_stage, stage)
         ever_final = ever_final or finalist
-        if getattr(s, "_bankrupt", False):
+        if getattr(s, "_bankrupt", False) or getattr(s, "_dissolved", False):
             break
         if money_log is not None:
             money_log[year - 1].append(s.money)

@@ -63,6 +63,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
     gp_entry_paid = False
     gp_alive, finalist, revival = True, False, False
     for week in range(1, B.WEEKS + 1):
+        compat0 = s.compat   # 途中解散（rift）の判定用
         acted = False
 
         t = C.TOURNAMENTS.get(week)
@@ -151,6 +152,8 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 B.add(s, "stamina", dst)
                 B.add(s, "mental", dmt)
             assert s.money >= C.BANKRUPT_LINE, f"goldenシードで夜逃げが発生（{year}年{week}週）。シードを変えること"
+        if C.RIFT_ON:   # 途中解散（乱数なし・golden の行には出ない）
+            assert not C.rift_weekend(s, year, compat0), f"goldenシードで途中解散が発生（{year}年{week}週）"
 
         if log is not None:
             log.append((year, week, s))

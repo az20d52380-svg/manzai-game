@@ -191,6 +191,11 @@ public struct GameConfig {
     public var debtLifeMental = -3.0
     /// 夜逃げライン: 所持金がこれを下回ったらキャリア強制終了（sim_career.BANKRUPT_LINE と同期）
     public var bankruptLine = -1_000_000
+    // --- 途中解散（すれ違いゲージ・docs/dissolution_rift_spec_v1.md）。Python: sim_career RIFT_*【仮】 ---
+    public var riftOn = true
+    public var riftGain = 1.5      // 相性が上がらなかった週 ×(上限−相性)/上限
+    public var riftHeal = 3.0      // 相性が上がった週
+    public var riftWarn = 50.0     // 初めて越えた週末に予告（アプリ側の選択肢イベント）
     /// 体力がこの値未満だと稽古を選べない（谷口が止める・sim_career.STAMINA_GATE と同期）
     public var staminaGate = 20.0
     /// 体調ダウン（「ケガ」という語は使わない）: 体力がこの値未満のキツいバイトで抽選（sim_career.INJURY_* と同期）

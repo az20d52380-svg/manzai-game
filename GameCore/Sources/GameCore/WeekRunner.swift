@@ -156,6 +156,7 @@ public struct WeekRunner<R: RandomSource> {
         }
         acted = false
         weekResults = []
+        state.riftWeekStartCompat = state.compat   // 途中解散：この週に相性が上がったか（乱数なし）
         section = .tournament
         revivalTried = false
         finalTried = false
@@ -372,6 +373,11 @@ public struct WeekRunner<R: RandomSource> {
         // 週末処理（生活費→生活苦→夜逃げ判定）→ 週の結果
         if GameEngine.applyWeekEnd(week: week, to: &state, config: config) {
             let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true)
+            finished = outcome
+            return .yearDone(outcome)
+        }
+        if GameEngine.applyRiftWeekEnd(year: year, to: &state, config: config) {
+            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, dissolved: true)
             finished = outcome
             return .yearDone(outcome)
         }
