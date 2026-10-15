@@ -311,7 +311,7 @@ private struct EventGlowLayer: View {
             }
             .fill(LinearGradient(colors: [YoseColor.kinBright.opacity(0.3 * k), YoseColor.kinBright.opacity(0.08 * k)], startPoint: .top, endPoint: .bottom))
             .blendMode(.screen)
-            if night { nightWindow(w / 2, 90, 240, 64, mullions: 2, dots: 6) }
+            if night { nightWindow(w / 2, 86, 240, 56, mullions: 2, dots: 6) }
         case .gakuya:
             ForEach(0..<5, id: \.self) { i in
                 halo(w * 0.32 + CGFloat(i - 2) * 29, 58, 34, YoseColor.kinBright, 0.7)
@@ -868,13 +868,13 @@ private struct FamiresBackdrop: View {
                     if time == .night {
                         ForEach(Array([(0.10, 0.62), (0.22, 0.30), (0.40, 0.70), (0.58, 0.40), (0.74, 0.66), (0.90, 0.34)].enumerated()), id: \.offset) { _, d in
                             Rectangle().fill(YoseColor.kinBright.opacity(0.7)).frame(width: 4, height: 4)
-                                .position(x: 240 * d.0, y: 64 * d.1)
+                                .position(x: 240 * d.0, y: 56 * d.1)
                         }
                     }
                 }
-                .frame(width: 240, height: 64)
+                .frame(width: 240, height: 56)
                 .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-                .position(x: w / 2, y: 90)
+                .position(x: w / 2, y: 86)
 
                 // 腰壁と床（テーブルの下まで敷き切る）
                 Rectangle().fill(Color(hex: 0x5A3E2B)).frame(height: h - (tableY - 10))
