@@ -348,6 +348,7 @@ public struct YoseChampionCelebrationView: View {
             // 左：賞金角印タグ
             Text("優勝賞金")
                 .font(YoseFont.gothic(13, weight: .black))
+                .lineLimit(1).fixedSize()
                 .foregroundStyle(YoseColor.kuroUrushi)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
@@ -365,7 +366,9 @@ public struct YoseChampionCelebrationView: View {
                     .font(YoseFont.number(28, weight: .black))
                     .foregroundStyle(Color(hex: 0xFFF7D6))
                     .contentTransition(.numericText(value: Double(displayedPrize)))
+                    .lineLimit(1).minimumScaleFactor(0.6)
             }
+            .lineLimit(1)
             .yoseNumberPop(value: displayedPrize, highlightColor: YoseColor.kinBright, scalePeak: 1.18)
         }
         .padding(.horizontal, 14)
