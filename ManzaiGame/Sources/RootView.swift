@@ -178,7 +178,7 @@ struct RootView: View {
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）
-                var s = GameState(config: GameConfig()); s.money = 3000
+                var s = GameState(config: GameConfig()); s.money = Int(ProcessInfo.processInfo.environment["MZ_MONEY"] ?? "") ?? 3000
                 session = GameSession(startState: s)
                 let kind: ChoiceEventKind
                 switch ProcessInfo.processInfo.environment["MZ_EV"] {
