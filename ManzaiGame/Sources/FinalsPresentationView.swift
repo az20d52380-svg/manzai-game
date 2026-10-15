@@ -756,8 +756,8 @@ struct FinalsPresentationView: View {
 
     private func judgeBox(_ j: JudgeScore, text: String, cue: Bool = true) -> some View {
         YoseSpeechBox(speaker: family(j.name), text: text, roleLabel: "審査員", showCue: cue)
-            .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "\(j.score)", isSquare: true, angle: 6).scaleEffect(0.8).offset(x: 4, y: -22) }
-            .padding(.top, 14)
+            .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "\(j.score)", isSquare: true, angle: 6).scaleEffect(0.72).offset(x: 6, y: -34) }   // 点数札は吹き出しの上へ出す（本文の右上に被らない）
+            .padding(.top, 24)
     }
 
     private var commentsBeat: some View {
