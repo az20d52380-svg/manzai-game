@@ -110,7 +110,7 @@ EVENT_RATE  = 0.12   # 大会・GP週を除く週の発生率【仮】
 EVENT_FIRE_CAP = None   # 効果つきイベントのキャリア通算発火上限（None=無制限）。会話増産時の総量予算（dialogue_batch3 §8）
 DEBT_LIFE_PEN  = (-10, -3)   # 【正典v2】(体力Δ, メンタルΔ): 生活費支払い時に所持金<0なら課す生活苦
 RIFT_ON        = True       # 途中解散（すれ違いゲージ）docs/dissolution_rift_spec_v1.md【仮】
-RIFT_GAIN      = 1.5        # 相性が上がらなかった週の増え方 ×(上限−相性)/上限
+RIFT_GAIN      = 0.5        # 相性が上がらなかった週の増え方 ×(上限−相性)/上限
 RIFT_HEAL      = 3.0        # 相性が上がった週の減り方
 RIFT_WARN      = 50.0       # 初めて越えた週末に予告（アプリ側の選択肢イベント）
 RIFT_RESPOND   = False      # 実測用：予告に「向き合う」で応えるボット（rift −30・体力 −10）

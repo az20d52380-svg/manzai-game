@@ -9,7 +9,7 @@ final class RiftTests: XCTestCase {
         var s = GameState(config: config)
         s.compat = 5; s.riftWeekStartCompat = 5
         XCTAssertFalse(GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config))
-        XCTAssertEqual(s.rift ?? 0, 1.5 * 15 / 20, accuracy: 1e-9)   // 上がらない週：+1.5×(20−5)/20
+        XCTAssertEqual(s.rift ?? 0, 0.5 * 15 / 20, accuracy: 1e-9)   // 上がらない週：+0.5×(20−5)/20
         s.riftWeekStartCompat = 5; s.compat = 6
         _ = GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config)
         XCTAssertEqual(s.rift ?? 0, 0, accuracy: 1e-9)               // 上がった週：−3（下限0）
@@ -30,7 +30,8 @@ final class RiftTests: XCTestCase {
         for _ in 0..<200 { XCTAssertFalse(GameEngine.applyRiftWeekEnd(year: 1, to: &s, config: config)) }
         XCTAssertEqual(s.rift ?? 0, 99, accuracy: 1e-9)              // 1年目は 99 で止まる
         XCTAssertEqual(s.riftWarned, true)                           // 予告は出ている
-        XCTAssertTrue(GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config))
+        XCTAssertFalse(GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config))   // 99.5
+        XCTAssertTrue(GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config))    // 100
         XCTAssertEqual(s.dissolved, true)
     }
 }
