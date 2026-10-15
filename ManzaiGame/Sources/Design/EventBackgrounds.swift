@@ -756,7 +756,7 @@ private struct ParkBackdrop: View {
 
                 // 左：公園のレトロ街灯（生垣の奥に立つ＝柱が植え込みを突き抜けない）
                 ZStack {
-                    Rectangle().fill(YoseColor.kuroUrushi).frame(width: 6, height: 120)
+                    Rectangle().fill(YoseColor.kuroUrushi).frame(width: 6, height: 106).offset(y: -7)
                     Rectangle().fill(YoseColor.kuroUrushi).frame(width: 24, height: 6).offset(y: -60)
                     Rectangle().fill(YoseColor.kinBright).frame(width: 18, height: 22).offset(y: -72)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2).offset(y: -72))
