@@ -148,12 +148,15 @@ struct AbilityUpView: View {
                         .accessibilityLabel("\(c)")
                     Text("\(Self.points(pv[currency: c]))").font(.maru(18, weight: .heavy)).monospacedDigit()
                         .foregroundStyle(Theme.ink).minimumScaleFactor(0.7).lineLimit(1)
+                    let spent = Self.points(base[currency: c]) - Self.points(pv[currency: c])
+                    Text(spent > 0 ? "(-\(spent))" : " ").font(.maru(10, weight: .heavy)).monospacedDigit()
+                        .foregroundStyle(Theme.vermD).minimumScaleFactor(0.7).lineLimit(1)
                 }
-                .frame(width: colW).padding(.vertical, 8)
+                .frame(width: colW).padding(.vertical, 4)
             }
         }
         .padding(.trailing, 6)
-        .frame(height: 64)
+        .frame(height: 74)
         .background(Theme.kinariPanel)
         .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
     }
@@ -220,16 +223,16 @@ struct AbilityUpView: View {
                 }
             }
             .frame(width: nameW, alignment: .leading)
-            plusMark(canTap: canTap)
+            plusMark(canTap: canTap, half: gained > 0)
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 let n = tag.first(where: { $0.0 == c })?.1
                 let have = Self.points(pv[currency: c])
                 Text(n.map { "\($0)" } ?? "-")
                     .font(n == nil ? .maru(14, weight: .regular) : .maru(18, weight: .heavy)).monospacedDigit()
-                    .foregroundStyle(n == nil ? Color(hex: 0xC5BFB0) : (n! > have ? Theme.vermD : Theme.ink))
+                    .foregroundStyle(n == nil ? Color(hex: 0xA0A0A0) : (n! > have ? Theme.vermD : Theme.ink))
                     .minimumScaleFactor(0.7).lineLimit(1)
                     .frame(width: colW, height: 40)
-                    .background(n == nil ? Color.clear : (n! > have ? Theme.verm.opacity(0.12) : Theme.card2.opacity(0.9)))
+                    .background(RoundedRectangle(cornerRadius: 4).fill(n == nil ? Color.black.opacity(0.03) : (n! > have ? Theme.verm.opacity(0.12) : Color(hex: 0xF5EFE6))))
             }
         }
         .padding(.leading, 6).padding(.trailing, 6).padding(.vertical, 8)
@@ -250,33 +253,36 @@ struct AbilityUpView: View {
         } label: { content }
         .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
         .disabled(!canTap)
-        return main.overlay(alignment: .bottomLeading) {
+        return main.overlay(alignment: .leading) {
             if gained > 0 {
                 // ［−］：この行で振った分をまるごと戻す（やり直せる安心）
                 Button {
                     Haptics.tick()
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
                 } label: {
-                    Image(systemName: "minus").font(.system(size: 14, weight: .black)).foregroundStyle(.white)
-                        .frame(width: 28, height: 22).background(Color(hex: 0x5D6D7E))
-                        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1))
+                    Image(systemName: "minus").font(.system(size: 17, weight: .black)).foregroundStyle(.white)
+                        .frame(width: 24, height: 46).background(Color(hex: 0x606060))
+                        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
                 }
                 .buttonStyle(PressableStyle())
-                .padding(.leading, 6 + nameW - 28).padding(.bottom, 4)
+                .padding(.leading, 6 + nameW + colGap).padding(.bottom, 2)
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
         }
     }
 
     /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
-    private func plusMark(canTap: Bool) -> some View {
-        Image(systemName: "plus").font(.system(size: 24, weight: .black))
-            .foregroundStyle(canTap ? .white : Color(hex: 0x9E988D))
-            .frame(width: plusW, height: 46)
-            .background(Rectangle().fill(canTap ? Color(hex: 0xBD3C28) : Color(hex: 0xD0CBC0)))
-            .overlay(Rectangle().stroke(canTap ? Theme.sumi : Color(hex: 0xBDB7AA), lineWidth: 1.5))
-            .shadow(color: canTap ? Color(hex: 0x7A1F13) : .clear, radius: 0, y: 2)
-            .padding(.bottom, 2)
+    private func plusMark(canTap: Bool, half: Bool = false) -> some View {
+        HStack(spacing: 0) {
+            Image(systemName: "plus").font(.system(size: half ? 17 : 24, weight: .black))
+                .foregroundStyle(canTap ? .white : Color(hex: 0x9E988D))
+                .frame(width: half ? 24 : plusW, height: 46)
+                .background(Rectangle().fill(canTap ? Color(hex: 0xBD3C28) : Color(hex: 0xD0CBC0)))
+                .overlay(Rectangle().stroke(canTap ? Theme.sumi : Color(hex: 0xBDB7AA), lineWidth: 1.5))
+                .shadow(color: canTap ? Color(hex: 0x7A1F13) : .clear, radius: 0, y: 2)
+        }
+        .frame(width: plusW, height: 46, alignment: .trailing)   // 加算あり：左半分は［−］の場所（重ねて描く）
+        .padding(.bottom, 2)
     }
 
     /// 次の等級の名前と、そこまでの能力値（表示だけ）。最高等級なら nil
@@ -300,8 +306,8 @@ struct AbilityUpView: View {
                     .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
                     .frame(maxWidth: .infinity, minHeight: 52)
                     .background(LinearGradient(colors: [Color(hex: 0xC0392B), Color(hex: 0x8A1F13)], startPoint: .top, endPoint: .bottom))
-                    .overlay(Rectangle().stroke(Color(hex: 0xE5C158), lineWidth: 1.5))
-                    .overlay(Rectangle().stroke(Color(hex: 0xE5C158), lineWidth: 3).opacity(active ? (pulse ? 1 : 0.15) : 0).padding(-3))   // 上げている間だけ金の光がゆっくり呼吸する
+                    .overlay(Rectangle().strokeBorder(Color(hex: 0xE5C158), lineWidth: 1.5))
+                    .overlay(Rectangle().strokeBorder(Color(hex: 0xE5C158), lineWidth: 3).opacity(active ? (pulse ? 1 : 0.15) : 0))   // 上げている間だけ金の光がゆっくり呼吸する
                     .shadow(color: Color(hex: 0xE5C158).opacity(active ? (pulse ? 0.8 : 0.1) : 0), radius: 8)
                     .shadow(color: Color(hex: 0x6A1207), radius: 0, y: 3)
             }
