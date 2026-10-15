@@ -61,6 +61,16 @@ struct StageScene: View {
 
                 // 8) センターマイク＋漫才師2人（カラー・呼吸）。主役感のため1.15倍（足元中央を支点）
                 Group {
+                // 接地シャドウ（足元の楕円影）：マイクと二人が床に浮かないように
+                Group {
+                    Ellipse().fill(Color.black.opacity(0.22)).frame(width: figH * 0.30, height: figH * 0.06)
+                        .position(x: micX, y: footY)
+                    Ellipse().fill(Color.black.opacity(0.25)).frame(width: figH * 0.62, height: figH * 0.09)
+                        .position(x: micX - figH * 0.52, y: footY - figH * 0.01)
+                    Ellipse().fill(Color.black.opacity(0.25)).frame(width: figH * 0.68, height: figH * 0.10)
+                        .position(x: micX + figH * 0.54, y: footY - figH * 0.01)
+                }
+                .blur(radius: 4)
                 CenterMic(height: figH * 0.78)
                     .position(x: micX, y: footY - figH * 0.39)
                 ManzaiFigure(height: figH * 0.90, tilt: 2.2, accent: Color(hex: 0x2E55B0),

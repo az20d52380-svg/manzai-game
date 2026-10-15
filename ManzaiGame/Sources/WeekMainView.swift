@@ -284,11 +284,20 @@ struct WeekMainView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill").font(.system(size: 11))
                             .foregroundStyle(hot ? Color(hex: 0xFF8A70) : Theme.gold)
-                        Text(m.weeksLeft <= 0 ? "\(m.name)　今週！" : "\(m.name) まで あと\(m.weeksLeft)週")
-                            .font(.maru(16, weight: .black)).monospacedDigit()
-                            .foregroundStyle(Theme.gold)
+                        if m.weeksLeft <= 0 {
+                            Text("\(m.name)　今週！")
+                                .font(.maru(16, weight: .black)).foregroundStyle(Theme.gold)
+                                .lineLimit(1).minimumScaleFactor(0.8)
+                        } else {
+                            HStack(alignment: .lastTextBaseline, spacing: 2) {
+                                Text("\(m.name) まで あと").font(.maru(15, weight: .black)).foregroundStyle(Theme.gold)
+                                Text("\(m.weeksLeft)").font(.maru(24, weight: .black)).monospacedDigit()
+                                    .foregroundStyle(Color(hex: 0xF1C40F))   // 山吹＝締め切り感
+                                    .contentTransition(.numericText())
+                                Text("週").font(.maru(15, weight: .black)).foregroundStyle(Theme.gold)
+                            }
                             .lineLimit(1).minimumScaleFactor(0.8)
-                            .contentTransition(.numericText())
+                        }
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
@@ -303,6 +312,9 @@ struct WeekMainView: View {
                 .padding(.horizontal, 12).padding(.vertical, 6)
                 .background(Color(hex: 0x3E1F18))
                 .overlay(Rectangle().stroke(Color(hex: 0xC1A550), lineWidth: 1.5))
+                // 巻物の軸：両端に金の飾り爪
+                .overlay(alignment: .leading) { Rectangle().fill(Color(hex: 0xC1A550)).frame(width: 5).padding(.vertical, -2).offset(x: -2) }
+                .overlay(alignment: .trailing) { Rectangle().fill(Color(hex: 0xC1A550)).frame(width: 5).padding(.vertical, -2).offset(x: 2) }
             }
             .buttonStyle(PressableStyle())
             .padding(.horizontal, 8).padding(.top, 6).padding(.bottom, 2)
@@ -356,6 +368,8 @@ struct WeekMainView: View {
                 .contentTransition(.numericText())
                 .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
                 .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
+            // 空の時は出さない（年初で器がまだ空＝何も表さない枠はバグに見える）。伸びたら現れる。
+            if fill > 0.001 || shown > 0 {
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack(alignment: .leading) {
@@ -372,6 +386,7 @@ struct WeekMainView: View {
                 .animation(.easeOut(duration: 0.3), value: shown)
             }
             .frame(height: 6)
+            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(name) \(Int(value.rounded()))")
@@ -407,9 +422,7 @@ struct WeekMainView: View {
         return adviceBox(lines[i])
             .overlay(alignment: .bottomTrailing) {
                 if i < lines.count - 1 {
-                    Image(systemName: "arrowtriangle.down.fill")
-                        .font(.system(size: 8)).foregroundStyle(Theme.inkFaint)
-                        .padding(6)
+                    BounceArrow().padding(6)
                 }
             }
             .contentShape(Rectangle())
@@ -975,17 +988,17 @@ struct WeekMainView: View {
             }
         }
         .padding(.horizontal, 14).padding(.top, 8).padding(.bottom, 10)
-        .background(Theme.sumi.ignoresSafeArea(edges: .bottom))
+        .background(Color(hex: 0x2D1E18).ignoresSafeArea(edges: .bottom))   // ダークウッドのトレイ
         .overlay(alignment: .top) { Rectangle().fill(Theme.gold).frame(height: 2) }
     }
 
     private func menuButton(_ glyph: String, _ label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label).font(.maru(16, weight: .black))
-                .foregroundStyle(Theme.kinari)
+                .foregroundStyle(Color(hex: 0x2B2B2B))
                 .frame(maxWidth: .infinity, minHeight: 40)
-                .background(Theme.sumi)
-                .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
+                .background(Color(hex: 0xFDFBF7))
+                .overlay(Rectangle().stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
                 .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
         }
         .buttonStyle(PressableStyle())
@@ -1227,5 +1240,17 @@ struct BubbleTail: Shape {
         p.addLine(to: CGPoint(x: r.minX, y: r.midY))
         p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
         return p
+    }
+}
+
+
+/// 吹き出しの「次へ」▼：ゆるく上下に弾む（タップで進める合図）。
+struct BounceArrow: View {
+    @State private var up = false
+    var body: some View {
+        Image(systemName: "arrowtriangle.down.fill")
+            .font(.system(size: 9)).foregroundStyle(Theme.inkFaint)
+            .offset(y: up ? 2.5 : -1.5)
+            .onAppear { withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
     }
 }
