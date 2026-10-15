@@ -59,6 +59,9 @@ struct FinalsBroadcastIntro: View {
         .onAppear {
             let first = !UserDefaults.standard.bool(forKey: Self.seenKey)
             short = !first || reduceMotion
+            #if DEBUG
+            if !(ProcessInfo.processInfo.environment["MZ_FIN"] ?? "").isEmpty { short = false }   // 目視用: MZ_FIN 指定中は常にフル
+            #endif
             stage = startStage
             withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true }
         }
@@ -167,7 +170,7 @@ struct FinalsBroadcastIntro: View {
             }
             if cur >= 0 {
                 Text(judges[cur]).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.kinari).id(cur)
-                    .transition(.opacity)
+                    .transition(.asymmetric(insertion: .opacity, removal: .identity))   // 前の名前と重ならない
             } else { Text(" ").font(YoseFont.mincho(26)) }
         }
         .animation(.easeOut(duration: 0.2), value: step)

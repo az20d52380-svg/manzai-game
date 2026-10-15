@@ -455,10 +455,13 @@ struct StageMakuri: View {
     /// 舞台中央に立てる大判（字24pt・幅52pt）。既定は舞台袖の小判
     var big = false
     var body: some View {
-        VStack(spacing: 0) {
+        // 長いコンビ名（最大12字）は字を小さくして舞台に収める
+        let n = name.count
+        let fs: CGFloat = big ? (n > 7 ? max(15, 26 - CGFloat(n - 7) * 2.2) : 26) : (n > 6 ? max(11, 17 - CGFloat(n - 6) * 1.2) : 17)
+        return VStack(spacing: 0) {
             VStack(spacing: 1) {
                 ForEach(Array(name.enumerated()), id: \.offset) { _, c in
-                    Text(String(c)).font(YoseFont.mincho(big ? 26 : 17)).foregroundStyle(YoseColor.sumi)
+                    Text(String(c)).font(YoseFont.mincho(fs)).foregroundStyle(YoseColor.sumi)
                 }
             }
             .padding(.vertical, big ? 14 : 8).frame(width: big ? 64 : 34)

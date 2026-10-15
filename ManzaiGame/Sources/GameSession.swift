@@ -157,6 +157,10 @@ final class GameSession {
         // 経験点は貯まり、週メインの「能力アップ」（AllocationView）で振る。おすすめ＝今までの自動注ぎと同じ1関数。golden は既定 true のまま。
         cfg.autoPourAllocation = false
         self.config = cfg
+        var combiName = combiName
+        #if DEBUG
+        if let c = ProcessInfo.processInfo.environment["MZ_COMBI"], !c.isEmpty { combiName = c }   // 目視用: 長いコンビ名の検証
+        #endif
         self.combiName = combiName
         var myName = myName, partnerName = partnerName
         #if DEBUG

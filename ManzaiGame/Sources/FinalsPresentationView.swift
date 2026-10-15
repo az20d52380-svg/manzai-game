@@ -46,7 +46,12 @@ struct FinalsPresentationView: View {
     @State private var ceremonyDone = false
     /// 番組導入（煽りV→タイトル→審査員席→進出組）が終わったか。終わると開演の儀へ
     @State private var introDone = false
+    #if DEBUG
+    // 目視用: 子の onAppear が親より先に走るため、MZ_FIN の導入場面は初期値で渡す
+    @State private var introStart: FinalsIntroStage = FinalsIntroStage.debug(ProcessInfo.processInfo.environment["MZ_FIN"] ?? "") ?? .vtr
+    #else
     @State private var introStart: FinalsIntroStage = .vtr
+    #endif
     /// 銀の紙吹雪（他組の優勝・自組の決勝敗退）
     @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
@@ -709,7 +714,7 @@ struct FinalsPresentationView: View {
                 .frame(maxWidth: .infinity).background(YoseColor.shu) }
         }
         .padding(.vertical, 5).padding(.horizontal, 3)
-        .frame(maxWidth: .infinity).frame(height: 84, alignment: .top)
+        .frame(maxWidth: .infinity).frame(height: 98, alignment: .top)   // 名前2行＋「あなた」帯でも合計が切れない
         .yoseHarigami(isFeatured: true)
         .overlay { if e.isSelf { Rectangle().stroke(YoseColor.shu, lineWidth: 2.5) } }
         .overlay { if fresh { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5) } }
