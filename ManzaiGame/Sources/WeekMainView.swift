@@ -275,7 +275,7 @@ struct WeekMainView: View {
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
-                        Text("経験点が残ってる ・ 能力アップで使おう")
+                        Text("経験点が残ってる。能力アップで使おう")
                             .font(.maru(10.5, weight: .bold)).foregroundStyle(Theme.gold)   // 9.5pt は小さすぎた
                     } else if m.weeksLeft >= 6 {
                         Text(lullLine())
