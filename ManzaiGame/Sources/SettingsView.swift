@@ -16,22 +16,21 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Theme.kinari.ignoresSafeArea()
+            YoseColor.kinari.ignoresSafeArea()
             VStack(spacing: 0) {
-                grabber
-                header
+                YoseHeaderBar(title: "設定", closeAction: onClose)
                     .onAppear {
                         #if DEBUG
                         if let n = Int(ProcessInfo.processInfo.environment["MZ_STEP"] ?? "") { restartStep = n }
                         #endif
                     }
                 ScrollView {
-                    VStack(spacing: Theme.Sp.s12) {
+                    VStack(alignment: .leading, spacing: 20) {
                         section("音量") {
-                            sliderRow("BGM", value: $bgm)
+                            volumeRow("BGM", value: $bgm)
                                 .onChange(of: bgm) { _, _ in Sound.shared.refreshBGMVolume() }   // 即時反映
-                            Divider()
-                            sliderRow("SE", value: $se)
+                            Rectangle().fill(YoseColor.kiDark).frame(height: 1)
+                            volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
                         }
                         // 監査G-02: 押しても何も起きない項目（購入を復元・通知・データ管理・利用規約）は撤去。
@@ -45,96 +44,89 @@ struct SettingsView: View {
                             section("このキャリア") { restartBlock(onQuitRun) }
                         }
                         // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
-                        Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
-                            .font(.maru(10.5)).foregroundStyle(Theme.inkSub)
-                            .padding(.top, Theme.Sp.s8)
-                        Text("\(AppInfo.displayName) v\(AppInfo.version)").font(.maru(10.5)).foregroundStyle(Theme.inkFaint)
+                        VStack(spacing: 4) {
+                            Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
+                                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                            Text("\(AppInfo.displayName) v\(AppInfo.version)")
+                                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        }
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity).padding(12).frame(minHeight: 64)
+                        .yoseKifuda()
                     }
-                    .padding(Theme.Sp.s16)
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
                 }
             }
+            if restartStep > 0, onQuitRun != nil { restartModal }
         }
-    }
-
-    private var grabber: some View { Color.clear.frame(height: 6) }
-
-    /// 臙脂＋金の帯（週のメイン画面と同じ色）。寄席文字風の見出し。
-    private var header: some View {
-        HStack(spacing: 10) {
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
-            Text("設定").font(.maru(22, weight: .black)).foregroundStyle(Theme.goldLeafHi)
-                .shadow(color: .black.opacity(0.5), radius: 0, x: 1, y: 1)
-            Rectangle().fill(Theme.goldLeafHi).frame(height: 1).frame(maxWidth: .infinity)
-            Button(action: onClose) {
-                Text("閉じる").font(.maru(12, weight: .black)).foregroundStyle(Theme.goldLeafHi)
-                    .padding(.horizontal, 10).padding(.vertical, 5)
-                    .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 1))
-            }
-            .buttonStyle(PressableStyle())
-            .accessibilityLabel("閉じる")
-        }
-        .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(LinearGradient(colors: [Theme.curtainLit, Theme.curtain], startPoint: .top, endPoint: .bottom).ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.goldLeafMid).frame(height: 2) }
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi)
-            VStack(spacing: 8) { content() }
-                .padding(Theme.Sp.s16)
-                .background(Color(hex: 0xFBF3E2))
-                .overlay(alignment: .leading) { Rectangle().fill(Theme.verm).frame(width: 5) }
-                .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+            VStack(spacing: 12) { content() }
+                .padding(YoseMetrics.padH + 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .yoseHarigami()
         }
     }
 
     /// 最初からやり直す（確認2段・セーブは onQuitRun＝GameSession.abandonRun が消してタイトルへ戻す）
     @ViewBuilder
     private func restartBlock(_ onQuitRun: @escaping () -> Void) -> some View {
-        if restartStep == 0 {
-            Button { restartStep = 1 } label: {
-                HStack {
-                    Text("最初からやり直す").font(.maru(16, weight: .black)).foregroundStyle(Theme.sumi)
-                    Spacer()
-                }
-            }
-            .buttonStyle(.plain)
-        } else {
-            VStack(alignment: .leading, spacing: 12) {
+        Button { restartStep = 1 } label: { Text("最初からやり直す").foregroundStyle(YoseColor.shu) }
+            .buttonStyle(YoseButtonStyle(.secondary))
+    }
+
+    /// 確認は画面を暗くして中央のモーダルに（「やめる」は二重の意味になるので取りやめは「もどる」）
+    @ViewBuilder
+    private var restartModal: some View {
+        if let onQuitRun {
+            YoseModal(title: "キャリアのやり直し",
+                      primaryTitle: restartStep == 1 ? "やり直す" : "記録を消してやり直す",
+                      primaryAction: { if restartStep == 1 { restartStep = 2 } else { onQuitRun() } },
+                      cancelTitle: "もどる", cancelAction: { restartStep = 0 }) {
                 Text(restartStep == 1 ? "最初からやり直しますか？\n今のコンビの記録は消えます。"
                                       : "本当に消しますか？\nもとには戻せません。")
-                    .font(.maru(14, weight: .black)).foregroundStyle(restartStep == 1 ? Theme.sumi : Theme.vermD)
+                    .font(YoseFont.bodyBold).foregroundStyle(restartStep == 1 ? YoseColor.sumi : YoseColor.shu)
+                    .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 10) {
-                    Button { restartStep = 0 } label: {
-                        Text("やめる").font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi)
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
-                    }
-                    Button { if restartStep == 1 { restartStep = 2 } else { onQuitRun() } } label: {
-                        Text(restartStep == 1 ? "やり直す" : "消して最初から").font(.maru(14, weight: .black)).foregroundStyle(.white)
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .background(restartStep == 1 ? Theme.verm : Theme.curtain)
-                            .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1.5))
-                    }
-                }
-                .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity)
             }
+            .transition(.opacity)
         }
     }
 
-    private func sliderRow(_ label: String, value: Binding<Double>) -> some View {
-        HStack(spacing: 12) {
-            Text(label).font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi).frame(width: 44, alignment: .leading)
-            Slider(value: value, in: 0...1).tint(Theme.verm)
-            Text("\(Int(value.wrappedValue * 100))").font(.maru(12, weight: .black)).monospacedDigit().foregroundStyle(Theme.sumi).frame(width: 30, alignment: .trailing)
+    /// 音量: [−] 目盛りゲージ [＋] 数字（1段＝10。ゲージ直接ドラッグでも動く）
+    private func volumeRow(_ label: String, value: Binding<Double>) -> some View {
+        HStack(spacing: 8) {
+            Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi).frame(width: 36, alignment: .leading)
+            Button { step(value, -0.1) } label: { Text("−").font(YoseFont.gothic(18, weight: .black)) }
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 44).disabled(value.wrappedValue <= 0.001)
+            YoseGauge(value: value.wrappedValue, total: 1, fill: YoseColor.shu, height: 16, showTicks: false)
+                .overlay { GeometryReader { geo in
+                    HStack(spacing: 0) { ForEach(1..<10, id: \.self) { _ in Spacer(); Rectangle().fill(YoseColor.sumi.opacity(0.3)).frame(width: 1) }; Spacer() }
+                        .allowsHitTesting(false)
+                    Color.clear.contentShape(Rectangle())
+                        .gesture(DragGesture(minimumDistance: 0).onChanged { g in
+                            let r: Double = Double(g.location.x / geo.size.width)
+                            value.wrappedValue = (min(max(r, 0.0), 1.0) * 10.0).rounded() / 10.0
+                        })
+                } }
+            Button { step(value, 0.1) } label: { Text("＋").font(YoseFont.gothic(18, weight: .black)) }
+                .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 44).disabled(value.wrappedValue >= 0.999)
+            Text("\(Int((value.wrappedValue * 100).rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                .frame(width: 36, alignment: .trailing)
         }
+    }
+
+    private func step(_ v: Binding<Double>, _ d: Double) {
+        v.wrappedValue = min(max(((v.wrappedValue + d) * 10).rounded() / 10, 0), 1)
     }
 
     private func linkRow(_ label: String) -> some View {
-        HStack { Text(label).font(.maru(14, weight: .black)).foregroundStyle(Theme.sumi); Spacer()
-            Image(systemName: "arrow.up.right.square").font(.system(size: 13)).foregroundStyle(Theme.inkFaint) }
+        HStack { Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi); Spacer()
+            Image(systemName: "arrow.up.right.square").font(.system(size: 13)).foregroundStyle(YoseColor.haiSumi) }
     }
 }
 
