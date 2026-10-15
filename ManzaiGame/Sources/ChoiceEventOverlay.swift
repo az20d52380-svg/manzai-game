@@ -54,13 +54,14 @@ struct ChoiceEventOverlay: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            YoseHeaderBar(title: text.title)
             sceneHeader
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 16) {
                         ForEach(Array(lines.enumerated()), id: \.element.id) { i, line in
                             lineView(line.advice, isLatest: i == lines.count - 1)
-                                .opacity(i >= lines.count - 2 ? 1 : 0.55)   // 直近2件以外は薄く（読み戻せる）
+                                .opacity(i >= lines.count - 2 ? 1 : 0.72)   // 直近2件以外は薄く（読み戻せる）
                                 .id(line.id)
                                 .transition(.opacity.combined(with: .offset(y: 8)))
                             if line.id == text.setup.count - 1, let chosenID {
@@ -68,7 +69,7 @@ struct ChoiceEventOverlay: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 12)
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14).padding(.bottom, 12)
                 }
                 .scrollIndicators(.hidden)
                 .onChange(of: lines.count) { _, _ in scrollToLast(proxy) }
@@ -82,11 +83,18 @@ struct ChoiceEventOverlay: View {
             }
             footer
         }
-        .background(background.ignoresSafeArea())
+        .background(YoseColor.kinari.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture { advance() }
         .onAppear {
             Sound.play(.event)   // イベント発生の一音
+            #if DEBUG
+            // 目視フック: MZ_EVSTEP=99 で地の文を送り切る／MZ_EVPICK=1 で最初の選択肢を選んで返事まで送り切る
+            if ProcessInfo.processInfo.environment["MZ_EVSTEP"] != nil { setupShown = text.setup.count }
+            if ProcessInfo.processInfo.environment["MZ_EVPICK"] != nil, let c = session.availableEventChoices().first {
+                choose(c.id); afterShown = text.afterChoice[c.id]?.count ?? 0
+            }
+            #endif
             armFooterIfNeeded()
         }
     }
@@ -101,36 +109,37 @@ struct ChoiceEventOverlay: View {
 
     private var sceneHeader: some View {
         EventSceneView(scene: scene)
-            .frame(height: 250)
-            .overlay(alignment: .top) {
-                Text(text.title).font(.maru(.title)).foregroundStyle(Theme.onGold)
-                    .padding(.horizontal, 20).padding(.vertical, 7)
-                    .background(LinearGradient(colors: [Color(hex: 0xFFF3C8), Theme.gold, Theme.goldD],
-                                               startPoint: .top, endPoint: .bottom), in: Capsule())
-                    .overlay(Capsule().stroke(.white, lineWidth: 2.5))
-                    .shadow(color: Theme.goldD.opacity(0.55), radius: 0, y: 3)
-                    .padding(.top, 8)
-            }
+            .frame(height: 220)
             .overlay(alignment: .topTrailing) {
                 // 選んだ結果＝二人の頭上に効果チップ（伸び＝濃い色の塗り／減り＝白地で祝わない）
                 VStack(alignment: .trailing, spacing: 6) {
                     ForEach(Array(effectChips.enumerated()), id: \.element.id) { i, c in
-                        GainChip(text: c.text, kind: c.up ? .gain(c.color) : .loss)
+                        eventChip(c)
                             .transition(.scale(scale: 0.6, anchor: .bottomTrailing).combined(with: .opacity))
                             .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.08), value: effectChips.count)
                     }
                 }
-                .padding(.top, 64).padding(.trailing, 16)
+                .padding(.top, 12).padding(.trailing, 14)
                 .allowsHitTesting(false)
             }
             .overlay(alignment: .bottom) {
-                Rectangle().fill(Theme.line).frame(height: 2.5)   // 場面と読み物の境（週メインの縁と同じ）
+                VStack(spacing: 0) {   // 場面と読み物の境（二重線）
+                    Rectangle().fill(YoseColor.kin).frame(height: 1.5)
+                    Rectangle().fill(YoseColor.sumi).frame(height: 2)
+                }
             }
             .clipped()
     }
 
-    private var background: some View {
-        Theme.kinari   // 画面の地は生成りに統一（場所の色味は上の場面の絵が担う）
+    /// 効果チップ（方向だけ）。伸び＝濃色の角札／減り＝和紙の角札。丸カプセルは使わない
+    private func eventChip(_ c: EffectChip) -> some View {
+        Text(c.text).font(YoseFont.gothic(15, weight: .heavy))
+            .foregroundStyle(c.up ? YoseColor.kinari : YoseColor.sumi)
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .background(c.up ? YoseColor.enji : YoseColor.washi)
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+            .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+            .fixedSize()
     }
 
     // MARK: 下＝読み物
@@ -138,21 +147,27 @@ struct ChoiceEventOverlay: View {
     @ViewBuilder private func lineView(_ a: Advice, isLatest: Bool) -> some View {
         let cue = isLatest && hasMore
         if a.name == nil {
-            NarrationCard(text: a.text, showCue: cue)
+            HStack(alignment: .bottom, spacing: 6) {
+                Text(a.text).font(YoseFont.mincho(15)).lineSpacing(6).foregroundStyle(YoseColor.sumi)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if cue { AdvanceCue(color: YoseColor.shu) }
+            }
+            .padding(.leading, 18).padding(.trailing, 12).padding(.vertical, 12)
+            .yoseHarigami()
+            .overlay(alignment: .leading) { Rectangle().fill(YoseColor.kin).frame(width: 3).padding(.vertical, 6).padding(.leading, 6) }
         } else {
-            TalkBubble(advice: a, showCue: cue)
+            YoseSpeechBox(speaker: a.name ?? "俺", text: a.text, showCue: cue)
         }
     }
 
     /// 選んだ札（選択肢の後に残す・B-10）
     private func chosenTag(_ label: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: "checkmark.circle.fill").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.goldDeep)
-            Text(label).font(.maru(.sub)).foregroundStyle(Theme.ink)
+            Image(systemName: "checkmark").font(.system(size: 12, weight: .black)).foregroundStyle(YoseColor.shu)
+            Text(label).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
         }
         .padding(.horizontal, 12).padding(.vertical, 6)
-        .background(.white, in: Capsule())
-        .overlay(Capsule().stroke(Theme.gold, lineWidth: 2))
+        .yoseKifuda()
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -167,7 +182,11 @@ struct ChoiceEventOverlay: View {
                         closeButton
                     } else {
                         ForEach(session.availableEventChoices(), id: \.id) { choice in
-                            ChoiceCard(label: text.choiceLabels[choice.id] ?? choice.id) { choose(choice.id) }
+                            Button { choose(choice.id) } label: {
+                                Text(text.choiceLabels[choice.id] ?? choice.id)
+                                    .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                            }
+                            .buttonStyle(YoseButtonStyle(.secondary))
                         }
                     }
                 } else if afterDone {
@@ -175,7 +194,7 @@ struct ChoiceEventOverlay: View {
                 }
             }
         }
-        .padding(.horizontal, 20).padding(.top, 6).padding(.bottom, 18)
+        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 6).padding(.bottom, 14)
         .frame(minHeight: 40)
         .animation(Theme.Motion.appear, value: footerReady)
     }
@@ -184,13 +203,8 @@ struct ChoiceEventOverlay: View {
         Button {
             session.dismissChoiceEvent()
             onClose()
-        } label: {
-            Text("閉じる").font(.maru(.body)).foregroundStyle(Theme.onGold)
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .background(Theme.gold, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                .shadow(color: Theme.goldD, radius: 0, y: 3)
-        }
-        .buttonStyle(PressableStyle())
+        } label: { Text("閉じる") }
+        .buttonStyle(YoseButtonStyle(.primary))
     }
 
     // MARK: 進行

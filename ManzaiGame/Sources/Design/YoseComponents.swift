@@ -276,6 +276,7 @@ struct YoseSpeechBox: View {
     let speaker: String
     let text: String
     var roleLabel: String? = nil
+    var showCue = true
     @State private var blink = false
 
     var body: some View {
@@ -295,8 +296,10 @@ struct YoseSpeechBox: View {
             HStack(alignment: .bottom, spacing: 6) {
                 Text(text).font(YoseFont.mincho(15)).lineSpacing(5).foregroundStyle(YoseColor.sumi)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "arrowtriangle.down.fill").font(.system(size: 10))
-                    .foregroundStyle(YoseColor.shu).opacity(blink ? 0.25 : 1)
+                if showCue {
+                    Image(systemName: "arrowtriangle.down.fill").font(.system(size: 10))
+                        .foregroundStyle(YoseColor.shu).opacity(blink ? 0.25 : 1)
+                }
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .yoseHarigami()
