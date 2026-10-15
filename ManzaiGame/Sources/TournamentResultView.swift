@@ -136,9 +136,8 @@ struct TournamentResultView: View {
                             // 1枚の精算木札（通過ライン／実力・賞金・知名度を整列。審査員の点数は出さない）
                             VStack(spacing: 8) {
                                 if let line = displayLine {
-                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                        Text("通過ライン \(Int(line))").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
-                                        Text("➔").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                                    HStack(alignment: .firstTextBaseline, spacing: 14) {
+                                        Text("ノルマ \(Int(line))").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
                                         HStack(spacing: 0) {
                                             Text("実力 ")
                                             RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
@@ -163,9 +162,11 @@ struct TournamentResultView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10).padding(.horizontal, 12)
-                            .background(Color(hex: 0xFAF6EE), in: RoundedRectangle(cornerRadius: 4))
+                            .background {
+                                RoundedRectangle(cornerRadius: 4).fill(Color(hex: 0xFAF6EE))
+                                    .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
+                            }
                             .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.sumi, lineWidth: 1.5))
-                            .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
                             .transition(.opacity)
                             Button {
                                 if climaxPages.isEmpty { session.acknowledgeResult() }
@@ -384,10 +385,11 @@ struct TournamentResultView: View {
                     Text("審査員　\(judge)").font(.maru(.sub)).foregroundStyle(Theme.sealName)
                 }
                 Spacer(minLength: 8)
-                Text(stampLabel(passed: passed)).font(.maru(.sub)).foregroundStyle(.white)
-                    .frame(width: 46, height: 46)
-                    .background(passed ? Theme.verm : Color(hex: 0x4E423C), in: Rectangle())
-                    .rotationEffect(.degrees(-4))
+                Text(passed ? "秀" : "惜").font(.maru(24, weight: .black))   // 落款風の講評印（中央の判と同じ語を繰り返さない）
+                    .foregroundStyle(passed ? Theme.verm : Color(hex: 0x4E423C))
+                    .frame(width: 44, height: 44)
+                    .overlay(Rectangle().stroke(passed ? Theme.verm : Color(hex: 0x4E423C), lineWidth: 2.5))
+                    .rotationEffect(.degrees(-8))
             }
             Text(text)
                 .font(.maru(.bodyMedium)).lineSpacing(TypeStep.bodyMedium.lineSpacing)
@@ -396,11 +398,12 @@ struct TournamentResultView: View {
                 .fixedSize(horizontal: false, vertical: true)   // 講評は最後まで出す（切らない）
         }
         .padding(18)
-        .background(LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom),
-                    in: Rectangle())
+        .background {   // 影は紙の板だけに落とす（文字に影を掛けない＝二重に見えない）
+            Rectangle().fill(LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom))
+                .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
+        }
         .overlay(alignment: .leading) { Rectangle().fill(Theme.vermD).frame(width: 5) }
         .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 2))
-        .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
     }
 
     // MARK: ⑪ 山場（敗者復活で散る）のタップ送りオーバーレイ（Fable doc02）
