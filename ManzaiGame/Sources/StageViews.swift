@@ -96,30 +96,23 @@ struct WaveformView: View {
 // MARK: 大会入口（遠征選択・道中大会）
 // 見た目の作り直し v1 §6 T1：楽屋（昼の稽古場）に大会の張り紙＝本番の前の明るい時間。ピンク地の入力フォームをやめる。
 
-/// 稽古場の壁に貼られた大会の張り紙（めくり札の白紙＋墨・朱の札）
+/// 大会看板（黒漆の地・消金の二重枠・墨のハードシャドウ＝design_system_argon_v1 §7-型D）
 struct TournamentPoster: View {
     let tag: String
     let name: String
     var body: some View {
         VStack(spacing: 6) {
-            Text(tag).font(.maru(.sub)).foregroundStyle(.white)
-                .padding(.horizontal, 12).padding(.vertical, 3)
-                .background(Theme.vermD, in: Capsule())
-            Text(name).font(.maru(28, weight: .black)).foregroundStyle(Theme.sumi)
+            YoseTag(text: tag, style: .solidEnji)
+            Text(name).font(YoseFont.bannerTitle).foregroundStyle(YoseColor.kin)
                 .lineLimit(1).minimumScaleFactor(0.6)
         }
-        .padding(.horizontal, 26).padding(.vertical, 14)
-        .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 4))
-        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.paperEdge, lineWidth: 1.5))
-        .overlay(alignment: .top) {
-            // 画鋲2つ
-            HStack(spacing: 120) { pin; pin }.offset(y: -5)
-        }
-        .rotationEffect(.degrees(-1.5))
-        .shadow(color: Theme.ink.opacity(0.18), radius: 8, y: 4)
-    }
-    private var pin: some View {
-        Circle().fill(Theme.verm).frame(width: 11, height: 11).overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1.5))
+        .padding(.horizontal, 26).padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(YoseColor.kuroUrushi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(3))
+        .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: 3) }
+        .padding(.horizontal, 32)
     }
 }
 
@@ -131,20 +124,36 @@ private struct EntryHeader: View {
         StageScene()
             .frame(height: 300)
             .overlay(alignment: .top) { TournamentPoster(tag: tag, name: name).padding(.top, 64) }
-            .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 2.5) }
+            .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
             .clipped()
             .ignoresSafeArea(edges: .top)
     }
 }
 
-/// 情報の札（読める色＝ink on 白・sub 13）
-private struct InfoPill: View {
-    let text: String
+/// 通過ライン ▶ いまの実力 の対比木札（％は出さない・賞金と週は角札）
+private struct LineBoard: View {
+    let week: Int
+    let line: Int
+    let power: Int
+    let prize: String
     var body: some View {
-        Text(text).font(.maru(.sub)).foregroundStyle(Theme.ink)
-            .padding(.horizontal, 10).padding(.vertical, 6)
-            .background(.white, in: Capsule())
-            .overlay(Capsule().stroke(Theme.lineStrong, lineWidth: 1.5))
+        VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                YoseTag(text: "第\(week)週", style: .outlineSumi)
+                Spacer()
+                YoseTag(text: "賞金 \(prize)", style: .outlineKin)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text("通過ライン").font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi)
+                Text("\(line)").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
+                Text("▶").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.haiSumi)
+                Spacer(minLength: 0)
+                YosePowerBadge(power: power, compact: true)
+            }
+        }
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
+        .frame(maxWidth: .infinity)
+        .yoseKifuda()
     }
 }
 
@@ -158,19 +167,20 @@ struct TournamentEntryView: View {
 
             // 監査B-04: 通過ラインと同じ単位（実力値＋相性）で「いまの実力」を並べる。ブレ・ネタ補正は出さない。
             // G4: 大会結果でも同じ2つを同じ大きさで再掲する（大きくしない＝見込みに寄せない・X2-02）
-            HStack(spacing: 8) {
-                InfoPill(text: "第\(spec.week)週")
-                InfoPill(text: "通過ライン \(Int(spec.line)) ／ いまの実力 \(Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()))")
-                InfoPill(text: "賞金 \(Yen.man(spec.prize))")
-            }
-            .padding(.horizontal, 12)
+            LineBoard(week: spec.week, line: Int(spec.line),
+                      power: Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()),
+                      prize: Yen.man(spec.prize))
+                .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）
             NetaPickRow(session: session, title: "今夜かけるネタ", requiredLength: NetaCatalog.lengthForTournament,
                         selected: session.selectedNeta, onSelect: { session.selectNeta($0) })
-                .padding(.horizontal, 20)
+                .padding(.horizontal, YoseMetrics.screenMargin)
 
             Spacer(minLength: 8)
+            // 出場の前に今の体力と所持金が見えるように（遠征費を払えるか・体力を使ってよいかの判断材料）
+            YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
+                              staminaColor: session.state.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
             VStack(spacing: 10) {
                 let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める
                 if spec.osaka {
@@ -185,36 +195,31 @@ struct TournamentEntryView: View {
                     entryButton("出場する", glyph: "mic.fill", sub: "東京開催・参加費 ¥\(cost.formatted())",
                                 enabled: session.state.money >= cost) { session.decideTournament(.夜行バス) }
                 }
-                Button { session.decideTournament(nil) } label: {
-                    Text("見送る").font(.maru(.body)).foregroundStyle(Theme.inkSub).frame(minWidth: 120, minHeight: 44)
-                }
-                .buttonStyle(PressableStyle())
+                Button { session.decideTournament(nil) } label: { Text("見送る") }
+                    .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 150)
             }
-            .padding(.horizontal, 20).padding(.bottom, 16)
+            .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.bgGradient.ignoresSafeArea())
+        .background(YoseColor.kinari.ignoresSafeArea())
     }
 
-    /// 出場カード（行動カードと同じ顔＝白・朱の縁・ハード影）。費用は交通費＋参加費の合計（B13）
+    /// 出場ボタン（物理ボタン。費用は交通費＋参加費の合計・B13）。払えない時は押せない表示で理由を出す
     private func entryButton(_ title: String, glyph: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: { if enabled { action() } }) {
             HStack(spacing: 12) {
-                Image(systemName: glyph).font(.system(size: 15, weight: .bold)).foregroundStyle(.white)
-                    .frame(width: 34, height: 34)
-                    .background(enabled ? Theme.verm : Theme.inkFaint, in: RoundedRectangle(cornerRadius: 9))
+                Image(systemName: glyph).font(.system(size: 17, weight: .bold))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.maru(.body)).foregroundStyle(enabled ? Theme.ink : Theme.inkSub)
-                    Text(enabled ? sub : "残高不足で出られない").font(.maru(.sub)).foregroundStyle(enabled ? Theme.inkSub : Theme.vermD)
+                    Text(title).font(YoseFont.buttonMain)
+                    Text(enabled ? sub : "残高不足で出られない").font(YoseFont.captionBold)
+                        .foregroundStyle(enabled ? YoseColor.haiSumi : YoseColor.shu)
+                        .lineLimit(2).minimumScaleFactor(0.85)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "chevron.right").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.inkSub)
             }
-            .padding(.horizontal, 14).frame(maxWidth: .infinity, minHeight: 64)
-            .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(enabled ? Theme.card : Color(hex: 0xF3EFE7)).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(enabled ? Theme.verm.opacity(0.75) : Theme.line, lineWidth: 3))
+            .frame(minHeight: 40)
         }
-        .buttonStyle(PressableStyle(enabled: enabled))
+        .buttonStyle(YoseButtonStyle(.secondary))
         .disabled(!enabled)
     }
 }
