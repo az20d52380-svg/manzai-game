@@ -41,11 +41,15 @@ struct CalendarView: View {
     }
 
     private var summary: some View {
-        VStack(spacing: 4) {
-            Text("\(session.combiName)").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+        VStack(spacing: 3) {
+            Text("\(session.combiName)").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.kinari)
             Text("\(session.year)年目 ・ 第\(session.week)週 ・ 賞金 ¥\(session.totalPrize.formatted())")
-                .font(YoseFont.number(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .font(YoseFont.number(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
         }
+        .frame(maxWidth: .infinity).padding(.vertical, 7)
+        .background(YoseColor.kuroUrushi)   // 番付の見出し帯（黒漆＋金線）
+        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
     }
 
     // 12行(月)×4列(週)＝罫線だけの番付表
@@ -89,7 +93,10 @@ struct CalendarView: View {
                 .padding(.horizontal, 2)
             } else if isPast, let cat = session.categoryLog[w] {
                 Text(cat.label.prefix(1)).font(YoseFont.gothic(13, weight: .heavy))   // 過去週＝やった事の頭文字（稽/バ/回）
-                    .foregroundStyle(YoseColor.haiSumi)
+                    .foregroundStyle(YoseColor.sumi.opacity(0.75))
+                    .frame(width: 24, height: 24)
+                    .background(catTint(cat).opacity(0.28))   // 小判子（種別で薄く色分け）
+                    .overlay(Rectangle().stroke(catTint(cat).opacity(0.7), lineWidth: 1))
             }
             if isCurrent {
                 Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).padding(1)   // 現在週＝金の栞
@@ -109,6 +116,14 @@ struct CalendarView: View {
         }
     }
 
+    private func catTint(_ cat: BandCategory) -> Color {
+        switch cat {
+        case .keiko: return YoseColor.expTan
+        case .baito: return YoseColor.tokiwa
+        default: return YoseColor.kin
+        }
+    }
+
     private var legend: some View {
         HStack(spacing: 12) {
             ForEach([BandCategory.keiko, .baito, .kaifuku], id: \.label) { cat in
@@ -119,7 +134,7 @@ struct CalendarView: View {
                 }
             }
             HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
-            HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
+            HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)).overlay(alignment: .topLeading) { Text("今").font(YoseFont.gothic(8, weight: .heavy)).foregroundStyle(YoseColor.kinBright).padding(.horizontal, 2).background(YoseColor.kuroUrushi).offset(x: -1, y: -1) }; Text("今週") }
         }
         .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
         .padding(.horizontal, 10).padding(.vertical, 8)
