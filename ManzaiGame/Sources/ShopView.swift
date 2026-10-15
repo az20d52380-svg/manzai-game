@@ -68,8 +68,12 @@ struct ShopView: View {
             VStack(alignment: .trailing, spacing: 6) {
                 Button { buy(item) } label: {
                     VStack(spacing: 0) {
-                        Text("購入").font(YoseFont.gothic(10, weight: .heavy)).foregroundStyle(ok ? YoseColor.shu : YoseColor.disabledText)
-                        Text("¥\(price(item).formatted())").font(YoseFont.number(big ? 20 : 17, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                        // 値札の上辺に朱の小帯（白抜きの「購入」）＋下段に値段＝押すと買える札だと一目で分かる
+                        Text("購入").font(YoseFont.gothic(10, weight: .heavy)).foregroundStyle(ok ? YoseColor.kinari : YoseColor.kinari.opacity(0.8))
+                            .frame(maxWidth: .infinity).frame(height: 16)
+                            .background(ok ? YoseColor.shu : YoseColor.disabledText)
+                        Text("¥\(price(item).formatted())").font(YoseFont.number(big ? 20 : 18, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                            .padding(.vertical, 4)
                     }
                 }
                 .buttonStyle(YoseButtonStyle(.kifuda))   // 値札は全商品同じ木札（高額だけ朱にしない）
@@ -84,7 +88,7 @@ struct ShopView: View {
                 }
             }
         }
-        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, big ? 14 : 10)
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, big ? 18 : 14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .yoseHarigami()
     }

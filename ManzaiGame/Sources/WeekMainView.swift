@@ -615,15 +615,13 @@ struct WeekMainView: View {
             Image(systemName: "pencil").font(.system(size: 14, weight: .heavy)).foregroundStyle(YoseColor.enji)
             Text("題名").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
             TextField("", text: Binding(get: { newNetaTitle ?? "" }, set: { newNetaTitle = String($0.prefix(16)) }),
-                      prompt: Text("例：\(NetaCatalog.autoName(forID: s.nextNetaID))"))
-                .font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi)
+                      prompt: Text("空欄ならおまかせ命名").foregroundColor(YoseColor.haiSumi.opacity(0.6)))
+                .font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi)
                 .tint(YoseColor.shu)
                 .submitLabel(.done)
-                .padding(.vertical, 4)
-                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1.5) }   // 入力できる下線
-            if (newNetaTitle ?? "").isEmpty {
-                YoseTag(text: "空欄＝おまかせ", style: .outlineSumi)
-            }
+                .padding(.horizontal, 8).frame(height: 36)
+                .background(YoseColor.washi)   // はっきりした入力窓（和紙地＋細い枠）
+                .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1.5))
             Button {
                 titleDiceStep += 1
                 newNetaTitle = NetaCatalog.autoName(forID: s.nextNetaID + titleDiceStep)   // 見た目の候補だけ（乱数は引かない）
