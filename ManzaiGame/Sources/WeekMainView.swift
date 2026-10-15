@@ -552,7 +552,7 @@ struct WeekMainView: View {
         return VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("磨くネタ").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                    Text(t == nil ? "書くネタ" : "磨くネタ").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                     if let n = t {
                         Text("「\(n.name)」").font(YoseFont.mincho(19)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
                     } else {
@@ -632,16 +632,15 @@ struct WeekMainView: View {
     /// 新しいネタの題名（空欄＝おまかせ）。オーナー 2026-10-12「タイトル決めとかこっちでかけるように」
     private var netaTitleField: some View {
         HStack(spacing: 8) {
-            Image(systemName: "pencil").font(.system(size: 14, weight: .heavy)).foregroundStyle(YoseColor.enji)
-            Text("題名").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+            YoseTag(text: "題名", style: .solidEnji)
             TextField("", text: Binding(get: { newNetaTitle ?? "" }, set: { newNetaTitle = String($0.prefix(16)) }),
                       prompt: Text("空欄ならおまかせ命名").foregroundColor(YoseColor.haiSumi.opacity(0.6)))
                 .font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi)
                 .tint(YoseColor.shu)
                 .submitLabel(.done)
                 .padding(.horizontal, 8).frame(height: 36)
-                .background(YoseColor.washi)   // はっきりした入力窓（和紙地＋細い枠）
-                .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1.5))
+                .background(Color.white)   // 書き込める白紙（白地＋墨の枠）
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
             Button {
                 titleDiceStep += 1
                 newNetaTitle = NetaCatalog.autoName(forID: s.nextNetaID + titleDiceStep)   // 見た目の候補だけ（乱数は引かない）
