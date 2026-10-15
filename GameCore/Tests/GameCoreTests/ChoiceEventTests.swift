@@ -335,4 +335,67 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertEqual(back.compatFreezeWeeks, 3)
         XCTAssertEqual(back.preoccupiedWeeks, 1)
     }
+
+    // MARK: 0041〜0049 相方以外の人とのイベント（docs/choice_events_others_v1.md）
+
+    private let othersKinds: [ChoiceEventKind] = [
+        .kouhaiInvite, .senpaiAllNight, .stageCrewChairs, .writerPostcards, .doukiJointLive,
+        .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota,
+    ]
+
+    func testOthers_areWeeklyTwoChoiceEvents() {
+        let config = GameConfig()
+        for k in othersKinds {
+            XCTAssertTrue(k.isWeeklyRandom, "\(k) は週次抽選プール")
+            XCTAssertEqual(ChoiceEventTable.choices(for: k, config: config).map(\.id), ["A", "B"], "\(k) は二択")
+        }
+    }
+
+    func testOthers_noChoiceDominates() {
+        // 上位互換が無い（E1）: 各イベントの A と B が、どちらも相手より全部得になっていない。
+        let config = GameConfig()
+        for k in othersKinds {
+            let cs = ChoiceEventTable.choices(for: k, config: config)
+            var base = GameState(config: config); base.money = 100_000; base.stamina = 50
+            func after(_ c: ChoiceEventChoice) -> [Double] {
+                var s = base; apply(c.effects, to: &s, config: config)
+                return [s.センス, s.発想, s.表現, s.華, s.メンタル, s.compat, s.stamina, s.fame, Double(s.money)]
+            }
+            let a = after(cs[0]), b = after(cs[1])
+            XCTAssertFalse(zip(a, b).allSatisfy { $0 >= $1 }, "\(k): A が B の上位互換")
+            XCTAssertFalse(zip(b, a).allSatisfy { $0 >= $1 }, "\(k): B が A の上位互換")
+        }
+    }
+
+    func test0041_kouhai_paysForFlairAndMental_declineCostsMental() {
+        let config = GameConfig()
+        let cs = ChoiceEventTable.choices(for: .kouhaiInvite, config: config)
+        var s = GameState(config: config); s.money = 50_000
+        let (hana, mental) = (s.華, s.メンタル)
+        apply(cs[0].effects, to: &s, config: config)
+        XCTAssertEqual(s.money, 42_000); XCTAssertEqual(s.華, hana + 1); XCTAssertEqual(s.メンタル, mental + 1)
+        var poor = GameState(config: config); poor.money = 7_999
+        XCTAssertFalse(cs[0].gate(poor), "おごれない時は A が灰色")
+        XCTAssertTrue(cs[1].effects.contains { if case .ability(.メンタル, let d) = $0 { return d < 0 }; return false })
+    }
+
+    func test0042_senpai_declineDoesNothing() {
+        let config = GameConfig()
+        let cs = ChoiceEventTable.choices(for: .senpaiAllNight, config: config)
+        XCTAssertTrue(cs[1].effects.isEmpty, "先輩の誘いを断る＝何もなし（オーナー指示）")
+        XCTAssertTrue(cs[0].effects.contains { if case .stamina(let d) = $0 { return d < 0 }; return false })
+    }
+
+    func testOthers_weeklyGates() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.money = 10_000
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.kouhaiInvite, state: s, week: 30, config: config))
+        s.money = 30_000
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.kouhaiInvite, state: s, week: 30, config: config))
+        s.stamina = 30
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.senpaiAllNight, state: s, week: 30, config: config))
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.homecomingCall, state: s, week: 37, config: config))
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.homecomingCall, state: s, week: 38, config: config))
+    }
 }

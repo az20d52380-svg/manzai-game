@@ -24,6 +24,16 @@ extension EventBackdrop {
         case .lastTrainReview:         return .init(.station, .night)   // 駅のホーム・ライブ帰りの夜
         case .luckyThirdLine:          return .init(.keikoba, .day)     // 稽古場・昼すぎ
         case .greenroomSilentTen:      return .init(.gakuya, .evening)  // 推定: 劇場の楽屋・ライブが終わった後→夕
+        // 相方以外の人とのイベント（docs/choice_events_others_v1.md §2）
+        case .kouhaiInvite:            return .init(.gakuya, .evening)  // 劇場の楽屋・ライブ終わりの夕方
+        case .senpaiAllNight:          return .init(.theater, .night)   // 劇場のロビー・最後の出番が終わった夜
+        case .stageCrewChairs:         return .init(.theater, .evening) // 劇場の客席・ライブが終わった後
+        case .writerPostcards:         return .init(.kissaten, .day)    // 喫茶店・昼
+        case .doukiJointLive:          return .init(.park, .day)        // 公園のベンチ・昼
+        case .baitoInventory:          return .init(.famires, .night)   // バイト先のファミレス・閉店後の夜
+        case .homecomingCall:          return .init(.apartment, .evening) // アパートの部屋・年末の夕方
+        case .regularFanOranges:       return .init(.theater, .day)     // 劇場の出口・昼の部の後
+        case .officeTicketQuota:       return .init(.office, .day)      // 事務所・昼
         }
     }
 }

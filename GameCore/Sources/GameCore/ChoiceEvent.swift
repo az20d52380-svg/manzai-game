@@ -27,12 +27,24 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     case regularEmployment
     case wroteOneTonight     // 0016: 書けた一本（持ちネタあり＝一本まとまった夜・選択肢あり・翌週バフはPhase2）
     case photoShootOffer     // 0022: 撮られる仕事（知名度20-50・選択肢あり。popup2択化で rollOffer 非依存＝golden不変）
+    // --- 相方以外の人とのイベント（docs/choice_events_others_v1.md・2026-10-15 オーナー指示。週次抽選プール・各1回制） ---
+    case kouhaiInvite        // 0041: 後輩の誘い（所持金2万+・2年目か週24以降）
+    case senpaiAllNight      // 0042: 先輩の朝まで（体力40+・本番の前週でない）
+    case stageCrewChairs     // 0043: 片付けの手伝い（週8以降）
+    case writerPostcards     // 0044: ハガキの仕分け（知名度10+・所持金<20万）
+    case doukiJointLive      // 0045: 同期からの誘い（週16以降・知名度<40・所持金2万+）
+    case baitoInventory      // 0046: 棚卸しの夜（所持金<15万・バイト3回以上）
+    case homecomingCall      // 0047: 母からの電話（週38以降・3週以内に本番なし）
+    case regularFanOranges   // 0048: いつものお客さん（知名度15+）
+    case officeTicketQuota   // 0049: ライブのチケット（知名度<30）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
         switch self {
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer:
+             .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer,
+             .kouhaiInvite, .senpaiAllNight, .stageCrewChairs, .writerPostcards, .doukiJointLive,
+             .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota:
             return true
         default:
             return false
@@ -208,6 +220,73 @@ public enum ChoiceEventTable {
                     .weakerSenseIdeaPlus(1),
                 ]),
             ]
+        // --- 相方以外の人とのイベント（docs/choice_events_others_v1.md §2。数値は既存の週次イベントと同じ幅に揃えた【仮】） ---
+        case .kouhaiInvite:
+            // 0041 後輩の誘い: A=おごる(所持金-8000/華+1/メンタル+1・所持金<8000で非活性)　B=断る(メンタル-1/体力+5)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .money(-8000), .ability(.華, 1), .ability(.メンタル, 1),
+                ], gate: { $0.money >= 8000 }),
+                ChoiceEventChoice(id: "B", effects: [
+                    .ability(.メンタル, -1), .stamina(5),
+                ]),
+            ]
+        case .senpaiAllNight:
+            // 0042 先輩の朝まで: A=ついて行く(センス+1/メンタル+1/体力-15)　B=遠慮する(何もなし＝オーナー指示)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.センス, 1), .ability(.メンタル, 1), .stamina(-15),
+                ]),
+                ChoiceEventChoice(id: "B", effects: []),
+            ]
+        case .stageCrewChairs:
+            // 0043 片付けの手伝い: A=手伝う(知名度+1/体力-10)　B=先に帰る(体力+5)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.fame(1), .stamina(-10)]),
+                ChoiceEventChoice(id: "B", effects: [.stamina(5)]),
+            ]
+        case .writerPostcards:
+            // 0044 ハガキの仕分け: A=引き受ける(所持金+15000/発想+1/体力-10)　B=断る(相性+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.money(15_000), .ability(.発想, 1), .stamina(-10)]),
+                ChoiceEventChoice(id: "B", effects: [.compat(1)]),
+            ]
+        case .doukiJointLive:
+            // 0045 同期からの誘い: A=二組でやる(知名度+2/所持金-10000/体力-10・所持金<10000で非活性)　B=断る(相性+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .fame(2), .money(-10_000), .stamina(-10),
+                ], gate: { $0.money >= 10_000 }),
+                ChoiceEventChoice(id: "B", effects: [.compat(1)]),
+            ]
+        case .baitoInventory:
+            // 0046 棚卸しの夜: A=入る(所持金+20000/体力-15)　B=断る(表現+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.money(20_000), .stamina(-15)]),
+                ChoiceEventChoice(id: "B", effects: [.ability(.表現, 1)]),
+            ]
+        case .homecomingCall:
+            // 0047 母からの電話: A=帰省する(体力+15/メンタル+1/所持金-12000・所持金<12000で非活性)　B=残って稽古(表現+1/メンタル-1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .stamina(15), .ability(.メンタル, 1), .money(-12_000),
+                ], gate: { $0.money >= 12_000 }),
+                ChoiceEventChoice(id: "B", effects: [.ability(.表現, 1), .ability(.メンタル, -1)]),
+            ]
+        case .regularFanOranges:
+            // 0048 いつものお客さん: A=残って挨拶(華+1/知名度+1/所持金-5000＝バイトに遅れた分)　B=急いで出る(何もなし)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.ability(.華, 1), .fame(1), .money(-5000)]),
+                ChoiceEventChoice(id: "B", effects: []),
+            ]
+        case .officeTicketQuota:
+            // 0049 ライブのチケット: A=手売り(知名度+1/体力-10)　B=買い取る(所持金-6000/表現+1・所持金<6000で非活性)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.fame(1), .stamina(-10)]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .money(-6000), .ability(.表現, 1),
+                ], gate: { $0.money >= 6000 }),
+            ]
         case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
@@ -247,6 +326,16 @@ public enum ChoiceEventTable {
         case .photoShootOffer:
             // 0022: 顔で呼ばれ始める帯（知名度20-50）。下限は新人賞通過等で1年内到達しうる／上限は主に2年目以降
             return state.fame >= 20 && state.fame <= 50
+        // 相方以外の人とのイベント（docs/choice_events_others_v1.md §2）。年・バイト回数・本番までの週は GameSession の追加ゲート
+        case .kouhaiInvite:      return state.money >= 20_000          // おごれる余地がある時だけ（A が灰色だらけにならない）
+        case .senpaiAllNight:    return state.stamina >= 40            // 朝まで付き合っても倒れない帯
+        case .stageCrewChairs:   return week >= 8                      // 劇場に出入りし始めた後
+        case .writerPostcards:   return state.fame >= 10 && state.money < 200_000
+        case .doukiJointLive:    return week >= 16 && state.fame < 40 && state.money >= 20_000
+        case .baitoInventory:    return state.money < 150_000
+        case .homecomingCall:    return week >= 38                     // 年末（正月の帰省の話）
+        case .regularFanOranges: return state.fame >= 15               // 常連がつき始めた帯
+        case .officeTicketQuota: return state.fame < 30                // 手売りが要る帯
         default:
             return false
         }

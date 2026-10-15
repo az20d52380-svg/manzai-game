@@ -518,6 +518,20 @@ final class GameSession {
             // 0029: 連敗していない＋大会が視界（2-4週前）＝好調が"負けの反動"に読まれない帯（lossStreak/次マイルストンを要する）
             guard lossStreak == 0, let m = nextMilestoneForEvent() else { return false }
             return (2...4).contains(m.week - week)
+        // 相方以外の人とのイベント（docs/choice_events_others_v1.md §2）
+        case .kouhaiInvite:
+            // 後輩がいる頃（2年目以降か、1年目の後半）
+            return year >= 2 || week >= 24
+        case .senpaiAllNight:
+            // 朝まで付き合う夜が本番の前週に重ならない
+            guard let m = nextMilestoneForEvent() else { return true }
+            return m.week - week >= 2
+        case .baitoInventory:
+            // バイト先で頼られる程度に入っている（0023 と同じ UI 層カウンタ）
+            return jobCount >= 3
+        case .homecomingCall:
+            // 帰省の数日が追い込みを食わない
+            return noTournamentWithin3Weeks()
         default:
             return true
         }
@@ -597,7 +611,9 @@ final class GameSession {
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
-             .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer:
+             .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer,
+             .kouhaiInvite, .senpaiAllNight, .stageCrewChairs, .writerPostcards, .doukiJointLive,
+             .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         case .regularEmployment:
             break   // 0023 廃止（抽選外）。古いセーブの保留中イベント互換のためケースだけ残す

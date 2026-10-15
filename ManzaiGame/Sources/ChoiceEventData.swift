@@ -52,6 +52,15 @@ enum ChoiceEventData {
         case .wroteOneTonight: return wroteOneTonight
         case .taniguchiShortJob: return taniguchiShortJob
         case .photoShootOffer: return photoShootOffer
+        case .kouhaiInvite: return kouhaiInvite
+        case .senpaiAllNight: return senpaiAllNight
+        case .stageCrewChairs: return stageCrewChairs
+        case .writerPostcards: return writerPostcards
+        case .doukiJointLive: return doukiJointLive
+        case .baitoInventory: return baitoInventory
+        case .homecomingCall: return homecomingCall
+        case .regularFanOranges: return regularFanOranges
+        case .officeTicketQuota: return officeTicketQuota
         }
     }
 
@@ -495,5 +504,263 @@ enum ChoiceEventData {
         ],
         choiceLabels: [:],
         afterChoice: [:]
+    )
+
+    // MARK: - 相方以外の人とのイベント（docs/choice_events_others_v1.md・2026-10-15 オーナー指示）
+    //   第三者は標準語・谷口は関西弁。正典v3（ボケない・日常会話）＋研究 research_event_fun_v0 §4 案A（固有物1つ＋人柄1つ・選択後は反応で返す）。
+
+    // MARK: 0041 後輩の誘い
+
+    private static let kouhaiInvite = ChoiceEventText(
+        title: "後輩の誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の楽屋。ライブ終わりの夕方。"),
+            Advice(name: "浅見", text: "お疲れさまです。今日、初めてこの劇場に出られました"),
+            Advice(name: "俺", text: "おめでとう。ずっと出たがってたもんな"),
+            Advice(name: "浅見", text: "それで、駅前の『とり政』で一杯どうですか。うちの相方も来ます"),
+            Advice(name: "谷口", text: "行ったら俺らのおごりやな。俺も一年目、先輩に唐揚げおごってもろたわ"),
+        ],
+        choiceLabels: [
+            "A": "浅見たちに、とり政でおごる",
+            "B": "今日は断って、まっすぐ帰る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行こう。今日は俺たちが出す"),
+                Advice(name: "浅見", text: "ありがとうございます。相方、呼んできます"),
+                Advice(name: "谷口", text: "やっと、先輩らしいことできるな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "ごめん、今日は帰る。また今度な"),
+                Advice(name: "浅見", text: "分かりました。次の出番の後に、また声かけます"),
+                Advice(name: "谷口", text: "帰ってよう寝よ。……ちょっと悪いことしたな"),
+            ],
+        ]
+    )
+
+    // MARK: 0042 先輩の誘い
+
+    private static let senpaiAllNight = ChoiceEventText(
+        title: "先輩の誘い",
+        setup: [
+            Advice(name: nil, text: "劇場のロビー。最後の出番が終わった夜。"),
+            Advice(name: "堀口", text: "お前ら、このあと空いてるか。朝までやってるもつ鍋屋に行くぞ"),
+            Advice(name: "俺", text: "堀口さん、明日も早いんじゃないですか"),
+            Advice(name: "堀口", text: "明日は昼からだから平気だ。売れなかった頃の話、聞かせてやる"),
+            Advice(name: "谷口", text: "堀口さんの昔の話、ためになるで。けど、朝までは体きついな"),
+        ],
+        choiceLabels: [
+            "A": "朝まで堀口さんについて行く",
+            "B": "今日は遠慮して帰る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "ご一緒します。朝まで付き合います"),
+                Advice(name: "堀口", text: "よし。じゃあ、俺が一年目の頃の話からな"),
+                Advice(name: "谷口", text: "話、忘れんうちにメモしとこ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません、今日は帰ります"),
+                Advice(name: "堀口", text: "おう。また誘うからな"),
+            ],
+        ]
+    )
+
+    // MARK: 0043 片付けの手伝い
+
+    private static let stageCrewChairs = ChoiceEventText(
+        title: "片付けの手伝い",
+        setup: [
+            Advice(name: nil, text: "劇場の客席。ライブが終わった後。"),
+            Advice(name: "柏木", text: "ごめん、片付けの人が一人休みでさ。椅子を並べ直すの、手伝ってくれる？"),
+            Advice(name: "俺", text: "全部ですか。二百席ありますよね"),
+            Advice(name: "柏木", text: "二人いれば三十分で終わるよ。支配人にも、名前を伝えておくから"),
+            Advice(name: "谷口", text: "俺、前のバイトで椅子並べてたから、慣れてんねん"),
+        ],
+        choiceLabels: [
+            "A": "二人で客席の椅子を並べ直す",
+            "B": "お礼を言って、先に帰る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "やります。端の列から並べます"),
+                Advice(name: "柏木", text: "助かった。二人の名前、ちゃんと覚えたよ"),
+                Advice(name: "谷口", text: "ほんまに三十分で終わったな。けっこう疲れたわ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません、今日は先に帰ります"),
+                Advice(name: "柏木", text: "いいよいいよ。お疲れさま"),
+                Advice(name: "谷口", text: "ほな、駅まで一緒に帰ろか"),
+            ],
+        ]
+    )
+
+    // MARK: 0044 ハガキの仕分け
+
+    private static let writerPostcards = ChoiceEventText(
+        title: "ハガキの仕分け",
+        setup: [
+            Advice(name: nil, text: "喫茶店。作家の戸田さんに呼ばれた昼。"),
+            Advice(name: "戸田", text: "深夜ラジオに届くハガキの仕分け、手伝ってくれないかな。週に一回、夜中なんだ"),
+            Advice(name: "俺", text: "夜中ですか。お金は出ますか"),
+            Advice(name: "戸田", text: "少しだけど出すよ。いろんな人の文章が読めるのも、勉強になると思う"),
+            Advice(name: "谷口", text: "俺、夜はすぐ眠なるねん。お前が決めてええで"),
+        ],
+        choiceLabels: [
+            "A": "ハガキの仕分けを引き受ける",
+            "B": "夜は練習に使いたいと断る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "やります。来週からお願いします"),
+                Advice(name: "戸田", text: "助かるよ。思ってるより、ハガキは多いからね"),
+                Advice(name: "谷口", text: "読んだ中でおもろいのあったら、俺にも教えてな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません。夜は二人で練習したいんです"),
+                Advice(name: "戸田", text: "分かった。夜の練習、がんばってね"),
+                Advice(name: "谷口", text: "ほな、夜は毎日うちに集合な"),
+            ],
+        ]
+    )
+
+    // MARK: 0045 同期からの誘い
+
+    private static let doukiJointLive = ChoiceEventText(
+        title: "同期からの誘い",
+        setup: [
+            Advice(name: nil, text: "公園のベンチ。同期の真鍋と会った昼。"),
+            Advice(name: "真鍋", text: "今度、二組で小さい会場を借りて、ライブをやらないか"),
+            Advice(name: "俺", text: "会場代は、いくらかかるんだ"),
+            Advice(name: "真鍋", text: "二組で割って、一組一万円だ。お客さんを三十人呼べたら赤字にはならない"),
+            Advice(name: "谷口", text: "真鍋とやるんか。あいつらには、負けたないな"),
+        ],
+        choiceLabels: [
+            "A": "真鍋たちと二組でライブをやる",
+            "B": "お金が厳しいので、今回は断る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "やろう。チラシは俺が作る"),
+                Advice(name: "真鍋", text: "決まりだな。三十人、両方で呼ぼう"),
+                Advice(name: "谷口", text: "知り合い、全員に声かけるわ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "悪い、今回はやめておく。お金が厳しいんだ"),
+                Advice(name: "真鍋", text: "そうか。会場は、他の組を誘ってみる"),
+                Advice(name: "谷口", text: "次に誘われた時のために、二人で貯めとこな"),
+            ],
+        ]
+    )
+
+    // MARK: 0046 棚卸しの夜
+
+    private static let baitoInventory = ChoiceEventText(
+        title: "棚卸しの夜",
+        setup: [
+            Advice(name: nil, text: "バイト先のファミレス。閉店後の夜。"),
+            Advice(name: "矢島", text: "来週の木曜、夜通しで棚卸しがあるんだ。入れないかな"),
+            Advice(name: "俺", text: "夜通しですか。次の日は昼から稽古なんです"),
+            Advice(name: "矢島", text: "深夜の手当がつくから、いつもの倍近く出るよ。無理なら他を当たる"),
+        ],
+        choiceLabels: [
+            "A": "夜通しの棚卸しに入る",
+            "B": "次の日の稽古のために断る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "入ります。今月、ちょうど厳しかったので"),
+                Advice(name: "矢島", text: "助かるよ。夜食は出すからね"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません。次の日の稽古に、ちゃんと出たいんです"),
+                Advice(name: "矢島", text: "分かった。体は大事にしてね"),
+            ],
+        ]
+    )
+
+    // MARK: 0047 母からの電話
+
+    private static let homecomingCall = ChoiceEventText(
+        title: "母からの電話",
+        setup: [
+            Advice(name: nil, text: "アパートの部屋。年末の夕方。"),
+            Advice(name: "母", text: "お正月は帰ってくるの？ お父さん、毎日カレンダーを見てるよ"),
+            Advice(name: "俺", text: "まだ分からない。稽古もあるし"),
+            Advice(name: "母", text: "切符、今のうちに取れば安いって。顔だけでも見せなさい"),
+            Advice(name: "谷口", text: "帰ったらええやん。俺も大阪、帰ろかな"),
+        ],
+        choiceLabels: [
+            "A": "正月は実家に帰る",
+            "B": "帰らずに、こっちで稽古する",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "帰るよ。切符、明日取る"),
+                Advice(name: "母", text: "よかった。お父さんにも言っておくね"),
+                Advice(name: "谷口", text: "三日くらい、ゆっくりしてきいや"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "ごめん、今年は帰らない。春には一回帰るから"),
+                Advice(name: "母", text: "そう。体だけは気をつけてね"),
+                Advice(name: "谷口", text: "ほな、正月も稽古やな。おかんには、ちゃんと電話しときや"),
+            ],
+        ]
+    )
+
+    // MARK: 0048 いつものお客さん
+
+    private static let regularFanOranges = ChoiceEventText(
+        title: "いつものお客さん",
+        setup: [
+            Advice(name: nil, text: "劇場の出口。昼の部が終わった後。"),
+            Advice(name: "佐伯", text: "今日もよかったよ。このみかん、二人で食べて"),
+            Advice(name: "俺", text: "佐伯さん、いつもありがとうございます"),
+            Advice(name: "佐伯", text: "今度、友だちも連れてくるからね"),
+            Advice(name: "谷口", text: "出口に残って、お客さんに挨拶してこか。バイト、遅れるかもしれんけど"),
+        ],
+        choiceLabels: [
+            "A": "出口に残ってお客さんに挨拶する",
+            "B": "バイトに間に合うよう急いで出る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "残ろう。一人ずつお礼を言おう"),
+                Advice(name: "佐伯", text: "次は友だちに、二人の名前を教えておくね"),
+                Advice(name: "谷口", text: "バイト先には、遅れるって電話しとくわ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません、今日はバイトなので急ぎます"),
+                Advice(name: "佐伯", text: "いいのよ。また来るからね"),
+            ],
+        ]
+    )
+
+    // MARK: 0049 ライブのチケット
+
+    private static let officeTicketQuota = ChoiceEventText(
+        title: "ライブのチケット",
+        setup: [
+            Advice(name: nil, text: "事務所。来月のライブの話をされた昼。"),
+            Advice(name: "中条", text: "来月の事務所ライブ、一組十枚ずつチケットを売ってほしいの"),
+            Advice(name: "俺", text: "十枚ですか。売れなかった分は、どうなりますか"),
+            Advice(name: "中条", text: "残った分は、出る人で買い取りなの。ごめんね"),
+            Advice(name: "谷口", text: "駅前で手売りしたら、なんとかなるやろ"),
+        ],
+        choiceLabels: [
+            "A": "週末、駅前でチケットを手売りする",
+            "B": "手売りはせず、残りを買い取る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "週末、駅前に立とう。二人で声をかけよう"),
+                Advice(name: "谷口", text: "寒いけど、がんばろな。知らん人に声かけるの、初めてやわ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今回は買い取ろう。立つ時間を稽古に回したい"),
+                Advice(name: "中条", text: "分かった。じゃあ十枚、先に渡しておくね"),
+                Advice(name: "谷口", text: "空いた週末は、二人で稽古やな"),
+            ],
+        ]
     )
 }
