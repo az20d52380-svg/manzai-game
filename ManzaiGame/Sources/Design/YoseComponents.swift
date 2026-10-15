@@ -114,9 +114,9 @@ struct YoseButtonStyle: ButtonStyle {
                 if let badgeText {
                     Text(badgeText)
                         .font(YoseFont.gothic(11, weight: .heavy))
-                        .foregroundStyle(YoseColor.kinari)
+                        .foregroundStyle(role == .primary ? YoseColor.kuroUrushi : YoseColor.kinari)   // 朱の主ボタン上では山吹金の札（保護色を避ける）
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(YoseColor.shu)
+                        .background(role == .primary ? YoseColor.kinBright : YoseColor.shu)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                         .rotationEffect(.degrees(-8))
                         .offset(x: -6, y: -4)

@@ -196,12 +196,15 @@ struct AbilityUpView: View {
         let content = HStack(spacing: colGap) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(a)").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.7)
-                HStack(spacing: 3) {
-                    Text("\(Int(v.rounded()))").font(YoseFont.number(19, weight: .black)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.sumi)
+                HStack(spacing: 1) {
+                    if gained > 0 {
+                        Text("\(Int(base[a].rounded()))→").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).fixedSize()
+                    }
+                    Text("\(Int(v.rounded()))").font(YoseFont.number(19, weight: .black)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.sumi).lineLimit(1).fixedSize()
                         .contentTransition(.numericText())
                         .scaleEffect(bumped == a ? 1.3 : 1, anchor: .leading)
                     if gained > 0 {
-                        Text("+\(gained)").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                        Text("+\(gained)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.shu).lineLimit(1).fixedSize()
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -259,7 +262,7 @@ struct AbilityUpView: View {
                 Image(systemName: "minus").font(.system(size: 16, weight: .black))
                     .foregroundStyle(canUndo ? YoseColor.sumi : YoseColor.disabledText)
                     .frame(width: minusW, height: 46)
-                    .background(Rectangle().fill(canUndo ? YoseColor.washi : YoseColor.ginNezu))
+                    .background(Rectangle().fill(canUndo ? YoseColor.ki : YoseColor.ginNezu))
                     .overlay { if !canUndo { YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4).clipped() } }
                     .overlay(Rectangle().stroke(canUndo ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canUndo ? 2 : 1.5))
                     .shadow(color: canUndo ? YoseColor.sumi : .clear, radius: 0, y: 2)
@@ -300,7 +303,7 @@ struct AbilityUpView: View {
             Button { taps = session.recommendedAllocation(); Haptics.tick() } label: { Text("おまかせ").lineLimit(1).minimumScaleFactor(0.85) }
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
             Button { confirm() } label: { Text("確定").padding(.trailing, active ? 34 : 0) }
-                .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "未確定" : nil)).frame(maxWidth: .infinity, minHeight: 48)
+                .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "+\(taps.count)段階" : nil)).frame(maxWidth: .infinity, minHeight: 48)
         }
         .font(YoseFont.gothic(14, weight: .heavy))
         .frame(height: 52)
