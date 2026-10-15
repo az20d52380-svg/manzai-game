@@ -24,6 +24,7 @@
 		2643395E9DDCAF2BA532E57B /* se_grain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */; };
 		274A09C6852CB442400DAE49 /* se_taiko.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */; };
 		290A540EAC4D4FD7912614B4 /* se_tada.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */; };
+		29383121F034EDCD512A2999 /* YoseMilestoneFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3922B827A8BB6C8A1576AAC /* YoseMilestoneFX.swift */; };
 		2A0C4D15DED110C70394538A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F49ED139642FC2518E962F8 /* RootView.swift */; };
 		2CF0DA6FF334100C755ADEDF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C28779B3A3A70B4A8256AD4F /* PrivacyInfo.xcprivacy */; };
 		2D7CCCC64634FD7E538BAFAA /* se_drumroll.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */; };
@@ -33,8 +34,8 @@
 		420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A799C1CDD04C665A5DE37ABB /* SettingsView.swift */; };
 		4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A618381798F759B9F5580F /* Juice.swift */; };
 		4671A140B09142E5B42D60D7 /* CharacterAvatars.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */; };
-		47D12D77D92D87BBA4D04FCA /* YoseGameParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */; };
 		46CF8359E9EE6440505DC20E /* EndingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16007007DF00D086ECC94A4C /* EndingViews.swift */; };
+		47D12D77D92D87BBA4D04FCA /* YoseGameParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */; };
 		503ABBC496CD986CDC932884 /* DialogueData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1F100811789DF64591C427 /* DialogueData.swift */; };
 		5179064A2B5912376290FD3B /* AbilityUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6B90BFC5A4AED3BFE09913 /* AbilityUpView.swift */; };
 		53DD57D26963633913018B7A /* FontLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47D421441D548D881226B2E /* FontLoader.swift */; };
@@ -55,8 +56,8 @@
 		877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */; };
 		8A594478EA03EF55A5AEACB6 /* ChoiceEventData.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */; };
 		8B6790D2107EF19DC87AA12A /* MPLUSRounded1c-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7ABBF9FD27D827A700C7A2A7 /* MPLUSRounded1c-ExtraBold.ttf */; };
-		91217B57A08A20012B50956D /* MPLUSRounded1c-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */; };
 		8F8EA73EBE8FB72EF969B0BE /* Endings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */; };
+		91217B57A08A20012B50956D /* MPLUSRounded1c-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */; };
 		9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */; };
 		9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = F840A919C087A92A94339899 /* RadarChart.swift */; };
 		9C0D027CDCFED1A3CCE43054 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B56CF2CC9552602E05AC67B /* CalendarView.swift */; };
@@ -99,8 +100,8 @@
 		08B86D882DE6689C655ADD0C /* FanReportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanReportData.swift; sourceTree = "<group>"; };
 		0B56CF2CC9552602E05AC67B /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseCatalog.swift; sourceTree = "<group>"; };
-		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		16007007DF00D086ECC94A4C /* EndingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndingViews.swift; sourceTree = "<group>"; };
+		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		2479B3303C35A9B094342137 /* se_cursor.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cursor.mp3; sourceTree = "<group>"; };
 		2AAFBC0284B7A53A0A48C18D /* S6bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S6bView.swift; sourceTree = "<group>"; };
 		2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
@@ -145,10 +146,11 @@
 		AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_drumroll.mp3; sourceTree = "<group>"; };
 		AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_mid.mp3; sourceTree = "<group>"; };
 		AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cancel.mp3; sourceTree = "<group>"; };
-		AFF716652A1CEF538F57F1BF /* se_event.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_event.mp3; sourceTree = "<group>"; };
 		AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endings.swift; sourceTree = "<group>"; };
+		AFF716652A1CEF538F57F1BF /* se_event.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_event.mp3; sourceTree = "<group>"; };
 		B18155352CE011A350B1DEC6 /* WeekMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekMainView.swift; sourceTree = "<group>"; };
 		B383B72A92017AEB3494614B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B3922B827A8BB6C8A1576AAC /* YoseMilestoneFX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseMilestoneFX.swift; sourceTree = "<group>"; };
 		B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_success.mp3; sourceTree = "<group>"; };
 		B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_small.mp3; sourceTree = "<group>"; };
 		BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBackdropTable.swift; sourceTree = "<group>"; };
@@ -235,10 +237,10 @@
 				E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */,
 				DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */,
 				CC1F100811789DF64591C427 /* DialogueData.swift */,
-				08B86D882DE6689C655ADD0C /* FanReportData.swift */,
-				599065030751D5F2DB350459 /* FinalsPresentationView.swift */,
 				AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */,
 				16007007DF00D086ECC94A4C /* EndingViews.swift */,
+				08B86D882DE6689C655ADD0C /* FanReportData.swift */,
+				599065030751D5F2DB350459 /* FinalsPresentationView.swift */,
 				5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */,
 				D47D421441D548D881226B2E /* FontLoader.swift */,
 				2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */,
@@ -329,6 +331,7 @@
 				F154485CAC8C1E8A41BD89A9 /* YoseEffects.swift */,
 				9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */,
 				E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */,
+				B3922B827A8BB6C8A1576AAC /* YoseMilestoneFX.swift */,
 				8A020307F3B3C34947A00DD3 /* YoseMotion.swift */,
 				F6A7C2408A19FD4353246D25 /* YoseRankUpOverlay.swift */,
 				ED71D4E26DB33CA0C24BF06A /* YoseTokens.swift */,
@@ -448,11 +451,11 @@
 				F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */,
 				A5261165B97770A127810577 /* CommandData.swift in Sources */,
 				503ABBC496CD986CDC932884 /* DialogueData.swift in Sources */,
+				46CF8359E9EE6440505DC20E /* EndingViews.swift in Sources */,
+				8F8EA73EBE8FB72EF969B0BE /* Endings.swift in Sources */,
 				D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */,
 				557A44DC9CC271F9216143B1 /* EventBackgrounds.swift in Sources */,
 				7929C910D01A177FA32BE25C /* FanReportData.swift in Sources */,
-				46CF8359E9EE6440505DC20E /* EndingViews.swift in Sources */,
-				8F8EA73EBE8FB72EF969B0BE /* Endings.swift in Sources */,
 				B5FF297729B861895AB02480 /* FinalsPresentationView.swift in Sources */,
 				877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */,
 				53DD57D26963633913018B7A /* FontLoader.swift in Sources */,
@@ -486,6 +489,7 @@
 				0B34AAF95695F5153E2B33D9 /* YoseEffects.swift in Sources */,
 				23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */,
 				47D12D77D92D87BBA4D04FCA /* YoseGameParts.swift in Sources */,
+				29383121F034EDCD512A2999 /* YoseMilestoneFX.swift in Sources */,
 				C7CC7DDD5702BD8FE0DC6F10 /* YoseMotion.swift in Sources */,
 				C892078A22A967AE53124380 /* YoseRankUpOverlay.swift in Sources */,
 				9EE8443D230F2569125B3C1B /* YoseTokens.swift in Sources */,

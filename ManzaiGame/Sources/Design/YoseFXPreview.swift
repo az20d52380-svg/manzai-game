@@ -17,29 +17,23 @@ struct YoseFXPreview: View {
             case "rankup", "rankup_multi":
                 if show { YoseRankUpOverlay(items: Self.sampleItems(multi: kind == "rankup_multi"), totalPower: 134, powerDelta: 4) { show = false; relaunch() } }
             case "yearturn":
-                if show { YoseYearTurnCurtainView(summary: YearTurnSummary(combiName: "（見本）", previousYear: 1, newYear: 2, power: 104, fame: 32, money: 150_000, netaCount: 4)) { show = false; relaunch() } }
-            case "burst":
-                VStack(spacing: 30) {
-                    Text("\(100 + fire)").font(YoseFont.number(60, weight: .black)).foregroundStyle(YoseColor.sumi)
-                        .yoseNumberPop(value: fire)
-                    Text("経験点バースト").font(YoseFont.gothic(14))
+                if show { YoseYearTurnCurtainView(summary: YearTurnSummary(combiName: "満月ロケット", previousYear: 1, newYear: 2, power: 104, fame: 32, money: 150_000, netaCount: 4)) { show = false; relaunch() } }
+            case "burst", "cutin":
+                // 週画面の見立て（練習ボタン押下直後）の上を貫通する大成功カットイン
+                ZStack {
+                    VStack(spacing: 14) {
+                        Text("1年目 3月 2週").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        Text("練習：ネタ合わせ").font(YoseFont.gothic(13)).foregroundStyle(YoseColor.haiSumi)
+                    }.offset(y: -240)
+                    if show { YoseBigSuccessCutIn { show = false; relaunch() } }
                 }
-                .overlay { YoseBurstParticles(trigger: fire, count: 24, radius: 120).frame(width: 300, height: 300) }
             case "streak":
                 Text("能力 42 → 46").font(YoseFont.number(34, weight: .black)).padding(30)
                     .background(YoseColor.washi).yoseKifuda().yoseLightStreak(trigger: fire)
             case "pass":
-                ZStack {
-                    YoseHarigamiCard { Text("予選通過").font(YoseFont.mincho(28)).padding(40) }
-                    YoseAnimatedHanko(text: "突破", isStamped: stamped, isSquare: true, angle: -8).offset(x: 80, y: -30).scaleEffect(1.6)
-                }.yoseShake(trigger: fire, intensity: .medium)
+                if show { YosePassCelebrationView { show = false; relaunch() } }
             case "champion":
                 YoseChampionCelebrationView(duoName: "満月ロケット", partnerName: "谷口") { }
-            case "cutin":
-                ZStack {
-                    YoseSpeedLinesView(lineCount: 32)
-                    YoseCutInBanner(title: "手応え抜群！ハマった！！", subtitle: "練習大成功", stampText: "大成功", isPresented: show)
-                }
             default:
                 Text("MZ_FX 未定義: \(kind)")
             }
@@ -50,7 +44,7 @@ struct YoseFXPreview: View {
     private func play() async {
         try? await Task.sleep(nanoseconds: 300_000_000)
         show = true; stamped = true; fire += 1
-        if kind == "burst" || kind == "streak" || kind == "pass" {
+        if kind == "streak" {
             while !Task.isCancelled { try? await Task.sleep(nanoseconds: 1_600_000_000); stamped.toggle(); fire += 1 }
         }
     }
