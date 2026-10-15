@@ -37,7 +37,7 @@ struct AdvanceCue: View {
     @State private var bob = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        Image(systemName: "arrowtriangle.down.fill")
+        Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
             .font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(color)
             .offset(y: bob ? 2.5 : 0)
             .onAppear {

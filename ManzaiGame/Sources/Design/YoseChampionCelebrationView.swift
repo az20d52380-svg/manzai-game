@@ -435,7 +435,7 @@ public struct YoseChampionCelebrationView: View {
             HStack(spacing: 8) {
                 Text("表彰式・エンディングへ進む")
                     .font(YoseFont.gothic(16, weight: .heavy))
-                Image(systemName: "arrowtriangle.right.fill")
+                Image(systemName: "arrowtriangle.right.fill").accessibilityHidden(true)
                     .font(.system(size: Font.mzScaled(12), weight: .black))
             }
             .foregroundStyle(YoseColor.kinari)

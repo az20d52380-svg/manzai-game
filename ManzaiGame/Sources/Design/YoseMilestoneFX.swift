@@ -30,7 +30,8 @@ struct YoseGoldText: View {
 /// 加算発光する局所の光芯（中心は白金、外へ減衰。放射線は描かない）
 private struct YoseCoreGlow: View {
     var radius: CGFloat = 200
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         Circle()
             .fill(RadialGradient(colors: [Color(hex: 0xFFF2C4).opacity(0.65), YoseColor.kinBright.opacity(0.28), YoseColor.shu.opacity(0.08), .clear],
                                  center: .center, startRadius: 4, endRadius: radius))
@@ -194,7 +195,7 @@ struct YosePassCelebrationView: View {
                         Text("通過基準").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         Text("\(threshold)").font(YoseFont.number(34, weight: .black)).foregroundStyle(YoseColor.haiSumi)
                     }
-                    Image(systemName: "play.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(revealed ? YoseColor.shu : YoseColor.kin)
+                    Image(systemName: "play.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(revealed ? YoseColor.shu : YoseColor.kin).accessibilityHidden(true)
                     VStack(spacing: 2) {
                         Text("発揮実力").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         Text("\(shownPower)").font(YoseFont.number(58, weight: .black))
@@ -249,7 +250,7 @@ struct YosePassCelebrationView: View {
             Text("知名度 +\(fameGain)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
             Spacer()
             Text(nextStep).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-            Image(systemName: "play.fill").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.kinBright)
+            Image(systemName: "play.fill").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.kinBright).accessibilityHidden(true)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(YoseColor.kuroUrushi)
@@ -448,7 +449,8 @@ struct YoseBigSuccessCutIn: View {
 
 /// 大成功の劇画集中線：太細・長短が不規則、外周から中心へ向かうほど消える、中央は空洞。金と白の混在。
 private struct BigSuccessRays: View {
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         Canvas { ctx, size in
             let c = CGPoint(x: size.width / 2, y: size.height / 2)
             let outer = hypot(size.width, size.height) * 0.62

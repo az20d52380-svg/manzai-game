@@ -37,7 +37,8 @@ struct ParticleBurst: View {
 
     private var life: Double { style == .spark ? 0.9 : 1.7 }
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         GeometryReader { geo in
             if let start = burstStart, !colors.isEmpty {
                 TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { tl in
@@ -124,7 +125,8 @@ struct SpeedLinesBurst: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let life = 0.32
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         GeometryReader { geo in
             if let s = start {
                 TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { tl in

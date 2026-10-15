@@ -272,6 +272,7 @@ struct YoseGauge: View {
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
         }
         .frame(height: height)
+        .accessibilityHidden(true)   // 数字が隣にある。ゲージの形だけでは読み上げに意味がない
     }
 }
 
@@ -302,7 +303,7 @@ struct YoseSpeechBox: View {
                 Text(text).font(YoseFont.mincho(15)).lineSpacing(5).foregroundStyle(YoseColor.sumi)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if showCue {
-                    Image(systemName: "arrowtriangle.down.fill").font(.system(size: Font.mzScaled(10)))
+                    Image(systemName: "arrowtriangle.down.fill").font(.system(size: Font.mzScaled(10))).accessibilityHidden(true)
                         .foregroundStyle(YoseColor.shu).opacity(blink ? 0.25 : 1)
                 }
             }

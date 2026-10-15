@@ -89,7 +89,7 @@ struct S6bView: View {
                             Text(Yen.text(max(0, s.money))).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                                 .lineLimit(1).minimumScaleFactor(0.6)
                         }
-                        Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(14))).foregroundStyle(YoseColor.shu)
+                        Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(14))).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
                         VStack(spacing: 0) {
                             Text("残金").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
                             Text(Yen.text(counted ? 0 : max(0, s.money)))

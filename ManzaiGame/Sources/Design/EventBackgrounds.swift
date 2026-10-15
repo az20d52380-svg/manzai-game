@@ -246,6 +246,7 @@ public struct EventStageBackdropView: View {
         .eventTimeTint(backdrop.time, strength: backdrop.place.nightStrength)
         .overlay { EventGlowLayer(place: backdrop.place, time: backdrop.time) }   // 夜の暗転の「上」に光源を置く
         .clipped()
+        .accessibilityHidden(true)
     }
 }
 
@@ -288,7 +289,8 @@ private struct EventGlowLayer: View {
             .frame(width: r * 2, height: r * 2).position(x: x, y: y).blendMode(.screen)
     }
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         GeometryReader { geo in
             let w = geo.size.width, h = geo.size.height
             if k > 0 {

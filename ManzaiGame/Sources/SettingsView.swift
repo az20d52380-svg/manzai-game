@@ -92,7 +92,7 @@ struct SettingsView: View {
     private func restartBlock(_ onQuitRun: @escaping () -> Void) -> some View {
         Button { restartStep = 1 } label: {
             HStack(spacing: 8) {
-                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: Font.mzScaled(14), weight: .black))
+                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: Font.mzScaled(14), weight: .black)).accessibilityHidden(true)
                 Text("最初からやり直す")
             }
             .foregroundStyle(YoseColor.shu)
@@ -138,6 +138,7 @@ struct SettingsView: View {
         HStack(spacing: 8) {
             Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.5).frame(width: 36, alignment: .leading)
             Button { step(value, -0.1) } label: { Text("−").font(YoseFont.gothic(18, weight: .black)) }
+                .accessibilityLabel("\(label)を下げる")
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 40).disabled(value.wrappedValue <= 0.001)
             YoseGauge(value: value.wrappedValue, total: 1, fill: YoseColor.shu, height: 18, showTicks: false)
                 .overlay { GeometryReader { geo in
@@ -150,6 +151,7 @@ struct SettingsView: View {
                         })
                 } }
             Button { step(value, 0.1) } label: { Text("＋").font(YoseFont.gothic(18, weight: .black)) }
+                .accessibilityLabel("\(label)を上げる")
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 40).disabled(value.wrappedValue >= 0.999)
             Text("\(Int((value.wrappedValue * 100).rounded()))").font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.5).frame(width: 36, alignment: .trailing)
@@ -162,7 +164,7 @@ struct SettingsView: View {
 
     private func linkRow(_ label: String) -> some View {
         HStack { Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi); Spacer()
-            Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi) }
+            Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }
     }
 }
 

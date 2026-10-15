@@ -313,7 +313,7 @@ struct WeekMainView: View {
             Button { showCalendar = true } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
-                        Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11)))
+                        Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)
                             .foregroundStyle(hot ? YoseColor.shu : YoseColor.kin)
                         if m.weeksLeft <= 0 {
                             Text("\(m.name)　今週！")
@@ -1235,7 +1235,7 @@ struct WeekMainView: View {
         } label: {
             // 条件付きの小カード（オファー/バイト）と同じ顔＝常設6枚の下に破線で並ぶ
             HStack(spacing: 7) {
-                Image(systemName: "forward.end.fill").font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(YoseColor.kinari)
+                Image(systemName: "forward.end.fill").font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)
                     .frame(width: 26, height: 26)
                     .background(YoseColor.haiSumi)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -1316,7 +1316,7 @@ struct BounceArrow: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var up = false
     var body: some View {
-        Image(systemName: "arrowtriangle.down.fill")
+        Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
             .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)
             .offset(y: up ? 2.5 : -1.5)
             .onAppear { guard !reduceMotion else { return }; withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }

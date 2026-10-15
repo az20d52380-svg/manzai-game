@@ -101,7 +101,8 @@ struct YoseBurstParticles: View {
         self.duration = duration
     }
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: burstStart == nil)) { timeline in
             Canvas { context, size in
                 guard let start = burstStart else { return }
@@ -361,7 +362,8 @@ struct YoseConfettiView: View {
         self.pieceCount = pieceCount
     }
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         Group {
             if isActive && !reduceMotion {
                 TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
@@ -607,7 +609,8 @@ struct YoseSpeedLinesView: View {
         self.innerClearRadiusRatio = innerClearRadiusRatio
     }
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         Canvas { context, size in
             let center = CGPoint(x: size.width / 2, y: size.height / 2)
             let outerR = hypot(size.width, size.height) * 0.65

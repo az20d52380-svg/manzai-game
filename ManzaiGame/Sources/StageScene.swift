@@ -262,7 +262,8 @@ struct DustField: View {
     let centerX: CGFloat
     let spread: CGFloat
 
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: reduceMotion)) { timeline in
             Canvas { ctx, size in
                 let t = timeline.date.timeIntervalSinceReferenceDate

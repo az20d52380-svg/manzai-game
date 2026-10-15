@@ -391,7 +391,7 @@ struct NotebookView: View {
                     .textFieldStyle(.plain)
                     .onSubmit { commitRename(neta.id) }
                 Button { commitRename(neta.id) } label: {
-                    Image(systemName: "checkmark.square.fill").foregroundStyle(YoseColor.shu)
+                    Image(systemName: "checkmark.square.fill").foregroundStyle(YoseColor.shu).accessibilityHidden(true)
                 }.buttonStyle(PressableStyle())
             }
         } else {

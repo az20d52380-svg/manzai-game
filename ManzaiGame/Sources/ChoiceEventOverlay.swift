@@ -204,7 +204,7 @@ struct ChoiceEventOverlay: View {
     /// 選んだ札（選択肢の後に残す・B-10）
     private func chosenTag(_ label: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: "checkmark").font(.system(size: Font.mzScaled(12), weight: .black)).foregroundStyle(YoseColor.shu)
+            Image(systemName: "checkmark").font(.system(size: Font.mzScaled(12), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
             Text(label).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
         }
         .padding(.horizontal, 12).padding(.vertical, 6)

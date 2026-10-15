@@ -128,7 +128,7 @@ struct AbilityUpView: View {
                     // 確定前に伸びが見える：42 → 45
                     HStack(spacing: 3) {
                         Text("\(before)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
-                        Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu)
+                        Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
                         Text("\(after)").font(YoseFont.number(26, weight: .black)).foregroundStyle(YoseColor.shu)
                             .contentTransition(.numericText())
                     }
@@ -252,6 +252,9 @@ struct AbilityUpView: View {
         } label: { content.yoseHarigami() }
         .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
         .disabled(!canTap)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(a)、いま\(Int(v.rounded()))\(gained > 0 ? "、\(gained)上げる予定" : "")")
+        .accessibilityHint(canTap ? "押すと能力を上げる" : "粒が足りない")
         return main.overlay(alignment: .leading) {
             // ［−］：常に同じ場所に出す（振った分をまるごと戻す）。振っていない時は灰色で押せない＝幅も位置も動かない
             let canUndo = gained > 0
@@ -269,6 +272,7 @@ struct AbilityUpView: View {
             }
             .buttonStyle(PressableStyle(enabled: canUndo))
             .disabled(!canUndo)
+            .accessibilityLabel("\(a)を元に戻す")
             .padding(.leading, 6 + nameW + colGap).padding(.bottom, 2)
         }
     }

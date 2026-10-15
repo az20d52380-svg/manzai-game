@@ -323,7 +323,7 @@ struct TournamentResultView: View {
                     .frame(maxWidth: .infinity).frame(height: 22)
                     .background(i == cur ? YoseColor.shu : YoseColor.ki)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: i == cur ? 1.5 : 1))
-                if i < 2 { Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.kin) }
+                if i < 2 { Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.kin).accessibilityHidden(true) }
             }
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
@@ -405,7 +405,7 @@ struct TournamentResultView: View {
                         Text("通過ライン").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                         Text("\(Int(line))").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
                     }
-                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(YoseColor.shu)
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
                         .alignmentGuide(.lastTextBaseline) { $0[.bottom] + 8 }
                 }
                 VStack(spacing: 0) {
@@ -571,7 +571,8 @@ struct RollingNumberText: View, Animatable {
 /// 歓声の熱気＝金と白の光粒が下からふわっと立ち上る（床の折れ線の代わり）
 private struct RisingGlow: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    var body: some View {
+    var body: some View { decorativeBody.accessibilityHidden(true) }   // 飾り（読み上げ対象外）
+    @ViewBuilder private var decorativeBody: some View {
         TimelineView(.animation(minimumInterval: nil, paused: reduceMotion)) { tl in
             Canvas { ctx, size in
                 let t = tl.date.timeIntervalSinceReferenceDate

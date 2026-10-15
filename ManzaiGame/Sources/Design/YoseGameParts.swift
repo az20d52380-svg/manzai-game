@@ -22,6 +22,8 @@ struct YosePowerBadge: View {
         }
         .padding(.horizontal, 10).padding(.vertical, 6)
         .yoseKifuda()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("実力 \(power)\(delta.map { $0 > 0 ? "、\($0)上がった" : "" } ?? "")")
     }
 }
 
@@ -44,6 +46,8 @@ struct YoseVitalMoneyBar: View {
                 + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu))
                     .lineLimit(1).fixedSize()
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("体力 \(maxStamina)のうち\(stamina)")
             Spacer(minLength: 0)
             if let fame {
                 HStack(spacing: 3) {
@@ -53,11 +57,14 @@ struct YoseVitalMoneyBar: View {
                         Text("↑+\(fameDelta)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("知名度 \(fame)\((fameDelta ?? 0) > 0 ? "、\(fameDelta ?? 0)上がった" : "")")
             }
             if money < 0 { YoseTag(text: "借金", style: .outlineShu).fixedSize() }   // 所持金マイナスの間だけ（表示のみ）
             Text("¥\(money.formatted(.number))").font(YoseFont.number(17, weight: .heavy))
                 .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinBright)
                 .lineLimit(1).fixedSize()
+                .accessibilityLabel(money < 0 ? "所持金 マイナス\(-money)円、借金" : "所持金 \(money)円")
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
         .frame(height: 36)

@@ -89,7 +89,7 @@ struct YoseYearTurnCurtainView: View {
                         HStack(spacing: 8) {
                             Text("\(summary.newYear)年目を始める")
                                 .font(YoseFont.gothic(18, weight: .heavy))
-                            Image(systemName: "play.fill")
+                            Image(systemName: "play.fill").accessibilityHidden(true)
                                 .font(.system(size: Font.mzScaled(13), weight: .black))
                         }
                         .frame(maxWidth: .infinity)

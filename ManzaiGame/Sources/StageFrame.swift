@@ -370,7 +370,7 @@ struct YoseAdvanceCue: View {
     @State private var bob = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        Image(systemName: "arrowtriangle.down.fill")
+        Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
             .font(.system(size: Font.mzScaled(12), weight: .black)).foregroundStyle(color)
             .shadow(color: YoseColor.sumi, radius: 0, x: 0, y: 1)
             .offset(y: bob ? 3 : 0)
