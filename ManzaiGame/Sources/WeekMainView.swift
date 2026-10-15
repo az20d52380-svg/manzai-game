@@ -438,7 +438,7 @@ struct WeekMainView: View {
                     .overlay(Rectangle().stroke(Color(hex: 0x2B2B2B), lineWidth: 1))
             }
             Text(a.text)
-                .font(.system(size: 15, weight: .medium, design: .serif)).lineSpacing(3)
+                .font(.custom("HiraMinProN-W6", size: 15)).lineSpacing(3)
                 .foregroundStyle(Theme.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .frame(maxWidth: 250, alignment: .leading)
@@ -448,7 +448,7 @@ struct WeekMainView: View {
                     // しっぽ：谷口の名札へ向ける
                     BubbleTail().fill(Color(hex: 0xFDFBF7))
                         .overlay(BubbleTail().stroke(Color(hex: 0x2B2B2B), lineWidth: 1.5))
-                        .frame(width: 10, height: 14).offset(x: -9, y: -14)
+                        .frame(width: 10, height: 14).offset(x: -8, y: -12)
                 }
         }
         .id(a.text)
@@ -700,16 +700,15 @@ struct WeekMainView: View {
         let sub: String = {
             switch c {
             case .ネタを書く:
-                if gated { return s.preoccupiedWeeks > 0 ? "今週は撮影" : "体力が足りない" }
+                if gated { return "" }   // 理由は「出張中/休演」テープ1枚で言う（二重の文字を出さない）
                 if let n = session.selectedNeta { return "\(session.activeNetas.count)本 ・ 勝負ネタ「\(n.name)」" }
                 return session.activeNetas.isEmpty ? "まだネタがない。まず一本" : "\(session.activeNetas.count)本 書いた"
-            case .練習: return gated ? (s.preoccupiedWeeks > 0 ? "今週は撮影" : "体力が足りない") : "合わせ・舞台 ほか"
-            case .バイト: return "お金を稼ぐ"
-            case .休む: return "体力を戻す"
+            case .練習: return gated ? "" : "合わせ・舞台 ほか"
+            case .バイト, .休む: return ""   // 名前＋判子アイコンで足りる（説明文は廃止）
             case .能力アップ:
                 if unspentBeforeStage { return "大会前に経験点を使おう" }
-                return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で能力を上げる"
-            case .お店: return "アイテムを買う"
+                return expGrains > 0 ? "経験点 \(expGrains) たまってる" : ""
+            case .お店: return ""
             }
         }()
         return Button {
@@ -728,10 +727,22 @@ struct WeekMainView: View {
             }
         } label: {
             let big = (c == .ネタを書く || c == .練習)
+            let stamp: String? = { switch c { case .バイト: return "yensign"; case .休む: return "moon.zzz.fill"
+                                          case .能力アップ: return "arrow.up.forward"; case .お店: return "bag.fill"; default: return nil } }()
             VStack(alignment: .leading, spacing: 6) {
-                Text(c.rawValue).font(.maru(big ? 26 : 19, weight: .black))
-                    .foregroundStyle(gated ? Color(hex: 0x2B2B2B).opacity(0.45) : Color(hex: 0x2B2B2B))
-                Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
+                HStack(spacing: 8) {
+                    if let stamp {   // 判子風アイコン（朱の角判）
+                        Image(systemName: stamp).font(.system(size: 13, weight: .black)).foregroundStyle(.white)
+                            .frame(width: 26, height: 26).background(tint.opacity(0.9), in: RoundedRectangle(cornerRadius: 3))
+                            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color(hex: 0x2B2B2B).opacity(0.6), lineWidth: 1))
+                    }
+                    Text(c.rawValue).font(.maru(big ? 26 : 20, weight: .heavy))
+                        .foregroundStyle(gated ? Color(hex: 0x2B2B2B).opacity(0.45) : Color(hex: 0x2B2B2B))
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                }
+                if !sub.isEmpty {
+                    Text(sub).font(.maru(12, weight: .bold)).foregroundStyle(gated ? Theme.vermD : ready ? Theme.goldDeep : Theme.inkSub).lineLimit(1)
+                }
             }
             .padding(.horizontal, 14).padding(.vertical, big ? 14 : 9)
             .frame(maxWidth: .infinity, minHeight: big ? 84 : 62, alignment: .leading)
@@ -739,16 +750,17 @@ struct WeekMainView: View {
                 .shadow(color: Color(hex: 0xC8BFA8), radius: 0, x: 0, y: 3))
             .overlay(RoundedRectangle(cornerRadius: 3).stroke((c == .能力アップ && unspentBeforeStage) ? Theme.gold : Color(hex: 0x2B2B2B),
                                         lineWidth: (c == .能力アップ && unspentBeforeStage) ? 3 : 1.5))
+            .overlay { if gated { RoundedRectangle(cornerRadius: 3).fill(Color.black.opacity(0.08)) } }
             .overlay {
                 // 選べない札は暗くせず、赤い千社札テープを斜めに貼って「今週は無理」を絵で言う
                 if gated {
                     Text(s.preoccupiedWeeks > 0 ? "出張中" : "休演")
-                        .font(.system(size: 11, weight: .heavy)).tracking(2).foregroundStyle(.white)
-                        .padding(.horizontal, 14).padding(.vertical, 3)
-                        .background(Color(hex: 0xBD3C28))
-                        .rotationEffect(.degrees(-12))
+                        .font(.system(size: 12, weight: .heavy)).tracking(2).foregroundStyle(.white)
+                        .padding(.horizontal, 14).padding(.vertical, 4)
+                        .background(Color(hex: 0xA62B1E))
+                        .rotationEffect(.degrees(-10))
                         .shadow(color: .black.opacity(0.3), radius: 0, x: 1, y: 1)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).padding(.trailing, 6).padding(.bottom, 8)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).padding(.trailing, 8).padding(.bottom, 8)
                 }
             }
         }
@@ -1002,7 +1014,7 @@ struct WeekMainView: View {
     private var staminaGauge: some View {
         let lit = Int(ceil(max(0, min(100, s.stamina)) / 20))
         let pinch = s.stamina <= 40
-        let col = pinch ? Color(hex: 0xBD3C28) : Color(hex: 0x2E583C)
+        let col = pinch ? Color(hex: 0xD9381E) : Color(hex: 0x2E583C)
         return HStack(spacing: 8) {
             HStack(spacing: 4) {
                 ForEach(0..<5, id: \.self) { i in
@@ -1033,15 +1045,18 @@ struct WeekMainView: View {
     private func lantern(on: Bool, color: Color, pulse: Bool) -> some View {
         TimelineView(.animation(minimumInterval: 1.0 / 20, paused: !pulse)) { ctx in
             let a = pulse ? 0.65 + 0.35 * sin(ctx.date.timeIntervalSinceReferenceDate * 5) : 1
+            // 提灯: 上下の張木（黒）＋角丸の胴＋和紙の縦ハイライト。消灯は煤けた灰。
             VStack(spacing: 0) {
-                Rectangle().fill(Color(hex: 0x2B2B2B)).frame(width: 8, height: 2).overlay(Rectangle().stroke(.white.opacity(0.4), lineWidth: 0.5))
-                Capsule().fill(on ? color : Color.white.opacity(0.14))
-                    .frame(width: 17, height: 20)
-                    .overlay(Capsule().stroke(on ? Color.white.opacity(0.55) : Color.white.opacity(0.3), lineWidth: 1))
-                    .overlay(VStack(spacing: 5) { Rectangle().fill(.black.opacity(on ? 0.25 : 0.12)).frame(height: 1); Rectangle().fill(.black.opacity(on ? 0.25 : 0.12)).frame(height: 1) }.padding(.horizontal, 2))
-                    .shadow(color: on ? color.opacity(0.9 * a) : .clear, radius: pulse ? 5 : 2)
+                Rectangle().fill(Color(hex: 0x1C1917)).frame(width: 14, height: 2).overlay(Rectangle().stroke(.white.opacity(0.3), lineWidth: 0.5))
+                RoundedRectangle(cornerRadius: 4).fill(on ? color : Color(hex: 0x4A453E))
+                    .frame(width: 16, height: 20)
+                    .overlay(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 1).fill(.white.opacity(on ? 0.4 : 0.08)).frame(width: 3, height: 13).padding(.leading, 3)   // 和紙の透け
+                    }
+                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(on ? Color.white.opacity(0.5) : Color.white.opacity(0.18), lineWidth: 1))
+                    .shadow(color: on ? color.opacity(0.8 * a) : .clear, radius: pulse ? 5 : 2)
                     .opacity(on ? a : 1)
-                Rectangle().fill(Color(hex: 0x2B2B2B)).frame(width: 8, height: 2)
+                Rectangle().fill(Color(hex: 0x1C1917)).frame(width: 14, height: 2).overlay(Rectangle().stroke(.white.opacity(0.3), lineWidth: 0.5))
             }
         }
     }

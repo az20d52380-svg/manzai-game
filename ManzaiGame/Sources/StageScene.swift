@@ -27,7 +27,7 @@ struct StageScene: View {
                 posterCard
                     .frame(width: w * 0.115, height: h * 0.14)
                     .rotationEffect(.degrees(2))
-                    .position(x: w * 0.885, y: h * 0.40)
+                    .position(x: w * 0.60, y: h * 0.27)   // 右上の木札（実力/相性）に被らない席へ
 
                 // 4) 板張りの床（明るい木・消失点パース）
                 floorBoards(width: w, height: h - horizon, vanishX: micX)
