@@ -192,7 +192,7 @@ struct TournamentEntryView: View {
             Spacer(minLength: 8)
             // 出場の前に今の体力と所持金が見えるように（遠征費を払えるか・体力を使ってよいかの判断材料）
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
-                              staminaColor: session.state.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
+                              staminaColor: session.state.stamina <= 40 ? YoseColor.shu : Color(hex: 0x3B7A4E))
             VStack(spacing: 10) {
                 // 押せるまま・結果を言葉で明示（ネタ無しでも出られる決まり）
                 if session.selectedNeta == nil || session.state.stamina <= 0 {
@@ -296,7 +296,7 @@ struct StagePreludeView: View {
 
             Spacer(minLength: 8)
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
-                              staminaColor: session.state.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
+                              staminaColor: session.state.stamina <= 40 ? YoseColor.shu : Color(hex: 0x3B7A4E))
             Button {
                 session.advanceAuto()
             } label: {

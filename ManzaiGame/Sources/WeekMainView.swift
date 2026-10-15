@@ -743,7 +743,7 @@ struct WeekMainView: View {
                 if c == .ネタを書く { openNetaWrite = true }
             }
         } label: {
-            let stamp: String? = { switch c { case .ネタを書く: return "square.and.pencil"; case .練習: return "figure.stand"
+            let stamp: String? = { switch c { case .ネタを書く: return "square.and.pencil"; case .練習: return "music.mic"
                                           case .バイト: return "yensign.circle.fill"; case .休む: return "moon.zzz.fill"
                                           case .能力アップ: return "arrow.up.forward.circle.fill"; case .お店: return "bag.fill" } }()
             let urgent = c == .能力アップ && unspentBeforeStage
@@ -1047,7 +1047,7 @@ struct WeekMainView: View {
     private var botbar: some View {
         VStack(spacing: 0) {
             YoseVitalMoneyBar(stamina: Int(s.stamina.rounded()), maxStamina: 100, money: s.money,
-                              staminaColor: s.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
+                              staminaColor: s.stamina <= 40 ? YoseColor.shu : Color(hex: 0x3B7A4E))
                 .opacity(gaugeFlash ? 0.5 : 1)
                 .onChange(of: staminaZone) { old, new in
                     guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）

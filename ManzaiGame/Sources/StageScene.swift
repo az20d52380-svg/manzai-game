@@ -220,22 +220,24 @@ struct ManzaiFigure: View {
 struct CenterMic: View {
     var height: CGFloat = 100
     var body: some View {
-        let headR = height * 0.16
+        // 木版画風のベタ塗り（グラデ球・ぼかし影を使わない）：墨の枠＋灰墨と黒漆のソリッド、上辺に細い白ハイライト
+        let headR = height * 0.17
         VStack(spacing: 0) {
-            Circle()
-                .fill(RadialGradient(colors: [Color(hex: 0xB8B4C8), Color(hex: 0x3A3448)],
-                                     center: UnitPoint(x: 0.35, y: 0.25),
-                                     startRadius: 1, endRadius: headR))
+            Circle().fill(YoseColor.haiSumi)
+                .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 2))
+                .overlay(alignment: .topLeading) {
+                    Capsule().fill(Color.white.opacity(0.55)).frame(width: headR * 0.34, height: 1.5)
+                        .offset(x: headR * 0.22, y: headR * 0.2).rotationEffect(.degrees(-25))
+                }
                 .frame(width: headR, height: headR)
-            RoundedRectangle(cornerRadius: 1.5)
-                .fill(LinearGradient(colors: [Color(hex: 0x6A6480), Color(hex: 0x2E2840)],
-                                     startPoint: .top, endPoint: .bottom))
-                .frame(width: max(3, height * 0.032), height: height * 0.74)
-            Ellipse()
-                .fill(Color(hex: 0x2A2438))
+            Rectangle().fill(YoseColor.kuroUrushi)
+                .overlay(alignment: .leading) { Rectangle().fill(Color.white.opacity(0.4)).frame(width: 1) }
+                .frame(width: max(3, height * 0.034), height: height * 0.74)
+            Ellipse().fill(YoseColor.kuroUrushi)
+                .overlay(Ellipse().stroke(YoseColor.sumi, lineWidth: 1.5))
                 .frame(width: height * 0.30, height: height * 0.09)
         }
-        .shadow(color: Theme.ink.opacity(0.3), radius: 3, x: 3, y: 2)
+        .shadow(color: YoseColor.sumi.opacity(0.28), radius: 0, x: 2, y: 2)   // ハードシャドウ
     }
 }
 
