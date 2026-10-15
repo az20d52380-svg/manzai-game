@@ -99,7 +99,7 @@ struct RootView: View {
                 if ProcessInfo.processInfo.environment["MZ_MODE"] == "short" { st.exp閃き = 2; st.exp語彙 = 3; st.exp間合い = 0.5; st.exp存在感 = 1; st.exp胆力 = 0 }   // 足りない行の目視
                 session = GameSession(startState: st)
             }
-            if ui == "stage" || ui == "juice", session.week <= 1 {
+            if ui == "stage" || ui == "juice", session.week <= 1, session.year == 1 {   // MZ_YEARS 後（2年目）は素の状態へ作り直さない
                 // 舞台シーン目視: 週頭イベント帯（0020[compat0-7]/0021[>=15]/0012[金欠]）を全て外した素の育成メイン
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
                 session = GameSession(startState: st)
