@@ -96,6 +96,7 @@ struct WeekMainView: View {
     @State private var openCat: CommandCategory?
     /// 練習→ネタを書く の下の「どのネタを磨くか」一覧を開いているか
     @State private var openNetaWrite = false
+    @State private var titleDiceStep = 0
     /// 新しいネタの題名入力（nil＝入力欄を閉じている）。空欄で書く＝おまかせの題名
     @State private var newNetaTitle: String?
     /// 「書くネタ」を替える一覧を開いているか
@@ -606,8 +607,20 @@ struct WeekMainView: View {
                       text: Binding(get: { newNetaTitle ?? "" }, set: { newNetaTitle = String($0.prefix(16)) }))
                 .font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi)
                 .submitLabel(.done)
+            if (newNetaTitle ?? "").isEmpty {
+                YoseTag(text: "空欄＝おまかせ", style: .outlineSumi)
+            }
+            Button {
+                titleDiceStep += 1
+                newNetaTitle = NetaCatalog.autoName(forID: s.nextNetaID + titleDiceStep)   // 見た目の候補だけ（乱数は引かない）
+                Haptics.tick()
+            } label: {
+                Label("候補", systemImage: "die.face.5").font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1)
+            }
+            .buttonStyle(YoseButtonStyle(.secondary))
+            .frame(width: 72)
         }
-        .padding(.horizontal, 12).frame(height: 42)
+        .padding(.horizontal, 12).padding(.trailing, -6).frame(height: 54)
         .background(YoseColor.washi)
         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
         .padding(.bottom, 2)
