@@ -6,6 +6,10 @@ import UIKit
 // 393×852pt 基準 / 外部画像ゼロ / 7層レイヤー＋時間軸シーケンス＋1タップ即確定対応
 // ============================================================================
 
+/// 優勝演出の余韻の長さ（秒）。これ以降は光・幕の更新を止め、紙吹雪は新しい粒を出さず落ちきったら止める（CPU 節約）
+let championHoldSeconds: Double = 6.5
+let championSettleSeconds: Double = 13.0
+
 public struct YoseChampionCelebrationView: View {
     public let tournamentName: String      // 例：「頂グランプリ 第4回 大会」
     public let generationText: String      // 例：「第4代 王者」
@@ -672,9 +676,12 @@ private struct ChampionStageBackdropCanvas: View {
     let isLit: Bool
     let startTime: Date
 
+    @State private var frozen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-            let t = timeline.date.timeIntervalSince(startTime)
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: frozen || reduceMotion)) { timeline in
+            let t = reduceMotion ? championHoldSeconds : min(timeline.date.timeIntervalSince(startTime), championHoldSeconds)
             Canvas { context, size in
                 let rect = CGRect(origin: .zero, size: size)
 
@@ -780,6 +787,11 @@ private struct ChampionStageBackdropCanvas: View {
                 )
             }
         }
+        .task {
+            let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            frozen = true
+        }
     }
 }
 
@@ -790,9 +802,12 @@ private struct ChampionStageBackdropCanvas: View {
 private struct ChampionGoldenHaloCanvas: View {
     let startTime: Date
 
+    @State private var frozen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-            let t = timeline.date.timeIntervalSince(startTime)
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: frozen || reduceMotion)) { timeline in
+            let t = reduceMotion ? championHoldSeconds : min(timeline.date.timeIntervalSince(startTime), championHoldSeconds)
             Canvas { context, size in
                 let center = CGPoint(x: size.width / 2, y: size.height * 0.36)
                 let maxR = hypot(size.width, size.height) * 0.62
@@ -877,6 +892,11 @@ private struct ChampionGoldenHaloCanvas: View {
                 }
             }
         }
+        .task {
+            let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            frozen = true
+        }
     }
 }
 
@@ -888,11 +908,14 @@ private struct ChampionCannonAndConfettiCanvas: View {
     let startTime: Date
     let foregroundLayer: Bool // false: 看板の奥を舞う120枚＋金テープ / true: 看板の手前を横切る大粒40枚
 
+    @State private var frozen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-            let elapsed = max(0, timeline.date.timeIntervalSince(startTime) - 0.28)
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: frozen || reduceMotion)) { timeline in
+            let elapsed = max(0, min(timeline.date.timeIntervalSince(startTime), championHoldSeconds + championSettleSeconds) - 0.28)
             Canvas { context, size in
-                guard elapsed > 0 else { return }
+                guard elapsed > 0, !reduceMotion else { return }
 
                 // A. 奥レイヤーのみ：左右下方のキャノン砲から噴き上がる金・朱の放物線テープ（36本）
                 if !foregroundLayer {
@@ -950,7 +973,12 @@ private struct ChampionCannonAndConfettiCanvas: View {
                     let seed = Double(i + (foregroundLayer ? 500 : 0)) * 2.71828
                     let speedY = (foregroundLayer ? 135.0 : 80.0) + fmod(seed * 53.0, 95.0)
                     let startY = -fmod(seed * 113.0, Double(size.height))
-                    let y = CGFloat(fmod(startY + elapsed * speedY + Double(size.height), Double(size.height + 80))) - 40
+                    let totalH = Double(size.height + 80)
+                    // 余韻の後は新しい周回に入った粒を出さない（残りが落ちきれば何も描かれない）
+                    let endCycle = floor((startY + (championHoldSeconds - 0.28) * speedY + Double(size.height)) / totalH)
+                    let nowCycle = floor((startY + elapsed * speedY + Double(size.height)) / totalH)
+                    if nowCycle > endCycle { continue }
+                    let y = CGFloat(fmod(startY + elapsed * speedY + Double(size.height), totalH)) - 40
 
                     let baseX = fmod(seed * 211.0, Double(size.width))
                     let swayX = sin(elapsed * 2.6 + seed) * (foregroundLayer ? 28.0 : 16.0)
@@ -971,6 +999,11 @@ private struct ChampionCannonAndConfettiCanvas: View {
                     c.stroke(Path(pieceRect), with: .color(YoseColor.sumi.opacity(0.55)), lineWidth: 0.7)
                 }
             }
+        }
+        .task {
+            let rest = championHoldSeconds + championSettleSeconds - Date().timeIntervalSince(startTime)
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            frozen = true
         }
     }
 }

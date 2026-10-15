@@ -340,7 +340,10 @@ extension View {
 struct YoseConfettiView: View {
     var isActive: Bool = true
     var pieceCount: Int = 56
+    /// 余韻の長さ（秒）。これ以降は新しい粒を出さず、残りが落ちきったら描画更新を止める（CPU 節約）
+    var settleAfter: Double = 6.5
 
+    @State private var frozen = false
     @State private var startDate = Date()
     @State private var pieces: [ConfettiPiece] = []
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -366,13 +369,16 @@ struct YoseConfettiView: View {
     @ViewBuilder private var decorativeBody: some View {
         Group {
             if isActive && !reduceMotion {
-                TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
+                TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: frozen)) { timeline in
                     Canvas { context, size in
-                        let elapsed = timeline.date.timeIntervalSince(startDate)
+                        let elapsed = min(timeline.date.timeIntervalSince(startDate), settleAfter + 10)
                         let totalH = size.height + 80
 
                         for piece in pieces {
                             let rawY = piece.initialYOffset + CGFloat(elapsed) * piece.fallSpeed
+                            let endRawY = piece.initialYOffset + CGFloat(settleAfter) * piece.fallSpeed
+                            // 余韻の後は新しい周回に入った粒を出さない（残りが落ちきれば何も描かれない）
+                            if floor(rawY / totalH) > floor(endRawY / totalH) { continue }
                             let y = rawY.truncatingRemainder(dividingBy: totalH) - 40
                             let sway = sin(elapsed * piece.swayFreq + Double(piece.initialXRatio * 10)) * Double(piece.swayAmp)
                             let x = piece.initialXRatio * size.width + CGFloat(sway)
@@ -395,6 +401,10 @@ struct YoseConfettiView: View {
                             c.stroke(Path(rect), with: .color(YoseColor.sumi.opacity(0.65)), lineWidth: 0.8)
                         }
                     }
+                }
+                .task {
+                    try? await Task.sleep(nanoseconds: UInt64((settleAfter + 10) * 1_000_000_000))
+                    frozen = true
                 }
                 .onAppear {
                     startDate = Date()

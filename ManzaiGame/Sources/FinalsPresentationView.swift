@@ -1323,9 +1323,13 @@ private struct SeededRng {
 
 /// 優勝の放射光（金の光条がゆっくり回る・テレビの優勝カットの背景）
 private struct RaysView: View {
+    @State private var startDate = Date()
+    @State private var frozen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { tl in
-            let t = tl.date.timeIntervalSinceReferenceDate
+        // 余韻（6.5秒）の後は回転を止めて最後の絵のまま静止（CPU 節約）
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: frozen || reduceMotion)) { tl in
+            let t = reduceMotion ? 0 : min(tl.date.timeIntervalSince(startDate), 6.5)
             Canvas { ctx, size in
                 let c = CGPoint(x: size.width / 2, y: size.height * 0.42)
                 let r = max(size.width, size.height)
@@ -1341,6 +1345,10 @@ private struct RaysView: View {
                 }
             }
         }
+        .task {
+            try? await Task.sleep(nanoseconds: 6_600_000_000)
+            frozen = true
+        }
     }
 }
 
@@ -1348,15 +1356,22 @@ private struct RaysView: View {
 private struct ConfettiView: View {
     private let pieces = 30
     private let palette: [Color] = [YoseColor.kinBright, YoseColor.shu, YoseColor.washi]
+    @State private var startDate = Date()
+    @State private var frozen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
+        // 余韻（6.5秒）の後は新しい粒を出さず、落ちきったら描画を止める（CPU 節約）
+        TimelineView(.animation(paused: frozen || reduceMotion)) { timeline in
+            let t = min(timeline.date.timeIntervalSince(startDate), 6.5 + 10)
             Canvas { ctx, size in
+                guard !reduceMotion else { return }
                 for i in 0..<pieces {
                     let seed = Double(i)
                     let x = (sin(seed * 12.9898) * 0.5 + 0.5) * size.width
                     let speed = 42 + (i % 5) * 14
-                    let y = (Double(speed) * t + seed * 47).truncatingRemainder(dividingBy: Double(size.height + 40)) - 20
+                    let totalH = Double(size.height + 40)
+                    if floor((Double(speed) * t + seed * 47) / totalH) > floor((Double(speed) * 6.5 + seed * 47) / totalH) { continue }
+                    let y = (Double(speed) * t + seed * 47).truncatingRemainder(dividingBy: totalH) - 20
                     let rot = t * 2 + seed
                     let c = palette[i % palette.count]
                     var rect = Path(CGRect(x: -4, y: -6, width: 8, height: 12))
@@ -1364,6 +1379,10 @@ private struct ConfettiView: View {
                     ctx.fill(rect, with: .color(c.opacity(0.9)))
                 }
             }
+        }
+        .task {
+            try? await Task.sleep(nanoseconds: 16_600_000_000)
+            frozen = true
         }
     }
 }
