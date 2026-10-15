@@ -33,4 +33,18 @@ final class RiftTests: XCTestCase {
         XCTAssertTrue(GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config))
         XCTAssertEqual(s.dissolved, true)
     }
+
+    func testRiftWarningChoices() {
+        let config = GameConfig()
+        let cs = ChoiceEventTable.choices(for: .riftWarning, config: config)
+        XCTAssertEqual(cs.map(\.id), ["A", "B"])
+        var s = GameState(config: config); s.rift = 55; s.stamina = 80
+        for e in cs[0].effects { s.applyEventEffect(e, config: config) }
+        XCTAssertEqual(s.rift ?? 0, 25, accuracy: 1e-9)
+        XCTAssertEqual(s.stamina, 70, accuracy: 1e-9)
+        var t = GameState(config: config); t.rift = 10
+        for e in cs[0].effects { t.applyEventEffect(e, config: config) }
+        XCTAssertEqual(t.rift ?? 0, 0, accuracy: 1e-9)   // 下限0
+        XCTAssertTrue(cs[1].effects.isEmpty)
+    }
 }

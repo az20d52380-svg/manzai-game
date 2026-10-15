@@ -67,6 +67,10 @@ final class GameSession {
     private(set) var didFireLostRehearsal = false
     private(set) var didFirePassFork = false
     private(set) var didFireEve = false
+    /// 0050「会わない週が続いた」（途中解散の予告）を出したか。キャリア1回（docs/endings_spec_v1 §2-3）
+    private(set) var didFireRiftWarn = false
+    /// 予告で選んだもの："A"＝向き合った／"B"＝流した／nil＝予告なし（#2 解散の一行と図鑑に使う・表示専用・golden非対象）
+    private(set) var riftWarnChoice: String?
     // --- 週次ランダムイベント（UI層抽選・golden非干渉。runner.rng とは別インスタンスの独立乱数列） ---
     /// 発火抽選に使う UI 専用乱数。runner が消費する乱数列には一切食い込まない＝3年 golden 不変。
     private var uiEventRng = SplitMix64(seed: 424242)   // init で seed 由来値に上書き
@@ -223,6 +227,8 @@ final class GameSession {
         self.didFireLostRehearsal = save.didFireLostRehearsal ?? false
         self.didFirePassFork = save.didFirePassFork ?? false
         self.didFireEve = save.didFireEve ?? false
+        self.didFireRiftWarn = save.didFireRiftWarn ?? false
+        self.riftWarnChoice = save.riftWarnChoice
         self.didWatchFinal = save.didWatchFinal ?? false
         self.debtWarnTier = save.debtWarnTier ?? 0
         checkSpectatorFinal()
@@ -443,7 +449,11 @@ final class GameSession {
         // 目視用：MZ_NOEVENT=1 で選択イベントを発火させない（MZ_UI=grown が起動直後にイベントで隠れた）。本導線は不変
         if ProcessInfo.processInfo.environment["MZ_NOEVENT"] != nil { return }
         #endif
-        if justLostStage, !didFireLostRehearsal {
+        if state.riftWarned == true, !didFireRiftWarn {
+            // 0050: 週末に riftWarned が初めて true になった週の次の週頭（決定的フラグ・抽選なし・キャリア1回）
+            pendingChoiceEvent = .riftWarning
+            didFireRiftWarn = true
+        } else if justLostStage, !didFireLostRehearsal {
             pendingChoiceEvent = .justLostRehearsal
             didFireLostRehearsal = true
         } else if lossStreak >= 3, !styleTalkDone {
@@ -616,6 +626,7 @@ final class GameSession {
         case .justLostRehearsal: justLostStage = false
         case .styleTalk: styleTalkDone = true
         case .justPassedFork: justPassedStage = false
+        case .riftWarning: riftWarnChoice = choiceID   // 0050: 何を選んだか（#2 の一行の差し替え・図鑑）。発火時に didFireRiftWarn 済み
         case .preTournamentEve: break   // 週送りで weeksLeft==1 の条件が自然に外れる＝追加フラグ不要
         case .tsuukaBreak: didFireTsuukaChoice = true
         case .earlyFormality: didFireEarlyFormality = true
@@ -832,12 +843,14 @@ final class GameSession {
         let prize: Int
         /// その年GPに出たか（エントリー費が払えず出られない年がある）。nil＝旧セーブ（出た扱い）。表示専用
         var enteredGP: Bool? = nil
+        /// 途中解散でキャリアが終わった年。nil＝旧セーブ（解散なし）。年表に「解散」の行を出す（表示専用）
+        var dissolved: Bool? = nil
     }
 
-    /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／結成 careerYears 年目の年末）
+    /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／解散／結成 careerYears 年目の年末）
     var careerOver: Bool {
         guard let o = outcome else { return false }
-        return o.champion || o.bankrupt || year >= config.careerYears
+        return o.champion || o.bankrupt || o.dissolved || year >= config.careerYears
     }
 
     /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
@@ -925,6 +938,8 @@ final class GameSession {
         var debtWarnTier: Int?
         var myName: String?        // 自分の名前（旧セーブ＝nil＝俺）
         var partnerName: String?   // 相方の名前（旧セーブ＝nil＝谷口）
+        var didFireRiftWarn: Bool? // 途中解散の予告を出したか（旧セーブ＝nil＝まだ）
+        var riftWarnChoice: String? // 予告の選択 "A"/"B"（旧セーブ＝nil）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -972,7 +987,8 @@ final class GameSession {
                             didFireLostRehearsal: didFireLostRehearsal, didFirePassFork: didFirePassFork,
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
                             yearStartState: yearStartState, yearHistory: yearHistory,
-                            debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName)
+                            debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName,
+                            didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice)
         do {
             let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)
@@ -1042,7 +1058,8 @@ final class GameSession {
                                                   bankrupt: outcome.bankrupt,
                                                   prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0),
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
-                                                      || log.contains { $0.contains(config.calendar.gpRoundNames.first ?? "GP1回戦") }))
+                                                      || log.contains { $0.contains(config.calendar.gpRoundNames.first ?? "GP1回戦") },
+                                                  dissolved: outcome.dissolved ? true : nil))
                 }
                 if outcome.champion {
                     // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）

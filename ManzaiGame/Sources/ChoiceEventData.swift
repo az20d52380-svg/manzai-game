@@ -52,6 +52,7 @@ enum ChoiceEventData {
         case .wroteOneTonight: return wroteOneTonight
         case .taniguchiShortJob: return taniguchiShortJob
         case .photoShootOffer: return photoShootOffer
+        case .riftWarning: return riftWarning
         case .kouhaiInvite: return kouhaiInvite
         case .senpaiAllNight: return senpaiAllNight
         case .stageCrewChairs: return stageCrewChairs
@@ -508,6 +509,32 @@ enum ChoiceEventData {
 
     // MARK: - 相方以外の人とのイベント（docs/choice_events_others_v1.md・2026-10-15 オーナー指示）
     //   第三者は標準語・谷口は関西弁。正典v3（ボケない・日常会話）＋研究 research_event_fun_v0 §4 案A（固有物1つ＋人柄1つ・選択後は反応で返す）。
+
+    // MARK: 0050 会わない週が続いた（途中解散の予告・docs/endings_spec_v1.md §4 逐語。採番は 0041 が使用済みのため 0050）
+
+    private static let riftWarning = ChoiceEventText(
+        title: "会わない週が続いた",
+        setup: [
+            Advice(name: nil, text: "夜。アパートの前。"),
+            Advice(name: "谷口", text: "近く通ったから寄ってん。最近、全然会うてへんな"),
+            Advice(name: "俺", text: "そうだな。バイトが続いてた"),
+            Advice(name: "谷口", text: "俺もや。……なあ、俺らこのままでええんかな"),
+        ],
+        choiceLabels: [
+            "A": "部屋に上がってもらい、夜通し話す",
+            "B": "今夜は遅いので、また今度にする",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "上がってくれ。ちゃんと話そう"),
+                Advice(name: "谷口", text: "うん。言いたいこと、たまってたんや"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今日はもう遅い。また今度な"),
+                Advice(name: "谷口", text: "……そうか。ほな、来週の水曜は空けといてな"),
+            ],
+        ]
+    )
 
     // MARK: 0041 後輩の誘い
 
