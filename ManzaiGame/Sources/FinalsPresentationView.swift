@@ -95,6 +95,10 @@ struct FinalsPresentationView: View {
             StageFrame(mode: stageMode, performers: stagePerformers,
                        floorTop: beat == .lot ? 0.60 : (beat == .result ? 0.62 : (beat == .perform ? 0.58 : 0.56)))
                 .animation(.easeInOut(duration: 0.5), value: beat)
+            if beat == .perform {   // ネタ中：舞台袖のめくり（コンビ名）
+                VStack { Spacer(); HStack { Spacer(); StageMakuri(name: spectator ? "客席" : session.combiName).padding(.trailing, 20) }.padding(.bottom, 190) }
+                    .allowsHitTesting(false)
+            }
             if celebrate && d.champion {
                 // 金の放射光と紙吹雪は自組の優勝の夜だけ（他組の優勝・決勝敗退には降らない・A2 §3-B2）
                 RaysView().ignoresSafeArea().allowsHitTesting(false)

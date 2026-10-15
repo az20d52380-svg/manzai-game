@@ -18,7 +18,7 @@ struct S6bView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Theme.curtain, Theme.curtainShade], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            LinearGradient(colors: [YoseColor.enji, YoseColor.kuroUrushi], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
             switch phase {
             case .kougyou: kougyou.transition(.opacity)
             case .montage:
@@ -36,54 +36,69 @@ struct S6bView: View {
 
     @State private var counted = false
     private var kougyou: some View {
-        VStack(spacing: Theme.Sp.s24) {
-            Spacer()
-            // 名ビラ＝生成りの紙に墨の寄席文字。金の二重縁
-            VStack(spacing: 14) {
-                Text("千秋楽").font(.maru(52, weight: .black)).tracking(8).foregroundStyle(Theme.sumi)
-                    .shadow(color: Theme.goldLeafHi, radius: 0, x: 2, y: 2)
-                Rectangle().fill(Theme.verm).frame(height: 3).padding(.horizontal, 24)
-                Text("\(session.combiName)　最後の舞台").font(.maru(14, weight: .bold)).foregroundStyle(Theme.sumi.opacity(0.8))
-                VStack(spacing: 2) {
-                    Text("残　金").font(.maru(11, weight: .bold)).tracking(4).foregroundStyle(Theme.inkDim)
-                    Text(Yen.text(counted ? 0 : max(0, s.money)))
-                        .font(.maru(34, weight: .black)).monospacedDigit().foregroundStyle(Theme.curtain)
-                        .contentTransition(.numericText())
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            // 千秋楽の興行ビラ（和紙の地・金と朱の二重枠・墨のハードシャドウ）
+            VStack(spacing: 12) {
+                Text("千 秋 楽").font(YoseFont.mincho(44)).foregroundStyle(YoseColor.sumi)
+                    .shadow(color: YoseColor.kin, radius: 0, x: 2, y: 2)
+                HStack(spacing: 8) {
+                    Rectangle().fill(YoseColor.shu).frame(height: 2)
+                    Rectangle().fill(YoseColor.shu).frame(width: 6, height: 6).rotationEffect(.degrees(45))
+                    Rectangle().fill(YoseColor.shu).frame(height: 2)
                 }
-                Text(venueName).font(.maru(22, weight: .black)).tracking(3).foregroundStyle(.white)
-                    .padding(.horizontal, 22).padding(.vertical, 6)
-                    .background(Theme.verm)
-                    .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
+                .padding(.horizontal, 20)
+                Text("\(session.combiName)　最後の舞台").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                // 最終到達舞台（4段階のうち、どこまで来たか）
+                VStack(spacing: 6) {
+                    Text("最終到達舞台").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
+                    Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
+                    HStack(spacing: 4) {
+                        ForEach(0..<4, id: \.self) { t in
+                            YoseTag(text: Self.venueNames[t], style: t == venueTier ? .solidEnji : .outlineSumi)
+                                .opacity(t <= venueTier ? 1 : 0.5)
+                        }
+                    }
+                }
+                .padding(.vertical, 12).frame(maxWidth: .infinity)
+                .yoseKifuda()
+                // 所持金を舞台に懸ける＝残金が減って0になる（元の額を一拍見せてから）
+                VStack(spacing: 4) {
+                    Text("所持金を全額、最後の舞台に懸ける").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                    HStack(spacing: 10) {
+                        VStack(spacing: 0) {
+                            Text("所持金").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                            Text(Yen.text(max(0, s.money))).font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                                .lineLimit(1).minimumScaleFactor(0.6)
+                        }
+                        Image(systemName: "arrowtriangle.right.fill").font(.system(size: 14)).foregroundStyle(YoseColor.shu)
+                        VStack(spacing: 0) {
+                            Text("残金").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
+                            Text(Yen.text(counted ? 0 : max(0, s.money)))
+                                .font(YoseFont.numLarge).monospacedDigit().foregroundStyle(YoseColor.shu)
+                                .contentTransition(.numericText())
+                        }
+                    }
+                }
             }
-            .padding(.vertical, 28).padding(.horizontal, 20)
+            .padding(.vertical, 24).padding(.horizontal, 20)
             .frame(maxWidth: .infinity)
-            .background(Color(hex: 0xFBF3E2))
-            .overlay(Rectangle().stroke(Theme.goldLeafHi, lineWidth: 3))
-            .overlay(Rectangle().stroke(Theme.goldLeafMid, lineWidth: 1).padding(7))
-            .padding(.horizontal, 28)
-            venue.frame(height: 110)
-            Spacer()
-            Text("タップで進む").font(.maru(11)).foregroundStyle(Theme.goldLeafHi.opacity(0.8)).padding(.bottom, Theme.Sp.s24)
+            .background(YoseColor.washi)
+            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3))
+            .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5).padding(6))
+            .background(alignment: .bottom) { Rectangle().fill(YoseColor.kuroUrushi).offset(y: 5) }
+            .padding(.horizontal, 20)
+            Spacer(minLength: 0)
+            Button { advance(.montage) } label: { Text("最後の舞台へ上がる ▶") }
+                .buttonStyle(YoseButtonStyle(.primary))
+                .padding(.horizontal, 20).padding(.bottom, 28)
         }
-        .contentShape(Rectangle()).onTapGesture { advance(.montage) }
         // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
         .onAppear { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
     }
 
-    // 会場カット（客電の粒＝客席の埋まり。規模で粒数）
-    private var venue: some View {
-        let tier = venueTier
-        let rows = 4 + tier * 2, cols = 8 + tier * 3
-        return VStack(spacing: 4) {
-            ForEach(0..<rows, id: \.self) { _ in
-                HStack(spacing: 4) {
-                    ForEach(0..<cols, id: \.self) { _ in
-                        Circle().fill(Theme.goldLeafHi.opacity(0.7)).frame(width: 3, height: 3)
-                    }
-                }
-            }
-        }
-    }
+    private static let venueNames = ["町の劇場", "ホール", "アリーナ", "ドーム"]
 
     private var venueTier: Int {   // 残金帯4段階（GameConfig集約・数値は全て【仮】）
         let c = session.config
@@ -94,7 +109,7 @@ struct S6bView: View {
         default: return 3                      // ドーム
         }
     }
-    private var venueName: String { ["町の劇場", "ホール", "アリーナ", "ドーム"][venueTier] }
+    private var venueName: String { Self.venueNames[venueTier] }
 
     // MARK: ② モンタージュ用カード
 
