@@ -41,7 +41,7 @@ struct YearResultView: View {
             }
             .overlay(alignment: .bottom) {   // まだ下に続く合図（見出しがフッターで切れて見えない）
                 VStack(spacing: 0) {
-                    LinearGradient(colors: [YoseColor.kinari.opacity(0), YoseColor.kinari], startPoint: .top, endPoint: .bottom).frame(height: 22)
+                    LinearGradient(colors: [YoseColor.kinari.opacity(0), YoseColor.kinari], startPoint: .top, endPoint: .bottom).frame(height: 40)
                     Text("▼ 下にも続きます").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                         .frame(maxWidth: .infinity).padding(.bottom, 3).background(YoseColor.kinari)
                 }
@@ -125,7 +125,8 @@ struct YearResultView: View {
         Text(g).font(YoseFont.gothic(15, weight: .black))
             .foregroundStyle(g == "S" ? YoseColor.sumi : (dim && !up ? YoseColor.haiSumi : YoseColor.kinari))
             .frame(width: 28, height: 24)
-            .background(g == "S" ? YoseColor.kin : (up ? YoseColor.shu : (dim ? YoseColor.ginNezu : YoseColor.enji)))   // 上がった行だけ朱。変わらない行は鈍色
+            .background(g == "S" ? YoseColor.kinBright : (up ? YoseColor.shu : (dim ? YoseColor.ginNezu : YoseColor.enji)))   // 上がった行だけ朱。変わらない行は鈍色
+            .overlay(alignment: .top) { if g == "S" { Rectangle().fill(.white.opacity(0.4)).frame(height: 2).padding(.horizontal, 1.5).padding(.top, 1.5) } }
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
     }
 
