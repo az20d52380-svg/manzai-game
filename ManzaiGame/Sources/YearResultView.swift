@@ -22,27 +22,33 @@ struct YearResultView: View {
     @State private var confettiFire = 0
 
     var body: some View {
-        ScrollView {
-            // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
-            VStack(spacing: Theme.Sp.s16) {
-                yearBadge.stagger(0, appear)
-                reachStamp.stagger(1, appear)
-                gradeLadder.stagger(2, appear)
-                historyBlock.stagger(2, appear)
-                totalsBlock.stagger(3, appear)
-                eventsBlock.stagger(4, appear)
-                yearEndMonolog.stagger(5, appear)
-                restartButton.stagger(6, appear)
-                breakdownBlock.stagger(7, appear)
-                radarBlock.stagger(8, appear)
+        VStack(spacing: 0) {
+            YoseHeaderBar(title: "\(session.year)年目 年末総決算", subtitle: session.combiName)
+            ScrollView {
+                // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
+                VStack(spacing: 12) {
+                    reachStamp.stagger(1, appear)
+                    gradeLadder.stagger(2, appear)
+                    totalsBlock.stagger(3, appear)
+                    historyBlock.stagger(3, appear)
+                    eventsBlock.stagger(4, appear)
+                    yearEndMonolog.stagger(5, appear)
+                    breakdownBlock.stagger(7, appear)
+                    radarBlock.stagger(8, appear)
+                }
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 14)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, Theme.Sp.s24).padding(.vertical, Theme.Sp.s32)
-            .frame(maxWidth: .infinity)
+            // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
+            restartButton.stagger(6, appear)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 6)
+                .background(YoseColor.kinari)
+                .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
         }
-        .background(Theme.kinari.ignoresSafeArea())
+        .background(YoseColor.kinari.ignoresSafeArea())
         .overlay {
             // 優勝の年だけ、判と同時に金の紙吹雪（年に1度の祝い）
-            ParticleBurst(trigger: confettiFire, colors: [Theme.gold, Theme.verm, .white, Color(hex: 0xFFE07A)],
+            ParticleBurst(trigger: confettiFire, colors: [YoseColor.kinBright, YoseColor.shu, YoseColor.washi, YoseColor.kin],
                           style: .confetti, count: 54, origin: UnitPoint(x: 0.5, y: 0.18))
         }
         .onAppear {
@@ -55,48 +61,64 @@ struct YearResultView: View {
         }
     }
 
+    private func abilityColor(_ a: Ability) -> Color {
+        switch a {
+        case .センス: return YoseColor.expGo
+        case .発想: return YoseColor.expSen
+        case .表現: return YoseColor.expMa
+        case .華: return YoseColor.expSon
+        case .メンタル: return YoseColor.expTan
+        }
+    }
+
+    /// 木札の見出し（黒漆に消金）
+    private func sectionLabel(_ t: String) -> some View {
+        Text(t).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
+            .padding(.horizontal, 10).frame(height: 24)
+            .background(YoseColor.kuroUrushi)
+    }
+
     // MARK: 等級の段（4月→いま・G5）
 
     /// 5能力の 4月の等級 → いまの等級 と、次の等級までの進み。上がった能力は金の縁と「↑」。等級は表示写像だけ（Theme.rank）
     private var gradeLadder: some View {
         let base = session.yearStartState
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
-        return VStack(alignment: .leading, spacing: 9) {
-            Text("この1年で育ったもの").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+        return VStack(alignment: .leading, spacing: 8) {
+            sectionLabel("この1年で育ったもの")
             ForEach(order, id: \.self) { a in
                 let from = Theme.rank(base[a]), to = Theme.rank(s[a])
                 let up = from != to
                 let cap = a == .メンタル ? session.config.mentalCap : session.config.abilityCap
-                HStack(spacing: 10) {
-                    AbilityBadge(ability: a, size: 22)
-                    Text("\(a)").font(.maru(.sub)).foregroundStyle(Theme.ink).frame(width: 56, alignment: .leading)
+                HStack(spacing: 8) {
+                    Text(String("\(a)".prefix(1))).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(.white)
+                        .frame(width: 18, height: 18).background(abilityColor(a))
+                    Text("\(a)").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        .frame(width: 54, alignment: .leading).lineLimit(1).minimumScaleFactor(0.7)
                     gradeChip(from, dim: true)
-                    Image(systemName: "arrow.right").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.inkSub)
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: 9)).foregroundStyle(YoseColor.shu)
                     gradeChip(to, dim: false)
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(Theme.abilityColor(a).opacity(0.14))
-                            Capsule().fill(Theme.abilityColor(a))
-                                .frame(width: geo.size.width * Theme.rankProgress(s[a], cap: cap))
-                        }
-                    }
-                    .frame(height: 9)
-                    Text(up ? "↑" : " ").font(.maru(.sub)).foregroundStyle(Theme.goldDeep).frame(width: 14)
+                    YoseGauge(value: Theme.rankProgress(s[a], cap: cap), total: 1, fill: abilityColor(a), height: 12)
+                    Text(up ? "↑" : " ").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.shu).frame(width: 14)
                 }
-                .padding(.horizontal, 10).padding(.vertical, 6)
-                .background(up ? Color(hex: 0xFFF6DD) : .clear, in: RoundedRectangle(cornerRadius: 9))
-                .overlay(RoundedRectangle(cornerRadius: 9).stroke(up ? Theme.gold : .clear, lineWidth: 2))
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(up ? YoseColor.kinBright.opacity(0.16) : Color.clear)
+                .overlay(Rectangle().stroke(up ? YoseColor.kin : Color.clear, lineWidth: 1.5))
             }
         }
-        .padding(Theme.Sp.s16)
-        .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-        .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
+    /// 等級の角章（開始時は薄く・いまは濃く。Sだけ消金の地）
     private func gradeChip(_ g: String, dim: Bool) -> some View {
-        Text(g).font(.maru(17, weight: .black)).foregroundStyle(.white)
-            .frame(width: 30, height: 26)
-            .background(Theme.gradeColor(g).opacity(dim ? 0.55 : 1), in: RoundedRectangle(cornerRadius: 6))
+        Text(g).font(YoseFont.gothic(15, weight: .black))
+            .foregroundStyle(g == "S" ? YoseColor.sumi : (dim ? YoseColor.haiSumi : YoseColor.kinari))
+            .frame(width: 28, height: 24)
+            .background(g == "S" ? YoseColor.kin : (dim ? YoseColor.ginNezu : YoseColor.enji))
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
     }
 
     // MARK: これまで（1年＝1行・2年目以降だけ）
@@ -105,26 +127,22 @@ struct YearResultView: View {
     @ViewBuilder private var historyBlock: some View {
         if session.yearHistory.count >= 2 {
             VStack(alignment: .leading, spacing: 6) {
-                Text("これまでの頂グランプリ").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                sectionLabel("これまでの頂グランプリ")
                 ForEach(session.yearHistory, id: \.year) { r in
                     let label = Self.reachLabel(r, names: session.config.calendar.gpRoundNames)
                     HStack(spacing: 10) {
-                        Text("\(r.year)年目").font(.maru(.sub)).monospacedDigit().foregroundStyle(Theme.inkSub)
+                        Text("\(r.year)年目").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
-                        Text(label).font(.maru(.sub)).foregroundStyle(r.champion || r.reachedFinal ? Theme.goldDeep : Theme.ink)
+                        Text(label).font(YoseFont.mincho(15)).foregroundStyle(r.champion || r.reachedFinal ? YoseColor.shu : YoseColor.sumi)
                         Spacer()
-                        if r.year == session.year {
-                            Text("今年").font(.maru(.sub)).foregroundStyle(.white)
-                                .padding(.horizontal, 7).padding(.vertical, 2)
-                                .background(Theme.vermD, in: Capsule())
-                        }
+                        if r.year == session.year { YoseTag(text: "今年", style: .solidEnji) }
                     }
                 }
             }
-            .padding(Theme.Sp.s16)
+            .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: Theme.Rad.card).fill(Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-            .overlay(RoundedRectangle(cornerRadius: Theme.Rad.card).stroke(Theme.line, lineWidth: 2.5))
+            .yoseHarigami()
+            .padding(.bottom, 2)
         }
     }
 
@@ -138,115 +156,116 @@ struct YearResultView: View {
         return "準決勝敗退"
     }
 
-    // MARK: 年目バッジ
-
-    private var yearBadge: some View {
-        VStack(spacing: 2) {
-            Text(session.combiName).font(.maru(.title)).foregroundStyle(Theme.ink)
-            Text("\(session.year)年目 ・ 年次リザルト").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
-        }
-    }
-
-    // MARK: 到達段階の判
+    // MARK: 到達段階の額縁（左に朱印・右に到達の説明）
 
     private var reachStamp: some View {
         let (text, passed) = reach()
-        let c = passed ? Theme.verm : Theme.ink
-        return VStack(spacing: 6) {
-            Text(text)
-                .font(.maru(.display)).foregroundStyle(.white)
-                .padding(.horizontal, 24).padding(.vertical, 8)
-                .background(c, in: RoundedRectangle(cornerRadius: Theme.Rad.stamp))
-                .rotationEffect(.degrees(-4))
-                .scaleEffect(stampIn ? 1 : 1.3)
-                .opacity(stampIn ? 1 : 0)
-            Text(reachSub()).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+        return HStack(spacing: 14) {
+            YoseHankoStamp(text: text, isSquare: true, angle: -4).scaleEffect(1.25)
+                .padding(.leading, 14).padding(.trailing, 4)
+                .scaleEffect(stampIn ? 1 : 1.6).opacity(stampIn ? 1 : 0)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(session.year)年目 ・ 年次リザルト").font(YoseFont.gothic(11, weight: .heavy))
+                    .foregroundStyle(passed ? YoseColor.kin : YoseColor.ginNezu)
+                Text(reachSub()).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinari)
+                    .lineLimit(2).minimumScaleFactor(0.7).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
         }
+        .padding(.vertical, 18).padding(.trailing, 12)
+        .frame(maxWidth: .infinity)
+        .background(YoseColor.kuroUrushi)
+        .overlay(Rectangle().stroke(passed ? YoseColor.kin : YoseColor.haiSumi, lineWidth: 3))
+        .overlay(Rectangle().stroke(passed ? YoseColor.shu : YoseColor.sumi, lineWidth: 1.5).padding(6))
+        .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: 4) }
+        .padding(.bottom, 4)
     }
 
     // MARK: レーダー重ね
 
     private var radarBlock: some View {
         VStack(spacing: 4) {
+            sectionLabel("年初と現在").frame(maxWidth: .infinity, alignment: .leading)
             RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.yearStartState, config: session.config))
                 .frame(height: 210)
             HStack(spacing: 12) {
-                legendDot(Theme.inkFaint, "年初", dashed: true)
-                legendDot(Theme.verm, "現在", dashed: false)
+                legendDot(YoseColor.haiSumi, "年初", dashed: true)
+                legendDot(YoseColor.shu, "現在", dashed: false)
             }
-            .font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+            .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
-        .padding(Theme.Sp.s16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e2()
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
     // MARK: 48週 行動内訳色帯
 
     private var breakdownBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("この1年の使い方").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+            sectionLabel("この1年の使い方")
             ActionBreakdownBand(weeks: session.config.weeks, categoryByWeek: session.categoryLog)
             HStack(spacing: 10) {
                 ForEach([BandCategory.keiko, .baito, .kaifuku, .taikai], id: \.label) { cat in
                     HStack(spacing: 4) {
-                        Circle().fill(cat.color).frame(width: 7, height: 7)
-                        Text(cat.label).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                        Rectangle().fill(cat.color).frame(width: 8, height: 8)
+                        Text(cat.label).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     }
                 }
             }
         }
-        .padding(Theme.Sp.s16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e2()
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
     // MARK: 出来事3行（大会結果のみ）
 
     private var eventsBlock: some View {
         let lines = Array(session.log.suffix(3))
-        return VStack(alignment: .leading, spacing: 5) {
-            Text("出来事").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+        return VStack(alignment: .leading, spacing: 6) {
+            sectionLabel("出来事")
             if lines.isEmpty {
-                Text("今年は、大会に出なかった。").font(.maru(.bodyMedium)).foregroundStyle(Theme.inkSub)
+                Text("今年は、大会に出なかった。").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
             } else {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                    Text(line).font(.maru(.bodyMedium)).foregroundStyle(Theme.ink)
+                    Text(line).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Theme.Sp.s16)
-        .background(Theme.card2, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e1()
+        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
     // MARK: 賞金/知名度 年計
 
     private var totalsBlock: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 8) {
             total("今年の賞金", session.totalPrize, yen: true)
-            Divider().frame(height: 30)
             total("知名度", Int(s.fame.rounded()), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
-            Divider().frame(height: 30)
             total("最終所持金", s.money, yen: true)
         }
-        .padding(.vertical, Theme.Sp.s12)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
-        .e1()
+        .padding(.bottom, 2)
     }
 
     private func total(_ k: String, _ v: Int, yen: Bool, delta: Int? = nil) -> some View {
         VStack(spacing: 3) {
+            Text(k).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.enji)
             CountUpText(value: v, yen: yen)
-                .font(.maru(.title)).foregroundStyle(v < 0 ? Theme.vermD : Theme.ink)
+                .font(YoseFont.numMedium).foregroundStyle(v < 0 ? YoseColor.shu : YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.6)
-            Text(k).font(.maru(.sub)).foregroundStyle(Theme.inkSub)
             if let delta, delta > 0 {
-                Text("（+\(delta)）").font(.maru(12, weight: .bold)).foregroundStyle(Theme.goldDeep)
+                Text("↑+\(delta)").font(YoseFont.number(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+            } else {
+                Text(" ").font(YoseFont.number(12, weight: .heavy))
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity).padding(.vertical, 10)
+        .yoseKifuda()
     }
 
     // MARK: 年の締めの独白（voice_corpus yearEnd.* を復元）
@@ -256,7 +275,7 @@ struct YearResultView: View {
     private var yearEndMonolog: some View {
         Group {
             if let line = yearEndLine() {
-                NarrationCard(text: line)
+                YoseNarration(text: line)
             }
         }
     }
@@ -326,12 +345,8 @@ struct YearResultView: View {
     private var restartButton: some View {
         Button(action: onNextYear ?? onEnding ?? onRestart) {
             Text(onNextYear != nil ? "\(session.year + 1)年目へ ▶" : onEnding != nil ? "勇退エンディングへ ▶" : "もう一度")
-                .font(.maru(.body)).foregroundStyle(.white)
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                .shadow(color: Theme.vermD, radius: 0, y: 3)
         }
-        .buttonStyle(PressableStyle()).padding(.horizontal, Theme.Sp.s24).padding(.top, Theme.Sp.s4)
+        .buttonStyle(YoseButtonStyle(.primary))
     }
 
     private func legendDot(_ c: Color, _ label: String, dashed: Bool) -> some View {
