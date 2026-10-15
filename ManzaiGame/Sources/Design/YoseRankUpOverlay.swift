@@ -71,7 +71,7 @@ struct YoseRankUpOverlay: View {
         if let main = primary {
             ZStack {
                 // 暗転（夜の舞台）。どこをタップしても1回で閉じる
-                Color(hex: 0x0B0807).opacity(cardAppeared ? 0.88 : 0.0)
+                Color(hex: 0x0B0807).opacity(cardAppeared ? 0.94 : 0.0)
                     .ignoresSafeArea()
 
                 // 新ランク着地で点る加算発光の後光（Sランクは大きく強く＋紙吹雪）
@@ -296,7 +296,7 @@ struct YoseRankUpOverlay: View {
         try? await Task.sleep(nanoseconds: 340_000_000)
         guard !isDismissed else { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-        flash = 0.14
+        flash = 0.08
         withAnimation(.easeOut(duration: 0.3)) { flash = 0 }
         withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { badgeLanded = true }
         burstTrigger += 1
