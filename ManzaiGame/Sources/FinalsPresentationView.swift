@@ -136,10 +136,10 @@ struct FinalsPresentationView: View {
             }.ignoresSafeArea(edges: .bottom).allowsHitTesting(false)
         }
         .overlay {
-            ParticleBurst(trigger: burstFire, colors: [Theme.gold, Color(hex: 0xFFE07A), Theme.verm, .white],
+            ParticleBurst(trigger: burstFire, colors: [YoseColor.kinBright, YoseColor.kin, YoseColor.shu, YoseColor.washi],
                           style: .confetti, count: 60, origin: UnitPoint(x: 0.5, y: 0.42))
             // 他組の優勝・自組の決勝敗退＝銀の紙吹雪（負けの夜にも同じ物量・金は使わない・X2-06）
-            ParticleBurst(trigger: silverFire, colors: [Theme.silver, .white, Color(hex: 0xAEB6C2)],
+            ParticleBurst(trigger: silverFire, colors: [YoseColor.ginNezu, YoseColor.washi, YoseColor.haiSumi],
                           style: .confetti, count: 50, origin: UnitPoint(x: 0.5, y: 0.30))
         }
         .screenShake(trigger: slamFire, intensity: 8)
@@ -633,83 +633,94 @@ struct FinalsPresentationView: View {
         }
     }
 
-    // MARK: Beat 3 — 最終決戦（M-1式＝3組・審査員7人が顔の上に組名札を掲げる）
+    // MARK: Beat 3 — 最終決戦（M-1式＝3組・審査員7人が縦長の票札で組名を掲げる）
     private var finalDuelBeat: some View {
         let names = duelNames
         let counts = (0..<3).map { k in d.voteOrder.prefix(revealVotes).filter { $0 == k }.count }
         return VStack(spacing: 14) {
-            Telop(text: "最終決戦", size: 22, color: Color(hex: 0xFFE9A8))
             if revealVotes == 0 { mcBubble(FinalsMC.startVoting) }
 
-            // 3組の得票カウンタ（番組のスコア表示・自組は金）
+            // 3組の得票番付（自組・最多得票は朱枠の特別札・下に過半数4マス）
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { k in
-                    trioCounter(name: names.count > k ? names[k] : "—", count: counts[k], mine: k == d.selfDuelIndex)
+                    trioCounter(rank: k + 1, name: names.count > k ? names[k] : "—", count: counts[k],
+                                mine: k == d.selfDuelIndex, lead: counts[k] > 0 && counts[k] == counts.max())
                 }
             }
 
-            // 審査員7人: 顔の上に票札（組名）が掲がる（M-1の票開示）
-            HStack(spacing: 3) {
+            // 審査員7人: 縦長の木札。上が投票先（縦書き）・下が審査員の姓
+            HStack(spacing: 5) {
                 ForEach(0..<7, id: \.self) { i in
                     let shown = i < revealVotes
                     let vote = d.voteOrder[i]
-                    VStack(spacing: 3) {
+                    VStack(spacing: 0) {
                         votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: vote == d.selfDuelIndex)
-                        CharacterFace(spec: FaceCatalog.judge(d.judges[i].name), size: 40)
-                            .overlay(Circle().stroke(shown ? (vote == d.selfDuelIndex ? Theme.gold : .white)
-                                                           : .white.opacity(0.5), lineWidth: 2))
                         // 姓をそのまま出す（2文字で切ると天堂寺→「天堂」・神楽坂→「神楽」と別の語に読めた）
                         Text(String(d.judges[i].name.split(separator: " ").first ?? Substring(d.judges[i].name)))
-                            .font(.maru(12, weight: .bold)).foregroundStyle(Theme.sumi)
-                            .lineLimit(1).minimumScaleFactor(0.75)
-                            .padding(.horizontal, 4).background(Theme.mekuri.opacity(0.9), in: Capsule())
+                            .font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                            .lineLimit(1).minimumScaleFactor(0.6)
+                            .frame(maxWidth: .infinity).frame(height: 26)
+                            .background(YoseColor.kuroUrushi)
+                            .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
                     }
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
                 }
             }
-            VStack(spacing: 4) {
-                Telop(text: revealVotes < 7 ? "タップで札をめくる（\(revealVotes)/7）" : "——開票、出揃った。",
-                      size: 14, color: revealVotes < 7 ? Theme.houseLight : Color(hex: 0xFFE07A))
-                if revealVotes < 7 { AdvanceCue(color: Theme.gold) }
+            if revealVotes < 7 {
+                Button { advance() } label: { Text("次の審査員札をめくる（\(revealVotes)/7）▶") }
+                    .buttonStyle(YoseButtonStyle(.primary))
+                    .frame(width: 300)
+            } else {
+                YTelop(text: "——開票、出揃った。", size: 16, color: YoseColor.kinBright)
             }
         }
     }
 
-    private func trioCounter(name: String, count: Int, mine: Bool) -> some View {
-        VStack(spacing: 1) {
-            Text(name).font(.maru(.sub)).lineLimit(1).minimumScaleFactor(0.6)
-                .foregroundStyle(Theme.ink)
-            Text("\(count)")
-                .font(.maru(34, weight: .black)).monospacedDigit()
-                .foregroundStyle(mine ? Theme.vermD : Theme.sumi)
-                .contentTransition(.numericText())
-                .punch(on: count, peak: 1.3)
+    private func trioCounter(rank: Int, name: String, count: Int, mine: Bool, lead: Bool) -> some View {
+        VStack(spacing: 4) {
+            YoseTag(text: "1本目\(rank)位", style: mine ? .solidEnji : .outlineSumi)
+            Text(name).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
+                .frame(height: 38)
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text("\(count)").font(YoseFont.number(40, weight: .black))
+                    .foregroundStyle(count > 0 ? YoseColor.shu : YoseColor.haiSumi)
+                    .contentTransition(.numericText())
+                    .punch(on: count, peak: 1.3)
+                Text("票").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            }
+            HStack(spacing: 3) {   // 過半数（7人中4票）までの4マス
+                ForEach(0..<4, id: \.self) { n in
+                    Rectangle().fill(n < count ? YoseColor.shu : YoseColor.ginNezu).frame(height: 6)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
+                }
+            }
+            .padding(.horizontal, 6)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
-        .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(mine ? Theme.gold : Theme.paperEdge, lineWidth: mine ? 3 : 1))
-        .shadow(color: Theme.goldLeafLo.opacity(0.6), radius: 0, y: 3)
+        .padding(.vertical, 8)
+        .yoseHarigami(isFeatured: mine || lead)
+        .padding(.bottom, 2)
     }
 
-    /// 票札1枚: 組名が書かれた札が審査員の頭上に掲がる。自組＝朱地に金縁。表と裏を別の面で描く（鏡文字にならない）。
+    /// 票札1枚: 投票先の組名を縦書きで掲げる。自組＝朱地。表と裏を別の面で描く（鏡文字にならない）。
     private func votePlate(shown: Bool, voteName: String, forUs: Bool) -> some View {
         FlipCard(shown: shown) {
-            Text(voteName)
-                .font(.maru(12, weight: .black))
-                .foregroundStyle(forUs ? Color(hex: 0xFFF3C8) : Theme.sumi)
-                .lineLimit(2).minimumScaleFactor(0.5)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 2)
-                .frame(width: 48, height: 46)
-                .background(forUs ? AnyShapeStyle(LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom))
-                                  : AnyShapeStyle(Theme.mekuri), in: RoundedRectangle(cornerRadius: 6))
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(forUs ? Theme.gold : Theme.paperEdge, lineWidth: forUs ? 2 : 1))
-                .shadow(color: forUs ? Theme.verm.opacity(0.5) : .clear, radius: 6, y: 2)
+            VStack(spacing: 0) {
+                ForEach(Array(voteName.enumerated()), id: \.offset) { _, c in
+                    Text(String(c)).font(YoseFont.mincho(13)).lineLimit(1)
+                }
+            }
+            .minimumScaleFactor(0.5)
+            .foregroundStyle(forUs ? YoseColor.kinari : YoseColor.sumi)
+            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity).frame(height: 116, alignment: .top)
+            .background(forUs ? YoseColor.shu : YoseColor.washi)
         } back: {
-            Text("？").font(.maru(17, weight: .black)).foregroundStyle(Theme.goldLeafMid)
-                .frame(width: 48, height: 46)
-                .background(Color(hex: 0xF3E6C6), in: RoundedRectangle(cornerRadius: 6))
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.goldLeafMid, lineWidth: 1.5))
+            Text("？").font(YoseFont.gothic(20, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                .frame(maxWidth: .infinity).frame(height: 116)
+                .background(YoseColor.kiDark)
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.65), value: shown)
     }
@@ -721,46 +732,49 @@ struct FinalsPresentationView: View {
         let winnerName = names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
         return VStack(spacing: 12) {
             mcBubble(FinalsMC.announceWinner)
-            Text(winnerName)
-                .font(.maru(30, weight: .black)).lineLimit(1).minimumScaleFactor(0.6)
-                .foregroundStyle(Theme.sumi)
-                .padding(.horizontal, 24).padding(.vertical, 10)
-                .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 8))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(d.champion ? Theme.gold : Theme.silver, lineWidth: 3))
-                .shadow(color: (d.champion ? Theme.gold : Theme.silver).opacity(0.7), radius: 12)
-                .scaleEffect(celebrate || !d.champion ? 1 : 1.6)
-            if d.champion {
-                Text("優勝").font(.maru(40, weight: .black)).foregroundStyle(Theme.onGold)
-                    .frame(width: 128, height: 128)
-                    .background(RadialGradient(colors: [Color(hex: 0xFFE07A), Theme.gold], center: .topLeading, startRadius: 5, endRadius: 140), in: Circle())
-                    .overlay(Circle().stroke(.white.opacity(0.85), lineWidth: 4))
-                    .rotationEffect(.degrees(-8)).shadow(color: Theme.gold.opacity(0.8), radius: 24, y: 8)
-                    .scaleEffect(celebrate ? 1 : 2.0)
-            } else if !spectator {
-                Telop(text: "決勝", size: 30)
+            // 優勝額縁（黒漆＋金＋朱の枠・左に特大の朱印）。他組の優勝は銀鼠の地
+            HStack(spacing: 14) {
+                YoseHankoStamp(text: "優勝", isSquare: true, angle: -4).scaleEffect(1.35)
+                    .padding(.leading, 10).padding(.trailing, 6)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("頂グランプリ 今年の優勝").font(YoseFont.gothic(12, weight: .heavy))
+                        .foregroundStyle(d.champion ? YoseColor.kin : YoseColor.sumi)
+                    Text(winnerName).font(YoseFont.mincho(26))
+                        .foregroundStyle(d.champion ? YoseColor.kinari : YoseColor.sumi)
+                        .lineLimit(1).minimumScaleFactor(0.5)
+                }
+                Spacer(minLength: 0)
             }
+            .padding(.vertical, 16).padding(.horizontal, 8)
+            .frame(maxWidth: .infinity)
+            .background(d.champion ? YoseColor.kuroUrushi : YoseColor.ginNezu)
+            .overlay(Rectangle().stroke(d.champion ? YoseColor.kin : YoseColor.sumi, lineWidth: 3))
+            .overlay(Rectangle().stroke(d.champion ? YoseColor.shu : YoseColor.haiSumi, lineWidth: 1.5).padding(6))
+            .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: 4) }
+            .padding(.bottom, 4)
+            .scaleEffect(celebrate || !d.champion ? 1 : 1.25)
             Spacer(minLength: 0)
             // 余韻（文言は既存のまま・地の文と台詞を分けただけ）
             if d.champion {
-                VStack(spacing: 10) {
-                    NarrationCard(text: "谷口が、そっと耳打ちした。")
-                    TalkBubble(advice: Advice(name: "谷口", text: "……なあ、腹減ったな"))
+                VStack(spacing: 6) {
+                    Text("谷口が、そっと耳打ちした。").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.kinari)
+                        .padding(.horizontal, 10).padding(.vertical, 3)
+                        .background(YoseColor.kuroUrushi)
+                    YoseSpeechBox(speaker: "谷口", text: "……なあ、腹減ったな", roleLabel: "相方")
                 }
             } else if spectator {
-                NarrationCard(text: "客席の照明が上がる前に、二人で席を立った。")
+                YoseNarration(text: "客席の照明が上がる前に、二人で席を立った。")
             } else {
-                NarrationCard(text: "届かなかった。だが、この夜の舞台には立った。")
+                YoseNarration(text: "届かなかった。だが、この夜の舞台には立った。")
             }
             Button {
                 if spectator { onFinishSpectating?(winnerName) }
                 else if d.champion { session.acknowledgeWin() } else { session.acknowledgeResult() }
             } label: {
-                Text(spectator ? "次の週へ ▶" : "結果を見る ▶").font(.maru(.body)).foregroundStyle(Theme.onGold)
-                    .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(Theme.gold, in: RoundedRectangle(cornerRadius: 14))
-                    .shadow(color: Theme.goldD, radius: 0, y: 3)
+                Text(spectator ? "次の週へ ▶" : "結果を見る ▶")
             }
-            .buttonStyle(PressableStyle()).padding(.horizontal, 24).padding(.bottom, 28)
+            .buttonStyle(YoseButtonStyle(.primary))
+            .padding(.bottom, 14)
         }
         .frame(maxHeight: .infinity)
         .onAppear {
@@ -976,7 +990,7 @@ private struct RaysView: View {
                     p.addLine(to: CGPoint(x: c.x + cos(a - w) * r, y: c.y + sin(a - w) * r))
                     p.addLine(to: CGPoint(x: c.x + cos(a + w) * r, y: c.y + sin(a + w) * r))
                     p.closeSubpath()
-                    ctx.fill(p, with: .color(Theme.gold.opacity(i.isMultiple(of: 2) ? 0.10 : 0.05)))
+                    ctx.fill(p, with: .color(YoseColor.kinBright.opacity(i.isMultiple(of: 2) ? 0.10 : 0.05)))
                 }
             }
         }
@@ -986,7 +1000,7 @@ private struct RaysView: View {
 /// 決勝の紙吹雪（決定的な位置）
 private struct ConfettiView: View {
     private let pieces = 30
-    private let palette: [Color] = [Theme.gold, Theme.verm, Theme.cSense, Theme.cChara, Theme.cMental, Theme.cIdea]
+    private let palette: [Color] = [YoseColor.kinBright, YoseColor.shu, YoseColor.washi]
     var body: some View {
         TimelineView(.animation) { timeline in
             let t = timeline.date.timeIntervalSinceReferenceDate
