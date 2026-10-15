@@ -469,7 +469,7 @@ struct WeekMainView: View {
                                 actionCard(v, compact: true, dashed: false, wide: cat == .バイト)
                             }
                         }
-                        if lastAlone, let v = cardList.last { actionCard(v, compact: true, dashed: false) }
+                        if lastAlone, let v = cardList.last { actionCard(v, compact: true, dashed: false, row: true) }
                     }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
@@ -671,7 +671,7 @@ struct WeekMainView: View {
         }
     }
 
-    private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil, wide: Bool = false) -> some View {
+    private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil, wide: Bool = false, row: Bool = false) -> some View {
         let preoccupied = v.isTrain && s.preoccupiedWeeks > 0                       // 0022 撮影で稽古枠が埋まった週
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
@@ -687,7 +687,7 @@ struct WeekMainView: View {
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
         } label: {
-            actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact, wide: wide)
+            actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact, wide: wide, row: row)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
         }
@@ -780,7 +780,7 @@ struct WeekMainView: View {
     /// カードの顔（貼り紙）: アイコン箱＋名前／説明／伸び（経験点は正本の5色）／コスト（所持金・体力）。
     /// 条件付きの小カード（dashed）は金の破線を内側に引いて「今だけのカード」と分ける。
     /// wide は全幅の横長（バイト用）＝左に名前と説明・右に稼ぎの大きな数字。
-    private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool, dashed: Bool, wide: Bool = false) -> some View {
+    private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool, dashed: Bool, wide: Bool = false, row: Bool = false) -> some View {
         let after = session.previewAfterPour(v.action, offer: offer)
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
@@ -808,7 +808,7 @@ struct WeekMainView: View {
             } else if !v.affordable {
                 Text("お金が足りない").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
             }
-            if !wide, !effects.isEmpty {
+            if !wide, !row, !effects.isEmpty {
                 ViewThatFits(in: .horizontal) {   // 入りきらなければ2段に折る（札を「…」で切らない）
                     HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } }
                     VStack(alignment: .leading, spacing: 4) {
@@ -817,7 +817,7 @@ struct WeekMainView: View {
                     }
                 }
             }
-            if !wide {
+            if !wide, !row {
                 HStack(spacing: 4) {
                     if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
                     if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
@@ -825,7 +825,20 @@ struct WeekMainView: View {
             }
         }
         return Group {
-            if wide {
+            if row {
+                // 奇数枚の最後（全幅）: 左に名前・説明、右に効果と消費を右寄せで束ねる（右半分を空けない）
+                HStack(alignment: .center, spacing: 8) {
+                    body
+                    Spacer(minLength: 4)
+                    VStack(alignment: .trailing, spacing: 4) {
+                        if !effects.isEmpty { HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } } }
+                        HStack(spacing: 4) {
+                            if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
+                            if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                        }
+                    }
+                }
+            } else if wide {
                 HStack(alignment: .center, spacing: 8) {
                     body
                     Spacer(minLength: 4)
