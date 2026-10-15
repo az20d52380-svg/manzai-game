@@ -137,7 +137,7 @@ struct TournamentResultView: View {
                             VStack(spacing: 8) {
                                 if let line = displayLine {
                                     HStack(alignment: .firstTextBaseline, spacing: 14) {
-                                        Text("ノルマ \(Int(line))").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                                        Text("通過ライン \(Int(line))").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
                                         HStack(spacing: 0) {
                                             Text("実力 ")
                                             RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
