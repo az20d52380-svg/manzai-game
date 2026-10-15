@@ -340,7 +340,7 @@ struct WeekMainView: View {
     private var sceneBackground: some View {
         // 稽古場シーン（StageScene.swift）: 明るい昼の稽古場＋板張り＋センターマイク＋漫才師2人＋光の中の塵。
         // 立ち絵イラスト導入までの見た目の到達点（TODO: 本イラスト差替）。上端はステータスバー裏まで届かせる。
-        StageScene().ignoresSafeArea(edges: .top)
+        StageScene(compact: openCat != nil).ignoresSafeArea(edges: .top)
     }
 
     // MARK: 実力・相性の2本バー（A「削る」: 能力ピル6本・谷口評の置き換え。数字は整数・％は出さない）

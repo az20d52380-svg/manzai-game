@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct StageScene: View {
+    /// true＝下位一覧（練習/バイト/休む…）を開いている間：人物・マイク・ポスターを描かず、壁と床だけの高座帯にする（頭切れ・木札被りを構造的に無くす）
+    var compact = false
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -28,11 +30,13 @@ struct StageScene: View {
                 Rectangle().fill(Color(hex: 0x8D6E63)).frame(width: w, height: 8)
                     .overlay(alignment: .bottom) { Rectangle().fill(Color(hex: 0x5D4037).opacity(0.5)).frame(height: 1.5) }
                     .position(x: w / 2, y: h * 0.19)
+                if !compact {
                 VStack(spacing: 0) {
                     HStack(spacing: 18) { Rectangle().fill(Color(hex: 0x5D4037)).frame(width: 1.5, height: 10); Rectangle().fill(Color(hex: 0x5D4037)).frame(width: 1.5, height: 10) }
                     posterCard.frame(width: 28, height: 64)
                 }
                 .position(x: w * 0.60, y: h * 0.19 + 4 + 37)
+                }
 
                 // 4) 板張りの床（明るい木・消失点パース）
                 floorBoards(width: w, height: h - horizon, vanishX: micX)
@@ -59,32 +63,18 @@ struct StageScene: View {
                 DustField(centerX: micX - w * 0.06, spread: w * 0.30)
                     .allowsHitTesting(false)
 
-                // 8) センターマイク＋漫才師2人（カラー・呼吸）。主役感のため1.15倍（足元中央を支点）
-                Group {
-                // 接地シャドウ（足元の楕円影）：マイクと二人が床に浮かないように
-                Group {
-                    Ellipse().fill(Color.black.opacity(0.35)).frame(width: figH * 0.30, height: figH * 0.06)
-                        .position(x: micX, y: footY)
-                    Ellipse().fill(Color.black.opacity(0.32)).frame(width: figH * 0.62, height: figH * 0.09)
-                        .position(x: micX - figH * 0.52, y: footY - figH * 0.01)
-                    Ellipse().fill(Color.black.opacity(0.32)).frame(width: figH * 0.68, height: figH * 0.10)
-                        .position(x: micX + figH * 0.54, y: footY - figH * 0.01)
+                // 8) センターマイク＋二人のめくり札（俺＝黒帯・谷口＝朱帯）。人は図形で描かない（ぼかし影も敷かない）
+                if !compact {
+                    Group {
+                        CenterMic(height: figH * 0.78)
+                            .position(x: micX, y: footY - figH * 0.39)
+                        StageNameBoard(name: "俺", band: YoseColor.kuroUrushi, height: figH * 0.86)
+                            .position(x: micX - figH * 0.50, y: footY - figH * 0.43 - 3)
+                        StageNameBoard(name: "谷口", band: YoseColor.shu, height: figH * 0.98)
+                            .position(x: micX + figH * 0.52, y: footY - figH * 0.49 - 3)
+                    }
+                    .scaleEffect(1.15, anchor: UnitPoint(x: micX / w, y: footY / h))
                 }
-                .blur(radius: 4)
-                CenterMic(height: figH * 0.78)
-                    .position(x: micX, y: footY - figH * 0.39)
-                ManzaiFigure(height: figH * 0.90, tilt: 2.2, accent: Color(hex: 0x2E55B0),
-                             breathe: 3.1,
-                             bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
-                    .position(x: micX - figH * 0.52, y: footY - figH * 0.45)
-                ManzaiFigure(height: figH, tilt: -2.6, accent: Color(hex: 0xB02318),
-                             breathe: 2.4,
-                             bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
-                    .position(x: micX + figH * 0.54, y: footY - figH * 0.50)
-                }
-                .scaleEffect(1.15, anchor: UnitPoint(x: micX / w, y: footY / h))
             }
         }
     }
@@ -137,6 +127,29 @@ struct StageScene: View {
         p.addLine(to: CGPoint(x: bottom.x - spread, y: bottom.y))
         p.closeSubpath()
         return p
+    }
+}
+
+/// 舞台のめくり名札（寄席のめくり札＝二人の立ち位置。縦書きの名前・上に帯・墨枠＋ハードシャドウ）
+struct StageNameBoard: View {
+    let name: String
+    let band: Color
+    let height: CGFloat
+    var body: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(band).frame(height: 14)
+                .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
+            VStack(spacing: 2) {
+                ForEach(Array(name), id: \.self) { ch in
+                    Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                }
+            }
+            .frame(maxHeight: .infinity)
+        }
+        .frame(width: 56, height: height)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+        .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
     }
 }
 
