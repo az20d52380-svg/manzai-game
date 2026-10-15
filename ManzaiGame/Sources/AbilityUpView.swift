@@ -23,9 +23,10 @@ struct AbilityUpView: View {
     static func points(_ v: Double) -> Int { Int(v * 10 + 1e-6) }
 
     /// 列の固定幅（Gemini r2）：能力名70・＋50・経験点5列は各42・列間6。現在の経験点の行と下の費用が同じ中心線に乗る
-    private let nameW: CGFloat = 70
-    private let plusW: CGFloat = 50
-    private let colW: CGFloat = 42
+    private let nameW: CGFloat = 66
+    private let plusW: CGFloat = 74   // ［−］34＋隙間2＋［＋］38 で固定（幅は絶対に変えない・Gemini r6）
+    private let colW: CGFloat = 38
+    private let minusW: CGFloat = 34
     private let colGap: CGFloat = 6
     @State private var pulse = false
     @State private var bumped: Ability? = nil
@@ -232,7 +233,7 @@ struct AbilityUpView: View {
                 }
             }
             .frame(width: nameW, alignment: .leading)
-            plusMark(canTap: canTap, half: gained > 0)
+            plusMark(canTap: canTap)
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 let n = tag.first(where: { $0.0 == c })?.1
                 let have = Self.points(pv[currency: c])
@@ -263,35 +264,34 @@ struct AbilityUpView: View {
         .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
         .disabled(!canTap)
         return main.overlay(alignment: .leading) {
-            if gained > 0 {
-                // ［−］：この行で振った分をまるごと戻す（やり直せる安心）
-                Button {
-                    Haptics.tick()
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
-                } label: {
-                    Image(systemName: "minus").font(.system(size: 17, weight: .black)).foregroundStyle(.white)
-                        .frame(width: 24, height: 46).background(Color(hex: 0x606060))
-                        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
-                }
-                .buttonStyle(PressableStyle())
-                .padding(.leading, 6 + nameW + colGap).padding(.bottom, 2)
-                .transition(.move(edge: .leading).combined(with: .opacity))
+            // ［−］：常に同じ場所に出す（振った分をまるごと戻す）。振っていない時は灰色で押せない＝幅も位置も動かない
+            let canUndo = gained > 0
+            Button {
+                Haptics.tick()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
+            } label: {
+                Image(systemName: "minus").font(.system(size: 16, weight: .black))
+                    .foregroundStyle(canUndo ? .white : Color(hex: 0x9E988D))
+                    .frame(width: minusW, height: 46)
+                    .background(Rectangle().fill(canUndo ? Color(hex: 0x606060) : Color(hex: 0xE5E0D8)))
+                    .overlay(Rectangle().stroke(canUndo ? Theme.sumi : Color(hex: 0xBDB7AA), lineWidth: 1.5))
             }
+            .buttonStyle(PressableStyle(enabled: canUndo))
+            .disabled(!canUndo)
+            .padding(.leading, 6 + nameW + colGap).padding(.bottom, 2)
         }
     }
 
     /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
-    private func plusMark(canTap: Bool, half: Bool = false) -> some View {
-        HStack(spacing: 0) {
-            Image(systemName: "plus").font(.system(size: half ? 17 : 24, weight: .black))
-                .foregroundStyle(canTap ? .white : Color(hex: 0x9E988D))
-                .frame(width: half ? 24 : plusW, height: 46)
-                .background(Rectangle().fill(canTap ? Color(hex: 0xBD3C28) : Color(hex: 0xD0CBC0)))
-                .overlay(Rectangle().stroke(canTap ? Theme.sumi : Color(hex: 0xBDB7AA), lineWidth: 1.5))
-                .shadow(color: canTap ? Color(hex: 0x7A1F13) : .clear, radius: 0, y: 2)
-        }
-        .frame(width: plusW, height: 46, alignment: .trailing)   // 加算あり：左半分は［−］の場所（重ねて描く）
-        .padding(.bottom, 2)
+    private func plusMark(canTap: Bool) -> some View {
+        Image(systemName: "plus").font(.system(size: 20, weight: .black))
+            .foregroundStyle(canTap ? .white : Color(hex: 0x9E988D))
+            .frame(width: plusW - minusW - 2, height: 46)
+            .background(Rectangle().fill(canTap ? Color(hex: 0xBD3C28) : Color(hex: 0xD0CBC0)))
+            .overlay(Rectangle().stroke(canTap ? Theme.sumi : Color(hex: 0xBDB7AA), lineWidth: 1.5))
+            .shadow(color: canTap ? Color(hex: 0x7A1F13) : .clear, radius: 0, y: 2)
+            .frame(width: plusW, height: 46, alignment: .trailing)   // 左の minusW＋隙間は［−］の場所（常に固定）
+            .padding(.bottom, 2)
     }
 
     /// 次の等級の名前と、そこまでの能力値（表示だけ）。最高等級なら nil
