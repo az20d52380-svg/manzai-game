@@ -104,7 +104,7 @@ struct YearResultView: View {
                     Text("\(a)").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                         .frame(width: 54, alignment: .leading).lineLimit(1).minimumScaleFactor(0.7)
                     gradeChip(from, dim: true)
-                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: 9)).foregroundStyle(YoseColor.shu)
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(9))).foregroundStyle(YoseColor.shu)
                     gradeChip(to, dim: !up, up: up)
                     YoseGauge(value: Theme.rankProgress(s[a], cap: cap), total: 1, fill: abilityColor(a), height: 12)
                     Text(up ? "↑" : " ").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.shu).frame(width: 14)

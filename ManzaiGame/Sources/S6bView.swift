@@ -72,7 +72,7 @@ struct S6bView: View {
                     Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
                     HStack(spacing: 4) {
                         ForEach(0..<4, id: \.self) { t in
-                            if t > 0 { Text("▶").font(.system(size: 8)).foregroundStyle(YoseColor.haiSumi) }
+                            if t > 0 { Text("▶").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.haiSumi) }
                             YoseTag(text: Self.venueNames[t], style: t == venueTier ? .solidEnji : .outlineSumi)
                                 .opacity(t <= venueTier ? 1 : 0.5)
                         }
@@ -82,14 +82,14 @@ struct S6bView: View {
                 .yoseKifuda()
                 // 所持金を舞台に懸ける＝残金が減って0になる（元の額を一拍見せてから）
                 VStack(spacing: 4) {
-                    Text("所持金を全額、最後の舞台に懸ける").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                    Text("所持金を全額、最後の舞台に懸ける").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(2).minimumScaleFactor(0.7).multilineTextAlignment(.center)
                     HStack(spacing: 10) {
                         VStack(spacing: 0) {
                             Text("所持金").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                             Text(Yen.text(max(0, s.money))).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                                 .lineLimit(1).minimumScaleFactor(0.6)
                         }
-                        Image(systemName: "arrowtriangle.right.fill").font(.system(size: 14)).foregroundStyle(YoseColor.shu)
+                        Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(14))).foregroundStyle(YoseColor.shu)
                         VStack(spacing: 0) {
                             Text("残金").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
                             Text(Yen.text(counted ? 0 : max(0, s.money)))
@@ -171,8 +171,8 @@ struct S6bView: View {
             .padding(Theme.Sp.s16).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: Theme.Rad.card))
             .padding(.horizontal, Theme.Sp.s24)
 
-            Text("—— \(session.combiName) ——").font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.8)).padding(.top, Theme.Sp.s24)
-            Text("結成からの記録").font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.6))
+            Text("—— \(session.combiName) ——").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.8)).padding(.top, Theme.Sp.s24)
+            Text("結成からの記録").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.6))
             Spacer()
             Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45)).padding(.bottom, Theme.Sp.s24)
         }
@@ -201,7 +201,7 @@ struct S6bView: View {
             .scaleEffect(burned ? 1 : 1.05).opacity(burned ? 1 : 0)
 
             Text("楽屋の壁。最後の舞台の夜。")
-                .font(.system(size: 13, design: .serif)).foregroundStyle(.white.opacity(0.8)).opacity(burned ? 1 : 0)
+                .font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.8)).opacity(burned ? 1 : 0)
             Spacer()
             Button(action: onFinish) {
                 Text(finishLabel).font(.maru(16)).foregroundStyle(.white)

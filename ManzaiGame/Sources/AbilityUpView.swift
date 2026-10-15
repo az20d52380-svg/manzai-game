@@ -128,7 +128,7 @@ struct AbilityUpView: View {
                     // 確定前に伸びが見える：42 → 45
                     HStack(spacing: 3) {
                         Text("\(before)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
-                        Image(systemName: "arrow.right").font(.system(size: 11, weight: .black)).foregroundStyle(YoseColor.shu)
+                        Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu)
                         Text("\(after)").font(YoseFont.number(26, weight: .black)).foregroundStyle(YoseColor.shu)
                             .contentTransition(.numericText())
                     }
@@ -259,7 +259,7 @@ struct AbilityUpView: View {
                 Haptics.tick()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
             } label: {
-                Image(systemName: "minus").font(.system(size: 16, weight: .black))
+                Image(systemName: "minus").font(.system(size: Font.mzScaled(16), weight: .black))
                     .foregroundStyle(canUndo ? YoseColor.sumi : YoseColor.disabledText)
                     .frame(width: minusW, height: 46)
                     .background(Rectangle().fill(canUndo ? YoseColor.ki : YoseColor.ginNezu))
@@ -275,7 +275,7 @@ struct AbilityUpView: View {
 
     /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
     private func plusMark(canTap: Bool) -> some View {
-        Image(systemName: "plus").font(.system(size: 20, weight: .black))
+        Image(systemName: "plus").font(.system(size: Font.mzScaled(20), weight: .black))
             .foregroundStyle(canTap ? YoseColor.kinari : YoseColor.disabledText)
             .frame(width: plusW - minusW - 2, height: 46)
             .background(Rectangle().fill(canTap ? YoseColor.shu : YoseColor.ginNezu))
@@ -298,9 +298,9 @@ struct AbilityUpView: View {
         return HStack(spacing: 8) {
             Button { onClose() } label: { Text("戻る").lineLimit(1).minimumScaleFactor(0.85) }   // 反映せずに閉じる
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
-            Button { taps.removeAll() } label: { Text("リセット").lineLimit(1).minimumScaleFactor(0.85) }
+            Button { taps.removeAll() } label: { Text("リセット").lineLimit(1).minimumScaleFactor(0.6) }
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48).disabled(!active)
-            Button { taps = session.recommendedAllocation(); Haptics.tick() } label: { Text("おまかせ").lineLimit(1).minimumScaleFactor(0.85) }
+            Button { taps = session.recommendedAllocation(); Haptics.tick() } label: { Text("おまかせ").lineLimit(1).minimumScaleFactor(0.6) }
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
             Button { confirm() } label: { Text("確定").padding(.trailing, active ? 34 : 0) }
                 .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "+\(taps.count)段階" : nil)).frame(maxWidth: .infinity, minHeight: 48)

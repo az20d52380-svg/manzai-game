@@ -323,7 +323,7 @@ struct TournamentResultView: View {
                     .frame(maxWidth: .infinity).frame(height: 22)
                     .background(i == cur ? YoseColor.shu : YoseColor.ki)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: i == cur ? 1.5 : 1))
-                if i < 2 { Image(systemName: "arrowtriangle.right.fill").font(.system(size: 8)).foregroundStyle(YoseColor.kin) }
+                if i < 2 { Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.kin) }
             }
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
@@ -405,7 +405,7 @@ struct TournamentResultView: View {
                         Text("通過ライン").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                         Text("\(Int(line))").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
                     }
-                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: 16, weight: .black)).foregroundStyle(YoseColor.shu)
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(YoseColor.shu)
                         .alignmentGuide(.lastTextBaseline) { $0[.bottom] + 8 }
                 }
                 VStack(spacing: 0) {

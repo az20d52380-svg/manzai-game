@@ -235,9 +235,17 @@ enum Haptics {
 /// 丸ゴシック（見出し・数字）＝ゲームフォント M PLUS Rounded 1c（OFL・FontLoader が起動時登録）。
 /// 未登録/失敗時は system 丸ゴにフォールバック（見た目が劣化するだけで壊れない）。
 extension Font {
+    /// 文字サイズの追従（上限つき）：端末の文字サイズに合わせて拡大し、レイアウトが崩れないよう最大1.35倍で止める。
+    static func mzScaled(_ size: CGFloat) -> CGFloat {
+        let s = UIFontMetrics(forTextStyle: .body).scaledValue(for: size)
+        return min(max(s, size), size * 1.35)
+    }
+}
+
+extension Font {
     static func maru(_ size: CGFloat, weight: Font.Weight = .heavy) -> Font {
         guard FontLoader.isAvailable else {
-            return .system(size: size, weight: weight, design: .rounded)
+            return .system(size: Font.mzScaled(size), weight: weight, design: .rounded)
         }
         let name: String
         switch weight {
@@ -246,7 +254,7 @@ extension Font {
         case .bold, .semibold: name = "RoundedMplus1c-Bold"
         default: name = "RoundedMplus1c-Medium"
         }
-        return .custom(name, size: size)
+        return .custom(name, fixedSize: mzScaled(size))
     }
 }
 

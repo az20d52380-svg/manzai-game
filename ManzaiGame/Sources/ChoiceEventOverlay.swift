@@ -204,7 +204,7 @@ struct ChoiceEventOverlay: View {
     /// 選んだ札（選択肢の後に残す・B-10）
     private func chosenTag(_ label: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: "checkmark").font(.system(size: 12, weight: .black)).foregroundStyle(YoseColor.shu)
+            Image(systemName: "checkmark").font(.system(size: Font.mzScaled(12), weight: .black)).foregroundStyle(YoseColor.shu)
             Text(label).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
         }
         .padding(.horizontal, 12).padding(.vertical, 6)
@@ -468,7 +468,7 @@ struct PlaceScene: View {
             Rectangle().fill(Color(hex: 0x6E6A70)).frame(width: w * 0.06, height: horizon)
                 .position(x: w * 0.90, y: horizon / 2)
             VStack(spacing: 2) {
-                Text("えき").font(.system(size: 20, weight: .black)).foregroundStyle(Theme.ink)
+                Text("えき").font(.system(size: Font.mzScaled(20), weight: .black)).foregroundStyle(Theme.ink)
                 Rectangle().fill(Theme.verm).frame(width: 64, height: 4)
             }
             .padding(.horizontal, 18).padding(.vertical, 6)

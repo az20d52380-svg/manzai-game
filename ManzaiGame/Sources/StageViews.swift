@@ -157,7 +157,7 @@ private struct LineBoard: View {
             HStack(alignment: .center, spacing: 12) {
                 Spacer(minLength: 0)
                 Text("通過ライン").font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi)
-                Text("\(line)").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
+                Text("\(line)").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.5)
                 Text("▶").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.haiSumi)
                 // 木札の中に木札を入れない：実力は平らな角札ラベル＋大きな数字を同じ札の上に直接並べる
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
@@ -165,7 +165,7 @@ private struct LineBoard: View {
                         .padding(.horizontal, 4).padding(.vertical, 1)
                         .background(YoseColor.enji.opacity(0.12))
                         .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
-                    Text("\(power)").font(YoseFont.number(30, weight: .black)).foregroundStyle(YoseColor.sumi)
+                    Text("\(power)").font(YoseFont.number(30, weight: .black)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.5)
                 }
                 if power < line { YoseTag(text: "あと\(line - power)不足", style: .outlineShu) }
                 Spacer(minLength: 0)
@@ -237,7 +237,7 @@ struct TournamentEntryView: View {
     private func entryButton(_ title: String, glyph: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: { if enabled { action() } }) {
             HStack(spacing: 12) {
-                Image(systemName: glyph).font(.system(size: 17, weight: .bold))
+                Image(systemName: glyph).font(.system(size: Font.mzScaled(17), weight: .bold))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(YoseFont.buttonMain)
                     Text(enabled ? sub : "残高不足で出られない").font(YoseFont.captionBold)

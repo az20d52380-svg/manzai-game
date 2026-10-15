@@ -194,7 +194,7 @@ struct YosePassCelebrationView: View {
                         Text("通過基準").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         Text("\(threshold)").font(YoseFont.number(34, weight: .black)).foregroundStyle(YoseColor.haiSumi)
                     }
-                    Image(systemName: "play.fill").font(.system(size: 16, weight: .black)).foregroundStyle(revealed ? YoseColor.shu : YoseColor.kin)
+                    Image(systemName: "play.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(revealed ? YoseColor.shu : YoseColor.kin)
                     VStack(spacing: 2) {
                         Text("発揮実力").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         Text("\(shownPower)").font(YoseFont.number(58, weight: .black))
@@ -249,7 +249,7 @@ struct YosePassCelebrationView: View {
             Text("知名度 +\(fameGain)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
             Spacer()
             Text(nextStep).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-            Image(systemName: "play.fill").font(.system(size: 11, weight: .black)).foregroundStyle(YoseColor.kinBright)
+            Image(systemName: "play.fill").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.kinBright)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(YoseColor.kuroUrushi)

@@ -188,7 +188,7 @@ struct YoseRankUpOverlay: View {
                     HStack(spacing: 3) {
                         ForEach(0..<3, id: \.self) { i in
                             Image(systemName: "play.fill")
-                                .font(.system(size: i == 2 ? 20 : 14, weight: .black))
+                                .font(.system(size: Font.mzScaled(i == 2 ? 20 : 14), weight: .black))
                                 .foregroundStyle(i == 2 ? YoseColor.shu : YoseColor.kin)
                                 .opacity(badgeLanded ? 1 : 0.25)
                         }
@@ -228,7 +228,7 @@ struct YoseRankUpOverlay: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(item.abilityName).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                     Text("\(item.beforeValue)").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
-                    Image(systemName: "arrow.right").font(.system(size: 11, weight: .black)).foregroundStyle(YoseColor.shu)
+                    Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu)
                     Text(stamped ? "\(shownValue)" : "？？").font(YoseFont.number(26, weight: .black)).foregroundStyle(YoseColor.sumi)
                         .contentTransition(.numericText(value: Double(shownValue)))
                 }

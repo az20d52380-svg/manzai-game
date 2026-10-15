@@ -301,7 +301,7 @@ struct YoseSpeechBox: View {
                 Text(text).font(YoseFont.mincho(15)).lineSpacing(5).foregroundStyle(YoseColor.sumi)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if showCue {
-                    Image(systemName: "arrowtriangle.down.fill").font(.system(size: 10))
+                    Image(systemName: "arrowtriangle.down.fill").font(.system(size: Font.mzScaled(10)))
                         .foregroundStyle(YoseColor.shu).opacity(blink ? 0.25 : 1)
                 }
             }

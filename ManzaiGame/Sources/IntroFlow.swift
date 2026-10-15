@@ -369,7 +369,7 @@ struct S1TitleView: View {
         }
         .overlay(alignment: .topTrailing) {
             Button { showSettings = true } label: {
-                Image(systemName: "gearshape.fill").font(.system(size: 18, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                Image(systemName: "gearshape.fill").font(.system(size: Font.mzScaled(18), weight: .bold)).foregroundStyle(YoseColor.sumi)
                     .frame(width: 40, height: 40)
                     .background(YoseColor.ki)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
@@ -523,7 +523,7 @@ struct NameEntryView: View {
                     Haptics.confirm()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "dice.fill").font(.system(size: 13, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: "dice.fill").font(.system(size: Font.mzScaled(13), weight: .black)).foregroundStyle(YoseColor.kinari)
                             .frame(width: 24, height: 24).background(YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                         Text("おまかせで考える").font(YoseFont.gothic(15, weight: .heavy))

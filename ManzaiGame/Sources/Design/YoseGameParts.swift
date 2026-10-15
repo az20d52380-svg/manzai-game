@@ -47,7 +47,7 @@ struct YoseVitalMoneyBar: View {
             Spacer(minLength: 0)
             if let fame {
                 HStack(spacing: 3) {
-                    Text("知名度").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.8))
+                    Text("知名度").font(YoseFont.gothic(10, weight: .bold)).lineLimit(1).minimumScaleFactor(0.6).foregroundStyle(YoseColor.kinari.opacity(0.8))
                     Text("\(fame)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     if let fameDelta, fameDelta > 0 {
                         Text("↑+\(fameDelta)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
@@ -108,7 +108,7 @@ struct YoseFooterTabBar: View {
             ForEach(items.indices, id: \.self) { idx in
                 Button(action: items[idx].action) {
                     HStack(spacing: 6) {
-                        Image(systemName: items[idx].symbol).font(.system(size: 13, weight: .black))
+                        Image(systemName: items[idx].symbol).font(.system(size: Font.mzScaled(13), weight: .black))
                             .foregroundStyle(YoseColor.enji)
                         Text(items[idx].title).font(YoseFont.gothic(16, weight: .heavy))
                             .foregroundStyle(YoseColor.sumi)

@@ -31,12 +31,12 @@ enum YoseColor {
 }
 
 enum YoseFont {
-    static func mincho(_ size: CGFloat) -> Font { .custom("HiraMinProN-W6", size: size) }
+    static func mincho(_ size: CGFloat) -> Font { .custom("HiraMinProN-W6", fixedSize: Font.mzScaled(size)) }
     static func gothic(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .system(size: size, weight: weight, design: .default)
+        .system(size: Font.mzScaled(size), weight: weight, design: .default)
     }
     static func number(_ size: CGFloat, weight: Font.Weight = .heavy) -> Font {
-        .system(size: size, weight: weight, design: .default).monospacedDigit()
+        .system(size: Font.mzScaled(size), weight: weight, design: .default).monospacedDigit()
     }
     // 役割トークン（§3 サイズ段階）
     static let bannerTitle = gothic(26, weight: .black)

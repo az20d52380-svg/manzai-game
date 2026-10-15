@@ -312,12 +312,12 @@ struct WeekMainView: View {
             Button { showCalendar = true } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
-                        Image(systemName: "flag.fill").font(.system(size: 11))
+                        Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11)))
                             .foregroundStyle(hot ? YoseColor.shu : YoseColor.kin)
                         if m.weeksLeft <= 0 {
                             Text("\(m.name)　今週！")
                                 .font(YoseFont.gothic(16, weight: .black)).foregroundStyle(YoseColor.kinBright)
-                                .lineLimit(1).minimumScaleFactor(0.8)
+                                .lineLimit(1).minimumScaleFactor(0.6)
                         } else {
                             HStack(alignment: .lastTextBaseline, spacing: 2) {
                                 Text("\(m.name) まで あと").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kin)
@@ -326,7 +326,7 @@ struct WeekMainView: View {
                                     .contentTransition(.numericText())
                                 Text("週").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kin)
                             }
-                            .lineLimit(1).minimumScaleFactor(0.8)
+                            .lineLimit(1).minimumScaleFactor(0.6)
                         }
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
@@ -613,7 +613,7 @@ struct WeekMainView: View {
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = ""; pickingNeta = false }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus").font(.system(size: 12, weight: .heavy))
+                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy))
                         Text("新しく書く").font(YoseFont.gothic(14, weight: .heavy))
                         Spacer()
                         Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
@@ -768,7 +768,7 @@ struct WeekMainView: View {
             VStack(spacing: 3) {
                 HStack(spacing: 7) {
                     if let stamp {
-                        Image(systemName: stamp).font(.system(size: 15, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari)
                             .frame(width: 28, height: 28)
                             .background(gated ? YoseColor.disabledText : YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -812,7 +812,7 @@ struct WeekMainView: View {
         if case .rest(let r) = v.action, let rec = session.config.rests[r]?.recovery { stamDelta = Int(rec.rounded()) }   // 回復量は体力が満タンでも数字で見せる
         let tint = cardTint(v)
         let iconBox = Image(systemName: v.glyph)
-            .font(.system(size: compact ? 12 : 14, weight: .bold)).foregroundStyle(YoseColor.kinari)
+            .font(.system(size: Font.mzScaled(compact ? 12 : 14), weight: .bold)).foregroundStyle(YoseColor.kinari)
             .frame(width: 26, height: 26)
             .background(gated ? YoseColor.disabledText : tint)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -1234,7 +1234,7 @@ struct WeekMainView: View {
         } label: {
             // 条件付きの小カード（オファー/バイト）と同じ顔＝常設6枚の下に破線で並ぶ
             HStack(spacing: 7) {
-                Image(systemName: "forward.end.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(YoseColor.kinari)
+                Image(systemName: "forward.end.fill").font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(YoseColor.kinari)
                     .frame(width: 26, height: 26)
                     .background(YoseColor.haiSumi)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -1315,7 +1315,7 @@ struct BounceArrow: View {
     @State private var up = false
     var body: some View {
         Image(systemName: "arrowtriangle.down.fill")
-            .font(.system(size: 9)).foregroundStyle(Theme.inkFaint)
+            .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)
             .offset(y: up ? 2.5 : -1.5)
             .onAppear { withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
     }

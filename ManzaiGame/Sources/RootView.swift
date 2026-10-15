@@ -298,7 +298,7 @@ struct RootView: View {
     }
 
     private func debugChip(_ label: String) -> some View {
-        Text(label).font(.system(size: 11, weight: .heavy))
+        Text(label).font(.system(size: Font.mzScaled(11), weight: .heavy))
             .foregroundStyle(.white).padding(.horizontal, 8).padding(.vertical, 5)
             .background(.black.opacity(0.45), in: Capsule())
     }

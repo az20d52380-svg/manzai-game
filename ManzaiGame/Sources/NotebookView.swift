@@ -298,7 +298,7 @@ struct NotebookView: View {
             sectionTitle("持ちネタ", trailing: "\(session.activeNetas.count) / \(session.config.netaActiveSlots)")
             if session.activeNetas.isEmpty {
                 Text("まだネタがない。「ネタを書く」から書こう。")
-                    .font(.system(size: 13, design: .serif)).foregroundStyle(Theme.inkDim)
+                    .font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(Theme.inkDim)
                     .padding(.vertical, Theme.Sp.s8)
             } else {
                 ForEach(session.activeNetas) { neta in
@@ -312,7 +312,7 @@ struct NotebookView: View {
         VStack(alignment: .leading, spacing: Theme.Sp.s12) {
             sectionTitle("しまったネタ")
             Text("いつでも出せる。前のネタが、また使えることもある。")
-                .font(.system(size: 12, design: .serif)).foregroundStyle(Theme.inkSub)
+                .font(.system(size: Font.mzScaled(12), design: .serif)).foregroundStyle(Theme.inkSub)
             ForEach(session.archivedNetas) { neta in
                 archivedRow(neta)
             }
@@ -376,7 +376,7 @@ struct NotebookView: View {
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
     @ViewBuilder private func oroshiLine(_ neta: Neta) -> some View {
         if session.justOroshiNeta?.id == neta.id, let text = session.justOroshiNeta?.text {
-            Text(text).font(.system(size: 11.5, design: .serif)).foregroundStyle(Theme.inkDim)
+            Text(text).font(.system(size: Font.mzScaled(11.5), design: .serif)).foregroundStyle(Theme.inkDim)
                 .transition(.opacity)
         }
     }
@@ -428,11 +428,11 @@ struct NotebookView: View {
     /// 完成度/手応えバー（0..100・数値併記）
     private func netaBar(label: String, value: Double, color: Color) -> some View {
         HStack(spacing: 8) {
-            Text(label).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).frame(width: 60, alignment: .leading)
+            Text(label).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.6).frame(width: 60, alignment: .leading)
             YoseGauge(value: value, total: 100, fill: color, height: 14)
             Text("\(Int(value.rounded()))").font(YoseFont.numLarge)
                 .foregroundStyle(YoseColor.sumi)
-                .frame(width: 40, alignment: .trailing)
+                .lineLimit(1).minimumScaleFactor(0.5).frame(width: 40, alignment: .trailing)
         }
     }
 
