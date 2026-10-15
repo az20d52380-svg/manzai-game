@@ -949,6 +949,11 @@ final class GameSession {
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
     static func debtTier(money: Int) -> Int { money < -800_000 ? 3 : money < -500_000 ? 2 : money < 0 ? 1 : 0 }
+    /// 今の所持金で新しく知らせるべき段（まだ出していない深い段があれば、その段。なければ nil）。表示専用
+    func debtNoticeTierToShow(money: Int) -> Int? {
+        let tier = GameSession.debtTier(money: money)
+        return tier > debtWarnTier ? tier : nil
+    }
     /// 借金の知らせを出した段を記録（深い方へだけ進む）
     func markDebtWarned(_ tier: Int) {
         guard tier > debtWarnTier else { return }

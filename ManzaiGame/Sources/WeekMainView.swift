@@ -1194,8 +1194,7 @@ struct WeekMainView: View {
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
         guard debtNotice == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
-        let tier = GameSession.debtTier(money: s.money)
-        guard tier > session.debtWarnTier else { return }
+        guard let tier = session.debtNoticeTierToShow(money: s.money) else { return }
         session.markDebtWarned(tier)
         switch tier {
         case 1: debtNotice = "生活費が払えず、借金になった。借金が100万を越えると、芸人を続けられない。"
