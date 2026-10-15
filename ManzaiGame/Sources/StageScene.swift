@@ -17,10 +17,10 @@ struct StageScene: View {
             let w = geo.size.width
             let h = geo.size.height
             let horizon = h * 0.55            // 壁と床の境
-            let micX = w * 0.62               // センターマイクの立ち位置（左下は台詞の席なので右寄り）
-            let footY = h * 0.84           // 二人の足元（下端の吹き出し・カードに隠れない高さ）
-            let figH = max(130, h * 0.27)     // 人物は画面比で決める
-            let showActors = !compact || h >= 260   // 下位一覧でも高さに余裕があれば（バイト等）めくり札を出す
+            let micX = compact ? w * 0.36 : w * 0.62               // センターマイクの立ち位置（左下は台詞の席なので右寄り）
+            let footY = compact ? h * 0.93 : h * 0.84           // 二人の足元（下端の吹き出し・カードに隠れない高さ）
+            let figH = compact ? h * 0.66 : max(130, h * 0.27)     // 人物は画面比で決める
+            let showActors = true   // 下位一覧でも高さに余裕があれば（バイト等）めくり札を出す
 
             ZStack {
                 // 1) 稽古場の壁（明るいクリーム・上ほど白）
@@ -81,12 +81,14 @@ struct StageScene: View {
                                      bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
                                      headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
                             .position(x: micX + figH * 0.54, y: footY - figH * 0.50)
+                        if !compact {
                         StageFootTag(name: "俺", band: YoseColor.kuroUrushi)
                             .position(x: micX - figH * 0.52, y: footY - 34)
                         StageFootTag(name: "谷口", band: YoseColor.shu)
                             .position(x: micX + figH * 0.54, y: footY - 34)
+                        }
                     }
-                    .scaleEffect(1.15, anchor: UnitPoint(x: micX / w, y: footY / h))
+                    .scaleEffect(compact ? 1.0 : 1.15, anchor: UnitPoint(x: micX / w, y: footY / h))
                 }
             }
         }
