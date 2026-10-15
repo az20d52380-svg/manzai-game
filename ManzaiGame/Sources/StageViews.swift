@@ -146,12 +146,14 @@ private struct LineBoard: View {
                 Spacer()
                 if let prize { YoseTag(text: "賞金 \(prize)", style: .outlineKin) }
             }
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
+                Spacer(minLength: 0)
                 Text("通過ライン").font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi)
                 Text("\(line)").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
                 Text("▶").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.haiSumi)
-                Spacer(minLength: 0)
                 YosePowerBadge(power: power, compact: true)
+                if power < line { YoseTag(text: "あと\(line - power)不足", style: .outlineShu) }
+                Spacer(minLength: 0)
             }
         }
         .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
