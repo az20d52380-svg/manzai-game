@@ -318,12 +318,20 @@ struct StageSign: View {
     let title: String
     var subtitle: String? = nil
     var tag: String? = nil
+    /// 大会の大看板（頂グランプリ等）：消金の墨袋文字26ptにする
+    var outlined = false
     var body: some View {
         VStack(spacing: 3) {
             HStack(spacing: 8) {
                 if let tag { YoseTag(text: tag, style: .solidEnji) }
-                Text(title).font(YoseFont.headerTitle).foregroundStyle(YoseColor.kin)
-                    .lineLimit(1).minimumScaleFactor(0.7)
+                if outlined {
+                    YoseOutlinedText(text: title, font: YoseFont.gothic(26, weight: .black), fill: YoseColor.kinBright,
+                                     outlineColor: YoseColor.kuroUrushi, outlineWidth: 1.5, dropShadowY: 2)
+                        .tracking(2).lineLimit(1).minimumScaleFactor(0.7)
+                } else {
+                    Text(title).font(YoseFont.headerTitle).foregroundStyle(YoseColor.kin)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                }
             }
             if let subtitle {
                 Text(subtitle).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari)
@@ -337,6 +345,68 @@ struct StageSign: View {
         .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.7), lineWidth: 0.8).padding(4))
         .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: YoseMetrics.shadowCard) }
         .padding(.horizontal, 24)
+    }
+}
+
+/// 舞台上の短い太字（墨の縁つき・暗い地にも明るい床にも置ける）。旧 Telop（丸ゴ＋ぼかし影）の置き換え。
+struct YTelop: View {
+    let text: String
+    var size: CGFloat = 20
+    var color: Color = YoseColor.kinari
+    var body: some View {
+        YoseOutlinedText(text: text, font: YoseFont.gothic(size, weight: .black), fill: color,
+                         outlineColor: YoseColor.sumi, outlineWidth: 1.5, dropShadowY: 2)
+            .multilineTextAlignment(.center)
+    }
+}
+
+/// 送りの合図 ▼（朱・上下に弾む。演出ひかえめでは止まる）
+struct YoseAdvanceCue: View {
+    var color: Color = YoseColor.kinBright
+    @State private var bob = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var body: some View {
+        Image(systemName: "arrowtriangle.down.fill")
+            .font(.system(size: 12, weight: .black)).foregroundStyle(color)
+            .shadow(color: YoseColor.sumi, radius: 0, x: 0, y: 1)
+            .offset(y: bob ? 3 : 0)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { bob = true }
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+/// 地の文の貼り紙（明朝・左に臙脂の綴じ）。旧 NarrationCard の置き換え。
+struct YoseNarration: View {
+    let text: String
+    var body: some View {
+        Text(text).font(YoseFont.mincho(15)).lineSpacing(5).foregroundStyle(YoseColor.sumi)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .yoseHarigami(isFeatured: true)
+            .padding(.bottom, 2)
+    }
+}
+
+/// 舞台下端の帯（黒漆・消金の上辺・左に朱の縦帯・コンビ名は明朝）。
+struct StageLowerBand: View {
+    let name: String
+    var left: String? = nil
+    var tag: String
+    var body: some View {
+        HStack(spacing: 10) {
+            Rectangle().fill(YoseColor.shu).frame(width: 6)
+            if let left { Text(left).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin) }
+            Text(name).font(YoseFont.mincho(16)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.7)
+            Spacer(minLength: 6)
+            YoseTag(text: tag, style: .outlineKin)
+        }
+        .padding(.trailing, 14).padding(.top, 0)
+        .frame(height: 50, alignment: .center)
+        .background(YoseColor.kuroUrushi)
+        .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
     }
 }
 

@@ -101,7 +101,7 @@ struct FinalsPresentationView: View {
                 ConfettiView().ignoresSafeArea().allowsHitTesting(false)
             }
 
-            VStack(spacing: 18) {
+            VStack(spacing: 10) {
                 broadcastTitle
 
                 Group {
@@ -122,13 +122,13 @@ struct FinalsPresentationView: View {
                     // 送りの合図は▼1種（K4）。採点だけ「1人ずつ」と添える
                     VStack(spacing: 4) {
                         if beat == .open && revealedJudges < 7 {
-                            Telop(text: "タップで1人ずつ発表", size: 13, color: Theme.houseLight)
+                            YTelop(text: "タップで1人ずつ発表", size: 13)
                         }
-                        AdvanceCue(color: Theme.gold)
+                        YoseAdvanceCue()
                     }
                 }
             }
-            .padding(.horizontal, 20).padding(.top, 44).padding(.bottom, 56)
+            .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 62)
 
             // 下部テロップ（番組の下三分帯・コンビ名）
             VStack { Spacer()
@@ -165,6 +165,7 @@ struct FinalsPresentationView: View {
             #if DEBUG
             // 目視用: MZ_FIN=pre/open/board/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
             switch ProcessInfo.processInfo.environment["MZ_FIN"] {
+            case "lot": beat = .lot
             case "pre": beat = .preceding; shown = max(0, d.order - 1)
             case "open": beat = .open; revealedJudges = 5
             case "comments": beat = .comments; revealedJudges = 7
@@ -195,28 +196,15 @@ struct FinalsPresentationView: View {
 
     /// 番組タイトル（黒×金の中継グラフィック）
     private var broadcastTitle: some View {
-        VStack(spacing: 5) {
-            Telop(text: "頂 グランプリ", size: 26, color: Color(hex: 0xFFE9A8))
-            Text("決勝").font(.maru(.sub)).tracking(4).foregroundStyle(.white)
-                .padding(.horizontal, 14).padding(.vertical, 3)
-                .background(LinearGradient(colors: [Theme.verm, Theme.vermD], startPoint: .top, endPoint: .bottom),
-                            in: Capsule())
-                .overlay(Capsule().stroke(Theme.gold.opacity(0.8), lineWidth: 1))
-        }
+        StageSign(title: "頂 グランプリ", tag: "決勝", outlined: true)
+            .padding(.horizontal, -4)
     }
 
-    /// 下部テロップ帯（コンビ名・M-1の下三分）
+    /// 下部テロップ帯（コンビ名・M-1の下三分）。今が何番手かを常に出す
     private var lowerThird: some View {
-        HStack(spacing: 10) {
-            Rectangle().fill(Theme.verm).frame(width: 5)
-            Text(spectator ? "客席から" : session.combiName).font(.maru(.body)).foregroundStyle(.white)
-            Spacer()
-            Text(spectator ? session.combiName : "結成\(session.year)年").font(.maru(.sub)).foregroundStyle(Theme.gold)
-        }
-        .padding(.horizontal, 16).frame(height: 46)
-        .background(Theme.lowerThird.opacity(0.96))
-        .overlay(alignment: .top) { Rectangle().fill(Theme.gold.opacity(0.85)).frame(height: 1.5) }
-        .padding(.bottom, 0)
+        StageLowerBand(name: spectator ? session.combiName : session.combiName,
+                       left: spectator ? "客席から" : nil,
+                       tag: spectator ? "結成\(session.year)年目・観戦" : (d.order > 0 ? "結成\(session.year)年目・第\(d.order)番" : "結成\(session.year)年目"))
     }
 
     private func advance() {
@@ -331,25 +319,41 @@ struct FinalsPresentationView: View {
     // MARK: Beat 0 — 籤（出順）
     private var lotBeat: some View {
         // 札は上に小さく置き、舞台の二人（StageFrame の performers）を隠さない
-        VStack(spacing: 8) {
-            Telop(text: "出順発表", size: 15)
-            // 金縁の出順プレート（テレビの札）
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(d.order)").font(.maru(56, weight: .black)).monospacedDigit()
-                    .foregroundStyle(Theme.sumi)
-                Text("番目 ／ 全10組").font(.maru(.sub)).foregroundStyle(Theme.goldDeep)
+        let slots = d.entries.sorted { $0.order < $1.order }
+        return VStack(spacing: 8) {
+            // 中央メイン札（出順抽選）
+            VStack(spacing: 2) {
+                Text("出順抽選").font(YoseFont.captionBold).tracking(3).foregroundStyle(YoseColor.enji)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("第").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                    Text("\(d.order)").font(YoseFont.number(48, weight: .black)).foregroundStyle(YoseColor.shu)
+                    Text("番").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                    Text("／ 全10組").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                }
+                Text(session.combiName).font(YoseFont.mincho(22)).foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.6)
             }
-            .padding(.horizontal, 22).padding(.vertical, 2)
-            .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(
-                LinearGradient(colors: [Color(hex: 0xFFE9A8), Theme.gold, Color(hex: 0x8A6508)],
-                               startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2.5))
-            .shadow(color: Theme.gold.opacity(0.35), radius: 16, y: 6)
-            Telop(text: session.combiName, size: 24, color: .white)
-                .lineLimit(1).minimumScaleFactor(0.6)
-            Spacer(minLength: 150)
+            .padding(.horizontal, 28).padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .yoseKifuda(showNail: true)
+            .overlay(RoundedRectangle(cornerRadius: YoseMetrics.radius).stroke(YoseColor.kin, lineWidth: 1.5).padding(6))
+            .padding(.horizontal, 20)
+            Spacer(minLength: 130)
+            // 全10組の出順番付（自組だけ朱枠の特別札）
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 5), spacing: 6) {
+                ForEach(slots, id: \.order) { e in
+                    VStack(spacing: 1) {
+                        Text("\(e.order)").font(YoseFont.number(15, weight: .black))
+                            .foregroundStyle(e.isSelf ? YoseColor.shu : YoseColor.enji)
+                        Text(displayName(e)).font(YoseFont.mincho(11)).foregroundStyle(YoseColor.sumi)
+                            .lineLimit(1).minimumScaleFactor(0.5)
+                    }
+                    .frame(maxWidth: .infinity).frame(height: 40)
+                    .yoseHarigami(isFeatured: e.isSelf)
+                }
+            }
             mcBubble(FinalsMC.call(order: d.order, name: session.combiName))
-                .padding(.bottom, 30)
+                .padding(.top, 4)
         }
     }
 
@@ -432,9 +436,11 @@ struct FinalsPresentationView: View {
 
     // MARK: 司会の吹き出し（決勝の進行役）
     private func mcBubble(_ text: String) -> some View {
-        TalkBubble(advice: Advice(name: FinalsMC.name, text: text), faceSize: 44)
+        YoseSpeechBox(speaker: family(FinalsMC.name), text: text, roleLabel: "司会")
             .transition(.opacity)
     }
+    /// 名前札には姓だけ（「鳴海 ジョー」→「鳴海」）
+    private func family(_ full: String) -> String { String(full.split(separator: " ").first ?? Substring(full)) }
 
     // MARK: 講評（採点の直後・司会が最高点と最低点の審査員に振る）
     /// 講評する審査員（最高点の人→最低点の人。同点は席順の早い方）
