@@ -142,6 +142,10 @@ struct StageFrame: View {
                          bodyColors: rival ? [Color(hex: 0x5A504A), YoseColor.kuroUrushi] : [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
                          headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
                 .position(x: w * 0.5 + figH * 0.52, y: foot - figH * 0.50)
+            if !rival {   // 自組の二人は足元に小さな名札（めくり）
+                StageFootTag(name: "俺", band: YoseColor.kuroUrushi).position(x: w * 0.5 - figH * 0.50, y: foot + 10)
+                StageFootTag(name: "谷口", band: YoseColor.shu).position(x: w * 0.5 + figH * 0.52, y: foot + 10)
+            }
         }
     }
 

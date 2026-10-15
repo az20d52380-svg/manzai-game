@@ -66,15 +66,25 @@ struct StageScene: View {
                 DustField(centerX: micX - w * 0.06, spread: w * 0.30)
                     .allowsHitTesting(false)
 
-                // 8) センターマイク＋二人のめくり札（俺＝黒帯・谷口＝朱帯）。人は図形で描かない（ぼかし影も敷かない）
+                // 8) センターマイク＋二人の人形（俺＝青系・谷口＝赤系）。足元に小さな名札（めくり）を添える
                 if showActors {
                     Group {
                         CenterMic(height: figH * 0.78)
                             .position(x: micX, y: footY - figH * 0.39)
-                        StageNameBoard(name: "俺", band: YoseColor.kuroUrushi, height: figH * 0.86)
-                            .position(x: micX - figH * 0.50, y: footY - figH * 0.43 - 3)
-                        StageNameBoard(name: "谷口", band: YoseColor.shu, height: figH * 0.98)
-                            .position(x: micX + figH * 0.52, y: footY - figH * 0.49 - 3)
+                        ManzaiFigure(height: figH * 0.90, tilt: 2.2, accent: Color(hex: 0x2E55B0),
+                                     breathe: 3.1,
+                                     bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
+                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                            .position(x: micX - figH * 0.52, y: footY - figH * 0.45)
+                        ManzaiFigure(height: figH, tilt: -2.6, accent: Color(hex: 0xB02318),
+                                     breathe: 2.4,
+                                     bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
+                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                            .position(x: micX + figH * 0.54, y: footY - figH * 0.50)
+                        StageFootTag(name: "俺", band: YoseColor.kuroUrushi)
+                            .position(x: micX - figH * 0.52, y: footY - 34)
+                        StageFootTag(name: "谷口", band: YoseColor.shu)
+                            .position(x: micX + figH * 0.54, y: footY - 34)
                     }
                     .scaleEffect(1.15, anchor: UnitPoint(x: micX / w, y: footY / h))
                 }
@@ -133,26 +143,22 @@ struct StageScene: View {
     }
 }
 
-/// 舞台のめくり名札（寄席のめくり札＝二人の立ち位置。縦書きの名前・上に帯・墨枠＋ハードシャドウ）
-struct StageNameBoard: View {
+/// 人形の足元に添える小さなめくり名札（横長・左に帯・墨枠＋ベタ影）
+struct StageFootTag: View {
     let name: String
     let band: Color
-    let height: CGFloat
     var body: some View {
-        VStack(spacing: 0) {
-            Rectangle().fill(band).frame(height: 14)
-                .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
-            VStack(spacing: 2) {
-                ForEach(Array(name), id: \.self) { ch in
-                    Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
-                }
-            }
-            .frame(maxHeight: .infinity)
+        HStack(spacing: 0) {
+            Rectangle().fill(band).frame(width: 6)
+            Text(name).font(YoseFont.mincho(12)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .padding(.horizontal, 5)
         }
-        .frame(width: 56, height: height)
+        .frame(height: 16)
         .background(YoseColor.washi)
-        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-        .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+        .background(Rectangle().fill(YoseColor.sumi).offset(x: 1.5, y: 1.5))
+        .fixedSize()
     }
 }
 
@@ -176,10 +182,9 @@ struct ManzaiFigure: View {
         let headR = height * 0.30
         ZStack(alignment: .bottom) {
             // 足元の影
-            Ellipse().fill(Theme.ink.opacity(0.20))
-                .frame(width: bodyW * 1.35, height: 10)
-                .offset(y: 6)
-                .blur(radius: 3)
+            Ellipse().fill(YoseColor.sumi.opacity(0.28))
+                .frame(width: bodyW * 1.35, height: 8)
+                .offset(x: 2, y: 5)
             VStack(spacing: -headR * 0.34) {
                 // 頭（肌＋髪のキャップ）
                 Circle()
@@ -191,12 +196,16 @@ struct ManzaiFigure: View {
                                 .mask(alignment: .top) { Rectangle().frame(height: headR * 0.52) }
                         }
                     }
+                    .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     .frame(width: headR, height: headR)
                 // 胴（上着）
                 UnevenRoundedRectangle(topLeadingRadius: bodyW * 0.42, bottomLeadingRadius: 9,
                                        bottomTrailingRadius: 9, topTrailingRadius: bodyW * 0.42)
                     .fill(LinearGradient(colors: bodyColors, startPoint: .top, endPoint: .bottom))
                     .frame(width: bodyW, height: bodyH)
+                    .overlay(UnevenRoundedRectangle(topLeadingRadius: bodyW * 0.42, bottomLeadingRadius: 9,
+                                                    bottomTrailingRadius: 9, topTrailingRadius: bodyW * 0.42)
+                        .stroke(YoseColor.sumi, lineWidth: 1.5))
                     .overlay(alignment: .top) {
                         // 首元のマフラー（コンビ色の記号）
                         Capsule().fill(accent)
