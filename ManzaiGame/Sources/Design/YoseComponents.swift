@@ -23,6 +23,7 @@ struct YoseHeaderBar: View {
                 VStack(spacing: 1) {
                     Text(title)
                         .font(YoseFont.gothic(19, weight: .heavy)).tracking(1)
+                        .lineLimit(1).minimumScaleFactor(0.5)   // 長い題（エンディング図鑑）が途中で折れない
                         .foregroundStyle(YoseColor.kin)
                         .shadow(color: YoseColor.kuroUrushi, radius: 0, x: 0, y: 1.5)
                     if let subtitle {
