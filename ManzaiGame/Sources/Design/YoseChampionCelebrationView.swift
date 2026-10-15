@@ -705,21 +705,22 @@ private struct ChampionStageBackdropCanvas: View {
 
                 guard isLit else {
                     // 溜め：中央へ落ちる細いピンスポットと、中心へ吸い込まれる金粉
-                    let cx = size.width / 2, focusY = size.height * 0.40
+                    let cx = size.width / 2, focusY = size.height * 0.40, floorY = size.height * 0.72
                     let grow = min(1.0, max(0.0, t / 0.28))
                     var spot = Path()
                     spot.move(to: CGPoint(x: cx - 3, y: 0)); spot.addLine(to: CGPoint(x: cx + 3, y: 0))
-                    spot.addLine(to: CGPoint(x: cx + 34, y: focusY + 70)); spot.addLine(to: CGPoint(x: cx - 34, y: focusY + 70))
+                    spot.addLine(to: CGPoint(x: cx + 58, y: floorY)); spot.addLine(to: CGPoint(x: cx - 58, y: floorY))
                     spot.closeSubpath()
                     context.fill(spot, with: .linearGradient(
                         Gradient(colors: [Color(hex: 0xFFF2C4).opacity(0.05), Color(hex: 0xFFF2C4).opacity(0.30 + 0.25 * grow), Color(hex: 0xFFF2C4).opacity(0.0)]),
-                        startPoint: CGPoint(x: cx, y: 0), endPoint: CGPoint(x: cx, y: focusY + 70)))
-                    context.fill(Path(ellipseIn: CGRect(x: cx - 60, y: focusY + 40, width: 120, height: 22)),
+                        startPoint: CGPoint(x: cx, y: 0), endPoint: CGPoint(x: cx, y: floorY)))
+                    context.fill(Path(ellipseIn: CGRect(x: cx - 90, y: floorY - 12, width: 180, height: 26)),
                                  with: .radialGradient(Gradient(colors: [YoseColor.kinBright.opacity(0.45), .clear]),
-                                                       center: CGPoint(x: cx, y: focusY + 51), startRadius: 0, endRadius: 60))
+                                                       center: CGPoint(x: cx, y: floorY + 1), startRadius: 0, endRadius: 90))
                     for k in 0..<16 {
-                        let ang = Double(k) / 16.0 * 2 * .pi + Double(k % 3) * 0.4
-                        let r0 = 90.0 + Double(k % 4) * 14.0
+                        let jit = abs(sin(Double(k) * 12.9898) * 43758.5453).truncatingRemainder(dividingBy: 1)
+                        let ang = Double(k) / 16.0 * 2 * .pi + (jit - 0.5) * 0.9
+                        let r0 = 60.0 + jit * 120.0
                         let r = r0 * (1.0 - 0.9 * grow)
                         let pt = CGPoint(x: cx + CGFloat(cos(ang) * r), y: focusY + CGFloat(sin(ang) * r * 0.8))
                         let sz: CGFloat = 2.0 + CGFloat(k % 3)
@@ -896,7 +897,7 @@ private struct ChampionCannonAndConfettiCanvas: View {
                     for i in 0..<tapeCount {
                         let seed = Double(i) * 1.618
                         let fromLeft = (i % 2 == 0)
-                        let originX: CGFloat = fromLeft ? -8 : size.width + 8
+                        let originX: CGFloat = fromLeft ? 16 : size.width - 16
                         let originY: CGFloat = size.height * 0.76
 
                         let delay = Double(i % 6) * 0.035
@@ -927,7 +928,7 @@ private struct ChampionCannonAndConfettiCanvas: View {
                         context.stroke(
                             ribbon,
                             with: .color(color.opacity(0.90)),
-                            lineWidth: (i % 4 == 0) ? 4.0 : 2.5
+                            lineWidth: (i % 4 == 0) ? 5.0 : 3.5
                         )
                     }
                 }
