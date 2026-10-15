@@ -216,13 +216,13 @@ struct TournamentEntryView: View {
                 if spec.osaka {
                     let busTotal = session.config.calendar.busTravel.cost + fee
                     let trainTotal = session.config.calendar.trainTravel.cost + fee
-                    entryButton("夜行バスで出場", glyph: "bus.fill", sub: "¥\(busTotal.formatted())（交通費＋参加費）・体力を使う",
+                    entryButton("夜行バスで出場", glyph: "bus.fill", sub: "¥\(busTotal.formatted())（交通費＋エントリー費）・体力を使う",
                                 enabled: session.state.money >= busTotal) { session.decideTournament(.夜行バス) }
-                    entryButton("新幹線で出場", glyph: "tram.fill", sub: "¥\(trainTotal.formatted())（交通費＋参加費）・体力温存",
+                    entryButton("新幹線で出場", glyph: "tram.fill", sub: "¥\(trainTotal.formatted())（交通費＋エントリー費）・体力温存",
                                 enabled: session.state.money >= trainTotal) { session.decideTournament(.新幹線) }
                 } else {
-                    let cost = fee   // 東京開催は参加費のみ（WeekRunner.resolveTournament と同じ条件・監査G-05）
-                    entryButton("出場する", glyph: "mic.fill", sub: "東京開催・参加費 ¥\(cost.formatted())",
+                    let cost = fee   // 東京開催はエントリー費のみ（WeekRunner.resolveTournament と同じ条件・監査G-05）
+                    entryButton("出場する", glyph: "mic.fill", sub: "東京開催・エントリー費 ¥\(cost.formatted())",
                                 enabled: session.state.money >= cost) { session.decideTournament(.夜行バス) }
                 }
                 Button { session.decideTournament(nil) } label: { Text("見送る") }
@@ -234,7 +234,7 @@ struct TournamentEntryView: View {
         .background(YoseColor.kinari.ignoresSafeArea())
     }
 
-    /// 出場ボタン（物理ボタン。費用は交通費＋参加費の合計・B13）。払えない時は押せない表示で理由を出す
+    /// 出場ボタン（物理ボタン。費用は交通費＋エントリー費の合計・B13）。払えない時は押せない表示で理由を出す
     private func entryButton(_ title: String, glyph: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: { if enabled { action() } }) {
             HStack(spacing: 12) {
