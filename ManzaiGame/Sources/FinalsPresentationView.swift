@@ -108,7 +108,8 @@ struct FinalsPresentationView: View {
             // 下半分の座布団（観客の頭・床の茶色を黒漆で沈め、ボタンの土台にする）
             VStack(spacing: 0) {
                 Spacer()
-                LinearGradient(colors: [.clear, YoseColor.kuroUrushi.opacity(0.82)], startPoint: .top, endPoint: .bottom)
+                LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: YoseColor.kuroUrushi.opacity(0.88), location: 0.3),
+                                       .init(color: YoseColor.kuroUrushi, location: 0.58)], startPoint: .top, endPoint: .bottom)   // ボタンと黒帯の間に客の頭を挟まない
                     .frame(height: 170)
             }
             .ignoresSafeArea().allowsHitTesting(false)

@@ -401,8 +401,9 @@ struct StageLowerBand: View {
             if let left { Text(left).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin) }
             Text(name).font(YoseFont.mincho(16)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.7)
             Spacer(minLength: 6)
-            Text(tag).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
-                .padding(.horizontal, 8).frame(height: 24)
+            Text(tag).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                .padding(.horizontal, 9).frame(height: 28)
+                .background(YoseColor.enji)
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                 .fixedSize()
         }
