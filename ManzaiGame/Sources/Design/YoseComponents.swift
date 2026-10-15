@@ -57,7 +57,7 @@ struct YoseHeaderBar: View {
 }
 
 // MARK: ② ボタン
-enum YoseButtonRole { case primary, secondary, command }
+enum YoseButtonRole { case primary, secondary, command, kifuda }   // kifuda=フッタータブ用の木札色
 
 struct YoseButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
@@ -78,6 +78,7 @@ struct YoseButtonStyle: ButtonStyle {
     }
     private var fillColor: Color {
         guard isEnabled else { return YoseColor.ginNezu }
+        if role == .kifuda { return YoseColor.ki }
         return role == .primary ? YoseColor.shu : YoseColor.washi
     }
     private var textColor: Color {
@@ -104,6 +105,9 @@ struct YoseButtonStyle: ButtonStyle {
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: YoseMetrics.radius))
+            .overlay {
+                if role == .kifuda && isEnabled { RoundedRectangle(cornerRadius: 1).stroke(YoseColor.kiDark, lineWidth: 1).padding(3) }
+            }
             .overlay(RoundedRectangle(cornerRadius: YoseMetrics.radius)
                 .stroke(!isEnabled ? YoseColor.haiSumi : (highlight ? YoseColor.shu : YoseColor.sumi), lineWidth: !isEnabled ? 1.5 : (highlight ? 2.5 : 2)))
             .overlay(alignment: .bottomTrailing) {

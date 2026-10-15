@@ -113,7 +113,7 @@ struct YoseFooterTabBar: View {
                     }
                     .frame(maxWidth: .infinity).frame(height: 44)
                 }
-                .buttonStyle(YoseButtonStyle(.secondary))
+                .buttonStyle(YoseButtonStyle(.kifuda))
             }
         }
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 8)
