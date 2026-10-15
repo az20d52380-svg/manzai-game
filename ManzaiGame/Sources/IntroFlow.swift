@@ -397,65 +397,66 @@ struct NameEntryView: View {
     @State private var inkWet = false
     @FocusState private var focused: Bool
 
+    private static let candidates = ["なんば亭", "ぽんぽこ座", "ドラ焼き兄弟", "三時のおやつ", "ひだまり劇場",
+                                     "すっぽん横丁", "ハチミツ堂", "夜更かしバンビ", "ちゃぶ台ガレージ", "しゃべり場"]
+
     var body: some View {
-        ZStack {
-            Theme.bgGradient.ignoresSafeArea()
-            VStack(spacing: Theme.Sp.s16) {
-                // 二人（色付き）＋センターマイク＝これから名前を付けるコンビ（見た目の作り直し v1 §6 I3）
-                ZStack(alignment: .bottom) {
-                    Ellipse().fill(Theme.ink.opacity(0.10)).frame(width: 220, height: 18).blur(radius: 3)
-                    HStack(alignment: .bottom, spacing: 18) {
-                        ManzaiFigure(height: 120, tilt: 2.2, accent: Color(hex: 0x2E55B0), breathe: 3.1,
-                                     bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
-                        CenterMic(height: 96)
-                        ManzaiFigure(height: 132, tilt: -2.6, accent: Color(hex: 0xB02318), breathe: 2.4,
-                                     bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
-                    }
+        VStack(spacing: 0) {
+            YoseHeaderBar(title: "コンビ結成")
+            VStack(spacing: 14) {
+                Text("コンビ名を、決めよう。").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                    .padding(.top, 22)
+
+                // めくり札（横額縁・金の内枠・上に太鼓鋲）に名前を書く
+                VStack(spacing: 8) {
+                    TextField("", text: $name, prompt: Text("例：なんば亭").foregroundColor(YoseColor.disabledText))
+                        .onChange(of: name) { _, v in if v.count > 12 { name = String(v.prefix(12)) } }
+                        .font(YoseFont.mincho(28)).foregroundStyle(YoseColor.sumi)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                        .focused($focused)
+                        .submitLabel(.done)
+                        .onSubmit(decide)
+                    Text("※最大12文字").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                 }
-                .padding(.top, 40)
+                .padding(.vertical, 22).padding(.horizontal, 18)
+                .frame(maxWidth: .infinity)
+                .yoseHarigami(isFeatured: true)
+                .overlay(alignment: .top) {
+                    HStack { rivet; Spacer(); rivet }.padding(.horizontal, 10).padding(.top, 8)
+                }
+                .scaleEffect(inkWet ? 1.03 : 1)
+                .padding(.horizontal, 24)
 
-                Text("コンビ名を、決めよう。").font(.maru(.title)).foregroundStyle(Theme.ink)
-
-                // めくり札（白紙に墨・上に紐の輪2つ）に名前を書く
-                TextField("コンビ名", text: $name)
-                    .onChange(of: name) { _, v in if v.count > 12 { name = String(v.prefix(12)) } }   // 監査G-09: 長い名前で画面が崩れる
-                    .font(.maru(30, weight: .black)).foregroundStyle(Theme.sumi)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1).minimumScaleFactor(0.6)
-                    .focused($focused)
-                    .submitLabel(.done)
-                    .onSubmit(decide)
-                    .padding(.vertical, 26).padding(.horizontal, 18)
-                    .frame(maxWidth: .infinity)
-                    .background(Theme.mekuri, in: RoundedRectangle(cornerRadius: 6))
-                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.paperEdge, lineWidth: 1.5))
-                    .overlay(alignment: .top) {
-                        HStack(spacing: 120) { ring; ring }.offset(y: -7)   // 紐の輪（めくり札の印）
-                    }
-                    .scaleEffect(inkWet ? 1.03 : 1)
-                    .shadow(color: Theme.ink.opacity(0.14), radius: 10, y: 4)
-                    .padding(.horizontal, Theme.Sp.s32)
+                Button {
+                    var pick = Self.candidates.randomElement() ?? "なんば亭"
+                    if pick == name { pick = Self.candidates.randomElement() ?? pick }
+                    withAnimation(.easeOut(duration: 0.15)) { name = pick }
+                    Haptics.confirm()
+                } label: {
+                    Label("おまかせで考える", systemImage: "dice.fill").font(YoseFont.gothic(15, weight: .heavy))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(YoseButtonStyle(.secondary))
+                .padding(.horizontal, 24)
 
                 Button(action: decide) {
-                    Text("これでいく").font(.maru(.body)).foregroundStyle(.white)
-                        .frame(maxWidth: .infinity, minHeight: 52)
-                        .background(name.isEmpty ? Theme.inkFaint : Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
-                        .shadow(color: name.isEmpty ? .clear : Theme.vermD, radius: 0, y: 3)
+                    Text("結成する！").font(YoseFont.gothic(18, weight: .heavy))
+                        .frame(maxWidth: .infinity, minHeight: 54)
                 }
-                .buttonStyle(PressableStyle(enabled: !name.isEmpty))
+                .buttonStyle(YoseButtonStyle(.primary))
                 .disabled(name.isEmpty)
-                .padding(.horizontal, Theme.Sp.s32)
-                Spacer()
+                .padding(.horizontal, 24)
+                Spacer(minLength: 0)
             }
         }
+        .background(YoseColor.kinari.ignoresSafeArea())
         .onAppear { focused = true }
     }
 
-    private var ring: some View {
-        Circle().stroke(Color(hex: 0x8A7A60), lineWidth: 2).frame(width: 12, height: 12)
-            .background(Circle().fill(Theme.mekuri))
+    private var rivet: some View {
+        Rectangle().fill(YoseColor.kuroUrushi).frame(width: 8, height: 8)
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
     }
 
     private func decide() {
@@ -466,6 +467,7 @@ struct NameEntryView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name) }
     }
 }
+
 
 // MARK: フロー統合（title → reminiscence → nameEntry → onComplete(name)）
 
