@@ -422,6 +422,12 @@ struct FinalsPresentationView: View {
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
             ForEach(Array(rows.enumerated()), id: \.element.order) { rank, e in
                 let seated = rank < 3
+                if rank == 3 {
+                    Text("▲ ここまで最終決戦進出（上位3組） ▲").font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari)
+                        .frame(maxWidth: .infinity).frame(height: 20)
+                        .background(YoseColor.shu)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                }
                 HStack(spacing: 10) {
                     Text("\(rank + 1)").font(YoseFont.number(18, weight: .black))
                         .foregroundStyle(seated ? YoseColor.shu : YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7).frame(width: 28)
@@ -434,7 +440,7 @@ struct FinalsPresentationView: View {
                 }
                 .padding(.horizontal, 12).padding(.vertical, 4)
                 .yoseHarigami(isFeatured: seated)
-                .opacity(seated || e.isSelf ? 1 : 0.62)
+                .overlay { if !seated && !e.isSelf { Rectangle().fill(YoseColor.ginNezu.opacity(0.6)).allowsHitTesting(false) } }
             }
             // まだ埋まっていない席は空の札で見せる（3つの椅子を争うと一目で分かる）
             ForEach(rows.count..<max(rows.count, 3), id: \.self) { rank in
