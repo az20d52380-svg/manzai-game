@@ -14,8 +14,8 @@ struct SettingsView: View {
     @AppStorage("vol_se") private var se: Double = 0.8
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
-    @State private var showEndingBook = false
-    @State private var showGlossary = false
+    private enum FullCover: String, Identifiable { case glossary, endingBook; var id: String { rawValue } }
+    @State private var cover: FullCover?
 
     var body: some View {
         ZStack {
@@ -38,11 +38,11 @@ struct SettingsView: View {
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
                         }
                         section("遊び方") {
-                            Button { showGlossary = true } label: { linkRow("用語集") }
+                            Button { cover = .glossary } label: { linkRow("用語集") }
                                 .buttonStyle(.plain)
                         }
                         section("記録") {
-                            Button { showEndingBook = true } label: { linkRow("エンディング図鑑") }
+                            Button { cover = .endingBook } label: { linkRow("エンディング図鑑") }
                                 .buttonStyle(.plain)
                         }
                         // 監査G-02: 押しても何も起きない項目（購入を復元・通知・データ管理・利用規約）は撤去。
@@ -78,10 +78,11 @@ struct SettingsView: View {
             if restartStep > 0, onQuitRun != nil { restartModal }
         }
         // 全画面の開き先は1つにまとめる（同じ View に fullScreenCover を2つ並べると片方が開かないことがある）
-        .fullScreenCover(isPresented: Binding(get: { showEndingBook || showGlossary },
-                                              set: { if !$0 { showEndingBook = false; showGlossary = false } })) {
-            if showGlossary { GlossaryView { showGlossary = false } }
-            else { EndingGalleryView { showEndingBook = false } }
+        .fullScreenCover(item: $cover) { c in
+            switch c {
+            case .glossary: GlossaryView { cover = nil }
+            case .endingBook: EndingGalleryView { cover = nil }
+            }
         }
     }
 

@@ -46,7 +46,9 @@ struct YoseHeaderBar: View {
             }
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 3)
         }
-        .frame(minHeight: 48)   // 標準サイズは従来どおり48。大きい文字では題と副題が収まる高さまで伸びる
+        .frame(minHeight: 48)
+        .fixedSize(horizontal: false, vertical: true)   // 背景色が縦に伸びて画面を食うのを防ぐ
+        // 標準サイズは従来どおり48。大きい文字では題と副題が収まる高さまで伸びる
         .overlay(alignment: .bottom) {
             VStack(spacing: 0) {
                 Rectangle().fill(YoseColor.kin).frame(height: 2)
