@@ -122,8 +122,8 @@ private struct EntryHeader: View {
     let name: String
     var body: some View {
         StageScene()
-            .frame(height: 300)
-            .overlay(alignment: .top) { TournamentPoster(tag: tag, name: name).padding(.top, 64) }
+            .frame(height: 344)   // 看板（上64pt＋約84pt）が二人の頭に被らない高さ
+            .overlay(alignment: .top) { TournamentPoster(tag: tag, name: name).padding(.top, 58) }
             .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
             .clipped()
             .ignoresSafeArea(edges: .top)
@@ -135,13 +135,16 @@ private struct LineBoard: View {
     let week: Int
     let line: Int
     let power: Int
-    let prize: String
+    var prize: String? = nil
+    /// 左端の朱札（GP本番前は「頂GP 決勝」等）。nil なら出さない
+    var stageTag: String? = nil
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 6) {
+                if let stageTag { YoseTag(text: stageTag, style: .solidEnji) }
                 YoseTag(text: "第\(week)週", style: .outlineSumi)
                 Spacer()
-                YoseTag(text: "賞金 \(prize)", style: .outlineKin)
+                if let prize { YoseTag(text: "賞金 \(prize)", style: .outlineKin) }
             }
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text("通過ライン").font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi)
@@ -182,6 +185,12 @@ struct TournamentEntryView: View {
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
                               staminaColor: session.state.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
             VStack(spacing: 10) {
+                // 押せるまま・結果を言葉で明示（ネタ無しでも出られる決まり）
+                if session.selectedNeta == nil || session.state.stamina <= 0 {
+                    Text([session.selectedNeta == nil ? "ネタ無しで出る（上乗せなし）" : nil,
+                          session.state.stamina <= 0 ? "体力が尽きた状態で出る" : nil].compactMap { $0 }.joined(separator: "・"))
+                        .font(YoseFont.captionBold).foregroundStyle(YoseColor.shu)
+                }
                 let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める
                 if spec.osaka {
                     let busTotal = session.config.calendar.busTravel.cost + fee
@@ -234,6 +243,20 @@ struct StagePreludeView: View {
     /// この舞台の目安尺（v2 §4-1補・表示のみ）。nil なら尺の言及をしない
     var requiredLength: NetaLength? = nil
 
+    /// 表示用の通過ライン（名目値。結果画面と同じ単位）。回戦＝その週／敗者復活／決勝。見つからなければ出さない
+    private var nominalLine: Int? {
+        let cal = session.config.calendar
+        if isFinal { return Int(cal.gpFinalLine) }
+        if title == "敗者復活" { return Int(cal.gpRevivalLine) }
+        return cal.gpRounds.first { $0.week == session.week }.map { Int($0.line) }
+    }
+    /// 本番へボタンの下に出す一言＝押せるまま・結果を言葉で明示（ネタ無しは上乗せなし）
+    private var goNote: String? {
+        if session.selectedNeta == nil { return "ネタ無しで出る（上乗せなし）" }
+        if isFinal && session.selectedNeta2 == nil { return "2本目は選ばずに進む" }
+        return nil
+    }
+
     var body: some View {
         VStack(spacing: 14) {
             EntryHeader(tag: "頂 グランプリ", name: title)
@@ -251,14 +274,27 @@ struct StagePreludeView: View {
             }
             .padding(.horizontal, YoseMetrics.screenMargin)
 
+            // ゲームが持っている事実だけ：通過ライン▶いまの実力（審査傾向のような元データの無い物は置かない・％なし）
+            if let line = nominalLine {
+                LineBoard(week: session.week, line: line,
+                          power: Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()),
+                          stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
+                    .padding(.horizontal, YoseMetrics.screenMargin)
+            }
+
             Spacer(minLength: 8)
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
                               staminaColor: session.state.stamina <= 40 ? YoseColor.shu : YoseColor.tokiwa)
             Button {
                 session.advanceAuto()
             } label: {
-                Text("本番へ ▶").font(YoseFont.gothic(18, weight: .heavy))
-                    .frame(maxWidth: .infinity, minHeight: 54)
+                VStack(spacing: 2) {
+                    Text("本番へ ▶").font(YoseFont.gothic(18, weight: .heavy))
+                    if let note = goNote {
+                        Text(note).font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari.opacity(0.9))
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 54)
             }
             .buttonStyle(YoseButtonStyle(.primary)).padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 12)
         }

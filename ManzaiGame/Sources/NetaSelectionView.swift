@@ -46,13 +46,16 @@ struct NetaPickRow: View {
         }
         .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .yoseHarigami(isFeatured: true)
+        .yoseHarigami(isFeatured: selected != nil)   // 未選択は朱の特別枠にしない（選んだ札と見分ける）
     }
 
     private var changeLabel: some View {
-        Text(expanded ? "とじる ▲" : "変更 ▼").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+        let unset = selected == nil && !session.activeNetas.isEmpty
+        return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(12, weight: .heavy))
+            .foregroundStyle(unset && !expanded ? YoseColor.kinari : YoseColor.sumi)
             .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(YoseColor.ki).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+            .background(unset && !expanded ? YoseColor.shu : YoseColor.ki)
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
     }
 
     private func tags(_ neta: Neta) -> some View {
