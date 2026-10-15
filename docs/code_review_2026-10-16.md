@@ -24,3 +24,9 @@
 - 年またぎ: 年末週に riftWarned が立っても次年の最初の自由週で発火。yearHistory は pump の再入で二重に積まない（year ガード）。解散は careerOver・YearResultView・エンディング判定のすべてで扱われている。
 - 決勝の番組化: 結果・点数・票順は `d.voteOrder`/`d.winnerIndex`/`d.entries` を読むだけで、書き換える式は無い。`voteOrder[revealVotes]` は `revealVotes < 7` ガード内。審査員 7 人・サーチライト 4 本の配列添字は範囲固定。acknowledgeWin/Result は `done` ガードで二重に呼ばれない。
 - ゼロ割・force unwrap・メインスレッド外の更新: 新規コードに Task.detached / DispatchQueue.global は無く、割り算の分母は定数（compatCap）。
+
+## 修正済（2026-10-16 preview-all）
+- 1 予告0050: 年末へで消える件＝済（未発火に戻して次年第1週に出す＋旧セーブ復元時も戻す・テスト追加）
+- 2 resultName 残り＝済
+- 3 @discardableResult 付け直し＝済（式不変・swift test 137 green・golden同期OK）
+- 4/3（RootView副作用・finalLineOverride）＝メモのまま
