@@ -41,6 +41,7 @@ struct ShopView: View {
             }
         }
         .padding(.horizontal, 10)
+        .background(YoseColor.kinari)
         .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 1.5).offset(y: 1) }
     }
 
@@ -66,7 +67,7 @@ struct ShopView: View {
                 Button { buy(item) } label: {
                     Text("¥\(price(item).formatted())").font(YoseFont.number(big ? 20 : 17, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
                 }
-                .buttonStyle(YoseButtonStyle(big && ok ? .primary : .secondary))
+                .buttonStyle(YoseButtonStyle(.secondary))   // 値札は全商品同じ見た目（高額だけ朱にしない）
                 .frame(width: 118)
                 .disabled(!ok)
                 if n > 0 {
