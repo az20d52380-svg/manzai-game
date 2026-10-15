@@ -22,6 +22,7 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
@@ -150,6 +151,14 @@ struct WeekMainView: View {
                          onQuitRun: { showSettings = false; session.abandonRun() })
         }
         .overlay { burstCostOverlay }
+        .overlay {
+            if let m = debtNotice {
+                YoseModal(title: "借金", primaryTitle: "わかった", primaryAction: { debtNotice = nil }, cancelTitle: nil) {
+                    Text(m).font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                        .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
@@ -174,9 +183,9 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { showEvent = false } else { syncEventPresentation() }
+            if kind == nil { showEvent = false; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice() } } else { syncEventPresentation() }
         }
-        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowDebtNotice() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
@@ -220,7 +229,10 @@ struct WeekMainView: View {
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
         .onChange(of: session.year) { _, _ in maybeShowTiredNotice() }
-        .onChange(of: session.week) { _, _ in banterIndex = 0 }   // 掛け合いの読み位置は週頭でリセット
+        .onChange(of: session.week) { _, _ in
+            banterIndex = 0
+            Task { try? await Task.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
+        }   // 掛け合いの読み位置は週頭でリセット
         .task(id: toast) {
             if let t = toast {
                 try? await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)
@@ -1103,6 +1115,19 @@ struct WeekMainView: View {
     }
 
     private func showToast(_ t: String) { toast = t }
+
+    /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
+    private func maybeShowDebtNotice() {
+        guard debtNotice == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        let tier = GameSession.debtTier(money: s.money)
+        guard tier > session.debtWarnTier else { return }
+        session.markDebtWarned(tier)
+        switch tier {
+        case 1: debtNotice = "生活費が払えず、借金になった。借金が100万を越えると、芸人を続けられない。"
+        case 2: debtNotice = "借金が50万を越えた。あと50万で、芸人を続けられなくなる。"
+        default: debtNotice = "借金が80万を越えた。あと20万で終わりだ。"
+        }
+    }
 
     /// 年初の週に1回だけ：前の年の大会で使って飽きが進んだネタを事実だけ知らせる（表示のみ）。
     private func maybeShowTiredNotice() {

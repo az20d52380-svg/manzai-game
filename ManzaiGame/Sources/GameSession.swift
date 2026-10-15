@@ -118,6 +118,8 @@ final class GameSession {
     private(set) var watchingFinal = false
     /// 今年の観客版決勝を観終えたか（1年1回）
     private(set) var didWatchFinal = false
+    /// 借金の知らせを出した最も深い段（0=未・1=初マイナス・2=−50万割れ・3=−80万割れ）。1キャリアで各段1回（表示のみ・golden非対象）
+    private(set) var debtWarnTier = 0
     /// 今年の決勝のスコアとラインの差（score − 実効ライン）。決勝演出の順位・票を内部の結果に沿って合成するため
     /// （正＝優勝。0に近いほど接戦）。表示専用・golden非対象
     private(set) var lastFinalMargin: Double?
@@ -195,6 +197,7 @@ final class GameSession {
         self.didFirePassFork = save.didFirePassFork ?? false
         self.didFireEve = save.didFireEve ?? false
         self.didWatchFinal = save.didWatchFinal ?? false
+        self.debtWarnTier = save.debtWarnTier ?? 0
         checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
@@ -876,6 +879,16 @@ final class GameSession {
         // v3（複数年キャリア）
         var yearStartState: GameState?
         var yearHistory: [YearRecord]?
+        var debtWarnTier: Int?
+    }
+
+    /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
+    static func debtTier(money: Int) -> Int { money < -800_000 ? 3 : money < -500_000 ? 2 : money < 0 ? 1 : 0 }
+    /// 借金の知らせを出した段を記録（深い方へだけ進む）
+    func markDebtWarned(_ tier: Int) {
+        guard tier > debtWarnTier else { return }
+        debtWarnTier = tier
+        saveNow()
     }
 
     private static let saveKey = "manzai.save.v1"
@@ -913,7 +926,8 @@ final class GameSession {
                             version: Self.saveVersion,
                             didFireLostRehearsal: didFireLostRehearsal, didFirePassFork: didFirePassFork,
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
-                            yearStartState: yearStartState, yearHistory: yearHistory)
+                            yearStartState: yearStartState, yearHistory: yearHistory,
+                            debtWarnTier: debtWarnTier)
         do {
             let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)

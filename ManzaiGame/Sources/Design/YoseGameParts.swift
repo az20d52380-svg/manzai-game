@@ -54,8 +54,10 @@ struct YoseVitalMoneyBar: View {
                     }
                 }
             }
+            if money < 0 { YoseTag(text: "借金", style: .outlineShu).fixedSize() }   // 所持金マイナスの間だけ（表示のみ）
             Text("¥\(money.formatted(.number))").font(YoseFont.number(17, weight: .heavy))
-                .foregroundStyle(YoseColor.kinBright)
+                .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinBright)
+                .lineLimit(1).fixedSize()
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
         .frame(height: 36)

@@ -112,6 +112,12 @@ struct RootView: View {
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
                 session = GameSession(startState: st)
             }
+            if ui == "debt", session.week <= 1, session.year == 1 {
+                // 借金の知らせ・朱の表示の目視: MZ_MONEY=<円> で所持金を指定して週メインを開く（例 -100000 / -600000 / -900000）
+                var st = GameState(config: session.config); st.compat = 10
+                st.money = Int(ProcessInfo.processInfo.environment["MZ_MONEY"] ?? "") ?? -100_000
+                session = GameSession(startState: st)
+            }
             if ui == "juice" {
                 // ジュース目視: 2秒後にネタ作りを自動実行＝Beat2バースト＋パーティクル＋ピル跳ねをスクショで拾う
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
