@@ -38,7 +38,7 @@ struct NotebookView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            YoseHeaderBar(title: "ネタ帳", subtitle: session.combiName, closeAction: onClose)
+            YoseHeaderBar(title: "コンビ", subtitle: session.combiName, closeAction: onClose)
             YoseTopTabBar(tabs: ["能力", "戦績", "持ちネタ"], selectedIndex: tabIndex)
                 .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
             ScrollView {
@@ -83,6 +83,23 @@ struct NotebookView: View {
                 Text("今年はもう、能力が伸びにくい（年が明けると戻る）。")
                     .font(YoseFont.mincho(13)).foregroundStyle(YoseColor.haiSumi).padding(.top, 6)
             }
+            // コンビの名札（ゲームが持っている事実だけ）
+            VStack(spacing: 6) {
+                Text("コンビの名札").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                    .frame(maxWidth: .infinity).padding(.vertical, 5).background(YoseColor.enji)
+                ForEach([("コンビ名", session.combiName), ("相　方", "谷口"), ("いま", "\(session.year)年目　第\(session.week)週")], id: \.0) { row in
+                    HStack {
+                        Text(row.0).font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        Text(row.1).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 3)
+                }
+                Color.clear.frame(height: 6)
+            }
+            .frame(maxWidth: .infinity)
+            .yoseHarigami()
+            .padding(.top, 6)
         }
     }
 
@@ -98,7 +115,7 @@ struct NotebookView: View {
             Text("\(a)").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .frame(width: 64, alignment: .leading).lineLimit(1).minimumScaleFactor(0.8)
             YoseGauge(value: Theme.rankProgress(v, cap: cap), total: 1, fill: YoseColor.shu, height: 12)
-            Text("\(Int(v.rounded()))").font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            Text("\(Int(v.rounded()))").font(YoseFont.number(22, weight: .black)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
                 .frame(width: 48, alignment: .trailing)
         }
