@@ -721,11 +721,12 @@ struct WeekMainView: View {
                 if let n = session.selectedNeta { return "\(session.activeNetas.count)本 ・ 勝負ネタ「\(n.name)」" }
                 return session.activeNetas.isEmpty ? "まだネタがない。まず一本" : "\(session.activeNetas.count)本 書いた"
             case .練習: return gated ? "" : "合わせ・舞台 ほか"
-            case .バイト, .休む: return ""   // 名前＋判子アイコンで足りる（説明文は廃止）
+            case .バイト: return "お金を稼ぐ"   // 6枚とも2段（名前＋一言）に揃える（監査 r4 04）
+            case .休む: return "体力を回復"
             case .能力アップ:
                 if unspentBeforeStage { return "" }   // 朱札「未振分あり」と上の看板が言う
-                return expGrains > 0 ? "経験点 \(expGrains) たまってる" : ""
-            case .お店: return ""
+                return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で強化"
+            case .お店: return "アイテムを買う"
             }
         }()
         return Button {
@@ -1047,6 +1048,7 @@ struct WeekMainView: View {
     private var botbar: some View {
         VStack(spacing: 0) {
             YoseVitalMoneyBar(stamina: Int(s.stamina.rounded()), maxStamina: 100, money: s.money,
+                              fame: Int(s.fame.rounded()),
                               staminaColor: s.stamina <= 40 ? YoseColor.shu : Color(hex: 0x3B7A4E))
                 .opacity(gaugeFlash ? 0.5 : 1)
                 .onChange(of: staminaZone) { old, new in
