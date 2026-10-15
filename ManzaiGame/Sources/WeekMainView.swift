@@ -50,6 +50,9 @@ struct WeekMainView: View {
     @State private var burstGen = 0
     /// Beat2 をタップで畳む要求（規格K6「待ちは畳める」）。立てると Beat2 の残りの間が即終わる（退場は見せる）。
     @State private var burstSkip = false
+    /// 押した行動名（perform で立て、Beat2 のタスクが結果の一行にして消費する）と、その結果札の表示。
+    @State private var resultName: String?
+    @State private var resultLine: String?
     /// 選択肢イベントを今出すか。pendingChoiceEvent と burstHold の「変化」で明示的に判定し直す
     /// （合成 Binding の get だけに任せると、保留が外れても提示が読み直されず、次のタップまで出ない不具合があった）。
     @State private var showEvent = false
@@ -87,6 +90,13 @@ struct WeekMainView: View {
         case "settings": showSettings = true
         case "notebook": showNotebook = true
         case "calendar": showCalendar = true
+        case "autojob":   // 結果札の目視: 2.5秒おきにバイトを自動実行（結果→次週のイベントの順を撮る）
+            Task {
+                for _ in 0..<3 {
+                    try? await Task.sleep(nanoseconds: 2_500_000_000)
+                    if let v = CommandCatalog.cards(.バイト, config: session.config, money: s.money).first, session.pendingChoiceEvent == nil { perform(v) }
+                }
+            }
         default: break
         }
     }
@@ -218,8 +228,12 @@ struct WeekMainView: View {
             func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
             guard session.lastDeltaWeek == session.week else { clearBeat(); return }
             let chips = makeBurstChips()
-            guard !chips.isEmpty else { clearBeat(); return }
+            let line = makeResultLine()
+            resultName = nil
+            guard !chips.isEmpty || line != nil else { clearBeat(); return }
             burstChips = chips
+            if let line { withAnimation(Theme.Motion.appear) { resultLine = line } }
+            defer { if resultLine != nil { withAnimation(Theme.Motion.exit) { resultLine = nil } } }
             burstVisible = true   // 出現は per-chip の emphSpring+stagger（burstOverlay 側）
             if chips.contains(where: \.up) {
                 particleFire += 1     // 同時に立ち絵の頭上で火花が爆ぜる（獲得の「効いた」）
@@ -227,7 +241,7 @@ struct WeekMainView: View {
                 Sound.play(lastJitsuryokuGain > 0.001 ? .grain : .pop)
             }   // 体力が減るだけの週は火花も集中線も音も出さない（損を祝わない・R4 の穴①）
             if session.lastMoneyDelta > 0 { Sound.play(.money) }
-            await waitOrSkip(seconds: 1.2)   // 画面タップで畳める（K6）
+            await waitOrSkip(seconds: chips.isEmpty ? 1.0 : 1.2)   // 画面タップで畳める（K6）
             clearBeat()
             burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
             try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
@@ -302,6 +316,18 @@ struct WeekMainView: View {
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .top) {
+                // 結果札: 押した行動の実際の増減を一行で（次の週のイベントより先に見せる・触れない）。
+                if let line = resultLine {
+                    Text(line)
+                        .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .padding(.horizontal, 16).padding(.vertical, 8)
+                        .background(YoseColor.kuroUrushi)
+                        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(2))
+                        .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+                        .padding(.top, 74)
+                        .transition(.asymmetric(insertion: .scale(scale: 0.88).combined(with: .opacity), removal: .opacity))
+                        .allowsHitTesting(false)
+                }
                 // 週送りスタンプ: 週が明けた瞬間に「第N週」が一拍だけ立つ（Beat2 の前座・触れない）。
                 // 黒漆の横札＋金枠（YoseToast と同じ語彙）。めくり札・マイクに被らない舞台の上段に掲げる。
                 if weekStampVisible {
@@ -698,6 +724,7 @@ struct WeekMainView: View {
         beatTask = Task {
             try? await Task.sleep(nanoseconds: 120_000_000)
             if showBeat { try? await Task.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
+            resultName = v.name
             burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
             burstHold = true
             Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
@@ -999,6 +1026,24 @@ struct WeekMainView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 .allowsHitTesting(false)
         }
+    }
+
+    /// 押した行動の結果を一行に（実際の状態差のみ・新規計算なし・％なし）。例「バイト　所持金 +64,000」
+    private func makeResultLine() -> String? {
+        guard let name = resultName else { return nil }
+        func signed(_ n: Int) -> String {
+            let f = NumberFormatter(); f.numberStyle = .decimal
+            return (n > 0 ? "+" : "−") + (f.string(from: NSNumber(value: abs(n))) ?? "\(abs(n))")
+        }
+        var parts: [String] = []
+        let md = session.lastMoneyDelta
+        if md != 0 { parts.append("所持金 \(signed(md))") }
+        let exp = AbilityUpView.points(session.lastGrainGains.reduce(0) { $0 + $1.amount })
+        if exp > 0 { parts.append("経験点 +\(exp)") }
+        let sd = session.lastStaminaDelta
+        if sd != 0 { parts.append("体力 \(signed(sd))") }
+        guard !parts.isEmpty else { return nil }
+        return ([name] + parts.prefix(2)).joined(separator: "　")
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
