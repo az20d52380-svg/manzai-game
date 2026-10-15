@@ -40,6 +40,8 @@ struct RootView: View {
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                 }
             } else {
+            if let fx = ProcessInfo.processInfo.environment["MZ_FX"] { YoseFXPreview(kind: fx) }   // 演出の単独再生（MZ_FX=rankup/yearturn/burst/pass/champion/cutin/streak）
+            else {
             switch ProcessInfo.processInfo.environment["MZ_UI"] {
             case "notebook": NotebookView(session: session, onClose: {})   // S5目視（能力は.taskでgrown）
                 .onAppear { if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { session.debugSeedKirokuLog() } }
@@ -55,6 +57,7 @@ struct RootView: View {
             case "catalog": YoseCatalogView()                               // デザイン部品見本
             case "frame": StageFramePreview(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
+            }
             }
             }
             #else

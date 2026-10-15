@@ -10,6 +10,7 @@
 		07755E46FD8EC92ACE98C353 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9602D87CE2E13D9365DE6EEE /* SoundManager.swift */; };
 		085B8C61648D2030E1CAA987 /* bgm_daily.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 024DBFE5B9622AFE4F257FBA /* bgm_daily.mp3 */; };
 		0925CDD9634B4E4FADD702CC /* StageViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584B31B6D7B7B692F33CC50E /* StageViews.swift */; };
+		0B34AAF95695F5153E2B33D9 /* YoseEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = F154485CAC8C1E8A41BD89A9 /* YoseEffects.swift */; };
 		0BCC02D48F08FBE904F7745A /* se_event.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AFF716652A1CEF538F57F1BF /* se_event.mp3 */; };
 		11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18155352CE011A350B1DEC6 /* WeekMainView.swift */; };
 		13105DD511B67B290F9706DE /* se_tap.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 62ED400B84054F70C3BA1883 /* se_tap.mp3 */; };
@@ -19,6 +20,7 @@
 		1FCCD2091EABB90AE69CD4DA /* se_cancel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */; };
 		20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */; };
 		21E800CFC18797B54C85B120 /* StageScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1F087A453470E4CF970A6B /* StageScene.swift */; };
+		23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */; };
 		2643395E9DDCAF2BA532E57B /* se_grain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */; };
 		274A09C6852CB442400DAE49 /* se_taiko.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */; };
 		290A540EAC4D4FD7912614B4 /* se_tada.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */; };
@@ -45,6 +47,7 @@
 		70D5CD0C4FBD5217C11058D4 /* YoseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D87A214DB8E1FE8512D92D /* YoseComponents.swift */; };
 		74DDE7A5903D2D4934E9536F /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = 27B231D4CDB45E90519F75D6 /* GameCore */; };
 		78C7F495D368DDFE1BD4AAC9 /* YoseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */; };
+		78C8C1B88DF1C8660332C114 /* YoseYearTurnCurtain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84CB9905639D09C704FC9DB /* YoseYearTurnCurtain.swift */; };
 		7929C910D01A177FA32BE25C /* FanReportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08B86D882DE6689C655ADD0C /* FanReportData.swift */; };
 		7A33BA9747B3D7310837D74E /* se_money.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = DA0693E895C9B421B8BE4EAB /* se_money.mp3 */; };
 		7E26DA2DFACB9136A1D39FDD /* se_success.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */; };
@@ -72,6 +75,7 @@
 		C135C70C43982811F7AD0254 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4BD130E2E1C169A1A5799E /* ShopView.swift */; };
 		C712E78003F444653742469B /* Names.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8BA6562B8B9B90803319E52 /* Names.swift */; };
 		C7CC7DDD5702BD8FE0DC6F10 /* YoseMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A020307F3B3C34947A00DD3 /* YoseMotion.swift */; };
+		C892078A22A967AE53124380 /* YoseRankUpOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7C2408A19FD4353246D25 /* YoseRankUpOverlay.swift */; };
 		D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */; };
 		D6DD3EA8BA750EBBFE6DBB11 /* se_rankup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C0518515B27DFACD1B80A893 /* se_rankup.mp3 */; };
 		DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */; };
@@ -127,6 +131,7 @@
 		9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Black.ttf"; sourceTree = "<group>"; };
 		9602D87CE2E13D9365DE6EEE /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		9A6B90BFC5A4AED3BFE09913 /* AbilityUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbilityUpView.swift; sourceTree = "<group>"; };
+		9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseFXPreview.swift; sourceTree = "<group>"; };
 		A274A5E67200827BEBFC258E /* YearResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearResultView.swift; sourceTree = "<group>"; };
 		A56CE862F769B1982A6304E6 /* se_shakin.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_shakin.mp3; sourceTree = "<group>"; };
 		A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TournamentResultView.swift; sourceTree = "<group>"; };
@@ -146,6 +151,7 @@
 		CC1F100811789DF64591C427 /* DialogueData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogueData.swift; sourceTree = "<group>"; };
 		D47D421441D548D881226B2E /* FontLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontLoader.swift; sourceTree = "<group>"; };
 		D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterAvatars.swift; sourceTree = "<group>"; };
+		D84CB9905639D09C704FC9DB /* YoseYearTurnCurtain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseYearTurnCurtain.swift; sourceTree = "<group>"; };
 		D8BA6562B8B9B90803319E52 /* Names.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Names.swift; sourceTree = "<group>"; };
 		DA0693E895C9B421B8BE4EAB /* se_money.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_money.mp3; sourceTree = "<group>"; };
 		DA68AC6CD1C1D0C3A79BB435 /* se_transition.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_transition.mp3; sourceTree = "<group>"; };
@@ -159,8 +165,10 @@
 		EC27C4A85A610F060F476DE5 /* ManzaiGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManzaiGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED71D4E26DB33CA0C24BF06A /* YoseTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseTokens.swift; sourceTree = "<group>"; };
 		EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_tada.mp3; sourceTree = "<group>"; };
+		F154485CAC8C1E8A41BD89A9 /* YoseEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseEffects.swift; sourceTree = "<group>"; };
 		F5D08F932A4334F422E73881 /* JudgeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JudgeData.swift; sourceTree = "<group>"; };
 		F6A618381798F759B9F5580F /* Juice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Juice.swift; sourceTree = "<group>"; };
+		F6A7C2408A19FD4353246D25 /* YoseRankUpOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseRankUpOverlay.swift; sourceTree = "<group>"; };
 		F840A919C087A92A94339899 /* RadarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChart.swift; sourceTree = "<group>"; };
 		FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_tension.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -309,9 +317,13 @@
 				4EE7F6B8DDE4970A034B1FDA /* EventBackgrounds.swift */,
 				0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */,
 				53D87A214DB8E1FE8512D92D /* YoseComponents.swift */,
+				F154485CAC8C1E8A41BD89A9 /* YoseEffects.swift */,
+				9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */,
 				E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */,
 				8A020307F3B3C34947A00DD3 /* YoseMotion.swift */,
+				F6A7C2408A19FD4353246D25 /* YoseRankUpOverlay.swift */,
 				ED71D4E26DB33CA0C24BF06A /* YoseTokens.swift */,
+				D84CB9905639D09C704FC9DB /* YoseYearTurnCurtain.swift */,
 			);
 			path = Design;
 			sourceTree = "<group>";
@@ -459,9 +471,13 @@
 				AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */,
 				78C7F495D368DDFE1BD4AAC9 /* YoseCatalog.swift in Sources */,
 				70D5CD0C4FBD5217C11058D4 /* YoseComponents.swift in Sources */,
+				0B34AAF95695F5153E2B33D9 /* YoseEffects.swift in Sources */,
+				23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */,
 				47D12D77D92D87BBA4D04FCA /* YoseGameParts.swift in Sources */,
 				C7CC7DDD5702BD8FE0DC6F10 /* YoseMotion.swift in Sources */,
+				C892078A22A967AE53124380 /* YoseRankUpOverlay.swift in Sources */,
 				9EE8443D230F2569125B3C1B /* YoseTokens.swift in Sources */,
+				78C8C1B88DF1C8660332C114 /* YoseYearTurnCurtain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
