@@ -471,7 +471,10 @@ struct NameEntryView: View {
                 .frame(maxWidth: .infinity)
                 .yoseHarigami(isFeatured: true)
                 .overlay(alignment: .top) {
-                    HStack { rivet; Spacer(); rivet }.padding(.horizontal, 10).padding(.top, 8)
+                    HStack { rivet; Spacer(); rivet }.padding(.horizontal, 12).padding(.top, 10)
+                }
+                .overlay(alignment: .bottom) {
+                    HStack { rivet; Spacer(); rivet }.padding(.horizontal, 12).padding(.bottom, 10)
                 }
                 .scaleEffect(inkWet ? 1.03 : 1)
                 .padding(.horizontal, 24)
@@ -482,8 +485,13 @@ struct NameEntryView: View {
                     withAnimation(.easeOut(duration: 0.15)) { name = pick }
                     Haptics.confirm()
                 } label: {
-                    Label("おまかせで考える", systemImage: "dice.fill").font(YoseFont.gothic(15, weight: .heavy))
-                        .frame(maxWidth: .infinity)
+                    HStack(spacing: 8) {
+                        Image(systemName: "dice.fill").font(.system(size: 13, weight: .black)).foregroundStyle(YoseColor.kinari)
+                            .frame(width: 24, height: 24).background(YoseColor.enji)
+                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                        Text("おまかせで考える").font(YoseFont.gothic(15, weight: .heavy))
+                    }
+                    .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(YoseButtonStyle(.secondary))
                 .padding(.horizontal, 24)
@@ -503,8 +511,8 @@ struct NameEntryView: View {
     }
 
     private var rivet: some View {
-        Rectangle().fill(YoseColor.kuroUrushi).frame(width: 8, height: 8)
-            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
+        Circle().fill(YoseColor.kuroUrushi).frame(width: 8, height: 8)
+            .overlay(Circle().stroke(YoseColor.kin, lineWidth: 1))
     }
 
     private func decide() {
