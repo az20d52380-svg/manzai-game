@@ -246,7 +246,9 @@ struct WeekMainView: View {
             .overlay(alignment: .topTrailing) { statBars.padding(.trailing, YoseMetrics.screenMargin).padding(.top, 8) }
             .overlay(alignment: .bottomLeading) {
                 // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
-                if let b = beatAdvice {
+                if openCat != nil && beatAdvice == nil {
+                    EmptyView()   // 下位一覧を開いている間は声を出さない（舞台が狭くなっても重ならない）
+                } else if let b = beatAdvice {
                     adviceBox(b).padding(YoseMetrics.screenMargin)
                 } else if let lines = session.weekBanter, !lines.isEmpty {
                     banterBox(lines).padding(YoseMetrics.screenMargin)
@@ -434,25 +436,28 @@ struct WeekMainView: View {
     private var commandZone: some View {
         let extras = extraCards
         let showYearEnd = session.noStagesLeft && session.week < session.config.weeks
-        return VStack(spacing: 9) {
+        return VStack(spacing: 8) {
             // 常設4枚は位置を動かさない（条件付きのカードは下に足す＝親指が覚えた場所が週ごとにずれない）
             if let cat = openCat {
-                // 下位一覧：戻る＋種類のカード（小さめ・2列）。実行したら4ボタンへ戻る
-                HStack(spacing: 8) {
+                // 下位一覧：戻る（副ボタン）＋見出し＋横罫線。実行したら4ボタンへ戻る
+                HStack(spacing: 10) {
                     Button { withAnimation(Theme.Motion.appearQuick) { if pickingNeta { pickingNeta = false } else { openCat = nil; openNetaWrite = false; newNetaTitle = nil } } } label: {
-                        Label("もどる", systemImage: "chevron.left").font(.maru(13, weight: .bold))
-                            .foregroundStyle(Theme.inkSub).padding(.horizontal, 10).padding(.vertical, 6)
-                            .background(Theme.card, in: Rectangle())
-                    }.buttonStyle(PressableStyle())
-                    Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(.maru(16, weight: .heavy)).foregroundStyle(Theme.ink)
-                    Spacer()
+                        Label("もどる", systemImage: "chevron.left").font(YoseFont.gothic(13, weight: .heavy))
+                    }
+                    .buttonStyle(YoseButtonStyle(.secondary))
+                    .frame(width: 92)
+                    Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                    Rectangle().fill(YoseColor.kiDark).frame(height: 1.5)
+                    if cat == .休む && s.stamina >= 99.5 {
+                        Text("今は体力が満タン").font(YoseFont.captionBold).foregroundStyle(YoseColor.shu)
+                    }
                 }
                 if openNetaWrite {
                     netaWriteList.transition(.move(edge: .trailing).combined(with: .opacity))
                 } else {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 2), spacing: 9) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: cat == .バイト ? 1 : 2), spacing: 8) {
                         ForEach(CommandCatalog.cards(cat, config: session.config, money: s.money)) { v in
-                            actionCard(v, compact: true, dashed: false)
+                            actionCard(v, compact: true, dashed: false, wide: cat == .バイト)
                         }
                     }
                     .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -465,7 +470,7 @@ struct WeekMainView: View {
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
             if !extras.isEmpty || showYearEnd {
-                HStack(spacing: 9) {
+                HStack(spacing: 10) {
                     ForEach(extras) { v in actionCard(v, compact: true) }
                     if showYearEnd { yearEndTile }
                 }
@@ -632,7 +637,7 @@ struct WeekMainView: View {
         }
     }
 
-    private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil) -> some View {
+    private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil, wide: Bool = false) -> some View {
         let preoccupied = v.isTrain && s.preoccupiedWeeks > 0                       // 0022 撮影で稽古枠が埋まった週
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
@@ -648,7 +653,7 @@ struct WeekMainView: View {
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
         } label: {
-            actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact)
+            actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact, wide: wide)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
         }
@@ -734,39 +739,37 @@ struct WeekMainView: View {
         .buttonStyle(YoseButtonStyle(.command))
     }
 
-    /// カードの顔: アイコン＋名前／伸び（実力 ↑・相性 +N・ネタ +N）／コスト（所持金・体力）。
-    /// compact（条件付きの小カード）は伸びとコストを1行にまとめ、破線の縁で「今だけのカード」と分ける。
-    private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool, dashed: Bool) -> some View {
+    /// カードの顔（貼り紙）: アイコン箱＋名前／説明／伸び（経験点は正本の5色）／コスト（所持金・体力）。
+    /// 条件付きの小カード（dashed）は金の破線を内側に引いて「今だけのカード」と分ける。
+    /// wide は全幅の横長（バイト用）＝左に名前と説明・右に稼ぎの大きな数字。
+    private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool, dashed: Bool, wide: Bool = false) -> some View {
         let after = session.previewAfterPour(v.action, offer: offer)
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
         let stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
         let tint = cardTint(v)
-        return VStack(alignment: .leading, spacing: compact ? 5 : 7) {
+        let iconBox = Image(systemName: v.glyph)
+            .font(.system(size: compact ? 12 : 14, weight: .bold)).foregroundStyle(YoseColor.kinari)
+            .frame(width: 26, height: 26)
+            .background(gated ? YoseColor.disabledText : tint)
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+        let body = VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 7) {
-                Image(systemName: v.glyph)
-                    .font(.system(size: compact ? 11 : 13, weight: .bold)).foregroundStyle(.white)
-                    .frame(width: compact ? 22 : 26, height: compact ? 22 : 26)
-                    .background(gated ? Theme.inkFaint : tint, in: Rectangle())
-                Text(v.name).font(.maru(compact ? 13 : 15)).foregroundStyle(gated ? Theme.inkSub : Theme.ink)
+                iconBox
+                Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
                     .lineLimit(1).minimumScaleFactor(0.8)
-                if case .acceptOffer = v.action {
-                    Text(v.desc).font(.maru(10)).foregroundStyle(Theme.goldD).lineLimit(1)   // オファー名（既存の OfferSpec.name）
-                }
             }
-            if compact, !dashed, !gated {
-                Text(v.desc).font(.maru(10.5)).foregroundStyle(Theme.inkSub).lineLimit(1)
+            if case .acceptOffer = v.action {
+                Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(1)   // オファー名（既存の OfferSpec.name）
+            } else if !dashed, !gated {
+                Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
             }
             if gated {
-                Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(.maru(13, weight: .bold)).foregroundStyle(Theme.vermD)
+                Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
             } else if !v.affordable {
-                Text("¥不足").font(.maru(10.5)).foregroundStyle(Theme.verm)
-            } else if !compact, !effects.isEmpty {
-                HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0) } }
+                Text("お金が足りない").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
             }
-            if !compact { Spacer(minLength: 0) }
-            // 一覧（compact かつ実線）は伸びとコストを2行に分ける＝2列の幅でも札が切れない
-            if compact, !dashed, !effects.isEmpty {
+            if !wide, !effects.isEmpty {
                 ViewThatFits(in: .horizontal) {   // 入りきらなければ2段に折る（札を「…」で切らない）
                     HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } }
                     VStack(alignment: .leading, spacing: 4) {
@@ -775,43 +778,60 @@ struct WeekMainView: View {
                     }
                 }
             }
-            HStack(spacing: 4) {
-                if compact, dashed { ForEach(effects, id: \.text) { effectPill($0) } }
-                if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
-                if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+            if !wide {
+                HStack(spacing: 4) {
+                    if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
+                    if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                }
             }
         }
-        .padding(.horizontal, 11).padding(.vertical, compact ? 8 : 10)
-        .frame(maxWidth: .infinity, minHeight: compact ? nil : 92, maxHeight: compact ? .infinity : nil, alignment: .topLeading)
-        .background(Rectangle().fill(gated ? Color(hex: 0xF3EFE7) : Theme.card).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-        .overlay(Rectangle()
-            .stroke(gated ? Theme.lineStrong.opacity(0.4) : tint.opacity(compact ? 0.8 : 0.55),
-                    style: StrokeStyle(lineWidth: 3, dash: dashed ? [6, 4] : [])))
-        .overlay(alignment: .topTrailing) {
-            if !gated { DogEar(size: 16).fill(Theme.sumi.opacity(0.85)).frame(width: 16, height: 16) }   // 貼り紙の折れ角
+        return Group {
+            if wide {
+                HStack(alignment: .center, spacing: 8) {
+                    body
+                    Spacer(minLength: 4)
+                    VStack(alignment: .trailing, spacing: 4) {
+                        if moneyDelta != 0 {
+                            Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
+                                .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
+                                .foregroundStyle(moneyDelta > 0 ? YoseColor.tokiwa : YoseColor.shu)
+                        }
+                        if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                    }
+                }
+            } else {
+                body.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
         }
-        // 押せないカードは地と縁で言う（全体を薄くすると一番読ませたい「今日は休め」が1.8〜2.2:1まで落ちた）
+        .padding(.horizontal, 11).padding(.vertical, compact ? 9 : 10)
+        .frame(maxWidth: .infinity, minHeight: wide ? 70 : nil, maxHeight: wide ? nil : .infinity, alignment: .topLeading)
+        .background(gated ? YoseColor.ginNezu.opacity(0.6) : Color.clear)
+        .yoseHarigami()
+        .overlay {
+            if dashed && !gated {
+                Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5)
+            }
+        }
     }
 
-    /// カードごとの地色（アイコン地・縁）。色だけに頼らずアイコン＋名前でも区別する（§6-5）。
+    /// カードごとの地色（アイコン箱）。色だけに頼らずアイコン＋名前でも区別する（§6-5）。
     private func cardTint(_ v: CommandVariant) -> Color {
         switch v.action {
-        case .train(.ネタ作り), .train(.喫茶店で書く), .train(.ファミレスで書く): return Theme.cIdea   // 書く場所は3つとも「ネタを書く」の色
-        case .train(.ネタ合わせ): return Theme.cCompat
-        case .train: return Theme.cExpr
-        case .rest: return Theme.night
-        case .job: return Theme.cMoney
-        case .acceptOffer: return Theme.gold
+        case .train(.ネタ作り), .train(.喫茶店で書く), .train(.ファミレスで書く): return YoseColor.expMa   // 書く場所は3つとも「ネタを書く」の色
+        case .train(.ネタ合わせ): return YoseColor.shu
+        case .train: return YoseColor.enji
+        case .rest: return YoseColor.expTan
+        case .job: return YoseColor.tokiwa
+        case .acceptOffer: return YoseColor.kin
         }
     }
 
     private func effectPill(_ e: CardEffect) -> some View {
-        // 字は濃い版（白地/10%地で4.5:1以上・K3）。3枚並んでも溢れないよう縮小可
-        Text(e.text).font(.maru(12, weight: .heavy)).foregroundStyle(e.color)
+        Text(e.text).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(e.color)
             .lineLimit(1).minimumScaleFactor(0.8)
             .padding(.horizontal, 6).padding(.vertical, 2)
-            .background(e.color.opacity(0.10), in: Rectangle())
-            .overlay(Rectangle().stroke(e.color.opacity(0.7), lineWidth: 1.5))
+            .background(e.color.opacity(0.12))
+            .overlay(Rectangle().stroke(e.color, lineWidth: 1.5))
     }
 
     // MARK: Beat2 獲得バースト（この週の行動で入ったものが立ち絵の頭上に立ち上る）
@@ -908,19 +928,19 @@ struct WeekMainView: View {
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
         let up = money > 0
         return Text("\(up ? "+" : "-")¥\(Yen.man(abs(money)))")
-            .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
-            .foregroundStyle(insufficient ? .white : (up ? Theme.cMoney : Theme.verm))
+            .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
+            .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.shu))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMoney : Theme.verm).opacity(0.14), in: Rectangle())
+            .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.shu).opacity(0.12))
     }
 
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
         let up = delta > 0
         return Text("体力 \(up ? "+" : "")\(delta)")
-            .font(.system(size: 12, weight: .heavy)).lineLimit(1).fixedSize()
-            .foregroundStyle(insufficient ? .white : (up ? Theme.cMental : Theme.inkDim))
+            .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
+            .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.sumi))
             .padding(.horizontal, 5).padding(.vertical, 2)
-            .background(insufficient ? Theme.staminaCrit : (up ? Theme.cMental : Theme.inkDim).opacity(0.14), in: Rectangle())
+            .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.sumi).opacity(0.12))
     }
 
     // MARK: 最下部の帯（年週・大会までN週・体力ゲージ・所持金）
@@ -1003,21 +1023,32 @@ struct WeekMainView: View {
         let cfg = session.config
         var out: [CardEffect] = []
         if GameEngine.jitsuryoku(after, config: cfg) - GameEngine.jitsuryoku(s, config: cfg) > 0.001 {
-            out.append(CardEffect(text: "実力 ↑", color: Theme.senseDeep))
+            out.append(CardEffect(text: "実力 ↑", color: YoseColor.enji))
         }
         // 手動の能力アップ：稽古で入る経験点を出す（パワプロの練習画面と同じ「何が貯まるか」）。大きい順に最大2つ
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
         for (c, d) in gains where AbilityUpView.points(d) > 0 {
-            out.append(CardEffect(text: "\(c) +\(AbilityUpView.points(d))", color: Theme.currencyColor(c)))
+            out.append(CardEffect(text: "\(c) +\(AbilityUpView.points(d))", color: Self.expColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
-        if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: Theme.vermD)) }
-        if let neta = netaEffect(v.action) { out.append(CardEffect(text: neta, color: Theme.ideaDeep)) }
+        if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: YoseColor.shu)) }
+        if let neta = netaEffect(v.action) { out.append(CardEffect(text: neta, color: YoseColor.expMa)) }
         // G1: 舞台に立つ週は知名度が上がる＝押した週に必ず何かが残ることをカードで予告する
         let fd = after.fame - s.fame
-        if Int(fd.rounded()) > 0 { out.append(CardEffect(text: "知名度 +\(Int(fd.rounded()))", color: Theme.goldDeep)) }
+        if Int(fd.rounded()) > 0 { out.append(CardEffect(text: "知名度 +\(Int(fd.rounded()))", color: YoseColor.kinText)) }
         return out
+    }
+
+    /// 経験点5色（正本 §2・能力アップ画面の5色と同じ）
+    private static func expColor(_ c: ExpCurrency) -> Color {
+        switch c {
+        case .閃き: return YoseColor.expSen
+        case .語彙: return YoseColor.expGo
+        case .間合い: return YoseColor.expMa
+        case .存在感: return YoseColor.expSon
+        case .胆力: return YoseColor.expTan
+        }
     }
 
     /// ネタへの効き（旧 trainExtras と同じ名目値・監査E-06）。ネタを書く＝選択中ネタの改稿 or 新ネタ／舞台に立つ＝客前で磨く。
@@ -1057,17 +1088,18 @@ struct WeekMainView: View {
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
             }
         } label: {
-            // 条件付きの小カード（オファー/バイト）と同じ顔＝常設4枚の下に破線で並ぶ
+            // 条件付きの小カード（オファー/バイト）と同じ顔＝常設6枚の下に破線で並ぶ
             HStack(spacing: 7) {
-                Image(systemName: "forward.end.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
-                    .background(Theme.inkDim, in: Rectangle())
-                Text(yearEndArmed ? "もう一度" : "年末へ").font(.maru(13)).foregroundStyle(Theme.inkDim).lineLimit(1)
+                Image(systemName: "forward.end.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(YoseColor.kinari)
+                    .frame(width: 26, height: 26)
+                    .background(YoseColor.haiSumi)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                Text(yearEndArmed ? "もう一度" : "年末へ").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
             }
-            .padding(.horizontal, 11).padding(.vertical, 8)
+            .padding(.horizontal, 11).padding(.vertical, 9)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(Theme.card2, in: Rectangle())
-            .overlay(Rectangle().stroke(Theme.line, style: StrokeStyle(lineWidth: 3, dash: [6, 4])))
+            .yoseHarigami()
+            .overlay(Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5))
         }
         .buttonStyle(PressableStyle())
     }
