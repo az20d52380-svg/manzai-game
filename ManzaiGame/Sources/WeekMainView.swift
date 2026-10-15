@@ -1131,8 +1131,8 @@ struct WeekMainView: View {
         session.markDebtWarned(tier)
         switch tier {
         case 1: debtNotice = "生活費が払えず、借金になった。借金が100万を越えると、芸人を続けられない。"
-        case 2: debtNotice = "借金が50万を越えた。あと50万で、芸人を続けられなくなる。"
-        default: debtNotice = "借金が80万を越えた。あと20万で終わりだ。"
+        case 2: debtNotice = "借金が50万を越えた。あと50万で、芸人を続けられなくなる。バイトに専念すれば、まだ立て直せる。"
+        default: debtNotice = "借金が80万を越えた。あと20万で終わりだ。今すぐバイトに専念すれば、まだ間に合う。"
         }
     }
 
