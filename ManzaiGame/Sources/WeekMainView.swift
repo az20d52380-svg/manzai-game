@@ -746,7 +746,8 @@ struct WeekMainView: View {
         let after = session.previewAfterPour(v.action, offer: offer)
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
-        let stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
+        var stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
+        if case .rest(let r) = v.action, let rec = session.config.rests[r]?.recovery { stamDelta = Int(rec.rounded()) }   // 回復量は体力が満タンでも数字で見せる
         let tint = cardTint(v)
         let iconBox = Image(systemName: v.glyph)
             .font(.system(size: compact ? 12 : 14, weight: .bold)).foregroundStyle(YoseColor.kinari)
