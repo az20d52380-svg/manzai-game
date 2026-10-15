@@ -113,6 +113,7 @@ struct FinalsBroadcastIntro: View {
     /// 煽りV（場面1前半）。行ごとに 拍子木 se_shaku_wooden_clap、決めコピーで 大太鼓 se_taiko_grand_hit。
     private var vtrView: some View {
         VStack(spacing: 26) {
+            Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 70, height: 1).opacity(step > 0 ? 1 : 0)
             ForEach(Array(vtrLines.enumerated()), id: \.offset) { i, line in
                 let last = i == vtrLines.count - 1
                 Text(line)
@@ -125,6 +126,7 @@ struct FinalsBroadcastIntro: View {
                     .animation(.easeOut(duration: 0.35), value: step)
                     .animation(.spring(response: 0.3, dampingFraction: 0.55), value: slam)
             }
+            Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 70, height: 1).opacity(step > 0 ? 1 : 0)
         }
     }
 
@@ -248,15 +250,18 @@ struct FinalsBroadcastIntro: View {
     /// 進出10組（場面3）。めくり札が順に返る se_mekuri_flip_fast、自組の着地で重低音。
     private var finalistsView: some View {
         let cols = Array(repeating: GridItem(.flexible(), spacing: 6), count: 5)
-        return VStack(spacing: 14) {
-            Text("決勝進出 \(finalists.count)組").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kin)
-            LazyVGrid(columns: cols, spacing: 6) {
+        return VStack(spacing: 18) {
+            Text("決勝進出 \(finalists.count)組").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                .padding(.horizontal, 18).padding(.vertical, 6)
+                .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 1) }
+                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1) }
+            LazyVGrid(columns: cols, spacing: 8) {
                 ForEach(Array(finalists.enumerated()), id: \.offset) { i, f in
                     let on = step > i
-                    Text(f.name).font(YoseFont.mincho(f.name.count > 4 ? 11 : 14)).lineLimit(2).minimumScaleFactor(0.5)
+                    Text(f.name).font(YoseFont.mincho(f.name.count > 4 ? 12 : 16)).lineLimit(2).minimumScaleFactor(0.5)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(f.isSelf ? YoseColor.shu : YoseColor.sumi)
-                        .frame(maxWidth: .infinity).frame(height: 92)
+                        .frame(maxWidth: .infinity).frame(height: 128)
                         .background(f.isSelf ? YoseColor.washiFeatured : YoseColor.washi)
                         .overlay(Rectangle().stroke(f.isSelf ? YoseColor.shu : YoseColor.kin, lineWidth: f.isSelf ? 3 : 1.5))
                         .overlay(alignment: .bottom) {
