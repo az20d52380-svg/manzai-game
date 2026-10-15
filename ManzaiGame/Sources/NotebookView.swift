@@ -296,31 +296,23 @@ struct NotebookView: View {
                 nameLabel(neta)
                 Spacer(minLength: 4)
                 if isSelected {
-                    Text("真剣勝負").font(.maru(14, weight: .black)).foregroundStyle(Theme.verm)
-                        .padding(.horizontal, 6).padding(.vertical, 2)
-                        .overlay(Rectangle().stroke(Theme.verm, lineWidth: 2.2))
-                        .overlay(Rectangle().stroke(Theme.verm.opacity(0.5), lineWidth: 0.8).padding(3))
-                        .rotationEffect(.degrees(-6))
+                    YoseHankoStamp(text: "真剣勝負")
                         .modifier(StampShake())
                 }
                 if renamingID != neta.id {
-                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0xB0A898))   // カード右端＝触れる（名前タップで改名）
+                    YoseTag(text: "改名", style: .outlineSumi)   // 名前タップと同じ＝題名を直す入口を札で示す
                         .onTapGesture { renameDraft = neta.name; renamingID = neta.id }
                 }
             }
-            Text(NetaCatalog.displayName(neta.kata)).font(.maru(9, weight: .bold)).foregroundStyle(.white)
-                .padding(.horizontal, 6).padding(.vertical, 2).background(Theme.verm)
-            netaBar(label: "完成度", value: neta.polish, color: Theme.verm)
-            netaBar(label: "客の反応", value: neta.buzz, color: Theme.gold)
+            YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
+            netaBar(label: "完成度", value: neta.polish, color: YoseColor.shu)
+            netaBar(label: "客の反応", value: neta.buzz, color: YoseColor.kinBright)
             oroshiLine(neta)
             HStack(spacing: 8) {
-                Text("舞台 \(neta.stageCount)回").font(.maru(11)).monospacedDigit().foregroundStyle(Theme.inkSub)
+                Text("舞台 \(neta.stageCount)回").font(YoseFont.gothic(11, weight: .bold)).monospacedDigit().foregroundStyle(YoseColor.haiSumi)
                 if !neta.lengthFit.isEmpty {
-                    Text(neta.lengthFit.map { NetaCatalog.displayName($0) }.joined(separator: " / "))   // 尺タグは1つのカプセルに統合
-                        .font(.maru(11)).foregroundStyle(Theme.sumi).lineLimit(1)
-                        .padding(.horizontal, 8).padding(.vertical, 2)
-                        .background(Color(hex: 0xEAE5D8), in: Capsule())
+                    YoseTag(text: neta.lengthFit.map { NetaCatalog.displayName($0) }.joined(separator: " / "), style: .outlineSumi)   // 尺タグは1つの角札に統合
+                        .lineLimit(1)
                 }
                 Spacer()
                 netaBadges(neta)
@@ -345,11 +337,8 @@ struct NotebookView: View {
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background {
-            Rectangle().fill(Color(hex: 0xFAF6E9)).shadow(color: Theme.sumi.opacity(0.12), radius: 0, x: 2, y: 3)
-        }
-        .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.sumi, lineWidth: 1.5))
-        .clipShape(RoundedRectangle(cornerRadius: 2))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseHarigami(isFeatured: isSelected)
     }
 
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
@@ -366,11 +355,11 @@ struct NotebookView: View {
             HStack(spacing: 6) {
                 TextField("題材名", text: $renameDraft)
                     .onChange(of: renameDraft) { _, v in if v.count > 16 { renameDraft = String(v.prefix(16)) } }   // 新しく書く時の題名と同じ上限（長い名前で題名の行が崩れる）
-                    .font(.maru(17, weight: .black)).foregroundStyle(Theme.sumi)
+                    .font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
                     .textFieldStyle(.plain)
                     .onSubmit { commitRename(neta.id) }
                 Button { commitRename(neta.id) } label: {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.verm)
+                    Image(systemName: "checkmark.square.fill").foregroundStyle(YoseColor.shu)
                 }.buttonStyle(PressableStyle())
             }
         } else {
@@ -379,7 +368,7 @@ struct NotebookView: View {
                 renamingID = neta.id
             } label: {
                 HStack(spacing: 4) {
-                    Text(neta.name).font(.system(size: 20, weight: .heavy, design: .serif)).foregroundStyle(Theme.sumi).lineLimit(1)
+                    Text(neta.name).font(YoseFont.netaTitle).foregroundStyle(YoseColor.sumi).lineLimit(1)
                 }
             }.buttonStyle(.plain)
         }
@@ -395,15 +384,11 @@ struct NotebookView: View {
         HStack(spacing: 4) {
             NetaTiredBadge(neta: neta)
             if !neta.isDown {
-                Text("まだ人前でやっていない").font(.maru(11)).foregroundStyle(Theme.inkSub)
+                YoseTag(text: "まだ人前でやっていない", style: .outlineSumi)
                     .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
-                    .padding(.horizontal, 6).padding(.vertical, 2)
-                    .overlay(Capsule().stroke(Theme.inkFaint, lineWidth: 1))   // 状態印は楕円の落款風に統一
             }
             if neta.isTeppan(config: session.config) {
-                Text("自信作").font(.maru(11.5, weight: .black)).foregroundStyle(Theme.goldD)
-                    .padding(.horizontal, 5).padding(.vertical, 1)
-                    .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                YoseTag(text: "自信作", style: .outlineKin)
             }
         }
     }
@@ -411,17 +396,11 @@ struct NotebookView: View {
     /// 完成度/手応えバー（0..100・数値併記）
     private func netaBar(label: String, value: Double, color: Color) -> some View {
         HStack(spacing: 8) {
-            Text(label).font(.maru(11.5, weight: .bold)).foregroundStyle(Theme.inkSub).frame(width: 60, alignment: .leading)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Rectangle().fill(Theme.sumi.opacity(0.08))
-                    Rectangle().fill(color).frame(width: geo.size.width * CGFloat(min(1, max(0, value / 100))))
-                }
-            }
-            .frame(height: 14)
-            Text("\(Int(value.rounded()))").font(.system(size: 22, weight: .black, design: .rounded)).monospacedDigit()
-                .foregroundStyle(color == Theme.gold ? Theme.goldD : color)
-                .frame(minWidth: 34, alignment: .trailing).fixedSize()
+            Text(label).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).frame(width: 60, alignment: .leading)
+            YoseGauge(value: value, total: 100, fill: color, height: 14)
+            Text("\(Int(value.rounded()))").font(YoseFont.numLarge)
+                .foregroundStyle(YoseColor.sumi)
+                .frame(width: 40, alignment: .trailing)
         }
     }
 
@@ -433,8 +412,8 @@ struct NotebookView: View {
                     session.changeNetaKata(neta.id, to: k)
                     withAnimation(Theme.Motion.appearQuick) { kataPickerFor = nil }
                 } label: {
-                    Circle().fill(Theme.kataColor(k)).frame(width: 20, height: 20)
-                        .overlay(Circle().stroke(Theme.gold, lineWidth: k == neta.kata ? 2.5 : 0))
+                    Rectangle().fill(Theme.kataColor(k)).frame(width: 22, height: 22)
+                        .overlay(Rectangle().stroke(k == neta.kata ? YoseColor.kinBright : YoseColor.sumi, lineWidth: k == neta.kata ? 3 : 1.5))
                 }.buttonStyle(PressableStyle())
             }
             Spacer()
@@ -445,19 +424,12 @@ struct NotebookView: View {
 
     private func actionChip(_ label: String, active: Bool, primary: Bool = false, _ action: @escaping () -> Void) -> some View {
         Button {
-            #if canImport(UIKit)
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            #endif
             action()
         } label: {
-            Text(label).font(.maru(primary ? 14 : 12, weight: .black))
-                .foregroundStyle(primary && active ? Color.white : (active ? Theme.sumi : Theme.inkFaint))
-                .padding(.horizontal, primary ? 14 : 10)
-                .frame(height: primary ? 36 : 32)
-                .background(primary && active ? Theme.verm : (active ? Color(hex: 0xE8DFC8) : Color.clear), in: RoundedRectangle(cornerRadius: 4))
-                .overlay(RoundedRectangle(cornerRadius: 4).stroke(primary ? Theme.sumi : Color(hex: 0xD0C4A8), lineWidth: primary ? 1.2 : 0.5))
+            Text(label).font(YoseFont.gothic(primary ? 15 : 13, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.85)
         }
-        .buttonStyle(PressableStyle())
+        .buttonStyle(YoseButtonStyle(primary ? .primary : .secondary))
+        .frame(width: primary ? 132 : 92)
         .disabled(!active)
     }
 
