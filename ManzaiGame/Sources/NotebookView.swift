@@ -316,8 +316,14 @@ struct NotebookView: View {
             }
             if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
-                actionChip(isSelected ? "勝負ネタ中" : "勝負ネタにする", active: !isSelected, primary: true) {
-                    session.selectNeta(neta.id)
+                if isSelected {
+                    Label("勝負ネタ設定中", systemImage: "checkmark.seal.fill")   // 押せないボタンを置かない
+                        .font(.maru(13, weight: .black)).foregroundStyle(Theme.verm)
+                        .frame(height: 36)
+                } else {
+                    actionChip("勝負ネタにする", active: true, primary: true) {
+                        session.selectNeta(neta.id)
+                    }
                 }
                 actionChip("型を変える", active: true) {
                     withAnimation(Theme.Motion.appearQuick) {
@@ -330,10 +336,11 @@ struct NotebookView: View {
             }
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(Color(hex: 0xFAF6E9))
+        .background {
+            Rectangle().fill(Color(hex: 0xFAF6E9)).shadow(color: Theme.sumi.opacity(0.12), radius: 0, x: 2, y: 3)
+        }
         .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.sumi, lineWidth: 1.5))
         .clipShape(RoundedRectangle(cornerRadius: 2))
-        .shadow(color: Theme.sumi.opacity(0.12), radius: 0, x: 2, y: 3)
     }
 
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
@@ -364,8 +371,8 @@ struct NotebookView: View {
             } label: {
                 HStack(spacing: 4) {
                     Text(neta.name).font(.system(size: 20, weight: .heavy, design: .serif)).foregroundStyle(Theme.sumi).lineLimit(1)
-                    Text("改").font(.maru(9, weight: .bold)).foregroundStyle(Theme.inkSub)
-                        .frame(width: 15, height: 15).overlay(Circle().stroke(Theme.inkFaint, lineWidth: 0.8))
+                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color(hex: 0xA09080))   // 触れる＝名前から編集へ（丸「改」を廃止）
                 }
             }.buttonStyle(.plain)
         }
@@ -383,8 +390,8 @@ struct NotebookView: View {
             if !neta.isDown {
                 Text("まだ人前でやっていない").font(.maru(11)).foregroundStyle(Theme.inkSub)
                     .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
-                    .padding(.horizontal, 5).padding(.vertical, 1)
-                    .overlay(Rectangle().stroke(Theme.inkSub, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(Color(hex: 0xE8E2D2), in: RoundedRectangle(cornerRadius: 2))   // 点線枠をやめ、墨のべた小帯に
             }
             if neta.isTeppan(config: session.config) {
                 Text("自信作").font(.maru(11.5, weight: .black)).foregroundStyle(Theme.goldD)
