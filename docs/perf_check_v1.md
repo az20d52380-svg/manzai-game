@@ -31,3 +31,10 @@
 優勝（YoseChampionCelebrationView 3つの Canvas）・予選通過/昇格の紙吹雪（YoseConfettiView）・決勝結果の背景（RaysView/ConfettiView）を、余韻6.5秒の後に止める作りへ。光・幕は6.5秒の状態で静止、紙吹雪は新しい粒を出さず残りが落ちきったら TimelineView を paused。視差軽減では最初から最小限。見た目は変化なし（feedback_shots/perf_v1/）。
 実測（iPhone 17・アプリ CPU%・1秒ごと22回）：champion は 約200→17秒以降 約1%／pass は 約10%→14秒以降 約1.2%／MZ_SMOKE=4 MZ_FIN=champ は 23%→約10%（17秒以降）。
 残り約10%（決勝の結果画面）は演出外のループ（吹き出しの▼点滅 repeatForever・StageScene の呼吸等）＝次の候補。
+
+## 追記：画面往復の長時間テスト（メモリの漏れ・2026-10-16）
+DEBUG フック `MZ_SMOKE=soak`（RootView.soakLoop・`MZ_SOAK_MS`＝1手の待ち ms）を新設。実UIを通して「週→大会→結果→決勝（客席観戦・優勝）→年末→翌年」を回し続け、キャリアが終われば エンディング→新周回（2周に1回は優勝データ）。既存の MZ_SMOKE=3 等は同期で一気に進むので画面を作らず、漏れの点検には向かない。
+実測（iPhone 17・アプリの RSS を 5秒ごと・目安）：
+- 待ち120ms・約16分：約278MB で横ばい（±10MB）。
+- 待ち40ms（速回し）・約9分：起動直後 267MB → 以降 275〜290MB の範囲で上下し、9分後 278MB。階段状の増加なし。年末・決勝・エンディングを何十回通っても戻らない増加は見られず（CPU は 6〜88% で上下＝演出の有無）。
+結論：漏れの兆候なし＝コードの直しは不要。※シミュレータの数字は目安（実機は Instruments の Allocations/Leaks で別途）。
