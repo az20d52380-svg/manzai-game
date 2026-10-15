@@ -525,7 +525,9 @@ struct StageFramePreview: View {
             }
             .offset(y: -150)
         case .loser:
-            StageVerdictPlate(text: "予選敗退・・・", lost: true).offset(y: -150)
+            StageVerdictPlate(text: "予選敗退", lost: true)
+                .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "惜敗").offset(x: 14, y: -18) }
+                .offset(y: -150)
         default: EmptyView()
         }
     }
