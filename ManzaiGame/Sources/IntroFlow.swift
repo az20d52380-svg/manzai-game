@@ -122,10 +122,11 @@ private struct RecallScriptRow: View {
     var body: some View {
         let name = advice.name ?? "俺"
         HStack(alignment: .firstTextBaseline, spacing: 0) {
-            Text("\(name)「\(advice.text)」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
+            Text("\(name)「\(advice.text)」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi.opacity(0.85))
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 10)
-                .overlay(alignment: .leading) { Rectangle().fill(YoseColor.shu).frame(width: 2) }
+                .padding(.leading, 12).padding(.vertical, 4)
+                .background(YoseColor.ki.opacity(0.35))
+                .overlay(alignment: .leading) { Rectangle().fill(YoseColor.shu).frame(width: 3) }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(name)、\(advice.text)")
@@ -172,14 +173,16 @@ private struct RecallPicture: View {
                                            : mood == .eve ? [YoseColor.kinBright.opacity(0.8), YoseColor.shu.opacity(0.35)]
                                            : [Color(hex: 0xE8C590).opacity(0.85), YoseColor.washiFeatured],
                                            startPoint: .top, endPoint: .bottom)
+                            Rectangle().fill(.white.opacity(0.45)).frame(width: 10).rotationEffect(.degrees(28)).offset(x: -8)
                             Rectangle().fill(YoseColor.sumi).frame(width: 2)
                             Rectangle().fill(YoseColor.sumi).frame(height: 2)
                         }
+                        .clipped()
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
                     }
                 }
-                .frame(width: w * 0.78, height: h * 0.30)
-                .frame(maxHeight: .infinity, alignment: .top).padding(.top, h * 0.14)
+                .frame(width: w * 0.78, height: h * 0.21)
+                .frame(maxHeight: .infinity, alignment: .top).padding(.top, h * 0.17)
                 // 床
                 Rectangle().fill(floorColor).frame(height: floorH)
                     .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
