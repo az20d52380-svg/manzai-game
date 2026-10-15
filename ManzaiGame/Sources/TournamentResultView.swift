@@ -94,7 +94,7 @@ struct TournamentResultView: View {
                 // 下端の座布団（観客の頭の上に載る文字・ボタンの地を黒漆で沈める）
                 VStack(spacing: 0) {
                     Spacer()
-                    LinearGradient(colors: [.clear, YoseColor.kuroUrushi.opacity(0.8)], startPoint: .top, endPoint: .bottom)
+                    LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: YoseColor.kuroUrushi.opacity(0.92), location: 0.3), .init(color: YoseColor.kuroUrushi, location: 0.55)], startPoint: .top, endPoint: .bottom)
                         .frame(height: 190)
                 }
                 .ignoresSafeArea().allowsHitTesting(false)
