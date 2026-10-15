@@ -397,9 +397,9 @@ enum DialogueData {
             Advice(name: "俺", text: "カラオケの部屋代は、割り勘にしよう。"),
         ],
         "t_ランニング・サウナ": [
-            Advice(name: "俺", text: "今日は話し方教室だ。知らない人ばかりで緊張する。"),
-            Advice(name: "俺", text: "教室の帰りに、本屋に寄っていこう。"),
-            Advice(name: "俺", text: "教室の前に、のど飴を買っておこう。"),
+            Advice(name: "俺", text: "今日はエントリーライブだ。知らない人ばかりで緊張する。"),
+            Advice(name: "俺", text: "ライブの帰りに、本屋に寄っていこう。"),
+            Advice(name: "俺", text: "出番の前に、のど飴を買っておこう。"),
             Advice(name: "俺", text: "今日は、隣の人に自分から話しかけてみよう。"),
         ],
         "t_フリーライブ": [
@@ -455,12 +455,12 @@ enum DialogueData {
             Advice(name: "俺", text: "ファミレスの隅の席で、黙って書こう。"),
         ],
         "t_作家の勉強会": [
-            Advice(name: "俺", text: "授業料は高い。ちゃんとメモを取ろう。"),
-            Advice(name: "俺", text: "知らない人ばかりだ。席は前のほうに座ろう。"),
+            Advice(name: "俺", text: "出演料は安くない。お題はちゃんとメモを取ろう。"),
+            Advice(name: "俺", text: "知らない人ばかりだ。早めに楽屋入りしよう。"),
         ],
         "t_ボイトレ": [
             Advice(name: "俺", text: "声を出す日だ。のどを冷やさないようにしよう。"),
-            Advice(name: "俺", text: "先生に言われたことは、帰りの電車で思い出そう。"),
+            Advice(name: "俺", text: "安い部屋だ。時間いっぱい声を通そう。"),
         ],
         "rest_サウナ": [
             Advice(name: "俺", text: "サウナのあとは、水をたくさん飲もう。"),
