@@ -388,7 +388,7 @@ struct WeekMainView: View {
             }
             // 空の時は出さない（年初で器がまだ空＝何も表さない枠はバグに見える）。伸びたら現れる。
             if fill > 0.001 || shown > 0 {
-                YoseGauge(value: fill, total: 1, fill: shown > 0 ? YoseColor.shu : YoseColor.enji, height: 8, showTicks: false)
+                YoseGauge(value: fill, total: 1, fill: shown > 0 ? YoseColor.shu : YoseColor.enji, height: 8, showTicks: true)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -432,7 +432,7 @@ struct WeekMainView: View {
     private func adviceBox(_ a: Advice) -> some View {
         // 寄席のめくり名札＋明朝の貼り紙セリフ枠（YoseSpeechBox）。
         let name = a.name ?? "俺"
-        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : nil)
+        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : (name == "俺" ? "主人公" : nil))
             .id(a.text)
             .transition(.opacity)
     }
