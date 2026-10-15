@@ -21,6 +21,11 @@ struct S6bView: View {
     var body: some View {
         ZStack {
             LinearGradient(colors: [YoseColor.enji, YoseColor.kuroUrushi], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            if phase == .kougyou {   // 客席の幕（縦縞）を暗く重ねて上下の空白を寄席の壁にする
+                HStack(spacing: 0) {
+                    ForEach(0..<10, id: \.self) { i in (i % 2 == 0 ? Color.black.opacity(0.22) : Color.clear) }
+                }.ignoresSafeArea()
+            }
             switch phase {
             case .kougyou: kougyou.transition(.opacity)
             case .montage:
@@ -46,7 +51,8 @@ struct S6bView: View {
                     Rectangle().fill(i % 3 == 0 ? YoseColor.kuroUrushi : (i % 3 == 1 ? YoseColor.shu : YoseColor.tokiwa))
                 }
             }
-            .frame(height: 18).overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
+            .frame(height: 24).overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
+            .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2).offset(y: 2) }
             Spacer(minLength: 0)
             // 千秋楽の興行ビラ（和紙の地・金と朱の二重枠・墨のハードシャドウ）
             VStack(spacing: 12) {
@@ -66,6 +72,7 @@ struct S6bView: View {
                     Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
                     HStack(spacing: 4) {
                         ForEach(0..<4, id: \.self) { t in
+                            if t > 0 { Text("▶").font(.system(size: 8)).foregroundStyle(YoseColor.haiSumi) }
                             YoseTag(text: Self.venueNames[t], style: t == venueTier ? .solidEnji : .outlineSumi)
                                 .opacity(t <= venueTier ? 1 : 0.5)
                         }
@@ -97,10 +104,11 @@ struct S6bView: View {
                     .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "全額投入", angle: -6).offset(x: 6, y: -16) }
                 }
             }
-            .padding(.vertical, 24).padding(.horizontal, 20)
+            .padding(.vertical, 36).padding(.horizontal, 20)
             .frame(maxWidth: .infinity)
             .background(YoseColor.washi)
-            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3))
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
+            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3).padding(2.5))
             .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5).padding(6))
             .background(alignment: .bottom) { Rectangle().fill(YoseColor.kuroUrushi).offset(y: 5) }
             .padding(.horizontal, 20)
