@@ -32,7 +32,7 @@ struct YoseVitalMoneyBar: View {
     let money: Int
     var fame: Int? = nil
     var fameDelta: Int? = nil
-    var staminaColor: Color = YoseColor.tokiwa
+    var staminaColor: Color = Color(hex: 0x3E8E57)   // 黒帯の上でも満タンが読める若竹色
 
     var body: some View {
         HStack(spacing: 12) {

@@ -13,9 +13,9 @@ extension EventBackdrop {
         case .tsuukaBreak:             return .init(.keikoba, .day)     // 稽古場・昼休み
         case .earlyFormality:          return .init(.keikoba, .day)     // 稽古場・昼
         case .brokeDrinkingInvite:     return .init(.park, .night)      // 推定: 稽古場の帰り道(場所)・夜
-        case .senpaiMeishi:            return .init(.famires, .day)     // 推定: 焼肉屋に近い背景が無いので卓のあるファミレス・昼
+        case .senpaiMeishi:            return .init(.yakiniku, .day)    // 焼肉屋・先輩のおごりの昼
         case .peerFoldedChair:         return .init(.keikoba, .day)     // 推定: 時間帯の記述なし→昼
-        case .namelessReservationSlip: return .init(.keikoba, .day)     // 稽古場の受付・昼
+        case .namelessReservationSlip: return .init(.uketsuke, .day)    // 稽古場の受付・昼
         case .lineupTop:               return .init(.gakuya, .day)      // 劇場の楽屋・ライブの日の昼
         case .photoShootOffer:         return .init(.office, .day)      // 事務所・昼
         case .taniguchiShortJob:       return .init(.keikoba, .day)     // 稽古場・月末の昼

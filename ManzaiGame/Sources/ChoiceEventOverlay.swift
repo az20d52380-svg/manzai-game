@@ -83,6 +83,10 @@ struct ChoiceEventOverlay: View {
                 }
             }
             footer
+            // 体力・知名度・所持金の黒帯（選んだ結果がどこに効くかの基準を常に見せる）
+            YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
+                              fame: Int(session.state.fame.rounded()))
+                .background(YoseColor.kuroUrushi.ignoresSafeArea(edges: .bottom))
         }
         .background(YoseColor.kinari.ignoresSafeArea())
         .contentShape(Rectangle())
@@ -135,6 +139,7 @@ struct ChoiceEventOverlay: View {
                 .padding(.top, 12).padding(.trailing, 14)
                 .allowsHitTesting(false)
             }
+            .overlay { moodOverlay.allowsHitTesting(false) }
             .overlay(alignment: .bottom) {
                 VStack(spacing: 0) {   // 場面と読み物の境（二重線）
                     Rectangle().fill(YoseColor.kin).frame(height: 1.5)
@@ -142,6 +147,18 @@ struct ChoiceEventOverlay: View {
                 }
             }
             .clipped()
+    }
+
+    /// 出来事の空気（表示だけ）。哀しい日は周辺を落とし、調子のいい日は上から明るい光を差す
+    @ViewBuilder private var moodOverlay: some View {
+        switch kind {
+        case .peerFoldedChair:
+            RadialGradient(colors: [.clear, YoseColor.kuroUrushi.opacity(0.32)], center: .center, startRadius: 60, endRadius: 260)
+        case .luckyThirdLine:
+            LinearGradient(colors: [YoseColor.kinBright.opacity(0.22), .clear], startPoint: .top, endPoint: .bottom)
+        default:
+            EmptyView()
+        }
     }
 
     /// 効果チップ（方向だけ）。伸び＝濃色の角札／減り＝和紙の角札。丸カプセルは使わない
@@ -166,8 +183,9 @@ struct ChoiceEventOverlay: View {
                 if cue { AdvanceCue(color: YoseColor.shu) }
             }
             .padding(.leading, 18).padding(.trailing, 12).padding(.vertical, 12)
+            .frame(minHeight: 88, alignment: .leading)   // 1行でも3行でも枠が縮まない
             .yoseHarigami()
-            .overlay(alignment: .leading) { Rectangle().fill(YoseColor.kin).frame(width: 3).padding(.vertical, 6).padding(.leading, 6) }
+            .overlay(alignment: .leading) { Rectangle().fill(YoseColor.enji).frame(width: 4).padding(.vertical, 6).padding(.leading, 6) }
         } else {
             YoseSpeechBox(speaker: a.name ?? "俺", text: a.text, showCue: cue)
         }
@@ -188,6 +206,11 @@ struct ChoiceEventOverlay: View {
 
     @ViewBuilder private var footer: some View {
         VStack(spacing: 10) {
+            if hasMore {
+                // タップで進むことを示す（下半分が空いて「選択肢が消えた」と迷わない）
+                Text("画面をタップして次へ ▶").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
             if footerReady {
                 if chosenID == nil, setupDone {
                     // 選択肢なしフレーバー（0028等）は会話を送り切ったら「閉じる」、選択肢ありは選択肢カード
