@@ -48,6 +48,8 @@ struct SettingsView: View {
                 }
             // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
             VStack(spacing: 4) {
+                Text("権利表記・バージョン").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Rectangle().fill(YoseColor.kiDark).frame(height: 1).padding(.horizontal, 28)
                 Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
                     .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
                 Text("\(AppInfo.displayName) v\(AppInfo.version)")
@@ -64,7 +66,10 @@ struct SettingsView: View {
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+            HStack(spacing: 8) {
+                Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)   // 見出しの左朱帯
+                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+            }
             VStack(spacing: 12) { content() }
                 .padding(YoseMetrics.padH + 2)
                 .frame(maxWidth: .infinity, alignment: .leading)
