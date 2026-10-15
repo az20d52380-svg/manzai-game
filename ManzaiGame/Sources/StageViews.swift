@@ -181,10 +181,25 @@ private struct LineBoard: View {
 struct TournamentEntryView: View {
     @Bindable var session: GameSession
     let spec: TournamentSpec
+    @State private var hint: HintSpec?   // 初めて大会に出る時だけの説明（右上の「？」で読み返せる）
+
+    /// 大会エントリーの用語説明（金額・体力は GameConfig から読む）
+    static func hintSpec(_ cal: CalendarConfig) -> HintSpec {
+        HintSpec(key: "entry", title: "大会エントリー", rows: [
+            .init(term: "通過ライン", text: "実力（相性をふくむ）がこの数字を超えるほど、通過しやすい。"),
+            .init(term: "舞台尺", text: "その舞台のネタの長さ。持ちネタの尺が合っているか、ネタを選ぶ所に出る。"),
+            .init(term: "エントリー費", text: "出るだけで\(cal.entryFee.formatted())円かかる。足りないと出られない。"),
+            .init(term: "交通費", text: "大阪の大会だけ。夜行バスは\(cal.busTravel.cost.formatted())円で体力を\(Int(-cal.busTravel.stamina))使う。新幹線は\(cal.trainTravel.cost.formatted())円で体力はそのまま。"),
+            .init(term: "体力", text: "大会に出るのにも使う。0のまま出ることもできる。"),
+        ])
+    }
 
     var body: some View {
         VStack(spacing: 14) {
             EntryHeader(tag: spec.osaka ? "大阪遠征" : "エントリー", name: spec.name)
+                .overlay(alignment: .topTrailing) {
+                    HintMarkButton { hint = Self.hintSpec(session.config.calendar) }.padding(.trailing, 6).padding(.top, 4)
+                }
 
             // 監査B-04: 通過ラインと同じ単位（実力値＋相性）で「いまの実力」を並べる。ブレ・ネタ補正は出さない。
             // G4: 大会結果でも同じ2つを同じ大きさで再掲する（大きくしない＝見込みに寄せない・X2-02）
@@ -232,6 +247,14 @@ struct TournamentEntryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(YoseColor.kinari.ignoresSafeArea())
+        .overlay { if let h = hint { HintModal(spec: h) { OneTimeHint.markDone(h.key); hint = nil } } }
+        .task {
+            let h = Self.hintSpec(session.config.calendar)
+            if !OneTimeHint.suppressedForDebug, !OneTimeHint.isDone(h.key) {
+                try? await Task.sleep(nanoseconds: 450_000_000)
+                hint = h
+            }
+        }
     }
 
     /// 出場ボタン（物理ボタン。費用は交通費＋エントリー費の合計・B13）。払えない時は押せない表示で理由を出す
