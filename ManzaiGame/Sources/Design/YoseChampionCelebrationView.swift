@@ -118,26 +118,28 @@ public struct YoseChampionCelebrationView: View {
                 .padding(.horizontal, 14)
 
                 // 優勝賞金ボード木札
-                if phase >= 5 {
-                    championPrizePlaque
-                        .padding(.top, 12)
-                        .padding(.horizontal, 20)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
+                // 位置固定：最初から場所を確保し、透明度とオフセットだけで出す（大看板をジャンプさせない）
+                championPrizePlaque
+                    .padding(.top, 12)
+                    .padding(.horizontal, 20)
+                    .opacity(phase >= 5 ? 1 : 0)
+                    .offset(y: phase >= 5 ? 0 : 18)
+                    .animation(.easeOut(duration: 0.3), value: phase >= 5)
 
                 Spacer(minLength: 10)
 
                 // 下部：相方の耳打ちセリフ箱 ＋ 番組下三分テロップ ＋ 次へボタン
-                if phase >= 5 {
-                    VStack(spacing: 8) {
-                        partnerEmotionBox
-                        broadcastLowerThirdBar
-                        proceedActionBar
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 12)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                VStack(spacing: 8) {
+                    partnerEmotionBox
+                    broadcastLowerThirdBar
+                    proceedActionBar
                 }
+                .padding(.horizontal, 14)
+                .padding(.bottom, 12)
+                .opacity(phase >= 5 ? 1 : 0)
+                .offset(y: phase >= 5 ? 0 : 18)
+                .allowsHitTesting(phase >= 5)
+                .animation(.easeOut(duration: 0.3), value: phase >= 5)
             }
             .yoseShake(trigger: shakeTrigger, intensity: .heavy, axis: .vertical)
 
