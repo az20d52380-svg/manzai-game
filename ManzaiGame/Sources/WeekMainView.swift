@@ -715,7 +715,7 @@ struct WeekMainView: View {
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
         return Button {
-            guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { return }   // 多重タップ・バースト中は無視（監査F-10）
+            guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { syncEventPresentation(); return }   // 多重タップ・バースト中は無視（監査F-10）
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
                 Sound.play(.deny)
@@ -763,7 +763,7 @@ struct WeekMainView: View {
             }
         }()
         return Button {
-            guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { return }
+            guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { syncEventPresentation(); return }
             if gated {
                 Sound.play(.deny)
                 showToast(s.preoccupiedWeeks > 0 ? "今週は撮影。稽古の時間がない。" : "体力が足りない。今日は休もう。")

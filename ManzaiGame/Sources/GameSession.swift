@@ -1331,6 +1331,18 @@ extension GameSession {
         return "STUCK steps y=\(s.year) w=\(s.week) phase=\(s.phase)"
     }
 
+    /// 調査用: 毎週バイトを押した時の「週・所持金・保留イベント」を前後で出す（行動が捨てられていないかの確認）
+    static func debugActionTrace() {
+        let s = GameSession()
+        for _ in 0..<8 {
+            guard case .freeAction = s.phase else { break }
+            if let k = s.pendingChoiceEvent { fputs("[AT] w\(s.week) PENDING-BEFORE \(k)\n", stderr); s.dismissChoiceEvent() }
+            let w0 = s.week, m0 = s.state.money, st0 = s.state.stamina
+            s.choose(.job(.標準))
+            fputs("[AT] w\(w0)->w\(s.week) money \(Int(m0))->\(Int(s.state.money)) stamina \(Int(st0))->\(Int(s.state.stamina)) lastAction=\(String(describing: s.lastAction)) pendingAfter=\(String(describing: s.pendingChoiceEvent))\n", stderr)
+        }
+    }
+
     static func debugSelfTest() {
         func line(_ s: String) { fputs("[ST] \(s)\n", stderr) }
         var kinds: [String: Int] = [:]

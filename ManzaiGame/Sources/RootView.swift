@@ -75,6 +75,7 @@ struct RootView: View {
             let endingHook = ProcessInfo.processInfo.environment["MZ_ENDING"] != nil
             if smoke != nil || ui != nil || endingHook { started = true }
             if smoke == "selftest" { GameSession.debugSelfTest(); return }
+            if smoke == "actiontrace" { GameSession.debugActionTrace(); return }
             if endingHook, session.week <= 1 { forceChampion() }   // S6b（#5/#7/#8）用の優勝データ。1〜4・6 の場面は session 不要   // スモーク/UI確認時はS1を飛ばす
             // 複数年の目視: MZ_YEARS=n で n 年ぶん自動で年末→翌年へ進めてから、他のフックを掛ける
             if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
