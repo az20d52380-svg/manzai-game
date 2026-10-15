@@ -1180,4 +1180,95 @@ public struct FinalsConfettiAndTapeCannonView: View {
                     for step in 0...segments {
                         let segT = CGFloat(launchProgress) * (CGFloat(step) / CGFloat(segments)) * 1.35
                         let px = startX + vx * segT + sin(segT * 6.0 + CGFloat(seed)) * 14.0
-                        let py = startY + vy * segT + 0.5 * gravity * seg
+                        let py = startY + vy * segT + 0.5 * gravity * segT * segT
+                        if step == 0 {
+                            ribbon.move(to: CGPoint(x: px, y: py))
+                        } else {
+                            ribbon.addLine(to: CGPoint(x: px, y: py))
+                        }
+                    }
+
+                    let tapeColor = (i % 3 == 0) ? YoseColor.kinBright : ((i % 3 == 1) ? YoseColor.kin : YoseColor.shu)
+                    context.stroke(
+                        ribbon,
+                        with: .color(tapeColor.opacity(0.92)),
+                        lineWidth: (i % 4 == 0) ? 4.5 : 3.0
+                    )
+                }
+
+                // C. 金・銀・朱・白和紙の角紙吹雪（220枚）
+                let confettiCount = 220
+                let palette: [Color] = [
+                    YoseColor.kinBright,
+                    YoseColor.kin,
+                    YoseColor.shu,
+                    YoseColor.washi,
+                    YoseColor.enji
+                ]
+
+                for i in 0..<confettiCount {
+                    let s = Double(i) * 3.14159
+                    let speedY = 75.0 + fmod(s * 43.0, 110.0)
+                    let initialY = -fmod(s * 89.0, Double(size.height))
+                    let y = CGFloat(fmod(initialY + elapsed * speedY + Double(size.height), Double(size.height + 60))) - 30
+                    let baseX = fmod(s * 197.0, Double(size.width))
+                    let swayX = sin(elapsed * 2.8 + s) * (12.0 + fmod(s * 7.0, 16.0))
+                    let x = CGFloat(baseX + swayX)
+
+                    let w: CGFloat = 6.0 + CGFloat(i % 4) * 2.5
+                    let h: CGFloat = (3.5 + CGFloat(i % 3) * 1.5) * CGFloat(abs(cos(elapsed * 4.0 + s)) + 0.25)
+
+                    var piece = Path()
+                    let rect = CGRect(x: -w / 2, y: -h / 2, width: w, height: h)
+                    piece.addRect(rect)
+
+                    var transform = CGAffineTransform(translationX: x, y: y)
+                    transform = transform.rotated(by: CGFloat(elapsed * 2.2 + s))
+
+                    let color = palette[i % palette.count]
+                    context.fill(piece.applying(transform), with: .color(color))
+                }
+            }
+        }
+        .allowsHitTesting(false)
+        .onChange(of: isActive) { _, newValue in
+            if newValue { startTime = .now }
+        }
+    }
+}
+```
+
+---
+
+## 3. 予選の大会結果に足す『番組感』4個（デザインシステム型D準拠）
+
+※デザインシステム禁則（§7 型D・§8-6・§8-7）を厳守し、**予選では審査員の点数（85点・92点など）や `％` 表示は一切出さず**、「同じテレビ局・同じ賞レースの世界線に繋がっている番組感」を以下の4要素で付与する。
+
+1. **大会アイキャッチ看板（1.2秒のオープニング黒金カード）**
+   * 予選結果画面が開いた最初の1.2秒間（タップで即スキップ可）、舞台上部に黒漆＋二重金枠の番組アイキャッチ看板（例：`【第12週・本番】 春新人賞 予選Aブロック`）を `scaleEffect(1.15 -> 1.0)` でドンと打ち出し、拍子木音（`se_shaku_wooden_clap`）を鳴らす。大会グレードに応じて枠の色を「銅（地区予選）→ 銀（準決勝）→ 消金（G1予選）」と昇格させる。
+2. **番組下三分（Lower Third）での「出場組数・出番位置」の表示**
+   * 舞台エリアの下部に決勝と同じデザインの `FinalsBroadcastTelopBar`（小型版）を敷き、`エントリー 128組 ／ 第24試合：あなたのコンビ` のように「大勢のライバルの中で自分たちが今どこを戦っているか」を生放送中継風のテロップで見せる。
+3. **「通過基準 vs 発揮実力」の電光カウントアップと合否の溜め（％表示なし）**
+   * 結果・報酬カード上段の `[通過基準 30] ▶ [発揮実力 ???]` において、発揮実力を最初から表示せず、0.5秒のドラムロールで `0` から `134` へ等幅数字（`.monospacedDigit()`）で一気にカウントアップさせる。
+   * 通過基準を超えた瞬間に枠全体が `yoseKinBright` に発光して朱印 `YoseHankoStamp("突破")` が叩きつけられ、届かなかった場合は照明が一段落ちて無音1拍の後に `惜敗` の墨印が押される。
+4. **審査員1名の「番組ワイプ風・一言講評＋評価朱印（秀・良・可）」**
+   * 点数は出さない代わりに、審査員席から1名（その大会の担当審査員）の名札付き `YoseSpeechBox` を出し、右上に `YoseHankoStamp("秀", isSquare: true)` を叩きつける。「テレビのダイジェスト番組で審査員が1人だけコメントを抜かれた」手触りになり、決勝の7人採点への憧れを高める。
+
+---
+
+## 4. 実装の優先順（効き目の大きい順に10個）
+
+オーナーの指摘「M-1っぽくない。番組が始まった感とか決勝発表の演出とか」に対し、**最小の工数で最大の「M-1生放送感」を生む順**に10項目を並べた実装ロードマップ。
+
+| 順位 | 実装項目 | 対象場面 | 効き目（なぜ最優先か） |
+| :---: | :--- | :--- | :--- |
+| **1** | **オープニング（煽りV 3行 ＋ 暗転明けタイトルコール ＋ MC登場）の新設** | 場面1 | 現状「いきなり籤の静止画から始まる」最大の弱点を解消し、最初の5秒で「特別な生放送番組が始まった！」とプレイヤーの背筋を伸ばさせる。 |
+| **2** | **決勝スタジオ照明＆床スモーク（`FinalsStageLightingView`）への背景差し替え** | 全場面 | 昼間の寄席のような明るい木目背景を「漆黒＋4本の金サーチライト＋床スモーク＋最終決戦の真紅照明」に変えるだけで、全画面のスクショが一気に賞レース特番の画になる。 |
+| **3** | **優勝の瞬間の「金テープ40本＋紙吹雪大噴射」＆「こけしシルエットの撤去（特大優勝めくり＋賞金ボード化）」** | 場面11 | 実機 `43_優勝` のAIっぽい丸頭こけしを排除し、キャノン砲の金テープと白フラッシュを入れることで、クライマックスの達成感が別次元になる。 |
+| **4** | **採点発表の「7審査員・横一列電光めくり」と「合計点表示前の0.6秒無音溜め」** | 場面7 | 実機 `39_審査員開票` の2段グリッドを「左端から右端へ順番に灯る7連ボード」に直し、95点以上の朱色発光と合計前の無音溜めを入れることで、M-1最大の醍醐味である採点の緊張感が出る。 |
+| **5** | **暫定ボードの「暫定3席（王座ボックス）」化と、4位転落組の消灯・退場演出** | 場面8 | 実機 `41_ボード` の単調な10行リストを「3脚の椅子取りゲーム」に変え、押し出された組の照明がバチンと消えて一言残して去るドラマを作る。 |
+| **6** | **審査員席7人のオープニング紹介（場面2）と、ファイナリスト10組のめくり集結（場面3）** | 場面2・3 | ネタが始まる前に「今夜採点する7人の顔ぶれ」と「ライバル10組の名札（初/連続/ラストイヤー）」を見せることで、大会の権威とスケール感が跳ね上がる。 |
+| **7** | **常時表示の「LIVE ● 生放送」ヘッダー帯と「番組テロップ帯（Lower Third）」の導入** | 全場面 | `FinalsLiveHeaderBar` と `FinalsBroadcastTelopBar` を上下に据えることで、どの瞬間を切り取っても「テレビの生中継画面」に見える骨格が固まる。 |
+| **8** | **出番くじ（神籤）の「待機組の震え＋心拍Haptics」と「登場の扉オープン＆逆光スモーク」** | 場面4・5 | 自組が引かれる瞬間の「ドクン、ドクン」という振動と、戦績コピーから大扉が割れて逆光の中に飛び出す4秒間で、「今から自分の番だ！」という没入感を作る。 |
+| **9** | **最終決戦の「照明色替え（真紅×群青）」「1位通過時の出順選択」「王手（3票）の暗転溜め」** | 場面9・10 | 1本目と最終決戦でスタジオの空気（色と音）を明確に切り替え、4票目（決定票）をめくる直前の0.8秒の無音溜めで最高潮の溜めを作る。 |
+| **10** | **予選結果画面への「番組アイキャッチ看板」と「通過基準カウントアップ＋突破朱印」の波及** | 予選結果 | 決勝で作った番組部品（黒金看板・下三分・カウントアップ）を予選にも小型化して入れることで、1年を通じた「頂グランプリへの道」の一貫性が完成する。 |
