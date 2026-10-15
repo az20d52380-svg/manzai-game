@@ -7,3 +7,5 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 ManzaiGame/build/
+.dd/
+ManzaiGame/.dd/
