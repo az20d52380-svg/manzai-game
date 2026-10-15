@@ -226,7 +226,7 @@ struct WeekMainView: View {
             defer { if gen == burstGen { burstHold = false } }
             // 後始末（一言を消す等）は世代が一致する時だけ＝旧週のタスクの続きが次週の Beat1 を消さない（X4-04）。
             func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
-            guard session.lastDeltaWeek == session.week else { clearBeat(); return }
+            guard session.lastDeltaWeek == session.week else { resultName = nil; clearBeat(); return }
             let chips = makeBurstChips()
             let line = makeResultLine()
             resultName = nil
