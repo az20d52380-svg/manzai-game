@@ -77,8 +77,12 @@ struct SettingsView: View {
             }
             if restartStep > 0, onQuitRun != nil { restartModal }
         }
-        .fullScreenCover(isPresented: $showEndingBook) { EndingGalleryView { showEndingBook = false } }
-        .fullScreenCover(isPresented: $showGlossary) { GlossaryView { showGlossary = false } }
+        // 全画面の開き先は1つにまとめる（同じ View に fullScreenCover を2つ並べると片方が開かないことがある）
+        .fullScreenCover(isPresented: Binding(get: { showEndingBook || showGlossary },
+                                              set: { if !$0 { showEndingBook = false; showGlossary = false } })) {
+            if showGlossary { GlossaryView { showGlossary = false } }
+            else { EndingGalleryView { showEndingBook = false } }
+        }
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
