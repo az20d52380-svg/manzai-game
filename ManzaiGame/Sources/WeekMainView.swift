@@ -69,6 +69,28 @@ struct WeekMainView: View {
     /// 能力アップ（AllocationView・経験点を能力に振る）
     @State private var showAllocation = false
 
+    #if DEBUG
+    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar）
+    private func debugWeekHook() {
+        guard let w = ProcessInfo.processInfo.environment["MZ_WEEK"] else { return }
+        switch w {
+        case "practice": openCat = .練習
+        case "baito": openCat = .バイト
+        case "rest": openCat = .休む
+        case "netawrite": openCat = .ネタを書く; openNetaWrite = true
+        case "newneta": openCat = .ネタを書く; openNetaWrite = true; newNetaTitle = ""
+        case "shop": showShop = true
+        case "allocate": showAllocation = true
+        case "settings": showSettings = true
+        case "notebook": showNotebook = true
+        case "calendar": showCalendar = true
+        default: break
+        }
+    }
+    #else
+    private func debugWeekHook() {}
+    #endif
+
     private var s: GameState { session.state }
     /// 開いている4ボタンの下位一覧（nil＝4ボタン）。パワプロ式（オーナー指示 2026-10-12）
     @State private var openCat: CommandCategory?
@@ -152,7 +174,7 @@ struct WeekMainView: View {
         .onChange(of: session.pendingChoiceEvent) { _, kind in
             if kind == nil { showEvent = false } else { syncEventPresentation() }
         }
-        .onAppear { syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {

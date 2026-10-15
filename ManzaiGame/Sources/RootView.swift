@@ -41,6 +41,7 @@ struct RootView: View {
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
+            case "intro_title", "intro_name": IntroFlowView { _ in }          // タイトル／名前決めの目視
             case "frame": StageFrame(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
             }
@@ -107,11 +108,18 @@ struct RootView: View {
                 var st = GameSession.debugMaxedState(); st.compat = 10; st.money = 500_000; st.preoccupiedWeeks = ProcessInfo.processInfo.environment["MZ_FREE"] != nil ? 0 : 1
                 session = GameSession(startState: st)
             }
-            if ui == "neta" || ui == "neta_list" || ui == "netaentry", session.week <= 1 {
+            if ui == "neta" || ui == "neta_list" || ui == "netaentry" || ui == "weeknetas", session.week <= 1 {
                 // ネタ帳目視: 持ちネタ（鉄板/おろし前/擦り切れ/保管庫）を積んだ開始状態（数値は全て【仮】）
                 session = GameSession(startState: GameSession.debugNetaState())
                 // netaentry＝その持ちネタのまま最初の大会の入口で止める（入口のネタ選びの目視・2026-10-14）
                 if ui == "netaentry" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
+            }
+            if ui == "prelude" || ui == "prelude_final", session.week <= 1 {
+                // 本番前カード（ネタ選び）の目視: 能力マックスで GP の本番前（prelude_final＝決勝）まで進める
+                var st = GameSession.debugMaxedState(); let ns = GameSession.debugNetaState()
+                st.netas = ns.netas; st.nextNetaID = ns.nextNetaID; st.selectedNetaID = ns.selectedNetaID; st.archivedNetas = ns.archivedNetas
+                session = GameSession(startState: st)
+                session.debugAdvanceToPrelude(final: ui == "prelude_final")
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）

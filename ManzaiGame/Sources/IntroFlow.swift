@@ -389,9 +389,16 @@ struct NotificationPromptView: View {
 
 struct IntroFlowView: View {
     var onComplete: (String) -> Void
-    @State private var stage: Stage = .title
+    @State private var stage: Stage = IntroFlowView.initialStage
     @State private var name = "あなたのコンビ"
     private enum Stage { case title, reminiscence, nameEntry, notif }
+
+    private static var initialStage: Stage {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_UI"] == "intro_name" { return .nameEntry }   // 目視用: 名前決めへ直行
+        #endif
+        return .title
+    }
 
     static let cards = [
         // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた・語は1字も変えない）

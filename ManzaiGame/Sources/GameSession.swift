@@ -1117,6 +1117,23 @@ final class GameSession {
     }
 
     /// DEBUG: 決勝優勝が確定する（winFinale）まで自動プレイ。自由週はバイトで破産回避。
+    /// DEBUG: 本番前カード（gpRound / gpFinal）の手前で止まる（MZ_UI=prelude/prelude_final）
+    func debugAdvanceToPrelude(final: Bool, maxSteps: Int = 500) {
+        var steps = 0
+        while !finished, steps < maxSteps {
+            steps += 1
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .gpRound: if !final { return }; advanceAuto()
+            case .gpFinal: return
+            case .gpRevival: advanceAuto()
+            case .tournamentDecision: decideTournament(.夜行バス)
+            case .freeAction: choose(.job(.標準))
+            default: return
+            }
+        }
+    }
+
     func debugAdvanceToChampionFinale(maxSteps: Int = 500) {
         var steps = 0
         while !winFinale, !finished, steps < maxSteps {
