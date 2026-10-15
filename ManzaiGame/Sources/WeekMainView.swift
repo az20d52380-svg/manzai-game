@@ -458,7 +458,7 @@ struct WeekMainView: View {
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
-                        YoseTag(text: "今は体力が満タン", style: .outlineShu)
+                        YoseTag(text: "満タン・回復は余る", style: .outlineShu)
                     }
                 }
                 if openNetaWrite {
@@ -876,6 +876,12 @@ struct WeekMainView: View {
                 Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5)
             }
         }
+        .overlay {
+            // 体力が満タンの休みでは、回復が余るので「相性 +」の付く札だけ朱の枠で目に留める（押せるのは全部そのまま）
+            if case .rest = v.action, s.stamina >= 99.5, !gated, effects.contains(where: { $0.text.hasPrefix("相性") }) {
+                Rectangle().stroke(YoseColor.shu, lineWidth: 2)
+            }
+        }
     }
 
     /// カードごとの地色（アイコン箱）。色だけに頼らずアイコン＋名前でも区別する（§6-5）。
@@ -884,7 +890,7 @@ struct WeekMainView: View {
         case .train(.ネタ作り), .train(.喫茶店で書く), .train(.ファミレスで書く): return YoseColor.expMa   // 書く場所は3つとも「ネタを書く」の色
         case .train(.ネタ合わせ): return YoseColor.shu
         case .train: return YoseColor.enji
-        case .rest: return YoseColor.expTan
+        case .rest: return YoseColor.tokiwa
         case .job: return YoseColor.tokiwa
         case .acceptOffer: return YoseColor.kin
         }
