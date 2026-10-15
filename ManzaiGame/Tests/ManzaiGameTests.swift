@@ -183,6 +183,24 @@ final class RiftWarnEventTests: XCTestCase {
         XCTAssertEqual(warnedBeforeFire, true)
         XCTAssertTrue(warnedBeforeEver)
     }
+    /// 予告が出た週に「年末へ」を押しても、予告は消えず次の年の第1週頭に出る（1キャリア1回は保つ）
+    func testRiftWarningSurvivesFastForwardToYearEnd() {
+        var st = GameState(config: GameConfig()); st.compat = 12; st.money = 5_000_000; st.rift = 10; st.riftWarned = true
+        let s = GameSession(startState: st)
+        XCTAssertEqual(s.pendingChoiceEvent, .riftWarning)
+        s.fastForwardToYearEnd()
+        if s.watchingFinal { s.finishWatchingFinal(winner: "x"); s.fastForwardToYearEnd() }   // 決勝の夜は観せて止まる
+        XCTAssertTrue(s.finished && !s.careerOver, "年末まで進む前提 finished=\(s.finished) over=\(s.careerOver) rift=\(s.state.rift ?? -1)")
+        guard s.finished, !s.careerOver else { return }
+        XCTAssertFalse(s.didFireRiftWarn)
+        s.startNextYear()
+        XCTAssertEqual(s.pendingChoiceEvent, .riftWarning)
+        XCTAssertEqual(s.week, 1)
+        XCTAssertTrue(s.didFireRiftWarn)
+        s.dismissChoiceEvent()
+        s.fastForwardToYearEnd()
+        XCTAssertTrue(s.didFireRiftWarn)
+    }
     func testNoRiftWarnWhenFlagNeverSet() {
         var st = GameState(config: GameConfig()); st.rift = 0
         let s = GameSession(startState: st)

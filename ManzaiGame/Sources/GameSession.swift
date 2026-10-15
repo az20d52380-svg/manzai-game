@@ -231,8 +231,11 @@ final class GameSession {
         self.didFireLostRehearsal = save.didFireLostRehearsal ?? false
         self.didFirePassFork = save.didFirePassFork ?? false
         self.didFireEve = save.didFireEve ?? false
-        self.didFireRiftWarn = save.didFireRiftWarn ?? false
         self.riftWarnChoice = save.riftWarnChoice
+        // 予告を出した扱いでも、選んでおらず保留にも残っていない＝見ないまま消えた（旧版の「年末へ」）→ 未発火に戻して次の週頭に出す
+        let firedRaw = save.didFireRiftWarn ?? false
+        self.didFireRiftWarn = (firedRaw && save.riftWarnChoice == nil && save.pendingChoiceEvent != .riftWarning
+                                && save.runner.state.riftWarned == true) ? false : firedRaw
         self.didWatchFinal = save.didWatchFinal ?? false
         self.debtWarnTier = save.debtWarnTier ?? 0
         checkSpectatorFinal()
@@ -797,7 +800,11 @@ final class GameSession {
         var steps = 0
         while !finished, !winFinale, !watchingFinal, steps < 200 {   // 決勝の夜は止めて観せる（H-01）
             steps += 1
-            if pendingChoiceEvent != nil { dismissChoiceEvent(); continue }   // 年を閉じる意思表示＝イベントは見送る
+            if pendingChoiceEvent != nil {   // 年を閉じる意思表示＝イベントは見送る
+                // 0050 予告は見ないまま消さない＝未発火に戻し、次の年の第1週頭に必ず出す（riftWarned は持ち越される）
+                if pendingChoiceEvent == .riftWarning, riftWarnChoice == nil { didFireRiftWarn = false }
+                dismissChoiceEvent(); continue
+            }
             if pendingResult != nil { acknowledgeResult(); continue }
             switch phase {
             case .freeAction:         choose(.rest(.完全休養))
