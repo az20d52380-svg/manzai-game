@@ -33,9 +33,10 @@ enum FanReportData {
     ]
 
     /// ハマった夜の一言。選び方は salt 剰余＝乱数非消費（紙講評と同じ）
-    static func burst(name: String, salt: Int) -> String {
-        let n = burstLines.count
-        return burstLines[((salt % n) + n) % n].replacingOccurrences(of: "〈名〉", with: name)
+    static func burst(name: String, salt: Int, known: Bool = false) -> String {
+        let pool = known ? burstLines : burstLines.filter { !knownOnly.contains($0) }
+        let n = pool.count
+        return pool[((salt % n) + n) % n].replacingOccurrences(of: "〈名〉", with: name)
     }
 
     // MARK: 判の前に流す2〜4枚（fan_report_design §1「本番→ファンレポ2〜4本→合否」）
@@ -99,15 +100,31 @@ enum FanReportData {
 
     /// 判の前に流す観客の声（2〜4枚）。salt 剰余だけで選ぶ＝乱数非消費・同じ週は同じ声。
     /// 通過＝点差が大きければ熱狂／小さければ手応え。敗退＝あと一歩なら五分五分／遠ければ不発。ハマった夜は必ず先頭に。
-    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int) -> [String] {
+    /// 「前から見ている客」の言い方（いつも・去年・安定・期待）。無名のうちは出さない（オーナー指摘 10/15：初出場の無名に「いつも通りじゃない」はおかしい）
+    private static let knownOnly: Set<String> = [
+        "今日の〈名〉、何かが起きてた。いつも面白いけど今日のは違う。神回。",
+        "今日の〈名〉、明らかにいつもの温度じゃなかった。客席がひとつの生き物になってた。",
+        "いつも通りのはずが、今日の〈名〉だけ空気の密度が違った。当たり日を引いた組は強い。",
+        "〈名〉、出てきた瞬間から客席の期待が違った。終わったあと拍手が鳴りやまなかった。",
+        "〈名〉、いつも通ってる劇場の空気と別物だった。何回でも思い出せる。",
+        "〈名〉安定に面白い。ちゃんとウケてた。通ってると思う。",
+        "〈名〉、去年より確実に仕上がってる。伸びしろまだあるの怖い。",
+        "去年見た時よりツッコミの切れが増してる〈名〉。これは一段階上がった。",
+    ]
+    /// 客に知られているか（2年目以降かつ知名度が育ってから）。表示だけの判定・乱数非消費
+    static func isKnown(year: Int, fame: Double) -> Bool { year >= 2 && fame >= 15 }
+
+    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false) -> [String] {
         let count = 2 + ((salt / 7) % 3 + 3) % 3 + (burst ? 1 : 0)   // 2〜4
+        let keep: ([String]) -> [String] = { pool in known ? pool : pool.filter { !knownOnly.contains($0) } }
         let band: [String]
-        if passed { band = (margin ?? 0) >= 8 ? bandA : bandB }
-        else if let m = margin, m >= -3 { band = bandC }
-        else if let m = margin, m >= -10 { band = ((salt % 2) + 2) % 2 == 0 ? bandC : bandD }
-        else { band = bandD }
+        if passed { band = keep((margin ?? 0) >= 8 ? bandA : bandB) }
+        else if let m = margin, m >= -3 { band = keep(bandC) }
+        else if let m = margin, m >= -10 { band = keep(((salt % 2) + 2) % 2 == 0 ? bandC : bandD) }
+        else { band = keep(bandD) }
+        let bursts = keep(burstLines)
         var lines: [String] = []
-        if burst { lines.append(burstLines[((salt % burstLines.count) + burstLines.count) % burstLines.count]) }
+        if burst { lines.append(bursts[((salt % bursts.count) + bursts.count) % bursts.count]) }
         var k = 0
         while lines.count < min(count, 4) {
             let c = pick(band, k, salt); k += 1

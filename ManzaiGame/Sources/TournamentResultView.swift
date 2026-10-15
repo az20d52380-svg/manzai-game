@@ -37,7 +37,8 @@ struct TournamentResultView: View {
         let r = result
         return FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
                                     burst: r.burst == true || debugForceFanReport,
-                                    salt: summary.year * 131 + summary.week)
+                                    salt: summary.year * 131 + summary.week,
+                                    known: FanReportData.isKnown(year: summary.year, fame: session.state.fame))
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
     private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
