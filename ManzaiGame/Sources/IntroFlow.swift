@@ -113,13 +113,11 @@ private struct RecallScriptRow: View {
     let advice: Advice
     var body: some View {
         let name = advice.name ?? "俺"
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(name).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-                .padding(.horizontal, 6).padding(.vertical, 2)
-                .background(name == "谷口" ? YoseColor.shu : YoseColor.kuroUrushi)
-                .frame(minWidth: 44)
-            Text(advice.text).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi)
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
+            Text("\(name)「\(advice.text)」").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.haiSumi)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 10)
+                .overlay(alignment: .leading) { Rectangle().fill(YoseColor.kiDark).frame(width: 2) }
         }
         .opacity(0.7)
         .accessibilityElement(children: .combine)
@@ -157,7 +155,19 @@ private struct RecallPicture: View {
                 HStack(spacing: 10) {
                     ForEach(0..<3, id: \.self) { _ in
                         ZStack {
-                            Rectangle().fill(mood == .eve ? YoseColor.kinBright.opacity(0.8) : YoseColor.washiFeatured)
+                            LinearGradient(colors: mood == .eve ? [YoseColor.kinBright.opacity(0.8), YoseColor.shu.opacity(0.35)]
+                                           : [Color(hex: 0xE8C590).opacity(0.85), YoseColor.washiFeatured],
+                                           startPoint: .top, endPoint: .bottom)
+                            // 校舎と雲のシルエット
+                            VStack(spacing: 0) {
+                                Capsule().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 26, height: 7).offset(x: -8, y: 12)
+                                Spacer(minLength: 0)
+                                HStack(alignment: .bottom, spacing: 2) {
+                                    Rectangle().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 14, height: 18)
+                                    Rectangle().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 20, height: 30)
+                                    Rectangle().fill(YoseColor.kiDark.opacity(0.45)).frame(width: 12, height: 14)
+                                }
+                            }
                             Rectangle().fill(YoseColor.sumi).frame(width: 2)
                             Rectangle().fill(YoseColor.sumi).frame(height: 2)
                         }
@@ -175,6 +185,11 @@ private struct RecallPicture: View {
                     RecallNameBoard(name: "谷口", band: YoseColor.shu, height: min(176, h * 0.52))
                 }
                 .padding(.bottom, floorH * 0.28)
+                // 手前の机2つ（天板＋ネタ帳）
+                HStack(spacing: together ? 24 : w * 0.18) {
+                    RecallDesk(); RecallDesk()
+                }
+                .padding(.bottom, floorH * 0.04)
             }
             .clipped()
         }
@@ -184,6 +199,23 @@ private struct RecallPicture: View {
         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
         .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
         .padding(.bottom, 3)
+    }
+}
+
+/// 教室の机（台形の天板＋脚・白いネタ帳）
+private struct RecallDesk: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                Rectangle().fill(YoseColor.kiDark)
+                Rectangle().fill(YoseColor.washi).frame(width: 22, height: 10).rotationEffect(.degrees(-6)).offset(x: -14)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1).frame(width: 22, height: 10).rotationEffect(.degrees(-6)).offset(x: -14))
+            }
+            .frame(width: 92, height: 14)
+            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+            HStack { Rectangle().fill(YoseColor.sumi).frame(width: 4, height: 18); Spacer(); Rectangle().fill(YoseColor.sumi).frame(width: 4, height: 18) }
+                .frame(width: 76)
+        }
     }
 }
 
