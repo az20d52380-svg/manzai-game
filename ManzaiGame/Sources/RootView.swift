@@ -82,7 +82,9 @@ struct RootView: View {
             }
             if ui == "allocate", session.week <= 1 {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
-                session = GameSession(startState: GameSession.debugAllocationState())
+                var st = GameSession.debugAllocationState()
+                if ProcessInfo.processInfo.environment["MZ_MODE"] == "short" { st.exp閃き = 2; st.exp語彙 = 3; st.exp間合い = 0.5; st.exp存在感 = 1; st.exp胆力 = 0 }   // 足りない行の目視
+                session = GameSession(startState: st)
             }
             if ui == "stage" || ui == "juice", session.week <= 1 {
                 // 舞台シーン目視: 週頭イベント帯（0020[compat0-7]/0021[>=15]/0012[金欠]）を全て外した素の育成メイン
