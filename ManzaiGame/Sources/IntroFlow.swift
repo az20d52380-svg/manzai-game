@@ -431,8 +431,10 @@ struct S1TitleView: View {
 // MARK: コンビ名入力（ネタ帳見開き）
 
 struct NameEntryView: View {
-    var onDecide: (String) -> Void
+    var onDecide: (String, String?, String?) -> Void   // コンビ名・自分の名前・相方の名前（空欄＝nil）
     @State private var name = ""
+    @State private var myName = ""
+    @State private var partnerName = ""
     @State private var inkWet = false
     @FocusState private var focused: Bool
 
@@ -498,9 +500,14 @@ struct NameEntryView: View {
                         Text(name.isEmpty ? "＿＿＿＿＿＿" : name).font(YoseFont.mincho(24)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
                     }.padding(.horizontal, 14)
                     Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
+                    HStack { Text("自　分").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        nameField($myName, prompt: "俺")
+                    }.padding(.horizontal, 14)
+                    Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
                     HStack { Text("相　方").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
                         Spacer()
-                        Text("谷口").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                        nameField($partnerName, prompt: "谷口")
                     }.padding(.horizontal, 14)
                     Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
                     HStack { Text("結成日").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
@@ -536,6 +543,19 @@ struct NameEntryView: View {
         .onAppear { focused = true }
     }
 
+    /// 結成届の名前欄（全角6字まで・空欄＝既定の名前のまま）
+    private func nameField(_ text: Binding<String>, prompt: String) -> some View {
+        HStack(spacing: 6) {
+            TextField("", text: text, prompt: Text(verbatim: prompt).foregroundColor(YoseColor.haiSumi.opacity(0.55)))
+                .onChange(of: text.wrappedValue) { _, v in if v.count > Names.maxLength { text.wrappedValue = String(v.prefix(Names.maxLength)) } }
+                .font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                .multilineTextAlignment(.trailing).lineLimit(1).minimumScaleFactor(0.6)
+                .submitLabel(.done).tint(YoseColor.shu)
+            Text("（6字まで）").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+        }
+        .frame(maxWidth: 190)
+    }
+
     private var rivet: some View {
         Circle().fill(YoseColor.kuroUrushi).frame(width: 8, height: 8)
             .overlay(Circle().stroke(YoseColor.kin, lineWidth: 1))
@@ -546,7 +566,7 @@ struct NameEntryView: View {
         guard !name.isEmpty else { return }
         withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName)) }
     }
 }
 
@@ -620,7 +640,7 @@ struct NotificationPromptView: View {
 }
 
 struct IntroFlowView: View {
-    var onComplete: (String) -> Void
+    var onComplete: (String, String?, String?) -> Void
     @State private var stage: Stage = IntroFlowView.initialStage
     @State private var name = "あなたのコンビ"
     private enum Stage { case title, reminiscence, nameEntry, notif }
@@ -658,15 +678,15 @@ struct IntroFlowView: View {
                 ReminiscencePlayer(cards: Self.cards) { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } }
                     .transition(.opacity)
             case .nameEntry:
-                NameEntryView { n in
+                NameEntryView { n, me, partner in
                     name = n.isEmpty ? "あなたのコンビ" : n
-                    onComplete(name)
+                    onComplete(name, me, partner)
                 }
                 .transition(.opacity)
             case .notif:
                 // 通知機能が1本も実装されていない間は許諾を求めない（初週前の摩擦だけが残るため導線から外す）。
                 // NotificationPromptView 本体と MZ_UI=notif は通知実装時に復帰させる（休眠温存）。
-                NotificationPromptView { onComplete(name) }
+                NotificationPromptView { onComplete(name, nil, nil) }
                     .transition(.opacity)
             }
         }

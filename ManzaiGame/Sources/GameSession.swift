@@ -132,6 +132,9 @@ final class GameSession {
     /// 1年＝1行の記録（年末の「これまで」と勇退エンディングの年表に使う・表示専用・golden非対象）
     private(set) var yearHistory: [YearRecord] = []
     let combiName: String              // S1で入力（表示専用・golden非対象）
+    /// 自分の名前・相方の名前（S1で入力・nil/空＝俺・谷口のまま・表示専用・golden非対象）
+    let myName: String?
+    let partnerName: String?
     /// 中断セーブから復元されたセッションか（RootView が IntroFlow をスキップする判定に使う）
     let isRestored: Bool
 
@@ -139,7 +142,7 @@ final class GameSession {
     private var runner: WeekRunner<SplitMix64>
 
     init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil,
-         combiName: String = "あなたのコンビ") {
+         combiName: String = "あなたのコンビ", myName: String? = nil, partnerName: String? = nil) {
         // 実ゲームも自動注ぎ（A「削る」スライス1・fun_uiux_overhaul_v0 §5-1 A列）＝稽古で稼いだ粒は行動直後に
         // recommendedPlan で全量注がれ、のばす画面（AllocationView）は通らない。GameConfig 既定値（true）と同じ＝
         // sim/golden の前提と実ゲームが一致する（golden 不変）。明示しておくのは、既定値が将来変わっても実ゲームを固定するため。
@@ -149,6 +152,18 @@ final class GameSession {
         cfg.autoPourAllocation = false
         self.config = cfg
         self.combiName = combiName
+        var myName = myName, partnerName = partnerName
+        #if DEBUG
+        // 目視用: MZ_NAMES="自分名,相方名"（どちらか空でも可）
+        if let v = ProcessInfo.processInfo.environment["MZ_NAMES"] {
+            let p = v.components(separatedBy: ",")
+            myName = p.first.flatMap { $0.isEmpty ? nil : $0 }
+            partnerName = p.count > 1 && !p[1].isEmpty ? p[1] : nil
+        }
+        #endif
+        self.myName = myName
+        self.partnerName = partnerName
+        Names.set(me: myName, partner: partnerName)
         self.isRestored = false
         // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
@@ -169,6 +184,9 @@ final class GameSession {
         cfg.autoPourAllocation = false  // 新規と同じ（上の init の注記・2026-10-12 手動へ戻す）
         self.config = cfg
         self.combiName = save.combiName
+        self.myName = save.myName
+        self.partnerName = save.partnerName
+        Names.set(me: save.myName, partner: save.partnerName)
         self.isRestored = true
         self.uiEventRng = save.uiEventRng
         self.runner = WeekRunner(restoring: save.runner, config: cfg)
@@ -880,6 +898,8 @@ final class GameSession {
         var yearStartState: GameState?
         var yearHistory: [YearRecord]?
         var debtWarnTier: Int?
+        var myName: String?        // 自分の名前（旧セーブ＝nil＝俺）
+        var partnerName: String?   // 相方の名前（旧セーブ＝nil＝谷口）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -927,7 +947,7 @@ final class GameSession {
                             didFireLostRehearsal: didFireLostRehearsal, didFirePassFork: didFirePassFork,
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
                             yearStartState: yearStartState, yearHistory: yearHistory,
-                            debtWarnTier: debtWarnTier)
+                            debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName)
         do {
             let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)

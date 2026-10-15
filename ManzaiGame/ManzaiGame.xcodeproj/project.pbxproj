@@ -70,6 +70,7 @@
 		BB02DEED0D8FB7F6D961745C /* se_cursor.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2479B3303C35A9B094342137 /* se_cursor.mp3 */; };
 		BBBE44D86DED0FD7E6AB7A55 /* se_laugh_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 51C23F3FD0E280B988905E04 /* se_laugh_small.mp3 */; };
 		C135C70C43982811F7AD0254 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4BD130E2E1C169A1A5799E /* ShopView.swift */; };
+		C712E78003F444653742469B /* Names.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8BA6562B8B9B90803319E52 /* Names.swift */; };
 		C7CC7DDD5702BD8FE0DC6F10 /* YoseMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A020307F3B3C34947A00DD3 /* YoseMotion.swift */; };
 		D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */; };
 		D6DD3EA8BA750EBBFE6DBB11 /* se_rankup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C0518515B27DFACD1B80A893 /* se_rankup.mp3 */; };
@@ -145,6 +146,7 @@
 		CC1F100811789DF64591C427 /* DialogueData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogueData.swift; sourceTree = "<group>"; };
 		D47D421441D548D881226B2E /* FontLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontLoader.swift; sourceTree = "<group>"; };
 		D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterAvatars.swift; sourceTree = "<group>"; };
+		D8BA6562B8B9B90803319E52 /* Names.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Names.swift; sourceTree = "<group>"; };
 		DA0693E895C9B421B8BE4EAB /* se_money.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_money.mp3; sourceTree = "<group>"; };
 		DA68AC6CD1C1D0C3A79BB435 /* se_transition.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_transition.mp3; sourceTree = "<group>"; };
 		DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandData.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				F5D08F932A4334F422E73881 /* JudgeData.swift */,
 				F6A618381798F759B9F5580F /* Juice.swift */,
 				0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */,
+				D8BA6562B8B9B90803319E52 /* Names.swift */,
 				03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */,
 				66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */,
 				DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */,
@@ -435,6 +438,7 @@
 				6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */,
 				4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */,
 				54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */,
+				C712E78003F444653742469B /* Names.swift in Sources */,
 				20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */,
 				EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */,
 				DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */,

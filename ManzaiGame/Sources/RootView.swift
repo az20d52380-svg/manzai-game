@@ -51,7 +51,7 @@ struct RootView: View {
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
-            case "intro_title", "intro_name": IntroFlowView { _ in }          // タイトル／名前決めの目視
+            case "intro_title", "intro_name": IntroFlowView { _, _, _ in }          // タイトル／名前決めの目視
             case "catalog": YoseCatalogView()                               // デザイン部品見本
             case "frame": StageFramePreview(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
@@ -191,10 +191,10 @@ struct RootView: View {
                     #endif
                 }
         } else {
-            IntroFlowView { name in                       // S1: KV→回想→名入力
+            IntroFlowView { name, me, partner in          // S1: KV→回想→名入力（コンビ名・自分の名前・相方の名前）
                 // 初回もランダムシード（「もう一度」と同じ）。固定424242だと全プレイヤーの初年が同一乱数になる。
                 // DEBUGの MZ_SMOKE/MZ_UI 経路は上の .task が固定シードの session をそのまま使う＝決定的なまま。
-                session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name)
+                session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name, myName: me, partnerName: partner)
                 withAnimation(.easeInOut(duration: 0.4)) { started = true }
             }
         }
@@ -210,13 +210,13 @@ struct RootView: View {
         } else if session.finished {
             if showEnding {
                 S6bView(session: session) {                                    // S6b 勇退エンディング→顔合わせ(=新周回)
-                    session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName)
+                    session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName, myName: session.myName, partnerName: session.partnerName)
                     showEnding = false
                 }
             } else {
                 YearResultView(session: session,
                                onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max),
-                                                                  combiName: session.combiName) },
+                                                                  combiName: session.combiName, myName: session.myName, partnerName: session.partnerName) },
                                onEnding: session.outcome?.champion == true ? { showEnding = true } : nil,
                                onNextYear: session.careerOver ? nil : { session.startNextYear() })
             }
