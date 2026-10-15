@@ -40,6 +40,22 @@ private struct YoseCoreGlow: View {
     }
 }
 
+/// 正円の朱の丸判子（二重輪＋太い2文字）
+struct YoseRoundHanko: View {
+    let text: String
+    var size: CGFloat = 70
+    var body: some View {
+        Text(text)
+            .font(YoseFont.mincho(size * 0.34)).tracking(1)
+            .foregroundStyle(YoseColor.shu)
+            .frame(width: size, height: size)
+            .background(Circle().fill(YoseColor.washi.opacity(0.92)))
+            .overlay(Circle().stroke(YoseColor.shu, lineWidth: 3))
+            .overlay(Circle().stroke(YoseColor.shu, lineWidth: 1).padding(5))
+            .rotationEffect(.degrees(-10))
+    }
+}
+
 // MARK: - 予選通過（合否判定『突破』）
 
 struct YosePassCelebrationView: View {
@@ -169,7 +185,7 @@ struct YosePassCelebrationView: View {
 
     // 中：結果カード（通過基準 ▶ 発揮実力）
     private var resultCard: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .trailing) {
             VStack(spacing: 10) {
                 Text(duoName).font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                 HStack(alignment: .lastTextBaseline, spacing: 12) {
@@ -194,9 +210,9 @@ struct YosePassCelebrationView: View {
             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2).padding(5))
             .background(Rectangle().fill(Color.black).offset(y: 5))
 
-            YoseHankoStamp(text: "突破", isSquare: false, angle: -8)
-                .scaleEffect(hankoIn ? 1.35 : 3.4).opacity(hankoIn ? 1 : 0)
-                .offset(x: -22, y: 52)
+            YoseRoundHanko(text: "突破")
+                .scaleEffect(hankoIn ? 1.0 : 2.6).opacity(hankoIn ? 1 : 0)
+                .padding(.trailing, 14)
         }
     }
 
