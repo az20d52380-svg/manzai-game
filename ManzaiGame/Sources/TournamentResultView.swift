@@ -172,11 +172,9 @@ struct TournamentResultView: View {
         .overlay(alignment: .bottom) {
             // 判の前の観客の声（タップで次の1枚／「飛ばす」で判へ）。判が出たら消える
             if fanActive && !revealed {
-                VStack(spacing: 8) {
-                    Text("客席アンケート").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-                        .frame(width: 140, height: 26).yoseKifuda()
+                VStack(spacing: 6) {
                     ForEach(Array(fanVoices.prefix(fanShown).enumerated()), id: \.offset) { i, t in
-                        fanReportCard(t, showTag: true).transition(.opacity.combined(with: .offset(y: 10)))
+                        fanReportCard(t, showTag: i == 0).transition(.opacity.combined(with: .offset(y: 10)))   // 見出し札は1枚目だけ（3連呼を避ける）
                     }
                     HStack(spacing: 10) {   // 進む（画面タップと同じ）が主・飛ばすは副。幅は決める
                         Button("次の声へ ▶") { fanTap += 1 }
@@ -184,6 +182,14 @@ struct TournamentResultView: View {
                         Button("スキップ") { skipRequested = true }
                             .buttonStyle(YoseButtonStyle(.secondary))
                             .frame(width: 104)
+                    }
+                    .padding(.top, 10)
+                    .background(alignment: .bottom) {   // ボタンの座布団（客席の頭と重ならない黒漆の帯）
+                        YoseColor.kuroUrushi.opacity(0.88)
+                            .padding(.horizontal, -YoseMetrics.screenMargin)
+                            .padding(.bottom, -18)
+                            .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 1.5).padding(.horizontal, -YoseMetrics.screenMargin) }
+                            .ignoresSafeArea(edges: .bottom)
                     }
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 18)
@@ -346,6 +352,15 @@ struct TournamentResultView: View {
                 }
             }
             .frame(height: 56, alignment: .bottom)
+            .background {   // 計器の目盛り（25/50/75%の薄い横破線）。低ウケでも上が空白に見えない
+                VStack(spacing: 0) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        Spacer(minLength: 0)
+                        Rectangle().stroke(YoseColor.kiDark.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 3])).frame(height: 1)
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
             .overlay {   // 3等分の縦仕切り（細い破線）
                 HStack(spacing: 0) {
                     Color.clear.frame(maxWidth: .infinity)
@@ -420,7 +435,7 @@ struct TournamentResultView: View {
     /// 観客の一言（架空SNS）。審査員の講評と見分けがつくよう、貼り紙＋SNS名の角札で出す
     private func fanReportCard(_ text: String, showTag: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 5) {
-            if showTag { YoseTag(text: "\(FanReportData.sns)・観客の声", style: .outlineSumi) }
+            if showTag { YoseTag(text: "客席アンケート ・ \(FanReportData.sns)", style: .outlineSumi) }
             Text(text).font(YoseFont.mincho(14)).lineSpacing(4).foregroundStyle(YoseColor.sumi)
                 .fixedSize(horizontal: false, vertical: true)
         }
