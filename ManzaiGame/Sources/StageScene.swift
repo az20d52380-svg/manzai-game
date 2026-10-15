@@ -12,10 +12,10 @@ struct StageScene: View {
         GeometryReader { geo in
             let w = geo.size.width
             let h = geo.size.height
-            let horizon = h * 0.58            // 壁と床の境
+            let horizon = h * 0.55            // 壁と床の境
             let micX = w * 0.62               // センターマイクの立ち位置（左下は台詞の席なので右寄り）
-            let footY = h - h * 0.05          // 二人の足元
-            let figH = max(150, h * 0.30)     // 人物は画面比で決める
+            let footY = h * 0.84           // 二人の足元（下端の吹き出し・カードに隠れない高さ）
+            let figH = max(130, h * 0.27)     // 人物は画面比で決める
 
             ZStack {
                 // 1) 稽古場の壁（明るいクリーム・上ほど白）
@@ -63,11 +63,11 @@ struct StageScene: View {
                 Group {
                 // 接地シャドウ（足元の楕円影）：マイクと二人が床に浮かないように
                 Group {
-                    Ellipse().fill(Color.black.opacity(0.22)).frame(width: figH * 0.30, height: figH * 0.06)
+                    Ellipse().fill(Color.black.opacity(0.35)).frame(width: figH * 0.30, height: figH * 0.06)
                         .position(x: micX, y: footY)
-                    Ellipse().fill(Color.black.opacity(0.25)).frame(width: figH * 0.62, height: figH * 0.09)
+                    Ellipse().fill(Color.black.opacity(0.32)).frame(width: figH * 0.62, height: figH * 0.09)
                         .position(x: micX - figH * 0.52, y: footY - figH * 0.01)
-                    Ellipse().fill(Color.black.opacity(0.25)).frame(width: figH * 0.68, height: figH * 0.10)
+                    Ellipse().fill(Color.black.opacity(0.32)).frame(width: figH * 0.68, height: figH * 0.10)
                         .position(x: micX + figH * 0.54, y: footY - figH * 0.01)
                 }
                 .blur(radius: 4)
