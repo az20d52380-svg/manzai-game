@@ -77,6 +77,7 @@ struct RootView: View {
             if smoke != nil || ui != nil || endingHook { started = true }
             if smoke == "selftest" { GameSession.debugSelfTest(); return }
             if smoke == "actiontrace" { GameSession.debugActionTrace(); return }
+            if smoke == "soak" { await soakLoop(); return }   // 漏れ点検: 実UIを通して年を回し続ける（MZ_SOAK_MS=1手の待ち）
             if endingHook, session.week <= 1 { forceChampion() }   // S6b（#5/#7/#8）用の優勝データ。1〜4・6 の場面は session 不要   // スモーク/UI確認時はS1を飛ばす
             // 複数年の目視: MZ_YEARS=n で n 年ぶん自動で年末→翌年へ進めてから、他のフックを掛ける
             if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
@@ -303,6 +304,40 @@ struct RootView: View {
         Text(label).font(.system(size: Font.mzScaled(11), weight: .heavy))
             .foregroundStyle(.white).padding(.horizontal, 8).padding(.vertical, 5)
             .background(.black.opacity(0.45), in: Capsule())
+    }
+
+    /// 長時間の画面往復（メモリの漏れ点検）：1手ずつ待ちを置いて本物の画面を通し、年末・決勝・エンディングも通る。
+    private func soakLoop() async {
+        let ms = UInt64(ProcessInfo.processInfo.environment["MZ_SOAK_MS"] ?? "") ?? 120
+        var rounds = 0
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: ms * 1_000_000)
+            let s = session
+            if s.winFinale { try? await Task.sleep(nanoseconds: 1_500_000_000); s.acknowledgeWin(); continue }
+            if s.watchingFinal { s.finishWatchingFinal(winner: "—"); continue }
+            if s.pendingChoiceEvent != nil { s.dismissChoiceEvent(); continue }
+            if s.pendingResult != nil { s.acknowledgeResult(); continue }
+            if s.finished {
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                if s.careerOver {
+                    if s.endingID != nil { showEnding = true; try? await Task.sleep(nanoseconds: 3_000_000_000) }
+                    showEnding = false
+                    rounds += 1
+                    if rounds % 2 == 0 { forceChampion() }
+                    else { session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: s.combiName, myName: s.myName, partnerName: s.partnerName) }
+                } else { s.startNextYear() }
+                continue
+            }
+            switch s.phase {
+            case .tournamentDecision: s.decideTournament(.新幹線)
+            case .freeAction:
+                if s.state.money < 250_000 { s.choose(.job(.標準)) }
+                else if s.state.stamina >= 45 { s.choose(.train(.ネタ作り)) }
+                else { s.choose(.rest(.完全休養)) }
+            case .gpRound, .gpRevival, .gpFinal: s.advanceAuto()
+            default: break
+            }
+        }
     }
 
     private func forceChampion() {
