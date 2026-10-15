@@ -722,7 +722,12 @@ struct WeekMainView: View {
             let urgent = c == .能力アップ && unspentBeforeStage
             VStack(spacing: 3) {
                 HStack(spacing: 7) {
-                    if let stamp { Image(systemName: stamp).font(.system(size: 17, weight: .black)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.enji) }
+                    if let stamp {
+                        Image(systemName: stamp).font(.system(size: 15, weight: .black)).foregroundStyle(YoseColor.kinari)
+                            .frame(width: 28, height: 28)
+                            .background(gated ? YoseColor.disabledText : YoseColor.enji)
+                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    }
                     Text(c.rawValue).font(YoseFont.gothic(20, weight: .heavy))
                         .foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
                         .lineLimit(1).minimumScaleFactor(0.8)
