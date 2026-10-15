@@ -44,9 +44,9 @@ struct YoseHeaderBar: View {
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                 }
             }
-            .padding(.horizontal, YoseMetrics.screenMargin)
+            .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 3)
         }
-        .frame(height: 48)
+        .frame(minHeight: 48)   // 標準サイズは従来どおり48。大きい文字では題と副題が収まる高さまで伸びる
         .overlay(alignment: .bottom) {
             VStack(spacing: 0) {
                 Rectangle().fill(YoseColor.kin).frame(height: 2)

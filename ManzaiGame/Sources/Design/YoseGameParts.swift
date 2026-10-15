@@ -37,11 +37,12 @@ struct YoseVitalMoneyBar: View {
     var staminaColor: Color = Color(hex: 0x3E8E57)   // 黒帯の上でも満タンが読める若竹色
 
     var body: some View {
-        HStack(spacing: 12) {
+        let big = Font.mzScaled(10) > 11   // 大きい文字サイズでは体力ゲージを縮めて、知名度・借金・所持金を潰さない
+        HStack(spacing: big ? 8 : 12) {
             HStack(spacing: 6) {
                 Text("体力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin).fixedSize()
                 YoseGauge(value: Double(stamina), total: Double(maxStamina), fill: staminaColor, height: 12)
-                    .frame(width: fame == nil ? 76 : 60)   // 知名度も並ぶ黒帯では、ラベルを潰さないよう少し短く
+                    .frame(width: big && fame != nil ? (money < 0 ? 22 : 34) : (fame == nil ? 76 : 60))   // 知名度も並ぶ黒帯では、ラベルを潰さないよう少し短く
                 (Text("\(stamina)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                 + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu))
                     .lineLimit(1).fixedSize()
@@ -51,7 +52,7 @@ struct YoseVitalMoneyBar: View {
             Spacer(minLength: 0)
             if let fame {
                 HStack(spacing: 3) {
-                    Text("知名度").font(YoseFont.gothic(10, weight: .bold)).lineLimit(1).minimumScaleFactor(0.6).foregroundStyle(YoseColor.kinari.opacity(0.8))
+                    Text("知名度").font(YoseFont.gothic(10, weight: .bold)).lineLimit(1).fixedSize().foregroundStyle(YoseColor.kinari.opacity(0.8))
                     Text("\(fame)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     if let fameDelta, fameDelta > 0 {
                         Text("↑+\(fameDelta)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
