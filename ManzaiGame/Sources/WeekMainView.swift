@@ -148,6 +148,7 @@ struct WeekMainView: View {
             SettingsView(onClose: { showSettings = false },
                          onQuitRun: { showSettings = false; session.abandonRun() })
         }
+        .overlay { burstCostOverlay }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
             toastBar.animation(.easeOut(duration: 0.2), value: toast)
@@ -260,7 +261,7 @@ struct WeekMainView: View {
                 // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
                 SpeedLinesBurst(trigger: particleFire, center: UnitPoint(x: 0.62, y: 0.55))
                 ParticleBurst(trigger: particleFire,
-                              colors: burstChips.filter(\.up).map(\.bg),
+                              colors: [YoseColor.kinBright, YoseColor.shu, YoseColor.kin],
                               style: .spark, count: 26,
                               origin: UnitPoint(x: 0.62, y: 0.60))
             }
@@ -314,8 +315,10 @@ struct WeekMainView: View {
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
-                        Text("経験点が残ってる ・ 能力アップで使おう")
-                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                        Text("！ 経験点が残ってる ・ 能力アップで使おう ！")
+                            .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                            .frame(maxWidth: .infinity).padding(.vertical, 3)
+                            .background(YoseColor.shu)
                     } else if m.weeksLeft >= 6 {
                         Text(lullLine())
                             .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.85)).lineLimit(1).minimumScaleFactor(0.85)
@@ -693,7 +696,7 @@ struct WeekMainView: View {
             case .練習: return gated ? "" : "合わせ・舞台 ほか"
             case .バイト, .休む: return ""   // 名前＋判子アイコンで足りる（説明文は廃止）
             case .能力アップ:
-                if unspentBeforeStage { return "大会前に経験点を使おう" }
+                if unspentBeforeStage { return "" }   // 朱札「未振分あり」と上の看板が言う
                 return expGrains > 0 ? "経験点 \(expGrains) たまってる" : ""
             case .お店: return ""
             }
@@ -731,9 +734,6 @@ struct WeekMainView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .overlay(alignment: .topTrailing) {
-                if urgent { YoseTag(text: "大会前", style: .outlineShu).offset(x: 4, y: -10) }
-            }
             .overlay(alignment: .bottomTrailing) {
                 // 選べない札は、判子で「今週は無理」を言う
                 if gated {
@@ -746,7 +746,8 @@ struct WeekMainView: View {
                 }
             }
         }
-        .buttonStyle(YoseButtonStyle(.command))
+        .buttonStyle(YoseButtonStyle(.command, badgeText: c == .能力アップ && unspentBeforeStage ? "未振分あり" : nil,
+                                       highlight: c == .能力アップ && unspentBeforeStage))
     }
 
     /// カードの顔（貼り紙）: アイコン箱＋名前／説明／伸び（経験点は正本の5色）／コスト（所持金・体力）。
@@ -850,7 +851,7 @@ struct WeekMainView: View {
     /// 出現は下から stagger（0.07s刻み・emphSpring）、退場は逆再生。チップの色はカードの伸びと同じ＝予告と着地が同じ顔。
     private var burstOverlay: some View {
         VStack(alignment: .trailing, spacing: 5) {
-            ForEach(Array(burstChips.enumerated()), id: \.element.id) { i, chip in
+            ForEach(Array(burstChips.filter(\.up).enumerated()), id: \.element.id) { i, chip in
                 burstChipView(chip)
                     .opacity(burstVisible ? 1 : 0)
                     .offset(y: burstVisible ? 0 : 16)
@@ -861,12 +862,35 @@ struct WeekMainView: View {
     }
 
     private func burstChipView(_ chip: BurstChip) -> some View {
-        // パワプロの「＋経験点ドン」＝でかく・白縁・ハード影（小さくつつましい獲得表示は手応えが死ぬ）。
-        Text(chip.text).font(.maru(17, weight: .black)).foregroundStyle(chip.fg)
-            .padding(.horizontal, 12).padding(.vertical, 6)
-            .background(chip.bg, in: Rectangle())
-            .overlay(Rectangle().stroke(chip.up ? .white : Theme.lineStrong, lineWidth: 2))
-            .shadow(color: Theme.ink.opacity(0.25), radius: 0, y: 3)
+        // 伸びは山吹金の札＋墨2pt枠＋ハード影。「新ネタ」だけは朱の判子で叩きつける（ぼかし影・紫は使わない）。
+        Group {
+            if chip.text == "新ネタ" {
+                YoseHankoStamp(text: "新ネタ", isSquare: true).scaleEffect(1.15)
+                    .shadow(color: YoseColor.sumi.opacity(0.35), radius: 0, x: 0, y: 2)
+            } else {
+                Text(chip.text).font(YoseFont.gothic(17, weight: .black)).foregroundStyle(YoseColor.sumi)
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(YoseColor.kinBright)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+            }
+        }
+    }
+
+    /// 体力の減りは体力ゲージの直上に黒漆の札で（祝わない・どのゲージが減ったか視線が繋がる）
+    @ViewBuilder private var burstCostOverlay: some View {
+        if let chip = burstChips.first(where: { !$0.up }) {
+            Text(chip.text).font(YoseFont.gothic(17, weight: .black)).foregroundStyle(YoseColor.kinari)
+                .padding(.horizontal, 12).padding(.vertical, 6)
+                .background(YoseColor.kuroUrushi)
+                .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5))
+                .opacity(burstVisible ? 1 : 0)
+                .offset(y: burstVisible ? -14 : 0)
+                .animation(.spring(response: 0.28, dampingFraction: 0.7), value: burstVisible)
+                .padding(.leading, YoseMetrics.screenMargin).padding(.bottom, 104)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                .allowsHitTesting(false)
+        }
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。

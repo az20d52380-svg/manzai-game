@@ -63,10 +63,13 @@ struct YoseButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     let role: YoseButtonRole
     var badgeText: String? = nil
+    /// 注意を促す強調（朱の太枠＋山吹の薄塗り）。押せる状態の時だけ
+    var highlight = false
 
-    init(_ role: YoseButtonRole = .secondary, badgeText: String? = nil) {
+    init(_ role: YoseButtonRole = .secondary, badgeText: String? = nil, highlight: Bool = false) {
         self.role = role
         self.badgeText = badgeText
+        self.highlight = highlight
     }
 
     private var depth: CGFloat {
@@ -92,6 +95,7 @@ struct YoseButtonStyle: ButtonStyle {
             .background {
                 ZStack {
                     fillColor
+                    if highlight && isEnabled { YoseColor.kinBright.opacity(0.18) }
                     if !isEnabled {
                         YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4)
                     } else if role == .primary {
@@ -101,7 +105,7 @@ struct YoseButtonStyle: ButtonStyle {
             }
             .clipShape(RoundedRectangle(cornerRadius: YoseMetrics.radius))
             .overlay(RoundedRectangle(cornerRadius: YoseMetrics.radius)
-                .stroke(isEnabled ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: isEnabled ? 2 : 1.5))
+                .stroke(!isEnabled ? YoseColor.haiSumi : (highlight ? YoseColor.shu : YoseColor.sumi), lineWidth: !isEnabled ? 1.5 : (highlight ? 2.5 : 2)))
             .overlay(alignment: .bottomTrailing) {
                 if let badgeText {
                     Text(badgeText)
