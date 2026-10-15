@@ -824,6 +824,7 @@ struct WeekMainView: View {
                 }
             }
             if !wide, !row {
+                Spacer(minLength: 0)   // 消費（お金・体力）はカードの最下段へ揃える（隣のカードと同じ高さに並ぶ）
                 HStack(spacing: 4) {
                     if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
                     if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
