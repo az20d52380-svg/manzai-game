@@ -185,3 +185,92 @@ cd GameCore && swift test
 - `handoff_2026-10-15.md` — 引き継ぎ（2026-10-15・オーナー決定3件＝ネタ/お金/知名度・次の手順）
 - `NEW_CHAT_PROMPT.md` — 新チャットの起動手順（止まらない・自動再開・トークン節約・質問の仕方）・2026-10-15
 - `choice_events_others_v1.md` — 相方以外の人との選択肢イベント9本（後輩・先輩ほか・0041〜0049。実装は preview-all）の設計と採点・2026-10-15
+- `NEW_CHAT_PASTE.md` — 新チャットに貼る文（起動手順・2026-10-16版）・2026-10-15
+- `a11y_audit_v1.md` — アクセシビリティ点検 v1（preview-all）・2026-10-16
+- `balance_snapshot_2026-10-16.md` — 10年通しの手応えのスナップショット・2026-10-16
+- `boke_audit_v1.md` — ボケ点検 v1（オーナー指摘を受けた点検）・2026-10-15
+- `check_v5_endings_events.md` — エンディング・イベントの目視確認（check_v5）・2026-10-15
+- `comedy_games_ideas_v0.md` — お笑い題材ゲームの調査とこのゲームへの案・2026-10-15
+- `debt_warning_effect_v0.md` — 借金警告の効果の実測 v0（n=1000）・2026-10-16
+- `design_audit_argon_g1_r2_v0.md` — 実機画面16枚の厳格監査 第2回 r2・2026-10-15
+- `design_audit_argon_g1_v0.md` — 実機画面16枚の厳格監査 v0（基準つき）・2026-10-15
+- `design_audit_argon_g2_r2_v0.md` — 実機画面デザイン監査 G2 r2・2026-10-15
+- `design_audit_argon_g2_v0.md` — 実機画面デザイン監査 G2 v0・2026-10-15
+- `design_audit_argon_g3_r2_v0.md` — 実機画面監査 G3 r2・2026-10-15
+- `design_audit_argon_g3_v0.md` — 実機画面監査 G3 v0・2026-10-15
+- `design_audit_argon_g4_r2_v0.md` — 実機画面UI/UX・アート再監査 G4 r2・2026-10-15
+- `design_audit_argon_g4_v0.md` — 実機画面UI/UX・アート監査 G4 v0・2026-10-15
+- `design_audit_argon_r3_bg_v0.md` — イベント会話・場面背景の監査 R3（全22画面）・2026-10-15
+- `design_audit_argon_r3_g1_v0.md` — 実機画面デザイン監査 R3 G1・2026-10-15
+- `design_audit_argon_r3_g2_v0.md` — 実機画面監査 R3 G2（コンビ画面）・2026-10-15
+- `design_audit_argon_r3_g3_v0.md` — 実機画面監査 R3 G3（ジュース演出）・2026-10-15
+- `design_audit_argon_r3_g4_v0.md` — 実機画面UI/UX監査 R3 G4・2026-10-15
+- `design_audit_argon_r4_bg_v0.md` — イベント会話・場面背景の監査 R4（全26画面）・2026-10-15
+- `design_audit_argon_r4_g1_v0.md` — 実機画面監査 R4 G1（タイトル等）・2026-10-15
+- `design_audit_argon_r4_g2_v0.md` — 実機画面 3巡目監査 R4 G2・2026-10-15
+- `design_audit_argon_r4_g3_v0.md` — 実機画面監査 R4 G3（予選結果）・2026-10-15
+- `design_audit_argon_r4_g4_v0.md` — 実機画面UI/UX監査 R4 G4・2026-10-15
+- `design_audit_argon_r5_bg_v0.md` — イベント会話・場面背景の監査 R5（全26画面）・2026-10-15
+- `design_audit_argon_r5_g1_v0.md` — 実装監査 R5 G1・2026-10-15
+- `design_audit_argon_r5_g2_v0.md` — 実機監査 R5 G2・2026-10-15
+- `design_audit_argon_r5_g3_v0.md` — デザイン監査 R5 G3（予選結果・決勝演出）・2026-10-15
+- `design_audit_argon_r5_g4_v0.md` — 実機画面デザイン監査 R5 G4・2026-10-15
+- `design_system_argon_v1.md` — デザインシステム「寄席と計器」v1・2026-10-15
+- `dialogue_add_score_v0.md` — 追加174本の採点 v0（4cad2b7）・2026-10-15
+- `dissolution_rift_measure_v0.md` — 途中解散（すれ違いゲージ）の実測 v0・2026-10-15
+- `dissolution_rift_spec_v1.md` — 途中解散（すれ違いゲージ）の正典案 v1・2026-10-15
+- `effects_design_argon_v1.md` — 演出・エフェクト設計 v1（寄席と計器）・2026-10-15
+- `effects_redo_argon_v1.md` — 優勝演出の解剖と再設計仕様 v1・2026-10-15
+- `endings_distribution_v0.md` — エンディング判定案の分布 v0（実測）・2026-10-16
+- `event_backgrounds_argon_v1.md` — イベント会話背景のデザイン仕様 v1・2026-10-15
+- `exp_scale_options_v0.md` — 経験点の桁を大きくする案の判断材料（キュー66）・2026-10-15
+- `finals_broadcast_argon_v1.md` — 決勝の生放送・賞レース番組の仕様 v1・2026-10-15
+- `fun_audit_v0.md` — ゲームの面白さの点検（実測側）v0（キュー7）・2026-10-15
+- `fun_text_material_v0.md` — 文章・演出の素材 v0（fun_audit §3 の各案）・2026-10-15
+- `fx_v2_review_burst_r1.md` — 大成功演出のレビュー（fx_v2）r1・2026-10-15
+- `fx_v2_review_burst_r2.md` — 大成功演出のレビュー（fx_v2）r2・2026-10-15
+- `fx_v2_review_champion_r1.md` — 優勝演出のレビュー（fx_v2）r1・2026-10-15
+- `fx_v2_review_champion_r2.md` — 優勝演出のレビュー（fx_v2）r2・2026-10-15
+- `fx_v2_review_pass_r1.md` — 予選通過演出のレビュー（fx_v2）r1・2026-10-15
+- `fx_v2_review_pass_r2.md` — 予選通過演出のレビュー（fx_v2）r2・2026-10-15
+- `fx_v2_review_rankup_r1.md` — ランクアップ演出のレビュー（fx_v2）r1・採点72点・2026-10-15
+- `fx_v2_review_rankup_r2.md` — ランクアップ演出のレビュー（fx_v2）r2・採点86点・2026-10-15
+- `fx_v2_review_yearturn_r1.md` — 年の幕間演出のレビュー（fx_v2）r1・2026-10-15
+- `fx_v2_review_yearturn_r2.md` — 年の幕間演出のレビュー（fx_v2）r2・2026-10-15
+- `gemini_login_howto.md` — Gemini CLI を AI Pro のアカウントでつなぎ直す手順・2026-10-15
+- `gemini_uiux_answer_v0.md` — Gemini の回答（AIっぽさの原因10個）・2026-10-15
+- `gemini_uiux_prompt_v0.md` — Gemini に UI/UX を頼む時のプロンプト・2026-10-15
+- `gemini_uiux_review_argon_all_r1_v0.md` — Gemini 辛口UIレビュー（4画面の統一感）r1・2026-10-15
+- `gemini_uiux_review_neta_result_r1_v0.md` — Gemini 辛口UIレビュー（ネタ結果画面）r1・2026-10-15
+- `gemini_uiux_review_neta_result_r2_v0.md` — Gemini 辛口UIレビュー（ネタ結果画面）r2・2026-10-15
+- `gemini_uiux_review_neta_result_r3_v0.md` — Gemini 辛口UIレビュー（ネタ結果画面）r3・2026-10-15
+- `gemini_uiux_review_r2_v0.md` — Gemini 辛口UIレビュー r2・2026-10-15
+- `gemini_uiux_review_r3_v0.md` — Gemini 辛口UIレビュー r3・2026-10-15
+- `gemini_uiux_review_r4_v0.md` — Gemini 辛口UIレビュー r4・2026-10-15
+- `gemini_uiux_review_r5_v0.md` — Gemini 辛口UIレビュー r5・2026-10-15
+- `gemini_uiux_review_r6_v0.md` — Gemini 辛口UIレビュー r6・2026-10-15
+- `handoff_2026-10-16.md` — 引き継ぎ（2026-10-15 昼更新）・2026-10-15
+- `m1_broadcast_presentation_research_v0.md` — M-1決勝「番組感」の調査と改善案 v0・2026-10-15
+- `monetization_ideas_v0.md` — 課金アイテム案の考察 v0（キュー80）・2026-10-15
+- `money_harshness_options_v0.md` — お金のきつさ代案の実測 v0（n=1000）・2026-10-16
+- `multi_ending_v0.md` — 複数エンディングの案 v0（キュー82）・2026-10-15
+- `number_display_consistency_v0.md` — 数字の出し方の一貫性チェック v0（コード読み）・2026-10-15
+- `office_choice_v0.md` — 事務所を選べる案 v0（オーナー10/15夜）・2026-10-16
+- `owner_questions_digest_2026-10-16.md` — オーナーへの質問まとめ（判断待ちの並び）・2026-10-16
+- `preview_all_check_v0.md` — preview-all 初見点検 v0・2026-10-15
+- `privacy_policy_draft_v0.md` — プライバシーポリシー下書き v0（未公開・要確認）・2026-10-16
+- `proposal_ui_overhaul_all_v0.md` — UI試作の統合プレビュー案 v0・2026-10-15
+- `rankup_yearturn_argon_v1.md` — 能力ランクアップ・年の幕間の演出 v1・2026-10-15
+- `redesign_polish_todo_v0.md` — 作り直しの仕上げTODO（Argon r2の残り）・2026-10-15
+- `research_event_fun_v0.md` — 会話イベントが面白くない理由の調査 v0・2026-10-15
+- `research_judge_comments_v1.md` — 審査員コメントの調査の続き v1・2026-10-15
+- `research_m1_deep_v0.md` — M-1グランプリ深掘り調査（キュー74）・2026-10-15
+- `research_tournament_difficulty_v0.md` — 大会の難易度の調査 v0（キュー75）・2026-10-15
+- `smoke_preview_all_v1.md` — preview-all 通しスモーク v1・2026-10-15
+- `smoke_preview_all_v2.md` — preview-all 通しスモーク v2・2026-10-16
+- `store_listing_draft_v0.md` — ストア掲載の下書き v0（決めない範囲）・2026-10-16
+- `stuck_and_exploit_check_v0.md` — 詰みと抜け道の実測 v0・2026-10-15
+- `stuck_remeasure_money_l_v0.md` — 夜逃げ・借金の再実測（お金の調整L後）v0・2026-10-15
+- `text_repeat_rate_v0.md` — 文の繰り返し率（10年通し）の実測 v0・2026-10-15
+- `true_ending_ideas_v0.md` — トゥルーエンドの案 v0（キュー82）・2026-10-15
+- `wording_consistency_v1.md` — 画面文言の表記ゆれ点検 v1・2026-10-16
