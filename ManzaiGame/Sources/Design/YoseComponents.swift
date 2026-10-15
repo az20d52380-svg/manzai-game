@@ -87,6 +87,8 @@ struct YoseButtonStyle: ButtonStyle {
         configuration.label
             .font(YoseFont.gothic(role == .command ? 18 : 15, weight: .heavy))
             .foregroundStyle(textColor)
+            .padding(.horizontal, 10)
+            .frame(maxWidth: .infinity, minHeight: role == .command ? 68 : 44)   // 幅は外側の .frame いっぱい・高さは最低タップ領域（文字幅に縮まない／縦には伸びない）
             .background {
                 ZStack {
                     fillColor

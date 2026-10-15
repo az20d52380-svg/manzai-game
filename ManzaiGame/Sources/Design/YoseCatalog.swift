@@ -8,7 +8,10 @@ struct YoseCatalogView: View {
     @State private var stamped = false
     @State private var power = 120
     @State private var toast: String? = nil
-    @State private var showModal = false
+    @State private var showModal = ProcessInfo.processInfo.environment["MZ_CATALOG_MODAL"] != nil
+    /// 目視用：MZ_CATALOG_PAGE=1..3 で見本を分けて表示（未指定は全部）
+    private let page: Int? = ProcessInfo.processInfo.environment["MZ_CATALOG_PAGE"].flatMap { Int($0) }
+    private func pg(_ n: Int) -> Bool { page == nil || page == n }
 
     private func section(_ t: String) -> some View {
         Text(t).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
@@ -23,6 +26,7 @@ struct YoseCatalogView: View {
                 YoseHeaderBar(title: "部品見本", subtitle: "寄席と計器", closeAction: {})
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
+                        if pg(1) {
                         section("文字")
                         YoseOutlinedText(text: "大看板・番付")
                         Text("商店街の福引").font(YoseFont.netaTitle)
@@ -39,6 +43,9 @@ struct YoseCatalogView: View {
                             Button("稽古") { }.buttonStyle(YoseButtonStyle(.command, badgeText: "出張中")).frame(maxWidth: .infinity, minHeight: 68)
                         }
 
+                        }
+
+                        if pg(2) {
                         section("木札・貼り紙")
                         YoseKifudaCard(showNail: true) { Text("ステータス木札").font(YoseFont.bodyBold) }
                         YoseHarigamiCard { Text("貼り紙カード").font(YoseFont.bodyBold) }
@@ -67,6 +74,9 @@ struct YoseCatalogView: View {
                         }
                         YoseVitalMoneyBar(stamina: 70, maxStamina: 100, money: 123456, fame: 42, fameDelta: 6)
 
+                        }
+
+                        if pg(3) {
                         section("ゲージ")
                         YoseGauge(value: 60, total: 100)
                         YoseGauge(value: 25, total: 100, fill: YoseColor.tokiwa, height: 16)
@@ -91,6 +101,7 @@ struct YoseCatalogView: View {
                                 .buttonStyle(YoseButtonStyle(.secondary)).frame(maxWidth: .infinity, minHeight: 44)
                         }
                         YoseToast(message: "静的表示のトースト")
+                        }
                     }
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 12)
                 }
