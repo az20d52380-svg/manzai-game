@@ -34,14 +34,7 @@ struct YoseFXPreview: View {
                     YoseAnimatedHanko(text: "突破", isStamped: stamped, isSquare: true, angle: -8).offset(x: 80, y: -30).scaleEffect(1.6)
                 }.yoseShake(trigger: fire, intensity: .medium)
             case "champion":
-                ZStack {
-                    YoseSpeedLinesView(lineCount: 40)
-                    YoseConfettiView(isActive: show, pieceCount: 60)
-                    Text("優 勝").font(YoseFont.mincho(80)).foregroundStyle(YoseColor.kinBright)
-                        .shadow(color: YoseColor.kuroUrushi, radius: 0, x: 3, y: 4)
-                        .scaleEffect(stamped ? 1 : 2.5).opacity(stamped ? 1 : 0)
-                        .animation(.spring(response: 0.26, dampingFraction: 0.6), value: stamped)
-                }.yoseShake(trigger: fire, intensity: .heavy)
+                YoseChampionCelebrationView(duoName: "満月ロケット", partnerName: "谷口") { }
             case "cutin":
                 ZStack {
                     YoseSpeedLinesView(lineCount: 32)
