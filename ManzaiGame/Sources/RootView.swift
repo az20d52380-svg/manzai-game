@@ -43,7 +43,7 @@ struct RootView: View {
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
             case "intro_title", "intro_name": IntroFlowView { _ in }          // タイトル／名前決めの目視
             case "catalog": YoseCatalogView()                               // デザイン部品見本
-            case "frame": StageFrame(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
+            case "frame": StageFramePreview(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
             }
             #else
