@@ -45,6 +45,9 @@ struct YoseYearTurnCurtainView: View {
     @State private var contentAppeared: Bool = false
     @State private var stamped: Bool = false
     @State private var hasTriggeredStart: Bool = false
+    @State private var burstTrigger: Int = 0
+    @State private var shakeY: CGFloat = 0
+    @State private var spotOn: Bool = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(summary: YearTurnSummary, onStartNewYear: @escaping () -> Void) {
@@ -54,20 +57,27 @@ struct YoseYearTurnCurtainView: View {
 
     var body: some View {
         ZStack {
-            // 基本背景（生成り和紙）
-            YoseColor.kinari.ignoresSafeArea()
+            // 夜の寄席舞台：黒漆の闇＋天井から落ちるピンスポット＋床の照り返し
+            YearTurnStageBackdrop(lit: spotOn)
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // ① 最上部ヘッダー帯 (48pt)
-                YoseHeaderBar(title: "新シーズン開幕", subtitle: "\(summary.combiName)")
-
-                // ② 定式幕ヘッダー (18pt)
+                // ① 上部：定式幕の垂れ幕（舞台の上手）＋コンビ名の木札
                 joshikimakuHeader
+                HStack(spacing: 8) {
+                    Rectangle().fill(YoseColor.kin).frame(width: 20, height: 1.5)
+                    Text("新 シ ー ズ ン 開 幕")
+                        .font(YoseFont.gothic(13, weight: .heavy)).tracking(1.5)
+                        .foregroundStyle(YoseColor.kinBright)
+                    Rectangle().fill(YoseColor.kin).frame(width: 20, height: 1.5)
+                }
+                .padding(.top, 14)
 
                 // メインコンテンツ領域
-                VStack(spacing: 14) {
+                VStack(spacing: 16) {
                     // ③ 黒漆・寄席めくり看板（1年目 → 2年目 反転演出）
                     mekuriStageBoard
+                        .offset(y: shakeY)
 
                     // ④ 前年からの引き継ぎ資産カード（3連木札＋引き継ぎ明示タグ）
                     carryOverCard
@@ -86,9 +96,11 @@ struct YoseYearTurnCurtainView: View {
                         .frame(height: 54)
                     }
                     .buttonStyle(YoseButtonStyle(.primary))
+                    .opacity(contentAppeared ? 1 : 0)
+                    .offset(y: contentAppeared ? 0 : 14)
                 }
                 .padding(.horizontal, 14)
-                .padding(.top, 12)
+                .padding(.top, 10)
                 .padding(.bottom, 12)
 
                 // ⑦ 最下部ステータス黒帯（体力100/100全回復と所持金を常時表示）
@@ -149,82 +161,77 @@ struct YoseYearTurnCurtainView: View {
 
     // MARK: - ③ 黒漆・年次めくり大看板
 
+    private func mekuriCard(year: Int, caption: String) -> some View {
+        VStack(spacing: 0) {
+            // 上部の留め木（朱＋金の鋲）
+            Rectangle().fill(YoseColor.shu).frame(height: 10)
+                .overlay(Rectangle().fill(YoseColor.kinBright).frame(width: 30, height: 3))
+                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("結成").font(YoseFont.mincho(24)).foregroundStyle(YoseColor.sumi)
+                Text("\(year)")
+                    .font(YoseFont.mincho(92))
+                    .foregroundStyle(YoseColor.sumi)
+                Text("年目").font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+            }
+            .padding(.top, 10)
+            Rectangle().fill(YoseColor.sumi.opacity(0.2)).frame(height: 1).padding(.horizontal, 22)
+            Text(caption)
+                .font(YoseFont.gothic(13, weight: .heavy)).tracking(2)
+                .foregroundStyle(YoseColor.haiSumi)
+                .padding(.vertical, 9)
+        }
+        .frame(width: 270)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 3))
+        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1).padding(6))
+        .background(Rectangle().fill(Color.black).offset(y: 6))
+    }
+
     private var mekuriStageBoard: some View {
         ZStack(alignment: .topTrailing) {
-            VStack(spacing: 10) {
-                HStack(spacing: 6) {
-                    Rectangle().fill(YoseColor.kin).frame(width: 18, height: 1.5)
-                    Text("寄席・年次改め")
-                        .font(YoseFont.gothic(12, weight: .heavy))
-                        .tracking(1.5)
-                        .foregroundStyle(YoseColor.kin)
-                    Rectangle().fill(YoseColor.kin).frame(width: 18, height: 1.5)
+            VStack(spacing: 0) {
+                // 黒漆のめくり台（太い木桟＋真鍮の留め具2つ＋コンビ名）
+                HStack {
+                    Circle().fill(YoseColor.kinBright).frame(width: 9, height: 9).overlay(Circle().stroke(Color.black, lineWidth: 1))
+                    Spacer()
+                    Text(summary.combiName)
+                        .font(YoseFont.mincho(15)).tracking(3)
+                        .foregroundStyle(YoseColor.kinBright)
+                    Spacer()
+                    Circle().fill(YoseColor.kinBright).frame(width: 9, height: 9).overlay(Circle().stroke(Color.black, lineWidth: 1))
                 }
+                .padding(.horizontal, 12)
+                .frame(width: 290, height: 30)
+                .background(YoseColor.kuroUrushi)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                .background(Rectangle().fill(Color.black).offset(y: 4))
+                .zIndex(2)
 
-                // めくり札本体（前年 → 新年へパタンと縦反転）
-                ZStack {
-                    VStack(spacing: 4) {
-                        // めくり上部の黒漆留め木
-                        Rectangle()
-                            .fill(YoseColor.shu)
-                            .frame(height: 8)
-                            .overlay(
-                                Rectangle()
-                                    .fill(YoseColor.kin)
-                                    .frame(width: 24, height: 2)
-                            )
-                            .overlay(alignment: .bottom) {
-                                Rectangle().fill(YoseColor.sumi).frame(height: 1.5)
-                            }
-
-                        HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            Text("結成")
-                                .font(YoseFont.mincho(18))
-                                .foregroundStyle(YoseColor.sumi)
-                            Text("\(mekuriFlipped ? summary.newYear : summary.previousYear)")
-                                .font(YoseFont.number(38, weight: .black))
-                                .foregroundStyle(YoseColor.shu)
-                                .contentTransition(.numericText(value: Double(mekuriFlipped ? summary.newYear : summary.previousYear)))
-                            Text("年目")
-                                .font(YoseFont.mincho(20))
-                                .foregroundStyle(YoseColor.sumi)
-                        }
-                        .padding(.top, 2)
-
-                        Text(mekuriFlipped ? "春 ・ 第1週 開幕" : "全日程 終了")
-                            .font(YoseFont.gothic(12, weight: .heavy))
-                            .foregroundStyle(YoseColor.haiSumi)
-                            .padding(.bottom, 8)
-                    }
-                    .frame(width: 210)
-                    .background(YoseColor.washi)
-                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-                    .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
-                    .rotation3DEffect(
-                        .degrees(mekuriFlipped ? 0 : -85),
-                        axis: (x: 1, y: 0, z: 0),
-                        anchor: .top,
-                        perspective: 0.4
-                    )
+                ZStack(alignment: .top) {
+                    // 下層：新年のめくり札（完全不透明・固定）
+                    mekuriCard(year: summary.newYear, caption: "春 ・ 第1週 開幕")
+                    // 上層：前年の札。上辺を軸に奥へ跳ね上がって消える（半透明では重ねない）
+                    mekuriCard(year: summary.previousYear, caption: "全日程 終了")
+                        .rotation3DEffect(.degrees(mekuriFlipped ? 90 : 0), axis: (x: 1, y: 0, z: 0), anchor: .top, perspective: 0.35)
+                        .opacity(mekuriFlipped ? 0 : 1)
+                        .animation(.linear(duration: 0.01).delay(mekuriFlipped ? 0.2 : 0), value: mekuriFlipped)
                 }
-
+                .padding(.top, 4)
             }
-            .padding(.vertical, 14)
-            .padding(.horizontal, 14)
             .frame(maxWidth: .infinity)
-            .background(YoseColor.kuroUrushi)
-            .overlay(
-                Rectangle()
-                    .stroke(YoseColor.kin, lineWidth: 1.5)
-                    .padding(4)
-            )
-            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-            .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+            .padding(.top, 6)
+            .overlay {
+                YoseBurstParticles(trigger: burstTrigger, count: 26,
+                                   colors: [YoseColor.kinBright, Color.white, YoseColor.shu],
+                                   radius: 150, duration: 0.7)
+                    .frame(width: 300, height: 300).allowsHitTesting(false)
+            }
 
-            // 右上朱印『開幕』
-            YoseHankoStamp(text: "開幕", isSquare: false, angle: -6)
+            YoseHankoStamp(text: "開幕", isSquare: false, angle: -8)
                 .modifier(YoseStampImpactModifier(isStamped: stamped))
-                .offset(x: -12, y: 10)
+                .scaleEffect(1.15)
+                .offset(x: -26, y: 40)
         }
     }
 
@@ -257,8 +264,8 @@ struct YoseYearTurnCurtainView: View {
                     accent: YoseColor.sumi
                 )
                 metricKifuda(
-                    label: "所持金",
-                    valueText: Self.compactYen(summary.money),
+                    label: "勝負ネタ",
+                    valueText: "\(summary.netaCount)本",
                     accent: YoseColor.sumi
                 )
             }
@@ -304,23 +311,34 @@ struct YoseYearTurnCurtainView: View {
     // MARK: - 引き幕（定式幕）パネル
 
     private var curtainPanel: some View {
-        let colors: [Color] = [
-            YoseColor.kuroUrushi,
-            YoseColor.shu,
-            YoseColor.tokiwa,
-            YoseColor.kuroUrushi,
-            YoseColor.shu
-        ]
+        let colors: [Color] = [YoseColor.kuroUrushi, YoseColor.shu, YoseColor.tokiwa, YoseColor.kuroUrushi, YoseColor.shu]
         return HStack(spacing: 0) {
             ForEach(0..<5, id: \.self) { i in
                 Rectangle()
                     .fill(colors[i % colors.count])
-                    .overlay(alignment: .trailing) {
-                        Rectangle().fill(YoseColor.sumi.opacity(0.5)).frame(width: 2)
-                    }
+                    // 布のヒダ：縦ストライプ内に左右の明暗を重ねる
+                    .overlay(
+                        LinearGradient(stops: [.init(color: .black.opacity(0.45), location: 0),
+                                               .init(color: .white.opacity(0.10), location: 0.35),
+                                               .init(color: .black.opacity(0.30), location: 0.7),
+                                               .init(color: .black.opacity(0.55), location: 1)],
+                                       startPoint: .leading, endPoint: .trailing)
+                    )
+                    .overlay(alignment: .trailing) { Rectangle().fill(Color.black.opacity(0.5)).frame(width: 1.5) }
             }
         }
-        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
+        // 上部の幕押さえ（黒漆の幕板＋金線）
+        .overlay(alignment: .top) {
+            Rectangle().fill(YoseColor.kuroUrushi).frame(height: 26)
+                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kinBright).frame(height: 3) }
+        }
+        // 裾の房飾り
+        .overlay(alignment: .bottom) {
+            HStack(spacing: 0) {
+                ForEach(0..<14, id: \.self) { _ in Rectangle().fill(YoseColor.kin).frame(maxWidth: .infinity).frame(height: 14).padding(.horizontal, 1.5) }
+            }
+            .overlay(alignment: .top) { Rectangle().fill(YoseColor.kinBright).frame(height: 3) }
+        }
     }
 
     // MARK: - タイムライン制御（0.65秒・1タップ即開始）
@@ -328,35 +346,43 @@ struct YoseYearTurnCurtainView: View {
     private func playTransitionSequence() async {
         if reduceMotion {
             curtainClosed = false
+            spotOn = true
             mekuriFlipped = true
             contentAppeared = true
             stamped = true
             return
         }
 
-        UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
 
-        // 0.18s: 閉じた定式幕が左右へ開く
-        try? await Task.sleep(nanoseconds: 180_000_000)
-        withAnimation(.easeOut(duration: 0.22)) {
-            curtainClosed = false
-        }
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-            contentAppeared = true
-        }
+        // 0.00〜0.32s: 幕が閉じたまま静止（溜め）→ ピンスポットが点る
+        try? await Task.sleep(nanoseconds: 320_000_000)
+        withAnimation(.easeOut(duration: 0.3)) { spotOn = true }
 
-        // 0.30s: めくり札が「1年目」→「2年目」へパタンと反転
-        try? await Task.sleep(nanoseconds: 120_000_000)
-        withAnimation(.spring(response: 0.24, dampingFraction: 0.65)) {
-            mekuriFlipped = true
-        }
+        // 0.32s: 定式幕が左右へ引き開けられる
+        withAnimation(.easeInOut(duration: 0.30)) { curtainClosed = false }
 
-        // 0.48s: 『開幕』朱印スタンプ叩きつけ
-        try? await Task.sleep(nanoseconds: 180_000_000)
+        // 0.78s: めくり札が上辺を軸にパタン！＋金火花＋揺れ
+        try? await Task.sleep(nanoseconds: 460_000_000)
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        withAnimation(.spring(response: 0.26, dampingFraction: 0.62)) { mekuriFlipped = true }
+        burstTrigger += 1
+        withAnimation(.linear(duration: 0.04)) { shakeY = 5 }
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        withAnimation(.linear(duration: 0.05)) { shakeY = -3 }
+        try? await Task.sleep(nanoseconds: 55_000_000)
+        withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
+
+        // 1.0s: 朱印『開幕』
+        try? await Task.sleep(nanoseconds: 110_000_000)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) {
-            stamped = true
-        }
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { stamped = true }
+        burstTrigger += 1
+        withAnimation(.linear(duration: 0.04)) { shakeY = 3 }
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { contentAppeared = true }
     }
 
     private func triggerStart() {
@@ -375,5 +401,35 @@ struct YoseYearTurnCurtainView: View {
             return String(format: "¥%.1f万", man)
         }
         return "¥\(yen.formatted(.number))"
+    }
+}
+
+
+/// 年の幕間の舞台背景：黒漆の闇＋中央へ落ちる細いピンスポット＋檜舞台の照り返し
+private struct YearTurnStageBackdrop: View {
+    let lit: Bool
+    var body: some View {
+        Canvas { ctx, size in
+            ctx.fill(Path(CGRect(origin: .zero, size: size)),
+                     with: .linearGradient(Gradient(colors: [Color(hex: 0x0B0807), Color(hex: 0x1E1916), Color(hex: 0x0B0807)]),
+                                           startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
+            // 背景の定式幕（暗がりに沈む縦縞）
+            let n = 15, w = size.width / CGFloat(n)
+            for i in 0..<n {
+                let c: Color = i % 3 == 0 ? .black.opacity(0.35) : (i % 3 == 1 ? YoseColor.enji.opacity(0.09) : YoseColor.tokiwa.opacity(0.06))
+                ctx.fill(Path(CGRect(x: CGFloat(i) * w, y: 0, width: w, height: size.height)), with: .color(c))
+            }
+            guard lit else { return }
+            let cx = size.width / 2, fy = size.height * 0.40
+            var beam = Path()
+            beam.move(to: CGPoint(x: cx - 6, y: 0)); beam.addLine(to: CGPoint(x: cx + 6, y: 0))
+            beam.addLine(to: CGPoint(x: cx + 190, y: fy + 90)); beam.addLine(to: CGPoint(x: cx - 190, y: fy + 90))
+            beam.closeSubpath()
+            ctx.fill(beam, with: .linearGradient(Gradient(colors: [Color(hex: 0xFFF2C4).opacity(0.06), Color(hex: 0xFFF2C4).opacity(0.22), .clear]),
+                                                 startPoint: CGPoint(x: cx, y: 0), endPoint: CGPoint(x: cx, y: fy + 90)))
+            ctx.fill(Path(ellipseIn: CGRect(x: cx - 200, y: fy + 60, width: 400, height: 60)),
+                     with: .radialGradient(Gradient(colors: [YoseColor.kinBright.opacity(0.35), .clear]),
+                                           center: CGPoint(x: cx, y: fy + 90), startRadius: 0, endRadius: 200))
+        }
     }
 }
