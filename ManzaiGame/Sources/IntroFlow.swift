@@ -545,7 +545,23 @@ struct NameEntryView: View {
                     HStack { Text("目　標").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
                         Spacer()
                         Text("頂グランプリ 優勝").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
-                    }.padding(.horizontal, 14).padding(.bottom, 14)
+                    }.padding(.horizontal, 14)
+                    // 判子欄：名前を書くと朱印『結成』が押される（空の間は点線の枠だけ）
+                    HStack {
+                        Spacer()
+                        ZStack {
+                            Rectangle().stroke(YoseColor.kiDark, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                            if name.isEmpty {
+                                Text("結成印").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi.opacity(0.6))
+                            } else {
+                                YoseHankoStamp(text: "結成", isSquare: true, angle: -7)
+                                    .transition(.scale(scale: 1.6).combined(with: .opacity))
+                            }
+                        }
+                        .frame(width: 72, height: 72)
+                        .animation(Theme.Motion.appearQuick, value: name.isEmpty)
+                    }
+                    .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 14)
                 }
                 .frame(maxWidth: .infinity)
                 .yoseHarigami()
