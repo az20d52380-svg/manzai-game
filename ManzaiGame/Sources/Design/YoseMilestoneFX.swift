@@ -162,7 +162,8 @@ struct YosePassCelebrationView: View {
                     .foregroundStyle(YoseColor.kin.opacity(revealed ? 1 : 0.25))
                 ZStack {
                     Text("判 定 中").font(YoseFont.mincho(30)).tracking(10).foregroundStyle(YoseColor.kin.opacity(0.35))
-                        .opacity(revealed ? 0 : 1).animation(.linear(duration: 0.02), value: revealed)
+                        .opacity(revealed ? 0 : 1)
+                        .transaction { $0.animation = nil }
                     YoseGoldText(text: "予 選 通 過", size: 54, tracking: 4)
                         .scaleEffect(revealed ? 1 : 1.5).opacity(revealed ? 1 : 0)
                 }
@@ -234,8 +235,8 @@ struct YosePassCelebrationView: View {
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
             .background(Rectangle().fill(Color.black).offset(y: 4))
             YoseHankoStamp(text: "秀", isSquare: true, angle: 6)
-                .scaleEffect(hidemarkIn ? 1.0 : 2.2).opacity(hidemarkIn ? 1 : 0)
-                .offset(x: -8, y: -14)
+                .scaleEffect(hidemarkIn ? 1.5 : 2.8, anchor: .topTrailing).opacity(hidemarkIn ? 1 : 0)
+                .offset(x: -6, y: -18)
         }
         .opacity(hidemarkIn ? 1 : 0.0)
         .offset(y: hidemarkIn ? 0 : 14)
