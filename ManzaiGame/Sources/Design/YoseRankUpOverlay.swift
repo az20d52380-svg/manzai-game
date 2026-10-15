@@ -194,7 +194,7 @@ struct YoseRankUpOverlay: View {
                         }
                     }
                     .padding(.top, 16)
-                    VStack(spacing: 4) {
+                    VStack(spacing: 12) {
                         Text("新ランク").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
                         ZStack {
                             Rectangle().fill(YoseColor.kinari).overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.35), lineWidth: 1.5))
@@ -206,19 +206,21 @@ struct YoseRankUpOverlay: View {
                                 .scaleEffect(badgeLanded ? 1.0 : 2.3)
                                 .opacity(badgeLanded ? 1.0 : 0.0)
                         }
-                        .overlay {
-                            YoseBurstParticles(trigger: burstTrigger, count: 28,
+                        .background {
+                            // 木札の背後から放射状に飛ぶ火花（文字『E』の上には出さない）
+                            YoseBurstParticles(trigger: burstTrigger, count: 34,
                                                colors: [YoseColor.kinBright, Color.white, YoseColor.shu, YoseColor.kin],
-                                               radius: 120, duration: 0.7)
-                                .frame(width: 240, height: 240).allowsHitTesting(false)
+                                               radius: 150, duration: 0.7, streaks: true)
+                                .frame(width: 320, height: 320).allowsHitTesting(false)
+                        }
+                        .overlay(alignment: .bottomTrailing) {
+                            YoseHankoStamp(text: "昇格", isSquare: false, angle: -10)
+                                .modifier(YoseStampImpactModifier(isStamped: stamped))
+                                .scaleEffect(1.15).offset(x: 24, y: 14)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity)
-
-                YoseHankoStamp(text: "昇格", isSquare: false, angle: -8)
-                    .modifier(YoseStampImpactModifier(isStamped: stamped))
-                    .scaleEffect(1.1).offset(x: 6, y: 18)
             }
 
             // 能力値と実力（白和紙の木札で暗い地から浮かせる）
@@ -294,7 +296,7 @@ struct YoseRankUpOverlay: View {
         try? await Task.sleep(nanoseconds: 340_000_000)
         guard !isDismissed else { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-        flash = 0.26
+        flash = 0.14
         withAnimation(.easeOut(duration: 0.3)) { flash = 0 }
         withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { badgeLanded = true }
         burstTrigger += 1
