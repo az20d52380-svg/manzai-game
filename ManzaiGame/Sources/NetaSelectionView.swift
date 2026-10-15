@@ -19,10 +19,11 @@ struct NetaPickRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(title).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                Spacer()
+                // 尺の条件は見出しの隣に小さく（右の「変更」ボタンと並べて同じ箱に見せない）
                 if let requiredLength {
-                    YoseTag(text: "この舞台は\(NetaCatalog.displayName(requiredLength))", style: .outlineSumi)
+                    YoseTag(text: "舞台尺：\(NetaCatalog.displayName(requiredLength))", style: .outlineSumi)
                 }
+                Spacer()
             }
             Button {
                 withAnimation(Theme.Motion.appearQuick) { expanded.toggle() }
@@ -56,6 +57,7 @@ struct NetaPickRow: View {
             .padding(.horizontal, 8).padding(.vertical, 5)
             .background(unset && !expanded ? YoseColor.shu : YoseColor.ki)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+            .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: 2) }   // 押せる物理ボタンのハードシャドウ
     }
 
     private func tags(_ neta: Neta) -> some View {

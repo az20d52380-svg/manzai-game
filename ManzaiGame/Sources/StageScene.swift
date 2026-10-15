@@ -10,6 +10,8 @@ import SwiftUI
 struct StageScene: View {
     /// true＝下位一覧（練習/バイト/休む…）を開いている間：人物・マイク・ポスターを描かず、壁と床だけの高座帯にする（頭切れ・木札被りを構造的に無くす）
     var compact = false
+    /// 大会入口・本番前は黒漆の看板が上に掛かるので、吊り札（寄席）は掛けない（看板の下から枠線が覗く事故を無くす）
+    var showPoster = true
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -31,7 +33,7 @@ struct StageScene: View {
                 Rectangle().fill(Color(hex: 0x8D6E63)).frame(width: w, height: 8)
                     .overlay(alignment: .bottom) { Rectangle().fill(Color(hex: 0x5D4037).opacity(0.5)).frame(height: 1.5) }
                     .position(x: w / 2, y: h * 0.19)
-                if !compact {
+                if !compact && showPoster {
                 VStack(spacing: 0) {
                     HStack(spacing: 18) { Rectangle().fill(Color(hex: 0x5D4037)).frame(width: 1.5, height: 10); Rectangle().fill(Color(hex: 0x5D4037)).frame(width: 1.5, height: 10) }
                     posterCard.frame(width: 28, height: 64)

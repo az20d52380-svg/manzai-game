@@ -121,8 +121,8 @@ private struct EntryHeader: View {
     let tag: String
     let name: String
     var body: some View {
-        StageScene()
-            .frame(height: 344)   // 看板（上64pt＋約84pt）が二人の頭に被らない高さ
+        StageScene(showPoster: false)
+            .frame(minHeight: 344, maxHeight: 400)   // 看板（上64pt＋約84pt）が二人の頭に被らない高さ
             .overlay(alignment: .top) { TournamentPoster(tag: tag, name: name).padding(.top, 58) }
             .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
             .clipped()
@@ -151,7 +151,14 @@ private struct LineBoard: View {
                 Text("通過ライン").font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi)
                 Text("\(line)").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
                 Text("▶").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.haiSumi)
-                YosePowerBadge(power: power, compact: true)
+                // 木札の中に木札を入れない：実力は平らな角札ラベル＋大きな数字を同じ札の上に直接並べる
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                        .padding(.horizontal, 4).padding(.vertical, 1)
+                        .background(YoseColor.enji.opacity(0.12))
+                        .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
+                    Text("\(power)").font(YoseFont.number(30, weight: .black)).foregroundStyle(YoseColor.sumi)
+                }
                 if power < line { YoseTag(text: "あと\(line - power)不足", style: .outlineShu) }
                 Spacer(minLength: 0)
             }
@@ -192,6 +199,9 @@ struct TournamentEntryView: View {
                     Text([session.selectedNeta == nil ? "ネタ無しで出る（上乗せなし）" : nil,
                           session.state.stamina <= 0 ? "体力が尽きた状態で出る" : nil].compactMap { $0 }.joined(separator: "・"))
                         .font(YoseFont.captionBold).foregroundStyle(YoseColor.shu)
+                        .frame(maxWidth: .infinity).padding(.vertical, 5)
+                        .background(YoseColor.shu.opacity(0.12))
+                        .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5))
                 }
                 let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める
                 if spec.osaka {
