@@ -57,6 +57,22 @@ struct RootView: View {
             if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
                 session.debugAdvanceYears(n)
             }
+            // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
+            if let mk = ProcessInfo.processInfo.environment["MZ_SAVEMAKE"] {
+                var st = mk == "champ" ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
+                session = GameSession(startState: st)
+                if mk == "champ" { session.debugAdvanceToChampionFinale() }
+                else { session.debugAdvanceYears(1); session.debugAdvanceToYearEnd() }
+                session.saveNow()
+                if mk == "yearend_old",
+                   let d = UserDefaults.standard.data(forKey: "manzai.save.v1"),
+                   var o = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
+                    o.removeValue(forKey: "yearStartState")
+                    if let nd = try? JSONSerialization.data(withJSONObject: o) { UserDefaults.standard.set(nd, forKey: "manzai.save.v1") }
+                }
+                print("[savemake] \(mk) year=\(session.year) win=\(session.winFinale) fin=\(session.finished)")
+                return
+            }
             if session.week <= 1 {
                 if smoke == "1" { session.debugAdvanceToFirstResult() }
                 else if smoke == "2" { session.debugAdvanceToFirstResult(stopAtEntry: true) }

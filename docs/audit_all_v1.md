@@ -26,6 +26,7 @@
 - 何が起きる：決勝に勝った直後の演出中（winFinale=true）に終了すると、セーブは消され、再起動は新規。優勝＝勇退エンディングを見ずに最初から。
 - 直し方の案：優勝の位相では「年末S6の入口」で保存を残す（エンディング後に削除）。
 - 決めが要る：不要。
+- 目視確認（2026-10-15）：目視OK。MZ_SAVEMAKE=champ で優勝演出中に保存→terminate→再起動すると、決勝演出（頂グランプリ決勝・1位ボード）が出し直された（feedback_shots/audit_fix_check/a3.png）。
 
 **A-4 【済 dcfa26d】[中] 復元時にバランス更新が一部だけ古いまま残る**
 - WeekRunner.swift:537（`finalLine = snap.finalLine`）、保存済み `pendingSpec`（TournamentSpec の line/prize ごと保存）、`pendingOffer`
@@ -38,6 +39,7 @@
 - 何が起きる：年末画面（S6）で中断して再開すると、決勝の「あと◯点」の表示が出ない可能性。`yearStartState` が nil の旧セーブは `GameState(config:)`＝初期値に落ちるので、2年目以降だと「この年で育ったもの」の差分が過大に出る。
 - 直し方の案：`weekResults` から margin を引き直す（986行と同じ手）。yearStartState nil の時は表示を出さない。
 - 決めが要る：不要。
+- 目視確認（2026-10-15）：目視OK（仕様どおり）。2年目の通常セーブでは年末画面に「この1年で育ったもの」が出る（a5_yearend.png）。年初状態が無い旧セーブ（yearStartState除去・2年目）では差分が過大にならないよう意図的に非表示（a5_yearend_old.png）。「旧セーブで出る」ではなく「出さない」が修正の設計。決勝の差は2年目の敗退年のため margin 無しで確認不可（コード側のみ）。
 
 **A-6 【済 f68057d】[中] 新規フィールドの規約が人頼み（テスト網に無い）**
 - GameCore/Sources/GameCore/GameState.swift:5-10（規約はコメントのみ）、GameCore/Tests に ManzaiGame 側の SaveData 復号テストが無い（CodableTests は GameState／Snapshot まで）
@@ -86,6 +88,7 @@
 **B-4 【済 4c6ca71】[小] ショップの文言が config とずれる余地**
 - ManzaiGame/Sources/ShopView.swift:136（"4回ぶん" が直書き。config.itemSentoTickets=4 と今は一致）。
 - 直し方の案：`config.itemSentoTickets` から出す。決めが要る：不要。
+- 目視確認（2026-10-15）：目視OK。銭湯の回数券が「休む4回ぶん」「4回ぶん」と設定値どおり（b4.png）。
 
 **B-5 [小] 大会カレンダー表示と実装の食い違い候補**
 - GameSession.swift:1062（DEBUG）の「第44週 決勝」と実体 47週（gpFinalWeek）。DEBUG用の見本ログのみで本番には出ない。
@@ -104,6 +107,7 @@
 **C-2 【済 5cc880a】[小] 空白・記号**
 - WeekMainView.swift:278「経験点が残ってる ・ 能力アップで使おう」（「・」の前後に空白。他は詰める）。
 - 直し方の案：「経験点が残ってる。能力アップで使おう」。決めが要る：不要。
+- 目視確認（2026-10-15）：目視OK。MZ_UI=prestage で「経験点が残ってる。能力アップで使おう」（「・」なし）を確認（c2.png）。
 
 **C-3 【済 4218fb2】[小] 講評データの重複文**
 - GameCore/Sources/GameCore/JudgeTalk.swift:498/523（「後ろの席まで届いていた。{中}だけ、前の席止まりだった。」）、505/538（「磨かれた{入り}。…」）、507/527（「間の取り方が場面ごとに違う。…」）が2つのプールに同一文。210/329 の「粗を探す気で座った。粗がなかった。」も重複。

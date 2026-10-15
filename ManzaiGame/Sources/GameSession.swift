@@ -1136,6 +1136,26 @@ final class GameSession {
         }
     }
 
+    /// DEBUG: 今の年を年末（finished）まで自動プレイ（翌年へは進まない）
+    func debugAdvanceToYearEnd() {
+        var steps = 0
+        while !finished, !winFinale, steps < 600 {
+            steps += 1
+            if watchingFinal { finishWatchingFinal(winner: "—"); continue }
+            if pendingChoiceEvent != nil { dismissChoiceEvent(); continue }
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .tournamentDecision: decideTournament(.新幹線)
+            case .freeAction:
+                if state.money < 250_000 { choose(.job(.標準)) }
+                else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
+                else { choose(.rest(.完全休養)) }
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: steps = 600
+            }
+        }
+    }
+
     /// QA用（複数年）: n 年ぶん年末まで自動プレイして翌年へ進める（MZ_YEARS=n）。区切りに当たったら止まる。
     /// 自由週は「金が細ればバイト・体力があればネタ作り・無ければ休む」の素朴な台本（夜逃げで止まらないように）。
     func debugAdvanceYears(_ n: Int) {
