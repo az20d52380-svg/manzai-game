@@ -16,12 +16,15 @@ struct WaveformView: View {
     var compact: Bool = false
     /// ハマった夜（見える運・canonical_v2 §1「ハマは波形で必ず可視化」）：中盤に客席のスイッチが入った山が立つ。勝敗とも
     var burst: Bool = false
+    /// 左から右へ走り込む進み（compact のみ・登場時0.6秒）
+    @State private var runIn: CGFloat = 1
 
     var body: some View {
         TimelineView(.animation) { timeline in
             let t = timeline.date.timeIntervalSinceReferenceDate
             Canvas { ctx, size in
                 let W = size.width, H = size.height, mid = H / 2
+                if compact { ctx.clip(to: Path(CGRect(x: 0, y: 0, width: W * runIn, height: H))) }
                 // 中心線
                 var base = Path()
                 base.move(to: CGPoint(x: 0, y: mid)); base.addLine(to: CGPoint(x: W, y: mid))
@@ -30,7 +33,7 @@ struct WaveformView: View {
                 let warm = [Theme.gold, Theme.cExpr, Theme.verm]
                 let cold = [Color(hex: 0xAEB4C4), Color(hex: 0x8890A4)]
                 let grad = GraphicsContext.Shading.linearGradient(
-                    Gradient(colors: passed ? warm : cold),
+                    Gradient(colors: compact && passed ? [Color(hex: 0xE04028)] : (passed ? warm : cold)),
                     startPoint: .zero, endPoint: CGPoint(x: W, y: 0))
 
                 func env(_ x: Double) -> Double {
@@ -76,14 +79,17 @@ struct WaveformView: View {
                 .font(.maru(10)).foregroundStyle(.white.opacity(0.45)).offset(y: 14)
             }
         }
-        .padding(compact ? 8 : 12)
-        // 舞台の上の小さい客席メーター（compact）は明るい紙の地＝舞台の光の中で読める（紫のガラスはやめる・§4-1）。
-        // 従来の大きい版は暖色のダークガラス（暗転画面の「客席モニタ」）
-        .background(compact ? AnyShapeStyle(Theme.paperTop.opacity(0.95)) : AnyShapeStyle(Theme.lowerThird.opacity(0.85)),
-                    in: RoundedRectangle(cornerRadius: compact ? 14 : 18))
-        .overlay(RoundedRectangle(cornerRadius: compact ? 14 : 18)
-            .stroke(compact ? Theme.paperEdge : .white.opacity(0.14), lineWidth: 1.5))
-        .shadow(color: .black.opacity(0.30), radius: compact ? 6 : 12, y: compact ? 4 : 8)
+        .padding(compact ? 2 : 12)
+        // compact（結果画面）は枠も地も無し＝波形を舞台床に直接走らせる。大きい版は暖色のダークガラス
+        .background(compact ? AnyShapeStyle(Color.clear) : AnyShapeStyle(Theme.lowerThird.opacity(0.85)),
+                    in: RoundedRectangle(cornerRadius: 18))
+        .overlay { if !compact { RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.14), lineWidth: 1.5) } }
+        .shadow(color: .black.opacity(compact ? 0 : 0.30), radius: compact ? 0 : 12, y: compact ? 0 : 8)
+        .onAppear {
+            guard compact else { return }
+            runIn = 0
+            withAnimation(.easeOut(duration: 0.6)) { runIn = 1 }
+        }
     }
 }
 

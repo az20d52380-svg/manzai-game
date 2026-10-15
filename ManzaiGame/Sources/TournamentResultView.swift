@@ -15,6 +15,7 @@ struct TournamentResultView: View {
     @State private var revealedReview = false  // 講評（判の0.4s後）
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
+    @State private var ctaPulse = false
     @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
     @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
     /// 開示列のタスク（保持して画面を離れたら取り消す＝投げっぱなしにしない・X4-08）
@@ -132,48 +133,54 @@ struct TournamentResultView: View {
                                 .transition(.opacity.combined(with: .offset(y: 10)))
                         }
                         if revealedRest {
-                            HStack(spacing: 8) {
+                            // 1枚の精算木札（通過ライン／実力・賞金・知名度を整列。審査員の点数は出さない）
+                            VStack(spacing: 8) {
                                 if let line = displayLine {
-                                    // G4: 入口と同じ2つを同じ大きさで再掲（大きくしない＝見込みに寄せない）
-                                    HStack(spacing: 0) {
-                                        Text("通過ライン \(Int(line)) ／ いまの実力 ")
-                                        RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
+                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                        Text("通過ライン \(Int(line))").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                                        Text("➔").font(.maru(.sub)).foregroundStyle(Theme.inkSub)
+                                        HStack(spacing: 0) {
+                                            Text("実力 ")
+                                            RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
+                                        }
+                                        .font(.maru(22, weight: .black)).foregroundStyle(r.passed ? Theme.paperInk : Theme.inkSub)
                                     }
-                                    .font(.maru(.sub)).foregroundStyle(r.passed ? Theme.paperInk : Theme.inkSub)
-                                    .padding(.horizontal, 10).padding(.vertical, 5)
-                                    .background(Theme.kinariPanel, in: Rectangle())
-                                    .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
+                                    .lineLimit(1).minimumScaleFactor(0.8)
                                 }
-                                if r.prize > 0 {
-                                    // 通過＝金の縁の賞金札。数字がカウントアップする
-                                    RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
-                                        .font(.maru(20, weight: .heavy)).foregroundStyle(Theme.kinari)
-                                        .padding(.horizontal, 16).padding(.vertical, 7)
-                                        .background(Theme.vermD, in: Rectangle())
-                                        .overlay(Rectangle().stroke(Theme.gold, lineWidth: 2.5))
-                                        .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
-                                        .fixedSize()
+                                HStack(spacing: 10) {
+                                    if r.prize > 0 {
+                                        RollingNumberText(value: Double(r.prize / 10000) * countProgress, prefix: "賞金 +", suffix: "万")
+                                            .font(.maru(17, weight: .heavy)).foregroundStyle(Theme.goldD)
+                                            .padding(.horizontal, 10).padding(.vertical, 3)
+                                            .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
+                                    }
+                                    if session.lastResultFameDelta >= 0.5 {
+                                        Text("知名度 \(Int(summary.state.fame.rounded())) ▲\(Int(session.lastResultFameDelta.rounded()))")
+                                            .font(.maru(15, weight: .black)).foregroundStyle(Color(hex: 0x2F7A3E))
+                                    }
                                 }
+                                .fixedSize()
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10).padding(.horizontal, 12)
+                            .background(Color(hex: 0xFAF6EE), in: RoundedRectangle(cornerRadius: 4))
+                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.sumi, lineWidth: 1.5))
+                            .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
                             .transition(.opacity)
-                            if session.lastResultFameDelta >= 0.5 {
-                                // 知名度の増えた分（数字のみ・表示専用）
-                                Text("知名度 \(Int(summary.state.fame.rounded()))（+\(Int(session.lastResultFameDelta.rounded()))）")
-                                    .font(.maru(12, weight: .bold)).foregroundStyle(Theme.paperInk)
-                                    .padding(.horizontal, 10).padding(.vertical, 4)
-                                    .background(Theme.kinariPanel, in: Rectangle())
-                                    .fixedSize()
-                            }
                             Button {
                                 if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
-                                Text("次へ ▶").font(.maru(.body)).foregroundStyle(.white)
+                                Text("次へ 進む ▶").font(.maru(18, weight: .black)).foregroundStyle(.white)
                                     .frame(maxWidth: .infinity, minHeight: 52)
                                     .background(Theme.verm, in: Rectangle())
+                                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
                                     .shadow(color: .black.opacity(0.40), radius: 0, y: 3)
                             }
                             .buttonStyle(PressableStyle())
+                            .frame(maxWidth: .infinity)
+                            .scaleEffect(ctaPulse ? 1.02 : 1.0)
+                            .onAppear { withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { ctaPulse = true } }
                             .padding(.horizontal, 24)
                             .transition(.opacity)
                         }
@@ -331,8 +338,9 @@ struct TournamentResultView: View {
             .background(RadialGradient(colors: [c.opacity(0.88), c], center: .topLeading, startRadius: 5, endRadius: 130),
                        in: Rectangle())
             .overlay(Rectangle().stroke(passed ? Theme.gold : metal.opacity(0.55), lineWidth: passed ? 4 : 2).padding(5))   // 縁＝通過は金／敗退は静かな金属色
+            .overlay(Rectangle().stroke(passed ? Theme.gold.opacity(0.8) : .clear, lineWidth: 1.2).padding(12))   // 金の二重線
             .rotationEffect(.degrees(-4))
-            .shadow(color: .black.opacity(0.40), radius: 0, y: 5)
+            .shadow(color: .black.opacity(0.55), radius: 0, y: 6)
             .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))      // 通過は高くから叩きつける／敗退は低く静かに沈む（slamFire のシェイクと同時に着地）
             .opacity(revealed ? 1 : 0)
     }
@@ -366,9 +374,13 @@ struct TournamentResultView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 CharacterFace(spec: FaceCatalog.judge(judge), size: 40)
-                    .overlay(Circle().stroke(.white, lineWidth: 2))
+                    .overlay(Circle().stroke(Theme.gold, lineWidth: 2))
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("審査講評").font(.maru(.sub)).foregroundStyle(Theme.sealName)
+                    HStack(spacing: 5) {
+                        Text("審査講評").font(.maru(.sub)).foregroundStyle(Theme.sealName)
+                        Text("印").font(.maru(9, weight: .black)).foregroundStyle(Theme.verm)
+                            .frame(width: 15, height: 15).overlay(Rectangle().stroke(Theme.verm, lineWidth: 1))
+                    }
                     Text("審査員　\(judge)").font(.maru(.sub)).foregroundStyle(Theme.sealName)
                 }
                 Spacer(minLength: 8)
@@ -386,6 +398,7 @@ struct TournamentResultView: View {
         .padding(18)
         .background(LinearGradient(colors: [Theme.paperTop, Theme.paperBottom], startPoint: .top, endPoint: .bottom),
                     in: Rectangle())
+        .overlay(alignment: .leading) { Rectangle().fill(Theme.vermD).frame(width: 5) }
         .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 2))
         .shadow(color: .black.opacity(0.40), radius: 0, y: 4)
     }
