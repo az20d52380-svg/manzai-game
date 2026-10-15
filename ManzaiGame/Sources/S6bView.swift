@@ -37,6 +37,14 @@ struct S6bView: View {
     @State private var counted = false
     private var kougyou: some View {
         VStack(spacing: 0) {
+            YoseHeaderBar(title: "最終興行・千秋楽")
+            // 定式幕（黒・柿・萌黄）で上を締める
+            HStack(spacing: 0) {
+                ForEach(0..<12, id: \.self) { i in
+                    Rectangle().fill(i % 3 == 0 ? YoseColor.kuroUrushi : (i % 3 == 1 ? YoseColor.shu : YoseColor.tokiwa))
+                }
+            }
+            .frame(height: 18).overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
             Spacer(minLength: 0)
             // 千秋楽の興行ビラ（和紙の地・金と朱の二重枠・墨のハードシャドウ）
             VStack(spacing: 12) {
@@ -69,20 +77,22 @@ struct S6bView: View {
                     HStack(spacing: 10) {
                         VStack(spacing: 0) {
                             Text("所持金").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                            Text(Yen.text(max(0, s.money))).font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            Text(Yen.text(max(0, s.money))).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                                 .lineLimit(1).minimumScaleFactor(0.6)
                         }
                         Image(systemName: "arrowtriangle.right.fill").font(.system(size: 14)).foregroundStyle(YoseColor.shu)
                         VStack(spacing: 0) {
                             Text("残金").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
                             Text(Yen.text(counted ? 0 : max(0, s.money)))
-                                .font(YoseFont.numLarge).monospacedDigit().foregroundStyle(YoseColor.shu)
+                                .font(YoseFont.number(26, weight: .black)).monospacedDigit().foregroundStyle(YoseColor.shu)
                                 .contentTransition(.numericText())
                         }
                     }
-                    .padding(.vertical, 6).padding(.horizontal, 14)
+                    .padding(.vertical, 8).padding(.horizontal, 14)
+                    .frame(maxWidth: .infinity)
                     .background(YoseColor.ki.opacity(0.55))
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "全額投入", angle: -6).offset(x: 6, y: -16) }
                 }
             }
             .padding(.vertical, 24).padding(.horizontal, 20)
@@ -95,8 +105,7 @@ struct S6bView: View {
             Spacer(minLength: 0)
             Button { advance(.montage) } label: { Text("最後の舞台へ上がる ▶") }
                 .buttonStyle(YoseButtonStyle(.primary))
-                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(-5).allowsHitTesting(false))   // 暗い背景でも最後の1タップの輪郭が立つ金縁
-                .padding(.horizontal, 24).padding(.bottom, 30)
+                .padding(.horizontal, 14).padding(.bottom, 30)
         }
         // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
         .onAppear { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
