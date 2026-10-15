@@ -66,8 +66,9 @@ struct NotebookView: View {
         return VStack(spacing: 8) {
             HStack(spacing: 10) {
                 YosePowerBadge(power: Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))
+                    .frame(maxWidth: .infinity).frame(height: 48)
                 compatBadge
-                Spacer(minLength: 0)
+                    .frame(maxWidth: .infinity).frame(height: 48)
             }
             .padding(.bottom, 4)
             if exp > 0 && !cfg.autoPourAllocation {
@@ -87,15 +88,20 @@ struct NotebookView: View {
             VStack(spacing: 6) {
                 Text("コンビの名札").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     .frame(maxWidth: .infinity).padding(.vertical, 5).background(YoseColor.enji)
-                ForEach([("コンビ名", session.combiName), ("相　方", "谷口"), ("いま", "\(session.year)年目　第\(session.week)週")], id: \.0) { row in
-                    HStack {
-                        Text(row.0).font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
-                        Spacer()
-                        Text(row.1).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
+                    .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
+                ForEach(Array([("コンビ名", session.combiName), ("相方", "谷口"), ("いま", "\(session.year)年目　第\(session.week)週")].enumerated()), id: \.offset) { i, row in
+                    VStack(spacing: 0) {
+                        if i > 0 { Rectangle().fill(YoseColor.kiDark.opacity(0.5)).frame(height: 1).padding(.horizontal, 14) }
+                        HStack(spacing: 12) {
+                            Text(row.0).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                                .frame(width: 72, height: 26).background(YoseColor.ki.opacity(0.6))
+                            Text(row.1).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 7)
                     }
-                    .padding(.horizontal, 14).padding(.vertical, 3)
                 }
-                Color.clear.frame(height: 6)
+                Color.clear.frame(height: 2)
             }
             .frame(maxWidth: .infinity)
             .yoseHarigami()
@@ -114,7 +120,7 @@ struct NotebookView: View {
                 .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1).padding(-1))
             Text("\(a)").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .frame(width: 64, alignment: .leading).lineLimit(1).minimumScaleFactor(0.8)
-            YoseGauge(value: Theme.rankProgress(v, cap: cap), total: 1, fill: YoseColor.shu, height: 12)
+            YoseGauge(value: min(v, 120), total: 120, fill: YoseColor.shu, height: 12)   // 全能力で同じ物差し（同じ値なら同じ長さ）
             Text("\(Int(v.rounded()))").font(YoseFont.number(22, weight: .black)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
                 .frame(width: 48, alignment: .trailing)
@@ -130,6 +136,7 @@ struct NotebookView: View {
                 .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
             Text("\(Int(s.compat.rounded()))").font(YoseFont.number(24, weight: .black)).foregroundStyle(YoseColor.shu)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 10).padding(.vertical, 6)
         .yoseKifuda()
     }
@@ -188,11 +195,11 @@ struct NotebookView: View {
                 Rectangle().fill(YoseColor.kiDark).frame(width: 1).padding(.vertical, 8)
                 kirokuStat("獲得賞金", "\(total)", "万")
             }
-            .frame(height: 64).frame(maxWidth: .infinity).yoseKifuda()
+            .frame(height: 68).frame(maxWidth: .infinity).yoseKifuda()
             .padding(.bottom, 2)
             // これまでの年（出来事ログは年ごとに消えるので、2年目以降は前の年が見えなかった）。年の記録＝yearHistory
             if !session.yearHistory.isEmpty {
-                Text("これまでの頂グランプリ").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                kirokuHeading("これまでの頂グランプリ")
                 ForEach(session.yearHistory, id: \.year) { r in
                     let win = r.champion
                     HStack(spacing: 10) {
@@ -209,8 +216,7 @@ struct NotebookView: View {
                     .yoseHarigami(isFeatured: win || r.reachedFinal)
                 }
             }
-            Text(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会")
-                .font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+            kirokuHeading(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会")
             if entries.isEmpty {
                 Text("――まだ、舞台の記録はない。").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
                     .padding(.vertical, 8)
@@ -219,7 +225,7 @@ struct NotebookView: View {
                     HStack(spacing: 10) {
                         Text(e.week.replacingOccurrences(of: "第", with: "").replacingOccurrences(of: "週", with: "週"))
                             .font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
-                            .frame(width: 44, alignment: .leading)
+                            .frame(width: 52, alignment: .leading)
                         Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 24)
                         Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -237,12 +243,20 @@ struct NotebookView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// 見出し（左に朱の縦帯・ネタ帳/設定と同じ型）
+    private func kirokuHeading(_ t: String) -> some View {
+        HStack(spacing: 8) {
+            Rectangle().fill(YoseColor.shu).frame(width: 4, height: 18)
+            Text(t).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+        }
+    }
+
     private func kirokuStat(_ label: String, _ value: String, _ unit: String) -> some View {
         VStack(spacing: 2) {
-            Text(label).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+            Text(label).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(value).font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
-                Text(unit).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                Text(value).font(YoseFont.number(24, weight: .black)).foregroundStyle(unit == "万" ? YoseColor.shu : YoseColor.sumi)
+                Text(unit).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
         }
         .frame(maxWidth: .infinity)
