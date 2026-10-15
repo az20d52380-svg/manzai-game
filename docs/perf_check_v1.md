@@ -26,3 +26,8 @@
 ## 次の候補（実機で見る）
 - champion/優勝演出は終わりの無いループ：実機の Instruments（Time Profiler / Energy）で確認。ループ数秒後に紙吹雪を止める案（見た目が変わるので要相談）。
 - 週メイン 6% の内訳は Instruments で。
+
+## 追記：演出ループの停止（preview-all・2026-10-16）
+優勝（YoseChampionCelebrationView 3つの Canvas）・予選通過/昇格の紙吹雪（YoseConfettiView）・決勝結果の背景（RaysView/ConfettiView）を、余韻6.5秒の後に止める作りへ。光・幕は6.5秒の状態で静止、紙吹雪は新しい粒を出さず残りが落ちきったら TimelineView を paused。視差軽減では最初から最小限。見た目は変化なし（feedback_shots/perf_v1/）。
+実測（iPhone 17・アプリ CPU%・1秒ごと22回）：champion は 約200→17秒以降 約1%／pass は 約10%→14秒以降 約1.2%／MZ_SMOKE=4 MZ_FIN=champ は 23%→約10%（17秒以降）。
+残り約10%（決勝の結果画面）は演出外のループ（吹き出しの▼点滅 repeatForever・StageScene の呼吸等）＝次の候補。
