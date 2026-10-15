@@ -570,8 +570,9 @@ struct RollingNumberText: View, Animatable {
 
 /// 歓声の熱気＝金と白の光粒が下からふわっと立ち上る（床の折れ線の代わり）
 private struct RisingGlow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        TimelineView(.animation) { tl in
+        TimelineView(.animation(minimumInterval: nil, paused: reduceMotion)) { tl in
             Canvas { ctx, size in
                 let t = tl.date.timeIntervalSinceReferenceDate
                 for i in 0..<26 {

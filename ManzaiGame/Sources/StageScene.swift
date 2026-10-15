@@ -169,6 +169,7 @@ struct StageFootTag: View {
 /// 頭（肌＋髪）＋上着の胴。パワプロ的な「明るいマスコット」側に寄せた無貌の人形。
 /// accent は首元のマフラー。呼吸周期は二人で別（機械感を消す）。
 struct ManzaiFigure: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let height: CGFloat
     let tilt: Double            // 相方へ僅かに傾く（度）
     let accent: Color
@@ -219,6 +220,7 @@ struct ManzaiFigure: View {
             .rotationEffect(.degrees(tilt), anchor: .bottom)
         }
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: breathe).repeatForever(autoreverses: true)) {
                 inhale = true
             }
@@ -256,11 +258,12 @@ struct CenterMic: View {
 
 /// 16粒がゆっくり上昇しながら横に揺れる。粒ごとの位相は index から決める（乱数不使用＝描画のみ）。
 struct DustField: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let centerX: CGFloat
     let spread: CGFloat
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: reduceMotion)) { timeline in
             Canvas { ctx, size in
                 let t = timeline.date.timeIntervalSinceReferenceDate
                 for i in 0..<16 {

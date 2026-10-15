@@ -277,6 +277,7 @@ struct YoseGauge: View {
 
 // MARK: ⑨ 吹き出し
 struct YoseSpeechBox: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let speaker: String
     let text: String
     var roleLabel: String? = nil
@@ -308,6 +309,6 @@ struct YoseSpeechBox: View {
             .padding(.horizontal, 12).padding(.vertical, 10)
             .yoseHarigami()
         }
-        .onAppear { withAnimation(.easeOut(duration: 0.5).repeatForever(autoreverses: true)) { blink = true } }
+        .onAppear { guard !reduceMotion else { return }; withAnimation(.easeOut(duration: 0.5).repeatForever(autoreverses: true)) { blink = true } }
     }
 }

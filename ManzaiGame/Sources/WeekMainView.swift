@@ -15,6 +15,7 @@ import SwiftUI
 import GameCore
 
 struct WeekMainView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Bindable var session: GameSession
     let offer: OfferSpec?
 
@@ -703,7 +704,7 @@ struct WeekMainView: View {
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
                 Sound.play(.deny)
-                withAnimation(.linear(duration: 0.15)) { shakeSeed[v.id, default: 0] += 1 }
+                if !reduceMotion { withAnimation(.linear(duration: 0.15)) { shakeSeed[v.id, default: 0] += 1 } }
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
@@ -1312,11 +1313,12 @@ struct BubbleTail: Shape {
 
 /// 吹き出しの「次へ」▼：ゆるく上下に弾む（タップで進める合図）。
 struct BounceArrow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var up = false
     var body: some View {
         Image(systemName: "arrowtriangle.down.fill")
             .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)
             .offset(y: up ? 2.5 : -1.5)
-            .onAppear { withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
+            .onAppear { guard !reduceMotion else { return }; withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
     }
 }

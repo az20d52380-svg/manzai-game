@@ -5,10 +5,11 @@ import UIKit
 
 /// 判子叩きつけ：scale 2.2→1.0 + opacity。着地で success ハプティクス＋画面微振動用の値を返す。
 struct YoseStampImpactModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let isStamped: Bool
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isStamped ? 1.0 : 2.2)
+            .scaleEffect(isStamped || reduceMotion ? 1.0 : 2.2)
             .opacity(isStamped ? 1.0 : 0.0)
             .animation(.spring(response: 0.22, dampingFraction: 0.55), value: isStamped)
             .onChange(of: isStamped) { _, v in
@@ -19,12 +20,13 @@ struct YoseStampImpactModifier: ViewModifier {
 
 /// 数値の増減：numericText＋値が変わった瞬間に 1.2→1.0 で跳ねる
 struct YoseNumberBounceModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let value: Double
     @State private var bump = false
     func body(content: Content) -> some View {
         content
             .contentTransition(.numericText(value: value))
-            .scaleEffect(bump ? 1.2 : 1.0)
+            .scaleEffect(bump && !reduceMotion ? 1.2 : 1.0)
             .animation(.spring(response: 0.28, dampingFraction: 0.72), value: value)
             .animation(.spring(response: 0.28, dampingFraction: 0.72), value: bump)
             .onChange(of: value) { _, _ in

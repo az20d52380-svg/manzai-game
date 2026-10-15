@@ -8,6 +8,7 @@ import GameCore
 // MARK: 笑い波形メーター（mockupのcanvasをCanvasで再現）
 
 struct WaveformView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// 結果連動: 通過=暖色で大きく育ちオチで跳ねる／敗退=寒色でフラット・疎ら（mvp §7）
     var passed: Bool = true
     /// 敗退時の"惜しさ" 0..1（1＝あと一歩）。負けの波形を距離で変える（監査E-03）
@@ -20,7 +21,7 @@ struct WaveformView: View {
     @State private var runIn: CGFloat = 1
 
     var body: some View {
-        TimelineView(.animation) { timeline in
+        TimelineView(.animation(minimumInterval: nil, paused: reduceMotion)) { timeline in
             let t = timeline.date.timeIntervalSinceReferenceDate
             Canvas { ctx, size in
                 let W = size.width, H = size.height, mid = H / 2
