@@ -197,7 +197,7 @@ struct AbilityUpView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(a)").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.7)
                 HStack(spacing: 3) {
-                    Text("\(Int(v.rounded()))").font(YoseFont.number(14, weight: .heavy)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.haiSumi)
+                    Text("\(Int(v.rounded()))").font(YoseFont.number(19, weight: .black)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.sumi)
                         .contentTransition(.numericText())
                         .scaleEffect(bumped == a ? 1.3 : 1, anchor: .leading)
                     if gained > 0 {
@@ -205,6 +205,10 @@ struct AbilityUpView: View {
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
+                // 現在値のミニバー（枠＋朱の塗り・長さは全能力共通の物差し）
+                Rectangle().fill(YoseColor.ginNezu).frame(width: 48, height: 4)
+                    .overlay(alignment: .leading) { Rectangle().fill(YoseColor.shu).frame(width: 48 * min(1, max(0, v / 120)), height: 4) }
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
             }
             .frame(width: nameW, alignment: .leading)
             plusMark(canTap: canTap)
@@ -217,8 +221,9 @@ struct AbilityUpView: View {
                         Text("\(n)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(short ? YoseColor.shu : YoseColor.sumi)
                             .minimumScaleFactor(0.7).lineLimit(1)
                             .frame(width: colW, height: 40)
-                            .background(short ? YoseColor.shu.opacity(0.15) : wa(c).opacity(0.12))
-                            .overlay(Rectangle().stroke(short ? YoseColor.shu : wa(c), lineWidth: short ? 1.5 : 1))
+                            .background(short ? YoseColor.shu.opacity(0.18) : wa(c).opacity(0.12))
+                            .overlay(Rectangle().stroke(short ? YoseColor.shu : wa(c), lineWidth: short ? 2 : 1))
+                            .overlay(alignment: .topTrailing) { if short { Circle().fill(YoseColor.shu).frame(width: 7, height: 7).offset(x: -2, y: 2) } }   // 足りない粒の目印
                     } else {
                         Text("・").font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.ginNezu)   // 消費しない列は箱を置かない
                             .frame(width: colW, height: 40)
