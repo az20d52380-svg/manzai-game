@@ -51,6 +51,17 @@ struct FinalsPresentationView: View {
     @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
     @State private var holdingSeventh = false
+    // 番組の演出（見せ方だけ・結果は FinalsData のまま）
+    @State private var lotRevealed = false     // 出番くじ: 心拍のあと出順が出る
+    @State private var lotPulse = false
+    @State private var doorsOpen = false       // 登場の扉
+    @State private var entranceFull = false    // 登場の扉の初回フル
+    @State private var duelFull = false        // 王手の溜めの初回フル
+    @State private var totalCount: Double = 0  // 合計点のカウントアップ
+    @State private var showChamp = false       // 優勝の瞬間（YoseChampionCelebrationView）
+    @State private var showEnding = false      // 番組のエンディング
+    @State private var endingFull = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var s: GameState { session.state }
     /// 見せ札の合成結果。描画のたびに作り直さず、最初に1回だけ作って保持する（X4-18）。
@@ -98,6 +109,7 @@ struct FinalsPresentationView: View {
             StageFrame(mode: stageMode, performers: stagePerformers,
                        floorTop: beat == .lot ? 0.60 : (beat == .result ? 0.62 : (beat == .perform ? 0.58 : 0.56)))
                 .animation(.easeInOut(duration: 0.5), value: beat)
+            FinalsStudioLights(duel: beat == .duel)   // スタジオ照明（最終決戦だけ真紅×群青）
             if beat == .perform {   // ネタ中：舞台袖のめくり（コンビ名）
                 VStack { Spacer(); HStack { Spacer(); StageMakuri(name: spectator ? "客席" : session.combiName).padding(.trailing, 20) }.padding(.bottom, 190) }
                     .allowsHitTesting(false)
@@ -129,7 +141,11 @@ struct FinalsPresentationView: View {
                 .allowsHitTesting(false)
             }
 
+            if beat == .perform {   // 登場の扉（割れて逆光＋紹介テロップ）
+                FinalsEntranceDoors(open: doorsOpen, order: d.order, name: spectator ? "客席" : session.combiName, year: session.year)
+            }
             VStack(spacing: 10) {
+                FinalsLiveBar(scene: liveSceneName, trailing: spectator ? "客席から観戦" : (d.order > 0 ? "第\(d.order)番手" : nil))
                 broadcastTitle
 
                 Group {
@@ -188,6 +204,27 @@ struct FinalsPresentationView: View {
                 }
             }
         }
+        .overlay {
+            if showChamp {   // 優勝の瞬間（金テープ・大判優勝めくり・賞金ボード・相方の言葉）。タップで即完成→もう一度タップで先へ
+                YoseChampionCelebrationView(tournamentName: "頂グランプリ 決勝戦", generationText: "結成\(session.year)年目",
+                                            duoName: session.combiName, prizeAmountYen: session.config.calendar.gpPrize,
+                                            partnerName: Names.partner, partnerLine: "「……ほんまに、勝ったんやな」") {
+                    withAnimation(.easeOut(duration: 0.3)) { showChamp = false }
+                }
+                .transition(.opacity)
+            }
+        }
+        .overlay {
+            if showEnding {   // 番組のエンディング（優勝組・最終決戦の3組・出場組→放送はここまで）
+                FinalsBroadcastEnding(winnerName: resultWinnerName, champion: d.champion, spectator: spectator,
+                                      duelNames: duelNames, allNames: d.entries.map(displayName),
+                                      short: !endingFull) {
+                    showEnding = false
+                    finishResult()
+                }
+                .transition(.opacity)
+            }
+        }
         .onAppear {
             if dataCache == nil { dataCache = makeData() }
             Sound.bgm(.finals)   // 番組のBGM（決勝の格）
@@ -207,8 +244,16 @@ struct FinalsPresentationView: View {
             case "open": beat = .open; revealedJudges = 5
             case "comments": beat = .comments; revealedJudges = 7
             case "board": beat = .board; shown = 10; boardAuto = true
-            case "duel": beat = .duel; revealVotes = 5
+            case "duel": beat = .duel; revealVotes = 5; duelFull = true
             case "win": beat = .result
+            case "door": beat = .perform; entranceFull = true
+            case "total": beat = .open; revealedJudges = 7; totalCount = Double(d.total)
+            case "seats": beat = .board; shown = min(d.entries.count, 6); boardAuto = true
+            case "oute":   // 王手（3票）の瞬間
+                beat = .duel; duelFull = true
+                for k in 0...7 where (0..<3).map({ j in d.voteOrder.prefix(k).filter { $0 == j }.count }).max() == 3 { revealVotes = k; break }
+            case "champ": beat = .result; if d.champion && !spectator { showChamp = true }
+            case "ending": beat = .result; endingFull = true; showEnding = true
             default: break
             }
             #endif
@@ -217,7 +262,15 @@ struct FinalsPresentationView: View {
         .task(id: autoKey) {
             guard ceremonyDone else { return }
             if beat == .perform {
-                try? await Task.sleep(nanoseconds: 1_800_000_000)
+                if entranceFull && !reduceMotion {   // 扉が割れる→紹介テロップ→ネタ（初回は長め）
+                    try? await Task.sleep(nanoseconds: 350_000_000)
+                    withAnimation { doorsOpen = true }
+                    Haptics.confirm()          // se_door_open_heavy（大扉が割れる）
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                } else {
+                    doorsOpen = true
+                    try? await Task.sleep(nanoseconds: 1_800_000_000)
+                }
                 if !Task.isCancelled, beat == .perform { goNext() }
                 return
             }
@@ -249,7 +302,7 @@ struct FinalsPresentationView: View {
     private var advanceLabel: String {
         switch beat {
         case .preceding: return shown < d.order - 1 ? "次の組を見る ▶" : "出順を決める ▶"
-        case .lot: return "舞台へ ▶"
+        case .lot: return lotRevealed ? "舞台へ ▶" : "くじの結果を見る ▶"
         case .perform: return ""
         case .open: return revealedJudges < 7 ? "審査員の得点をめくる（\(min(7, revealedJudges + 1))/7）▶" : "講評へ ▶"
         case .comments: return commentStep < commentPicks.count - 1 ? "次の講評へ ▶" : "順位ボードへ ▶"
@@ -301,16 +354,25 @@ struct FinalsPresentationView: View {
             }
         case .open where revealedJudges < 7:
             revealJudge()
+        case .lot where !lotRevealed:
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { lotRevealed = true }   // くじの溜めを畳む
+            Haptics.rare()
         case .duel where revealVotes < 7:
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
-            let winCount = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
-            if winCount == 4 {                                          // 過半数到達＝その瞬間に決着
-                slamFire += 1                                           // 揺れ・閃光は決着の1回だけ（X2-26〜28）
-                Haptics.rare(); burstFire += 1
-                Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
+            // 王手（勝者の3票）の次が決着の札なら、めくる前に溜める（全SE断＋BGMを絞る・初回0.9秒／以降0.35秒）
+            let before = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
+            if before == 3 && d.voteOrder[revealVotes] == d.winnerIndex {
+                holdingSeventh = true
+                Sound.hushSE(true); Sound.duck(0.25, over: 0.2)       // se_silence_tension（決定票の前の無音）
+                Haptics.tick()
+                let hold: UInt64 = duelFull && !reduceMotion ? 900_000_000 : 350_000_000
+                Task {
+                    try? await Task.sleep(nanoseconds: hold)
+                    Sound.hushSE(false); Sound.duck(1, over: 0.4)
+                    holdingSeventh = false
+                    revealVote()
+                }
             } else {
-                Haptics.confirm()
-                Sound.play(.don)                                       // 札1枚＝ドン
+                revealVote()
             }
         default:
             if beat == .duel && d.champion && !celebrate {
@@ -321,10 +383,50 @@ struct FinalsPresentationView: View {
         }
     }
 
+    /// 最終決戦の票札を1枚めくる
+    private func revealVote() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
+        let winCount = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
+        if winCount == 4 {                                          // 過半数到達＝その瞬間に決着
+            slamFire += 1                                           // 揺れ・閃光は決着の1回だけ（X2-26〜28）
+            Haptics.rare(); burstFire += 1
+            Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
+        } else {
+            Haptics.confirm()
+            Sound.play(.don)                                       // 札1枚＝ドン
+        }
+    }
+
+    /// 結果画面の出口（番組エンディングのあとに呼ぶ）
+    private func finishResult() {
+        if spectator { onFinishSpectating?(resultWinnerName) }
+        else if d.champion { session.acknowledgeWin() } else { session.acknowledgeResult() }
+    }
+    private var resultWinnerName: String {
+        let names = duelNames
+        return names.count > d.winnerIndex ? names[d.winnerIndex] : session.combiName
+    }
+    /// LIVE ヘッダーの場面名
+    private var liveSceneName: String {
+        switch beat {
+        case .lot: return "出番くじ"
+        case .preceding: return "ファーストラウンド"
+        case .perform: return "登場・ネタ披露"
+        case .open: return "採点発表"
+        case .comments: return "審査員講評"
+        case .board: return "暫定ボード"
+        case .duel: return "最終決戦"
+        case .result: return "結果発表"
+        }
+    }
+
     /// 次のビートへ。ボードに入る瞬間は自組の行を載せ、暫定席に入れたかを音で返す
     private func goNext() {
         let nextBeat = beat.next
         Sound.play(.transition)
+        if nextBeat == .perform { doorsOpen = false; entranceFull = FinalsSeen.first("door") }
+        if nextBeat == .duel { duelFull = FinalsSeen.first("duel") }
+        if nextBeat == .result && d.champion && !spectator { showChamp = true }   // 優勝の瞬間へ接続
         if nextBeat == .board && !spectator {
             shown = d.order
             boardAuto = false
@@ -354,7 +456,8 @@ struct FinalsPresentationView: View {
     /// 審査員を1人開く（M-1式＝1人ずつ・オーナー判断 Q2）。揺れ・閃光は付けない（決着と優勝だけ）
     private func revealJudge() {
         withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealedJudges += 1 }
-        Haptics.confirm()
+        // se_score_flip_electronic_wood ×7／95点以上は se_crowd_gasp_high（どよめき）と強い振動
+        if d.judges.indices.contains(revealedJudges - 1), d.judges[revealedJudges - 1].score >= 95 { Haptics.rare() } else { Haptics.confirm() }
         Sound.play(revealedJudges >= 7 ? .tada : .don)            // 1人ずつドン・全員出たらジャジャーン
         if revealedJudges >= 7 { Sound.play(.applauseHall) }
     }
@@ -395,7 +498,9 @@ struct FinalsPresentationView: View {
                 Text("出順抽選").font(YoseFont.captionBold).tracking(3).foregroundStyle(YoseColor.enji)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("第").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
-                    Text("\(d.order)").font(YoseFont.number(48, weight: .black)).foregroundStyle(YoseColor.shu)
+                    Text(lotRevealed ? "\(d.order)" : "？").font(YoseFont.number(48, weight: .black)).foregroundStyle(YoseColor.shu)
+                        .scaleEffect(lotRevealed ? 1 : (lotPulse ? 1.25 : 0.95))
+                        .punch(on: lotRevealed, peak: 1.4)
                     Text("番").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                     Text("／ 全10組").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                 }
@@ -434,12 +539,33 @@ struct FinalsPresentationView: View {
                     .padding(.top, 9).padding(.horizontal, 2)
                     .frame(maxWidth: .infinity).frame(height: 98)
                     .yoseKifuda(showNail: true)
-                    .overlay { if e.isSelf { Rectangle().stroke(YoseColor.shu, lineWidth: 2.5) } }
+                    .overlay { if e.isSelf && lotRevealed { Rectangle().stroke(YoseColor.shu, lineWidth: 2.5) } }
+                    // 待機組の震え（くじの最中だけ）
+                    .rotationEffect(.degrees(lotRevealed ? 0 : (lotPulse ? 1.6 : -1.6)))
                 }
             }
             mcBubble(FinalsMC.call(order: d.order, name: session.combiName))
-                .padding(.top, 4)
+                .padding(.top, 4).opacity(lotRevealed ? 1 : 0)
         }
+        .task { await runLot() }
+    }
+
+    /// 出番くじ（§4-8）。心拍の振動（ドクン…ドクン）→出順が出る。初回は4拍・2回目以降は1拍。タップで畳める。
+    private func runLot() async {
+        guard !lotRevealed else { return }
+        let full = FinalsSeen.first("lot") && !reduceMotion
+        for _ in 0..<(full ? 4 : 1) {
+            guard !Task.isCancelled, !lotRevealed else { return }
+            withAnimation(.easeOut(duration: 0.12)) { lotPulse = true }
+            Haptics.confirm()                         // se_heartbeat_low（ドクン）
+            try? await Task.sleep(nanoseconds: 170_000_000)
+            withAnimation(.easeIn(duration: 0.12)) { lotPulse = false }
+            Haptics.tick()                            // （ドクッ）
+            try? await Task.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
+        }
+        guard !Task.isCancelled, !lotRevealed else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { lotRevealed = true }
+        Haptics.rare()                                // se_taiko_grand_hit（出順確定）
     }
 
     // MARK: 先の組（出順が自組より前）— 1組ずつ出てボードに載る
@@ -499,55 +625,95 @@ struct FinalsPresentationView: View {
         .transition(.scale(scale: 0.9).combined(with: .opacity))
     }
 
-    /// その時点のボード。上位3組＝暫定席（朱枠の特別札）、4位以下＝敗退（薄く）。押し出された組は席を立つ（薄くなる）
+    /// その時点のボード（§4-5 暫定3席）。上段＝暫定席3つ（椅子取り・新しく座った組は金に光る）、
+    /// 席を押し出された組は「席を離れる」帯で退場、下段＝4位以下（敗退・薄く）。順位・合計は standings(n) のまま。
     private func standingsList(n: Int, newest: FinalsEntry?) -> some View {
         let rows = standings(n)
+        let seats = Array(rows.prefix(3))
+        let rest = Array(rows.dropFirst(3))
+        let prevTop = Set(standings(max(0, n - 1)).prefix(3).map(\.order))
+        let nowTop = Set(seats.map(\.order))
+        // 今の1組で席から押し出された組（席が埋まる前の n<=3 では無し）
+        let ousted: FinalsEntry? = n >= 4 ? d.entries.prefix(n).first { prevTop.contains($0.order) && !nowTop.contains($0.order) } : nil
         return VStack(spacing: 5) {
             // 見出し帯：上の「今出た組」札と同じ名前が並んでも、これは席の表だと分かる
             Text("暫定順位（上位3組が最終決戦へ）").font(YoseFont.captionBold).foregroundStyle(YoseColor.kin)
                 .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12).frame(height: 26)
                 .background(YoseColor.kuroUrushi)
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
-            ForEach(Array(rows.enumerated()), id: \.element.order) { rank, e in
-                let seated = rank < 3
-                if rank == 3 {
-                    Text("▲ ここまで最終決戦進出（上位3組） ▲").font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari)
-                        .frame(maxWidth: .infinity).frame(height: 24)
-                        .background(YoseColor.enji)
-                        .overlay(alignment: .top) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
-                        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
-                        .padding(.horizontal, -4)
+            // 暫定席3つ（空席は札のまま・座ると金枠が光る）
+            HStack(spacing: 6) {
+                ForEach(0..<3, id: \.self) { rank in
+                    if rank < seats.count {
+                        seatCard(rank: rank, e: seats[rank], fresh: newest?.order == seats[rank].order)
+                            .id(seats[rank].order)
+                            .transition(.scale(scale: 0.85).combined(with: .opacity))
+                    } else {
+                        VStack(spacing: 3) {
+                            Text("暫定\(rank + 1)位").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                            Text("空席").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
+                        }
+                        .frame(maxWidth: .infinity).frame(height: 84)
+                        .background(ZStack { YoseColor.ki; YoseColor.kiDark.opacity(0.55) })
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    }
                 }
+            }
+            // 席を押し出された組（照明が消えて下段へ）。se_spotlight_shutoff（バチン）
+            if let o = ousted {
+                HStack(spacing: 8) {
+                    Text("▼").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.enji)
+                    Text("\(displayName(o))").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
+                    Text("暫定席を離れる").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    Spacer(minLength: 4)
+                    YoseTag(text: "敗退", style: .outlineSumi)
+                }
+                .padding(.horizontal, 12).frame(height: 30)
+                .background(YoseColor.ginNezu)
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                .id("ousted-\(o.order)-\(n)")
+                .transition(.opacity.combined(with: .offset(y: -6)))
+            }
+            // 4位以下（敗退）
+            ForEach(Array(rest.enumerated()), id: \.element.order) { i, e in
                 HStack(spacing: 10) {
-                    Text("\(rank + 1)").font(YoseFont.number(18, weight: .black))
-                        .foregroundStyle(seated ? YoseColor.shu : YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7).frame(width: 28)
-                    Text(displayName(e)).font(YoseFont.mincho(e.isSelf ? 17 : 15))
+                    Text("\(i + 4)").font(YoseFont.number(15, weight: .black)).foregroundStyle(YoseColor.haiSumi)
+                        .lineLimit(1).minimumScaleFactor(0.7).frame(width: 26)
+                    Text(displayName(e)).font(YoseFont.mincho(e.isSelf ? 15 : 13))
                         .foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.7)
                     if e.isSelf { YoseTag(text: "あなた", style: .outlineShu) }
                     Spacer(minLength: 4)
-                    if !seated { YoseTag(text: "敗退", style: .outlineSumi) }
-                    Text("\(e.total)").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    YoseTag(text: "敗退", style: .outlineSumi)
+                    Text("\(e.total)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 }
-                .padding(.horizontal, 12).padding(.vertical, 4)
-                .yoseHarigami(isFeatured: seated)
-                .overlay { if !seated && !e.isSelf { Rectangle().fill(YoseColor.ginNezu.opacity(0.6)).overlay(Rectangle().stroke(YoseColor.haiSumi, lineWidth: 1.5)).allowsHitTesting(false) } }
-            }
-            // まだ埋まっていない席は空の札で見せる（3つの椅子を争うと一目で分かる）
-            ForEach(rows.count..<max(rows.count, 3), id: \.self) { rank in
-                HStack(spacing: 10) {
-                    Text("\(rank + 1)").font(YoseFont.number(18, weight: .black))
-                        .foregroundStyle(YoseColor.haiSumi).frame(width: 28)
-                    Text("ーーー").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.haiSumi)
-                    Spacer(minLength: 4)
-                    Text("空席").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                }
-                .padding(.horizontal, 12).padding(.vertical, 4)
-                .frame(height: 34)
-                .background(ZStack { YoseColor.ki; YoseColor.kiDark.opacity(0.55) })
-                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                .padding(.horizontal, 12).frame(height: 28)
+                .background(YoseColor.ginNezu.opacity(0.75))
+                .overlay(Rectangle().stroke(e.isSelf ? YoseColor.shu : YoseColor.haiSumi, lineWidth: e.isSelf ? 2 : 1))
             }
         }
         .padding(.bottom, 2)
+    }
+
+    /// 暫定席1つ（縦長の札・順位／名前／合計）。自組は朱枠・いま座った組は金の発光
+    private func seatCard(rank: Int, e: FinalsEntry, fresh: Bool) -> some View {
+        VStack(spacing: 3) {
+            YoseTag(text: "暫定\(rank + 1)位", style: rank == 0 ? .solidEnji : .outlineShu)
+            Text(displayName(e)).font(YoseFont.mincho(e.isSelf ? 15 : 14)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(2).minimumScaleFactor(0.55).multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity).frame(minHeight: 34)
+            HStack(alignment: .firstTextBaseline, spacing: 1) {
+                Text("\(e.total)").font(YoseFont.number(22, weight: .black)).foregroundStyle(e.isSelf ? YoseColor.shu : YoseColor.sumi)
+                Text("点").font(YoseFont.gothic(10, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            }
+            if e.isSelf { Text("あなた").font(YoseFont.gothic(9, weight: .black)).foregroundStyle(YoseColor.kinari)
+                .frame(maxWidth: .infinity).background(YoseColor.shu) }
+        }
+        .padding(.vertical, 5).padding(.horizontal, 3)
+        .frame(maxWidth: .infinity).frame(height: 84, alignment: .top)
+        .yoseHarigami(isFeatured: true)
+        .overlay { if e.isSelf { Rectangle().stroke(YoseColor.shu, lineWidth: 2.5) } }
+        .overlay { if fresh { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5) } }
+        .shadow(color: fresh ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)   // se_rank_slide_heavy（席が入れ替わる）
     }
 
     // MARK: 司会の吹き出し（決勝の進行役）
@@ -671,10 +837,13 @@ struct FinalsPresentationView: View {
             VStack(spacing: 0) {
                 Text("合計").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(allShown ? "\(total)" : "？？？").font(YoseFont.number(40, weight: .black))
-                        .foregroundStyle(allShown ? YoseColor.kinBright : YoseColor.haiSumi)
-                        .contentTransition(.numericText())
-                        .punch(on: allShown, peak: 1.2)   // 7人目が開いた瞬間に初めて合計がドンと出る
+                    Group {
+                        if allShown { RollingNumberText(value: totalCount, prefix: "", suffix: "") }   // 0→合計へ電光カウントアップ
+                        else { Text("？？？") }
+                    }
+                    .font(YoseFont.number(40, weight: .black))
+                    .foregroundStyle(allShown ? YoseColor.kinBright : YoseColor.haiSumi)
+                    .punch(on: allShown, peak: 1.2)   // 7人目が開いた瞬間に初めて合計がドンと出る
                     Text(allShown ? "/ 700" : "点").font(allShown ? YoseFont.number(14, weight: .bold) : YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.ginNezu)
                 }
             }
@@ -683,11 +852,24 @@ struct FinalsPresentationView: View {
             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
             .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.7), lineWidth: 0.8).padding(4))
             .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
+            .overlay(alignment: .topTrailing) {
+                if allShown && !spectator {   // 合計の右上に暫定順位の朱印が叩きつけられる（se_total_score_explosion）
+                    let r = (standings(d.order).firstIndex { $0.isSelf } ?? 0) + 1
+                    YoseHankoStamp(text: "暫定\(r)位", isSquare: true, angle: -6).scaleEffect(0.62)
+                        .offset(x: 30, y: -30)
+                        .transition(.scale(scale: 2.0).combined(with: .opacity))
+                }
+            }
             if revealedJudges == 0 {
                 mcBubble(FinalsMC.startScoring)
             } else if let kata, allShown {
                 YoseNarration(text: "\(NetaCatalog.displayName(kata))で挑んだ一本。")
             }
+        }
+        .onChange(of: allShown) { _, now in
+            guard now else { return }
+            totalCount = 0
+            withAnimation(.easeOut(duration: reduceMotion ? 0.2 : 1.1)) { totalCount = Double(total) }
         }
     }
 
@@ -730,6 +912,8 @@ struct FinalsPresentationView: View {
         .frame(maxWidth: .infinity).frame(height: height, alignment: .top)
         .yoseHarigami(isFeatured: j.score >= 95)
         .overlay { if j.score >= 95 { Rectangle().fill(YoseColor.kin.opacity(0.16)).allowsHitTesting(false) } }   // 高得点札は金地
+        .overlay { if j.score >= 95 { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5).allowsHitTesting(false) } }   // 95点以上＝金枠発光
+        .shadow(color: j.score >= 95 ? YoseColor.kinBright.opacity(0.85) : .clear, radius: 9)
     }
 
     private func judgeBack(_ j: JudgeScore, height: CGFloat) -> some View {
@@ -771,13 +955,16 @@ struct FinalsPresentationView: View {
         return VStack(spacing: 14) {
             if revealVotes == 0 { mcBubble(FinalsMC.startVoting) }
 
-            Text("4票先取で優勝").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
-                .shadow(color: YoseColor.sumi, radius: 0, x: 0, y: 1)
+            Text("最終決戦  ——  4票先取で優勝").font(YoseFont.gothic(13, weight: .black)).tracking(1).foregroundStyle(YoseColor.kinari)
+                .frame(maxWidth: .infinity).frame(height: 28)
+                .background(YoseColor.enji)
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
             // 3組の得票番付（自組・最多得票は朱枠の特別札・下に過半数4マス）
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { k in
                     trioCounter(rank: k + 1, name: names.count > k ? names[k] : "—", count: counts[k],
-                                mine: k == d.selfDuelIndex, lead: counts[k] > 0 && counts[k] == counts.max())
+                                mine: k == d.selfDuelIndex, lead: counts[k] > 0 && counts[k] == counts.max(),
+                                check: counts[k] == 3 && revealVotes < 7)
                 }
             }
 
@@ -809,7 +996,7 @@ struct FinalsPresentationView: View {
         }
     }
 
-    private func trioCounter(rank: Int, name: String, count: Int, mine: Bool, lead: Bool) -> some View {
+    private func trioCounter(rank: Int, name: String, count: Int, mine: Bool, lead: Bool, check: Bool = false) -> some View {
         VStack(spacing: 4) {
             YoseTag(text: "1本目\(rank)位", style: mine ? .solidEnji : .outlineSumi)
             Text(name).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi)
@@ -833,6 +1020,15 @@ struct FinalsPresentationView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .yoseHarigami(isFeatured: mine || lead)
+        .overlay(alignment: .top) {   // 王手（あと1票で4票）
+            if check {
+                Text("王手").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                    .padding(.horizontal, 10).frame(height: 20).background(YoseColor.shu)
+                    .overlay(Rectangle().stroke(YoseColor.kinBright, lineWidth: 1.5))
+                    .offset(y: -11).transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: check)
         .padding(.bottom, 2)
     }
 
@@ -908,8 +1104,8 @@ struct FinalsPresentationView: View {
                 YoseNarration(text: "届かなかった。だが、この夜の舞台には立った。")
             }
             Button {
-                if spectator { onFinishSpectating?(winnerName) }
-                else if d.champion { session.acknowledgeWin() } else { session.acknowledgeResult() }
+                endingFull = FinalsSeen.first("ending") && !reduceMotion   // 番組のエンディング→出口
+                showEnding = true
             } label: {
                 Text(spectator ? "次の週へ ▶" : "結果を見る ▶")
             }

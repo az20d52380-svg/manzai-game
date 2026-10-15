@@ -317,3 +317,188 @@ struct FinalsBroadcastIntro: View {
         onDone()
     }
 }
+
+// MARK: - 本編の番組部品（docs/finals_broadcast_argon_v1.md §2・§4 優先順2/7/8/9/12・§3 予選）
+// 見せ方だけ。点数・順位・勝敗・乱数・結果の順は FinalsData のまま変えない。効果音は鳴らさない（名前はコメント）。
+
+/// 場面ごとの「初回はフル／2回目以降は短縮」。キーごとに1回だけ true を返す（DEBUG の MZ_FIN 指定中は常にフル＝目視用）。
+enum FinalsSeen {
+    static func first(_ key: String) -> Bool {
+        #if DEBUG
+        if !(ProcessInfo.processInfo.environment["MZ_FIN"] ?? "").isEmpty { return true }
+        #endif
+        let k = "finals_bc_seen_\(key)"
+        let f = !UserDefaults.standard.bool(forKey: k)
+        UserDefaults.standard.set(true, forKey: k)
+        return f
+    }
+}
+
+/// 全場面に常設する「LIVE 生放送」ヘッダー（§4-7）。左＝LIVE札、中＝いまの場面名、右＝出番。
+struct FinalsLiveBar: View {
+    let scene: String
+    var trailing: String? = nil
+    @State private var blink = false
+    var body: some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 5) {
+                Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
+                Text("LIVE 生放送").font(YoseFont.gothic(10, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+            }
+            .padding(.horizontal, 6).frame(height: 20)
+            .background(YoseColor.shu)
+            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
+            Text(scene).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinBright).lineLimit(1)
+            Spacer(minLength: 4)
+            if let trailing {
+                Text(trailing).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1)
+            }
+        }
+        .padding(.horizontal, 8).frame(height: 26)
+        .background(YoseColor.kuroUrushi.opacity(0.88))
+        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1) }
+        .onAppear { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } }
+    }
+}
+
+/// スタジオ照明（§4-2）。舞台の上に重ねる：金サーチライト4本。最終決戦は真紅×群青に替わる（§4-9）。
+struct FinalsStudioLights: View {
+    var duel: Bool
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                ForEach(0..<4, id: \.self) { i in
+                    let base: Double = [-30, -10, 10, 30][i]
+                    let col: Color = duel ? (i < 2 ? Color(hex: 0xC4262E) : Color(hex: 0x3047B8)) : YoseColor.kinBright
+                    Rectangle()
+                        .fill(LinearGradient(colors: [col.opacity(duel ? 0.34 : 0.20), .clear], startPoint: .bottom, endPoint: .top))
+                        .frame(width: 44, height: geo.size.height * 0.95)
+                        .rotationEffect(.degrees(base), anchor: .bottom)
+                        .position(x: geo.size.width * (0.16 + 0.22 * CGFloat(i)), y: geo.size.height * 0.52)
+                        .blendMode(.screen)
+                }
+                if duel {   // 最終決戦＝天井から赤と青の薄い被り
+                    LinearGradient(colors: [Color(hex: 0x7A1020).opacity(0.30), .clear, Color(hex: 0x14246E).opacity(0.30)],
+                                   startPoint: .leading, endPoint: .trailing).blendMode(.multiply)
+                }
+            }
+        }
+        .ignoresSafeArea().allowsHitTesting(false)
+        .animation(.easeInOut(duration: 0.6), value: duel)
+    }
+}
+
+/// 登場の扉（§4-8）。閉じた2枚の扉が割れて逆光が差し、紹介テロップが出る。open が true で割れる。
+struct FinalsEntranceDoors: View {
+    let open: Bool
+    let order: Int
+    let name: String
+    let year: Int
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                // 逆光（扉の隙間）
+                RadialGradient(colors: [YoseColor.kinBright.opacity(open ? 0.85 : 0), .clear],
+                               center: .center, startRadius: 4, endRadius: geo.size.width * 0.8)
+                HStack(spacing: 0) {
+                    door.offset(x: open ? -geo.size.width * 0.52 : 0)
+                    door.offset(x: open ? geo.size.width * 0.52 : 0)
+                }
+                .opacity(open ? 0 : 1)
+                .animation(.easeInOut(duration: 0.9), value: open)
+            }
+            .overlay(alignment: .top) {
+                VStack(spacing: 4) {   // 紹介テロップ（肩書・連続出場の元データは無いので、出番と結成年数だけ）
+                    Text("第\(order)番手").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        .padding(.horizontal, 10).frame(height: 22).background(YoseColor.enji)
+                    Text(name).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.kinBright).lineLimit(1).minimumScaleFactor(0.5)
+                    Text("結成\(year)年目").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                }
+                .padding(.vertical, 8).padding(.horizontal, 18)
+                .background(YoseColor.kuroUrushi.opacity(0.9))
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                .padding(.top, 70)
+                .opacity(open ? 1 : 0.0).offset(y: open ? 0 : 14)
+                .animation(.easeOut(duration: 0.4).delay(0.5), value: open)
+            }
+        }
+        .ignoresSafeArea().allowsHitTesting(false)
+    }
+    private var door: some View {
+        Rectangle().fill(LinearGradient(colors: [YoseColor.kuroUrushi, Color(hex: 0x2A1210)], startPoint: .top, endPoint: .bottom))
+            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
+            .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.5), lineWidth: 1).padding(10))
+    }
+}
+
+/// 番組のエンディング（§1 場面12）。優勝組・最終決戦の3組・本日の出場組を見せて「放送はここまで」。タップ／スキップで即閉じる。
+struct FinalsBroadcastEnding: View {
+    let winnerName: String
+    let champion: Bool
+    let spectator: Bool
+    let duelNames: [String]
+    let allNames: [String]
+    let short: Bool
+    var onDone: () -> Void
+    @State private var step = 0
+    @State private var done = false
+    var body: some View {
+        ZStack {
+            Color(hex: 0x0D0A09).ignoresSafeArea()
+            VStack(spacing: 0) {
+                FinalsLiveBar(scene: "エンディング")
+                Spacer(minLength: 0)
+                VStack(spacing: 14) {
+                    Text("頂グランプリ 決勝").font(YoseFont.gothic(13, weight: .heavy)).tracking(2).foregroundStyle(YoseColor.kin)
+                        .opacity(step >= 1 ? 1 : 0)
+                    VStack(spacing: 4) {
+                        Text("今夜の頂").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        Text(winnerName).font(YoseFont.mincho(32)).foregroundStyle(champion ? YoseColor.kinBright : YoseColor.washi)
+                            .lineLimit(1).minimumScaleFactor(0.5)
+                    }
+                    .opacity(step >= 2 ? 1 : 0).scaleEffect(step >= 2 ? 1 : 1.2)
+                    if !duelNames.isEmpty {
+                        Text("最終決戦  " + duelNames.joined(separator: " ／ "))
+                            .font(YoseFont.mincho(13)).foregroundStyle(YoseColor.washi).multilineTextAlignment(.center)
+                            .opacity(step >= 3 ? 1 : 0)
+                    }
+                    if !allNames.isEmpty {   // 本日の出場組（クレジット）
+                        Text("出場  " + allNames.joined(separator: "・"))
+                            .font(YoseFont.mincho(11)).foregroundStyle(YoseColor.ginNezu).multilineTextAlignment(.center)
+                            .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0)
+                    }
+                }
+                .animation(.easeOut(duration: 0.4), value: step)
+                Spacer(minLength: 0)
+                HStack(spacing: 0) {
+                    Text("司会 鳴海").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        .padding(.horizontal, 10).frame(height: 44).background(YoseColor.enji)
+                    Text("「以上、頂グランプリ決勝でした。」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi)
+                        .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 44).background(YoseColor.washi)
+                }
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                .opacity(step >= 3 ? 1 : 0).animation(.easeOut(duration: 0.4), value: step)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 26)
+            }
+            VStack { HStack { Spacer()
+                Button { finish() } label: {
+                    Text("スキップ ▶▶").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .padding(.horizontal, 10).frame(height: 28)
+                        .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
+                }.padding(.trailing, 8).padding(.top, 34)
+            }; Spacer() }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { finish() }
+        .task {
+            for i in 1...4 {
+                try? await Task.sleep(nanoseconds: UInt64((short ? 0.3 : 0.9) * 1_000_000_000))
+                if Task.isCancelled || done { return }
+                step = i   // se_applause_hall（余韻の拍手・最初の1回）
+            }
+            try? await Task.sleep(nanoseconds: UInt64((short ? 0.7 : 1.8) * 1_000_000_000))
+            finish()
+        }
+    }
+    private func finish() { guard !done else { return }; done = true; onDone() }
+}

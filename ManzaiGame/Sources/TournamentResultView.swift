@@ -16,6 +16,7 @@ struct TournamentResultView: View {
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
     @State private var ctaPulse = false
+    @State private var signIn = false          // 番組アイキャッチ：大会看板がドンと打ち出される
     @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
     @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
     /// 開示列のタスク（保持して画面を離れたら取り消す＝投げっぱなしにしない・X4-08）
@@ -113,7 +114,22 @@ struct TournamentResultView: View {
                     // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
                     StageSign(title: r.name, subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
                         .padding(.top, 8)
-                    stepDots.padding(.top, 8)
+                        .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: signIn)
+                    // 番組の下三分（小型）：LIVE札＋コンビ名＋結成年・週。点数は出さない
+                    HStack(spacing: 8) {
+                        Text("LIVE 生放送").font(YoseFont.gothic(10, weight: .black)).foregroundStyle(YoseColor.kinari)
+                            .padding(.horizontal, 6).frame(height: 20).background(YoseColor.shu)
+                            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
+                        Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)
+                        Spacer(minLength: 4)
+                        Text("結成\(summary.year)年目 ・ 第\(summary.week)週").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
+                    }
+                    .padding(.horizontal, 10).frame(height: 28)
+                    .background(YoseColor.kuroUrushi.opacity(0.9))
+                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 6)
+                    stepDots.padding(.top, 6)
 
                     // 結果額縁（大会名のすぐ下・二人の頭の上）＋一言の墨帯
                     VStack(spacing: 10) {
@@ -210,6 +226,7 @@ struct TournamentResultView: View {
                     .transition(.opacity)
             }
         }
+        .onAppear { signIn = true }
         .onDisappear { revealTask?.cancel() }
         #if DEBUG
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
@@ -421,6 +438,8 @@ struct TournamentResultView: View {
             }
         }
         .yoseHarigami(isFeatured: r.passed)   // 突破・賞金の下段を主役に（講評の貼り紙は普通の枠）
+        .overlay { if r.passed { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5).allowsHitTesting(false) } }   // 通過ラインを越えたら枠が金に光る
+        .shadow(color: r.passed ? YoseColor.kinBright.opacity(0.7) : .clear, radius: 9)
         .padding(.bottom, 2)
     }
 
