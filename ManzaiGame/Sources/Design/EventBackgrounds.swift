@@ -1367,7 +1367,7 @@ private struct UketsukeBackdrop: View {
                 ZStack {
                     Rectangle().fill(YoseColor.ki)
                     Rectangle().stroke(YoseColor.kiDark, lineWidth: 1).padding(4)
-                    Text("受付").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                    Text("受付").font(YoseFont.gothic(22, weight: .black)).foregroundStyle(YoseColor.sumi)
                 }
                 .frame(width: 84, height: 40)
                 .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
@@ -1416,9 +1416,6 @@ private struct UketsukeBackdrop: View {
                     .overlay(alignment: .top) { Rectangle().fill(YoseColor.shu).frame(height: 4) }
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     .position(x: w * 0.30, y: topY - 8)
-                Rectangle().fill(Color(hex: 0x8C6B48)).frame(width: 44, height: 10)
-                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-                    .position(x: w * 0.30 + 46, y: topY - 5)
                 // 呼び鈴
                 Circle().trim(from: 0.5, to: 1).fill(YoseColor.kinBright).frame(width: 22, height: 22)
                     .overlay(Circle().trim(from: 0.5, to: 1).stroke(YoseColor.sumi, lineWidth: 1.5).frame(width: 22, height: 22))
@@ -1426,10 +1423,6 @@ private struct UketsukeBackdrop: View {
                 Rectangle().fill(YoseColor.sumi).frame(width: 26, height: 3).position(x: w * 0.60, y: topY - 1.5)
                 Circle().fill(YoseColor.kinBright).frame(width: 4, height: 4)
                     .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1)).position(x: w * 0.60, y: topY - 17)
-                // 名簿
-                Rectangle().fill(YoseColor.washi).frame(width: 40, height: 6)
-                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-                    .position(x: w * 0.70, y: topY - 3)
             }
         }
     }
