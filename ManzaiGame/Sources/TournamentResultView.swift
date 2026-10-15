@@ -95,7 +95,8 @@ struct TournamentResultView: View {
                 if !revealed {
                     waveBoard(passed: r.passed, nearMiss: nearMiss(r), burst: r.burst == true)
                         .position(x: geo.size.width / 2, y: geo.size.height * 0.575)
-                        .opacity(revealedWave ? 1 : 0)
+                        .opacity(revealedWave && !(fanActive && fanShown > 1) ? 1 : 0)   // 声の札が2枚以上並ぶ間は波形を譲る（札の下に透けて重なる崩れを避ける・順番は不変）
+                        .animation(.easeOut(duration: 0.25), value: fanShown)
                         .transition(.opacity)
                 }
 
