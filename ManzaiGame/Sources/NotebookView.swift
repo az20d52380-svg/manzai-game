@@ -21,7 +21,7 @@ struct NotebookView: View {
     private static var initialTab: Tab {
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { return .kiroku }   // 大会の記録の目視（MZ_UI=notebook と併用）
-        if ProcessInfo.processInfo.environment["MZ_TAB"] == "neta" { return .neta }   // 持ちネタ帳の目視
+        if ProcessInfo.processInfo.environment["MZ_TAB"] == "neta" || ProcessInfo.processInfo.environment["MZ_UI"] == "neta_list" { return .neta }   // 持ちネタ帳の目視
         #endif
         return .chikara
     }

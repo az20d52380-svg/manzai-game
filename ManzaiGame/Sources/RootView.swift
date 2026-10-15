@@ -40,7 +40,7 @@ struct RootView: View {
             case "intro": ReminiscencePlayer(cards: IntroFlowView.cards, onComplete: {}) // 導入の回想カード目視
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
-            case "neta": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
+            case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
             case "frame": StageFrame(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
             default: mainFlow
             }
@@ -96,7 +96,7 @@ struct RootView: View {
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
                 session.choose(.train(.ネタ作り))
             }
-            if ui == "pass", session.week <= 1 {
+            if ui == "pass" || ui == "result_done", session.week <= 1 {
                 // 合否演出（通過側）目視: 能力マックスで初回大会へ＝「通過」判＋紙吹雪＋フラッシュを拾う
                 session = GameSession(startState: GameSession.debugMaxedState())
                 session.debugAdvanceToFirstResult()
@@ -107,7 +107,7 @@ struct RootView: View {
                 var st = GameSession.debugMaxedState(); st.compat = 10; st.money = 500_000; st.preoccupiedWeeks = ProcessInfo.processInfo.environment["MZ_FREE"] != nil ? 0 : 1
                 session = GameSession(startState: st)
             }
-            if ui == "neta" || ui == "netaentry", session.week <= 1 {
+            if ui == "neta" || ui == "neta_list" || ui == "netaentry", session.week <= 1 {
                 // ネタ帳目視: 持ちネタ（鉄板/おろし前/擦り切れ/保管庫）を積んだ開始状態（数値は全て【仮】）
                 session = GameSession(startState: GameSession.debugNetaState())
                 // netaentry＝その持ちネタのまま最初の大会の入口で止める（入口のネタ選びの目視・2026-10-14）

@@ -237,6 +237,11 @@ struct TournamentResultView: View {
             }
         }
         .onDisappear { revealTask?.cancel() }
+        #if DEBUG
+        .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
+            if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal() }
+        }
+        #endif
         .overlay {
             if let i = climaxIndex { climaxOverlay(i) }   // ⑪ 山場のタップ送り
         }
