@@ -35,6 +35,14 @@ extension EventBackdrop {
         case .homecomingCall:          return .init(.apartment, .evening) // アパートの部屋・年末の夕方
         case .regularFanOranges:       return .init(.theater, .day)     // 劇場の出口・昼の部の後
         case .officeTicketQuota:       return .init(.office, .day)      // 事務所・昼
+        // 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md §2）
+        case .summerFestivalGig:       return .init(.keikoba, .day)     // 稽古場・事務所から電話が来た昼
+        case .doukiOnTV:               return .init(.apartment, .night) // アパートの部屋・テレビをつけた夜
+        case .theaterRenovation:       return .init(.theater, .day)     // 劇場のロビー・張り紙が出た昼
+        case .classmateInAudience:     return .init(.theater, .night)   // 劇場の出口→近い背景=劇場・夜の部の後
+        case .partnerFever:            return .init(.keikoba, .morning) // 稽古場・相方から電話が来た朝
+        case .lostNotebook:            return .init(.station, .morning) // 駅の忘れ物の窓口→近い背景=駅・朝
+        case .yearEndLive:             return .init(.gakuya, .night)    // 劇場の楽屋・年末のライブの後
         }
     }
 }

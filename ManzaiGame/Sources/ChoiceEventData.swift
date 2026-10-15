@@ -62,6 +62,13 @@ enum ChoiceEventData {
         case .homecomingCall: return homecomingCall
         case .regularFanOranges: return regularFanOranges
         case .officeTicketQuota: return officeTicketQuota
+        case .summerFestivalGig: return summerFestivalGig
+        case .doukiOnTV: return doukiOnTV
+        case .theaterRenovation: return theaterRenovation
+        case .classmateInAudience: return classmateInAudience
+        case .partnerFever: return partnerFever
+        case .lostNotebook: return lostNotebook
+        case .yearEndLive: return yearEndLive
         }
     }
 
@@ -787,6 +794,208 @@ enum ChoiceEventData {
                 Advice(name: "俺", text: "今回は買い取ろう。立つ時間を稽古に回したい"),
                 Advice(name: "中条", text: "分かった。じゃあ十枚、先に渡しておくね"),
                 Advice(name: "谷口", text: "空いた週末は、二人で稽古やな"),
+            ],
+        ]
+    )
+
+    // ===== 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md・2026-10-16）=====
+    // 正典v3（キャラ会話はボケない・日常会話）。新しい人物は架空（石黒・宮内・小野寺・駅員・野々村）。第三者は標準語。
+
+    // MARK: 0051 夏祭りの営業
+
+    private static let summerFestivalGig = ChoiceEventText(
+        title: "夏祭りの営業",
+        setup: [
+            Advice(name: nil, text: "稽古場。事務所の中条さんから電話が来た昼。"),
+            Advice(name: "中条", text: "来月、ショッピングモールの夏祭りで、外のステージに出てほしいの"),
+            Advice(name: "俺", text: "外ですか。昼の一番暑い時間ですよね"),
+            Advice(name: "中条", text: "二時から三回。一組一万二千円で、お弁当も出るよ"),
+            Advice(name: "谷口", text: "日なたで三回はきついな。けど、ちゃんとお金になるで"),
+        ],
+        choiceLabels: [
+            "A": "夏祭りのステージに出る",
+            "B": "断って、その日は家で休む",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "出ます。三回とも二人で行きます"),
+                Advice(name: "中条", text: "ありがとう。帽子とタオルは、自分で持ってきてね"),
+                Advice(name: "谷口", text: "帰りに冷たいもん食べよな。日焼け止めも買わな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません。今月は体を休めたいんです"),
+                Advice(name: "中条", text: "分かった。秋のお祭りの時に、また声をかけるね"),
+                Advice(name: "谷口", text: "その日は家で、冷房つけて寝とくわ"),
+            ],
+        ]
+    )
+
+    // MARK: 0052 同期がテレビに出た夜
+
+    private static let doukiOnTV = ChoiceEventText(
+        title: "同期のテレビ",
+        setup: [
+            Advice(name: nil, text: "アパートの部屋。テレビをつけた夜。"),
+            Advice(name: "谷口", text: "あ、石黒らや。夜の番組に出とる"),
+            Advice(name: "俺", text: "本当だ。同期で最初のテレビだな"),
+            Advice(name: "谷口", text: "昼にメール来とってん。見てくれって"),
+            Advice(name: "俺", text: "そうか。ちゃんと映ってるな"),
+            Advice(name: "谷口", text: "……あいつら、先に行ってもうたな"),
+        ],
+        choiceLabels: [
+            "A": "番組を最後まで二人で見る",
+            "B": "テレビを消して、銭湯に行く",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "最後まで見よう。終わったら石黒に連絡する"),
+                Advice(name: "谷口", text: "うん。あいつ、ずっと緊張した顔しとるな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "消そう。銭湯に行って、今日はもう寝よう"),
+                Advice(name: "谷口", text: "せやな。石黒には、明日おめでとう言うわ"),
+            ],
+        ]
+    )
+
+    // MARK: 0053 いつもの劇場の改装
+
+    private static let theaterRenovation = ChoiceEventText(
+        title: "劇場の改装",
+        setup: [
+            Advice(name: nil, text: "劇場のロビー。張り紙が出た昼。"),
+            Advice(name: "宮内", text: "来月から二か月、改装で劇場を閉めるの。椅子と空調を新しくするんだって"),
+            Advice(name: "俺", text: "二か月もですか。その間の出番は、どうなりますか"),
+            Advice(name: "宮内", text: "隣町の劇場なら、出られる日を紹介できるよ。電車で四十分かかるけど"),
+            Advice(name: "谷口", text: "電車代は毎週かかるな。けど、向こうのお客さんに見てもらえるで"),
+        ],
+        choiceLabels: [
+            "A": "隣町の劇場に通って出る",
+            "B": "閉まっている間は公園で練習する",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "紹介してください。隣町に通います"),
+                Advice(name: "宮内", text: "伝えておくね。向こうは客席が広いよ"),
+                Advice(name: "谷口", text: "定期券、買うたほうが安いかもしれんな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "二か月は、二人の練習にあてます"),
+                Advice(name: "宮内", text: "分かった。新しい椅子、楽しみにしててね"),
+                Advice(name: "谷口", text: "公園やったら、お金もかからんしな"),
+            ],
+        ]
+    )
+
+    // MARK: 0054 同級生が客席に
+
+    private static let classmateInAudience = ChoiceEventText(
+        title: "高校の同級生",
+        setup: [
+            Advice(name: nil, text: "劇場の出口。夜の部が終わった後。"),
+            Advice(name: "小野寺", text: "久しぶり。高校で同じクラスだった小野寺だよ"),
+            Advice(name: "俺", text: "小野寺か。来てくれたのか"),
+            Advice(name: "小野寺", text: "会社の同期と五人で来た。このあと飲みに行くから、一緒に来いよ"),
+            Advice(name: "谷口", text: "俺は先に帰っとくわ。行くんやったら、明日の稽古に遅れんといてな"),
+        ],
+        choiceLabels: [
+            "A": "小野寺たちの飲み会に行く",
+            "B": "今日は断って、谷口と帰る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行くよ。少しだけな"),
+                Advice(name: "小野寺", text: "よし。会社の人に、次のライブのことを話しておくよ"),
+                Advice(name: "谷口", text: "また明日な。飲みすぎんといてや"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "ごめん、今日は帰る。また見に来てくれ"),
+                Advice(name: "小野寺", text: "分かった。今度、ご飯にゆっくり行こう"),
+                Advice(name: "谷口", text: "ええんか。帰りにコンビニ寄ってこ"),
+            ],
+        ]
+    )
+
+    // MARK: 0055 相方の熱
+
+    private static let partnerFever = ChoiceEventText(
+        title: "相方の熱",
+        setup: [
+            Advice(name: nil, text: "稽古場。谷口から電話が来た朝。"),
+            Advice(name: "谷口", text: "ごめん、熱が出てしもた。三十八度ある"),
+            Advice(name: "俺", text: "大丈夫か。病院は行ったのか"),
+            Advice(name: "谷口", text: "昼から行く。今日の稽古、休ませてな"),
+            Advice(name: "俺", text: "分かった。何か要るものはあるか"),
+            Advice(name: "谷口", text: "寝とったら治る。お前は気にせんと、練習しとって"),
+        ],
+        choiceLabels: [
+            "A": "飲み物と果物を買って、谷口の家に行く",
+            "B": "一人で稽古場に残って練習する",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "今から行く。スポーツドリンクとりんご、買っていく"),
+                Advice(name: "谷口", text: "来てくれたんか。部屋、散らかっとるけど上がって"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "分かった。今日は一人でやっておく"),
+                Advice(name: "谷口", text: "うん。治ったら、すぐ追いつくわ"),
+            ],
+        ]
+    )
+
+    // MARK: 0056 なくしたノート
+
+    private static let lostNotebook = ChoiceEventText(
+        title: "なくしたノート",
+        setup: [
+            Advice(name: nil, text: "駅の忘れ物の窓口。朝。"),
+            Advice(name: "谷口", text: "稽古のノート、ゆうべの電車の網棚に置いてきてしもてん"),
+            Advice(name: "俺", text: "組んだ日から書いてるノートだよな"),
+            Advice(name: "駅員", text: "終点の駅に届いているそうです。取りに行くなら、今日中にお願いします"),
+            Advice(name: "谷口", text: "終点まで一時間かかるんや。ほんまにごめん"),
+        ],
+        choiceLabels: [
+            "A": "終点の駅までノートを取りに行く",
+            "B": "あきらめて、新しいノートを買う",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "取りに行こう。今日の稽古は夕方からにする"),
+                Advice(name: "谷口", text: "ありがとう。電車代は俺が出すわ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "もういい。新しいノートを買って、一から書こう"),
+                Advice(name: "谷口", text: "うん。今度のは、表に二人の名前を書いとくわ"),
+            ],
+        ]
+    )
+
+    // MARK: 0057 年末のライブ
+
+    private static let yearEndLive = ChoiceEventText(
+        title: "年末のライブ",
+        setup: [
+            Advice(name: nil, text: "劇場の楽屋。年末のライブが終わった夜。"),
+            Advice(name: "野々村", text: "このあと、事務所の打ち上げがある。会費は一人五千円だ"),
+            Advice(name: "俺", text: "野々村さん、事務所の人は全員来るんですか"),
+            Advice(name: "野々村", text: "社長も来る。来年の話も、そこで出るかもしれないな"),
+            Advice(name: "谷口", text: "今年、年越しそば食べてへんかったな。駅前の店、まだ開いとるで"),
+        ],
+        choiceLabels: [
+            "A": "打ち上げに最後まで残る",
+            "B": "二人で駅前のそば屋に行く",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。最後までいます"),
+                Advice(name: "野々村", text: "よし。社長には、俺から二人の名前を伝えておく"),
+                Advice(name: "谷口", text: "そばは、来年の楽しみにとっとくわ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "すみません、今年は二人で帰ります"),
+                Advice(name: "野々村", text: "そうか。よいお年を"),
+                Advice(name: "谷口", text: "店、まだ開いててよかったな。熱いうちに食べよ"),
             ],
         ]
     )

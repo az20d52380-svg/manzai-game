@@ -38,6 +38,14 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     case homecomingCall      // 0047: 母からの電話（週38以降・3週以内に本番なし）
     case regularFanOranges   // 0048: いつものお客さん（知名度15+）
     case officeTicketQuota   // 0049: ライブのチケット（知名度<30）
+    // --- 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md・2026-10-16。週次抽選プール・各1回制） ---
+    case summerFestivalGig   // 0051: 夏祭りの営業（7〜8月=週14-20・体力40+・本番の前週でない）
+    case doukiOnTV           // 0052: 同期がテレビに出た夜（週20以降・知名度<30）
+    case theaterRenovation   // 0053: いつもの劇場の改装（週12以降・知名度<40）
+    case classmateInAudience // 0054: 同級生が客席に（週10以降・知名度5+）
+    case partnerFever        // 0055: 相方の熱（週6以降・体力<50）
+    case lostNotebook        // 0056: なくしたノート（週10以降・持ちネタあり）
+    case yearEndLive         // 0057: 年末のライブ（12月=週33-36）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
@@ -45,7 +53,9 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
              .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer,
              .kouhaiInvite, .senpaiAllNight, .stageCrewChairs, .writerPostcards, .doukiJointLive,
-             .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota:
+             .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota,
+             .summerFestivalGig, .doukiOnTV, .theaterRenovation, .classmateInAudience, .partnerFever,
+             .lostNotebook, .yearEndLive:
             return true
         default:
             return false
@@ -288,6 +298,62 @@ public enum ChoiceEventTable {
                     .money(-6000), .ability(.表現, 1),
                 ], gate: { $0.money >= 6000 }),
             ]
+        // --- 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md §2。幅は 0041〜0049 と同じ【仮】） ---
+        case .summerFestivalGig:
+            // 0051 夏祭りの営業: A=受ける(所持金+12000/知名度+1/体力-15)　B=断って休む(体力+10/メンタル+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.money(12_000), .fame(1), .stamina(-15)]),
+                ChoiceEventChoice(id: "B", effects: [.stamina(10), .ability(.メンタル, 1)]),
+            ]
+        case .doukiOnTV:
+            // 0052 同期がテレビに出た夜: A=最後まで見る(センス+1/メンタル-1)　B=消して銭湯へ(体力+10/メンタル+1/所持金-1000・所持金<1000で非活性)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.ability(.センス, 1), .ability(.メンタル, -1)]),
+                ChoiceEventChoice(id: "B", effects: [
+                    .stamina(10), .ability(.メンタル, 1), .money(-1000),
+                ], gate: { $0.money >= 1000 }),
+            ]
+        case .theaterRenovation:
+            // 0053 いつもの劇場の改装: A=隣町の劇場に通う(知名度+2/所持金-8000/体力-10・所持金<8000で非活性)　B=公園で二人で練習(表現+1/体力-5)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .fame(2), .money(-8000), .stamina(-10),
+                ], gate: { $0.money >= 8000 }),
+                ChoiceEventChoice(id: "B", effects: [.ability(.表現, 1), .stamina(-5)]),
+            ]
+        case .classmateInAudience:
+            // 0054 同級生が客席に: A=同級生たちの飲み会に行く(知名度+1/メンタル+1/体力-10)　B=相方と帰る(相性+1/体力+5)
+            return [
+                ChoiceEventChoice(id: "A", effects: [.fame(1), .ability(.メンタル, 1), .stamina(-10)]),
+                ChoiceEventChoice(id: "B", effects: [.compat(1), .stamina(5)]),
+            ]
+        case .partnerFever:
+            // 0055 相方の熱: A=看病に行く(相性+2/所持金-2000/体力-5・所持金<2000で非活性)　B=一人で稽古場に残る(表現+1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .compat(2), .money(-2000), .stamina(-5),
+                ], gate: { $0.money >= 2000 }),
+                ChoiceEventChoice(id: "B", effects: [.ability(.表現, 1)]),
+            ]
+        case .lostNotebook:
+            // 0056 なくしたノート: A=終点の駅まで取りに行く(メンタル+1/体力-10/所持金-1500・所持金<1500で非活性)　B=新しいノートを買う(発想+1/メンタル-1)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.メンタル, 1), .stamina(-10), .money(-1500),
+                ], gate: { $0.money >= 1500 }),
+                ChoiceEventChoice(id: "B", effects: [.ability(.発想, 1), .ability(.メンタル, -1)]),
+            ]
+        case .yearEndLive:
+            // 0057 年末のライブ: A=打ち上げに最後まで残る(センス+1/知名度+1/所持金-5000/体力-10・所持金<5000で非活性)
+            //                    B=二人でそばを食べて帰る(相性+1/メンタル+1/所持金-1500・所持金<1500で非活性)
+            return [
+                ChoiceEventChoice(id: "A", effects: [
+                    .ability(.センス, 1), .fame(1), .money(-5000), .stamina(-10),
+                ], gate: { $0.money >= 5000 }),
+                ChoiceEventChoice(id: "B", effects: [
+                    .compat(1), .ability(.メンタル, 1), .money(-1500),
+                ], gate: { $0.money >= 1500 }),
+            ]
         case .riftWarning:
             // 0050 会わない週が続いた: A=向き合う(rift-30/体力-10)　B=流す(何もなし＝仲はそのまま)。乱数なし
             return [
@@ -343,6 +409,14 @@ public enum ChoiceEventTable {
         case .homecomingCall:    return week >= 38                     // 年末（正月の帰省の話）
         case .regularFanOranges: return state.fame >= 15               // 常連がつき始めた帯
         case .officeTicketQuota: return state.fame < 30                // 手売りが要る帯
+        // 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md §2）。第1週=4月・4週で1か月
+        case .summerFestivalGig:   return (14...20).contains(week) && state.stamina >= 40   // 7〜8月・炎天下に立てる体力
+        case .doukiOnTV:           return week >= 20 && state.fame < 30   // まだテレビに縁がない帯
+        case .theaterRenovation:   return week >= 12 && state.fame < 40   // いつもの劇場に出ている帯
+        case .classmateInAudience: return week >= 10 && state.fame >= 5   // 噂が地元に届き始めた頃
+        case .partnerFever:        return week >= 6 && state.stamina < 50 // 疲れがたまった頃
+        case .lostNotebook:        return week >= 10 && !state.netas.isEmpty
+        case .yearEndLive:         return (33...36).contains(week)        // 12月
         default:
             return false
         }

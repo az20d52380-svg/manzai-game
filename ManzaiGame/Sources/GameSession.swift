@@ -559,6 +559,10 @@ final class GameSession {
         case .homecomingCall:
             // 帰省の数日が追い込みを食わない
             return noTournamentWithin3Weeks()
+        case .summerFestivalGig:
+            // 0051: 炎天下の営業が本番の前週に重ならない（0042 と同じ）
+            guard let m = nextMilestoneForEvent() else { return true }
+            return m.week - week >= 2
         default:
             return true
         }
@@ -641,7 +645,9 @@ final class GameSession {
         case .brokeDrinkingInvite, .senpaiMeishi, .peerFoldedChair, .lineupTop, .greenroomSilentTen,
              .lastTrainReview, .luckyThirdLine, .wroteOneTonight, .photoShootOffer,
              .kouhaiInvite, .senpaiAllNight, .stageCrewChairs, .writerPostcards, .doukiJointLive,
-             .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota:
+             .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota,
+             .summerFestivalGig, .doukiOnTV, .theaterRenovation, .classmateInAudience, .partnerFever,
+             .lostNotebook, .yearEndLive:
             break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
         case .regularEmployment:
             break   // 0023 廃止（抽選外）。古いセーブの保留中イベント互換のためケースだけ残す
