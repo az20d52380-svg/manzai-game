@@ -360,9 +360,9 @@ struct YoseBigSuccessCutIn: View {
                 .padding(.trailing, sw * 0.125 + 18)
         }
         .background(alignment: .trailing) {
-            YoseBurstParticles(trigger: burst, count: 34, colors: [YoseColor.kinBright, .white, YoseColor.shu, YoseColor.kin], radius: 170, duration: 0.8)
-                .frame(width: 380, height: 340).allowsHitTesting(false)
-                .padding(.trailing, sw * 0.125 - 40)
+            YoseBurstParticles(trigger: burst, count: 44, colors: [YoseColor.kinBright, .white, YoseColor.shu, YoseColor.kin], radius: 230, duration: 0.8, streaks: true)
+                .frame(width: 460, height: 420).allowsHitTesting(false)
+                .padding(.trailing, sw * 0.125 + 53 - 230)
         }
         .rotationEffect(.degrees(-5))
         .background(Rectangle().fill(Color.black).rotationEffect(.degrees(-5)).offset(y: 6))

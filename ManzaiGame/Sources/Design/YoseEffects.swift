@@ -70,6 +70,7 @@ struct YoseBurstParticles: View {
     var colors: [Color] = [YoseColor.kinBright, YoseColor.shu, YoseColor.kin]
     var radius: CGFloat = 90  // 飛び散る最大距離
     var duration: Double = 0.55
+    var streaks: Bool = false   // true: 円形に散る角片ではなく、放射状に走る火花の線（長短ばらつき）
 
     @State private var burstStart: Date? = nil
     @State private var seeds: [ParticleSeed] = []
@@ -89,8 +90,10 @@ struct YoseBurstParticles: View {
         count: Int = 18,
         colors: [Color] = [YoseColor.kinBright, YoseColor.shu, YoseColor.kin],
         radius: CGFloat = 90,
-        duration: Double = 0.55
+        duration: Double = 0.55,
+        streaks: Bool = false
     ) {
+        self.streaks = streaks
         self.trigger = trigger
         self.count = count
         self.colors = colors
@@ -111,6 +114,24 @@ struct YoseBurstParticles: View {
                 let alpha = max(0, 1.0 - pow(progress, 1.8))
                 let center = CGPoint(x: size.width / 2, y: size.height / 2)
 
+                if streaks {
+                    for seed in seeds {
+                        let d1 = radius * seed.speedScale * CGFloat(eased)
+                        let len = seed.size * 3.2 * CGFloat(1.0 - progress * 0.6)
+                        let d0 = max(0, d1 - len)
+                        let ca = CGFloat(cos(seed.angle)), sa = CGFloat(sin(seed.angle))
+                        let g = CGFloat(progress * progress) * 18.0
+                        var p = Path()
+                        p.move(to: CGPoint(x: center.x + ca * d0, y: center.y + sa * d0 + g))
+                        p.addLine(to: CGPoint(x: center.x + ca * d1, y: center.y + sa * d1 + g))
+                        let color = colors[seed.colorIndex % max(1, colors.count)]
+                        var c2 = context
+                        c2.opacity = alpha
+                        c2.stroke(p, with: .color(YoseColor.sumi), style: StrokeStyle(lineWidth: seed.size * 0.42 + 2, lineCap: .round))
+                        c2.stroke(p, with: .color(color), style: StrokeStyle(lineWidth: seed.size * 0.42, lineCap: .round))
+                    }
+                    return
+                }
                 for seed in seeds {
                     let dist = radius * seed.speedScale * CGFloat(eased)
                     let gravityY = CGFloat(progress * progress) * 24.0 // わずかな重力落下
@@ -145,11 +166,11 @@ struct YoseBurstParticles: View {
     private func regenerateSeeds() {
         seeds = (0..<count).map { i in
             let baseAngle = (Double(i) / Double(max(1, count))) * (.pi * 2.0)
-            let jitter = Double.random(in: -0.22...0.22)
+            let jitter = streaks ? Double.random(in: -0.45...0.45) : Double.random(in: -0.22...0.22)
             return ParticleSeed(
                 angle: baseAngle + jitter,
-                speedScale: CGFloat.random(in: 0.45...1.05),
-                size: CGFloat.random(in: 6...11),
+                speedScale: streaks ? CGFloat.random(in: 0.25...1.15) : CGFloat.random(in: 0.45...1.05),
+                size: streaks ? CGFloat.random(in: 7...16) : CGFloat.random(in: 6...11),
                 spinSpeed: Double.random(in: -360...360),
                 colorIndex: i,
                 isDiamond: i.isMultiple(of: 2)
