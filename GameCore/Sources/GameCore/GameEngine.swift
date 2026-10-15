@@ -215,9 +215,6 @@ public enum GameEngine {
         return bonus
     }
 
-    /// 週末処理（Python: run_year 末尾）。生活費は livingInterval 週ごと。
-    /// 正典v2: 所持金<0なら生活苦（体力・メンタル減）、夜逃げライン未満で true（キャリア終了）を返す
-    @discardableResult
     /// 途中解散のすれ違いゲージ（週末・生活費と夜逃げ判定の後）。乱数なし。解散なら true。Python: sim_career.rift_weekend
     public static func applyRiftWeekEnd(year: Int, to s: inout GameState, config: GameConfig) -> Bool {
         guard config.riftOn else { return false }
@@ -237,6 +234,9 @@ public enum GameEngine {
         return false
     }
 
+    /// 週末処理（Python: run_year 末尾）。生活費は livingInterval 週ごと。
+    /// 正典v2: 所持金<0なら生活苦（体力・メンタル減）、夜逃げライン未満で true（キャリア終了）を返す
+    @discardableResult
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
             s.money -= config.livingCost
