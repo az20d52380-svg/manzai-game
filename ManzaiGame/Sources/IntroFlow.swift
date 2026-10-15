@@ -352,8 +352,10 @@ struct S1TitleView: View {
                 stageTableau
                 Spacer(minLength: 12)
                 Button(action: onStart) {
-                    Text("はじめる").font(YoseFont.gothic(20, weight: .heavy))
+                    YoseOutlinedText(text: "はじめる", font: YoseFont.gothic(22, weight: .black),
+                                     fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 1.5, dropShadowY: 1.5)
                         .frame(maxWidth: .infinity, minHeight: 58)
+                        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1).padding(3))
                 }
                 .buttonStyle(YoseButtonStyle(.primary))
                 .padding(.horizontal, YoseMetrics.screenMargin)
@@ -420,6 +422,12 @@ struct S1TitleView: View {
         .background(alignment: .bottom) {
             Rectangle().fill(YoseColor.kiDark).frame(height: 22).frame(maxWidth: .infinity)
                 .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
+                .overlay {
+                    VStack(spacing: 5) {
+                        Rectangle().fill(YoseColor.sumi.opacity(0.28)).frame(height: 1)
+                        Rectangle().fill(YoseColor.sumi.opacity(0.28)).frame(height: 1)
+                    }.padding(.top, 5)
+                }
                 .padding(.horizontal, -40)
         }
     }
@@ -442,10 +450,14 @@ struct S1TitleView: View {
     private var crowdBand: some View {
         HStack(alignment: .bottom, spacing: 3) {
             ForEach(Self.crowd.indices, id: \.self) { i in
-                Rectangle().fill(Color(hex: 0x181210)).frame(width: Self.crowd[i].0, height: Self.crowd[i].1)
+                VStack(spacing: -2) {   // 頭＋肩（客のシルエット）
+                    Circle().fill(Color(hex: 0x181210)).frame(width: Self.crowd[i].0 * 0.52, height: Self.crowd[i].0 * 0.52)
+                    UnevenRoundedRectangle(topLeadingRadius: Self.crowd[i].0 * 0.45, topTrailingRadius: Self.crowd[i].0 * 0.45)
+                        .fill(Color(hex: 0x181210)).frame(width: Self.crowd[i].0, height: Self.crowd[i].1)
+                }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .bottom).frame(height: 56, alignment: .bottom)
+        .frame(maxWidth: .infinity, alignment: .bottom).frame(height: 78, alignment: .bottom)
         .clipped()
         .background(alignment: .bottom) {   // 客席の影の下は画面の下端まで黒漆で塗る（定式幕を貫通させない）
             Color(hex: 0x181210).frame(height: 14).background(Color(hex: 0x181210).ignoresSafeArea(edges: .bottom))
