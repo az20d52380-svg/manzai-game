@@ -52,9 +52,9 @@ struct NetaPickRow: View {
 
     private var changeLabel: some View {
         let unset = selected == nil && !session.activeNetas.isEmpty
-        return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(12, weight: .heavy))
+        return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(unset && !expanded ? 14 : 12, weight: .heavy))
             .foregroundStyle(unset && !expanded ? YoseColor.kinari : YoseColor.sumi)
-            .padding(.horizontal, 8).padding(.vertical, 5)
+            .padding(.horizontal, unset && !expanded ? 12 : 8).padding(.vertical, unset && !expanded ? 8 : 5)
             .background(unset && !expanded ? YoseColor.shu : YoseColor.ki)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
             .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).offset(y: 2) }   // 押せる物理ボタンのハードシャドウ

@@ -121,12 +121,20 @@ private struct EntryHeader: View {
     let tag: String
     let name: String
     var body: some View {
-        StageScene(showPoster: false)
-            .frame(minHeight: 344, maxHeight: 400)   // 看板（上64pt＋約84pt）が二人の頭に被らない高さ
-            .overlay(alignment: .top) { TournamentPoster(tag: tag, name: name).padding(.top, 58) }
-            .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
-            .clipped()
-            .ignoresSafeArea(edges: .top)
+        // 場面の下端がカード列にぴたり付くよう、レイアウト上の高さは Color.clear で決め、場面は背景として上端（安全領域）まで伸ばす
+        Color.clear
+            .frame(minHeight: 290, maxHeight: 430)   // 看板（上58pt＋約84pt）が二人の頭に被らない高さ
+            .background(alignment: .top) {
+                StageScene(showPoster: false)
+                    .overlay(alignment: .top) { TournamentPoster(tag: tag, name: name).padding(.top, 58) }
+                    .overlay(alignment: .top) {   // ステータスバー帯は臙脂の定式幕色＋金の罫（画面最上部の黒い空きを無くす）
+                        YoseColor.enji.frame(height: 52)
+                            .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
+                    }
+                    .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
+                    .clipped()
+                    .ignoresSafeArea(edges: .top)
+            }
     }
 }
 
@@ -217,7 +225,7 @@ struct TournamentEntryView: View {
                                 enabled: session.state.money >= cost) { session.decideTournament(.夜行バス) }
                 }
                 Button { session.decideTournament(nil) } label: { Text("見送る") }
-                    .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 150)
+                    .buttonStyle(YoseButtonStyle(.secondary))
             }
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 12)
         }
@@ -303,7 +311,9 @@ struct StagePreludeView: View {
                 VStack(spacing: 2) {
                     Text("本番へ ▶").font(YoseFont.gothic(18, weight: .heavy))
                     if let note = goNote {
-                        Text(note).font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari.opacity(0.9))
+                        Text(note).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                            .padding(.horizontal, 8).padding(.vertical, 2)
+                            .background(YoseColor.kuroUrushi.opacity(0.45))
                     }
                 }
                 .frame(maxWidth: .infinity, minHeight: 54)
