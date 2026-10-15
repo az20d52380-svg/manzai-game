@@ -25,6 +25,7 @@ struct SettingsView: View {
                         if let n = Int(ProcessInfo.processInfo.environment["MZ_STEP"] ?? "") { restartStep = n }
                         #endif
                     }
+                GeometryReader { geo in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         section("音量") {
@@ -49,6 +50,7 @@ struct SettingsView: View {
                             careerSection(onQuitRun)
                         }
             // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
+            Spacer(minLength: 16)   // 権利表記は画面の下端に据える（下半分の空白を作らない）
             VStack(spacing: 4) {
                 Text("権利表記・バージョン").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 Rectangle().fill(YoseColor.kiDark).frame(height: 1).padding(.horizontal, 28)
@@ -63,6 +65,8 @@ struct SettingsView: View {
             .padding(.top, 14)
                     }
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
+                    .frame(minHeight: geo.size.height)
+                }
                 }
             }
             if restartStep > 0, onQuitRun != nil { restartModal }
