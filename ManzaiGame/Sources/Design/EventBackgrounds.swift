@@ -356,6 +356,9 @@ private struct EventGlowLayer: View {
                 StationSign().position(x: w / 2, y: 56)
             }
         case .train:
+            // 蛍光灯の光は固定幅の箱にせず放射状に減衰（左右に縦の切れ目を出さない）。窓はその上に描く
+            RadialGradient(colors: [Color.white.opacity(0.26 * k), .clear], center: UnitPoint(x: 0.5, y: 0.08), startRadius: 6, endRadius: 230)
+                .frame(width: w, height: h).position(x: w / 2, y: h / 2).blendMode(.screen)
             if night {
                 ForEach([-76.0, 76.0], id: \.self) { dx in
                     nightWindow(w / 2 + CGFloat(dx), 88, 132, 68, mullions: 0, dots: 6)
@@ -363,8 +366,6 @@ private struct EventGlowLayer: View {
                 Rectangle().fill(Color(hex: 0xFFFBEA)).frame(width: w * 0.62, height: 6)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)).position(x: w / 2, y: 8)
             }
-            LinearGradient(colors: [Color.white.opacity(0.30 * k), .clear], startPoint: .top, endPoint: .bottom)
-                .frame(width: w * 0.8, height: 90).position(x: w / 2, y: 50).blendMode(.screen)
         case .sento:
             halo(w / 2, 20, 260, Color(hex: 0xFFC870), 0.28)
         case .yakiniku:
@@ -372,6 +373,11 @@ private struct EventGlowLayer: View {
             halo(w / 2, 30, 110, YoseColor.kinBright, 0.3)
         case .keikoba, .uketsuke:
             halo(w / 2, 6, 200, Color(hex: 0xFFF1C8), 0.30)
+            if place == .uketsuke {
+                // 夜の受付：看板とカウンター手元を暖色のスポットで照らす
+                halo(w * 0.55, 100, 140, YoseColor.kinBright, 0.34)
+                halo(w * 0.45, h - 70, 110, YoseColor.kinBright, 0.22)
+            }
         case .office:
             halo(w / 2, 6, 200, Color(hex: 0xFFF1C8), 0.26)
             halo(w / 2, h * 0.68 + 6, 100, YoseColor.kinBright, 0.28)
@@ -777,6 +783,10 @@ private struct TrainBackdrop: View {
                 Rectangle().fill(YoseColor.enji).frame(height: 36)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                     .position(x: w / 2, y: seatY)
+                ForEach([0.25, 0.5, 0.75], id: \.self) { f in
+                    Rectangle().fill(YoseColor.kuroUrushi.opacity(0.45)).frame(width: 1.5, height: 32)
+                        .position(x: w * f, y: seatY)
+                }
                 Rectangle().fill(YoseColor.shu).frame(height: 16)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                     .position(x: w / 2, y: seatY + 22)
@@ -1283,6 +1293,7 @@ private struct UketsukeBackdrop: View {
                 // 奥の壁：「受付」の看板札と予約の貼り紙
                 ZStack {
                     Rectangle().fill(YoseColor.ki)
+                    Rectangle().stroke(YoseColor.kiDark, lineWidth: 1).padding(4)
                     Text("受付").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                 }
                 .frame(width: 84, height: 40)
@@ -1312,18 +1323,21 @@ private struct UketsukeBackdrop: View {
                 .position(x: w / 2, y: h - 45 + 4)
                 // 天板の上の小物（下辺を天板の上辺に接地）
                 let topY = h - 90 + 4
-                Ellipse().fill(YoseColor.washi).frame(width: 46, height: 10)
-                    .overlay(Ellipse().stroke(YoseColor.sumi, lineWidth: 1.5))
-                    .position(x: w * 0.34, y: topY - 5)
-                ForEach(0..<3, id: \.self) { i in
-                    Circle().fill(YoseColor.shu).frame(width: 9, height: 9)
-                        .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.2))
-                        .position(x: w * 0.34 - 12 + CGFloat(i) * 12, y: topY - 13 + (i == 1 ? -4 : 0))
-                }
+                // エントリー番号札の束（白和紙＋朱の帯）と名簿バインダー
+                Rectangle().fill(YoseColor.washi).frame(width: 36, height: 16)
+                    .overlay(alignment: .top) { Rectangle().fill(YoseColor.shu).frame(height: 4) }
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    .position(x: w * 0.30, y: topY - 8)
+                Rectangle().fill(Color(hex: 0x8C6B48)).frame(width: 44, height: 10)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    .position(x: w * 0.30 + 46, y: topY - 5)
                 // 呼び鈴
                 Circle().trim(from: 0.5, to: 1).fill(YoseColor.kinBright).frame(width: 22, height: 22)
                     .overlay(Circle().trim(from: 0.5, to: 1).stroke(YoseColor.sumi, lineWidth: 1.5).frame(width: 22, height: 22))
                     .position(x: w * 0.60, y: topY - 5)
+                Rectangle().fill(YoseColor.sumi).frame(width: 26, height: 3).position(x: w * 0.60, y: topY - 1.5)
+                Circle().fill(YoseColor.kinBright).frame(width: 4, height: 4)
+                    .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1)).position(x: w * 0.60, y: topY - 17)
                 // 名簿
                 Rectangle().fill(YoseColor.washi).frame(width: 40, height: 6)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
