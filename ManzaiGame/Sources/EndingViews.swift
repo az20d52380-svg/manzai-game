@@ -360,6 +360,7 @@ struct EndingGalleryView: View {
             .padding(8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .yoseHarigami()
+            .contentShape(Rectangle())   // 枠の全体を押せる
         }
         .buttonStyle(.plain)
     }

@@ -177,6 +177,8 @@ struct SettingsView: View {
     private func linkRow(_ label: String) -> some View {
         HStack { Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi); Spacer()
             Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())   // 行の端も押せる
     }
 }
 

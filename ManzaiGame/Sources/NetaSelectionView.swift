@@ -116,6 +116,7 @@ struct NetaPickRow: View {
             .padding(.horizontal, 8).padding(.vertical, 8).frame(minHeight: 44)
             .background(isThis ? YoseColor.ki.opacity(0.55) : YoseColor.ki.opacity(0.18))
             .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1))
+            .contentShape(Rectangle())
         }
         .buttonStyle(PressableStyle())
     }
