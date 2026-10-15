@@ -12,7 +12,7 @@ import UserNotifications
 // 見た目の作り直し v1 §6 I2：暗い紫と半透明の灰色の形をやめ、明るい夕景（昼→放課後→宵）と色付きの二人で描く。
 
 /// 回想の時刻（背景の色）。黒にしない。
-enum DuskMood { case noon, after, eve }
+enum DuskMood { case noon, after, eve, night }
 
 struct ReminiscenceCard: Identifiable {
     let id = UUID()
@@ -32,7 +32,12 @@ struct ReminiscencePlayer: View {
     let cards: [ReminiscenceCard]
     var title: String = "はじまりの話"
     var onComplete: () -> Void
-    @State private var index = 0
+    @State private var index = ReminiscencePlayer.debugStart
+    #if DEBUG
+    static var debugStart: Int { Int(ProcessInfo.processInfo.environment["MZ_CARD"] ?? "") ?? 0 }   // 目視用: MZ_CARD=<0始まり>で途中の場面から
+    #else
+    static var debugStart: Int { 0 }
+    #endif
 
     var body: some View {
         let card = cards[safe: index] ?? cards[0]
@@ -135,6 +140,7 @@ private struct RecallPicture: View {
         case .noon: return [YoseColor.washiFeatured, YoseColor.ki]
         case .after: return [YoseColor.ki, YoseColor.kin.opacity(0.65)]
         case .eve: return [YoseColor.kiDark, YoseColor.shu.opacity(0.55)]
+        case .night: return [Color(hex: 0x1F2440), Color(hex: 0x3A3350)]   // 深夜：藍の闇
         }
     }
     private var floorColor: Color {
@@ -142,6 +148,7 @@ private struct RecallPicture: View {
         case .noon: return YoseColor.kiDark
         case .after: return YoseColor.kiDark.opacity(0.9)
         case .eve: return YoseColor.haiSumi
+        case .night: return Color(hex: 0x1A1626)
         }
     }
 
@@ -155,7 +162,8 @@ private struct RecallPicture: View {
                 HStack(spacing: 10) {
                     ForEach(0..<3, id: \.self) { _ in
                         ZStack {
-                            LinearGradient(colors: mood == .eve ? [YoseColor.kinBright.opacity(0.8), YoseColor.shu.opacity(0.35)]
+                            LinearGradient(colors: mood == .night ? [Color(hex: 0x0F1430), Color(hex: 0x2B3560)]
+                                           : mood == .eve ? [YoseColor.kinBright.opacity(0.8), YoseColor.shu.opacity(0.35)]
                                            : [Color(hex: 0xE8C590).opacity(0.85), YoseColor.washiFeatured],
                                            startPoint: .top, endPoint: .bottom)
                             Rectangle().fill(YoseColor.sumi).frame(width: 2)
@@ -243,6 +251,7 @@ struct ReminiscenceScene: View {
         case .noon: return Theme.duskNoon
         case .after: return Theme.duskAfter
         case .eve: return Theme.duskEve
+        case .night: return [Color(hex: 0x1F2440), Color(hex: 0x2E2F55), Color(hex: 0x4A3E63)]   // 深夜（暗転ではなく藍・窓だけ灯る）
         }
     }
 
@@ -287,6 +296,7 @@ struct ReminiscenceScene: View {
         case .noon: return [Color(hex: 0xFFFFFF), Color(hex: 0xFFF3D6)]
         case .after: return [Color(hex: 0xFFF1D6), Color(hex: 0xFFC98E)]
         case .eve: return [Color(hex: 0xFFE3A0), Color(hex: 0xF6B37A)]
+        case .night: return [Color(hex: 0x141A33), Color(hex: 0x232B4F)]
         }
     }
     private var floorColors: [Color] {
@@ -294,6 +304,7 @@ struct ReminiscenceScene: View {
         case .noon: return [Color(hex: 0xEED2A4), Color(hex: 0xD9B07A)]
         case .after: return [Color(hex: 0xE2A47A), Color(hex: 0xC98462)]
         case .eve: return [Color(hex: 0xB07E86), Color(hex: 0x8C6A82)]
+        case .night: return [Color(hex: 0x3A3350), Color(hex: 0x2A2540)]
         }
     }
 }

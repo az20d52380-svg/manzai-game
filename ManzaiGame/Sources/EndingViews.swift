@@ -32,7 +32,8 @@ struct EndingFlowView: View {
                             onFinish: { s6bDone() })
                 }
             case .cards:
-                ReminiscencePlayer(cards: cards, title: ending.title, onComplete: { go(.art) })
+                // #7 は場面カードが無い（S6b 直行）。onAppear で .s6b に替わるまでの最初の1描画で空配列を引かないよう守る
+                if cards.isEmpty { Color.clear } else { ReminiscencePlayer(cards: cards, title: ending.title, onComplete: { go(.art) }) }
             case .art:
                 artPage
             }
@@ -42,6 +43,10 @@ struct EndingFlowView: View {
             guard !recorded else { return }
             recorded = true
             stage = usesS6b ? .s6b : (cards.isEmpty ? .art : .cards)
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["MZ_ENDSTEP"] == "art" { stage = .art }   // 目視用: 一枚絵へ直行
+            if ProcessInfo.processInfo.environment["MZ_ENDSTEP"] == "cards", !cards.isEmpty { stage = .cards }   // 目視用: S6b を飛ばして場面へ
+            #endif
             if !replay && record { EndingBook.record(ending, partner: Names.partner) }
         }
     }
@@ -72,7 +77,9 @@ struct EndingFlowView: View {
                         .multilineTextAlignment(.center).padding(.horizontal, 28)
                 }
                 HStack(spacing: 8) {
-                    YoseTag(text: "No.\(ending.number)　\(ending.title)", style: .outlineKin)
+                    Text("No.\(ending.number)　\(ending.title)").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kin)
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))   // 暗い地では濃い金文字が沈むため明るい金
                     Text(ending.kind.label).font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 8).padding(.vertical, 3).background(ending.kind.color)
                 }
