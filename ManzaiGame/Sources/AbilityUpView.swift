@@ -56,6 +56,9 @@ struct AbilityUpView: View {
             footer
         }
         .background(Theme.kinari.ignoresSafeArea())
+        #if DEBUG
+        .task { if ProcessInfo.processInfo.environment["MZ_TAPS"] != nil { try? await Task.sleep(nanoseconds: 1_500_000_000); taps = [.センス, .発想, .センス] } }   // 目視用: ＋を押した後の状態
+        #endif
     }
 
     /// 臙脂＋金の帯（週のメイン・設定と同じ色）。
@@ -81,11 +84,12 @@ struct AbilityUpView: View {
                 let cap = a == .メンタル ? cfg.mentalCap : cfg.abilityCap
                 VStack(spacing: 4) {
                     Text("\(a)").font(.maru(11, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.8)
-                    Text(grade).font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.35), radius: 0, x: 1, y: 1)
+                    Text(grade).font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(Self.emblemText(grade))
+                        .shadow(color: .black.opacity(Self.emblemText(grade) == .white ? 0.35 : 0), radius: 0, x: 1, y: 1)
                         .frame(width: 42, height: 46)
-                        .background(HexEmblem().fill(Self.emblemColor(grade)))
-                        .overlay(HexEmblem().stroke(Theme.sumi, lineWidth: 2))
+                        .background(HexEmblem().fill(Self.emblemFill(grade)))
+                        .overlay(HexEmblem().fill(LinearGradient(colors: [.white.opacity(0.25), .clear], startPoint: .top, endPoint: .center)))   // 金属の光沢
+                        .overlay(HexEmblem().stroke(grade == "A" ? Color(hex: 0xF1C40F) : Theme.sumi, lineWidth: 2))
                         .shadow(color: .black.opacity(0.35), radius: 0, y: 2)
                     GeometryReader { g in
                         let prog = Theme.rankProgress(v, cap: cap)
@@ -104,19 +108,27 @@ struct AbilityUpView: View {
                     }
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 3)
-                .mzPanel()
+                .background(Theme.kinariPanel).overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))   // 朱の縦線は削除
             }
         }
     }
 
-    /// ランクの色（S金/A赤/B橙/C緑/D以下は藍灰）
-    static func emblemColor(_ g: String) -> Color {
+    /// ランクの色（墓石に見えないよう、G/F=真鍮・E/D=青銅・A=朱＋金枠・S=黄金）
+    static func emblemFill(_ g: String) -> AnyShapeStyle {
         switch g {
-        case "S": return Color(hex: 0xC1A550)
-        case "A": return Color(hex: 0xBD3C28)
-        case "B": return Color(hex: 0xD97724)
-        case "C": return Color(hex: 0x2E583C)
-        default: return Color(hex: 0x5A6265)
+        case "S": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xF39C12), Color(hex: 0xF1C40F)], startPoint: .top, endPoint: .bottom))
+        case "A": return AnyShapeStyle(Color(hex: 0xC0392B))
+        case "B": return AnyShapeStyle(Color(hex: 0xD97724))
+        case "C": return AnyShapeStyle(Color(hex: 0x2E583C))
+        case "D", "E": return AnyShapeStyle(Color(hex: 0x4A6572))
+        default: return AnyShapeStyle(Color(hex: 0x8A7F73))
+        }
+    }
+    static func emblemText(_ g: String) -> Color {
+        switch g {
+        case "S": return Color(hex: 0x1C1917)
+        case "G", "F": return Color(hex: 0x3A342C)
+        default: return .white
         }
     }
 
@@ -149,21 +161,24 @@ struct AbilityUpView: View {
     private var jitsuryokuCard: some View {
         let before = Int(GameEngine.jitsuryoku(base, config: cfg).rounded())
         let after = Int(GameEngine.jitsuryoku(pv, config: cfg).rounded())
+        let em = Color(hex: 0x2ECC71)
         return HStack(spacing: 8) {
             Text("実力").font(.maru(14, weight: .bold)).foregroundStyle(Theme.gold)
             Text("\(before)").font(.maru(24, weight: .heavy)).monospacedDigit().foregroundStyle(.white)
             if after != before {
                 // 確定前に伸びが見える：(+3) → 45
-                Text("(+\(after - before))").font(.maru(16, weight: .heavy)).monospacedDigit().foregroundStyle(Color(hex: 0x38A169))
-                Image(systemName: "arrow.right").font(.system(size: 13, weight: .bold)).foregroundStyle(Color(hex: 0x38A169))
-                Text("\(after)").font(.maru(24, weight: .heavy)).monospacedDigit().foregroundStyle(Color(hex: 0x38A169))
+                Text("(+\(after - before))").font(.maru(16, weight: .heavy)).monospacedDigit().foregroundStyle(em)
+                    .transition(.scale.combined(with: .opacity))
+                Image(systemName: "arrow.right").font(.system(size: 13, weight: .bold)).foregroundStyle(em)
+                Text("\(after)").font(.maru(24, weight: .heavy)).monospacedDigit().foregroundStyle(em)
                     .contentTransition(.numericText())
+                    .transition(.scale.combined(with: .opacity))
             }
             Spacer()
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
-        .background(Color(hex: 0x2B2B2B))
-        .overlay(Rectangle().stroke(Theme.gold, lineWidth: 1.5))
+        .background(Color(hex: 0x231F20))
+        .overlay(Rectangle().stroke(Color(hex: 0xD4AF37), lineWidth: 1.5))   // 金縁の番付札
         .animation(.easeOut(duration: 0.25), value: after)
     }
 
@@ -209,21 +224,20 @@ struct AbilityUpView: View {
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 let n = tag.first(where: { $0.0 == c })?.1
                 let have = Self.points(pv[currency: c])
-                Text(n.map { "\($0)" } ?? "0")
-                    .font(.maru(18, weight: .heavy)).monospacedDigit()
-                    .foregroundStyle(n == nil ? Theme.inkFaint.opacity(0.7) : (n! > have ? Theme.vermD : Theme.ink))
+                Text(n.map { "\($0)" } ?? "-")
+                    .font(n == nil ? .maru(14, weight: .regular) : .maru(18, weight: .heavy)).monospacedDigit()
+                    .foregroundStyle(n == nil ? Color(hex: 0xC5BFB0) : (n! > have ? Theme.vermD : Theme.ink))
                     .minimumScaleFactor(0.7).lineLimit(1)
                     .frame(width: colW, height: 40)
-                    .background(n == nil ? Theme.card2.opacity(0.5) : (n! > have ? Theme.verm.opacity(0.12) : Theme.card2.opacity(0.9)))
+                    .background(n == nil ? Color.clear : (n! > have ? Theme.verm.opacity(0.12) : Theme.card2.opacity(0.9)))
             }
         }
         .padding(.leading, 6).padding(.trailing, 6).padding(.vertical, 8)
         .background(flash == a ? Theme.gold : Theme.kinariPanel)
-        .overlay(alignment: .leading) { Rectangle().fill(Theme.abilityColor(a)).frame(width: 4) }
         .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
         .animation(.spring(response: 0.3, dampingFraction: 0.55), value: gained)
         .contentShape(Rectangle())
-        return Button {
+        let main = Button {
             guard let n = steps else { return }
             Haptics.confirm()   // 中程度の衝撃
             flash = a
@@ -236,6 +250,22 @@ struct AbilityUpView: View {
         } label: { content }
         .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
         .disabled(!canTap)
+        return main.overlay(alignment: .bottomLeading) {
+            if gained > 0 {
+                // ［−］：この行で振った分をまるごと戻す（やり直せる安心）
+                Button {
+                    Haptics.tick()
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
+                } label: {
+                    Image(systemName: "minus").font(.system(size: 14, weight: .black)).foregroundStyle(.white)
+                        .frame(width: 28, height: 22).background(Color(hex: 0x5D6D7E))
+                        .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1))
+                }
+                .buttonStyle(PressableStyle())
+                .padding(.leading, 6 + nameW - 28).padding(.bottom, 4)
+                .transition(.move(edge: .leading).combined(with: .opacity))
+            }
+        }
     }
 
     /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
@@ -267,11 +297,12 @@ struct AbilityUpView: View {
             // 主役：確定
             Button { confirm() } label: {
                 Text("確定").font(.maru(20, weight: .heavy)).foregroundStyle(.white)
-                    .shadow(color: Theme.gold, radius: 0, x: 1, y: 1)
+                    .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
                     .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(LinearGradient(colors: [Color(hex: 0xBD3C28), Color(hex: 0x8B1E0F)], startPoint: .top, endPoint: .bottom))
-                    .overlay(Rectangle().stroke(Theme.sumi, lineWidth: 1.5))
-                    .overlay(Rectangle().stroke(Theme.gold, lineWidth: 3).opacity(active ? (pulse ? 1 : 0.15) : 0).padding(-3))   // 上げている間だけ金の枠がゆっくり光る
+                    .background(LinearGradient(colors: [Color(hex: 0xC0392B), Color(hex: 0x8A1F13)], startPoint: .top, endPoint: .bottom))
+                    .overlay(Rectangle().stroke(Color(hex: 0xE5C158), lineWidth: 1.5))
+                    .overlay(Rectangle().stroke(Color(hex: 0xE5C158), lineWidth: 3).opacity(active ? (pulse ? 1 : 0.15) : 0).padding(-3))   // 上げている間だけ金の光がゆっくり呼吸する
+                    .shadow(color: Color(hex: 0xE5C158).opacity(active ? (pulse ? 0.8 : 0.1) : 0), radius: 8)
                     .shadow(color: Color(hex: 0x6A1207), radius: 0, y: 3)
             }
             .frame(minWidth: 130)
