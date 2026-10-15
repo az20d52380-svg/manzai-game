@@ -219,7 +219,7 @@ public struct YoseChampionCelebrationView: View {
             // 1. 看板最上部の金冠リボンバー
             HStack(spacing: 8) {
                 OrnamentDiamond()
-                Text("漫 才 日 本 一 決 定 戦")
+                Text("漫 才 の 頂 、 こ こ に 決 ま る")
                     .font(YoseFont.gothic(12, weight: .black))
                     .tracking(3)
                     .foregroundStyle(YoseColor.kuroUrushi)
