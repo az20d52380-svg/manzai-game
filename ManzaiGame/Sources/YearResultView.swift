@@ -230,8 +230,20 @@ struct YearResultView: View {
                 Text("今年は、大会に出なかった。").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.haiSumi)
             } else {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                    Text(line).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
-                        .fixedSize(horizontal: false, vertical: true)
+                    // 「第43週: GP準々決勝 通過」→ 左に黒漆の週札・右に本文（文言は変えない）
+                    if let r = line.range(of: ": ") ?? line.range(of: "：", options: []), line.hasPrefix("第"), line[..<r.lowerBound].hasSuffix("週") {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(String(line[..<r.lowerBound])).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                                .padding(.horizontal, 6).padding(.vertical, 2).frame(minWidth: 48)
+                                .background(YoseColor.kuroUrushi)
+                            Text(String(line[r.upperBound...])).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                    } else {
+                        Text(line).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
         }
