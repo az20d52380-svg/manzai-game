@@ -295,7 +295,7 @@ private struct EventGlowLayer: View {
     @ViewBuilder private func lights(_ w: CGFloat, _ h: CGFloat) -> some View {
         switch place {
         case .apartment:
-            halo(w * 0.48, 42, 100, YoseColor.kinBright, 0.55)
+            halo(w * 0.48, 60, 190, YoseColor.kinBright, 0.55)
             if night {
                 Circle().fill(Color(hex: 0xFFE9A8)).frame(width: 12, height: 12)
                     .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5)).position(x: w * 0.48, y: 40)
@@ -306,10 +306,10 @@ private struct EventGlowLayer: View {
         case .famires:
             halo(w / 2, 40, 110, YoseColor.kinBright, 0.45)
             Path { p in
-                p.move(to: CGPoint(x: w / 2 - 26, y: 44)); p.addLine(to: CGPoint(x: w / 2 + 26, y: 44))
+                p.move(to: CGPoint(x: w / 2 - 24, y: 42)); p.addLine(to: CGPoint(x: w / 2 + 24, y: 42))
                 p.addLine(to: CGPoint(x: w / 2 + 100, y: h * 0.72 + 4)); p.addLine(to: CGPoint(x: w / 2 - 100, y: h * 0.72 + 4)); p.closeSubpath()
             }
-            .fill(LinearGradient(colors: [YoseColor.kinBright.opacity(0.3 * k), YoseColor.kinBright.opacity(0.08 * k)], startPoint: .top, endPoint: .bottom))
+            .fill(LinearGradient(colors: [YoseColor.kinBright.opacity(0.3 * k), YoseColor.kinBright.opacity(0)], startPoint: .top, endPoint: .bottom))
             .blendMode(.screen)
             if night { nightWindow(w / 2, 86, 240, 56, mullions: 2, dots: 6) }
         case .gakuya:
@@ -386,8 +386,8 @@ private struct EventGlowLayer: View {
                 halo(w * 0.45, h - 70, 110, YoseColor.kinBright, 0.22)
             }
         case .office:
-            halo(w / 2, 6, 200, Color(hex: 0xFFF1C8), 0.26)
-            halo(w / 2, h * 0.68 + 6, 100, YoseColor.kinBright, 0.28)
+            halo(w / 2, h * 0.25, 170, Color(hex: 0xFFF1C8), 0.34)
+            halo(w / 2, h * 0.68 - 6, 100, YoseColor.kinBright, 0.26)
         }
     }
 
@@ -601,14 +601,19 @@ private struct ApartmentBackdrop: View {
                     .position(x: w / 2, y: floorY + 26)
                 Rectangle().fill(YoseColor.sumi).frame(height: 2).position(x: w / 2, y: floorY)
 
+                // 上部の長押（他の室内と揃える）
+                Rectangle().fill(Color(hex: 0x8C6B48)).frame(height: 6)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                    .position(x: w / 2, y: 14)
+
                 // 左：障子窓（桟は細く・夜は外の闇で青み）
                 ZStack {
-                    Rectangle().fill(time == .night ? Color(hex: 0x3A4659) : YoseColor.washi)
+                    Rectangle().fill(time == .night ? Color(hex: 0x2C3545) : YoseColor.washi)
                     HStack(spacing: 22) {
-                        ForEach(0..<3, id: \.self) { _ in Rectangle().fill(YoseColor.kiDark).frame(width: 1) }
+                        ForEach(0..<3, id: \.self) { _ in Rectangle().fill(time == .night ? Color(hex: 0x1E2430) : YoseColor.kiDark).frame(width: 1.5) }
                     }
                     VStack(spacing: 18) {
-                        ForEach(0..<3, id: \.self) { _ in Rectangle().fill(YoseColor.kiDark).frame(height: 1) }
+                        ForEach(0..<3, id: \.self) { _ in Rectangle().fill(time == .night ? Color(hex: 0x1E2430) : YoseColor.kiDark).frame(height: 1.5) }
                     }
                 }
                 .frame(width: 96, height: 86)
@@ -619,8 +624,8 @@ private struct ApartmentBackdrop: View {
                 ZStack {
                     Rectangle().fill(YoseColor.ki)
                     Rectangle().fill(YoseColor.sumi).frame(width: 1.5)
-                    Circle().fill(YoseColor.sumi).frame(width: 6, height: 6).offset(x: -8, y: 28)
-                    Circle().fill(YoseColor.sumi).frame(width: 6, height: 6).offset(x: 8, y: 28)
+                    Capsule().fill(YoseColor.sumi).frame(width: 5, height: 8).offset(x: -8, y: 28)
+                    Capsule().fill(YoseColor.sumi).frame(width: 5, height: 8).offset(x: 8, y: 28)
                     // 襖の左の戸に貼ったカレンダー（日めくり）
                     VStack(spacing: 0) {
                         Rectangle().fill(YoseColor.shu).frame(height: 9)
@@ -926,6 +931,11 @@ private struct FamiresBackdrop: View {
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                     .position(x: sx, y: tableY - 12)
                 }
+
+                // テーブルの中央支柱（天板から床へ）
+                Rectangle().fill(Color(hex: 0x6E4630)).frame(width: 24, height: max(0, h - (tableY + 25)))
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .position(x: w / 2, y: (tableY + 25) + max(0, h - (tableY + 25)) / 2)
 
                 // 手前：木目テーブル天板＋開いたネタ帳（中央の綴じ線）＋コーヒーカップ2つ
                 ZStack {
@@ -1382,7 +1392,7 @@ private struct OfficeBackdrop: View {
                 // 左：ブラインド窓（細いスラット・夜は隙間が濃紺の夜空）
                 VStack(spacing: 0) {
                     ForEach(0..<13, id: \.self) { i in
-                        Rectangle().fill(i.isMultiple(of: 2) ? (time == .night ? Color(hex: 0x24344D) : Color(hex: 0xD2E3EC)) : YoseColor.washi)
+                        Rectangle().fill(i.isMultiple(of: 2) ? (time == .night ? Color(hex: 0x24344D) : Color(hex: 0xD2E3EC)) : (time == .night ? Color(hex: 0xB8B4A6) : YoseColor.washi))
                     }
                 }
                 .frame(width: 124, height: 78)
@@ -1410,6 +1420,12 @@ private struct OfficeBackdrop: View {
                 .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
                 .position(x: w * 0.74, y: 76)
 
+                // 事務机の左右の脚
+                ForEach([w / 2 - 112, w / 2 + 112], id: \.self) { lx in
+                    Rectangle().fill(Color(hex: 0x7A5C3C)).frame(width: 12, height: h - (floorY + 34))
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                        .position(x: lx, y: (floorY + 34) + (h - (floorY + 34)) / 2)
+                }
                 // 手前：事務机（天板に厚み）・黒電話（受話器とダイヤル）・台本束・契約書バインダー
                 ZStack {
                     Rectangle().fill(Color(hex: 0x9C7A54)).frame(width: 260, height: 32)
