@@ -448,7 +448,7 @@ struct NameEntryView: View {
 
                 // めくり札（横額縁・金の内枠・上に太鼓鋲）に名前を書く
                 VStack(spacing: 8) {
-                    TextField("", text: $name, prompt: Text("例：なんば亭").foregroundColor(YoseColor.disabledText))
+                    TextField("", text: $name, prompt: Text("例：なんば亭").foregroundColor(YoseColor.haiSumi.opacity(0.55)))
                         .onChange(of: name) { _, v in if v.count > 12 { name = String(v.prefix(12)) } }
                         .font(YoseFont.mincho(28)).foregroundStyle(YoseColor.sumi)
                         .multilineTextAlignment(.center)
@@ -489,6 +489,39 @@ struct NameEntryView: View {
                 .buttonStyle(YoseButtonStyle(.secondary))
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
+                // コンビ結成届（書いた名前がそのまま写る）
+                VStack(spacing: 8) {
+                    Text("コンビ結成届").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .frame(maxWidth: .infinity).padding(.vertical, 5).background(YoseColor.enji)
+                    HStack { Text("コンビ名").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        Text(name.isEmpty ? "＿＿＿＿＿＿" : name).font(YoseFont.mincho(24)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
+                    }.padding(.horizontal, 14)
+                    Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
+                    HStack { Text("相　方").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        Text("谷口").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                    }.padding(.horizontal, 14)
+                    Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
+                    HStack { Text("結成日").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        Text("1年目　第1週").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                    }.padding(.horizontal, 14)
+                    Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
+                    HStack { Text("目　標").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        Text("頂グランプリ 優勝").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                    }.padding(.horizontal, 14).padding(.bottom, 14)
+                }
+                .frame(maxWidth: .infinity)
+                .yoseHarigami()
+                .padding(.horizontal, YoseMetrics.screenMargin)
+                .padding(.top, 8)
+                Spacer(minLength: 0)
+                // 書類（結成届）に名前を書いたら、いちばん下の主ボタンで出す＝視線が上から下へ流れる
+                if name.isEmpty {
+                    Text("名前を書くと「結成する！」が押せます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.shu)
+                }
                 Button(action: decide) {
                     Text("結成する！").font(YoseFont.gothic(18, weight: .heavy))
                         .frame(maxWidth: .infinity, minHeight: 56)
@@ -496,29 +529,7 @@ struct NameEntryView: View {
                 .buttonStyle(YoseButtonStyle(.primary))
                 .disabled(name.isEmpty)
                 .padding(.horizontal, YoseMetrics.screenMargin)
-                if name.isEmpty {
-                    Text("名前を書くと「結成する！」が押せます").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                }
-
-                // コンビ結成届（書いた名前がそのまま写る）
-                VStack(spacing: 8) {
-                    Text("コンビ結成届").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-                        .frame(maxWidth: .infinity).padding(.vertical, 5).background(YoseColor.enji)
-                    HStack { Text("コンビ名").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
-                        Spacer()
-                        Text(name.isEmpty ? "＿＿＿＿＿＿" : name).font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
-                    }.padding(.horizontal, 14)
-                    Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
-                    HStack { Text("相　方").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
-                        Spacer()
-                        Text("谷口").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
-                    }.padding(.horizontal, 14).padding(.bottom, 12)
-                }
-                .frame(maxWidth: .infinity)
-                .yoseHarigami()
-                .padding(.horizontal, YoseMetrics.screenMargin)
-                .padding(.top, 8)
-                Spacer(minLength: 0)
+                .padding(.bottom, 16)
             }
         }
         .background(YoseColor.kinari.ignoresSafeArea())
