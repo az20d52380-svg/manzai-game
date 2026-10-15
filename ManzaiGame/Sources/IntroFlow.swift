@@ -364,9 +364,9 @@ struct S1TitleView: View {
     /// 寄席大看板（黒漆＋金枠＋朱の内枠）
     private var signboard: some View {
         VStack(spacing: 8) {
-            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(44, weight: .black),
+            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(48, weight: .black),
                              fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 2, dropShadowY: 3)
-            Text("――漫才師、育成。").font(YoseFont.mincho(16)).foregroundStyle(YoseColor.kin)
+            Text("――漫才師、育成。").font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinBright)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 22)
         .background(YoseColor.kuroUrushi)
@@ -381,15 +381,31 @@ struct S1TitleView: View {
         HStack(alignment: .bottom, spacing: 26) {
             mekuri(YoseColor.shu, "漫才")
             VStack(spacing: 0) {
-                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 20, height: 34)
-                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
-                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 6, height: 96)
-                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 54, height: 8)
-                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                // マイクヘッド（金枠・横スリット3本・中央の金帯）
+                VStack(spacing: 5) {
+                    ForEach(0..<3, id: \.self) { _ in Rectangle().fill(YoseColor.kin.opacity(0.5)).frame(height: 1) }
+                }
+                .padding(.horizontal, 3).padding(.vertical, 5)
+                .frame(width: 24, height: 40)
+                .background(YoseColor.kuroUrushi)
+                .overlay(Rectangle().fill(YoseColor.kin).frame(height: 4))
+                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 6, height: 90)
+                // 二段の重りベース
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 32, height: 4)
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: 48, height: 6)
+                    .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
             }
             mekuri(YoseColor.kin, "四分")
         }
         .frame(maxWidth: .infinity)
+        .padding(.bottom, 14)
+        // 高座の床板（めくり台とマイクの脚を接地させる）
+        .background(alignment: .bottom) {
+            Rectangle().fill(YoseColor.kiDark).frame(height: 22).frame(maxWidth: .infinity)
+                .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2.5) }
+                .padding(.horizontal, -40)
+        }
     }
 
     private func mekuri(_ band: Color, _ label: String) -> some View {
