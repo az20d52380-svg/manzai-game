@@ -222,13 +222,13 @@ public enum ChoiceEventTable {
             ]
         // --- 相方以外の人とのイベント（docs/choice_events_others_v1.md §2。数値は既存の週次イベントと同じ幅に揃えた【仮】） ---
         case .kouhaiInvite:
-            // 0041 後輩の誘い: A=おごる(所持金-8000/華+1/メンタル+1・所持金<8000で非活性)　B=断る(メンタル-1/体力+5)
+            // 0041 後輩の誘い: A=おごる(所持金-8000/華+1/メンタル+1・所持金<8000で非活性)　B=断る(華-1/メンタル-1/体力+5・オーナー「華とかメンタルが若干下がる」)
             return [
                 ChoiceEventChoice(id: "A", effects: [
                     .money(-8000), .ability(.華, 1), .ability(.メンタル, 1),
                 ], gate: { $0.money >= 8000 }),
                 ChoiceEventChoice(id: "B", effects: [
-                    .ability(.メンタル, -1), .stamina(5),
+                    .ability(.華, -1), .ability(.メンタル, -1), .stamina(5),
                 ]),
             ]
         case .senpaiAllNight:

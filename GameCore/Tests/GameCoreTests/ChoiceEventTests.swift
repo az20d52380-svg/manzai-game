@@ -377,6 +377,7 @@ final class ChoiceEventTests: XCTestCase {
         var poor = GameState(config: config); poor.money = 7_999
         XCTAssertFalse(cs[0].gate(poor), "おごれない時は A が灰色")
         XCTAssertTrue(cs[1].effects.contains { if case .ability(.メンタル, let d) = $0 { return d < 0 }; return false })
+        XCTAssertTrue(cs[1].effects.contains { if case .ability(.華, let d) = $0 { return d < 0 }; return false }, "断ると華も下がる（オーナー指示）")
     }
 
     func test0042_senpai_declineDoesNothing() {
