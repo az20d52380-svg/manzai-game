@@ -541,10 +541,10 @@ struct WeekMainView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("磨くネタ").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                 if let n = t {
-                    Text("「\(n.name)」").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
+                    Text("「\(n.name)」").font(YoseFont.mincho(19)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
                     HStack(spacing: 6) {
-                        YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 10, showTicks: true).frame(width: 80)
-                        Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(14, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                        YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 12, showTicks: true).frame(width: 96)
+                        Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.shu)
                         Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
                     }
                 } else {
@@ -852,9 +852,17 @@ struct WeekMainView: View {
                     Spacer(minLength: 4)
                     VStack(alignment: .trailing, spacing: 4) {
                         if moneyDelta != 0 {
-                            Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
-                                .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
-                                .foregroundStyle(moneyDelta > 0 ? YoseColor.tokiwa : YoseColor.shu)
+                            HStack(spacing: 6) {
+                                if moneyDelta > 0 {
+                                    Text("収入").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(Color(hex: 0x7A6218))
+                                        .padding(.horizontal, 5).padding(.vertical, 1)
+                                        .background(YoseColor.kin.opacity(0.25))
+                                        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                                }
+                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
+                                    .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
+                                    .foregroundStyle(moneyDelta > 0 ? YoseColor.sumi : YoseColor.shu)
+                            }
                         }
                         if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
                     }
@@ -870,7 +878,7 @@ struct WeekMainView: View {
         .overlay(alignment: .leading) {
             // 左端の種別帯（無料＝朱／有料＝金）。一覧のカードだけ
             if compact && !gated {
-                Rectangle().fill(wide ? YoseColor.tokiwa : (moneyDelta < 0 ? YoseColor.kin : YoseColor.shu)).frame(width: 5).padding(.vertical, 2).padding(.leading, 2)
+                Rectangle().fill(wide ? YoseColor.kin : (moneyDelta < 0 ? YoseColor.kin : YoseColor.shu)).frame(width: 5).padding(.vertical, 2).padding(.leading, 2)
             }
         }
         .overlay {
@@ -889,11 +897,11 @@ struct WeekMainView: View {
     /// カードごとの地色（アイコン箱）。色だけに頼らずアイコン＋名前でも区別する（§6-5）。
     private func cardTint(_ v: CommandVariant) -> Color {
         switch v.action {
-        case .train(.ネタ作り), .train(.喫茶店で書く), .train(.ファミレスで書く): return YoseColor.expMa   // 書く場所は3つとも「ネタを書く」の色
+        case .train(.ネタ作り), .train(.喫茶店で書く), .train(.ファミレスで書く): return YoseColor.enji   // 書く場所のアイコンは寄席の臙脂（紫は『間合い』の色なので使わない）
         case .train(.ネタ合わせ): return YoseColor.shu
         case .train: return YoseColor.enji
         case .rest: return YoseColor.tokiwa
-        case .job: return YoseColor.tokiwa
+        case .job: return YoseColor.enji   // 常磐緑は体力・回復の色。お金の札は臙脂にして混ざらせない
         case .acceptOffer: return YoseColor.kin
         }
     }
