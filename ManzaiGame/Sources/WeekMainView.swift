@@ -521,11 +521,14 @@ struct WeekMainView: View {
             netaTargetBar
             if pickingNeta { netaPicker }
             if newNetaTitle != nil || (writeTarget == nil && !pickingNeta) { netaTitleField }
+            let places = CommandCatalog.netaPlaces(config: cfg, money: s.money)
+            let lastAlone = places.count > 2 && places.count % 2 == 1   // 奇数枚の最後は2列ぶち抜き
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 8) {
-                ForEach(CommandCatalog.netaPlaces(config: cfg, money: s.money)) { v in
+                ForEach(lastAlone ? Array(places.dropLast()) : places) { v in
                     actionCard(v, compact: true, dashed: false)
                 }
             }
+            if lastAlone, let v = places.last { actionCard(v, compact: true, dashed: false) }
         }
     }
 
@@ -845,8 +848,8 @@ struct WeekMainView: View {
         .yoseHarigami()
         .overlay(alignment: .leading) {
             // 左端の種別帯（無料＝朱／有料＝金）。一覧のカードだけ
-            if compact && !wide && !gated {
-                Rectangle().fill(moneyDelta < 0 ? YoseColor.kin : YoseColor.shu).frame(width: 5).padding(.vertical, 2).padding(.leading, 2)
+            if compact && !gated {
+                Rectangle().fill(wide ? YoseColor.tokiwa : (moneyDelta < 0 ? YoseColor.kin : YoseColor.shu)).frame(width: 5).padding(.vertical, 2).padding(.leading, 2)
             }
         }
         .overlay {
@@ -992,7 +995,8 @@ struct WeekMainView: View {
 
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
         let up = money > 0
-        return Text("\(up ? "+" : "-")¥\(Yen.man(abs(money)))")
+        let amt = abs(money) < 10000 ? "\(abs(money).formatted())" : Yen.man(abs(money))   // 1万円未満は整数円（¥0.5万を出さない）
+        return Text("\(up ? "+" : "-")¥\(amt)")
             .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.shu))
             .padding(.horizontal, 5).padding(.vertical, 2)
