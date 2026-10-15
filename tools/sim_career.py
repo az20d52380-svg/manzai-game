@@ -146,6 +146,57 @@ EVENT_TABLE = [
     (0, -10, 0, "expr", 2),        # 照明さんの雑談
     (0,   5, 0, "mental", 1),      # 常連のおばあちゃん
 ]
+# --- 相方以外の人とのイベント 0041〜0049（preview-all: ChoiceEvent.swift / choice_events_others_v1.md・2026-10-16）---
+# 既定OFF（golden・既存実測は不変）。ONにすると既存プール(EVENT_TABLE 18種)に9種が加わり、同じ12%抽選の一様選択に入る
+# （発火帯に入っていない／発火済みの引きは不発＝総発火数は増えない）。選択はボット共通の方針（OTHERS_CHOICE）。
+OTHERS_ON = False
+OTHERS_EVENTS = ["kouhai", "senpai", "crew", "postcard", "douki", "inventory", "homecoming", "fan", "ticket"]
+def _others_fireable(k, s, week, year, honban_ahead):
+    """honban_ahead: 次の本番(大会・GP回戦)までの週数（無ければ99）。jobs=この年までのバイト回数"""
+    jobs = getattr(s, "_jobs", 0)
+    if k == "kouhai":    return s.money >= 20_000 and (year >= 2 or week >= 24)
+    if k == "senpai":    return s.stamina >= 40 and honban_ahead >= 2
+    if k == "crew":      return week >= 8
+    if k == "postcard":  return s.fame >= 10 and s.money < 200_000
+    if k == "douki":     return week >= 16 and s.fame < 40 and s.money >= 20_000
+    if k == "inventory": return s.money < 150_000 and jobs >= 3
+    if k == "homecoming":return week >= 38 and honban_ahead >= 3
+    if k == "fan":       return s.fame >= 15
+    if k == "ticket":    return s.fame < 30
+    return False
+def _others_apply(s, k):
+    """ボット共通の方針: 余裕(お金5万+/体力50+)があれば人の方（A）へ、なければ B。効果はChoiceEvent.swiftの値"""
+    A = lambda: None
+    if k == "kouhai":
+        if s.money >= 50_000: s.money -= 8000; B.add(s, "chara", 1); B.add(s, "mental", 1)
+        else: B.add(s, "chara", -1); B.add(s, "mental", -1); B.add(s, "stamina", 5)
+    elif k == "senpai":
+        if s.stamina >= 60: B.add(s, "sense", 1); B.add(s, "mental", 1); B.add(s, "stamina", -15)
+    elif k == "crew":
+        if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "stamina", -10)
+        else: B.add(s, "stamina", 5)
+    elif k == "postcard":
+        if s.stamina >= 50: s.money += 15_000; B.add(s, "idea", 1); B.add(s, "stamina", -10)
+        else: B.add(s, "compat", 1)
+    elif k == "douki":
+        if s.money >= 50_000 and s.stamina >= 50: B.add(s, "fame", 2); s.money -= 10_000; B.add(s, "stamina", -10)
+        else: B.add(s, "compat", 1)
+    elif k == "inventory":
+        if s.stamina >= 50: s.money += 20_000; B.add(s, "stamina", -15)
+        else: B.add(s, "expr", 1)
+    elif k == "homecoming":
+        if s.money >= 50_000: B.add(s, "stamina", 15); B.add(s, "mental", 1); s.money -= 12_000
+        else: B.add(s, "expr", 1); B.add(s, "mental", -1)
+    elif k == "fan":
+        if s.money >= 30_000: B.add(s, "chara", 1); B.add(s, "fame", 1); s.money -= 5000
+    elif k == "ticket":
+        if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "stamina", -10)
+        elif s.money >= 6000: s.money -= 6000; B.add(s, "expr", 1)
+
+def _honban_ahead(week):
+    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
+    return min([w - week for w in ws if w > week] or [99])
+
 # 季節催事（週固定・毎年）
 SEASONAL = {1: (0, 10, 0, None, 0), 26: (0, 0, 0, "mental", 2)}
 
@@ -606,6 +657,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                         RUN_TRACK["trains"] = RUN_TRACK.get("trains", 0) + 1
             elif act == "job":
                 B.do_job(s, arg)
+                s._jobs = getattr(s, "_jobs", 0) + 1
             elif act == "offer" and offer:
                 B.do_offer(s, offer)
             elif act == "rest":
@@ -621,8 +673,16 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
             if not acted and rng.random() < EVENT_RATE:
                 # 同一イベントは同一キャリアで原則1回（event_design_v0 §頻度設計）。全消化後は発生しない
                 # EVENT_FIRE_CAP: プール何種でも効果発火は通算この回数まで（超過分はフレーバー表示のみ想定）
-                idx = int(rng.random() * len(EVENT_TABLE))
-                if RUN_EVENTS_FIRED is not None:
+                idx = int(rng.random() * (len(EVENT_TABLE) + (len(OTHERS_EVENTS) if OTHERS_ON else 0)))
+                if idx >= len(EVENT_TABLE):
+                    k = OTHERS_EVENTS[idx - len(EVENT_TABLE)]
+                    capped = EVENT_FIRE_CAP is not None and RUN_EVENTS_FIRED is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP
+                    if (RUN_EVENTS_FIRED is None or idx not in RUN_EVENTS_FIRED) and not capped \
+                            and _others_fireable(k, s, week, year, _honban_ahead(week)):
+                        if RUN_EVENTS_FIRED is not None:
+                            RUN_EVENTS_FIRED.add(idx)
+                        _others_apply(s, k)
+                elif RUN_EVENTS_FIRED is not None:
                     capped = EVENT_FIRE_CAP is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP
                     if idx not in RUN_EVENTS_FIRED and not capped:
                         RUN_EVENTS_FIRED.add(idx)

@@ -27,7 +27,7 @@ def make2(name):
     return make(name)
 
 def install(neta):
-    V.apply(); C.EVENTS_ON = True
+    V.apply(); C.EVENTS_ON = True; C.OTHERS_ON = bool(int(__import__("os").environ.get("OTHERS", "1")))
     C.NETA_ON = C.NETA_V2 = neta
     if neta: C.V2_TIRED_PEN, C.V2_TIRED_CAP = 1.0, 2
     B.enable_places(True); B.enable_paid_rests(True)
