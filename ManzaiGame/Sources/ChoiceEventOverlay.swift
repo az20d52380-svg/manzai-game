@@ -55,7 +55,7 @@ struct ChoiceEventOverlay: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            YoseHeaderBar(title: text.title, subtitle: "\(session.year)年目 第\(session.week)週 ・ 日常イベント")
+            YoseHeaderBar(title: text.title, subtitle: "\(session.year)年目　第\(session.week)週 ・ 日常イベント")
             sceneHeader
             ScrollViewReader { proxy in
                 ScrollView {
