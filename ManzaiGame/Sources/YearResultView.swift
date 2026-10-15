@@ -27,7 +27,7 @@ struct YearResultView: View {
             VStack(spacing: Theme.Sp.s16) {
                 yearBadge.stagger(0, appear)
                 reachStamp.stagger(1, appear)
-                gradeLadder.stagger(2, appear)
+                if session.hasYearStart { gradeLadder.stagger(2, appear) }
                 historyBlock.stagger(2, appear)
                 totalsBlock.stagger(3, appear)
                 eventsBlock.stagger(4, appear)
@@ -168,7 +168,7 @@ struct YearResultView: View {
 
     private var radarBlock: some View {
         VStack(spacing: 4) {
-            RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.yearStartState, config: session.config))
+            RadarChart(axes: RadarChart.abilityAxes(current: s, base: session.hasYearStart ? session.yearStartState : s, config: session.config))
                 .frame(height: 210)
             HStack(spacing: 12) {
                 legendDot(Theme.inkFaint, "年初", dashed: true)
