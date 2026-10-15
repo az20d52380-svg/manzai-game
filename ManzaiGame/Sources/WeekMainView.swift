@@ -528,7 +528,7 @@ struct WeekMainView: View {
                     actionCard(v, compact: true, dashed: false)
                 }
             }
-            if lastAlone, let v = places.last { actionCard(v, compact: true, dashed: false) }
+            if lastAlone, let v = places.last { actionCard(v, compact: true, dashed: false, row: true) }
         }
     }
 
@@ -540,7 +540,7 @@ struct WeekMainView: View {
                 if let n = t {
                     Text("「\(n.name)」").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
                     HStack(spacing: 6) {
-                        YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 8, showTicks: false).frame(width: 80)
+                        YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 10, showTicks: true).frame(width: 80)
                         Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(14, weight: .heavy)).foregroundStyle(YoseColor.shu)
                         Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
                     }
@@ -611,10 +611,13 @@ struct WeekMainView: View {
         HStack(spacing: 8) {
             Image(systemName: "pencil").font(.system(size: 14, weight: .heavy)).foregroundStyle(YoseColor.enji)
             Text("題名").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-            TextField(NetaCatalog.autoName(forID: s.nextNetaID),
-                      text: Binding(get: { newNetaTitle ?? "" }, set: { newNetaTitle = String($0.prefix(16)) }))
+            TextField("", text: Binding(get: { newNetaTitle ?? "" }, set: { newNetaTitle = String($0.prefix(16)) }),
+                      prompt: Text("例：\(NetaCatalog.autoName(forID: s.nextNetaID))"))
                 .font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi)
+                .tint(YoseColor.shu)
                 .submitLabel(.done)
+                .padding(.vertical, 4)
+                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1.5) }   // 入力できる下線
             if (newNetaTitle ?? "").isEmpty {
                 YoseTag(text: "空欄＝おまかせ", style: .outlineSumi)
             }
