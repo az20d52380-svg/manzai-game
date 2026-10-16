@@ -196,8 +196,11 @@ struct WeekMainView: View {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture { beatTask?.cancel() }
             } else if burstHold {
-                Color.clear.contentShape(Rectangle())
-                    .onTapGesture { burstSkip = true }
+                // 獲得チップ中のタップ：舞台側（上半分）だけで畳む。下の行動ボタンは覆わない（押した行動は tapOrQueue が畳んで予約実行）
+                GeometryReader { g in
+                    Color.clear.contentShape(Rectangle()).frame(height: g.size.height * 0.5)
+                        .onTapGesture { burstSkip = true }
+                }
             }
         }
         .onChange(of: burstHold) { _, holding in
@@ -751,7 +754,7 @@ struct WeekMainView: View {
         let preoccupied = v.isTrain && s.preoccupiedWeeks > 0                       // 0022 撮影で稽古枠が埋まった週
         let gated = v.isTrain && (s.stamina < session.config.staminaGate || s.preoccupiedWeeks > 0)
         let blocked = gated || !v.affordable
-        return Button {
+        let run: () -> Void = {
             guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { syncEventPresentation(); return }   // 多重タップ・バースト中は無視（監査F-10）
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
@@ -762,7 +765,8 @@ struct WeekMainView: View {
             }
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
-        } label: {
+        }
+        return Button { tapOrQueue(run) } label: {
             actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact, wide: wide, row: row)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
@@ -799,7 +803,7 @@ struct WeekMainView: View {
             case .お店: return "アイテムを買う"
             }
         }()
-        return Button {
+        let run: () -> Void = {
             guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { syncEventPresentation(); return }
             if gated {
                 Sound.play(.deny)
@@ -813,7 +817,8 @@ struct WeekMainView: View {
                 openCat = c
                 if c == .ネタを書く { openNetaWrite = true }
             }
-        } label: {
+        }
+        return Button { tapOrQueue(run) } label: {
             let stamp: String? = { switch c { case .ネタを書く: return "square.and.pencil"; case .練習: return "music.mic"
                                           case .バイト: return "yensign.circle.fill"; case .休む: return "moon.zzz.fill"
                                           case .能力アップ: return "arrow.up.forward.circle.fill"; case .お店: return "bag.fill" } }()
@@ -1065,6 +1070,17 @@ struct WeekMainView: View {
     }
 
     /// 指定秒だけ待つ。途中で burstSkip が立てば即戻る（タスクの取り消しでも即戻る）。
+    /// 獲得チップ表示中に行動ボタンが押された：チップを畳み、終わったらその押下を実行する（押した分を空振りにしない）
+    private func tapOrQueue(_ run: @escaping () -> Void) {
+        guard burstHold, pulledID == nil, session.pendingChoiceEvent == nil else { run(); return }
+        burstSkip = true
+        Task {
+            var n = 0
+            while burstHold, n < 60 { try? await Task.sleep(nanoseconds: 50_000_000); n += 1 }
+            if !burstHold { run() }
+        }
+    }
+
     private func waitOrSkip(seconds: Double) async {
         let steps = Int(seconds / 0.05)
         for _ in 0..<steps {
@@ -1340,7 +1356,7 @@ struct WeekMainView: View {
 
     /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）
     private var yearEndTile: some View {
-        Button {
+        Button { tapOrQueue {
             if burstHold || session.pendingChoiceEvent != nil { return }
             if yearEndArmed {
                 yearEndArmed = false
@@ -1350,7 +1366,7 @@ struct WeekMainView: View {
                 showToast("もう一度押すと、残りの週を休んで年末の結果へ進む。")
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
             }
-        } label: {
+        } } label: {
             // 条件付きの小カード（オファー/バイト）と同じ顔＝常設6枚の下に破線で並ぶ
             HStack(spacing: 7) {
                 Image(systemName: "forward.end.fill").font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)
