@@ -181,7 +181,7 @@ def jitsuryoku(s):
 # ============================================================
 
 ALLOCATION_STEP  = 1.0     # 割り振り1段で注ぐ「生の伸び試行量」（GameConfig.allocationStep と同期）
-EXP_SUPPLY_SCALE = 0.48    # 【仮】稽古発行の通貨供給スケール（GameConfig.expSupplyScale と同期・旧較正値を継承）
+EXP_SUPPLY_SCALE = 0.24    # 【仮】稽古発行の通貨供給スケール（GameConfig.expSupplyScale と同期）。交換（案D試作）とセットで旧0.48×0.5に再較正（docs/ability_exchange_proposal_v0.md）
 POUR_EPS         = 1e-9    # 浮動小数の塵で粒を空費しない下限（GameEngine.pourEpsilon と同期）
 
 # 経験点通貨5種（能力名と別立て＝真の多対多。ExpCurrency.allCases の鏡像）
@@ -261,10 +261,77 @@ def pour_step(s, key):
 
 ALL_ABILITIES = ["sense", "idea", "expr", "chara", "mental"]   # Ability.allCases と同順
 
+# ---- 交換（詰まり対策・案D 2026-10-16 試作・オーナー判断待ち＝ability-exchange-proposal ブランチ）【仮】 ----
+# 今の配合だと間合いの粒が余り、語彙・閃き・胆力が足りず「経験点はあるのに押せる＋が0」の週が1〜3年の約9割
+# （docs/ability_stall_measure_v0.md）。決まり: **どの能力も押せない時に限り**、伸び余地のある能力1つについて、
+# その配合に無い粒（余り）を EXCHANGE_RATE つ払って、足りない粒を1つ受け取り、1段押す。乱数を使わない。
+# 余りは残高の多い順（同数は CURRENCIES 順）に払う。GameEngine.exchange / pourTap の鏡像。
+EXCHANGE_ON       = True
+EXCHANGE_RATE     = 2.0    # 【仮】余り2 → 不足1（GameConfig.exchangeRate と同期）
+EXCHANGE_MIN_GAIN = 0.05   # 【仮】1段の見える伸びがこれ以下の能力には交換しない（器・予算切れで粒を燃やさない）
+
+def _pushable(s, key):
+    amount = _affordable_raw(s, key)
+    return amount > POUR_EPS and projected_gain(s, key, amount) > POUR_EPS
+
+def exchange_need(s, key):
+    """key を1段（ALLOCATION_STEP）押すのに足りない粒（配合の通貨ごと・足りていれば0）"""
+    mult = _rank_cost_multiplier(getattr(s, key))
+    return [(c, max(0.0, ALLOCATION_STEP * w * mult - getattr(s, CURRENCY_ATTR[c]))) for c, w in ABILITY_RECIPE[key]]
+
+def exchange_sources(s, key):
+    """払える余り＝key の配合に無い通貨で残高>0。残高の多い順（同数は CURRENCIES 順＝安定ソート）"""
+    recipe = [c for c, _ in ABILITY_RECIPE[key]]
+    src = [c for c in CURRENCIES if c not in recipe and getattr(s, CURRENCY_ATTR[c]) > 0]
+    return sorted(src, key=lambda c: -getattr(s, CURRENCY_ATTR[c]))
+
+def can_exchange(s, key):
+    if not EXCHANGE_ON or projected_gain(s, key, ALLOCATION_STEP) <= EXCHANGE_MIN_GAIN:
+        return False
+    tot = sum(n for _, n in exchange_need(s, key))
+    if tot <= POUR_EPS:
+        return False
+    return sum(getattr(s, CURRENCY_ATTR[c]) for c in exchange_sources(s, key)) >= EXCHANGE_RATE * tot
+
+def exchange(s, key):
+    """余りを EXCHANGE_RATE:1 で不足へ替える（can_exchange が真の時だけ呼ぶ）。戻り値=(払った[(c,量)], 受け取った[(c,量)])"""
+    need = exchange_need(s, key)
+    rest = EXCHANGE_RATE * sum(n for _, n in need)
+    paid = []
+    for c in exchange_sources(s, key):
+        attr = CURRENCY_ATTR[c]
+        t = min(getattr(s, attr), rest)
+        setattr(s, attr, getattr(s, attr) - t)
+        paid.append((c, t))
+        rest -= t
+        if rest <= 1e-12:
+            break
+    got = []
+    for c, n in need:
+        if n > 0:
+            attr = CURRENCY_ATTR[c]
+            setattr(s, attr, getattr(s, attr) + n)
+            got.append((c, n))
+    return paid, got
+
+def pour_tap(s, key, log=None):
+    """タップ1つの再生（全経路共通）: まず普通に1段。押せず、かつ**どの能力も押せない**時に限り交換して1段。
+    人の手配りは押せる能力しか押せない（ボタンが消える）ので、交換が起きるのはおまかせの列だけ。"""
+    g = pour_step(s, key)
+    if g > 0:
+        return g
+    if any(_pushable(s, a) for a in ALL_ABILITIES) or not can_exchange(s, key):
+        return 0.0
+    ex = exchange(s, key)
+    if log is not None:
+        log.append((key,) + ex)
+    return pour_step(s, key)
+
 def recommended_plan(s):
     """おすすめ注ぎ（決定論・golden台本の単一純関数）。GameEngine.recommendedPlan の鏡像。
     正典v3: 通貨が能力間で共有される（同じ通貨を複数能力が奪い合う）ため、旧来の「ロック→共通枠」2段では
     なく、注げる（gain>0）能力の中で現在値が最も低いものへ毎ステップ回す単一の追いつきループに一般化した。
+    交換（試作）: どの能力も押せなくなったら、交換できる能力の中で現在値が最も低いものへ交換して1段（pour_tap）。
     scratch のコピーで計画を作る（呼び出し側が本適用する＝表示と確定が食い違わない）"""
     import copy
     scratch = copy.copy(s)
@@ -272,10 +339,19 @@ def recommended_plan(s):
     guard = 0
     while guard < 10_000:
         candidates = [a for a in ALL_ABILITIES if _affordable_raw(scratch, a) > POUR_EPS]
-        if not candidates:
+        if candidates:
+            target = min(candidates, key=lambda a: getattr(scratch, a))
+            if pour_step(scratch, target) > 0:
+                plan.append(target)
+                guard += 1
+                continue
+            if any(_pushable(scratch, a) for a in ALL_ABILITIES):
+                break   # 従来どおり（最も低い能力が器切れ等で止まる＝監査F-02・UI側で延長）
+        ex = [a for a in ALL_ABILITIES if can_exchange(scratch, a)]
+        if not ex:
             break
-        target = min(candidates, key=lambda a: getattr(scratch, a))
-        if pour_step(scratch, target) <= 0:
+        target = min(ex, key=lambda a: getattr(scratch, a))
+        if pour_tap(scratch, target) <= 0:
             break
         plan.append(target)
         guard += 1
@@ -284,7 +360,7 @@ def recommended_plan(s):
 def apply_allocation(s, taps):
     """タップ列（recommended_plan の戻り値）を本状態に適用。WeekRunner.applyAllocation の鏡像"""
     for a in taps:
-        pour_step(s, a)
+        pour_tap(s, a)
 
 def pour_all(s):
     """行動直後の即時全量注ぎ（golden台本）: recommended_plan を作って本適用する。

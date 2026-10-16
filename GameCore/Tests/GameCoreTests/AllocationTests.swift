@@ -199,4 +199,35 @@ final class AllocationTests: XCTestCase {
         let high = GameEngine.nextStepCost(.センス, state: s, config: config).reduce(0) { $0 + $1.amount }
         XCTAssertGreaterThan(high, low)
     }
+    // MARK: 交換（詰まり対策・案D 試作）
+    /// 間合いだけ山ほどある（どの能力も押せない）→ おまかせが余りを2:1で不足へ替えて押す。
+    /// 押せる能力がある時は交換しない。交換オフなら何も起きない。
+    func testExchangeOnlyWhenStalled() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s[currency: .間合い] = 10
+        XCTAssertFalse(Ability.allCases.contains { GameEngine.isPushable($0, state: s, config: config) })
+        var recs: [GameEngine.ExchangeRecord] = []
+        let plan = GameEngine.recommendedPlan(state: s, config: config)
+        XCTAssertFalse(plan.isEmpty)
+        var t = s
+        for a in plan { GameEngine.pourTap(a, to: &t, config: config) { recs.append($0) } }
+        XCTAssertFalse(recs.isEmpty)
+        for r in recs {
+            let paid = r.paid.values.reduce(0, +), got = r.got.values.reduce(0, +)
+            XCTAssertEqual(paid, config.exchangeRate * got, accuracy: 1e-9)
+            let recipe = Set((config.abilityRecipes[r.ability] ?? []).map { $0.0 })
+            XCTAssertTrue(r.paid.keys.allSatisfy { !recipe.contains($0) }, "配合に入っている粒を払ってはいけない")
+        }
+        XCTAssertLessThan(t[currency: .間合い], 10)
+        // 押せる能力がある時は、押せない能力をタップしても交換しない
+        var u = GameState(config: config)
+        u[currency: .閃き] = 1; u[currency: .語彙] = 1; u[currency: .間合い] = 10   // 発想・表現は押せる
+        let before = u
+        XCTAssertEqual(GameEngine.pourTap(.メンタル, to: &u, config: config), 0)
+        XCTAssertEqual(u[currency: .間合い], before[currency: .間合い])
+        // 交換オフ＝旧挙動（押せなければ空）
+        var off = config; off.exchangeEnabled = false
+        XCTAssertTrue(GameEngine.recommendedPlan(state: s, config: off).isEmpty)
+    }
 }

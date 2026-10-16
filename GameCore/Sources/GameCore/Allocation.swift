@@ -116,9 +116,88 @@ extension GameEngine {
         return gain
     }
 
+    // MARK: 交換（詰まり対策・案D 試作・balance_sim の EXCHANGE_* / exchange / pour_tap の鏡像）
+    // 今の配合だと間合いの粒が余り、語彙・閃き・胆力が足りず「経験点はあるのに押せる＋が0」の週が1〜3年の約9割
+    // （docs/ability_stall_measure_v0.md）。どの能力も押せない時に限り、余り exchangeRate つ → 不足1つ に替えて1段押す。
+    // RandomSource 非消費。余りは残高の多い順（同数は ExpCurrency.allCases 順）に払う。
+
+    /// 交換1回の記録（UIの一言用）。paid=払った余り、got=受け取った不足（どちらも粒の量）
+    public struct ExchangeRecord: Equatable {
+        public let ability: Ability
+        public let paid: [ExpCurrency: Double]
+        public let got: [ExpCurrency: Double]
+    }
+
+    static func isPushable(_ a: Ability, state s: GameState, config: GameConfig) -> Bool {
+        let amount = affordableRaw(a, state: s, config: config)
+        return amount > pourEpsilon && projectedGain(a, amount: amount, state: s, config: config) > pourEpsilon
+    }
+
+    /// a を1段押すのに足りない粒（配合の通貨ごと・足りていれば0）。配合の並び順を保つ
+    static func exchangeNeed(_ a: Ability, state s: GameState, config: GameConfig) -> [(ExpCurrency, Double)] {
+        let mult = rankCostMultiplier(a, state: s, config: config)
+        return (config.abilityRecipes[a] ?? []).map { c, w in (c, max(0, config.allocationStep * w * mult - s[currency: c])) }
+    }
+
+    /// 払える余り＝a の配合に無い通貨で残高>0。残高の多い順（同数は allCases 順）
+    static func exchangeSources(_ a: Ability, state s: GameState, config: GameConfig) -> [ExpCurrency] {
+        let recipe = Set((config.abilityRecipes[a] ?? []).map { $0.0 })
+        let all = ExpCurrency.allCases
+        let src = all.filter { !recipe.contains($0) && s[currency: $0] > 0 }
+        return src.sorted { x, y in
+            let bx = s[currency: x], by = s[currency: y]
+            if bx != by { return bx > by }
+            return all.firstIndex(of: x)! < all.firstIndex(of: y)!
+        }
+    }
+
+    static func canExchange(_ a: Ability, state s: GameState, config: GameConfig) -> Bool {
+        guard config.exchangeEnabled,
+              projectedGain(a, amount: config.allocationStep, state: s, config: config) > config.exchangeMinGain else { return false }
+        let tot = exchangeNeed(a, state: s, config: config).reduce(0.0) { $0 + $1.1 }
+        guard tot > pourEpsilon else { return false }
+        let have = exchangeSources(a, state: s, config: config).reduce(0.0) { $0 + s[currency: $1] }
+        return have >= config.exchangeRate * tot
+    }
+
+    @discardableResult
+    static func exchange(_ a: Ability, state s: inout GameState, config: GameConfig) -> ExchangeRecord {
+        let need = exchangeNeed(a, state: s, config: config)
+        var rest = config.exchangeRate * need.reduce(0.0) { $0 + $1.1 }
+        var paid: [ExpCurrency: Double] = [:]
+        for c in exchangeSources(a, state: s, config: config) {
+            let t = min(s[currency: c], rest)
+            s[currency: c] -= t
+            paid[c] = t
+            rest -= t
+            if rest <= 1e-12 { break }
+        }
+        var got: [ExpCurrency: Double] = [:]
+        for (c, n) in need where n > 0 {
+            s[currency: c] += n
+            got[c] = n
+        }
+        return ExchangeRecord(ability: a, paid: paid, got: got)
+    }
+
+    /// タップ1つの再生（全経路共通・balance_sim.pour_tap の鏡像）: まず普通に1段。押せず、かつ**どの能力も
+    /// 押せない**時に限り交換して1段。人の手配りは押せる能力しか押せないので、交換が起きるのはおまかせの列だけ。
+    @discardableResult
+    public static func pourTap(_ a: Ability, to s: inout GameState, config: GameConfig,
+                               log: ((ExchangeRecord) -> Void)? = nil) -> Double {
+        let g = pourStep(a, to: &s, config: config)
+        if g > 0 { return g }
+        if Ability.allCases.contains(where: { isPushable($0, state: s, config: config) }) { return 0 }
+        guard canExchange(a, state: s, config: config) else { return 0 }
+        let rec = exchange(a, state: &s, config: config)
+        log?(rec)
+        return pourStep(a, to: &s, config: config)
+    }
+
     /// おすすめ注ぎ（決定論・golden台本の単一純関数）。正典v3: 通貨が能力間で共有される（同じ通貨を複数
     /// 能力が奪い合う）ため、旧来の「ロック→共通枠」2段ではなく、注げる（gain>0）能力の中で現在値が最も
     /// 低いものへ毎ステップ回す単一の追いつきループに一般化した（min-max照準をおすすめに載せない保守設計は不変）。
+    /// 交換（試作）: どの能力も押せなくなったら、交換できる能力の中で現在値が最も低いものへ交換して1段（pourTap）。
     /// UIの「おすすめ」ボタンと、週次ボット（golden台本）・simのおすすめボットが全てこの1関数（とPython鏡像）
     /// を使う——3系統の台本分裂＝golden毒源を作らない。
     public static func recommendedPlan(state: GameState, config: GameConfig) -> [Ability] {
@@ -127,8 +206,18 @@ extension GameEngine {
         var guardCount = 0
         while guardCount < 10_000 {
             let candidates = Ability.allCases.filter { affordableRaw($0, state: scratch, config: config) > pourEpsilon }
-            guard let target = candidates.min(by: { scratch[$0] < scratch[$1] }) else { break }
-            guard pourStep(target, to: &scratch, config: config) > 0 else { break }
+            if let target = candidates.min(by: { scratch[$0] < scratch[$1] }) {
+                if pourStep(target, to: &scratch, config: config) > 0 {
+                    plan.append(target)
+                    guardCount += 1
+                    continue
+                }
+                // 従来どおり（最も低い能力が器切れ等で止まる＝監査F-02・UI側で延長）
+                if Ability.allCases.contains(where: { isPushable($0, state: scratch, config: config) }) { break }
+            }
+            let ex = Ability.allCases.filter { canExchange($0, state: scratch, config: config) }
+            guard let target = ex.min(by: { scratch[$0] < scratch[$1] }) else { break }
+            guard pourTap(target, to: &scratch, config: config) > 0 else { break }
             plan.append(target)
             guardCount += 1
         }
@@ -140,7 +229,7 @@ extension GameEngine {
     /// ＝3系統の台本分裂（golden毒源）を作らない。RandomSource 非消費。
     public static func pourRecommended(to s: inout GameState, config: GameConfig) {
         for a in recommendedPlan(state: s, config: config) {
-            pourStep(a, to: &s, config: config)
+            pourTap(a, to: &s, config: config)
         }
     }
 }

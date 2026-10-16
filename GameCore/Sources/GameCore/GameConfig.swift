@@ -144,7 +144,13 @@ public struct GameConfig {
     ]
     /// 稽古が発行する経験点通貨の供給スケール【仮・旧expSupplyScaleの較正値を継承】。creditCurrency が
     /// 通貨加算量に掛ける。balance_sim.EXP_SUPPLY_SCALE と同期。
-    public var expSupplyScale = 0.48
+    public var expSupplyScale = 0.24   // 交換（案D試作）とセットで旧0.48×0.5に再較正（docs/ability_exchange_proposal_v0.md）
+    /// 交換（詰まり対策・案D 試作 2026-10-16・オーナー判断待ち）【仮】: どの能力も押せない時に限り、余りの粒
+    /// （その能力の配合に無い粒）を exchangeRate つ払って不足の粒を1つ受け取る。balance_sim.EXCHANGE_* と同期。
+    public var exchangeEnabled = true
+    public var exchangeRate = 2.0
+    /// 1段の見える伸びがこれ以下の能力には交換しない（器・予算切れで粒を燃やさない）
+    public var exchangeMinGain = 0.05
     /// 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」への対応）:
     /// 現在ランクが高いほど1段あたりの通貨消費が重くなる階段状の倍率帯。パワプロ実機リサーチで確認済み
     /// （査定値表は現在ランクが上がるほど1段の必要経験点が段階的に増える・g→sで数倍）。
