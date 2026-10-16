@@ -369,3 +369,32 @@ final class WeeklyEventOnceTests: XCTestCase {
         }
     }
 }
+
+/// playtest_v4 ③④：本番前の既定ネタ・年末の出来事の優勝
+final class PlaytestV4FixTests: XCTestCase {
+    func testStageNetaDefaultIsBestPolished() {
+        var st = GameState(config: GameConfig())
+        var best = Neta(id: 0, name: "商店街の福引", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1); best.polish = 100; best.stageCount = 3
+        var fresh = Neta(id: 1, name: "終電の二人", kata: .瞬発, lengthFit: [.短尺], bornYear: 1); fresh.polish = 30
+        st.netas = [best, fresh]; st.selectedNetaID = 1   // 新しく書いた直後に自動で選ばれた低い2本目
+        let s = GameSession(startState: st)
+        s.ensureStageNetaDefault()
+        XCTAssertEqual(s.selectedNeta?.id, 0)
+        s.selectNeta(nil); s.ensureStageNetaDefault()
+        XCTAssertEqual(s.selectedNeta?.id, 0)   // 選び忘れも一番高い物へ
+        var played = fresh; played.stageCount = 2; played.polish = 40
+        var st2 = st; st2.netas = [best, played]; st2.selectedNetaID = 1
+        let t = GameSession(startState: st2)
+        t.ensureStageNetaDefault()
+        XCTAssertEqual(t.selectedNeta?.id, 1)   // 手で選んだ舞台経験ありのネタは保つ
+    }
+    func testEventLinesKeepChampionships() {
+        let log = ["第12週: 春新人賞A 優勝 +50万", "第15週: 春新人賞B 優勝 +25万", "第27週: 夏中堅賞 敗退",
+                   "第41週: GP3回戦 通過", "第43週: GP準々決勝 通過", "第46週: GP準決勝 敗退"]
+        let l = YearResultView.eventLines(log)
+        XCTAssertEqual(l.count, 3)
+        XCTAssertTrue(l.contains(log[0]) && l.contains(log[1]))
+        XCTAssertEqual(l.last, log[5])
+        XCTAssertEqual(YearResultView.eventLines(["a", "b"]), ["a", "b"])
+    }
+}

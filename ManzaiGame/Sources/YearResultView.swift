@@ -232,8 +232,15 @@ struct YearResultView: View {
 
     // MARK: 出来事3行（大会結果のみ）
 
+    /// 出来事に出す最大3行。賞金の出る勝ち（優勝）は、終盤の通過・敗退に押し出されないよう先に確保し、残りを新しい順に埋めて時系列で返す。
+    static func eventLines(_ log: [String], limit: Int = 3) -> [String] {
+        var chosen = Set(log.indices.filter { log[$0].contains("優勝") && !log[$0].contains("客席") }.suffix(limit))
+        for i in log.indices.reversed() where chosen.count < limit { chosen.insert(i) }
+        return chosen.sorted().map { log[$0] }
+    }
+
     private var eventsBlock: some View {
-        let lines = Array(session.log.suffix(3))
+        let lines = Self.eventLines(session.log)
         return VStack(alignment: .leading, spacing: 6) {
             sectionLabel("出来事")
             if lines.isEmpty {
