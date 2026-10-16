@@ -346,8 +346,16 @@ final class GameSession {
     /// 確定（allocate）と同じ GameEngine.pourStep を同じ順で回す＝見積もりと結果が構造的に一致する
     func previewAllocation(_ taps: [Ability]) -> GameState {
         var copy = state
-        for a in taps { GameEngine.pourStep(a, to: &copy, config: config) }
+        for a in taps { GameEngine.pourTap(a, to: &copy, config: config) }   // 確定（runner.applyAllocation）と同じ pourTap
         return copy
+    }
+
+    /// タップ列の中で起きた交換（おまかせ列で、どの能力も押せない時だけ起きる・試作）。表示専用・乱数非消費
+    func exchangesIn(_ taps: [Ability]) -> [GameEngine.ExchangeRecord] {
+        var copy = state
+        var recs: [GameEngine.ExchangeRecord] = []
+        for a in taps { GameEngine.pourTap(a, to: &copy, config: config) { recs.append($0) } }
+        return recs
     }
 
     /// 割り振りの確定（RNG非消費・golden不変）。taps は AllocationView のタップ順。
@@ -372,7 +380,7 @@ final class GameSession {
     func recommendedAllocation() -> [Ability] {
         var plan = GameEngine.recommendedPlan(state: state, config: config)
         var probe = state
-        for a in plan { GameEngine.pourStep(a, to: &probe, config: config) }
+        for a in plan { GameEngine.pourTap(a, to: &probe, config: config) }
         var n = 0
         outer: while n < 2_000 {
             n += 1
@@ -1118,6 +1126,10 @@ final class GameSession {
         s.センス = 43; s.発想 = 24; s.表現 = 78; s.華 = 18; s.メンタル = 35   // センス43→45でC→B跨ぎ④／表現78=高値
         // 正典v3: 5通貨に配分（多対多＝複数能力のレシピを同時に満たせる残高を用意）
         s.exp閃き = 12; s.exp語彙 = 14; s.exp間合い = 10; s.exp存在感 = 14; s.exp胆力 = 9
+        // 交換（案D試作）の目視: MZ_EXCH=1 で「間合いだけ余って押せる＋が0」の詰まり状態にする（おまかせで交換の一言が出る）
+        if ProcessInfo.processInfo.environment["MZ_EXCH"] != nil {
+            s.exp閃き = 0; s.exp語彙 = 0; s.exp間合い = 3; s.exp存在感 = 0.2; s.exp胆力 = 0
+        }
         return s   // growthBudget は WeekRunner が年初 year1 値(6.0)へ設定＝上の通貨総量がそれを上回る＝食い合いが立つ
     }
 

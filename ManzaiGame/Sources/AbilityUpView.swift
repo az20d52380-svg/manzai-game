@@ -27,6 +27,7 @@ struct AbilityUpView: View {
                 VStack(spacing: 10) {
                     expStrip
                     jitsuryokuCard
+                    exchangeNote
                     ForEach(Ability.allCases, id: \.self) { row($0) }
                 }
                 .padding(.horizontal, 16).padding(.bottom, 16)
@@ -83,6 +84,41 @@ struct AbilityUpView: View {
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+    }
+
+    /// 交換が起きた時の一言（試作・おまかせ列だけで起きる）。例「余った間合い14を、胆力7に替えた」
+    static func exchangeLine(_ recs: [GameEngine.ExchangeRecord]) -> String? {
+        guard !recs.isEmpty else { return nil }
+        var paid: [ExpCurrency: Double] = [:], got: [ExpCurrency: Double] = [:]
+        for r in recs {
+            for (c, v) in r.paid { paid[c, default: 0] += v }
+            for (c, v) in r.got { got[c, default: 0] += v }
+        }
+        let fmt: ([ExpCurrency: Double]) -> String = { m in
+            ExpCurrency.allCases.compactMap { c in
+                guard let v = m[c], points(v) > 0 else { return nil }
+                return "\(c)\(points(v))"
+            }.joined(separator: "と")
+        }
+        let p = fmt(paid), g = fmt(got)
+        guard !p.isEmpty, !g.isEmpty else { return nil }
+        return "余った\(p)を、\(g)に替えた"
+    }
+
+    @ViewBuilder private var exchangeNote: some View {
+        if let line = Self.exchangeLine(session.exchangesIn(taps)) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.left.arrow.right").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.inkSub)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(line).font(.maru(13, weight: .bold)).foregroundStyle(Theme.ink)
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                    Text("押せる＋が無い時だけ、余り\(Int(cfg.exchangeRate))つを足りない1つに替える").font(.maru(10.5)).foregroundStyle(Theme.inkSub)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Rad.card))
+        }
     }
 
     /// 次の+1 に要る経験点（通貨ごと）と段数。nil＝届かない
