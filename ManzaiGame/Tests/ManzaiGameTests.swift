@@ -97,6 +97,14 @@ class IsolatedStoreTestCase: XCTestCase {
     }
 }
 
+final class IntroSkipTests: IsolatedStoreTestCase {
+    func testSkipOnlyAfterIntroSeen() {
+        XCTAssertFalse(IntroFlowView.hasSeenIntro)   // 1周目：出さない
+        IntroFlowView.markIntroSeen()
+        XCTAssertTrue(IntroFlowView.hasSeenIntro)    // 最後まで見た記録のあと：出す
+    }
+}
+
 final class DebtWarnTests: IsolatedStoreTestCase {
 
     func testTierBoundaries() {

@@ -34,6 +34,7 @@ struct ReminiscencePlayer: View {
     let cards: [ReminiscenceCard]
     var title: String = "はじまりの話"
     var onComplete: () -> Void
+    var onSkip: (() -> Void)? = nil   // 指定時だけヘッダー右に「とばす ▶」を出す（導入の2周目以降）
     @State private var index = ReminiscencePlayer.debugStart
     #if DEBUG
     static var debugStart: Int { Int(ProcessInfo.processInfo.environment["MZ_CARD"] ?? "") ?? Int(ProcessInfo.processInfo.environment["MZ_ENDSTEP"] ?? "") ?? 0 }   // 目視用: MZ_CARD=<0始まり>で途中の場面から
@@ -46,7 +47,8 @@ struct ReminiscencePlayer: View {
         let lines: [Advice] = !card.talk.isEmpty ? card.talk
             : (card.line.map { [Advice(name: card.speaker, text: $0)] } ?? [])
         VStack(spacing: 0) {
-            YoseHeaderBar(title: title, subtitle: "\(index + 1) / \(cards.count)")
+            YoseHeaderBar(title: title, subtitle: "\(index + 1) / \(cards.count)",
+                          closeTitle: "とばす ▶", closeAction: onSkip.map { skip in { Sound.play(.cursor); skip() } })
             ZStack(alignment: .topLeading) {
                 RecallPicture(mood: card.mood, together: card.together, backdrop: card.backdrop)
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14)
@@ -716,6 +718,11 @@ struct IntroFlowView: View {
     @State private var name = "あなたのコンビ"
     private enum Stage { case title, reminiscence, nameEntry, notif }
 
+    /// 導入（回想3場面）を最後まで見た記録。周回をまたぐ（GameSession.store＝UserDefaults）。2周目以降だけ「とばす ▶」を出す。
+    static let seenKey = "manzai.introSeen.v1"
+    static var hasSeenIntro: Bool { GameSession.store.bool(forKey: seenKey) }
+    static func markIntroSeen() { GameSession.store.set(true, forKey: seenKey) }
+
     private static var initialStage: Stage {
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_UI"] == "intro_name" { return .nameEntry }   // 目視用: 名前決めへ直行
@@ -746,7 +753,10 @@ struct IntroFlowView: View {
                 S1TitleView { withAnimation(.easeInOut(duration: 0.4)) { stage = .reminiscence } }
                     .transition(.opacity)
             case .reminiscence:
-                ReminiscencePlayer(cards: Self.cards) { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } }
+                ReminiscencePlayer(
+                    cards: Self.cards,
+                    onComplete: { Self.markIntroSeen(); withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } },
+                    onSkip: Self.hasSeenIntro ? { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } } : nil)
                     .transition(.opacity)
             case .nameEntry:
                 NameEntryView { n, me, partner in
