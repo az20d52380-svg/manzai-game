@@ -260,3 +260,45 @@ final class PlaytestFixTests: XCTestCase {
         XCTAssertTrue(note?.contains("ふつう") == true && note?.contains("短め") == true)
     }
 }
+
+
+/// 実プレイ点検 v2 の直し：年末の独白の条件（その年の戦績）・使った文を避ける選び方・観客の声。
+final class PlaytestFixV2Tests: XCTestCase {
+    func testStageRecordCountsWinsAndLosses() {
+        let log = ["第10週: 春新人賞A 通過", "第15週: 春新人賞B 敗退 / 夏の賞 優勝 +25万", "第20週: 体調 休", "第46週: 頂GP決勝 優勝「夕凪」（客席から）"]
+        let r = YearResultView.stageRecord(log: log)
+        XCTAssertEqual(r.wins, 2)
+        XCTAssertEqual(r.losses, 1)
+    }
+    func testWinningYearDropsLosingMonologue() {
+        let pool = ["今年は、予選で落ちる日が多かった。落ちた大会の名前を、手帳に書き出しておこう。",
+                    "バイトと稽古だけで、一年が終わった。明日は一日、何もしないで休もう。"]
+        // 5勝2敗：負けを語る行は出ない
+        XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 5, losses: 2), [pool[1]])
+        // 負け越し・同数・記録なし：そのまま
+        XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 2, losses: 5), pool)
+        XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 2, losses: 2), pool)
+        XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 0, losses: 0), pool)
+        // 外すと空になる時は元のまま
+        XCTAssertEqual(YearResultView.filterByRecord([pool[0]], wins: 5, losses: 2), [pool[0]])
+    }
+    func testIndexAvoidingUsedPrefersFreshThenOldest() {
+        XCTAssertEqual(DialogueData.indexAvoidingUsed(count: 4, salt: 1, used: []), 1)
+        XCTAssertEqual(DialogueData.indexAvoidingUsed(count: 4, salt: 1, used: [1, 2]), 3)
+        // 尽きたら最も古い物（先頭）から
+        XCTAssertEqual(DialogueData.indexAvoidingUsed(count: 3, salt: 0, used: [2, 0, 1]), 2)
+    }
+    func testSessionPickRotatesThroughPoolBeforeRepeating() {
+        let s = GameSession()
+        var seen: [Int] = []
+        for i in 0..<5 { seen.append(s.pickIndex(scene: "t", count: 5, salt: i * 3)) }
+        XCTAssertEqual(Set(seen).count, 5)           // 5回で全部違う
+        XCTAssertEqual(s.pickIndex(scene: "t", count: 5, salt: 0), seen[0])   // 尽きたら最も古い物から
+    }
+    func testFanVoicesAvoidUsedLines() {
+        let first = FanReportData.voices(name: "A", passed: true, margin: 12, burst: false, salt: 3)
+        let second = FanReportData.voices(name: "A", passed: true, margin: 12, burst: false, salt: 3, used: first)
+        XCTAssertTrue(Set(first).isDisjoint(with: Set(second)))
+        XCTAssertEqual(first, FanReportData.voices(name: "A", passed: true, margin: 12, burst: false, salt: 3, used: []))
+    }
+}

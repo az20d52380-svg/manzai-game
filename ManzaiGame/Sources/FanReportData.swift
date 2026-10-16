@@ -114,7 +114,20 @@ enum FanReportData {
     /// 客に知られているか（2年目以降かつ知名度が育ってから）。表示だけの判定・乱数非消費
     static func isKnown(year: Int, fame: Double) -> Bool { year >= 2 && fame >= 15 }
 
-    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false) -> [String] {
+    /// salt の位置から回した並びで、このキャリアで出していない文を先に・使い済みは古い順に後ろへ並べる（used＝名前を入れた後の文・古い順）。
+    /// used が空なら salt から順に回すだけ（従来と同じ）。乱数は使わない。
+    static func ordered(_ pool: [String], salt: Int, name: String, used: [String]) -> [String] {
+        let n = pool.count
+        guard n > 0 else { return [] }
+        let rotated = (0..<n).map { pool[(((salt + $0) % n) + n) % n] }
+        func rep(_ t: String) -> String { t.replacingOccurrences(of: "〈名〉", with: name) }
+        let fresh = rotated.filter { !used.contains(rep($0)) }
+        let old = rotated.filter { used.contains(rep($0)) }
+            .sorted { (used.firstIndex(of: rep($0)) ?? 0) < (used.firstIndex(of: rep($1)) ?? 0) }
+        return fresh + old
+    }
+
+    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false, used: [String] = []) -> [String] {
         let count = 2 + ((salt / 7) % 3 + 3) % 3 + (burst ? 1 : 0)   // 2〜4
         let keep: ([String]) -> [String] = { pool in known ? pool : pool.filter { !knownOnly.contains($0) } }
         let band: [String]
@@ -124,15 +137,16 @@ enum FanReportData {
         else { band = keep(bandD) }
         let bursts = keep(burstLines)
         var lines: [String] = []
-        if burst { lines.append(bursts[((salt % bursts.count) + bursts.count) % bursts.count]) }
+        if burst, let b = ordered(bursts, salt: salt, name: name, used: used).first { lines.append(b) }
+        let order = ordered(band, salt: salt, name: name, used: used)
         var k = 0
-        while lines.count < min(count, 4) {
-            let c = pick(band, k, salt); k += 1
+        while lines.count < min(count, 4), k < order.count {
+            let c = order[k]; k += 1
             if !lines.contains(c) { lines.append(c) }
         }
         // 5回に1回、最後の1枚を逆の空気のレポに差し替える（合否は予感であって確定ではない）
         if !burst, ((salt % 5) + 5) % 5 == 0, lines.count >= 2 {
-            lines[lines.count - 1] = pick(passed ? misPass : misFail, 0, salt / 5)
+            lines[lines.count - 1] = ordered(passed ? misPass : misFail, salt: salt / 5, name: name, used: used).first ?? lines[lines.count - 1]
         }
         return lines.map { $0.replacingOccurrences(of: "〈名〉", with: name) }
     }

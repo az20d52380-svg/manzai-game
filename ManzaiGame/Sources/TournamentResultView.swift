@@ -39,10 +39,14 @@ struct TournamentResultView: View {
     /// 判の前に流す観客の声（2〜4枚）。点数は出さない・乱数非消費（salt の剰余）
     private var fanVoices: [String] {
         let r = result
-        return FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
-                                    burst: r.burst == true || debugForceFanReport,
-                                    salt: summary.year * 131 + summary.week,
-                                    known: FanReportData.isKnown(year: summary.year, fame: session.state.fame))
+        let salt = summary.year * 131 + summary.week
+        // このキャリアで出していない声を先に（同じ結果の間は同じ並び＝再描画で動かない）
+        return session.fanVoices(key: salt) { used in
+            FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
+                                 burst: r.burst == true || debugForceFanReport,
+                                 salt: salt,
+                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used)
+        }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
     private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }

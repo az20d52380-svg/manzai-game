@@ -89,22 +89,44 @@ final class GameSession {
     /// 週頭の掛け合い（俺⇄谷口の短い会話・タップ送り）。nil=この週は独白。行動すると失効。
     /// 発火はUI専用乱数（uiEventRng）＝runnerの乱数列に非干渉＝golden不変。イベント発火週は譲る。
     private(set) var weekBanter: [Advice]?
-    /// 場面ごとの「直近に出した文の番号」（直近避け用・表示専用・乱数非消費・golden非対象。セーブには載せない）。
-    @ObservationIgnored private var recentPicks: [String: [Int]] = [:]
+    /// 場面ごとの「このキャリアで出した文の番号」（古い順・表示専用・乱数非消費・golden非対象）。
+    /// 年が替わっても消さない＝同じキャリアでは使った文を避け、プールが尽きたら最も古い物から使い回す。セーブに載せる（Optional）。
+    @ObservationIgnored private var usedPicks: [String: [Int]] = [:]
     /// 同じ key（週など）での再描画では同じ番号を返すための記憶（body の再評価で記録が進まないように）。
     @ObservationIgnored private var stablePicks: [String: (key: Int, idx: Int)] = [:]
-    /// 直近に出た文を避けた番号を返す。key が同じ間は同じ番号（View の再評価対策）。
+    /// このキャリアで観客の声（客席アンケート）に出した文（古い順）。セーブに載せる（Optional）。
+    @ObservationIgnored private var usedFanLines: [String] = []
+    @ObservationIgnored private var fanVoiceCache: (key: Int, lines: [String])?
+    /// このキャリアで一度出した固定の一文（決勝の最後の一行 等）の印。セーブに載せる（Optional）。
+    @ObservationIgnored private var shownOnce: Set<String> = []
+    /// 使った文を避けた番号を返す。key が同じ間は同じ番号（View の再評価対策）。
     func pickIndex(scene: String, count: Int, salt: Int, key: Int? = nil) -> Int {
         guard count > 0 else { return 0 }
         if let key, let s = stablePicks[scene], s.key == key, s.idx < count { return s.idx }
-        var recent = recentPicks[scene] ?? []
-        let idx = DialogueData.indexAvoiding(count: count, salt: salt, recent: recent)
-        recent.append(idx)
-        let limit = DialogueData.recentLimit(count: count)
-        if recent.count > limit { recent.removeFirst(recent.count - limit) }
-        recentPicks[scene] = recent
+        var used = (usedPicks[scene] ?? []).filter { $0 < count }
+        let idx = DialogueData.indexAvoidingUsed(count: count, salt: salt, used: used)
+        used.removeAll { $0 == idx }
+        used.append(idx)
+        usedPicks[scene] = used
         if let key { stablePicks[scene] = (key, idx) }
         return idx
+    }
+    /// 観客の声を、このキャリアで使っていない物から選んで返す。同じ key の間は同じ並び（View の再評価対策）。
+    func fanVoices(key: Int, make: (_ used: [String]) -> [String]) -> [String] {
+        if let c = fanVoiceCache, c.key == key { return c.lines }
+        let lines = make(usedFanLines)
+        fanVoiceCache = (key, lines)
+        for l in lines { usedFanLines.removeAll { $0 == l }; usedFanLines.append(l) }
+        if usedFanLines.count > 600 { usedFanLines.removeFirst(usedFanLines.count - 600) }
+        return lines
+    }
+    /// 固定の一文を、このキャリアで初めて出す時だけ true（出した印を付ける）。同じ id の再描画では同じ答え。
+    func firstShow(_ id: String, key: Int) -> Bool {
+        let tag = "\(id)#\(key)"
+        if shownOnce.contains(tag) { return true }          // 同じ場面の再描画
+        if shownOnce.contains(where: { $0.hasPrefix("\(id)#") }) { return false }
+        shownOnce.insert(tag)
+        return true
     }
     /// pickIndex を DialogueData.Picker の形にしたもの。
     func picker(key: Int? = nil) -> DialogueData.Picker {
@@ -243,6 +265,9 @@ final class GameSession {
         self.didWatchFinal = save.didWatchFinal ?? false
         self.debtWarnTier = save.debtWarnTier ?? 0
         self.didShowRiftHint = save.didShowRiftHint ?? false
+        self.usedPicks = save.usedPicks ?? [:]
+        self.usedFanLines = save.usedFanLines ?? []
+        self.shownOnce = Set(save.shownOnce ?? [])
         checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
@@ -911,7 +936,7 @@ final class GameSession {
         justLostStage = false
         justOroshiNeta = nil
         weekBanter = nil
-        recentPicks = [:]; stablePicks = [:]
+        stablePicks = [:]   // 使った文の記録（usedPicks）はキャリア通算＝年が替わっても消さない
         pendingChoiceEvent = nil
         lastEventRollWeek = -1
         lastBanterRollWeek = -1
@@ -968,6 +993,9 @@ final class GameSession {
         var didFireRiftWarn: Bool? // 途中解散の予告を出したか（旧セーブ＝nil＝まだ）
         var riftWarnChoice: String? // 予告の選択 "A"/"B"（旧セーブ＝nil）
         var didShowRiftHint: Bool?  // 予告の後の知らせを出したか（旧セーブ＝nil＝まだ）
+        var usedPicks: [String: [Int]]?   // このキャリアで使った文の番号（旧セーブ＝nil＝まだ使っていない）
+        var usedFanLines: [String]?       // このキャリアで出した観客の声（旧セーブ＝nil）
+        var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1030,7 +1058,8 @@ final class GameSession {
                             yearStartState: yearStartState, yearHistory: yearHistory,
                             debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName,
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
-                            didShowRiftHint: didShowRiftHint)
+                            didShowRiftHint: didShowRiftHint,
+                            usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted())
         do {
             let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)

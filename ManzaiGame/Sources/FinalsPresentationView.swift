@@ -1110,9 +1110,10 @@ struct FinalsPresentationView: View {
                     YoseSpeechBox(speaker: "谷口", text: "……ほんまに、勝ったんやな", roleLabel: "相方")
                 }
             } else if spectator {
-                YoseNarration(text: "客席の照明が上がる前に、二人で席を立った。")
+                // 固定の一文：このキャリアで二度目以降は出さない（毎年同じ最後の一行にならない）
+                if session.firstShow("final.spectatorLast", key: session.year) { YoseNarration(text: "客席の照明が上がる前に、二人で席を立った。") }
             } else {
-                YoseNarration(text: "届かなかった。だが、この夜の舞台には立った。")
+                if session.firstShow("final.lostLast", key: session.year) { YoseNarration(text: "届かなかった。だが、この夜の舞台には立った。") }
             }
             Button {
                 endingFull = FinalsSeen.first("ending") && !reduceMotion   // 番組のエンディング→出口
