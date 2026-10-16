@@ -266,6 +266,9 @@ struct YearResultView: View {
                     }
                 }
             }
+            if session.log.count > lines.count {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
+                Text("ほか\(session.log.count - lines.count)大会").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
