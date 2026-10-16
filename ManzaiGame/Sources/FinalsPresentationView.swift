@@ -215,6 +215,9 @@ struct FinalsPresentationView: View {
                                             duoName: session.combiName, prizeAmountYen: session.config.calendar.gpPrize,
                                             partnerName: Names.partner, partnerLine: "「……ほんまに、勝ったんやな」") {
                     withAnimation(.easeOut(duration: 0.3)) { showChamp = false }
+                    // 優勝年は全画面の後に「優勝は……！」の結果発表を重ねない（結果が2度伝わるため）＝そのまま番組エンディングへ
+                    endingFull = FinalsSeen.first("ending") && !reduceMotion
+                    showEnding = true
                 }
                 .transition(.opacity)
             }
@@ -431,7 +434,10 @@ struct FinalsPresentationView: View {
         Sound.play(.transition)
         if nextBeat == .perform { doorsOpen = false; entranceFull = FinalsSeen.first("door") }
         if nextBeat == .duel { duelFull = FinalsSeen.first("duel") }
-        if nextBeat == .result && d.champion && !spectator { showChamp = true }   // 優勝の瞬間へ接続
+        if nextBeat == .result && d.champion && !spectator {   // 優勝の瞬間へ接続（結果発表の画面は挟まない＝閉じたら番組エンディング）
+            showChamp = true
+            return
+        }
         if nextBeat == .board && !spectator {
             shown = d.order
             boardAuto = false
