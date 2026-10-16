@@ -230,4 +230,21 @@ final class AllocationTests: XCTestCase {
         var off = config; off.exchangeEnabled = false
         XCTAssertTrue(GameEngine.recommendedPlan(state: s, config: off).isEmpty)
     }
+
+    /// 手配りの「交換して上げる」＝ exchangeQuote が出した内容どおりに、タップ1つ(pourTap)で交換して1段上がる。押せる能力がある時は出ない
+    func testManualExchangeQuoteMatchesTap() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s[currency: .間合い] = 10
+        let target = Ability.allCases.first { GameEngine.exchangeQuote($0, state: s, config: config) != nil }
+        guard let a = target, let q = GameEngine.exchangeQuote(a, state: s, config: config) else { return XCTFail("交換できる能力が無い") }
+        var t = s
+        var recs: [GameEngine.ExchangeRecord] = []
+        let g = GameEngine.pourTap(a, to: &t, config: config) { recs.append($0) }
+        XCTAssertGreaterThan(g, 0)
+        XCTAssertEqual(recs, [q])
+        var u = GameState(config: config)
+        u[currency: .閃き] = 1; u[currency: .語彙] = 1; u[currency: .間合い] = 10
+        XCTAssertTrue(Ability.allCases.allSatisfy { GameEngine.exchangeQuote($0, state: u, config: config) == nil })
+    }
 }

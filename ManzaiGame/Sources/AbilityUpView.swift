@@ -12,6 +12,8 @@ struct AbilityUpView: View {
     let onClose: () -> Void
     /// この画面で押した段の並び（pourStep を順に再生＝見積もりと確定が同じ）
     @State private var taps: [Ability] = []
+    /// 「交換して上げる」の確認待ちの能力（押すと内容を出して確定）
+    @State private var pendingExchange: Ability?
 
     private var cfg: GameConfig { session.config }
     private var base: GameState { session.state }
@@ -19,6 +21,17 @@ struct AbilityUpView: View {
 
     /// 経験点の表示値（内部×10・切り捨て）
     static func points(_ v: Double) -> Int { Int(v * 10 + 1e-6) }
+
+    private var exchangeAlertText: String {
+        guard let a = pendingExchange, let q = GameEngine.exchangeQuote(a, state: pv, config: cfg) else { return "" }
+        let fmt: ([ExpCurrency: Double]) -> String = { m in
+            ExpCurrency.allCases.compactMap { c in
+                guard let v = m[c], Self.points(v) > 0 else { return nil }
+                return "\(c)\(Self.points(v))"
+            }.joined(separator: "と")
+        }
+        return "\(fmt(q.paid))を\(fmt(q.got))に替えて、\(a)を1段上げる"
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,6 +48,13 @@ struct AbilityUpView: View {
             footer
         }
         .background(LinearGradient(colors: [Theme.bgTop, Theme.bg2], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        .alert("交換して上げる", isPresented: Binding(get: { pendingExchange != nil }, set: { if !$0 { pendingExchange = nil } })) {
+            Button("交換する") {
+                if let a = pendingExchange { Haptics.tick(); taps.append(a) }   // 再生は pourTap＝確定・もどすと同じ道（リセットで交換も戻る）
+                pendingExchange = nil
+            }
+            Button("やめる", role: .cancel) { pendingExchange = nil }
+        } message: { Text(exchangeAlertText) }
     }
 
     private var header: some View {
@@ -144,6 +164,7 @@ struct AbilityUpView: View {
         let gained = Int(v.rounded()) - Int(base[a].rounded())
         let next = nextPlusOne(a)
         let tag = next?.cost ?? priceTag(a)
+        let quote = GameEngine.exchangeQuote(a, state: pv, config: cfg)
         return HStack(spacing: 10) {
             Text(grade).font(.maru(20, weight: .heavy)).foregroundStyle(.white)
                 .frame(width: 40, height: 40)
@@ -172,6 +193,18 @@ struct AbilityUpView: View {
                             .padding(.horizontal, 5).padding(.vertical, 1)
                             .overlay(Capsule().stroke(short ? Theme.line : Theme.currencyColor(c), lineWidth: 1.2))
                     }
+                }
+                if quote != nil {
+                    Button {
+                        pendingExchange = a
+                    } label: {
+                        Label("交換して上げる", systemImage: "arrow.left.arrow.right")
+                            .font(.maru(11.5, weight: .heavy)).foregroundStyle(Theme.abilityColor(a))
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .overlay(Capsule().stroke(Theme.abilityColor(a), lineWidth: 1.4))
+                    }
+                    .buttonStyle(PressableStyle())
+                    .accessibilityIdentifier("exchange_\(a)")
                 }
             }
             Spacer(minLength: 0)

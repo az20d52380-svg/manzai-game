@@ -180,6 +180,15 @@ extension GameEngine {
         return ExchangeRecord(ability: a, paid: paid, got: got)
     }
 
+    /// 手配りの「交換して上げる」ボタン用の見積もり（表示専用・状態は変えない）。どの能力も押せず、a が交換できる時だけ
+    /// 払う余り・受け取る不足を返す。押した後の再生は pourTap と同じ（＝確定・プレビューと構造的に一致）。
+    public static func exchangeQuote(_ a: Ability, state s: GameState, config: GameConfig) -> ExchangeRecord? {
+        if Ability.allCases.contains(where: { isPushable($0, state: s, config: config) }) { return nil }
+        guard canExchange(a, state: s, config: config) else { return nil }
+        var t = s
+        return exchange(a, state: &t, config: config)
+    }
+
     /// タップ1つの再生（全経路共通・balance_sim.pour_tap の鏡像）: まず普通に1段。押せず、かつ**どの能力も
     /// 押せない**時に限り交換して1段。人の手配りは押せる能力しか押せないので、交換が起きるのはおまかせの列だけ。
     @discardableResult
