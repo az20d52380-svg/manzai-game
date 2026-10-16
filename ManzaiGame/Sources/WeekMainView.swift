@@ -329,6 +329,7 @@ struct WeekMainView: View {
                 if let line = resultLine {
                     Text(line)
                         .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .multilineTextAlignment(.center)
                         .padding(.horizontal, 16).padding(.vertical, 8)
                         .background(YoseColor.kuroUrushi)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5).padding(2))
@@ -1051,8 +1052,11 @@ struct WeekMainView: View {
         if exp > 0 { parts.append("経験点 +\(exp)") }
         let sd = session.lastStaminaDelta
         if sd != 0 { parts.append("体力 \(signed(sd))") }
-        guard !parts.isEmpty else { return nil }
-        return ([name] + parts.prefix(2)).joined(separator: "　")
+        let living = session.lastLivingPaid
+        guard !parts.isEmpty || living > 0 else { return nil }
+        let main = ([name] + parts.prefix(2)).joined(separator: "　")
+        // 生活費（週末処理）は行動の差と混ぜず、別の行で出す
+        return living > 0 ? main + "\n生活費 \(signed(-living))" : main
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。

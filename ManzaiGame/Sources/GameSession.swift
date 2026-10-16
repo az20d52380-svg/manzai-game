@@ -34,7 +34,9 @@ final class GameSession {
     /// isNew=新しく書いた／それ以外は既存ネタの完成度の伸び（polish）。何も無ければ nil。
     private(set) var lastNetaGain: (isNew: Bool, polish: Double)?
     /// 直前の行動での所持金/体力の増減（Beat2 獲得バースト用・表示専用）。週末の生活費も含む「この週の収支」。
-    private(set) var lastMoneyDelta = 0
+    private(set) var lastMoneyDelta = 0   // 行動による差のみ（生活費は lastLivingPaid に分けた）
+    /// この週の週末に引かれた生活費（引かれない週は 0・表示専用）。
+    private(set) var lastLivingPaid = 0
     private(set) var lastStaminaDelta = 0
     /// Beat2 獲得チップ用の知名度の増分（表示専用・golden非対象）。舞台に立つ週の「押した→残った」を見せる（G1）
     private(set) var lastFameDelta: Double = 0
@@ -268,6 +270,7 @@ final class GameSession {
     /// 自由行動週の回答
     func choose(_ action: WeekAction) {
         let before = state
+        let actedWeek = week   // pump 後に week が進むので、生活費の判定は行動した週で行う
         var action = action
         // 0022 稽古拘束（撮られる仕事）: その週は撮影で稽古枠が埋まる＝稽古を選んでも自動休養化（UI層・golden非経路）。
         // WeekMainView が稽古カードをグレーにするので通常ここには来ないが、二重の安全網（谷口の体力ゲートと同型）。
@@ -302,7 +305,9 @@ final class GameSession {
             lastNetaGain = d > 0.001 ? (false, d) : nil
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
-        lastMoneyDelta = state.money - before.money
+        // 生活費（livingInterval 週ごとの週末処理）は行動の差と分けて持つ（GameEngine.applyWeekEnd と同条件・表示専用）。
+        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? config.livingCost : 0
+        lastMoneyDelta = state.money - before.money + lastLivingPaid
         lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
         lastFameDelta = state.fame - before.fame
         lastDeltaWeek = week
@@ -898,6 +903,7 @@ final class GameSession {
         lastGrainGains = []
         lastNetaGain = nil
         lastMoneyDelta = 0
+        lastLivingPaid = 0
         lastStaminaDelta = 0
         lastFameDelta = 0
         lastDeltaWeek = -1
