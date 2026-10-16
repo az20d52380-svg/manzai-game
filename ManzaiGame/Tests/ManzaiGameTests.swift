@@ -3,7 +3,7 @@ import XCTest
 import GameCore
 @testable import ManzaiGame
 
-final class EndingJudgeTests: XCTestCase {
+final class EndingJudgeTests: IsolatedStoreTestCase {
     private func rec(_ y: Int, final f: Bool) -> GameSession.YearRecord {
         GameSession.YearRecord(year: y, roundsPassed: 1, reachedFinal: f, champion: false, bankrupt: false, prize: 0)
     }
@@ -48,7 +48,7 @@ final class EndingJudgeTests: XCTestCase {
     }
 }
 
-final class NamesTests: XCTestCase {
+final class NamesTests: IsolatedStoreTestCase {
     override func tearDown() { Names.set(me: nil, partner: nil); super.tearDown() }
 
     func testDefaultsUnchanged() {
@@ -80,9 +80,24 @@ final class NamesTests: XCTestCase {
     }
 }
 
-final class DebtWarnTests: XCTestCase {
-    override func setUp() { super.setUp(); UserDefaults.standard.removeObject(forKey: "manzai.save.v1") }
-    override func tearDown() { UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); super.tearDown() }
+/// アプリ本体(テストホスト)と UserDefaults.standard を取り合わないよう、テスト中は専用 suite に保存先を差し替える
+class IsolatedStoreTestCase: XCTestCase {
+    private var savedStore: UserDefaults!
+    private var suiteName = ""
+    override func setUp() {
+        super.setUp()
+        savedStore = GameSession.store
+        suiteName = "mz.test.\(UUID().uuidString)"
+        GameSession.store = UserDefaults(suiteName: suiteName)!
+    }
+    override func tearDown() {
+        GameSession.store.removePersistentDomain(forName: suiteName)
+        GameSession.store = savedStore
+        super.tearDown()
+    }
+}
+
+final class DebtWarnTests: IsolatedStoreTestCase {
 
     func testTierBoundaries() {
         XCTAssertEqual(GameSession.debtTier(money: 0), 0)
@@ -110,13 +125,8 @@ final class DebtWarnTests: XCTestCase {
     func testOldSaveWithoutDebtTier() throws {
         let s = GameSession()
         s.markDebtWarned(2)   // saveNow される
-        // テストホスト(アプリ本体)も同じ UserDefaults.standard に保存・消去するため、書いた直後に読めない瞬間がありうる＝書き直して数回まで読み直す
-        var saved: Data?
-        for _ in 0..<20 where saved == nil {
-            s.saveNow()
-            saved = UserDefaults.standard.data(forKey: "manzai.save.v1")
-        }
-        let d = try XCTUnwrap(saved)
+        s.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
         var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
         XCTAssertNotNil(o["debtWarnTier"])
         o.removeValue(forKey: "debtWarnTier")
@@ -128,7 +138,7 @@ final class DebtWarnTests: XCTestCase {
     }
 }
 
-final class FanReportTests: XCTestCase {
+final class FanReportTests: IsolatedStoreTestCase {
     func testIsKnownBoundaries() {
         XCTAssertFalse(FanReportData.isKnown(year: 1, fame: 99))
         XCTAssertFalse(FanReportData.isKnown(year: 2, fame: 14.99))
@@ -159,8 +169,7 @@ final class FanReportTests: XCTestCase {
     }
 }
 
-final class RiftWarnEventTests: XCTestCase {
-    override func tearDown() { UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); super.tearDown() }
+final class RiftWarnEventTests: IsolatedStoreTestCase {
 
     /// 予告0050：riftWarned が初めて true になった週の次の週頭に1回だけ出る（1キャリア1回）
     func testRiftWarningFiresOnceAfterFlagSet() {
@@ -227,7 +236,7 @@ final class RiftWarnEventTests: XCTestCase {
     }
 }
 
-final class PlaytestFixTests: XCTestCase {
+final class PlaytestFixTests: IsolatedStoreTestCase {
     func testShortagesWhenOnlyMaGrains() {
         let cfg = GameConfig()
         var st = GameState(config: cfg)
@@ -269,7 +278,7 @@ final class PlaytestFixTests: XCTestCase {
 
 
 /// 実プレイ点検 v2 の直し：年末の独白の条件（その年の戦績）・使った文を避ける選び方・観客の声。
-final class PlaytestFixV2Tests: XCTestCase {
+final class PlaytestFixV2Tests: IsolatedStoreTestCase {
     func testStageRecordCountsWinsAndLosses() {
         let log = ["第10週: 春新人賞A 通過", "第15週: 春新人賞B 敗退 / 夏の賞 優勝 +25万", "第20週: 体調 休", "第46週: 頂GP決勝 優勝「夕凪」（客席から）"]
         let r = YearResultView.stageRecord(log: log)
@@ -309,7 +318,7 @@ final class PlaytestFixV2Tests: XCTestCase {
     }
 }
 
-final class WeekHintTests: XCTestCase {
+final class WeekHintTests: IsolatedStoreTestCase {
     private func base() -> WeekHint.Input {
         .init(netaCount: 2, stageWeeksLeft: 10, stageLength: .中尺, netaFitsStage: true, stamina: 80,
               livingThisWeek: false, money: 500_000, livingCost: 140_000, weeksWithoutPartner: 0,
@@ -362,7 +371,7 @@ final class WeekHintTests: XCTestCase {
 }
 
 /// 週次の選択肢イベントは1キャリア1回（年をまたいでも同じイベントが再発火しない・playtest_v4 ②）
-final class WeeklyEventOnceTests: XCTestCase {
+final class WeeklyEventOnceTests: IsolatedStoreTestCase {
     func testNoRepeatAcrossYears() {
         for seed in [424242, 1, 7, 99, 2024] as [UInt64] {
             let s = GameSession(seed: seed)
@@ -377,7 +386,7 @@ final class WeeklyEventOnceTests: XCTestCase {
 }
 
 /// playtest_v4 ③④：本番前の既定ネタ・年末の出来事の優勝
-final class PlaytestV4FixTests: XCTestCase {
+final class PlaytestV4FixTests: IsolatedStoreTestCase {
     func testStageNetaDefaultIsBestPolished() {
         var st = GameState(config: GameConfig())
         var best = Neta(id: 0, name: "商店街の福引", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1); best.polish = 100; best.stageCount = 3

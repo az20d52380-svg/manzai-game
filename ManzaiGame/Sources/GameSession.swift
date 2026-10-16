@@ -891,7 +891,7 @@ final class GameSession {
 
     /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
     func abandonRun() {
-        UserDefaults.standard.removeObject(forKey: Self.saveKey)
+        Self.store.removeObject(forKey: Self.saveKey)
         abandoned = true
     }
 
@@ -1041,6 +1041,8 @@ final class GameSession {
         saveNow()
     }
 
+    /// 保存先（本番は .standard 固定。単体テストだけが専用 suite に差し替える）
+    static var store: UserDefaults = .standard
     private static let saveKey = "manzai.save.v1"
     /// 読めなかったセーブの退避先（黙って消さない・監査G-03）
     private static let brokenSaveKey = "manzai.save.v1.broken"
@@ -1059,7 +1061,7 @@ final class GameSession {
         if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil || env["MZ_ENDING"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
         guard !abandoned, !(finished && careerOver) else {   // A-3: 勝利演出中(winFinale)も保存する。acknowledgeWin(finished=true)で消える
-            UserDefaults.standard.removeObject(forKey: Self.saveKey)
+            Self.store.removeObject(forKey: Self.saveKey)
             return
         }
         let save = SaveData(runner: runner.snapshot(), phase: phase, pendingResult: pendingResult,
@@ -1083,7 +1085,7 @@ final class GameSession {
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner)
         do {
             let data = try JSONEncoder().encode(save)
-            UserDefaults.standard.set(data, forKey: Self.saveKey)
+            Self.store.set(data, forKey: Self.saveKey)
         } catch {
             print("[save] encode failed: \(error)")   // 前回のセーブは残したまま（上書きしない）
         }
@@ -1091,7 +1093,7 @@ final class GameSession {
 
     /// 起動時のエントリポイント: セーブがあれば復元、無ければ新規（IntroFlow 前のプレースホルダ）。
     static func loadedOrNew(config: GameConfig = GameConfig()) -> GameSession {
-        let defaults = UserDefaults.standard
+        let defaults = store
         if let data = defaults.data(forKey: saveKey) {
             do {
                 let save = try JSONDecoder().decode(SaveData.self, from: data)
@@ -1484,7 +1486,7 @@ extension GameSession {
             if let e { EndingBook.record(e, partner: Names.partner) }
             line("\(label): y=\(s.year) w=\(s.week) champ=\(o?.champion ?? false) bank=\(o?.bankrupt ?? false) diss=\(o?.dissolved ?? false) compat=\(s.state.compat) money=\(s.state.money) rift=\(s.state.rift ?? -1) ending=#\(e?.number ?? 0) \(stuck ?? "ok")")
         }
-        UserDefaults.standard.removeObject(forKey: EndingBook.key)
+        GameSession.store.removeObject(forKey: EndingBook.key)
         // 1 夜逃げ
         do { var st = GameState(config: GameConfig()); st.compat = 10; st.money = GameConfig().bankruptLine + 5000
              let s = GameSession(startState: st); var k = [String: Int]()
@@ -1567,7 +1569,7 @@ extension GameSession {
                  var k2 = [String: Int](); let r2 = debugSelfPlay(l, kinds: &k2, maxSteps: 3000); line("oldsave play: \(r2 ?? "ok") y=\(l.year)")
              } else { line("oldsave: no save written") }
              UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); UserDefaults.standard.removeObject(forKey: "manzai.save.v1.broken") }
-        UserDefaults.standard.removeObject(forKey: EndingBook.key)
+        GameSession.store.removeObject(forKey: EndingBook.key)
         line("DONE")
     }
 }
