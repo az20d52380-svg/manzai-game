@@ -174,7 +174,7 @@ def _others_fireable(k, s, week, year, honban_ahead):
     if k == "classmate": return week >= 10 and s.fame >= 5
     if k == "fever":     return week >= 6 and s.stamina < 50
     if k == "notebook":  return week >= 10 and bool(getattr(s, "netas", None))
-    if k == "yearend":   return 33 <= week <= 36
+    if k == "yearend":   return 33 <= week <= 36 and s.money >= 1500   # 選択肢が全部お金ゲート＝1500未満は出さない（全イベント共通の決まり）
     return False
 def _others_apply(s, k):
     """ボット共通の方針: 余裕(お金5万+/体力50+)があれば人の方（A）へ、なければ B。効果はChoiceEvent.swiftの値"""
