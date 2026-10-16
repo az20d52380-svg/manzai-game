@@ -768,6 +768,16 @@ final class GameSession {
         state = runner.state
     }
 
+    /// 本番の前に出すネタの既定を整える（playtest_v4 ③）。選び忘れ(nil)、または「新しく書いた直後で舞台に一度も立っていない低い完成度のネタ」が
+    /// 書く行為で自動選択されていた時は、完成度が一番高いネタへ戻す。手で選んだ舞台経験ありのネタ・完成度が最高のネタには触れない。UI層のみ・乱数非消費。
+    func ensureStageNetaDefault() {
+        guard let best = state.netas.max(by: { $0.polish < $1.polish }) else { return }
+        let cur = selectedNeta
+        if cur == nil || (cur!.stageCount == 0 && cur!.polish < best.polish) {
+            selectNeta(best.id)
+        }
+    }
+
     /// 「今かけるネタ」を選ぶ（大会入口・持ちネタ帳から。保管庫のネタでも可＝自動でアクティブへ呼び戻さない・
     /// 呼び戻しは recallNeta を先に呼ぶ設計。ここはアクティブ枠内のIDのみ有効）。
     func selectNeta(_ id: Int?) {
