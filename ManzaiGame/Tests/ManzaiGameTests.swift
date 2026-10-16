@@ -397,4 +397,16 @@ final class PlaytestV4FixTests: XCTestCase {
         XCTAssertEqual(l.last, log[5])
         XCTAssertEqual(YearResultView.eventLines(["a", "b"]), ["a", "b"])
     }
+    func testEventLinesKeepFinalsLoss() {
+        let log = ["第27週: 夏中堅賞 優勝 +500万", "第29週: 秋賞 優勝 +25万", "第35週: 冬賞 優勝 +10万",
+                   "第43週: GP準々決勝 通過", "第46週: GP準決勝 通過", "第47週: GP決勝 敗退"]
+        let l = YearResultView.eventLines(log)
+        XCTAssertEqual(l.count, 3)
+        XCTAssertTrue(l.contains(log[5]))
+    }
+    func testFinalistMonologPrefersFitting() {
+        let pool = ["今年は、大会で顔見知りが増えた。会ったら、こちらから挨拶しよう。", "電車で、知らない人に声をかけられた。少し、身なりに気をつけよう。"]
+        XCTAssertEqual(YearResultView.preferFinalists(pool), [pool[1]])
+        XCTAssertEqual(YearResultView.preferFinalists([pool[0]]), [pool[0]])
+    }
 }

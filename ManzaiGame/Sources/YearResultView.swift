@@ -234,7 +234,10 @@ struct YearResultView: View {
 
     /// 出来事に出す最大3行。賞金の出る勝ち（優勝）は、終盤の通過・敗退に押し出されないよう先に確保し、残りを新しい順に埋めて時系列で返す。
     static func eventLines(_ log: [String], limit: Int = 3) -> [String] {
-        var chosen = Set(log.indices.filter { log[$0].contains("優勝") && !log[$0].contains("客席") }.suffix(limit))
+        // 決勝に立った年は、決勝の行（敗退も含む）を必ず1枠確保する（賞金大会の優勝に押し出されて決勝に触れない年末にしない）
+        var chosen = Set<Int>()
+        if let f = log.indices.last(where: { log[$0].contains("GP決勝") && !log[$0].contains("客席") }) { chosen.insert(f) }
+        for i in log.indices.filter({ log[$0].contains("優勝") && !log[$0].contains("客席") }).reversed() where chosen.count < limit { chosen.insert(i) }
         for i in log.indices.reversed() where chosen.count < limit { chosen.insert(i) }
         return chosen.sorted().map { log[$0] }
     }
@@ -334,6 +337,8 @@ struct YearResultView: View {
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
+        // 決勝に立って敗れた年は、決勝の夜を越えた感じの既存の行を優先する（顔見知り・挨拶の行は決勝に触れない）
+        if o.reachedFinal && !o.champion { pool = Self.preferFinalists(pool) }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
         // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
         return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
@@ -350,6 +355,15 @@ struct YearResultView: View {
             }
         }
         return (w, l)
+    }
+    /// 決勝の夜を越えた年に合う既存の行（新しい文は足さない）。該当が無ければ元のまま。
+    private static let finalistFits: Set<String> = [
+        "一年目で、ここまで来るとは思わなかった。谷口に、ちゃんと礼を言おう。",
+        "電車で、知らない人に声をかけられた。少し、身なりに気をつけよう。",
+    ]
+    static func preferFinalists(_ pool: [String]) -> [String] {
+        let kept = pool.filter { finalistFits.contains($0) }
+        return kept.isEmpty ? pool : kept
     }
     /// 負けを語る独白（戦績が負け越していない年には合わない）。
     private static let loseLeaning: Set<String> = [
