@@ -81,6 +81,7 @@ final class NamesTests: XCTestCase {
 }
 
 final class DebtWarnTests: XCTestCase {
+    override func setUp() { super.setUp(); UserDefaults.standard.removeObject(forKey: "manzai.save.v1") }
     override func tearDown() { UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); super.tearDown() }
 
     func testTierBoundaries() {
@@ -109,8 +110,13 @@ final class DebtWarnTests: XCTestCase {
     func testOldSaveWithoutDebtTier() throws {
         let s = GameSession()
         s.markDebtWarned(2)   // saveNow される
-        s.saveNow()
-        let d = try XCTUnwrap(UserDefaults.standard.data(forKey: "manzai.save.v1"))
+        // テストホスト(アプリ本体)も同じ UserDefaults.standard に保存・消去するため、書いた直後に読めない瞬間がありうる＝書き直して数回まで読み直す
+        var saved: Data?
+        for _ in 0..<20 where saved == nil {
+            s.saveNow()
+            saved = UserDefaults.standard.data(forKey: "manzai.save.v1")
+        }
+        let d = try XCTUnwrap(saved)
         var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
         XCTAssertNotNil(o["debtWarnTier"])
         o.removeValue(forKey: "debtWarnTier")
@@ -404,9 +410,16 @@ final class PlaytestV4FixTests: XCTestCase {
         XCTAssertEqual(l.count, 3)
         XCTAssertTrue(l.contains(log[5]))
     }
-    func testFinalistMonologPrefersFitting() {
-        let pool = ["今年は、大会で顔見知りが増えた。会ったら、こちらから挨拶しよう。", "電車で、知らない人に声をかけられた。少し、身なりに気をつけよう。"]
-        XCTAssertEqual(YearResultView.preferFinalists(pool), [pool[1]])
-        XCTAssertEqual(YearResultView.preferFinalists([pool[0]]), [pool[0]])
+    func testFinalsYearMonologPool() {
+        XCTAssertEqual(YearResultView.finalsPool(champion: false, reachedFinal: true), YearResultView.yeFinalLost)
+        XCTAssertEqual(YearResultView.finalsPool(champion: true, reachedFinal: true), YearResultView.yeChampion)
+        XCTAssertNil(YearResultView.finalsPool(champion: false, reachedFinal: false))
+        for line in YearResultView.yeFinalLost + YearResultView.yeChampion {
+            XCTAssertFalse(line.contains("去年"))   // 1年目の決勝でも出る
+            XCTAssertFalse(line.contains("笑"))
+        }
+        // 戦績フィルタで消えない（負けを語る行を含まない）
+        XCTAssertEqual(YearResultView.filterByRecord(YearResultView.yeFinalLost, wins: 6, losses: 1), YearResultView.yeFinalLost)
+        XCTAssertTrue(YearResultView.yeFinalLost.allSatisfy { $0.contains("決勝") })
     }
 }

@@ -340,8 +340,10 @@ struct YearResultView: View {
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
-        // 決勝に立って敗れた年は、決勝の夜を越えた感じの既存の行を優先する（顔見知り・挨拶の行は決勝に触れない）
-        if o.reachedFinal && !o.champion { pool = Self.preferFinalists(pool) }
+        // 頂グランプリの決勝に立った年は、決勝を名指しする行を優先する（決勝の実プレイ点検③・貧乏年/解散年は上の分岐が先）
+        if !o.bankrupt && !o.dissolved, let fp = Self.finalsPool(champion: o.champion, reachedFinal: o.reachedFinal) {
+            pool = fp; scene = o.champion ? "yearEnd.champion" : "yearEnd.finalLost"
+        }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
         // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
         return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
@@ -359,14 +361,11 @@ struct YearResultView: View {
         }
         return (w, l)
     }
-    /// 決勝の夜を越えた年に合う既存の行（新しい文は足さない）。該当が無ければ元のまま。
-    private static let finalistFits: Set<String> = [
-        "一年目で、ここまで来るとは思わなかった。谷口に、ちゃんと礼を言おう。",
-        "電車で、知らない人に声をかけられた。少し、身なりに気をつけよう。",
-    ]
-    static func preferFinalists(_ pool: [String]) -> [String] {
-        let kept = pool.filter { finalistFits.contains($0) }
-        return kept.isEmpty ? pool : kept
+    /// 決勝に立った年の独白プール（優勝年／決勝で敗れた年）。決勝に立っていない年は nil＝戦績による選び方のまま。
+    static func finalsPool(champion: Bool, reachedFinal: Bool) -> [String]? {
+        if champion { return yeChampion }
+        if reachedFinal { return yeFinalLost }
+        return nil
     }
     /// 負けを語る独白（戦績が負け越していない年には合わない）。
     private static let loseLeaning: Set<String> = [
@@ -406,6 +405,16 @@ struct YearResultView: View {
     private static let yeFirstStall = [  // 停滞年（1年目）
         "最初の一年が終わった。春からのことを、谷口と相談しよう。",
         "一年目は悔しい。来年は稽古を増やそう。",
+    ]
+    // 決勝に立った年（docs/yearend_monolog_finals_v1.md・manzai-drama-voice 採点済）。決勝の場面の物を1つずつ。「去年」を使わない＝1年目でも可。
+    static let yeFinalLost = [  // 決勝で敗れた年
+        "決勝の舞台の照明は、思っていたより熱かった。年明けは、谷口と初詣に行こう。",
+        "決勝の出番くじの紙が、まだ鞄に入っている。春までの予定を、谷口と決めよう。",
+        "決勝の控室で、衣装のボタンを付け直した。明日は家にいよう。",
+    ]
+    static let yeChampion = [  // 頂グランプリで優勝した年
+        "優勝のあと、審査員席の七人に挨拶して回った。年明けに、お礼の手紙を書こう。",
+        "決勝の楽屋に戻ると、谷口の携帯が鳴りやまなかった。年明けの予定を確かめよう。",
     ]
     private static let yeBankrupt = [  // 貧乏年
         "家賃が、もう払えない。今夜のうちに荷物をまとめよう。",
