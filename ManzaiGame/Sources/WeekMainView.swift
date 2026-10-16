@@ -535,7 +535,8 @@ struct WeekMainView: View {
         let name = a.name ?? "俺"
         return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : (name == "俺" ? "主人公" : nil))
             .id(a.text)
-            .transition(.opacity)
+            // 前の文は即座に消し、新しい文だけ淡く出す（退場と登場が同じ席で重なって二重に読めた＝playtest_v5 W20・W25）
+            .transition(.asymmetric(insertion: .opacity, removal: .identity))
     }
 
     // MARK: 行動カード（常設4枚 2×2＋条件付きの小カード。タップ＝即実行・ゲート/¥不足は toast で無効化）
