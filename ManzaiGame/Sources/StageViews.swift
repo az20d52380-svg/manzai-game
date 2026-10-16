@@ -212,6 +212,7 @@ struct TournamentEntryView: View {
             NetaPickRow(session: session, title: "今夜かけるネタ", requiredLength: NetaCatalog.lengthForTournament,
                         selected: session.selectedNeta, onSelect: { session.selectNeta($0) })
                 .padding(.horizontal, YoseMetrics.screenMargin)
+                .onAppear { session.ensureStageNetaDefault() }
 
             Spacer(minLength: 8)
             // 出場の前に今の体力と所持金が見えるように（遠征費を払えるか・体力を使ってよいかの判断材料）
@@ -318,6 +319,7 @@ struct StagePreludeView: View {
                 NetaPickRow(session: session, title: isFinal ? "決勝・1本目" : "今夜かけるネタ",
                             requiredLength: requiredLength, selected: session.selectedNeta,
                             onSelect: { session.selectNeta($0) })
+                    .onAppear { session.ensureStageNetaDefault() }
                 if isFinal {
                     NetaPickRow(session: session, title: "決勝・2本目（温存の一手）",
                                 requiredLength: requiredLength, selected: session.selectedNeta2,

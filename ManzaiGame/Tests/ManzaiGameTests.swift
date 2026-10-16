@@ -3,7 +3,7 @@ import XCTest
 import GameCore
 @testable import ManzaiGame
 
-final class EndingJudgeTests: XCTestCase {
+final class EndingJudgeTests: IsolatedStoreTestCase {
     private func rec(_ y: Int, final f: Bool) -> GameSession.YearRecord {
         GameSession.YearRecord(year: y, roundsPassed: 1, reachedFinal: f, champion: false, bankrupt: false, prize: 0)
     }
@@ -48,7 +48,7 @@ final class EndingJudgeTests: XCTestCase {
     }
 }
 
-final class NamesTests: XCTestCase {
+final class NamesTests: IsolatedStoreTestCase {
     override func tearDown() { Names.set(me: nil, partner: nil); super.tearDown() }
 
     func testDefaultsUnchanged() {
@@ -80,8 +80,24 @@ final class NamesTests: XCTestCase {
     }
 }
 
-final class DebtWarnTests: XCTestCase {
-    override func tearDown() { UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); super.tearDown() }
+/// アプリ本体(テストホスト)と UserDefaults.standard を取り合わないよう、テスト中は専用 suite に保存先を差し替える
+class IsolatedStoreTestCase: XCTestCase {
+    private var savedStore: UserDefaults!
+    private var suiteName = ""
+    override func setUp() {
+        super.setUp()
+        savedStore = GameSession.store
+        suiteName = "mz.test.\(UUID().uuidString)"
+        GameSession.store = UserDefaults(suiteName: suiteName)!
+    }
+    override func tearDown() {
+        GameSession.store.removePersistentDomain(forName: suiteName)
+        GameSession.store = savedStore
+        super.tearDown()
+    }
+}
+
+final class DebtWarnTests: IsolatedStoreTestCase {
 
     func testTierBoundaries() {
         XCTAssertEqual(GameSession.debtTier(money: 0), 0)
@@ -110,7 +126,7 @@ final class DebtWarnTests: XCTestCase {
         let s = GameSession()
         s.markDebtWarned(2)   // saveNow される
         s.saveNow()
-        let d = try XCTUnwrap(UserDefaults.standard.data(forKey: "manzai.save.v1"))
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
         var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
         XCTAssertNotNil(o["debtWarnTier"])
         o.removeValue(forKey: "debtWarnTier")
@@ -122,7 +138,7 @@ final class DebtWarnTests: XCTestCase {
     }
 }
 
-final class FanReportTests: XCTestCase {
+final class FanReportTests: IsolatedStoreTestCase {
     func testIsKnownBoundaries() {
         XCTAssertFalse(FanReportData.isKnown(year: 1, fame: 99))
         XCTAssertFalse(FanReportData.isKnown(year: 2, fame: 14.99))
@@ -153,8 +169,7 @@ final class FanReportTests: XCTestCase {
     }
 }
 
-final class RiftWarnEventTests: XCTestCase {
-    override func tearDown() { UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); super.tearDown() }
+final class RiftWarnEventTests: IsolatedStoreTestCase {
 
     /// 予告0050：riftWarned が初めて true になった週の次の週頭に1回だけ出る（1キャリア1回）
     func testRiftWarningFiresOnceAfterFlagSet() {
@@ -221,7 +236,7 @@ final class RiftWarnEventTests: XCTestCase {
     }
 }
 
-final class PlaytestFixTests: XCTestCase {
+final class PlaytestFixTests: IsolatedStoreTestCase {
     func testShortagesWhenOnlyMaGrains() {
         let cfg = GameConfig()
         var st = GameState(config: cfg)
@@ -263,7 +278,7 @@ final class PlaytestFixTests: XCTestCase {
 
 
 /// 実プレイ点検 v2 の直し：年末の独白の条件（その年の戦績）・使った文を避ける選び方・観客の声。
-final class PlaytestFixV2Tests: XCTestCase {
+final class PlaytestFixV2Tests: IsolatedStoreTestCase {
     func testStageRecordCountsWinsAndLosses() {
         let log = ["第10週: 春新人賞A 通過", "第15週: 春新人賞B 敗退 / 夏の賞 優勝 +25万", "第20週: 体調 休", "第46週: 頂GP決勝 優勝「夕凪」（客席から）"]
         let r = YearResultView.stageRecord(log: log)
@@ -300,5 +315,120 @@ final class PlaytestFixV2Tests: XCTestCase {
         let second = FanReportData.voices(name: "A", passed: true, margin: 12, burst: false, salt: 3, used: first)
         XCTAssertTrue(Set(first).isDisjoint(with: Set(second)))
         XCTAssertEqual(first, FanReportData.voices(name: "A", passed: true, margin: 12, burst: false, salt: 3, used: []))
+    }
+}
+
+final class WeekHintTests: IsolatedStoreTestCase {
+    private func base() -> WeekHint.Input {
+        .init(netaCount: 2, stageWeeksLeft: 10, stageLength: .中尺, netaFitsStage: true, stamina: 80,
+              livingThisWeek: false, money: 500_000, livingCost: 140_000, weeksWithoutPartner: 0,
+              plusAvailable: false, expBannerShown: false)
+    }
+    func testNone() { XCTAssertNil(WeekHint.line(base())) }
+    func testNoNeta() {
+        var i = base(); i.netaCount = 0
+        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+    }
+    func testLengthMismatch() {
+        var i = base(); i.stageWeeksLeft = 4; i.netaFitsStage = false; i.stageLength = .長尺
+        XCTAssertEqual(WeekHint.line(i), "次の大会は尺『長め』。合うネタがまだ無い。")
+        i.stageWeeksLeft = 5; XCTAssertNil(WeekHint.line(i))   // 5週先は出さない
+        i.stageWeeksLeft = 3; i.netaFitsStage = true; XCTAssertNil(WeekHint.line(i))
+        i.netaFitsStage = nil; XCTAssertNil(WeekHint.line(i))
+    }
+    func testStamina() {
+        var i = base(); i.stamina = 30
+        XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
+        i.stamina = 31; XCTAssertNil(WeekHint.line(i))
+    }
+    func testLiving() {
+        var i = base(); i.livingThisWeek = true; i.money = 139_999
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        i.money = 140_000; XCTAssertNil(WeekHint.line(i))
+        i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
+    }
+    func testPartner() {
+        var i = base(); i.weeksWithoutPartner = 6
+        XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
+        i.weeksWithoutPartner = 5; XCTAssertNil(WeekHint.line(i))
+    }
+    func testPlusAndBannerMerge() {
+        var i = base(); i.plusAvailable = true
+        XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+        i.expBannerShown = true; XCTAssertNil(WeekHint.line(i))   // 朱の帯と重ねない
+    }
+    func testPriorityOrder() {
+        var i = base()
+        i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
+        i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
+        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "次の大会は尺『ふつう』。合うネタがまだ無い。")
+        i.netaFitsStage = true; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
+        i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
+        i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+    }
+}
+
+/// 週次の選択肢イベントは1キャリア1回（年をまたいでも同じイベントが再発火しない・playtest_v4 ②）
+final class WeeklyEventOnceTests: IsolatedStoreTestCase {
+    func testNoRepeatAcrossYears() {
+        for seed in [424242, 1, 7, 99, 2024] as [UInt64] {
+            let s = GameSession(seed: seed)
+            var kinds: [String: Int] = [:]
+            _ = GameSession.debugSelfPlay(s, kinds: &kinds)
+            let weekly = Set(ChoiceEventKind.allCases.filter { $0.isWeeklyRandom }.map { "\($0)" })
+            for (k, n) in kinds where weekly.contains(k) {
+                XCTAssertLessThanOrEqual(n, 1, "seed \(seed): \(k) が \(n) 回発火")
+            }
+        }
+    }
+}
+
+/// playtest_v4 ③④：本番前の既定ネタ・年末の出来事の優勝
+final class PlaytestV4FixTests: IsolatedStoreTestCase {
+    func testStageNetaDefaultIsBestPolished() {
+        var st = GameState(config: GameConfig())
+        var best = Neta(id: 0, name: "商店街の福引", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1); best.polish = 100; best.stageCount = 3
+        var fresh = Neta(id: 1, name: "終電の二人", kata: .瞬発, lengthFit: [.短尺], bornYear: 1); fresh.polish = 30
+        st.netas = [best, fresh]; st.selectedNetaID = 1   // 新しく書いた直後に自動で選ばれた低い2本目
+        let s = GameSession(startState: st)
+        s.ensureStageNetaDefault()
+        XCTAssertEqual(s.selectedNeta?.id, 0)
+        s.selectNeta(nil); s.ensureStageNetaDefault()
+        XCTAssertEqual(s.selectedNeta?.id, 0)   // 選び忘れも一番高い物へ
+        var played = fresh; played.stageCount = 2; played.polish = 40
+        var st2 = st; st2.netas = [best, played]; st2.selectedNetaID = 1
+        let t = GameSession(startState: st2)
+        t.ensureStageNetaDefault()
+        XCTAssertEqual(t.selectedNeta?.id, 1)   // 手で選んだ舞台経験ありのネタは保つ
+    }
+    func testEventLinesKeepChampionships() {
+        let log = ["第12週: 春新人賞A 優勝 +50万", "第15週: 春新人賞B 優勝 +25万", "第27週: 夏中堅賞 敗退",
+                   "第41週: GP3回戦 通過", "第43週: GP準々決勝 通過", "第46週: GP準決勝 敗退"]
+        let l = YearResultView.eventLines(log)
+        XCTAssertEqual(l.count, 3)
+        XCTAssertTrue(l.contains(log[0]) && l.contains(log[1]))
+        XCTAssertEqual(l.last, log[5])
+        XCTAssertEqual(YearResultView.eventLines(["a", "b"]), ["a", "b"])
+    }
+    func testEventLinesKeepFinalsLoss() {
+        let log = ["第27週: 夏中堅賞 優勝 +500万", "第29週: 秋賞 優勝 +25万", "第35週: 冬賞 優勝 +10万",
+                   "第43週: GP準々決勝 通過", "第46週: GP準決勝 通過", "第47週: GP決勝 敗退"]
+        let l = YearResultView.eventLines(log)
+        XCTAssertEqual(l.count, 3)
+        XCTAssertTrue(l.contains(log[5]))
+    }
+    func testFinalsYearMonologPool() {
+        XCTAssertEqual(YearResultView.finalsPool(champion: false, reachedFinal: true), YearResultView.yeFinalLost)
+        XCTAssertEqual(YearResultView.finalsPool(champion: true, reachedFinal: true), YearResultView.yeChampion)
+        XCTAssertNil(YearResultView.finalsPool(champion: false, reachedFinal: false))
+        for line in YearResultView.yeFinalLost + YearResultView.yeChampion {
+            XCTAssertFalse(line.contains("去年"))   // 1年目の決勝でも出る
+            XCTAssertFalse(line.contains("笑"))
+        }
+        // 戦績フィルタで消えない（負けを語る行を含まない）
+        XCTAssertEqual(YearResultView.filterByRecord(YearResultView.yeFinalLost, wins: 6, losses: 1), YearResultView.yeFinalLost)
+        XCTAssertTrue(YearResultView.yeFinalLost.allSatisfy { $0.contains("決勝") })
     }
 }

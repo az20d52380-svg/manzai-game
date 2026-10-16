@@ -49,7 +49,7 @@ struct YearResultView: View {
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
-                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 6)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 66)   // 他画面の主ボタン（約y=747）と高さを揃える（連打の空振り防止）
                 .background(YoseColor.kinari)
                 .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
         }
@@ -232,8 +232,18 @@ struct YearResultView: View {
 
     // MARK: 出来事3行（大会結果のみ）
 
+    /// 出来事に出す最大3行。賞金の出る勝ち（優勝）は、終盤の通過・敗退に押し出されないよう先に確保し、残りを新しい順に埋めて時系列で返す。
+    static func eventLines(_ log: [String], limit: Int = 3) -> [String] {
+        // 決勝に立った年は、決勝の行（敗退も含む）を必ず1枠確保する（賞金大会の優勝に押し出されて決勝に触れない年末にしない）
+        var chosen = Set<Int>()
+        if let f = log.indices.last(where: { log[$0].contains("GP決勝") && !log[$0].contains("客席") }) { chosen.insert(f) }
+        for i in log.indices.filter({ log[$0].contains("優勝") && !log[$0].contains("客席") }).reversed() where chosen.count < limit { chosen.insert(i) }
+        for i in log.indices.reversed() where chosen.count < limit { chosen.insert(i) }
+        return chosen.sorted().map { log[$0] }
+    }
+
     private var eventsBlock: some View {
-        let lines = Array(session.log.suffix(3))
+        let lines = Self.eventLines(session.log)
         return VStack(alignment: .leading, spacing: 6) {
             sectionLabel("出来事")
             if lines.isEmpty {
@@ -255,6 +265,9 @@ struct YearResultView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+            }
+            if session.log.count > lines.count {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
+                Text("ほか\(session.log.count - lines.count)大会").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -327,6 +340,10 @@ struct YearResultView: View {
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
+        // 頂グランプリの決勝に立った年は、決勝を名指しする行を優先する（決勝の実プレイ点検③・貧乏年/解散年は上の分岐が先）
+        if !o.bankrupt && !o.dissolved, let fp = Self.finalsPool(champion: o.champion, reachedFinal: o.reachedFinal) {
+            pool = fp; scene = o.champion ? "yearEnd.champion" : "yearEnd.finalLost"
+        }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
         // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
         return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
@@ -343,6 +360,12 @@ struct YearResultView: View {
             }
         }
         return (w, l)
+    }
+    /// 決勝に立った年の独白プール（優勝年／決勝で敗れた年）。決勝に立っていない年は nil＝戦績による選び方のまま。
+    static func finalsPool(champion: Bool, reachedFinal: Bool) -> [String]? {
+        if champion { return yeChampion }
+        if reachedFinal { return yeFinalLost }
+        return nil
     }
     /// 負けを語る独白（戦績が負け越していない年には合わない）。
     private static let loseLeaning: Set<String> = [
@@ -382,6 +405,16 @@ struct YearResultView: View {
     private static let yeFirstStall = [  // 停滞年（1年目）
         "最初の一年が終わった。春からのことを、谷口と相談しよう。",
         "一年目は悔しい。来年は稽古を増やそう。",
+    ]
+    // 決勝に立った年（docs/yearend_monolog_finals_v1.md・manzai-drama-voice 採点済）。決勝の場面の物を1つずつ。「去年」を使わない＝1年目でも可。
+    static let yeFinalLost = [  // 決勝で敗れた年
+        "決勝の舞台の照明は、思っていたより熱かった。年明けは、谷口と初詣に行こう。",
+        "決勝の出番くじの紙が、まだ鞄に入っている。春までの予定を、谷口と決めよう。",
+        "決勝の控室で、衣装のボタンを付け直した。明日は家にいよう。",
+    ]
+    static let yeChampion = [  // 頂グランプリで優勝した年
+        "優勝のあと、審査員席の七人に挨拶して回った。年明けに、お礼の手紙を書こう。",
+        "決勝の楽屋に戻ると、谷口の携帯が鳴りやまなかった。年明けの予定を確かめよう。",
     ]
     private static let yeBankrupt = [  // 貧乏年
         "家賃が、もう払えない。今夜のうちに荷物をまとめよう。",

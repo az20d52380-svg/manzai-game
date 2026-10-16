@@ -138,6 +138,8 @@ final class GameSession {
     private(set) var winFinale = false
     /// S6 行動内訳帯用: 週インデックス→その週のカテゴリ（UI層の記録のみ・golden非対象）
     private(set) var categoryLog: [Int: BandCategory] = [:]
+    /// 相方と過ごす／ネタ合わせをしていない自由週の連続数（週メインの一行案内用・表示専用・golden非対象・セーブはOptional）
+    private(set) var weeksWithoutPartner = 0
     /// S6 年計用: その年の獲得賞金合計（UI層の記録のみ・golden非対象）
     private(set) var totalPrize = 0
     /// 進行中に「この年をやめてタイトルへ」が選ばれた（RootView がタイトルへ戻す・監査G-04）
@@ -268,6 +270,7 @@ final class GameSession {
         self.usedPicks = save.usedPicks ?? [:]
         self.usedFanLines = save.usedFanLines ?? []
         self.shownOnce = Set(save.shownOnce ?? [])
+        self.weeksWithoutPartner = save.weeksWithoutPartner ?? 0
         checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
@@ -301,6 +304,10 @@ final class GameSession {
         // WeekMainView が稽古カードをグレーにするので通常ここには来ないが、二重の安全網（谷口の体力ゲートと同型）。
         if state.preoccupiedWeeks > 0, case .train = action { action = .rest(.完全休養) }
         lastAction = action
+        switch action {   // 週メインの一行案内用（表示専用）
+        case .train(.ネタ合わせ), .rest(.相方と過ごす): weeksWithoutPartner = 0
+        default: weeksWithoutPartner += 1
+        }
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
         if case .job = action { jobCount += 1 }     // 0023 発火条件用のバイト実行回数（UI層・golden非対象）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
@@ -617,6 +624,8 @@ final class GameSession {
         /// 0010「前夜の一本」の対象か（新人賞級・GP準決勝・決勝/敗者復活＝高格／GP1回戦〜準々決勝＝低格）
         let highStakes: Bool
         var isGP: Bool
+        /// 舞台の尺の目安（表示専用）
+        var length: NetaLength = .中尺
     }
 
     /// これから実際に立てる本番の一覧（週順）。WeekMainView/AllocationView/イベント発火の唯一の走査（監査F-01）。
@@ -629,16 +638,17 @@ final class GameSession {
             for i in runner.gpRoundsPassed..<cal.gpRounds.count {
                 let name = i < cal.gpRoundNames.count ? cal.gpRoundNames[i] : "頂GP\(i + 1)回戦"
                 ms.append(StageInfo(week: cal.gpRounds[i].week, name: name, line: cal.gpRounds[i].line,
-                                    highStakes: i == cal.gpRounds.count - 1, isGP: true))
+                                    highStakes: i == cal.gpRounds.count - 1, isGP: true,
+                                    length: NetaCatalog.lengthForGPRound(index: i)))
             }
         }
         if runner.isFinalist || runner.isGPAlive {
-            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine, highStakes: true, isGP: true))
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine, highStakes: true, isGP: true, length: NetaCatalog.lengthForGPFinal))
         } else if runner.hasRevival {
-            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine, highStakes: true, isGP: true))
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine, highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
         }
         for t in cal.tournaments where t.isEligible(year: year, state: state) {
-            ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false))
+            ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
         }
         let includeThisWeek: Bool = { if case .freeAction = phase { return false }; return true }()
         return ms.filter { $0.week > week || (includeThisWeek && $0.week == week) }
@@ -766,6 +776,16 @@ final class GameSession {
         state = runner.state
     }
 
+    /// 本番の前に出すネタの既定を整える（playtest_v4 ③）。選び忘れ(nil)、または「新しく書いた直後で舞台に一度も立っていない低い完成度のネタ」が
+    /// 書く行為で自動選択されていた時は、完成度が一番高いネタへ戻す。手で選んだ舞台経験ありのネタ・完成度が最高のネタには触れない。UI層のみ・乱数非消費。
+    func ensureStageNetaDefault() {
+        guard let best = state.netas.max(by: { $0.polish < $1.polish }) else { return }
+        let cur = selectedNeta
+        if cur == nil || (cur!.stageCount == 0 && cur!.polish < best.polish) {
+            selectNeta(best.id)
+        }
+    }
+
     /// 「今かけるネタ」を選ぶ（大会入口・持ちネタ帳から。保管庫のネタでも可＝自動でアクティブへ呼び戻さない・
     /// 呼び戻しは recallNeta を先に呼ぶ設計。ここはアクティブ枠内のIDのみ有効）。
     func selectNeta(_ id: Int?) {
@@ -879,7 +899,7 @@ final class GameSession {
 
     /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
     func abandonRun() {
-        UserDefaults.standard.removeObject(forKey: Self.saveKey)
+        Self.store.removeObject(forKey: Self.saveKey)
         abandoned = true
     }
 
@@ -1004,6 +1024,7 @@ final class GameSession {
         var usedPicks: [String: [Int]]?   // このキャリアで使った文の番号（旧セーブ＝nil＝まだ使っていない）
         var usedFanLines: [String]?       // このキャリアで出した観客の声（旧セーブ＝nil）
         var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
+        var weeksWithoutPartner: Int?     // 相方と過ごさない週の連続数（旧セーブ＝nil＝0）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1028,6 +1049,8 @@ final class GameSession {
         saveNow()
     }
 
+    /// 保存先（本番は .standard 固定。単体テストだけが専用 suite に差し替える）
+    static var store: UserDefaults = .standard
     private static let saveKey = "manzai.save.v1"
     /// 読めなかったセーブの退避先（黙って消さない・監査G-03）
     private static let brokenSaveKey = "manzai.save.v1.broken"
@@ -1046,7 +1069,7 @@ final class GameSession {
         if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil || env["MZ_ENDING"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
         guard !abandoned, !(finished && careerOver) else {   // A-3: 勝利演出中(winFinale)も保存する。acknowledgeWin(finished=true)で消える
-            UserDefaults.standard.removeObject(forKey: Self.saveKey)
+            Self.store.removeObject(forKey: Self.saveKey)
             return
         }
         let save = SaveData(runner: runner.snapshot(), phase: phase, pendingResult: pendingResult,
@@ -1067,10 +1090,10 @@ final class GameSession {
                             debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName,
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
-                            usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted())
+                            usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner)
         do {
             let data = try JSONEncoder().encode(save)
-            UserDefaults.standard.set(data, forKey: Self.saveKey)
+            Self.store.set(data, forKey: Self.saveKey)
         } catch {
             print("[save] encode failed: \(error)")   // 前回のセーブは残したまま（上書きしない）
         }
@@ -1078,7 +1101,7 @@ final class GameSession {
 
     /// 起動時のエントリポイント: セーブがあれば復元、無ければ新規（IntroFlow 前のプレースホルダ）。
     static func loadedOrNew(config: GameConfig = GameConfig()) -> GameSession {
-        let defaults = UserDefaults.standard
+        let defaults = store
         if let data = defaults.data(forKey: saveKey) {
             do {
                 let save = try JSONDecoder().decode(SaveData.self, from: data)
@@ -1189,6 +1212,21 @@ final class GameSession {
             default: return
             }
         }
+    }
+
+    /// DEBUG: 週メインの一行案内（MZ_UI=weekhint）の目視用。action を n 回選んで週を進める（途中の選択イベントは流す）
+    func debugFreeWeeks(_ n: Int, _ action: WeekAction) {
+        var steps = 0, done = 0
+        while done < n, !finished, steps < 200 {
+            steps += 1
+            if let kind = pendingChoiceEvent {
+                if let c = ChoiceEventTable.choices(for: kind, config: config).first(where: { $0.gate(state) }) { applyEventChoice(c.id) }
+                dismissChoiceEvent(); continue
+            }
+            guard case .freeAction = phase else { return }
+            choose(action); done += 1
+        }
+        if let kind = pendingChoiceEvent { dismissChoiceEvent(); _ = kind }
     }
 
     /// DEBUG: 大会前の振り忘れの知らせ（MZ_UI=prestage）の目視用。練習（体力が落ちたら休む）で、最初の大会の
@@ -1460,7 +1498,7 @@ extension GameSession {
             if let e { EndingBook.record(e, partner: Names.partner) }
             line("\(label): y=\(s.year) w=\(s.week) champ=\(o?.champion ?? false) bank=\(o?.bankrupt ?? false) diss=\(o?.dissolved ?? false) compat=\(s.state.compat) money=\(s.state.money) rift=\(s.state.rift ?? -1) ending=#\(e?.number ?? 0) \(stuck ?? "ok")")
         }
-        UserDefaults.standard.removeObject(forKey: EndingBook.key)
+        GameSession.store.removeObject(forKey: EndingBook.key)
         // 1 夜逃げ
         do { var st = GameState(config: GameConfig()); st.compat = 10; st.money = GameConfig().bankruptLine + 5000
              let s = GameSession(startState: st); var k = [String: Int]()
@@ -1543,7 +1581,7 @@ extension GameSession {
                  var k2 = [String: Int](); let r2 = debugSelfPlay(l, kinds: &k2, maxSteps: 3000); line("oldsave play: \(r2 ?? "ok") y=\(l.year)")
              } else { line("oldsave: no save written") }
              UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); UserDefaults.standard.removeObject(forKey: "manzai.save.v1.broken") }
-        UserDefaults.standard.removeObject(forKey: EndingBook.key)
+        GameSession.store.removeObject(forKey: EndingBook.key)
         line("DONE")
     }
 }

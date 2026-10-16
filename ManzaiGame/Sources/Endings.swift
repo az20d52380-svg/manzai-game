@@ -193,7 +193,7 @@ enum EndingBook {
             return d
         }
         #endif
-        guard let data = UserDefaults.standard.data(forKey: key),
+        guard let data = GameSession.store.data(forKey: key),
               let raw = try? JSONDecoder().decode([String: EndingRecord].self, from: data) else { return [:] }
         var out: [EndingID: EndingRecord] = [:]
         for (k, v) in raw { if let id = EndingID(rawValue: k) { out[id] = v } }
@@ -206,6 +206,6 @@ enum EndingBook {
         if var r = all[id] { r.count += 1; r.lastPartnerName = partner; all[id] = r }
         else { all[id] = EndingRecord(count: 1, firstSeenAt: Date(), lastPartnerName: partner) }
         let raw = Dictionary(uniqueKeysWithValues: all.map { ($0.key.rawValue, $0.value) })
-        if let data = try? JSONEncoder().encode(raw) { UserDefaults.standard.set(data, forKey: key) }
+        if let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
     }
 }
