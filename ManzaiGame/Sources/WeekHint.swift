@@ -32,8 +32,8 @@ enum WeekHint {
         if let w = i.stageWeeksLeft, w <= stageNearWeeks, let len = i.stageLength, i.netaFitsStage == false {
             return "次の大会は尺『\(NetaCatalog.displayName(len))』。合うネタがまだ無い。"
         }
-        if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
         if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }
+        if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
         return nil
