@@ -86,8 +86,10 @@ struct TournamentResultView: View {
         return cal.gpRounds.first { $0.week == summary.week }?.line
     }
     /// 入口と同じ「いまの実力」（実力値＋相性）
-    private var currentPower: Int {
-        Int((GameEngine.jitsuryoku(summary.state, config: session.config) + summary.state.compat).rounded())
+    private var currentPower: Int { Self.displayPower(summary.state, config: session.config) }
+    /// 入場前の札（StageViews）と同じ式。結果カードもこの関数だけを通す（単体テストで固定）
+    static func displayPower(_ state: GameState, config: GameConfig) -> Int {
+        Int((GameEngine.jitsuryoku(state, config: config) + state.compat).rounded())
     }
 
     var body: some View {
@@ -430,7 +432,8 @@ struct TournamentResultView: View {
                 }
                 VStack(spacing: 0) {
                     Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
-                    RollingNumberText(value: Double(currentPower) * countProgress, prefix: "", suffix: "")
+                    // 実力は「得たもの」ではなく入場前と同じ現在値＝数え上げない（数え上げ中の途中の数字が「実力14」と読まれた＝playtest_v6 W27）
+                    Text("\(currentPower)").monospacedDigit()
                         .font(YoseFont.numHero).foregroundStyle(r.passed ? YoseColor.shu : YoseColor.haiSumi)
                 }
                 if r.passed && displayLine != nil {

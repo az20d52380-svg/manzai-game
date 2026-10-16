@@ -286,6 +286,14 @@ final class PlaytestFixTests: IsolatedStoreTestCase {
         XCTAssertEqual(AbilityUpView.practices(for: .閃き, config: cfg).first, "ネタを書く")
         XCTAssertFalse(AbilityUpView.practices(for: .語彙, config: cfg).isEmpty)   // 語彙は副効果から引く
     }
+    func testDisplayPowerSameAsEntryFormula() {
+        let cfg = GameConfig()
+        var st = GameState(config: cfg)
+        st.センス = 16; st.発想 = 14; st.表現 = 15; st.華 = 10; st.compat = 20
+        let expect = Int((GameEngine.jitsuryoku(st, config: cfg) + st.compat).rounded())
+        XCTAssertEqual(TournamentResultView.displayPower(st, config: cfg), expect)
+        XCTAssertGreaterThanOrEqual(TournamentResultView.displayPower(st, config: cfg), 20)   // 相性ぶんを含む＝実力値だけの小さい数にならない
+    }
     func testPowerNote() {
         XCTAssertNotNil(TournamentResultView.powerNote(passed: true, power: 21, line: 28))
         XCTAssertNotNil(TournamentResultView.powerNote(passed: false, power: 30, line: 28))
