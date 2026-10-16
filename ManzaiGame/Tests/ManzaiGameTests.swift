@@ -167,6 +167,23 @@ final class FanReportTests: IsolatedStoreTestCase {
             } }
         }
     }
+    /// 客席アンケートの声は、同じ帯のプールが尽きる前に同じ文を繰り返さない（隣の帯で補い、それも尽きたら最古から）
+    func testFanVoicesAvoidRepeatsAcrossCareer() {
+        let session = GameSession()
+        var seen: [String] = []
+        var repeatsBeforeExhaust = 0
+        for visit in 0..<3 {
+            let salt = 131 * 4 + 20 + visit * 4
+            let lines = session.fanVoices(key: salt) { used in
+                FanReportData.voices(name: "X", passed: true, margin: 20, burst: false, salt: salt, known: false, used: used)
+            }
+            XCTAssertFalse(lines.isEmpty)
+            XCTAssertEqual(Set(lines).count, lines.count, "同じ回の中で重複")
+            for l in lines { if seen.contains(l) { repeatsBeforeExhaust += 1 } }
+            seen += lines
+        }
+        XCTAssertEqual(repeatsBeforeExhaust, 0, "A帯8＋B帯4＝12文のうちは再登場しない：\(seen)")
+    }
     func testKnownCanGetKnownOnlyLines() {
         var hit = false
         for salt in 0..<300 {

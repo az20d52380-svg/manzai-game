@@ -138,7 +138,12 @@ enum FanReportData {
         let bursts = keep(burstLines)
         var lines: [String] = []
         if burst, let b = ordered(bursts, salt: salt, name: name, used: used).first { lines.append(b) }
-        let order = ordered(band, salt: salt, name: name, used: used)
+        // このキャリアで未使用の声を、同じ帯→隣の帯（A↔B・C↔D）の順で先に使い、それも尽きたら使い済みを古い順に戻す
+        let adjacent: [String] = passed ? keep(band == keep(bandA) ? bandB : bandA) : keep(band == keep(bandC) ? bandD : bandC)
+        func rep(_ t: String) -> String { t.replacingOccurrences(of: "〈名〉", with: name) }
+        let own = ordered(band, salt: salt, name: name, used: used)
+        let near = ordered(adjacent, salt: salt, name: name, used: used)
+        let order = own.filter { !used.contains(rep($0)) } + near.filter { !used.contains(rep($0)) } + own.filter { used.contains(rep($0)) }
         var k = 0
         while lines.count < min(count, 4), k < order.count {
             let c = order[k]; k += 1
