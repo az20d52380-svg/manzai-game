@@ -302,7 +302,12 @@ struct RootView: View {
         } else {
             switch session.phase {
             case .freeAction(let offer):
+                #if DEBUG
+                // 目視用: MZ_OFFER=1 で毎週オファーが出ている状態にする
+                WeekMainView(session: session, offer: ProcessInfo.processInfo.environment["MZ_OFFER"] != nil ? (offer ?? OfferSpec(name: "経験重視", income: 12, fame: 1, ability: nil, stamina: 0)) : offer)
+                #else
                 WeekMainView(session: session, offer: offer)          // S1 育成メイン
+                #endif
             case .tournamentDecision(let spec):
                 TournamentEntryView(session: session, spec: spec)     // 大会入口（遠征選択）
             case .gpRound(let index, let name):

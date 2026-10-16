@@ -69,6 +69,8 @@ struct WeekMainView: View {
     @State private var lastBeatWeek: [String: Int] = [:]
     /// 「年末へ」の二度押し確認（監査A-03）
     @State private var yearEndArmed = false
+    /// オファーを受ける前の二度押し確認（誤タップ事故＝playtest_v6 W31〜W34）
+    @State private var offerArmed = false
     /// 進行中の設定（監査G-04）
     @State private var showSettings = false
     /// 買い物（ShopView・アイテム）
@@ -119,6 +121,9 @@ struct WeekMainView: View {
     @State private var pendingNetaTitle: (id: Int, title: String)?
     private var mainCards: [CommandVariant] {
         CommandCatalog.mainCards(config: session.config, money: s.money)
+    }
+    private var offerCard: CommandVariant? {
+        extraCards.first { if case .acceptOffer = $0.action { return true } else { return false } }
     }
     private var extraCards: [CommandVariant] {
         CommandCatalog.extraCards(config: session.config, offer: offer, money: s.money)
@@ -301,8 +306,18 @@ struct WeekMainView: View {
                 HintMarkButton { hint = Self.firstWeekHint }   // 用語の「？」（初回の説明を開き直す）
                     .padding(.leading, YoseMetrics.screenMargin - 10).padding(.top, 0)
             }
+            .overlay(alignment: .bottom) {
+                // オファーの帯：舞台の下端（＝行動ボタンの直上）に載せる。レイアウトに参加しない＝ボタンの位置は動かない。下位一覧を開いている間は隠す
+                if openCat == nil, let o = offerCard {
+                    actionCard(o, compact: true)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 4)
+                        .transition(.opacity)
+                }
+            }
             .overlay(alignment: .bottomLeading) {
                 // 声の席は一つ: Beat1 発話 > 週頭の掛け合い（タップ送り） > 独白。
+                Group {
                 if openCat != nil && beatAdvice == nil {
                     EmptyView()   // 下位一覧を開いている間は声を出さない（舞台が狭くなっても重ならない）
                 } else if let b = beatAdvice {
@@ -312,6 +327,8 @@ struct WeekMainView: View {
                 } else {
                     monoBox.padding(YoseMetrics.screenMargin)
                 }
+                }
+                .padding(.bottom, offerCard != nil && openCat == nil ? 98 : 0)   // オファーの帯の上に声を載せる
             }
             .overlay {
                 // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
@@ -542,7 +559,7 @@ struct WeekMainView: View {
     // MARK: 行動カード（常設4枚 2×2＋条件付きの小カード。タップ＝即実行・ゲート/¥不足は toast で無効化）
 
     private var commandZone: some View {
-        let extras = extraCards
+        let extras = extraCards.filter { if case .acceptOffer = $0.action { return false } else { return true } }   // オファーは行動ボタンの上の帯へ（ボタンの位置を動かさない）
         let showYearEnd = session.noStagesLeft && session.week < session.config.weeks
         return VStack(spacing: 8) {
             // 常設4枚は位置を動かさない（条件付きのカードは下に足す＝親指が覚えた場所が週ごとにずれない）
@@ -795,6 +812,13 @@ struct WeekMainView: View {
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
+            if case .acceptOffer = v.action, !offerArmed {
+                offerArmed = true
+                showToast("もう一度押すと、このオファーを受ける。")
+                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); offerArmed = false }
+                return
+            }
+            offerArmed = false
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
         }
@@ -913,7 +937,7 @@ struct WeekMainView: View {
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
             if case .acceptOffer = v.action {
-                Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(1)   // オファー名（既存の OfferSpec.name）
+                Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(1)   // オファー名（既存の OfferSpec.name）
             } else if !dashed, !gated {
                 Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(row ? 1 : 2).fixedSize(horizontal: false, vertical: true)
             }
