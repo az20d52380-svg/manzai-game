@@ -271,6 +271,7 @@ cd GameCore && swift test
 - `smoke_preview_all_v2.md` — preview-all 通しスモーク v2・2026-10-16
 - `store_listing_draft_v0.md` — ストア掲載の下書き v0（決めない範囲）・2026-10-16
 - `stuck_and_exploit_check_v0.md` — 詰みと抜け道の実測 v0・2026-10-15
+- `exploit_search_v0.md` — 抜け道・罠の探索 v0（単純な方針87種×n=1000・お店+2.6ptの弱い抜け道／連打・バイト交互・GPだけの罠と直し案）・2026-10-16
 - `stuck_remeasure_money_l_v0.md` — 夜逃げ・借金の再実測（お金の調整L後）v0・2026-10-15
 - `text_repeat_rate_v0.md` — 文の繰り返し率（10年通し）の実測 v0・2026-10-15
 - `true_ending_ideas_v0.md` — トゥルーエンドの案 v0（キュー82）・2026-10-15
