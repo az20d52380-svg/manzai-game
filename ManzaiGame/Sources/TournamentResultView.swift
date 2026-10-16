@@ -63,7 +63,8 @@ struct TournamentResultView: View {
 
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
     private func stampLabel(passed: Bool) -> String {
-        // 道中の単発大会もGP回戦も判定は「通過ライン超え」。戦績・出来事ログ（通過/敗退）と同じ言葉に揃える（「優勝」は頂GP決勝だけ）
+        // 道中の単発大会（春新人賞など）は通過ライン超え＝その賞を取る（賞金・知名度＝TournamentSpec の「優勝時」）＝「優勝」。GP回戦は「通過」
+        if isMidTournament { return passed ? "優勝" : "敗退" }
         return passed ? "通過" : "敗退"
     }
 

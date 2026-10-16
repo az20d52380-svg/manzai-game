@@ -1323,7 +1323,7 @@ final class GameSession {
 
     private func summarize(_ s: WeekSummary) -> String {
         let parts = s.results.map { r -> String in
-            let mark = r.isStage ? (r.passed ? "通過" : "敗退") : "休"   // 体調ダウン/療養は合否でなく「休」（監査§1-4-5・Fable13§2）
+            let mark = r.isStage ? (r.passed ? (r.prize > 0 ? "優勝" : "通過") : "敗退") : "休"   // 賞金の出る勝ち＝その大会の優勝（結果の札と同じ言葉）   // 体調ダウン/療養は合否でなく「休」（監査§1-4-5・Fable13§2）
             let prize = r.prize > 0 ? " +\(r.prize / 10000)万" : ""
             return "\(r.name) \(mark)\(prize)"
         }
