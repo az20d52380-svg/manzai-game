@@ -275,7 +275,8 @@ struct AbilityUpView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(a)、いま\(Int(v.rounded()))\(gained > 0 ? "、\(gained)上げる予定" : "")")
         .accessibilityHint(canTap ? "押すと能力を上げる" : "粒が足りない")
-        return main.overlay(alignment: .leading) {
+        let caption = canTap ? [] : Self.shortageLines(a, state: pv, config: cfg)
+        return VStack(alignment: .leading, spacing: 2) { main.overlay(alignment: .leading) {
             // ［−］：常に同じ場所に出す（振った分をまるごと戻す）。振っていない時は灰色で押せない＝幅も位置も動かない
             let canUndo = gained > 0
             Button {
@@ -295,6 +296,11 @@ struct AbilityUpView: View {
             .accessibilityLabel("\(a)を元に戻す")
             .padding(.leading, 6 + nameW + colGap).padding(.bottom, 2)
         }
+            ForEach(caption, id: \.self) { line in
+                Text(line).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.shu)
+                    .lineLimit(2).minimumScaleFactor(0.8).padding(.horizontal, 8)
+            }
+        }
     }
 
     /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
@@ -308,6 +314,56 @@ struct AbilityUpView: View {
             .shadow(color: canTap ? YoseColor.sumi : .clear, radius: 0, y: 2)
             .frame(width: plusW, height: 46, alignment: .trailing)   // 左の minusW＋隙間は［−］の場所（常に固定）
             .padding(.bottom, 2)
+    }
+
+    /// 次の+1の値札に対して、いま足りない粒（通貨, あと何点）。行の赤い印と同じ基準（1段の重さ ＞ いまの残高）。表示専用
+    static func shortages(_ a: Ability, state s: GameState, config cfg: GameConfig) -> [(currency: ExpCurrency, short: Int)] {
+        GameEngine.nextStepCost(a, state: s, config: cfg).compactMap { c in
+            let price = max(1, points(s[currency: c.currency]) - points(s[currency: c.currency] - c.amount))
+            let have = points(s[currency: c.currency])
+            return price > have ? (c.currency, price - have) : nil
+        }
+    }
+
+    /// 能力アップ画面での練習の呼び名（コマンド一覧と同じ言葉）
+    static func practiceLabel(_ t: Training) -> String {
+        switch t {
+        case .ネタ作り: return "ネタを書く"
+        case .ネタ見せ会: return "ネタ見せ会"
+        case .ネタ合わせ: return "相方と合わせる"
+        case .ランニング・サウナ: return "エントリーライブに出る"
+        case .フリーライブ: return "舞台に立つ"
+        case .喫茶店で書く: return "喫茶店で書く"
+        case .ファミレスで書く: return "ファミレスで朝まで"
+        case .作家の勉強会: return "大喜利ライブに出る"
+        case .ボイトレ: return "カラオケボックスで声出し"
+        }
+    }
+
+    /// その粒が貯まる練習（TrainingSpec の主効果から。主効果が無い粒は副効果から）。お金のかからない物を先に、最大2つ
+    static func practices(for c: ExpCurrency, config cfg: GameConfig) -> [String] {
+        func rank(_ pick: (TrainingSpec) -> (StatKey, Double)?) -> [(Training, TrainingSpec)] {
+            cfg.trainings.compactMap { t, spec -> (Training, TrainingSpec)? in
+                if let e = pick(spec), case .currency(let cc) = e.0, cc == c { return (t, spec) }
+                return nil
+            }
+        }
+        var list = rank { $0.main }
+        if list.isEmpty { list = rank { $0.sub } }
+        let sorted = list.sorted { ($0.1.cost, practiceLabel($0.0)) < ($1.1.cost, practiceLabel($1.0)) }
+        return Array(sorted.prefix(2).map { practiceLabel($0.0) })
+    }
+
+    /// 押せない行の下に出す「何の粒があと何つ足りないか」と貯まる練習。足りない粒が無ければ nil
+    static func shortageLines(_ a: Ability, state s: GameState, config cfg: GameConfig) -> [String] {
+        shortages(a, state: s, config: cfg).sorted { $0.short > $1.short }.prefix(2).map { sh in
+            "\(Theme.currencyChar(sh.currency))（\(sh.currency)）あと\(sh.short) → " + practices(for: sh.currency, config: cfg).joined(separator: "・")
+        }
+    }
+
+    /// ＋が1つでも押せる状態か（週メインの「経験点が残ってる」を出す条件）
+    static func anyPlusEnabled(_ session: GameSession, state s: GameState) -> Bool {
+        Ability.allCases.contains { session.costOfNextStep($0, in: s) != nil }
     }
 
     /// 次の等級の名前と、そこまでの能力値（表示だけ）。最高等級なら nil

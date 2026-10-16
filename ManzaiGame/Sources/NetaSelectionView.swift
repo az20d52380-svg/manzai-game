@@ -61,14 +61,26 @@ struct NetaPickRow: View {
     }
 
     private func tags(_ neta: Neta) -> some View {
-        HStack(spacing: 6) {
-            YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
-            NetaTiredBadge(neta: neta)
-            if let requiredLength, !neta.fits(requiredLength) {
-                YoseTag(text: "尺が合わない", style: .outlineShu)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
+                NetaTiredBadge(neta: neta)
+                if let requiredLength, !neta.fits(requiredLength) {
+                    YoseTag(text: "尺が合わない", style: .outlineShu)
+                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+            if let requiredLength, let note = Self.lengthMismatchNote(neta, required: requiredLength) {
+                Text(note).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+            }
         }
+    }
+
+    /// 尺が合わない時の説明（数字を並べるだけ）。ネタの尺は書いた時に決まり後から変えられない＝操作は案内せず、別のネタを選ぶ道だけ示す
+    static func lengthMismatchNote(_ neta: Neta, required: NetaLength) -> String? {
+        guard !neta.fits(required) else { return nil }
+        let have = neta.lengthFit.map { NetaCatalog.displayName($0) }.joined(separator: "・")
+        return "舞台の尺は「\(NetaCatalog.displayName(required))」／このネタは「\(have)」向き。合うネタがあれば、変更から選べる"
     }
 
     @ViewBuilder private var currentSummary: some View {

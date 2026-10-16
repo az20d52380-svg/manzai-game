@@ -220,3 +220,43 @@ final class RiftWarnEventTests: XCTestCase {
         XCTAssertFalse(s.didFireRiftWarn)
     }
 }
+
+final class PlaytestFixTests: XCTestCase {
+    func testShortagesWhenOnlyMaGrains() {
+        let cfg = GameConfig()
+        var st = GameState(config: cfg)
+        for c in ExpCurrency.allCases { st[currency: c] = 0 }
+        st[currency: .間合い] = 80          // 間だけ貯まっている
+        // 華（存在感70%・閃き30%）は存在感も閃きも足りない
+        let sh = AbilityUpView.shortages(.華, state: st, config: cfg)
+        XCTAssertTrue(sh.contains { $0.currency == .存在感 && $0.short > 0 })
+        XCTAssertTrue(sh.contains { $0.currency == .閃き && $0.short > 0 })
+        XCTAssertFalse(sh.contains { $0.currency == .間合い })
+    }
+    func testNoShortageWhenRich() {
+        let cfg = GameConfig()
+        var st = GameState(config: cfg)
+        for c in ExpCurrency.allCases { st[currency: c] = 500 }
+        for a in Ability.allCases { XCTAssertTrue(AbilityUpView.shortages(a, state: st, config: cfg).isEmpty) }
+    }
+    func testPracticesMapToTrainingSpec() {
+        let cfg = GameConfig()
+        XCTAssertEqual(AbilityUpView.practices(for: .存在感, config: cfg).first, "舞台に立つ")
+        XCTAssertTrue(AbilityUpView.practices(for: .存在感, config: cfg).contains("カラオケボックスで声出し"))
+        XCTAssertEqual(AbilityUpView.practices(for: .閃き, config: cfg).first, "ネタを書く")
+        XCTAssertFalse(AbilityUpView.practices(for: .語彙, config: cfg).isEmpty)   // 語彙は副効果から引く
+    }
+    func testPowerNote() {
+        XCTAssertNotNil(TournamentResultView.powerNote(passed: true, power: 21, line: 28))
+        XCTAssertNotNil(TournamentResultView.powerNote(passed: false, power: 30, line: 28))
+        XCTAssertNil(TournamentResultView.powerNote(passed: true, power: 30, line: 28))
+        XCTAssertNil(TournamentResultView.powerNote(passed: false, power: 20, line: 28))
+        XCTAssertNil(TournamentResultView.powerNote(passed: true, power: 20, line: nil))
+    }
+    func testLengthMismatchNote() {
+        let n = Neta(id: 1, name: "x", kata: .華先行, lengthFit: [.短尺], bornYear: 1)
+        XCTAssertNil(NetaPickRow.lengthMismatchNote(n, required: .短尺))
+        let note = NetaPickRow.lengthMismatchNote(n, required: .中尺)
+        XCTAssertTrue(note?.contains("ふつう") == true && note?.contains("短め") == true)
+    }
+}

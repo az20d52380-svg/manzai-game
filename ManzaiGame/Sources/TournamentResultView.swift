@@ -63,7 +63,7 @@ struct TournamentResultView: View {
 
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
     private func stampLabel(passed: Bool) -> String {
-        if isMidTournament { return passed ? "優勝" : "敗退" }   // 道中の単発大会を勝ち抜く＝その大会で優勝（入賞とは意味が違う）
+        // 道中の単発大会もGP回戦も判定は「通過ライン超え」。戦績・出来事ログ（通過/敗退）と同じ言葉に揃える（「優勝」は頂GP決勝だけ）
         return passed ? "通過" : "敗退"
     }
 
@@ -394,6 +394,15 @@ struct TournamentResultView: View {
         .padding(.horizontal, YoseMetrics.screenMargin + 6)
     }
 
+    /// 「実力」は出場前の札と同じ値（実力値＋相性）。合否は ネタの出来・当夜のブレ込みなので、数字と食い違う時だけ理由を添える
+    static func powerNote(passed: Bool, power: Int, line: Double?) -> String? {
+        guard let line else { return nil }
+        if passed && Double(power) < line { return "実力はラインに届かなくても、ネタの出来と当夜の客席で突破" }
+        if !passed && Double(power) >= line { return "実力はラインを越えていたが、当夜のブレで届かず" }
+        return nil
+    }
+    private func powerNote(_ r: StageResult) -> String? { Self.powerNote(passed: r.passed, power: currentPower, line: displayLine) }
+
     /// 結果・精算の2段貼り紙（上段：通過ライン▶実力＋突破判子／下段：賞金・知名度）。審査員の点数は出さない
     private func settlementCard(_ r: StageResult) -> some View {
         let hasPrize = r.prize > 0
@@ -418,6 +427,10 @@ struct TournamentResultView: View {
                 }
             }
             .frame(maxWidth: .infinity).padding(.vertical, 10)
+            if let note = powerNote(r) {   // 実力（出場前と同じ値）と合否がずれた時だけ、理由を一言で
+                Text(note).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                    .multilineTextAlignment(.center).padding(.horizontal, 12).padding(.bottom, 8)
+            }
             if hasPrize || hasFame {
                 Rectangle().fill(YoseColor.kiDark).frame(height: 1)
                 HStack(spacing: 10) {

@@ -773,7 +773,7 @@ struct WeekMainView: View {
     /// 大会が近く（2週以内）、まだ振れる経験点がある＝バナーと能力アップの縁で知らせる（振るのは自分）
     private var unspentBeforeStage: Bool {
         guard expGrains > 0, let m = nextMilestone(), m.weeksLeft <= 2 else { return false }
-        return !session.recommendedAllocation().isEmpty
+        return AbilityUpView.anyPlusEnabled(session, state: s)   // 実際に押せる＋が1つ以上ある時だけ
     }
 
     /// たまっている経験点の合計（粒・切り捨て）
