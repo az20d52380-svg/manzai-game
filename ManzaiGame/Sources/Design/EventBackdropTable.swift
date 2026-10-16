@@ -6,13 +6,13 @@ import GameCore
 extension EventBackdrop {
     static func forEvent(_ kind: ChoiceEventKind) -> EventBackdrop {
         switch kind {
-        case .justLostRehearsal:       return .init(.keikoba, .night)   // 稽古場の前・夜
+        case .justLostRehearsal:       return .init(.street, .night, sign: "稽古場") // 稽古場の前・夜
         case .styleTalk:               return .init(.keikoba, .day)     // 稽古場・昼
         case .justPassedFork:          return .init(.keikoba, .day)     // 稽古場・昼
-        case .preTournamentEve:        return .init(.park, .night)      // 推定: 稽古場の帰り道(場所) ・夜
+        case .preTournamentEve:        return .init(.street, .night)    // 推定: 稽古場の帰り道・夜
         case .tsuukaBreak:             return .init(.keikoba, .day)     // 稽古場・昼休み
         case .earlyFormality:          return .init(.keikoba, .day)     // 稽古場・昼
-        case .brokeDrinkingInvite:     return .init(.park, .night)      // 推定: 稽古場の帰り道(場所)・夜
+        case .brokeDrinkingInvite:     return .init(.street, .night)    // 推定: 稽古場の帰り道・夜
         case .senpaiMeishi:            return .init(.yakiniku, .day)    // 焼肉屋・先輩のおごりの昼
         case .peerFoldedChair:         return .init(.keikoba, .day)     // 推定: 時間帯の記述なし→昼
         case .namelessReservationSlip: return .init(.uketsuke, .day)    // 稽古場の受付・昼
@@ -24,7 +24,7 @@ extension EventBackdrop {
         case .lastTrainReview:         return .init(.station, .night)   // 駅のホーム・ライブ帰りの夜
         case .luckyThirdLine:          return .init(.keikoba, .day)     // 稽古場・昼すぎ
         case .greenroomSilentTen:      return .init(.gakuya, .evening)  // 推定: 劇場の楽屋・ライブが終わった後→夕
-        case .riftWarning:             return .init(.apartment, .night) // アパートの前・夜（0050 途中解散の予告）
+        case .riftWarning:             return .init(.street, .night)    // アパートの前・夜（0050 途中解散の予告）
         // 相方以外の人とのイベント（docs/choice_events_others_v1.md §2）
         case .kouhaiInvite:            return .init(.gakuya, .evening)  // 劇場の楽屋・ライブ終わりの夕方
         case .senpaiAllNight:          return .init(.theater, .night)   // 劇場のロビー・最後の出番が終わった夜
@@ -33,15 +33,15 @@ extension EventBackdrop {
         case .doukiJointLive:          return .init(.park, .day)        // 公園のベンチ・昼
         case .baitoInventory:          return .init(.famires, .night)   // バイト先のファミレス・閉店後の夜
         case .homecomingCall:          return .init(.apartment, .evening) // アパートの部屋・年末の夕方
-        case .regularFanOranges:       return .init(.theater, .day)     // 劇場の出口・昼の部の後
+        case .regularFanOranges:       return .init(.theaterOutside, .day) // 劇場の出口・昼の部の後
         case .officeTicketQuota:       return .init(.office, .day)      // 事務所・昼
         // 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md §2）
         case .summerFestivalGig:       return .init(.keikoba, .day)     // 稽古場・事務所から電話が来た昼
         case .doukiOnTV:               return .init(.apartment, .night) // アパートの部屋・テレビをつけた夜
         case .theaterRenovation:       return .init(.theater, .day)     // 劇場のロビー・張り紙が出た昼
-        case .classmateInAudience:     return .init(.theater, .night)   // 劇場の出口→近い背景=劇場・夜の部の後
+        case .classmateInAudience:     return .init(.theaterOutside, .night) // 劇場の出口→近い背景=劇場・夜の部の後
         case .partnerFever:            return .init(.keikoba, .morning) // 稽古場・相方から電話が来た朝
-        case .lostNotebook:            return .init(.station, .morning) // 駅の忘れ物の窓口→近い背景=駅・朝
+        case .lostNotebook:            return .init(.stationGate, .morning) // 駅の忘れ物の窓口→近い背景=駅・朝
         case .yearEndLive:             return .init(.gakuya, .night)    // 劇場の楽屋・年末のライブの後
         }
     }

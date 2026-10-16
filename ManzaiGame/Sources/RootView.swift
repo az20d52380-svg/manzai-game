@@ -36,7 +36,7 @@ struct RootView: View {
                 let time = EventTimeOfDay(rawValue: ProcessInfo.processInfo.environment["MZ_BGTIME"] ?? "day") ?? .day
                 ZStack {
                     YoseColor.kinari.ignoresSafeArea()
-                    EventStageBackdropView(backdrop: EventBackdrop(place, time)).frame(height: 220)
+                    EventStageBackdropView(backdrop: EventBackdrop(place, time, sign: ProcessInfo.processInfo.environment["MZ_BGSIGN"])).frame(height: 220)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                 }
             } else {

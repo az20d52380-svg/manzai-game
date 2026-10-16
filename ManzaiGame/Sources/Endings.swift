@@ -109,7 +109,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
             return [
                 c("深夜二時。俺のアパート。", mood: .night, bg: EventBackdrop(.apartment,.night), [("谷口", "電話出えへんから来たで。電気、止まってるやん"), ("俺", "払えるあてがない。朝までにここを出る"),
                                         ("谷口", "ほんまに行くんか。どこ行くん"), ("俺", "田舎に戻る。親戚の畑で働かせてもらう")]),
-                c("午前四時。アパートの前。", mood: .night, bg: EventBackdrop(.apartment,.night), [("谷口", "荷物、それだけか"), ("俺", "段ボール二つ。残りは置いていく"),
+                c("午前四時。アパートの前。", mood: .night, bg: EventBackdrop(.street,.night), [("谷口", "荷物、それだけか"), ("俺", "段ボール二つ。残りは置いていく"),
                                         ("谷口", "借金、少しなら俺も払えるで"), ("俺", "いい。それはお前の分じゃない")]),
                 c("始発の前。駅のホーム。", mood: .night, together: false, bg: EventBackdrop(.station,.night), [("谷口", "着いたら連絡してな。絶対やで"), ("俺", "わかった。向こうの番号もあとで送る")]),
             ]
@@ -130,7 +130,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
                 c("十二月の終わり。俺のアパート。", bg: EventBackdrop(.apartment,.evening), [("谷口", "来年のグランプリの申し込み、締め切り来週やで"), ("俺", "出さない。今年で終わりにする"), ("谷口", "……そうか。十年やもんな")]),
                 c("年明け。バイト先の休憩室。", mood: .noon, bg: EventBackdrop(.office,.day), [("布施店長", "……昼のシフト、一人辞めたんだよ。お前、来月から入れるか"),
                                                     ("俺", "入ります。夜はもう空けなくていいので"), ("布施店長", "……じゃあ名札、作り直しとく。遅れんなよ")]),
-                c("三月。駅の改札前。", mood: .after, together: false, bg: EventBackdrop(.station,.day), [("谷口", "俺、地元の役所の試験、受かってん。来週帰るわ"),
+                c("三月。駅の改札前。", mood: .after, together: false, bg: EventBackdrop(.stationGate,.day), [("谷口", "俺、地元の役所の試験、受かってん。来週帰るわ"),
                                                           ("俺", "よかったな。向こうでも体に気をつけて"), ("谷口", "お前もな。たまには電話してや")]),
             ]
         case .keptGoing:
@@ -157,7 +157,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         case .championRetire:
             return []   // 既存の S6bView のまま（新しい文章なし）
         case .championPair:
-            return [c("翌朝。ファミレスの前。", mood: .after, bg: EventBackdrop(.famires,.morning), [("谷口", "明日から、ちょっと休もか"), ("俺", "うん。休んで、それから次のことを二人で決めよう"),
+            return [c("翌朝。ファミレスの前。", mood: .after, bg: EventBackdrop(.street,.morning, sign: "ファミレス"), [("谷口", "明日から、ちょっと休もか"), ("俺", "うん。休んで、それから次のことを二人で決めよう"),
                                                        ("谷口", "ほな、来週また連絡するわ")])]
         }
     }

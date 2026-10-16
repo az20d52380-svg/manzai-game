@@ -17,6 +17,8 @@ public enum EventPlace: String, CaseIterable, Codable, Sendable {
     case yakiniku    // 12. 焼肉屋（暖簾・排煙ダクト・七輪ロースター）
     case uketsuke    // 13. 稽古場の受付（ハイカウンター・飴皿）
     case theaterOutside // 14. 劇場の外観（入口・看板・のぼり・切符売り場・外灯）
+    case street      // 15. 街の通り（アパートや店の前の夜道・外灯・電柱・入口。sign で店先）
+    case stationGate // 16. 駅の改札（改札機・案内板・時計）
 
     public var label: String {
         switch self {
@@ -34,6 +36,8 @@ public enum EventPlace: String, CaseIterable, Codable, Sendable {
         case .yakiniku:  return "焼肉屋"
         case .uketsuke:  return "稽古場受付"
         case .theaterOutside: return "劇場の外"
+        case .street:    return "街の通り"
+        case .stationGate: return "駅の改札"
         }
     }
 }
@@ -47,6 +51,8 @@ extension EventPlace {
         case .train: return 0.55      // 車内は蛍光灯
         case .park: return 0.62
         case .theaterOutside: return 0.62
+        case .street: return 0.62
+        case .stationGate: return 0.65
         case .theater: return 0.6
         case .famires: return 0.65
         case .gakuya: return 0.8
@@ -76,10 +82,13 @@ public enum EventTimeOfDay: String, CaseIterable, Codable, Sendable {
 public struct EventBackdrop: Equatable, Codable, Sendable {
     public let place: EventPlace
     public let time: EventTimeOfDay
+    /// .street のみ：店先の看板文字（nil ならアパートの入口）
+    public let sign: String?
 
-    public init(_ place: EventPlace, _ time: EventTimeOfDay = .day) {
+    public init(_ place: EventPlace, _ time: EventTimeOfDay = .day, sign: String? = nil) {
         self.place = place
         self.time = time
+        self.sign = sign
     }
 }
 
@@ -244,6 +253,8 @@ public struct EventStageBackdropView: View {
             case .yakiniku:  YakinikuBackdrop()
             case .uketsuke:  UketsukeBackdrop()
             case .theaterOutside: TheaterOutsideBackdrop()
+            case .street: StreetBackdrop(sign: backdrop.sign)
+            case .stationGate: StationGateBackdrop()
             }
         }
         .environment(\.eventTime, backdrop.time)
@@ -427,6 +438,14 @@ private struct EventGlowLayer: View {
                 Circle().fill(Color(hex: 0xFFE9A8)).frame(width: 14, height: 14)
                     .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5)).position(x: w * fx, y: 62)
             }
+        case .street:
+            halo(w * 0.76, h * 0.70 - 104, 110, YoseColor.kinBright, 0.55)
+            halo(w * 0.40, h * 0.70 - 40, 90, Color(hex: 0xFFC870), 0.30)
+            Circle().fill(Color(hex: 0xFFE9A8)).frame(width: 14, height: 14)
+                .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5)).position(x: w * 0.76, y: h * 0.70 - 104)
+        case .stationGate:
+            halo(w / 2, 14, 220, Color(hex: 0xFFF6DA), 0.30)
+            halo(w * 0.84, h * 0.35, 70, Color(hex: 0xFFE9A8), 0.25)
         case .office:
             halo(w / 2, h * 0.25, 170, Color(hex: 0xFFF1C8), 0.34)
             halo(w / 2, h * 0.68 - 6, 100, YoseColor.kinBright, 0.26)
@@ -1408,6 +1427,155 @@ private struct TheaterOutsideBackdrop: View {
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2).offset(y: -50))
                 }
                 .position(x: w * 0.10, y: groundY - 44)
+            }
+        }
+    }
+}
+
+// MARK: - 15. 街の通り（アパートや店の前の夜道・外灯・電柱・建物の入口。sign があれば店先、無ければアパートの入口。人物なし・図形のみ）
+private struct StreetBackdrop: View {
+    @Environment(\.eventTime) private var time
+    var sign: String?
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height, groundY = h * 0.70
+            ZStack {
+                eventSky(time)
+                // 奥の街並み（低い建物の影＋窓の灯り）
+                HStack(alignment: .bottom, spacing: 3) {
+                    ForEach(0..<8, id: \.self) { i in
+                        Rectangle().fill(Color(hex: i % 2 == 0 ? 0xB9B2A4 : 0xA8A294))
+                            .frame(width: w / 8 - 3, height: CGFloat(60 + (i * 37) % 44))
+                            .overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.5), lineWidth: 1))
+                            .overlay(alignment: .top) {
+                                Rectangle().fill(time == .night ? Color(hex: 0xFFE9A8) : Color(hex: 0xD8E8F0)).frame(width: 7, height: 8).padding(.top, 14)
+                            }
+                    }
+                }
+                .frame(width: w).position(x: w / 2, y: groundY - 50 - 22)
+                // 手前の建物（入口の壁）
+                Rectangle().fill(Color(hex: 0xE2D8C2)).frame(width: w * 0.64, height: groundY - 34)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .position(x: w * 0.40, y: 34 + (groundY - 34) / 2)
+                Rectangle().fill(YoseColor.kuroUrushi).frame(width: w * 0.64 + 8, height: 10).position(x: w * 0.40, y: 36)
+                if let sign {
+                    // 店先：日除け（赤白縞）・看板・ガラス戸
+                    ZStack {
+                        Rectangle().fill(YoseColor.kuroUrushi)
+                        Text(sign).font(YoseFont.gothic(18, weight: .black)).foregroundStyle(YoseColor.kinBright)
+                    }
+                    .frame(width: 112, height: 30).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2)).position(x: w * 0.40, y: 64)
+                    HStack(spacing: 0) {
+                        ForEach(0..<8, id: \.self) { i in Rectangle().fill(i % 2 == 0 ? YoseColor.shu : YoseColor.washi) }
+                    }
+                    .frame(width: 168, height: 22).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2)).position(x: w * 0.40, y: 96)
+                    ZStack {
+                        Rectangle().fill(time == .night ? Color(hex: 0xFFE9B0) : Color(hex: 0xD8E8F0))
+                        Rectangle().fill(YoseColor.sumi).frame(width: 2)
+                        Rectangle().fill(Color(hex: 0x6B3A2E)).frame(height: 14).frame(maxHeight: .infinity, alignment: .bottom)
+                    }
+                    .frame(width: 100, height: groundY - 118).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .position(x: w * 0.40, y: 108 + (groundY - 118) / 2)
+                } else {
+                    // アパート：二階の窓・階段の手すり・鉄の扉と部屋番号・集合ポスト
+                    ForEach([0.22, 0.58], id: \.self) { fx in
+                        Rectangle().fill(time == .night ? Color(hex: 0xFFE2A0) : Color(hex: 0xD8E8F0)).frame(width: 40, height: 34)
+                            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                            .overlay(Rectangle().fill(YoseColor.sumi).frame(width: 2))
+                            .position(x: w * fx, y: 82)
+                    }
+                    Rectangle().fill(Color(hex: 0x6E7B80)).frame(width: 52, height: groundY - 130)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                        .overlay(alignment: .top) {
+                            Text("101").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.sumi)
+                                .padding(.horizontal, 3).background(YoseColor.washi).padding(.top, 5)
+                        }
+                        .position(x: w * 0.40, y: 130 + (groundY - 130) / 2)
+                    Rectangle().fill(Color(hex: 0x8C969A)).frame(width: 34, height: 42)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                        .overlay(VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(YoseColor.sumi.opacity(0.6)).frame(width: 22, height: 3) } })
+                        .position(x: w * 0.18, y: groundY - 36)
+                    Rectangle().fill(YoseColor.sumi).frame(width: w * 0.64, height: 3).position(x: w * 0.40, y: groundY - 8)
+                }
+                // 歩道と車道
+                Rectangle().fill(Color(hex: 0xCFC7B4)).frame(height: 26).position(x: w / 2, y: groundY + 13)
+                Rectangle().fill(Color(hex: 0x6A6E74)).frame(height: h - groundY - 26).position(x: w / 2, y: groundY + 26 + (h - groundY - 26) / 2)
+                Rectangle().fill(YoseColor.sumi).frame(height: 2).position(x: w / 2, y: groundY)
+                HStack(spacing: 22) { ForEach(0..<9, id: \.self) { _ in Rectangle().fill(YoseColor.washi).frame(width: 26, height: 4) } }
+                    .position(x: w / 2, y: h - 16)
+                // 電柱（右）と電線
+                ZStack {
+                    Rectangle().fill(Color(hex: 0x5B4A3A)).frame(width: 7, height: groundY - 6)
+                    Rectangle().fill(Color(hex: 0x5B4A3A)).frame(width: 50, height: 5).offset(y: -(groundY - 6) / 2 + 22)
+                    Rectangle().fill(Color(hex: 0x5B4A3A)).frame(width: 38, height: 4).offset(y: -(groundY - 6) / 2 + 36)
+                }
+                .position(x: w * 0.90, y: groundY / 2 + 3)
+                Rectangle().fill(YoseColor.sumi).frame(width: w, height: 1.5).rotationEffect(.degrees(2.5)).position(x: w / 2, y: 22)
+                Rectangle().fill(YoseColor.sumi).frame(width: w, height: 1.5).rotationEffect(.degrees(-1.5)).position(x: w / 2, y: 36)
+                // 外灯（右寄り）
+                ZStack {
+                    Rectangle().fill(YoseColor.kuroUrushi).frame(width: 5, height: 118).offset(y: 6)
+                    Rectangle().fill(YoseColor.kinBright).frame(width: 20, height: 20).offset(y: -54)
+                        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2).offset(y: -54))
+                }
+                .position(x: w * 0.76, y: groundY - 50)
+            }
+        }
+    }
+}
+
+// MARK: - 16. 駅の改札（改札機・案内板・時計・出口の光。人物なし・図形のみ）
+private struct StationGateBackdrop: View {
+    @Environment(\.eventTime) private var time
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height, floorY = h * 0.70
+            ZStack {
+                // 構内の壁と床タイル
+                Rectangle().fill(Color(hex: 0xE4DDCB))
+                Rectangle().fill(Color(hex: 0xB8B0A0)).frame(height: h - floorY).position(x: w / 2, y: floorY + (h - floorY) / 2)
+                Rectangle().fill(YoseColor.sumi).frame(height: 2).position(x: w / 2, y: floorY)
+                HStack(spacing: 38) { ForEach(0..<10, id: \.self) { _ in Rectangle().fill(YoseColor.sumi.opacity(0.18)).frame(width: 1.5, height: h - floorY) } }
+                    .position(x: w / 2, y: floorY + (h - floorY) / 2)
+                // 天井の梁
+                Rectangle().fill(Color(hex: 0x8C8676)).frame(height: 14).position(x: w / 2, y: 7)
+                // 出口の外の明かり（右奥）
+                ZStack {
+                    eventSky(time)
+                    Rectangle().fill(YoseColor.sumi).frame(width: 2)
+                }
+                .frame(width: 84, height: floorY - 70).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                .position(x: w * 0.84, y: 70 + (floorY - 70) / 2)
+                // 案内板（吊り下げ・緑地に白字）
+                ZStack {
+                    Rectangle().fill(Color(hex: 0x1F6B4C))
+                    Text("出口").font(YoseFont.gothic(18, weight: .black)).foregroundStyle(YoseColor.washi)
+                }
+                .frame(width: 96, height: 32).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2)).position(x: w * 0.30, y: 48)
+                Rectangle().fill(YoseColor.sumi).frame(width: 2, height: 18).position(x: w * 0.30 - 30, y: 24)
+                Rectangle().fill(YoseColor.sumi).frame(width: 2, height: 18).position(x: w * 0.30 + 30, y: 24)
+                // 時計
+                ZStack {
+                    Circle().fill(YoseColor.washi)
+                    Rectangle().fill(YoseColor.sumi).frame(width: 2, height: 11).offset(y: -5.5)
+                    Rectangle().fill(YoseColor.sumi).frame(width: 8, height: 2).offset(x: 4, y: 0)
+                }
+                .frame(width: 34, height: 34).overlay(Circle().stroke(YoseColor.sumi, lineWidth: 2)).position(x: w * 0.58, y: 52)
+                // 改札機（左から三台・投入口とフラップ・緑の矢印灯）
+                ForEach(0..<3, id: \.self) { i in
+                    ZStack(alignment: .top) {
+                        Rectangle().fill(Color(hex: 0x9AA3A8))
+                        Rectangle().fill(Color(hex: 0x2A3238)).frame(height: 12).padding(.top, 6)
+                        Circle().fill(Color(hex: 0x4FD08A)).frame(width: 7, height: 7).padding(.top, 22)
+                        Rectangle().fill(YoseColor.kinBright).frame(width: 18, height: 4).padding(.top, 36)
+                    }
+                    .frame(width: 34, height: 66).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .position(x: w * (0.10 + 0.2 * CGFloat(i)), y: floorY - 33 + 4)
+                }
+                // 手前の柱
+                Rectangle().fill(Color(hex: 0xCFC7B4)).frame(width: 30, height: floorY - 14)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .position(x: w * 0.68, y: 14 + (floorY - 14) / 2)
             }
         }
     }
