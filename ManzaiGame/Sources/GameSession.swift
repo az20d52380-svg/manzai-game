@@ -1318,6 +1318,7 @@ final class GameSession {
     /// QA用（複数年）: n 年ぶん年末まで自動プレイして翌年へ進める（MZ_YEARS=n）。区切りに当たったら止まる。
     /// 自由週は「金が細ればバイト・体力があればネタ作り・無ければ休む」の素朴な台本（夜逃げで止まらないように）。
     func debugAdvanceYears(_ n: Int) {
+        let care = ProcessInfo.processInfo.environment["MZ_CARE"] == "1"
         for _ in 0..<n {
             var steps = 0
             while !finished, !winFinale, steps < 600 {
@@ -1328,9 +1329,7 @@ final class GameSession {
                 switch phase {
                 case .tournamentDecision: decideTournament(.新幹線)
                 case .freeAction:
-                    if state.money < 250_000 { choose(.job(.標準)) }
-                    else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
-                    else { choose(.rest(.完全休養)) }
+                    debugFreeWeek(care: care)
                 case .gpRound, .gpRevival, .gpFinal: advanceAuto()
                 default: steps = 600
                 }
@@ -1338,6 +1337,37 @@ final class GameSession {
             guard finished, !careerOver else { return }
             startNextYear()
         }
+        // MZ_STOPWEEK=w: 今の年の第w週の自由行動の手前まで同じ台本で進めて止める（10年目の年末を手で遊ぶ用）
+        if let w = Int(ProcessInfo.processInfo.environment["MZ_STOPWEEK"] ?? ""), w > 0 {
+            var steps = 0
+            while !finished, !winFinale, steps < 600 {
+                if case .freeAction = phase, week >= w, pendingResult == nil, pendingChoiceEvent == nil, !watchingFinal { return }
+                steps += 1
+                if watchingFinal { finishWatchingFinal(winner: "—"); continue }
+                if pendingChoiceEvent != nil { dismissChoiceEvent(); continue }
+                if pendingResult != nil { acknowledgeResult(); continue }
+                switch phase {
+                case .tournamentDecision: decideTournament(.新幹線)
+                case .freeAction: debugFreeWeek(care: care)
+                case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+                default: steps = 600
+                }
+            }
+        }
+    }
+
+    /// 自由週の台本。care=true（MZ_CARE=1）は相方を大事にする：体力に余裕があれば週に一度ネタ合わせ・隔週で相方と過ごす。
+    private func debugFreeWeek(care: Bool) {
+        if care {
+            if state.money < 250_000 { choose(.job(.標準)) }
+            else if state.stamina < 45 { choose(.rest(.相方と過ごす)) }
+            else if week % 2 == 0 { choose(.rest(.相方と過ごす)) }
+            else { choose(.train(.ネタ合わせ)) }
+            return
+        }
+        if state.money < 250_000 { choose(.job(.標準)) }
+        else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
+        else { choose(.rest(.完全休養)) }
     }
 
     /// QA用: 年末（S4）まで一気に自動プレイ（結果は自動で送る）。
