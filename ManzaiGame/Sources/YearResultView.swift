@@ -324,9 +324,37 @@ struct YearResultView: View {
             if pool == Self.yeStall { pool = Self.yeFirstStall; scene += ".first" }
             else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap; scene += ".first" }
         }
+        // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
+        let rec = Self.stageRecord(log: session.log)
+        pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
         // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
         return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
+    }
+
+    /// その年の出来事ログ（summarize の一行＝「第N週: 大会名 通過 / …」）から、本番の勝ち（通過・優勝）と負け（敗退）を数える。
+    /// 休（体調ダウン）と観客席からの決勝は数えない。表示専用・乱数非消費。
+    static func stageRecord(log: [String]) -> (wins: Int, losses: Int) {
+        var w = 0, l = 0
+        for line in log where !line.contains("客席から") {
+            for part in line.split(separator: "/") {
+                if part.contains(" 敗退") { l += 1 }
+                else if part.contains(" 通過") || part.contains(" 優勝") { w += 1 }
+            }
+        }
+        return (w, l)
+    }
+    /// 負けを語る独白（戦績が負け越していない年には合わない）。
+    private static let loseLeaning: Set<String> = [
+        "今年は、思ったほど勝ち進めなかった。谷口が落ち込んでないか心配だ。",
+        "今年は、予選で落ちる日が多かった。落ちた大会の名前を、手帳に書き出しておこう。",
+        "一年目は悔しい。来年は稽古を増やそう。",
+    ]
+    /// 勝ちが負けより多い年は、負けを語る独白を外す（外すと空になる時は元のまま）。
+    static func filterByRecord(_ pool: [String], wins: Int, losses: Int) -> [String] {
+        guard wins > losses else { return pool }
+        let kept = pool.filter { !loseLeaning.contains($0) }
+        return kept.isEmpty ? pool : kept
     }
 
     // yearEnd.* 逐語（voice_corpus_v0 §4-3＋§8・calibration 0be8a11）。独白(俺)・標準語。相方固有名を含む行は除外。
