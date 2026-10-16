@@ -24,6 +24,7 @@ struct WeekMainView: View {
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
     @State private var hint: HintSpec?       // 初回だけの短い説明（初週・生活費の前の週。`？` からも開く）
+    @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
@@ -166,6 +167,14 @@ struct WeekMainView: View {
         .overlay {
             if let m = debtNotice {
                 YoseModal(title: "借金", primaryTitle: "わかった", primaryAction: { debtNotice = nil }, cancelTitle: nil) {
+                    Text(m).font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                        .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .overlay {
+            if let m = riftNotice {
+                YoseModal(title: "コンビ", primaryTitle: "わかった", primaryAction: { riftNotice = nil }, cancelTitle: nil) {
                     Text(m).font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
                         .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                 }
@@ -1193,7 +1202,12 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
-        guard debtNotice == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        guard debtNotice == nil, riftNotice == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        if session.riftHintToShow {
+            session.markRiftHintShown()
+            riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。"
+            return
+        }
         guard let tier = session.debtNoticeTierToShow(money: s.money) else { return }
         session.markDebtWarned(tier)
         switch tier {
@@ -1224,7 +1238,7 @@ struct WeekMainView: View {
 
     /// 初回だけ出す短い説明（初週＝実力/相性/体力/経験点、最初の生活費の週＝引き落とし）。他の知らせと重ねない。
     private func maybeShowFirstHints() {
-        guard !OneTimeHint.suppressedForDebug, hint == nil, debtNotice == nil, toast == nil,
+        guard !OneTimeHint.suppressedForDebug, hint == nil, debtNotice == nil, riftNotice == nil, toast == nil,
               session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil,
               !showAllocation, !showShop, !showNotebook, !showCalendar, !showSettings,
               case .freeAction = session.phase, session.year == 1 else { return }

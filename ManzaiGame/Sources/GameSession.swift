@@ -124,6 +124,8 @@ final class GameSession {
     private(set) var didWatchFinal = false
     /// 借金の知らせを出した最も深い段（0=未・1=初マイナス・2=−50万割れ・3=−80万割れ）。1キャリアで各段1回（表示のみ・golden非対象）
     private(set) var debtWarnTier = 0
+    /// 0050 の後の「すれ違いが減る」知らせを出したか（キャリア1回・表示のみ）
+    private(set) var didShowRiftHint = false
     /// 今年の決勝のスコアとラインの差（score − 実効ライン）。決勝演出の順位・票を内部の結果に沿って合成するため
     /// （正＝優勝。0に近いほど接戦）。表示専用・golden非対象
     private(set) var lastFinalMargin: Double?
@@ -238,6 +240,7 @@ final class GameSession {
                                 && save.runner.state.riftWarned == true) ? false : firedRaw
         self.didWatchFinal = save.didWatchFinal ?? false
         self.debtWarnTier = save.debtWarnTier ?? 0
+        self.didShowRiftHint = save.didShowRiftHint ?? false
         checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
@@ -958,6 +961,7 @@ final class GameSession {
         var partnerName: String?   // 相方の名前（旧セーブ＝nil＝谷口）
         var didFireRiftWarn: Bool? // 途中解散の予告を出したか（旧セーブ＝nil＝まだ）
         var riftWarnChoice: String? // 予告の選択 "A"/"B"（旧セーブ＝nil）
+        var didShowRiftHint: Bool?  // 予告の後の知らせを出したか（旧セーブ＝nil＝まだ）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -971,6 +975,14 @@ final class GameSession {
     func markDebtWarned(_ tier: Int) {
         guard tier > debtWarnTier else { return }
         debtWarnTier = tier
+        saveNow()
+    }
+
+    /// 予告0050を選び終えた後、週メインで一度だけ出す事実の一言を出すべきか。表示専用
+    var riftHintToShow: Bool { riftWarnChoice != nil && !didShowRiftHint && pendingChoiceEvent == nil }
+    func markRiftHintShown() {
+        guard !didShowRiftHint else { return }
+        didShowRiftHint = true
         saveNow()
     }
 
@@ -1011,7 +1023,8 @@ final class GameSession {
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
                             yearStartState: yearStartState, yearHistory: yearHistory,
                             debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName,
-                            didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice)
+                            didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
+                            didShowRiftHint: didShowRiftHint)
         do {
             let data = try JSONEncoder().encode(save)
             UserDefaults.standard.set(data, forKey: Self.saveKey)
@@ -1442,7 +1455,7 @@ extension GameSession {
         do { var st = GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
              let s = GameSession(startState: st); s.debugAdvanceYears(1); s.saveNow()
              if let d = UserDefaults.standard.data(forKey: "manzai.save.v1"), var o = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
-                 for k in ["version", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName", "didFireRiftWarn", "riftWarnChoice", "didFireLostRehearsal", "didFirePassFork", "didFireEve", "didWatchFinal"] { o.removeValue(forKey: k) }
+                 for k in ["version", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName", "didFireRiftWarn", "riftWarnChoice", "didShowRiftHint", "didFireLostRehearsal", "didFirePassFork", "didFireEve", "didWatchFinal"] { o.removeValue(forKey: k) }
                  if var r = o["runner"] as? [String: Any], var stt = r["state"] as? [String: Any] {
                      for k in ["rift", "riftWarned", "riftWeekStartCompat", "dissolved"] { stt.removeValue(forKey: k) }
                      r["state"] = stt; o["runner"] = r

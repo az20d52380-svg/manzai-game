@@ -183,6 +183,18 @@ final class RiftWarnEventTests: XCTestCase {
         XCTAssertEqual(warnedBeforeFire, true)
         XCTAssertTrue(warnedBeforeEver)
     }
+    /// 予告の後の「すれ違いが減る」知らせは、選んだ後に一度だけ出る（選ぶ前は出ない・記録後は出ない）
+    func testRiftHintShowsOnlyOnceAfterWarning() {
+        var st = GameState(config: GameConfig()); st.compat = 12; st.money = 5_000_000; st.rift = 10; st.riftWarned = true
+        let s = GameSession(startState: st)
+        XCTAssertEqual(s.pendingChoiceEvent, .riftWarning)
+        XCTAssertFalse(s.riftHintToShow, "選ぶ前に出た")
+        s.applyEventChoice(s.availableEventChoices()[0].id)
+        s.dismissChoiceEvent()
+        XCTAssertTrue(s.riftHintToShow)
+        s.markRiftHintShown()
+        XCTAssertFalse(s.riftHintToShow, "2回目が出た")
+    }
     /// 予告が出た週に「年末へ」を押しても、予告は消えず次の年の第1週頭に出る（1キャリア1回は保つ）
     func testRiftWarningSurvivesFastForwardToYearEnd() {
         var st = GameState(config: GameConfig()); st.compat = 12; st.money = 5_000_000; st.rift = 10; st.riftWarned = true
