@@ -49,7 +49,7 @@ struct YearResultView: View {
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
-                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 6)
+                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 66)   // 他画面の主ボタン（約y=747）と高さを揃える（連打の空振り防止）
                 .background(YoseColor.kinari)
                 .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
         }
