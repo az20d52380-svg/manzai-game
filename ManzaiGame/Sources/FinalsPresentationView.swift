@@ -11,8 +11,8 @@ import GameCore
 
 /// 決勝のビート（順に進む・飛ばさない）。中身の無いビート（出順1番の「先の組」）だけは入らない。
 enum FinalsBeat: Int, Comparable {
-    case preceding = 0 // 自組より前の出順の組が1組ずつ出る（自動で送る・タップで次の組）
-    case lot = 1       // 自組の籤（出順）
+    case lot = 0       // 自組の籤（出順）＝番組の最初（導入→くじ→1組目…）
+    case preceding = 1 // 自組より前の出順の組が1組ずつ出る（自動で送る・タップで次の組）
     case perform = 2   // ネタ（舞台の二人・歓声。自動で採点へ）
     case open = 3      // 7審査員の採点（1人ずつ開く＝オーナー判断 2026-10-09）
     case comments = 4  // 司会が審査員2人（最高点・最低点）に講評を振る（r1 §3・P4）
@@ -239,7 +239,7 @@ struct FinalsPresentationView: View {
             if spectator {
                 beat = .board; shown = 0; boardAuto = true   // 観客は10組を出順どおりに観てから最終決戦
             } else {
-                beat = d.order == 1 ? .lot : .preceding        // トップバッターは先の組が無い
+                beat = .lot                                    // くじが最初（先の組はそのあと・トップバッターは先の組が無い）
             }
             #if DEBUG
             // 目視用: MZ_FIN=pre/open/board/duel/win で各ビートへ直行（タップ注入できないCLI検証のため）
@@ -309,8 +309,8 @@ struct FinalsPresentationView: View {
     /// 下部の主ボタンの文言（押すと画面タップと同じ advance）
     private var advanceLabel: String {
         switch beat {
-        case .preceding: return shown < d.order - 1 ? "次の組を見る ▶" : "出順を決める ▶"
-        case .lot: return lotRevealed ? "舞台へ ▶" : "くじの結果を見る ▶"
+        case .preceding: return shown < d.order - 1 ? "次の組を見る ▶" : "舞台へ ▶"
+        case .lot: return lotRevealed ? (d.order > 1 ? "先の組を見る ▶" : "舞台へ ▶") : "くじの結果を見る ▶"
         case .perform: return ""
         case .open: return revealedJudges < 7 ? "審査員の得点をめくる（\(min(7, revealedJudges + 1))/7）▶" : "講評へ ▶"
         case .comments: return commentStep < commentPicks.count - 1 ? "次の講評へ ▶" : "順位ボードへ ▶"
@@ -430,7 +430,7 @@ struct FinalsPresentationView: View {
 
     /// 次のビートへ。ボードに入る瞬間は自組の行を載せ、暫定席に入れたかを音で返す
     private func goNext() {
-        let nextBeat = beat.next
+        let nextBeat = (beat == .lot && d.order <= 1) ? FinalsBeat.perform : beat.next   // トップバッターは先の組を飛ばす
         Sound.play(.transition)
         if nextBeat == .perform { doorsOpen = false; entranceFull = FinalsSeen.first("door") }
         if nextBeat == .duel { duelFull = FinalsSeen.first("duel") }
