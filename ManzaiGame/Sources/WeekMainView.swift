@@ -128,6 +128,7 @@ struct WeekMainView: View {
         VStack(spacing: 0) {
             stageHeaderBand
             goalBanner
+            weekHintLine
             sceneZone
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             commandZone
@@ -404,6 +405,36 @@ struct WeekMainView: View {
             .buttonStyle(PressableStyle())
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 4)
             .background(Color(hex: 0xFFFBF0))
+        }
+    }
+
+    /// 目標の帯の下の一行案内（優先順で最初に当てはまる1つ。表示専用）
+    private var weekHintText: String? {
+        let m = nextMilestone()
+        let stage = session.nextStage
+        let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.max { $0.polish < $1.polish }
+        let bannerShown = (m?.weeksLeft ?? 99) <= 2 && unspentBeforeStage
+        return WeekHint.line(.init(
+            netaCount: s.netas.count,
+            stageWeeksLeft: m?.weeksLeft, stageLength: stage?.length,
+            netaFitsStage: cur.flatMap { n in stage.map { n.fits($0.length) } },
+            stamina: s.stamina,
+            livingThisWeek: session.week % session.config.livingInterval == 0,
+            money: s.money, livingCost: session.config.livingCost,
+            weeksWithoutPartner: session.weeksWithoutPartner,
+            plusAvailable: expGrains > 0 && AbilityUpView.anyPlusEnabled(session, state: s),
+            expBannerShown: bannerShown))
+    }
+
+    @ViewBuilder private var weekHintLine: some View {
+        if let text = weekHintText {
+            Text(text)
+                .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 44).padding(.top, 4).padding(.bottom, 22)
+                .background(Color(hex: 0xFFFBF0))
+                .accessibilityIdentifier("weekHintLine")
         }
     }
 

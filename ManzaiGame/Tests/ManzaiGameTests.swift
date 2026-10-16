@@ -302,3 +302,55 @@ final class PlaytestFixV2Tests: XCTestCase {
         XCTAssertEqual(first, FanReportData.voices(name: "A", passed: true, margin: 12, burst: false, salt: 3, used: []))
     }
 }
+
+final class WeekHintTests: XCTestCase {
+    private func base() -> WeekHint.Input {
+        .init(netaCount: 2, stageWeeksLeft: 10, stageLength: .中尺, netaFitsStage: true, stamina: 80,
+              livingThisWeek: false, money: 500_000, livingCost: 140_000, weeksWithoutPartner: 0,
+              plusAvailable: false, expBannerShown: false)
+    }
+    func testNone() { XCTAssertNil(WeekHint.line(base())) }
+    func testNoNeta() {
+        var i = base(); i.netaCount = 0
+        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+    }
+    func testLengthMismatch() {
+        var i = base(); i.stageWeeksLeft = 4; i.netaFitsStage = false; i.stageLength = .長尺
+        XCTAssertEqual(WeekHint.line(i), "次の大会は尺『長め』。合うネタがまだ無い。")
+        i.stageWeeksLeft = 5; XCTAssertNil(WeekHint.line(i))   // 5週先は出さない
+        i.stageWeeksLeft = 3; i.netaFitsStage = true; XCTAssertNil(WeekHint.line(i))
+        i.netaFitsStage = nil; XCTAssertNil(WeekHint.line(i))
+    }
+    func testStamina() {
+        var i = base(); i.stamina = 30
+        XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
+        i.stamina = 31; XCTAssertNil(WeekHint.line(i))
+    }
+    func testLiving() {
+        var i = base(); i.livingThisWeek = true; i.money = 139_999
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        i.money = 140_000; XCTAssertNil(WeekHint.line(i))
+        i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
+    }
+    func testPartner() {
+        var i = base(); i.weeksWithoutPartner = 6
+        XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
+        i.weeksWithoutPartner = 5; XCTAssertNil(WeekHint.line(i))
+    }
+    func testPlusAndBannerMerge() {
+        var i = base(); i.plusAvailable = true
+        XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+        i.expBannerShown = true; XCTAssertNil(WeekHint.line(i))   // 朱の帯と重ねない
+    }
+    func testPriorityOrder() {
+        var i = base()
+        i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
+        i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
+        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "次の大会は尺『ふつう』。合うネタがまだ無い。")
+        i.netaFitsStage = true; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
+        i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
+        i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+    }
+}

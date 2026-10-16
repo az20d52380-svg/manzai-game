@@ -147,6 +147,26 @@ struct RootView: View {
                 st.money = Int(ProcessInfo.processInfo.environment["MZ_MONEY"] ?? "") ?? -100_000
                 session = GameSession(startState: st)
             }
+            if ui == "weekhint", session.week <= 1, session.year == 1 {
+                // 週メインの一行案内の目視: MZ_WH=neta0/stage/stamina/living/partner/plus で各条件の状態を作る
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
+                let kind = ProcessInfo.processInfo.environment["MZ_WH"] ?? "neta0"
+                if kind != "neta0" {
+                    let ns = GameSession.debugNetaState(); st.netas = ns.netas; st.nextNetaID = ns.nextNetaID; st.selectedNetaID = ns.selectedNetaID
+                }
+                if kind == "stage" { for i in st.netas.indices { st.netas[i].lengthFit = [.短尺] } }
+                if kind == "stamina" { st.stamina = 20 }
+                if kind == "living" { st.money = 135_000 }
+                if kind == "plus" { let a = GameSession.debugAllocationState(); st.exp閃き = a.exp閃き; st.exp語彙 = a.exp語彙; st.exp間合い = a.exp間合い; st.exp存在感 = a.exp存在感; st.exp胆力 = a.exp胆力 }
+                session = GameSession(startState: st)
+                switch kind {
+                case "stage": if let w = session.nextStage?.week { session.debugAdvanceUntilStage(weeksBefore: 3, stageWeek: w) }
+                case "stamina": session.debugFreeWeeks(4, .job(.キツい))
+                case "living": session.debugFreeWeeks(3, .rest(.完全休養))
+                case "partner": session.debugFreeWeeks(6, .rest(.完全休養))
+                default: break
+                }
+            }
             if ui == "juice" {
                 // ジュース目視: 2秒後にネタ作りを自動実行＝Beat2バースト＋パーティクル＋ピル跳ねをスクショで拾う
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
