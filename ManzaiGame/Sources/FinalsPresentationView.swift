@@ -399,6 +399,18 @@ struct FinalsPresentationView: View {
             slamFire += 1                                           // 揺れ・閃光は決着の1回だけ（X2-26〜28）
             Haptics.rare(); burstFire += 1
             Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
+            if revealVotes < 7 {                                    // 4票で決まったあとの残りの札：1拍おいて、早めに1枚ずつ開く（連打の手間を省く）
+                holdingSeventh = true
+                Task {
+                    try? await Task.sleep(nanoseconds: 1_100_000_000)
+                    while revealVotes < 7 {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) { revealVotes += 1 }
+                        Haptics.confirm(); Sound.play(.don)
+                        try? await Task.sleep(nanoseconds: 380_000_000)
+                    }
+                    holdingSeventh = false
+                }
+            }
         } else {
             Haptics.confirm()
             Sound.play(.don)                                       // 札1枚＝ドン
