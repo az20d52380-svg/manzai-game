@@ -368,6 +368,14 @@ public enum ChoiceEventTable {
     /// 週次抽選イベントの発火ゲート（純関数・RNG非消費）。確定発火の kind は常に false（抽選プール外）。
     /// GameSession の週次抽選が「発火帯に入っている候補」だけを対象にする（proposals 各票の発火条件）。
     public static func weeklyFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig) -> Bool {
+        guard weeklyBandFireable(kind, state: state, week: week, config: config) else { return false }
+        // 全イベント共通: 選択肢があるのに今の状態で1つも選べないイベントは出さない（発火も上限消費もしない）。
+        // 選択肢なしのフレーバーは対象外。RNG非消費・候補の絞り込みのみ。
+        let cs = choices(for: kind, config: config)
+        return cs.isEmpty || cs.contains { $0.gate(state) }
+    }
+
+    private static func weeklyBandFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig) -> Bool {
         switch kind {
         case .brokeDrinkingInvite:
             // 0011: 低所持金帯（<5万）＋相性が上限未満（上限だと A の相性+1 が死んで B 上位互換化＝proposal リスク節）

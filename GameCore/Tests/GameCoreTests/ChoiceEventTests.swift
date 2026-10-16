@@ -488,4 +488,23 @@ final class ChoiceEventTests: XCTestCase {
         s.fame = 4
         XCTAssertFalse(ChoiceEventTable.weeklyFireable(.classmateInAudience, state: s, week: 20, config: config))
     }
+
+    /// 全イベント共通: どの選択肢も選べない状態では週次の発火候補に入らない（所持金0・体力0 等の極端な状態）
+    func testNoWeeklyFireWhenNoChoiceSelectable() {
+        let config = GameConfig()
+        var s = GameState()
+        s.money = 0; s.stamina = 0
+        for kind in ChoiceEventKind.allCases {
+            let cs = ChoiceEventTable.choices(for: kind, config: config)
+            guard !cs.isEmpty, !cs.contains(where: { $0.gate(s) }) else { continue }
+            for week in 1...52 {
+                XCTAssertFalse(ChoiceEventTable.weeklyFireable(kind, state: s, week: week, config: config), "\(kind) week \(week)")
+            }
+        }
+        // 年末のライブ: 所持金1500未満では窓の中でも出ない／1500あれば出る
+        s.money = 1499
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 34, config: config))
+        s.money = 1500
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 34, config: config))
+    }
 }
