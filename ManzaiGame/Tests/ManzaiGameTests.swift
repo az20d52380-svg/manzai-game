@@ -354,3 +354,18 @@ final class WeekHintTests: XCTestCase {
         i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
     }
 }
+
+/// 週次の選択肢イベントは1キャリア1回（年をまたいでも同じイベントが再発火しない・playtest_v4 ②）
+final class WeeklyEventOnceTests: XCTestCase {
+    func testNoRepeatAcrossYears() {
+        for seed in [424242, 1, 7, 99, 2024] as [UInt64] {
+            let s = GameSession(seed: seed)
+            var kinds: [String: Int] = [:]
+            _ = GameSession.debugSelfPlay(s, kinds: &kinds)
+            let weekly = Set(ChoiceEventKind.allCases.filter { $0.isWeeklyRandom }.map { "\($0)" })
+            for (k, n) in kinds where weekly.contains(k) {
+                XCTAssertLessThanOrEqual(n, 1, "seed \(seed): \(k) が \(n) 回発火")
+            }
+        }
+    }
+}
