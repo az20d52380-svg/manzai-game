@@ -333,6 +333,7 @@ struct S1TitleView: View {
     var onStart: () -> Void
     @State private var lit = false
     @State private var showSettings = false
+    @State private var showBook = false
 
     private static let crowd: [(CGFloat, CGFloat)] = [   // (幅, 高さ)＝ばらつかせた観客席の影
         (34, 40), (22, 52), (40, 36), (28, 56), (36, 44), (24, 38), (42, 54), (30, 42), (26, 50), (38, 36), (32, 48), (24, 56)
@@ -378,6 +379,18 @@ struct S1TitleView: View {
             .padding(.top, 64).padding(.trailing, 14)
             .accessibilityLabel("設定")
         }
+        .overlay(alignment: .topLeading) {
+            Button { showBook = true } label: {
+                Text("図鑑").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    .frame(minWidth: 52, minHeight: 40).padding(.horizontal, 6)
+                    .background(YoseColor.ki)
+                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
+                    .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+            }
+            .padding(.top, 64).padding(.leading, 14)
+            .accessibilityLabel("エンディング図鑑")
+        }
+        .fullScreenCover(isPresented: $showBook) { EndingGalleryView { showBook = false } }
         .sheet(isPresented: $showSettings) { SettingsView { showSettings = false } }
         .onAppear { lit = true }
     }

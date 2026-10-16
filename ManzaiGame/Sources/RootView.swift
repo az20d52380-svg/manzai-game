@@ -228,6 +228,13 @@ struct RootView: View {
         }
     }
 
+    /// エンディング／夜逃げ・解散のあと：タイトルへ戻る（「はじめる」→導入→名前決めからやり直す）
+    private func returnToTitle() {
+        showEnding = false
+        session = GameSession()
+        withAnimation(.easeInOut(duration: 0.3)) { started = false }
+    }
+
     @ViewBuilder private var mainFlow: some View {
         if started {
             content
@@ -257,14 +264,12 @@ struct RootView: View {
             if showEnding {
                 if let ending = session.endingID {
                     EndingFlowView(session: session, ending: ending) {                 // 場面→一枚絵→図鑑に記録→もう一度(=新周回)
-                        session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: session.combiName, myName: session.myName, partnerName: session.partnerName)
-                        showEnding = false
+                        returnToTitle()
                     }
                 }
             } else {
                 YearResultView(session: session,
-                               onRestart: { session = GameSession(seed: UInt64.random(in: .min ... .max),
-                                                                  combiName: session.combiName, myName: session.myName, partnerName: session.partnerName) },
+                               onRestart: { returnToTitle() },
                                onEnding: session.endingID != nil ? { showEnding = true } : nil,
                                onNextYear: session.careerOver ? nil : { session.startNextYear() })
             }
