@@ -189,6 +189,7 @@ cd GameCore && swift test
 - `NEW_CHAT_PASTE.md` — 新チャットに貼る文（起動手順・2026-10-16版）・2026-10-15
 - `a11y_audit_v1.md` — アクセシビリティ点検 v1（preview-all）・2026-10-16
 - `balance_snapshot_2026-10-16.md` — 10年通しの手応えのスナップショット・2026-10-16
+- `ability_exchange_proposal_v0.md` — 能力アップの詰まり対策の試作（案D 交換2:1＋供給×0.5・ability-exchange-proposal ブランチのみ・オーナー判断待ち）
 - `boke_audit_v1.md` — ボケ点検 v1（オーナー指摘を受けた点検）・2026-10-15
 - `check_v5_endings_events.md` — エンディング・イベントの目視確認（check_v5）・2026-10-15
 - `comedy_games_ideas_v0.md` — お笑い題材ゲームの調査とこのゲームへの案・2026-10-15
