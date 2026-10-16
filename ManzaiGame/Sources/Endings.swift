@@ -144,14 +144,14 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
                 c("十二月。事務所の会議室。", mood: .noon, bg: EventBackdrop(.office,.day), [("真壁", "来年も続けるなら、枠は取ります。どうしますか"), ("俺", "今年で区切ります。二人で話して決めました"),
                                                     ("谷口", "決勝に出られたんは、ほんまにありがたかったです")]),
                 c("一月。最後の単独ライブの日。", bg: EventBackdrop(.theater,.evening), [("谷口", "客席、思ったより埋まってるで"), ("俺", "来てくれた人に、帰りにちゃんと挨拶しよう")]),
-                c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.theater,.evening), [("谷口", "俺、テレビの裏方の仕事、紹介してもろてん"), ("俺", "そうか。俺は春から運送の会社で働く"),
+                c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.park,.evening), [("谷口", "俺、テレビの裏方の仕事、紹介してもろてん"), ("俺", "そうか。俺は春から運送の会社で働く"),
                                                  ("谷口", "ほな、どっちも朝早いな。たまに飯行こ")]),
             ]
         case .tenYearsTrue:
             return [
                 c("年末。最初に二人で出た劇場。", bg: EventBackdrop(.theater,.evening), [("谷口", "ここ、最初に二人で出たとこやな"), ("俺", "うん。今日の出番、ここで頼んだ")]),
                 c("出番の前。舞台の袖。", bg: EventBackdrop(.theater,.evening), [("谷口", "十年、ずっと隣におったな"), ("俺", "そうだな。出番、そろそろだ"), ("谷口", "せやな。ほな行こか")]),
-                c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.theater,.night), [("谷口", "来年のグランプリ、もう一回決勝行こな"), ("俺", "行こう。一月から週二で練習を入れる"),
+                c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.park,.night), [("谷口", "来年のグランプリ、もう一回決勝行こな"), ("俺", "行こう。一月から週二で練習を入れる"),
                                                  ("谷口", "よっしゃ。体だけは壊さんとこな")]),
             ]
         case .championRetire:
