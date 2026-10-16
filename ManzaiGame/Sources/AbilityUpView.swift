@@ -14,6 +14,8 @@ struct AbilityUpView: View {
     @State private var taps: [Ability] = []
     /// ＋を押した行が一瞬「金」に光る
     @State private var flash: Ability? = nil
+    /// 「交換して上げる」の確認待ちの能力（押すと内容を出して確定）
+    @State private var pendingExchange: Ability?
 
     private var cfg: GameConfig { session.config }
     private var base: GameState { session.state }
@@ -43,6 +45,17 @@ struct AbilityUpView: View {
         }
     }
 
+    private var exchangeAlertText: String {
+        guard let a = pendingExchange, let q = GameEngine.exchangeQuote(a, state: pv, config: cfg) else { return "" }
+        let fmt: ([ExpCurrency: Double]) -> String = { m in
+            ExpCurrency.allCases.compactMap { c in
+                guard let v = m[c], Self.points(v) > 0 else { return nil }
+                return "\(c)\(Self.points(v))"
+            }.joined(separator: "と")
+        }
+        return "\(fmt(q.paid))を\(fmt(q.got))に替えて、\(a)を1段上げる"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "能力アップ")
@@ -53,6 +66,7 @@ struct AbilityUpView: View {
                 VStack(spacing: 10) {
                     rankStrip
                     summaryBox
+                    exchangeNote
                     ForEach(Ability.allCases, id: \.self) { row($0) }
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
@@ -60,6 +74,13 @@ struct AbilityUpView: View {
             footer
         }
         .background(YoseColor.kinari.ignoresSafeArea())
+        .alert("交換して上げる", isPresented: Binding(get: { pendingExchange != nil }, set: { if !$0 { pendingExchange = nil } })) {
+            Button("交換する") {
+                if let a = pendingExchange { Haptics.tick(); taps.append(a) }   // 再生は pourTap＝確定・もどすと同じ道
+                pendingExchange = nil
+            }
+            Button("やめる", role: .cancel) { pendingExchange = nil }
+        } message: { Text(exchangeAlertText) }
         .overlay { if let h = hint { HintModal(spec: h) { OneTimeHint.markDone(h.key); hint = nil } } }
         .task {
             if !OneTimeHint.suppressedForDebug, !OneTimeHint.isDone(Self.hintSpec.key) {
@@ -189,6 +210,41 @@ struct AbilityUpView: View {
         .animation(.easeOut(duration: 0.25), value: after)
     }
 
+    /// 交換が起きた時の一言（試作・おまかせ列だけで起きる）。例「余った間合い14を、胆力7に替えた」
+    static func exchangeLine(_ recs: [GameEngine.ExchangeRecord]) -> String? {
+        guard !recs.isEmpty else { return nil }
+        var paid: [ExpCurrency: Double] = [:], got: [ExpCurrency: Double] = [:]
+        for r in recs {
+            for (c, v) in r.paid { paid[c, default: 0] += v }
+            for (c, v) in r.got { got[c, default: 0] += v }
+        }
+        let fmt: ([ExpCurrency: Double]) -> String = { m in
+            ExpCurrency.allCases.compactMap { c in
+                guard let v = m[c], points(v) > 0 else { return nil }
+                return "\(c)\(points(v))"
+            }.joined(separator: "と")
+        }
+        let p = fmt(paid), g = fmt(got)
+        guard !p.isEmpty, !g.isEmpty else { return nil }
+        return "余った\(p)を、\(g)に替えた"
+    }
+
+    @ViewBuilder private var exchangeNote: some View {
+        if let line = Self.exchangeLine(session.exchangesIn(taps)) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.left.arrow.right").font(.system(size: 13, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(line).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                    Text("押せる＋が無い時だけ、余り\(Int(cfg.exchangeRate))つを足りない1つに替える").font(YoseFont.gothic(10.5)).foregroundStyle(YoseColor.haiSumi)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(YoseColor.kinari)
+        }
+    }
+
     /// 次の+1 に要る経験点（通貨ごと）と段数。nil＝届かない
     private func nextPlusOne(_ a: Ability) -> (steps: Int, cost: [(ExpCurrency, Int)])? {
         guard let n = session.costOfNextStep(a, in: pv) else { return nil }
@@ -276,6 +332,7 @@ struct AbilityUpView: View {
         .accessibilityLabel("\(a)、いま\(Int(v.rounded()))\(gained > 0 ? "、\(gained)上げる予定" : "")")
         .accessibilityHint(canTap ? "押すと能力を上げる" : "粒が足りない")
         let caption = canTap ? [] : Self.shortageLines(a, state: pv, config: cfg)
+        let quote = GameEngine.exchangeQuote(a, state: pv, config: cfg)
         return VStack(alignment: .leading, spacing: 2) { main.overlay(alignment: .leading) {
             // ［−］：常に同じ場所に出す（振った分をまるごと戻す）。振っていない時は灰色で押せない＝幅も位置も動かない
             let canUndo = gained > 0
@@ -299,6 +356,17 @@ struct AbilityUpView: View {
             ForEach(caption, id: \.self) { line in
                 Text(line).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.shu)
                     .lineLimit(2).minimumScaleFactor(0.8).padding(.horizontal, 8)
+            }
+            if quote != nil {
+                Button { pendingExchange = a } label: {
+                    Label("交換して上げる", systemImage: "arrow.left.arrow.right")
+                        .font(YoseFont.gothic(11.5, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .overlay(Capsule().stroke(YoseColor.shu, lineWidth: 1.4))
+                }
+                .buttonStyle(PressableStyle())
+                .padding(.horizontal, 8)
+                .accessibilityIdentifier("exchange_\(a)")
             }
         }
     }

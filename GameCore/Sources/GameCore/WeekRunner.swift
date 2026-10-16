@@ -396,7 +396,7 @@ public struct WeekRunner<R: RandomSource> {
     /// golden/sim 経路は autoPourAllocation=true で行動直後に全量注ぐため、ここに来る残高は実ゲーム（手動注ぎ）だけ。
     /// taps は AllocationView のタップ順（プレビューと同一列を同一順で再生＝表示と確定が食い違わない）。
     public mutating func applyAllocation(_ taps: [Ability]) {
-        for a in taps { GameEngine.pourStep(a, to: &state, config: config) }
+        for a in taps { GameEngine.pourTap(a, to: &state, config: config) }   // 交換はおまかせ列だけで起きる（pourTap）
     }
 
     // MARK: 持ちネタの純適用（正典: docs/neta_system_redesign_v2.md Phase 0-b / スコア寄与=Phase 1-a）
