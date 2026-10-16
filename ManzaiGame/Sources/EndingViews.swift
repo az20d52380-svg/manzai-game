@@ -46,6 +46,7 @@ struct EndingFlowView: View {
             #if DEBUG
             if ProcessInfo.processInfo.environment["MZ_ENDSTEP"] == "art" { stage = .art }   // 目視用: 一枚絵へ直行
             if ProcessInfo.processInfo.environment["MZ_ENDSTEP"] == "cards", !cards.isEmpty { stage = .cards }   // 目視用: S6b を飛ばして場面へ
+            if Int(ProcessInfo.processInfo.environment["MZ_ENDSTEP"] ?? "") != nil, !cards.isEmpty { stage = .cards }   // MZ_ENDSTEP=<番号>: その場面カードを直接
             #endif
             if !replay && record { EndingBook.record(ending, partner: Names.partner) }
         }

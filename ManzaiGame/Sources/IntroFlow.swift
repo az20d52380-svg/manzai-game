@@ -36,7 +36,7 @@ struct ReminiscencePlayer: View {
     var onComplete: () -> Void
     @State private var index = ReminiscencePlayer.debugStart
     #if DEBUG
-    static var debugStart: Int { Int(ProcessInfo.processInfo.environment["MZ_CARD"] ?? "") ?? 0 }   // 目視用: MZ_CARD=<0始まり>で途中の場面から
+    static var debugStart: Int { Int(ProcessInfo.processInfo.environment["MZ_CARD"] ?? "") ?? Int(ProcessInfo.processInfo.environment["MZ_ENDSTEP"] ?? "") ?? 0 }   // 目視用: MZ_CARD=<0始まり>で途中の場面から
     #else
     static var debugStart: Int { 0 }
     #endif
