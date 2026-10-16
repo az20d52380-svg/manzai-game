@@ -136,28 +136,28 @@ struct WeekMainView: View {
         // パワプロ・サクセスの文法＝日常パートは明るくポップ（暗転は本番系画面の語彙）。
         .background(Theme.kinari.ignoresSafeArea())
         .fullScreenCover(isPresented: $showNotebook) {
-            NotebookView(session: session) { showNotebook = false }   // S5 ネタ帳
+            NotebookView(session: session) { instant { showNotebook = false } }.modifier(FadeInOnAppear())   // S5 ネタ帳
         }
         .fullScreenCover(isPresented: $showCalendar) {
-            CalendarView(session: session) { showCalendar = false }   // S4 年間カレンダー
+            CalendarView(session: session) { instant { showCalendar = false } }.modifier(FadeInOnAppear())   // S4 年間カレンダー
         }
         .fullScreenCover(isPresented: Binding(
             // Beat2 バースト表示中は提示を待たせる（burstHold）＝獲得の一拍がcoverに隠れない。
             // 提示の判定は syncEventPresentation（イベントが立った／保留が外れた の変化で呼ぶ）に一本化。
             get: { showEvent },
-            set: { if !$0 { showEvent = false; session.dismissChoiceEvent() } }
+            set: { if !$0 { instant { showEvent = false }; session.dismissChoiceEvent() } }
         )) {
             // 選択肢イベント（0024ピース3・確定発火）。pendingChoiceEvent は private(set) なので
             // Bool の合成 Binding 経由（既存 showNotebook 等と同じ isPresented パターン）。
             if let kind = session.pendingChoiceEvent {
-                ChoiceEventOverlay(session: session, kind: kind) {}
+                ChoiceEventOverlay(session: session, kind: kind) {}.modifier(FadeInOnAppear())
             }
         }
         .fullScreenCover(isPresented: $showAllocation) {
-            AbilityUpView(session: session) { showAllocation = false }
+            AbilityUpView(session: session) { instant { showAllocation = false } }.modifier(FadeInOnAppear())
         }
         .fullScreenCover(isPresented: $showShop) {
-            ShopView(session: session) { showShop = false }
+            ShopView(session: session) { instant { showShop = false } }.modifier(FadeInOnAppear())
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(onClose: { showSettings = false },
@@ -209,7 +209,7 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { showEvent = false; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
+            if kind == nil { instant { showEvent = false }; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
         .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowDebtNotice(); try? await Task.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
@@ -361,7 +361,7 @@ struct WeekMainView: View {
     @ViewBuilder private var goalBanner: some View {
         if let m = nextMilestone() {
             let hot = m.weeksLeft <= 3
-            Button { showCalendar = true } label: {
+            Button { instant { showCalendar = true } } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)
@@ -807,8 +807,8 @@ struct WeekMainView: View {
                 return
             }
             Sound.play(.tap)
-            if c == .能力アップ { showAllocation = true; return }
-            if c == .お店 { showShop = true; return }
+            if c == .能力アップ { instant { showAllocation = true }; return }
+            if c == .お店 { instant { showShop = true }; return }
             withAnimation(Theme.Motion.appearQuick) {
                 openCat = c
                 if c == .ネタを書く { openNetaWrite = true }
@@ -1061,7 +1061,7 @@ struct WeekMainView: View {
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
     private func syncEventPresentation() {
-        if session.pendingChoiceEvent != nil, !burstHold, pulledID == nil { showEvent = true }
+        if session.pendingChoiceEvent != nil, !burstHold, pulledID == nil { instant { showEvent = true } }
     }
 
     /// 指定秒だけ待つ。途中で burstSkip が立てば即戻る（タスクの取り消しでも即戻る）。
@@ -1169,8 +1169,8 @@ struct WeekMainView: View {
                     }
                 }
             YoseFooterTabBar(items: [
-                YoseFooterItem(title: "日程", symbol: "calendar") { showCalendar = true },              // S4 カレンダー
-                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { showNotebook = true },       // S5 コンビの情報（旧ネタ帳）
+                YoseFooterItem(title: "日程", symbol: "calendar") { instant { showCalendar = true } },              // S4 カレンダー
+                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { instant { showNotebook = true } },       // S5 コンビの情報（旧ネタ帳）
                 YoseFooterItem(title: "設定", symbol: "gearshape.fill") { showSettings = true },        // 音量・この年をやめる（監査G-04）
             ])
         }
@@ -1203,6 +1203,14 @@ struct WeekMainView: View {
     }
 
     private func showToast(_ t: String) { toast = t }
+
+    /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
+    /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
+    /// （実機でも同じ・押した行動が出ない／イベントの後に押した行動が戻る）。見た目の柔らかさは中身の FadeInOnAppear で補う。
+    private func instant(_ body: () -> Void) {
+        var t = Transaction(); t.disablesAnimations = true
+        withTransaction(t, body)
+    }
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
@@ -1430,5 +1438,15 @@ struct BounceArrow: View {
             .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)
             .offset(y: up ? 2.5 : -1.5)
             .onAppear { guard !reduceMotion else { return }; withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
+    }
+}
+
+
+/// 全画面の覆いを出す時の柔らかさ（システムの提示アニメは入力を止めるので使わず、中身を 0.18 秒でふわっと出す）。
+struct FadeInOnAppear: ViewModifier {
+    @State private var on = false
+    func body(content: Content) -> some View {
+        content.opacity(on ? 1 : 0)
+            .onAppear { withAnimation(.easeOut(duration: 0.18)) { on = true } }
     }
 }

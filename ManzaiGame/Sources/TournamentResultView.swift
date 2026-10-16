@@ -29,6 +29,9 @@ struct TournamentResultView: View {
     @State private var fanShown = 0
     @State private var fanTap = 0
     @State private var fanActive = false
+    /// 画面の段（儀式が終わった・判が出た）が切り替わった時刻。直後 0.4 秒のタップは誤タップとして無視する（結果板・講評を飛ばさない）。
+    @State private var stageChangedAt = Date.distantPast
+    private func tapAccepted() -> Bool { Date().timeIntervalSince(stageChangedAt) >= 0.4 }
 
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
@@ -184,7 +187,7 @@ struct TournamentResultView: View {
             // 判が出るまでは画面のどこを叩いても溜めを畳んで判へ飛ぶ（K6・初回から）
             if !revealed {
                 Color.clear.contentShape(Rectangle())
-                    .onTapGesture { if fanActive { fanTap += 1 } else { skipRequested = true } }   // 声の相は1枚ずつ送る
+                    .onTapGesture { guard tapAccepted() else { return }; if fanActive { fanTap += 1 } else { skipRequested = true } }   // 声の相は1枚ずつ送る
             }
         }
         .overlay(alignment: .bottom) {
@@ -218,9 +221,12 @@ struct TournamentResultView: View {
             // 判のあとも、タップで残りの段階（講評・得たもの）を一気に出せる。次へのボタンは出し切ってから
             if revealed && !revealedRest && ceremonyDone {
                 Color.clear.contentShape(Rectangle())
-                    .onTapGesture { finishReveal() }
+                    .onTapGesture { guard tapAccepted() else { return }; finishReveal() }
             }
         }
+        .onChange(of: ceremonyDone) { _, _ in stageChangedAt = Date() }
+        .onChange(of: revealed) { _, _ in stageChangedAt = Date() }
+        .onChange(of: revealedReview) { _, _ in stageChangedAt = Date() }
         .overlay {
             if !ceremonyDone {
                 StageCeremony { ceremonyDone = true; beginReveal() }
