@@ -22,3 +22,8 @@ claude/q-combined8s ＋ q106-skills 最新(cf387f1) ＋ 頂GP予選ライン−2
 1. 本体ブランチ claude/manzai-slg-foundation-wprqlu で `git merge --no-ff origin/claude/q-candidate`
 2. `cd GameCore && swift test`（180本緑）、`python3 tools/check_golden_sync.py`
 3. アプリのテスト（xcodebuild build／ManzaiGame のテスト）
+
+## 追記（親）：面白さの点検の数字（exp_fun_audit_v0・n=300・今／候補）
+- 自由に選べる週・実質1択の週・同じ行動の連続は、ほぼ同じ（例 ローテ 自由27→26%・最長連続6.1→6.2週）。何も起きない最長はやや短く（ローテ 12.2→11.0週・やり込み 11.7→10.9週＝寒梅漫才杯と誘いの分）。
+- 年ごとの伸びは同じ形（10年目の実力 ローテ 48.2→45.9）。
+- 新しい仕組み（部屋・特技・誘いの行く/断る・オファーの断り方）は「人が選ぶ物」で、ボットはほとんど使わない＝この点検では効き目が出ない。手応えは実プレイで見る（候補を入れた後に実プレイ点検 v9）。
