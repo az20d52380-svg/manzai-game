@@ -117,4 +117,41 @@ final class BoundaryGapTests: XCTestCase {
             XCTAssertFalse(fire(k, s, week: 30), "\(k) は抽選プール外")
         }
     }
+
+    /// 0015 同期の解散: 20週目から（19週は出ない）
+    func testPeerFoldedChairWeekBand() {
+        var s = GameState(config: cfg)
+        s.money = 300_000
+        XCTAssertFalse(fire(.peerFoldedChair, s, week: 19))
+        XCTAssertTrue(fire(.peerFoldedChair, s, week: 20))
+    }
+
+    /// 0014 終電の反省会: 知名度<20（20ちょうどで外れる）
+    func testLastTrainReviewFameEdge() {
+        var s = GameState(config: cfg)
+        s.money = 300_000
+        s.fame = 19.9
+        XCTAssertTrue(fire(.lastTrainReview, s))
+        s.fame = 20
+        XCTAssertFalse(fire(.lastTrainReview, s))
+    }
+
+    /// 0023 就職の誘い: 所持金<10万（10万ちょうどで外れる）
+    func testRegularEmploymentMoneyEdge() {
+        var s = GameState(config: cfg)
+        s.money = 99_999
+        XCTAssertTrue(fire(.regularEmployment, s))
+        s.money = 100_000
+        XCTAssertFalse(fire(.regularEmployment, s))
+    }
+
+    /// 0016 一本書けた夜: 持ちネタが1本でもあれば出る
+    func testWroteOneTonightNeedsNeta() {
+        var s = GameState(config: cfg)
+        s.money = 300_000
+        s.netas = []
+        XCTAssertFalse(fire(.wroteOneTonight, s))
+        s.netas = [Neta(id: 1, name: "試し", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1)]
+        XCTAssertTrue(fire(.wroteOneTonight, s))
+    }
 }
