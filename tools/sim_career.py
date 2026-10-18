@@ -117,6 +117,9 @@ RIFT_ON        = True       # 途中解散（すれ違いゲージ）docs/dissol
 RIFT_GAIN      = 0.5        # 相性が上がらなかった週の増え方 ×(上限−相性)/上限
 RIFT_HEAL      = 3.0        # 相性が上がった週の減り方
 RIFT_WARN      = 50.0       # 初めて越えた週末に予告（アプリ側の選択肢イベント）
+RIFT_JOINT_STILL = True     # §94 二人で舞台に立つ週（ネタ見せ会・フリーライブ・大会・GP）で相性が上がらなくても、すれ違いは増えない（減りもしない）
+GP_LOSS_COMPAT = (0.5, 0.5, 0.5, 0.25, 0.125)   # §94 GPの予選で落ちた時の相性の下げ幅（1〜3回戦・準々決勝・準決勝）。敗者復活・決勝・その他の大会の負けでは下げない
+RIFT_JOINT_TRAIN = ("ネタ見せ会", "フリーライブ")   # §94 舞台に立つ稽古
 RIFT_RESPOND   = False      # 実測用：予告に「向き合う」で応えるボット（rift −30・体力 −10）
 # --- §102 飲みの誘い（先輩・後輩）: 不定期に何度も来る軽い気分転換の選択。docs/balance_q93_98_measure_v0.md §102【仮】 ---
 INVITE_P       = 0.04       # 毎週末（rift_weekend の後）にこの率で誘いが来る（10年で約19回）
@@ -580,8 +583,12 @@ def invite_weekend(s, pol, year, week, seed):
 def rift_weekend(s, year, compat0):
     """途中解散のすれ違いゲージ（週末・生活費の後）。乱数なし。解散なら True。Swift: GameEngine.applyRiftWeekEnd"""
     r = getattr(s, "rift", 0.0)
+    joint = getattr(s, "_joint", False)   # §94 この週に二人で舞台に立ったか（run_year が立てる）
+    s._joint = False
     if s.compat > compat0:
         r = max(0.0, r - RIFT_HEAL)
+    elif joint and RIFT_JOINT_STILL:
+        pass                              # §94 二人の週はすれ違いがたまらない（増えない・減らない）
     else:
         r = min(100.0, r + RIFT_GAIN * (B.COMPAT_CAP - s.compat) / B.COMPAT_CAP)
     if r >= RIFT_WARN and not getattr(s, "rift_warned", False):
@@ -635,6 +642,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         t = TOURNAMENTS.get(week)
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
+            if acted: s._joint = True
             if RUN_TRACK is not None and acted:
                 RUN_TRACK.setdefault("year_entered", []).append(t["name"])
                 if won_t:
@@ -657,6 +665,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 line += _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, line, rng, final=False)
                 acted = True
+                s._joint = True
+                if not ok:
+                    B.add(s, "compat", -GP_LOSS_COMPAT[gp_stage])   # §94 予選で落ちたら相性↓
                 if ok:
                     if RUN_BOREDOM is not None:
                         RUN_BOREDOM[gp_stage] = 0    # 壁を越えたら既視感リセット
@@ -681,6 +692,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 rev_line = GP_REVIVAL_LINE + upset + _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, rev_line, rng, final=True)
                 acted = True
+                s._joint = True
                 REVIVAL_STATS["attempts"] += 1
                 if ok:
                     REVIVAL_STATS["passes"] += 1
@@ -695,6 +707,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 eff_line += _neta_line_adj(s, f"GP決勝{year}", rng, final=True)
                 ok, _ = _gp_perform(s, eff_line, rng, final=True)
                 acted = True
+                s._joint = True
                 if ok:
                     s.money += GP_PRIZE
                     fame_champ(s)
@@ -737,6 +750,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 if not B.do_training(s, arg):
                     B.do_rest(s, "完全休養")
                 else:
+                    if arg in RIFT_JOINT_TRAIN: s._joint = True
                     if NETA_ON:
                         _neta_on_train(s, arg)
                     if RUN_TRACK is not None:

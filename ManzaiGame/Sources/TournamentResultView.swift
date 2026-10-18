@@ -152,6 +152,10 @@ struct TournamentResultView: View {
                         if revealedReview {
                             washi(text: review.text, judge: review.judge, passed: r.passed)
                                 .transition(.opacity.combined(with: .offset(y: 10)))
+                            if !r.passed && Self.gpQualifierNames.contains(r.name) {   // §94 予選で落ちると相性が下がる（数字は出さない・ボケない）
+                                taniguchiLossLine
+                                    .transition(.opacity)
+                            }
                         }
                         if revealedRest {
                             settlementCard(r)
@@ -429,6 +433,20 @@ struct TournamentResultView: View {
         .padding(.horizontal, 12).padding(.vertical, 8)
         .yoseKifuda()
         .padding(.horizontal, YoseMetrics.screenMargin + 6)
+    }
+
+    /// §94 予選（1回戦〜準決勝）。敗者復活・決勝の負けでは相性は下がらない
+    private static let gpQualifierNames: Set<String> = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
+    private var taniguchiLossLine: some View {
+        HStack(spacing: 8) {
+            Text("谷口").font(YoseFont.captionBold).foregroundStyle(YoseColor.kin)
+                .padding(.horizontal, 8).frame(height: 22).background(YoseColor.kuroUrushi)
+            Text("……次や、次").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.sumi)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 6)
+        .yoseHarigami()
+        .padding(.bottom, 2)
     }
 
     /// 結果・精算の2段貼り紙（上段：突破判子／下段：賞金・知名度）。数字と基準は出さない

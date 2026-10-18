@@ -48,4 +48,57 @@ final class RiftTests: XCTestCase {
         XCTAssertEqual(t.rift ?? 0, 0, accuracy: 1e-9)   // 下限0
         XCTAssertTrue(cs[1].effects.isEmpty)
     }
+
+    // --- §94 予選で落ちたら相性↓・二人でやる週はすれ違いがたまらない ---
+
+    /// 弱い状態で GP の最初の回戦（seeded なら2回戦）を落とした時の相性の下げ幅を測る
+    private func compatDropAtFirstGPLoss(seeded: Bool) -> (stage: Int, drop: Double) {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.compat = 10; s.money = 5_000_000
+        var r = WeekRunner(state: s, year: 1, config: config, rng: SplitMix64(seed: 3), gpSeeded: seeded)
+        var phase = r.begin()
+        while true {
+            switch phase {
+            case .tournamentDecision: phase = r.resolveTournament(travel: nil)
+            case .freeAction: phase = r.resolveAction(.rest(.完全休養))
+            case .gpRound:
+                let before = r.state.compat
+                let stage = r.gpRoundsPassed
+                phase = r.resolveAuto()
+                if r.gpRoundsPassed == stage { return (stage, before - r.state.compat) }   // 落ちた回戦
+            case .weekDone: phase = r.begin()
+            case .yearDone: XCTFail("GP回戦で落ちなかった"); return (-1, -1)
+            default: phase = r.resolveAuto()
+            }
+        }
+    }
+
+    func testGPQualifierLossLowersCompatPerRound() {
+        XCTAssertEqual(GameConfig().gpLossCompat, [0.5, 0.5, 0.5, 0.25, 0.125])   // 準々は半分・準決勝は1/4
+        for seeded in [false, true] {
+            let (stage, drop) = compatDropAtFirstGPLoss(seeded: seeded)
+            XCTAssertEqual(drop, GameConfig().gpLossCompat[stage], accuracy: 1e-9)   // 落ちた回戦の下げ幅
+        }
+    }
+
+    func testJointWeekDoesNotAccumulateRift() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.compat = 5; s.riftWeekStartCompat = 5; s.rift = 10; s.riftJointWeek = true
+        _ = GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config)
+        XCTAssertEqual(s.rift ?? 0, 10, accuracy: 1e-9)      // 増えない・減らない
+        XCTAssertEqual(s.riftJointWeek, false)               // 週末で印は戻る
+        s.riftWeekStartCompat = 5; s.riftJointWeek = true; s.compat = 6
+        _ = GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config)
+        XCTAssertEqual(s.rift ?? 0, 7, accuracy: 1e-9)       // 相性が上がった週は今どおり減る
+    }
+
+    func testSoloWeekStillAccumulatesRift() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.compat = 5; s.riftWeekStartCompat = 5; s.rift = 10
+        _ = GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config)
+        XCTAssertEqual(s.rift ?? 0, 10 + 0.5 * 15 / 20, accuracy: 1e-9)   // 一人の週は今どおり増える
+    }
 }

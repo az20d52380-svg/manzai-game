@@ -258,8 +258,12 @@ public enum GameEngine {
     public static func applyRiftWeekEnd(year: Int, to s: inout GameState, config: GameConfig) -> Bool {
         guard config.riftOn else { return false }
         var r = s.rift ?? 0
+        let joint = s.riftJointWeek == true   // §94 この週に二人で舞台に立ったか
+        s.riftJointWeek = false
         if s.compat > (s.riftWeekStartCompat ?? s.compat) {
             r = max(0, r - config.riftHeal)
+        } else if joint && config.riftJointStill {
+            // §94 二人の週はすれ違いがたまらない（増えない・減らない）
         } else {
             r = min(100, r + config.riftGain * (config.compatCap - s.compat) / config.compatCap)
         }
