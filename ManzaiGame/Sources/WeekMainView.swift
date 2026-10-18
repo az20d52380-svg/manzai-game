@@ -874,7 +874,7 @@ struct WeekMainView: View {
             case .休む: return "体力を回復"
             case .能力アップ:
                 if unspentBeforeStage { return "" }   // 朱札「未振分あり」と上の看板が言う
-                return expGrains > 0 ? "経験点 \(expGrains) たまってる" : "経験点で強化"
+                return expGrains > 0 ? "振れる経験点あり" : "能力を伸ばす"
             case .お店: return "アイテムを買う"
             }
         }()

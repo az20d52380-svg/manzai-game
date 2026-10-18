@@ -277,7 +277,7 @@ struct AbilityUpView: View {
         .disabled(!canTap)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(a)、いま\(Int(v.rounded()))\(gained > 0 ? "、\(gained)上げる予定" : "")")
-        .accessibilityHint(canTap ? "押すと能力を上げる" : "粒が足りない")
+        .accessibilityHint(canTap ? "押すと能力を上げる" : "経験点が足りない")
         let caption = canTap ? [] : Self.shortageLines(a, state: pv, config: cfg)
         return VStack(alignment: .leading, spacing: 2) { main.overlay(alignment: .leading) {
             // ［−］：常に同じ場所に出す（振った分をまるごと戻す）。振っていない時は灰色で押せない＝幅も位置も動かない
