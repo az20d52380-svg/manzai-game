@@ -140,5 +140,24 @@ extension CodableTests {
         XCTAssertEqual(restored.snapshot().pendingOffer?.name, o.name)
         XCTAssertEqual(restored.snapshot().pendingOffer?.income, o.income + 1, "今の config の値に取り直す")
     }
+
+    /// オファーが来ていない週に「受ける」が届いても、完全休養と同じ扱い（落ちない・状態も乱数も同じ）
+    func testAcceptOfferWithoutOfferActsAsFullRest() throws {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 20_260_724))
+        var phase = r.begin()
+        var found = false
+        for _ in 0..<400 {
+            if case .freeAction(nil) = phase { found = true; break }
+            phase = step(&r, phase)
+        }
+        XCTAssertTrue(found, "オファーの無い自由週が1年に1回はある")
+        var a = r, b = r
+        let pa = a.resolveAction(.acceptOffer)
+        let pb = b.resolveAction(.rest(.完全休養))
+        let e = JSONEncoder(); e.outputFormatting = [.sortedKeys]
+        XCTAssertEqual(try e.encode(a.snapshot()), try e.encode(b.snapshot()))
+        XCTAssertEqual(try e.encode(pa), try e.encode(pb))
+    }
 }
 
