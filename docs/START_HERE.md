@@ -277,3 +277,80 @@ cd GameCore && swift test
 - `text_repeat_rate_v0.md` — 文の繰り返し率（10年通し）の実測 v0・2026-10-15
 - `true_ending_ideas_v0.md` — トゥルーエンドの案 v0（キュー82）・2026-10-15
 - `wording_consistency_v1.md` — 画面文言の表記ゆれ点検 v1・2026-10-16
+
+## その他の文書（追補・2026-10-19 自走で索引から漏れていた75本を集めた）
+- `AUTOPILOT_done.md` — AUTOPILOT の済（10/18 に本体から移した・読まなくてよい）
+- `ability_stall_measure_v0.md` — 能力アップ詰まり実測 v0（2026-10-16・数値は全て【仮】・式は変えていない）
+- `audit_1018b_v0.md` — 目視点検 audit_1018b（iPhone 17・2026-10-18）
+- `balance_q93_98_measure_v0.md` — キュー93〜98 の実測と推奨（2026-10-18・数値は全て【仮】・式はまだ変えていない）
+- `bug_action_dropped_v1.md` — 不具合調査: 「バイトを押したのに日常イベントが先に出て実行されない」(onboarding_audit_v1 #5)
+- `candidate_v0.md` — 候補ブランチ claude/q-candidate（2026-10-18・数値は全て【仮】）
+- `choice_event_inventory_v0.md` — 選択イベント全件棚卸し v0（2026-10-15・読むだけ調査）
+- `code_review_2026-10-16.md` — コードレビュー 2026-10-16（preview-all の 10/15 18:00 以降・138コミットの新規コード）
+- `combined7_bands_v0.md` — 7本統合（q97/98/103/102/90/96/94・q93なし）の帯の実測（2026-10-18・数値は全て【仮】）
+- `combined_bands_v0.md` — 試し統合ブランチ claude/q-combined の帯の実測（規律Aの準備8本を全部入れた時）
+- `comedian_life_research_v0.md` — 若手漫才師の生活リサーチ v0（ゲーム前提の点検材料）
+- `comedy_games_research_v0.md` — お笑い・漫才・芸人題材ゲーム 先行作リサーチ v0（2026-10-15）
+- `dialogue_data_grade_v1.md` — DialogueData.swift 採点表 v1（2026-10-18・コード変更なし）
+- `dialogue_grade_1018b.md` — 台詞採点 2026-10-18（その2）— 今日入った日本語の台詞文字列
+- `dialogue_score_1019_v0.md` — 文体ゲート採点 10/19（10/17以降に本体へ入った台詞・地の文）
+- `dialogue_score_events_0012_0029_v0.md` — 選択肢イベント 0012〜0029 等（0041 より前）会話採点 v0
+- `dialogue_score_events_0041_0057_v0.md` — 選択肢イベント 0041〜0057 会話採点 v0
+- `event_0041_0057_grade_v1.md` — 選択イベント 0041〜0057 採点表 v1
+- `event_cap_measure_v0.md` — イベント発火上限×抽選率の実測 v0（2026-10-16）
+- `event_fix_drafts_v0.md` — 選択イベント 直し案の下書き v0（2026-10-15）
+- `event_reality_check_v0.md` — 選択イベント 現実とのずれ点検表 v0（2026-10-15）
+- `exp_rebalance_options_1019_v0.md` — 経験点の配り方の案比べ（最初の昇格を早められるか）v0（2026-10-19）
+- `exp_scale_pawapro_v0.md` — 経験点の桁をパワプロ並みにする案 v0
+- `first_rank_cost_options_1019_v0.md` — 最初の昇格コスト案比べ v0（2026-10-19）
+- `first_rankup_measure_v0.md` — 1年目の最初のランクアップ（G→F＝能力15以上）実測 v0
+- `fun_plan_v1.md` — 面白さを上げる計画 v1（2026-10-16・親のまとめ）
+- `fun_playtest_1019_v0.md` — 面白さの実プレイ点検（画面で遊んだ手触り）v0　2026-10-19
+- `handoff_2026-10-15b.md` — 引き継ぎ（2026-10-15 b・次のチャット用）
+- `handoff_2026-10-18.md` — 引き継ぎ 2026-10-18 夜（新チャット用）
+- `handoff_2026-10-18b.md` — 引き継ぎ 2026-10-18 夜その2（新チャット用）
+- `handoff_2026-10-19.md` — 引き継ぎ 2026-10-19（新チャット用）
+- `iap_design_v0.md` — 課金の設計案 v0（2026-10-19・決めない／案と推奨・コード変更なし）
+- `judge_comment_grammar_v0.md` — 審査員コメントの「文法」v0・2026-10-15
+- `judge_comment_inventory_v0.md` — 審査員コメント棚卸し v0（2026-10-15・読み取り専用の調査）
+- `judge_comment_score_v1.md` — 審査員講評 採点 v1（JudgeTalk.swift 書き直し後）
+- `judge_comment_score_v2.md` — 審査員講評 採点 v2（342e115 以降に足された・変わった JudgeTalk.swift の行）
+- `judge_comment_visual_check_v0.md` — 審査員コメント目視（JudgeTalk 書き直し後）v0
+- `money_after_merge_v0.md` — 本体マージ後のお金と会場の段（測り直し） v0
+- `money_sink_candidates_v0.md` — 能力に変わらない吸い込み口の案 実測 v0（決定はオーナー）
+- `onboarding_audit_v1.md` — 初めて遊ぶ人の導線 点検 v1（2026-10-16）
+- `owner_questions_2026-10-15.md` — オーナーへの質問（2026-10-15 まとめ・「止めて」の後に上から1問ずつ聞く）
+- `pawapro_ability_up_research_v0.md` — パワプロ サクセス 能力アップ（経験点の振り分け）調査 v0
+- `perf_check_v1.md` — 重さ点検 v1（2026-10-16）
+- `playtest_2nd_run_v1.md` — 2周目の流れ 点検 v1（2026-10-16・preview-all d4d8d42・iPhone 17）
+- `playtest_finals_v1.md` — 実プレイ点検 決勝の流れ v1（準決勝→決勝→番組エンディング→年末→エンディング）
+- `playtest_v1.md` — 実プレイ点検 v1（1年目・画面で遊んだ記録）
+- `playtest_v10.md` — 実プレイ点検 v10（claude/manzai-slg-foundation-wprqlu・iPhone 17・2026-10-19）
+- `playtest_v2.md` — 実プレイ点検 v2（2年目・画面で遊んだ記録）
+- `playtest_v3_endings.md` — 実プレイ点検 v3（エンディングまで・画面で遊んだ記録）
+- `playtest_v4.md` — 実プレイ点検 v4（3年目・画面で遊んだ記録）
+- `playtest_v5.md` — 実プレイ点検 v5（4年目・画面で遊んだ記録）
+- `playtest_v6.md` — 実プレイ点検 v6（5年目・画面で遊んだ記録）
+- `playtest_v7.md` — 実プレイ点検 v7（静止画点検のみ・手プレイは未実施）
+- `playtest_v8_1018b.md` — 実プレイ点検 v8（10/18 b）キュー78 の残り
+- `playtest_v9_candidate.md` — 実プレイ点検 v9（claude/q-candidate・iPhone 17・2026-10-18）
+- `playthrough_check_2026-10-15.md` — 初見1年通し点検 v0（2026-10-15）
+- `prep_check_v0.md` — 準備ブランチの目視（claude/q-combined8s・iPhone 17・2026-10-18）
+- `proposal_event_backgrounds_v0.md` — 選択イベントの背景を場所ごとに変える（試作 v0）
+- `proposal_fan_report_v0.md` — 試作：観客の声を「判の前」に2〜4枚流す（オーナー確認待ち）
+- `proposal_q65_ability_up_v0.md` — 提案 q65：能力アップ画面の見やすさ（オーナー判断待ち・main には未反映）
+- `proposal_q70_calendar_ending_v0.md` — 試作q70 カレンダー・エンディング（表示のみ・main未反映）
+- `proposal_q70_neta_shop_v0.md` — 試作 q70 ネタ帳・ショップを「AIっぽくない」見た目に（v0・main 未反映）
+- `proposal_q70_result_v0.md` — 試作 q70：予選の大会結果画面（見せ方）
+- `proposal_q70_week_main_v0.md` — 試作 q70 週のメイン画面を「AIっぽくない」見た目に（v0・main 未反映）
+- `proposal_settings_restart_v0.md` — 試作：設定に「最初からやり直す」＋見た目をそろえる（main未反映）
+- `report_2026-10-19.md` — 報告 2026-10-18〜19（ここまでやったこと・質問）
+- `result_reveal_m1_research_v0.md` — 大会結果の「知らされ方」調査と画面案 v0（2026-10-18）
+- `smoke_preview_all_v3.md` — 通し点検 v3（preview-all 4705df0・遷移アニメ無し化の影響確認）
+- `ui_sweep_1019.md` — UI/UX 目視（2026-10-19）
+- `ui_sweep_2026-10-18.md` — UI目視 2026-10-18（preview-all 658fff0・iPhone 17）
+- `uiux_not_ai_audit_v0.md` — 「AIっぽさ」目視棚卸し v0（2026-10-15）
+- `uiux_not_ai_research_v0.md` — 「AIっぽくない」UI/UX リサーチ v0（2026-10-15）
+- `uiux_sweep_1019_v0.md` — UI/UX 点検 2026-10-19（iPhone 17・MZ_UI フック・縮小スクショ）
+- `visual_check_q90_q106_v0.md` — 目視 q-candidate（q90 部屋選び / q106 特技）v0
+- `yearend_monolog_finals_v1.md` — 年末の独白：頂グランプリの決勝に立った年（v1・2026-10-16）
