@@ -354,3 +354,4 @@ cd GameCore && swift test
 - `uiux_sweep_1019_v0.md` — UI/UX 点検 2026-10-19（iPhone 17・MZ_UI フック・縮小スクショ）
 - `visual_check_q90_q106_v0.md` — 目視 q-candidate（q90 部屋選び / q106 特技）v0
 - `yearend_monolog_finals_v1.md` — 年末の独白：頂グランプリの決勝に立った年（v1・2026-10-16）
+- `milestone_events_drafts_v0.md` — 空白の週に置く小さな節目イベントの下書き12本（キュー78・fun_audit §3-3 案1・未採用＝オーナー確認待ち）v0・2026-10-19
