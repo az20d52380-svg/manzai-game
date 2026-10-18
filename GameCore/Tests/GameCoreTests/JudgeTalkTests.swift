@@ -228,5 +228,25 @@ final class JudgeTalkTests: XCTestCase {
             for t in lines { XCTAssertLessThanOrEqual(sentences(t), max, "\(j): \(t)") }
         }
     }
+
+    /// 紙講評の状態フックは「体力→メンタル→相性」の順で1つだけ効く（重なっても先の方が勝つ）
+    func testPaperStateHookPriority() {
+        func text(_ passed: Bool, st: Double, me: Double, co: Double, _ salt: Int) -> String {
+            var sc = JudgeTalk.Scene(netaName: nil, kata: nil)
+            sc.stamina = st; sc.mental = me; sc.compat = co
+            return JudgeTalk.paperReview(passed: passed, scene: sc, salt: salt).text
+        }
+        var differs = false
+        for salt in 0..<60 {
+            // 不合格：体力低＋メンタル低＋相性低 ＝ 体力低だけ と同じ
+            XCTAssertEqual(text(false, st: 20, me: 10, co: 5, salt), text(false, st: 20, me: 50, co: 12, salt))
+            // 不合格：メンタル低＋相性低 ＝ メンタル低だけ
+            XCTAssertEqual(text(false, st: 60, me: 10, co: 5, salt), text(false, st: 60, me: 10, co: 12, salt))
+            // 合格：体力低＋メンタル低 ＝ 体力低だけ
+            XCTAssertEqual(text(true, st: 20, me: 10, co: 12, salt), text(true, st: 20, me: 50, co: 12, salt))
+            if text(false, st: 20, me: 50, co: 12, salt) != text(false, st: 60, me: 10, co: 12, salt) { differs = true }
+        }
+        XCTAssertTrue(differs, "体力低とメンタル低は別の文の束")
+    }
 }
 
