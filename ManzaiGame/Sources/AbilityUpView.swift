@@ -100,7 +100,7 @@ struct AbilityUpView: View {
         let learned = base.has(k)
         let affordable = GameEngine.canLearn(k, state: pv)
         let costText = k.cost.map { "\(String(describing: $0.currency))\(ExpDisplay.cost($0.amount, have: pv[currency: $0.currency]))" }.joined(separator: "・")
-        return Button { if affordable { skillToLearn = k } } label: {
+        return Button { if affordable, !learned { skillToLearn = k } } label: {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(k.rawValue).font(YoseFont.gothic(14, weight: .heavy))
@@ -120,7 +120,7 @@ struct AbilityUpView: View {
             .overlay(Rectangle().stroke(YoseColor.sumi.opacity(affordable || learned ? 0.5 : 0.25), lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .disabled(learned || !affordable)
+        .disabled(!learned && !affordable)   // 覚えた札は薄くせず（印を読めるように）、押しても何も起きない
     }
 
     static var hintSpec: HintSpec {
