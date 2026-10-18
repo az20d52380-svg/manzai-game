@@ -337,11 +337,13 @@ def do_training(s, name):
 # アイテム（GameCore/Item.swift の鏡像・docs/item_design_v0.md・全て【仮】）。購入は乱数を引かない
 # ============================================================
 ITEMS = {   # 名前: (価格, 年の上限 None=キャリア1回)
-    "栄養ドリンク": (3_000, 6), "銭湯の回数券": (10_000, 99), "中古のICレコーダー": (30_000, None),
+    "栄養ドリンク": (3_000, 6), "回復ドリンク大": (20_000, 4), "喉のケア用品": (20_000, 1), "銭湯の回数券": (10_000, 99), "中古のICレコーダー": (30_000, None),
     "新幹線回数券": (200_000, 1), "ネタ作家の勉強会": (150_000, 2), "ボイトレ短期集中": (250_000, 1),
     "稽古場の年契約": (2_400_000, 1),
 }
 ITEM_DRINK_STAMINA = 8.0
+ITEM_DRINK_L_STAMINA = 20.0
+ITEM_THROAT_INJURY_MULT = 0.5   # 喉のケア用品を今年持っていれば体調ダウン確率×0.5（item_counts は年初に消える）
 ITEM_SENTO_TICKETS = 4
 ITEM_SENTO_RECOVERY = 10.0
 ITEM_RECORDER_BONUS = 1.0
@@ -351,7 +353,7 @@ ITEM_VOICE = (4.0, 2.0)    # 間合い・語彙（通貨に直接）
 
 # お店で売る品（オーナー原則 2026-10-12「アイテムで能力は上がらない」・money_items_neta_v1 §3）。
 # 能力に効く4品（ICレコーダー・勉強会・ボイトレ・稽古場の年契約）は売らない。Swift: GameConfig.shopLineup と同値。
-SHOP_LINEUP = ["栄養ドリンク", "銭湯の回数券", "新幹線回数券"]
+SHOP_LINEUP = ["栄養ドリンク", "回復ドリンク大", "喉のケア用品", "銭湯の回数券", "新幹線回数券"]
 
 def can_buy(s, item):
     if item not in SHOP_LINEUP:
@@ -379,6 +381,10 @@ def buy_item(s, item):
     s.item_counts = counts
     if item == "栄養ドリンク":
         add(s, "stamina", ITEM_DRINK_STAMINA)
+    elif item == "回復ドリンク大":
+        add(s, "stamina", ITEM_DRINK_L_STAMINA)
+    elif item == "喉のケア用品":
+        pass   # 効果は item_counts の有無で体調ダウン判定が読む（throat_mult）
     elif item == "銭湯の回数券":
         s.sento_tickets = ITEM_SENTO_TICKETS
     elif item == "中古のICレコーダー":
@@ -392,6 +398,10 @@ def buy_item(s, item):
     elif item == "稽古場の年契約":
         s.studio_active = True
     return True
+
+def throat_mult(s):
+    """体調ダウン確率の係数。喉のケア用品をその年持っていれば0.5、なければ1（恒等）"""
+    return ITEM_THROAT_INJURY_MULT if (getattr(s, "item_counts", None) or {}).get("喉のケア用品", 0) > 0 else 1.0
 
 def reset_yearly_items(s):
     """年初（WeekRunner.init と同じ位置）。未購入は恒等"""
