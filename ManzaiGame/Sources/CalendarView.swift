@@ -92,7 +92,7 @@ struct CalendarView: View {
             if isTournament {
                 Rectangle().fill(isPast ? YoseColor.shu.opacity(0.55) : YoseColor.shu)   // 大会週＝朱の色面
                 VStack(spacing: 0) {
-                    Text(tournamentName(w)).font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                    Text(tournamentName(w)).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinBright)
                         .lineLimit(1).minimumScaleFactor(0.7)
                     Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         .lineLimit(1)
@@ -111,12 +111,6 @@ struct CalendarView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .topLeading) {
-            if isCurrent {
-                Text("今週").font(YoseFont.gothic(9, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
-                    .padding(.horizontal, 3).background(YoseColor.kuroUrushi)
-            }
-        }
         .contentShape(Rectangle())
         .onLongPressGesture(minimumDuration: 0.3) {
             if isPast { showToast("第\(w)週 \(session.categoryLog[w]?.label ?? "——")。") }
@@ -141,7 +135,7 @@ struct CalendarView: View {
                 }
             }
             HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
-            HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)).overlay(alignment: .topLeading) { Text("今").font(YoseFont.gothic(8, weight: .heavy)).foregroundStyle(YoseColor.kinBright).padding(.horizontal, 2).background(YoseColor.kuroUrushi).offset(x: -1, y: -1) }; Text("今週") }
+            HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
         }
         .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
         .padding(.horizontal, 10).padding(.vertical, 8)
