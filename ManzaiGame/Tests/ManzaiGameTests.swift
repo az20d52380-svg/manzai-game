@@ -337,6 +337,10 @@ final class WeekHintTests: IsolatedStoreTestCase {
               plusAvailable: false, expBannerShown: false)
     }
     func testNone() { XCTAssertNil(WeekHint.line(base())) }
+    func testDebtWeekIsNarration() {
+        var i = base(); i.money = -1; i.stamina = 40
+        XCTAssertEqual(WeekHint.line(i), "所持金はマイナス。今月の家賃のめどが立っていない。")
+    }
     func testInjuryWarn() {
         var i = base(); i.stamina = 45
         XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるで。")

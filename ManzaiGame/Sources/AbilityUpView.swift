@@ -130,6 +130,16 @@ struct AbilityUpView: View {
                     }
                 }
                 Spacer(minLength: 4)
+                if !learned, !affordable {   // 足りない数（持ち分との差・表示値は能力アップの表と同じ丸め）
+                    VStack(alignment: .trailing, spacing: 1) {
+                        ForEach(Array(k.cost.enumerated()), id: \.offset) { _, c in
+                            let lack = ExpDisplay.cost(c.amount, have: pv[currency: c.currency]) - ExpDisplay.value(pv[currency: c.currency])
+                            if c.amount > pv[currency: c.currency] + 1e-9, lack > 0 {
+                                Text("\(String(describing: c.currency)) あと\(lack)").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                            }
+                        }
+                    }
+                }
                 if learned {
                     Text("覚えた").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(.white)
                         .padding(.horizontal, 8).padding(.vertical, 3).background(YoseColor.shu)
