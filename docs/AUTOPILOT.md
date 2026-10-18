@@ -19,7 +19,7 @@
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
-- なし（10/18 夜）。それまでの定期の回の記録は docs/AUTOPILOT_done.md
+- （10/18 5時間枠95%で区切り）規律A の実測 93・94・96・97・98 を途中まで docs/balance_q93_98_measure_v0.md に。97 は推奨まで済。94・96・98 は追加の案を測定中（結果は scratchpad＝消える。再開時は各スクリプトを回し直す：exp_exp_rebalance_v0.py 300 all／exp_compat_loss_rift_v0.py 1000 L0.5_T0,L1_T0,L0.5_T0.5,L1_T0.5／exp_winter_cup_v0.py 1000 W46_L34,W46_L38,W48_L34／exp_offer_named_v0.py 1000 all）。95 は sonnet が作業中だった（未コミットなら作業ツリーを確かめる）。それまでの定期の回の記録は docs/AUTOPILOT_done.md
 
 ## キュー（上から）
 （10/18 夜 オーナー「止まらず続けて」で再開。質問の回答は docs/owner_questions_digest_2026-10-16.md の「回答」各節。演出は仮デザインでよい＝後でオーナーが Gemini で考える。Gemini の API は上限で使えない＝自分で考える）
