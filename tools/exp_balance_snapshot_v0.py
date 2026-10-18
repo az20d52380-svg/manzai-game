@@ -67,7 +67,7 @@ def one(args):
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     jobs = [(ne, b, n) for ne in (False, True) for b in BOTS]
-    with Pool(10) as p: res = p.map(one, jobs)
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(one, jobs, chunksize=1)
     p1 = lambda x, k: f"{100*x/k:.1f}"
     print(f"n={n} 優勝年=初優勝年の中央値 | 10年目所持金=10年目の年末まで残った人の中央値(万) | バイト週=バイト週/全行動週")
     print("NETA|ボット|決勝到達%|優勝%|初優勝年(中央)|夜逃げ%|解散%|10年完走%(未優勝で生存)|10年目所持金|バイト週%|#1|#2|#3|#4|#5|#6|#7|#8")

@@ -21,7 +21,7 @@ def one(args):
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 300
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(a, b, n) for a in (False, True, "off") for b in M.BOTS])
+        res = pool.map(one, [(a, b, n) for a in (False, True, "off") for b in M.BOTS], chunksize=1)
     print(f"# n={n}/ボット・全部入り・ネタ込み。所持金は万円 Q1/中央/Q3。10年目=10年目まで続いた人のみ(n10)")
     print("EVENTS_APP|ボット|優勝%|決勝%|解散%|夜逃げ%|10年目所持金(n10)|終了時所持金")
     for a, name, r in res:

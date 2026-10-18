@@ -134,7 +134,7 @@ def extra(n):
     jobs = [("ローテ+中の部屋(素)", "std", False, n), ("ローテ+中の部屋+rift警告に向き合う", "std", True, n),
             ("ローテ+中の部屋+キツいバイト", "hard", False, n), ("ローテ+中の部屋+キツい+向き合う", "hard", True, n)]
     with Pool(4, maxtasksperchild=1) as p:
-        for r in p.map(one_x, jobs): print(r)
+        for r in p.map(one_x, jobs, chunksize=1): print(r)
 if __name__ == "__main__":
     if len(sys.argv) > 2 and sys.argv[2] == "extra": extra(int(sys.argv[1]))
     else: main()

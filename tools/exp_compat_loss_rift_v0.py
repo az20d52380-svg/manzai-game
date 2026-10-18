@@ -83,7 +83,7 @@ def main():
         ["L0_T-", "L0_T0", "L0_T1", "L0.5_T1", "L1_T1", "L2_T1", "L1_T1_O", "L1_T-"]
     jobs = [(v, b, n) for v in variants for b in BOTS]
     with Pool(maxtasksperchild=1) as p:
-        res = p.map(one, jobs)
+        res = p.map(one, jobs, chunksize=1)
     print(f"# n={n}/ボット ネタ込み。エンド=案A（相性15）。#1夜逃げ #2解散 #3/#4決勝なし(相性低/高) #5/#6決勝あり #7/#8優勝")
     print("案|ボット|優勝%|決勝%|解散%|予告%|相性平均|#1|#2|#3|#4|#5|#6|#7|#8|5-40%のエンド数")
     for var, name, recs in res:

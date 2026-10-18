@@ -34,7 +34,7 @@ def main():
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else \
         ["TH20_P0.02", "TH35_P0.01", "TH35_P0.02", "TH40_P0.01", "TH50_P0.005", "TH50_P0.01"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS])
+        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット ネタ込み。ダウン=1年あたりの回数・一度でもダウンしたキャリア%")
     print("案|ボット|ダウン/年|ダウン経験%|優勝%|決勝%|解散%")
     for var, name, r in res:

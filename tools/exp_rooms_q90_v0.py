@@ -63,7 +63,7 @@ def main():
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else \
         ["none", "R3-8_H5-10", "R3-8_H10-20", "R5-15_H10-20"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS])
+        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット ネタ込み。部屋の年%=キャリアの年のうち 安/ふつう/いい部屋 に住んだ割合")
     print("案|ボット|優勝%|決勝%|解散%|夜逃げ%|最後の所持金(万)|部屋の年%(安/ふつう/いい)")
     for var, name, r in res:

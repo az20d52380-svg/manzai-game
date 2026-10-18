@@ -61,7 +61,7 @@ def main():
         for g, h in [(0.5, 3.0), (0.7, 3.0), (1.0, 3.0), (1.0, 5.0), (0.7, 5.0), (1.2, 4.0)]:
             cfgs[f"G{g}/H{h}/W50"] = dict(on=True, gain=g, heal=h); cfgs[f"G{g}/H{h}/W50+向き合う"] = dict(on=True, gain=g, heal=h, respond=True)
     jobs = [(s, b, cn, cf, n) for s in (("A",) if "--sweep2" in sys.argv else ("A", "B")) for b in BOTS for cn, cf in cfgs.items()]
-    with Pool(10) as p: res = p.map(one, jobs)
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(one, jobs, chunksize=1)
     R_ = {(s, b, c): r for s, b, c, r in res}
     for s in (("A",) if "--sweep2" in sys.argv else ("A", "B")):
         print(f"\n## 設定{s} n={n}")

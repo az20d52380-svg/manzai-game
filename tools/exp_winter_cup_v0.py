@@ -44,7 +44,7 @@ def main():
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else \
         ["none", "W44_L26", "W44_L30", "W46_L26", "W46_L30"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS])
+        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット ネタ込み。出場=キャリアでの寒梅杯の出場回数・一度は優勝した%")
     print("案|ボット|優勝(GP)%|決勝%|解散%|夜逃げ%|寒梅出場回|寒梅優勝経験%|最後の所持金(万)")
     for var, name, r in res:

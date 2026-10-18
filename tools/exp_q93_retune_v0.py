@@ -79,7 +79,7 @@ def main():
         ["A", "R2M@0.8", "RHM@0.9", "RHM@0.8", "RH@0.9", "R2M@0.7"]
     jobs = [(v, g, b, n) for v in variants for g in ("A", "B") for b in range(4)]
     with Pool(maxtasksperchild=1) as p:
-        res = p.map(job, jobs)
+        res = p.map(job, jobs, chunksize=1)
     print(f"# n={n}/ボット ネタ込み。組A=hand（詰まり1年目/1〜3年・決勝・優勝・解散）／組B=本番ボット（優勝・決勝・解散）")
     for var, grp, name, r in res:
         if grp == "A":

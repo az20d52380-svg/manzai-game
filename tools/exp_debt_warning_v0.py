@@ -59,7 +59,7 @@ def one(args):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
-    with Pool(10) as p: res = p.map(one, [(ne, vi, n) for ne in (False, True) for vi in range(len(VARS))])
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(one, [(ne, vi, n) for ne in (False, True) for vi in range(len(VARS))], chunksize=1)
     P = lambda x, k: f"{100*x/k:.1f}" if k else "-"
     print(f"n={n} 夜逃げ年=夜逃げした人の年の中央値 | 立て直し=反応が発動して夜逃げしなかった人(発動数に対する%) | 決勝/優勝=全体に対する%(＋生存者のみ) | 10年目所持金=完走者の中央値(万)")
     print("NETA|型|発動%|夜逃げ%|夜逃げ年(中央)|立て直し%|決勝到達%|優勝%|生存者の決勝%|生存者の優勝%|10年目所持金|解散%")

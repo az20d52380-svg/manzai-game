@@ -94,7 +94,7 @@ def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 300
     conds = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else ["none", "room", "all"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(c, ne, b, n) for c in conds for ne in (False, True) for b in BOTS])
+        res = pool.map(one, [(c, ne, b, n) for c in conds for ne in (False, True) for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット。所持金は万円 Q1/中央/Q3。10年目=10年目まで続いた人のみ(n10)。終了時=打切り(初優勝/解散/夜逃げ)時点。会場の段%=終了時の所持金で <0 / 0-300 / 300-800 / 800+(ドーム)")
     print("条件|ネタ|ボット|優勝%|決勝%|解散%|夜逃げ%|10年目所持金(n10)|終了時所持金|会場の段% <0/0-300/300-800/800+")
     for c, ne, name, r in res:

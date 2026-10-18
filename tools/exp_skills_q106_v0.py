@@ -95,7 +95,7 @@ def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else ["none", "all", "no_burst"]
     with Pool(maxtasksperchild=1) as p:
-        res = p.map(job, [(v, g, b, n) for v in variants for g in ("A", "B") for b in range(4)])
+        res = p.map(job, [(v, g, b, n) for v in variants for g in ("A", "B") for b in range(4)], chunksize=1)
     print(f"# n={n}/ボット ネタ込み・体調ダウン§97入り。特技=10年で覚えた数・最初に覚えた年")
     for var, grp, name, r in res:
         print(f"{var}|{grp}|{name}|決={r['fin']:.1f}|優={r['win']:.1f}|散={r['ds']:.1f}|特技={r['nsk']:.1f}|初={r['fy']:.1f}年")

@@ -42,7 +42,7 @@ def main():
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else \
         ["none", "P0.04_行く", "P0.04_断る", "P0.08_行く"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS])
+        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット ネタ込み。誘い=キャリアでの回数")
     print("案|ボット|優勝%|決勝%|解散%|誘い回数|最後の所持金(万)")
     for var, name, r in res:

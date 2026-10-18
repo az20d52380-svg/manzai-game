@@ -40,7 +40,7 @@ def one(args):
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     jobs = [(c, b, n) for c in CONFIGS for b in BOTS]
-    with Pool(10) as p: res = p.map(one, jobs)
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(one, jobs, chunksize=1)
     nm = [f"T{i}" for i in range(len(C.EVENT_TABLE))] + list(C.OTHERS_EVENTS)
     by = {}
     for cfg, name, r in res: by.setdefault(cfg, []).append(r)

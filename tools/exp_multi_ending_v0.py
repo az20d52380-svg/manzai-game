@@ -100,7 +100,7 @@ ORDER = ["夜逃げ", "解散(成績良 決勝経験あり)", "解散(成績悪 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     jobs = [(s, b, n) for s in ("A", "B") for b in BOTS]
-    with Pool(10) as p: res = p.map(one, jobs)
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(one, jobs, chunksize=1)
     for setting in ("A", "B"):
         print(f"\n## 設定{setting}（{'現行: ネタなし' if setting=='A' else 'NETA_ON+V2 飽きD'}）n={n}")
         for dn, df in [("(解散なし=今の決まり)", None)] + [(k, v) for k, v in DISS.items()]:

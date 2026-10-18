@@ -62,7 +62,7 @@ def main():
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else \
         ["none", "N", "N_D0.1_K3", "N_D0.2_K3", "N_D0.2_K4", "N_D0.5_K4"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS])
+        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット ネタ込み。ボットは来たオファーを必ず受ける。落ちた腕=キャリアでセンス・表現それぞれ下がった合計")
     print("案|ボット|優勝%|決勝%|解散%|最後の所持金(万)|オファー回数|落ちた腕")
     for var, name, r in res:

@@ -63,7 +63,7 @@ def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 300
     keys = sys.argv[2].split(",") if len(sys.argv) > 2 else list(CFGS)
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(k, a, b, n) for k in keys for a in (False, True) for b in BOTS])
+        res = pool.map(one, [(k, a, b, n) for k in keys for a in (False, True) for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット・全部入り・ネタ込み。優勝%/決勝%/解散%/夜逃げ%｜知名度中央値 1年/3年/5年/10年末｜初決勝の年末｜優勝時")
     for key, app, bot, r in res:
         f = r["fame"]

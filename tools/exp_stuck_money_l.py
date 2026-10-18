@@ -45,7 +45,7 @@ def q(v, p): v = sorted(v); return v[min(len(v) - 1, int(p * len(v)))]
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     jobs = [(b, n, st) for st in ("new", "old") for b in BOTS]
-    with Pool(10) as p: res = p.map(run, jobs)
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(run, jobs, chunksize=1)
     print(f"n={n} NETA_ON=NETA_V2=True 夜逃げ=-100万 | 最低所持金は万円 | 借金週=週頭の所持金<0の週/全週（夜逃げで終わったキャリアはその時点まで）")
     print("設定|ボット|優勝%|夜逃げ%|夜逃げ年(1/2/3/4/5/6+ %)|最低所持金 p10/中央/p90|借金週%(平均)|借金経験%|-50万割れ%|-50万週%(平均)")
     for name, st, R in res:

@@ -64,7 +64,7 @@ RULES = ["A", "B", "C", "D15", "D30", "D50", "E1", "E2", "G", "G2", "F", "F2"]
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     jobs = [(ne, b, n) for ne in (False, True) for b in BOTS]
-    with Pool(10) as p: res = p.map(one, jobs)
+    with Pool(10, maxtasksperchild=1) as p: res = p.map(one, jobs, chunksize=1)
     print(f"n={n} 各案の #1〜#8 割合(%) と 5〜40%に入ったエンド数(出現するエンドのうち)")
     print("案|NETA|ボット|#1|#2|#3|#4|#5|#6|#7|#8|散り(#3〜#8で5-40%の数)")
     for rule in RULES:

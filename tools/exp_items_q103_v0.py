@@ -54,7 +54,7 @@ def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     variants = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else ["none", "D", "C", "T", "DCT"]
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS])
+        res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
     print(f"# n={n}/ボット ネタ込み・体調ダウン§97推奨入り。使った額=10年でアイテムに使った額")
     print("案|ボット|優勝%|決勝%|解散%|ダウン回数|使った額(万)|最後の所持金(万)")
     for var, name, r in res:

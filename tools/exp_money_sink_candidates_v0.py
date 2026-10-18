@@ -44,7 +44,7 @@ def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 300
     cands = sys.argv[2].split(",") if len(sys.argv) > 2 and sys.argv[2] != "all" else list(CANDS)
     with Pool(maxtasksperchild=1) as pool:
-        res = pool.map(one, [(c, b, n) for c in cands for b in M.BOTS])
+        res = pool.map(one, [(c, b, n) for c in cands for b in M.BOTS], chunksize=1)
     print(f"# n={n}/ボット 全部入り・ネタ込み。所持金は万円 Q1/中央/Q3。段%=終了時 <0/0-300/300-800/800+(ドーム)")
     print("案|ボット|優勝%|決勝%|解散%|夜逃げ%|10年目所持金(n10)|段% <0/0-300/300-800/800+")
     for c, name, r in res:

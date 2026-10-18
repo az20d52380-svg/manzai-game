@@ -201,8 +201,8 @@ def main():
         jobs += [(nm, n, None, None) for nm in EXTREME]
         jobs += [(nm, n, 8.0, 2.0) for nm in EXTREME if nm.startswith(("バイト標準+オファー", "巡回:バイト標準→ネタ見せ会"))]
     print(f"=== 詰み・抜け道 | n={n} | q60-62-impl 推奨(飽きD・知名度G)・ネタ込み・イベント込み | 数値は【仮】 ===")
-    with Pool(10) as p:
-        res = p.map(one_run, jobs)
+    with Pool(10, maxtasksperchild=1) as p:
+        res = p.map(one_run, jobs, chunksize=1)
     for name, init, compat, recs in res:
         tag = ("どん底出だし" if init == 5.0 else "悪い出だし") if init else "通常出だし"
         print(fmt(f"[{tag}] {name}", summarize(recs)), flush=True)
