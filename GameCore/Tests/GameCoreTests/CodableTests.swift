@@ -117,3 +117,28 @@ final class CodableTests: XCTestCase {
         XCTAssertEqual(back.margin, -3)
     }
 }
+
+extension CodableTests {
+    /// A-4: 保留中のオファーは復元時に今の config から取り直す（バランス更新が古いセーブに固まらない）。名前が無ければ保存時のまま
+    func testRestoreRefreshesPendingOfferFromConfig() throws {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 20_260_724))
+        var phase = r.begin()
+        var held: OfferSpec?
+        for _ in 0..<400 {
+            if case .freeAction(let o?) = phase { held = o; break }
+            phase = step(&r, phase)
+        }
+        let o = try XCTUnwrap(held, "1年のうちにオファーが1回は来る")
+        let snap = r.snapshot()
+
+        var bumped = GameConfig()
+        bumped.offersNamed = bumped.offersNamed.map { OfferSpec(name: $0.name, income: $0.income + 1, fame: $0.fame, ability: $0.ability, stamina: $0.stamina) }
+        bumped.offerMoney = OfferSpec(name: bumped.offerMoney.name, income: bumped.offerMoney.income + 1, fame: bumped.offerMoney.fame, ability: bumped.offerMoney.ability, stamina: bumped.offerMoney.stamina)
+        bumped.offerExp = OfferSpec(name: bumped.offerExp.name, income: bumped.offerExp.income + 1, fame: bumped.offerExp.fame, ability: bumped.offerExp.ability, stamina: bumped.offerExp.stamina)
+        let restored = WeekRunner(restoring: snap, config: bumped)
+        XCTAssertEqual(restored.snapshot().pendingOffer?.name, o.name)
+        XCTAssertEqual(restored.snapshot().pendingOffer?.income, o.income + 1, "今の config の値に取り直す")
+    }
+}
+
