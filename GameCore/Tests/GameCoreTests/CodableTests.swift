@@ -159,5 +159,31 @@ extension CodableTests {
         XCTAssertEqual(try e.encode(a.snapshot()), try e.encode(b.snapshot()))
         XCTAssertEqual(try e.encode(pa), try e.encode(pb))
     }
+
+    /// 療養中の自由週は入力を待たずに休み、「療養」が週の結果に残って残り週が1減る
+    func testRecoveryWeekSkipsFreeActionInRunner() {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 20_260_724))
+        var phase = r.begin()
+        for _ in 0..<400 {
+            if case .freeAction = phase { break }
+            phase = step(&r, phase)
+        }
+        guard case .freeAction = phase else { return XCTFail("自由週に着かない") }
+        // 次の週から療養2週（体調ダウン直後と同じ形）
+        phase = r.resolveAction(.rest(.完全休養))
+        var s = r.state; s.recoveryWeeks = 2
+        var snap = r.snapshot(); snap.state = s
+        var rr = WeekRunner(restoring: snap, config: config)
+        var sawRecovery = false
+        var p = phase
+        for _ in 0..<40 {
+            if case .weekDone(let w) = p, w.results.contains(where: { $0.name == "療養" }) { sawRecovery = true; break }
+            if case .freeAction = p { break }
+            p = step(&rr, p)
+        }
+        XCTAssertTrue(sawRecovery)
+        XCTAssertEqual(rr.state.recoveryWeeks, 1)
+    }
 }
 
