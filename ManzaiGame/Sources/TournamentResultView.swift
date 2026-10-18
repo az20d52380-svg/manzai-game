@@ -457,7 +457,7 @@ struct TournamentResultView: View {
         let hasFame = session.lastResultFameDelta >= 0.5
         return VStack(spacing: 0) {
             if r.passed {
-                YoseHankoStamp(text: "突破", angle: -8)
+                YoseHankoStamp(text: isMidTournament ? "優勝" : "突破", angle: -8)
                     .frame(maxWidth: .infinity).padding(.vertical, 10)
             }
             if hasPrize || hasFame {
