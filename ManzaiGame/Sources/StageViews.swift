@@ -226,6 +226,15 @@ struct TournamentEntryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(YoseColor.kinari.ignoresSafeArea())
         .overlay { if let h = hint { HintModal(spec: h) { OneTimeHint.markDone(h.key); hint = nil } } }
+        .overlay {   // 療養明けが大会の入口に重なった週は、体調ダウンの知らせを入口より先に出す（表示の順だけ・判定不変）
+            if session.injuryNoticeWeeks > 0 {
+                YoseModal(title: "体調ダウン", primaryTitle: "わかった", primaryAction: { session.clearInjuryNotice() }, cancelTitle: nil) {
+                    Text("無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。")
+                        .font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                        .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
         .task {
             let h = Self.hintSpec(session.config.calendar)
             if !OneTimeHint.suppressedForDebug, !OneTimeHint.isDone(h.key) {
