@@ -157,6 +157,7 @@ public struct WeekRunner<R: RandomSource> {
         acted = false
         weekResults = []
         state.riftWeekStartCompat = state.compat   // 途中解散：この週に相性が上がったか（乱数なし）
+        state.riftJointWeek = false
         section = .tournament
         revivalTried = false
         finalTried = false
@@ -182,6 +183,7 @@ public struct WeekRunner<R: RandomSource> {
                 let netaLine = spec.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
                 let result = GameEngine.perform(state, line: netaLine, config: config, rng: &rng)
                 markNetaUsed()
+                state.riftJointWeek = true   // §94 二人で舞台に立つ週
                 if result.passed {
                     state.money += spec.prize
                     GameEngine.add(.知名度, spec.fame, to: &state, config: config)
@@ -212,6 +214,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: roundLine, config: config, rng: &rng)
             markNetaUsed()
             acted = true
+            state.riftJointWeek = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 gpStage += 1
@@ -220,6 +223,9 @@ public struct WeekRunner<R: RandomSource> {
                     GameEngine.addFameBig(cal.fameFinalist, to: &state)   // 決勝進出（キュー62）
                 }
             } else {
+                if gpStage < config.gpLossCompat.count {
+                    GameEngine.add(.コンビ相性, -config.gpLossCompat[gpStage], to: &state, config: config)   // §94 予選で落ちたら相性↓
+                }
                 if gpStage == cal.gpRounds.count - 1 {
                     revival = true   // 準決勝敗退のみ敗者復活へ
                 }
@@ -232,6 +238,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: revivalLine, config: config, rng: &rng)
             markNetaUsed()
             acted = true
+            state.riftJointWeek = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 finalist = true
@@ -247,6 +254,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
             markNetaUsed()
             acted = true
+            state.riftJointWeek = true
             weekResults.append(StageResult(name: "GP決勝", passed: result.passed,
                                            prize: result.passed ? cal.gpPrize : 0, margin: result.score - effLine, burst: result.burst))
             if result.passed {
@@ -294,6 +302,7 @@ public struct WeekRunner<R: RandomSource> {
         case .train(let t):
             if GameEngine.applyTraining(t, to: &state, config: config) {
                 lastTrainingDone = t
+                if t == .ネタ見せ会 || t == .フリーライブ { state.riftJointWeek = true }   // §94
             } else {
                 GameEngine.applyRest(.完全休養, to: &state, config: config)   // 払えなければ休む（Python同様）
             }

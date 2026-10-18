@@ -79,6 +79,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     s.money += t["prize"]
                     B.add(s, "fame", t["fame"])
                 acted = True
+                s._joint = True
 
         if not acted and gp_alive and gp_stage < len(C.GP_ROUNDS) and week == C.GP_ROUNDS[gp_stage][0]:
             if not gp_entry_paid and s.money < C.GP_ENTRY_FEE:
@@ -89,6 +90,9 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     gp_entry_paid = True
                 ok, _ = B.perform(s, C.GP_ROUNDS[gp_stage][1], rng)
                 acted = True
+                s._joint = True
+                if not ok:
+                    B.add(s, "compat", -C.GP_LOSS_COMPAT[gp_stage])   # §94 予選で落ちたら相性↓
                 if ok:
                     B.add(s, "fame", C.GP_ROUND_FAME)
                     gp_stage += 1
@@ -104,6 +108,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
             if revival:
                 ok, _ = B.perform(s, C.GP_REVIVAL_LINE, rng)
                 acted = True
+                s._joint = True
                 if ok:
                     B.add(s, "fame", C.GP_ROUND_FAME)
                     finalist = True
@@ -112,6 +117,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 eff_line = C.GP_FINAL_LINE - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
                 ok, _ = B.perform(s, eff_line, rng)
                 acted = True
+                s._joint = True
                 if ok:
                     s.money += C.GP_PRIZE
                     C.fame_champ(s)
@@ -136,6 +142,8 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 if act == "train":
                     if not B.do_training(s, arg):
                         B.do_rest(s, "完全休養")
+                    elif arg in C.RIFT_JOINT_TRAIN:
+                        s._joint = True
                 elif act == "job":
                     B.do_job(s, arg)
                 else:

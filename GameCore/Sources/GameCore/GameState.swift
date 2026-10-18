@@ -65,6 +65,8 @@ public struct GameState: Codable {
     public var riftWarned: Bool?
     /// 週頭の相性（この週に相性が上がったかの判定用）
     public var riftWeekStartCompat: Double?
+    /// §94 この週に二人で舞台に立った（ネタ見せ会・フリーライブ・大会・GP）。週頭に false に戻す。Optional＝古いセーブ互換
+    public var riftJointWeek: Bool?
     /// 途中解散でキャリアが終わったか
     public var dissolved: Bool?
 
