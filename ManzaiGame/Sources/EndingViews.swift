@@ -351,10 +351,10 @@ struct EndingGalleryView: View {
                 if let rec {
                     Text(id.title).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi).lineLimit(1)
                     Text("\(Self.dateText(rec.firstSeenAt))　\(rec.count)回　相方：\(rec.lastPartnerName)")
-                        .font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7)
+                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7)
                 } else {
                     Text("？？？").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.haiSumi)
-                    Text(id.hint).font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                    Text(id.hint).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         .lineLimit(3).fixedSize(horizontal: false, vertical: true)
                 }
             }

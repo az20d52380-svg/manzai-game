@@ -624,7 +624,7 @@ struct NameEntryView: View {
                 .font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                 .multilineTextAlignment(.trailing).lineLimit(1).minimumScaleFactor(0.6)
                 .submitLabel(.done).tint(YoseColor.shu)
-            Text("（6字まで）").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            Text("（6字まで）").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
         .frame(maxWidth: 190)
     }
