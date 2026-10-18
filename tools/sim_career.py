@@ -89,6 +89,8 @@ TOURNAMENTS = {
              ok=lambda year, s: year <= 5),           # 1〜5年目のみ
     38: dict(name="推薦制中堅賞",  line=33, prize=500_000, fame=FAME_MID,   osaka=False,
              ok=lambda year, s: s.fame >= 30),        # 知名度30以上【仮】
+    46: dict(name="寒梅漫才杯",    line=34, prize=250_000, fame=FAME_SMALL, osaka=False,
+             ok=lambda year, s: year <= 10),          # 芸歴10年内・GP準決勝の翌週【仮】キュー98 §98（balance_q93_98_measure_v0）
 }
 
 EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
