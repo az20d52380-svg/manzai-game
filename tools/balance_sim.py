@@ -46,10 +46,11 @@ def room_rent(s): return ROOM_RENT[getattr(s, "room", 0) or 0]
 # 正典v3（パワプロ式5通貨・docs/exp_currency_redesign_v0.md）: main/subは能力でなく経験点通貨を発行する。
 # "cur:"接頭辞＝経験点通貨（ABILITY_RECIPEで能力へブレンド変換）／それ以外（compat等）は従来どおり経済外add直結。
 # 量は旧版（能力直付け）のamountを踏襲＝EXP_SUPPLY_SCALE等の既存較正値をそのまま出発点にできる【仮】。
+# 【§93 R2M@0.8】ネタ見せ会の間合い 旧6→4・ネタ合わせの間合い 旧3→2（docs/balance_q93_98_measure_v0.md）
 TRAININGS = {
     "ネタ作り":     dict(main=("cur:hirameki", 3),   sub=("cur:goi", 1),      cost=0,      stam=-20, fame=0),
-    "ネタ見せ会":     dict(main=("cur:maai", 6),       sub=("cur:tanryoku", 3), cost=80_000, stam=-30, fame=0),
-    "ネタ合わせ":   dict(main=("cur:maai", 3),       sub=("compat", 1),       cost=0,      stam=-20, fame=0),
+    "ネタ見せ会":     dict(main=("cur:maai", 4),       sub=("cur:tanryoku", 3), cost=80_000, stam=-30, fame=0),
+    "ネタ合わせ":   dict(main=("cur:maai", 2),       sub=("compat", 1),       cost=0,      stam=-20, fame=0),
     "ランニング・サウナ": dict(main=("cur:tanryoku", 6), sub=None,                cost=80_000, stam=-10, fame=0),
     "フリーライブ":     dict(main=("cur:sonzaikan", 3), sub=("cur:maai", 1),    cost=0,      stam=-30, fame=1),
 }
@@ -196,7 +197,7 @@ def jitsuryoku(s):
 # ============================================================
 
 ALLOCATION_STEP  = 1.0     # 割り振り1段で注ぐ「生の伸び試行量」（GameConfig.allocationStep と同期）
-EXP_SUPPLY_SCALE = 0.48    # 【仮】稽古発行の通貨供給スケール（GameConfig.expSupplyScale と同期・旧較正値を継承）
+EXP_SUPPLY_SCALE = 0.384   # §93 旧0.48→0.384（×0.8）。 【仮】稽古発行の通貨供給スケール（GameConfig.expSupplyScale と同期・旧較正値を継承）
 POUR_EPS         = 1e-9    # 浮動小数の塵で粒を空費しない下限（GameEngine.pourEpsilon と同期）
 
 # 経験点通貨5種（能力名と別立て＝真の多対多。ExpCurrency.allCases の鏡像）
@@ -205,12 +206,13 @@ CURRENCY_ATTR = {c: f"exp_{c}" for c in CURRENCIES}
 
 # 能力→通貨レシピ（Leontief固定比率＝1能力=複数通貨のブレンド。1通貨=複数能力に寄与）。
 # GameConfig.abilityRecipes の鏡像。重みは全て【仮】（sim較正で確定）。
+# 【§93 R2M@0.8】配合を供給比に合わせた。旧: sense 閃.45/間.35/胆.20・idea 閃.65/語.35・expr 語.35/間.65・chara 存.70/閃.30・mental 存.25/胆.75
 ABILITY_RECIPE = {
-    "sense":  [("hirameki", 0.45), ("maai", 0.35), ("tanryoku", 0.20)],
-    "idea":   [("hirameki", 0.65), ("goi", 0.35)],
-    "expr":   [("goi", 0.35), ("maai", 0.65)],
-    "chara":  [("sonzaikan", 0.70), ("hirameki", 0.30)],
-    "mental": [("sonzaikan", 0.25), ("tanryoku", 0.75)],
+    "sense":  [("hirameki", 0.35), ("maai", 0.40), ("tanryoku", 0.25)],
+    "idea":   [("hirameki", 0.60), ("goi", 0.25), ("maai", 0.15)],
+    "expr":   [("goi", 0.20), ("maai", 0.60), ("tanryoku", 0.20)],
+    "chara":  [("sonzaikan", 0.50), ("hirameki", 0.20), ("maai", 0.30)],
+    "mental": [("sonzaikan", 0.20), ("tanryoku", 0.80)],
 }
 # add() の予算②で使う実力値換算重み（mental は 0＝予算を通らない）
 _W = {"sense": W_SENSE, "idea": W_IDEA, "expr": W_EXPR, "chara": W_CHARA, "mental": 0.0}
