@@ -7,6 +7,7 @@
   S   供給の付け替え：ネタ作り 閃3/語2・喫茶 閃3.5/語2.5・ファミレス 閃3/語2・勉強会 閃4/語5・ネタ見せ会 間4/胆3・ネタ合わせ 間2
   R   配合の付け替え（間合いを使う能力を増やす）：センス 閃.35/間.45/胆.20・表現 語.25/間.75・華 存.60/閃.20/間.20
   SR  S と R の両方
+  M   間合いの供給だけ減らす（ネタ見せ会 間6→4・ネタ合わせ 間3→2）
   R2  配合の需要比を供給比に合わせる（RECIPE2）
   「@x」は供給スケール EXP_SUPPLY_SCALE を x 倍（詰まりが消えて伸びた分を戻す）"""
 import sys, copy
@@ -43,8 +44,19 @@ RECIPE2 = {
     "mental": [("sonzaikan", 0.20), ("tanryoku", 0.80)],
 }
 
+SUPPLY_M = {   # M：間合いの供給だけ減らす（他は今のまま）
+    "ネタ見せ会": (("cur:maai", 4), ("cur:tanryoku", 3)),
+    "ネタ合わせ": (("cur:maai", 2), None),
+}
+
 def patch(v):
     saved = dict(tr=copy.deepcopy(B.TRAININGS), ptr=copy.deepcopy(B.PLACE_TRAININGS), rec=copy.deepcopy(B.ABILITY_RECIPE))
+    if "M" in v:
+        for name, (main, sub) in SUPPLY_M.items():
+            for tbl in (B.TRAININGS, B.PLACE_TRAININGS):
+                if name in tbl:
+                    tbl[name]["main"] = main
+                    if sub is not None: tbl[name]["sub"] = sub
     if "S" in v:
         for name, (main, sub) in SUPPLY.items():
             for tbl in (B.TRAININGS, B.PLACE_TRAININGS):
