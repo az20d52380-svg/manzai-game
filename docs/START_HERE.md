@@ -359,3 +359,4 @@ cd GameCore && swift test
 - `room_rent_exploit_v0.md`・`exploit_search_v1.md`・`diag_mid_room_rift_v0.md`・`money_after_merge_v0.md`・`money_sink_candidates_v0.md`・`code_review_2026-10-19.md`・`playtest_v11.md`・`judge_comment_score_v2.md` — 10/19 自走の実測・点検（AUTOPILOT の済に要点）
 - `feature_parity_v0.md` — 部屋・特技・お店の品の Python⇄Swift 一致の台本 golden（tools/gen_golden_features.py・FeatureGoldenTests）v0・2026-10-19
 - `event_gate_parity_v0.md`・`events_app_parity_v0.md` — 選択肢イベントの発火のアプリ⇄Python 一致点検と、アプリと同じ抽選（EVENTS_APP）での帯の比較 v0・2026-10-19
+- `milestone_events_drafts_v1.md`・`milestone_events_redteam_v0.md` — 節目イベントの下書きの書き直し v1 とレッドチーム採点・2026-10-19
