@@ -71,6 +71,8 @@ struct WeekMainView: View {
     @State private var yearEndArmed = false
     /// オファーを受ける前の二度押し確認（誤タップ事故＝playtest_v6 W31〜W34）
     @State private var offerArmed = false
+    /// オファーの帯の実際の高さ（声の席をこの分だけ上げる＝固定値だと帯に吹き出しが重なった）
+    @State private var offerBandH: CGFloat = 0
     /// 進行中の設定（監査G-04）
     @State private var showSettings = false
     /// 買い物（ShopView・アイテム）
@@ -309,8 +311,12 @@ struct WeekMainView: View {
             .overlay(alignment: .bottom) {
                 // オファーの帯：舞台の下端（＝行動ボタンの直上）に載せる。レイアウトに参加しない＝ボタンの位置は動かない。下位一覧を開いている間は隠す
                 if openCat == nil, let o = offerCard {
-                    actionCard(o, compact: true)
+                    actionCard(o, compact: true, dashed: false, row: true)   // 全幅の2段（名前／効果と収入を1行）＝帯を低くして声と人物を押し上げない
                         .fixedSize(horizontal: false, vertical: true)
+                        .background(GeometryReader { g in
+                            Color.clear.onAppear { offerBandH = g.size.height }
+                                .onChange(of: g.size.height) { _, h in offerBandH = h }
+                        })
                         .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 4)
                         .transition(.opacity)
                 }
@@ -328,7 +334,7 @@ struct WeekMainView: View {
                     monoBox.padding(YoseMetrics.screenMargin)
                 }
                 }
-                .padding(.bottom, offerCard != nil && openCat == nil ? 98 : 0)   // オファーの帯の上に声を載せる
+                .padding(.bottom, offerCard != nil && openCat == nil ? max(0, offerBandH + 10 - YoseMetrics.screenMargin) : 0)   // オファーの帯（下の余白4＋隙間6）の上に声を載せる
             }
             .overlay {
                 // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
