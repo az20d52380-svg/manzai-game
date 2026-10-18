@@ -337,6 +337,10 @@ final class WeekHintTests: IsolatedStoreTestCase {
               plusAvailable: false, expBannerShown: false)
     }
     func testNone() { XCTAssertNil(WeekHint.line(base())) }
+    func testInjuryWarn() {
+        var i = base(); i.stamina = 45
+        XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるで。")
+    }
     func testNoNeta() {
         var i = base(); i.netaCount = 0
         XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")

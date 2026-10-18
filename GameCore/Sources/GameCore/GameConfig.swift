@@ -199,8 +199,8 @@ public struct GameConfig {
     /// 体力がこの値未満だと稽古を選べない（谷口が止める・sim_career.STAMINA_GATE と同期）
     public var staminaGate = 20.0
     /// 体調ダウン（「ケガ」という語は使わない）: 体力がこの値未満のキツいバイトで抽選（sim_career.INJURY_* と同期）
-    public var injuryThreshold = 20.0
-    public var injuryProbPerPoint = 0.02
+    public var injuryThreshold = 50.0
+    public var injuryProbPerPoint = 0.005
     public var injuryRestWeeks = 3
     public var injuryMentalHit = -5.0
 
