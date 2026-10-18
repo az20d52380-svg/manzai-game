@@ -47,6 +47,16 @@ struct ChoiceEventOverlay: View {
     }
     /// 効果の無い会話だけの出来事（選択肢なしフレーバー）＝台詞を全部1枚に並べ、1回のタップで閉じる
     private var isFlavor: Bool { session.availableEventChoices().isEmpty }
+    /// 1タップで出す行数のまとめ方：shown 行目の続きから最大3行・合計約80字まで（少なくとも1行）。
+    /// 台詞の中身・順序・選択肢の出る位置（setup 末尾）は変えず、見せる粒度だけ粗くする。
+    private func chunkEnd(_ items: [Advice], from shown: Int) -> Int {
+        guard shown < items.count else { return items.count }
+        var end = shown + 1, chars = items[shown].text.count
+        while end < items.count, end - shown < 3, chars + items[end].text.count <= 80 {
+            chars += items[end].text.count; end += 1
+        }
+        return end
+    }
     private var setupDone: Bool { setupShown >= text.setup.count }
     private var afterDone: Bool {
         guard let chosenID else { return false }
@@ -64,7 +74,7 @@ struct ChoiceEventOverlay: View {
                     VStack(spacing: 16) {
                         ForEach(Array(lines.enumerated()), id: \.element.id) { i, line in
                             lineView(line.advice, isLatest: i == lines.count - 1)
-                                .opacity(i >= lines.count - 2 || isFlavor ? 1 : 0.72)   // 直近2件以外は薄く（読み戻せる）
+                                .opacity(i >= lines.count - 3 || isFlavor ? 1 : 0.72)   // 直近2件以外は薄く（読み戻せる）
                                 .id(line.id)
                                 .transition(.opacity.combined(with: .offset(y: 8)))
                             if line.id == text.setup.count - 1, let chosenID {
@@ -95,6 +105,7 @@ struct ChoiceEventOverlay: View {
         .onTapGesture { advance() }
         .onAppear {
             Sound.play(.event)   // イベント発生の一音
+            setupShown = chunkEnd(text.setup, from: 0)   // 最初の場面もまとめて出す
             if isFlavor { setupShown = text.setup.count }   // 選択肢なし＝全部並べる
             #if DEBUG
             // 目視フック: MZ_EVSTEP=99 で地の文を送り切る／MZ_EVPICK=1 で最初の選択肢を選んで返事まで送り切る
@@ -269,7 +280,8 @@ struct ChoiceEventOverlay: View {
         guard hasMore else { return }
         Sound.play(.cursor)
         withAnimation(Theme.Motion.appear) {
-            if chosenID == nil { setupShown += 1 } else { afterShown += 1 }
+            if chosenID == nil { setupShown = chunkEnd(text.setup, from: setupShown) }
+            else { afterShown = chunkEnd(text.afterChoice[chosenID ?? ""] ?? [], from: afterShown) }
         }
         armFooterIfNeeded()
     }
@@ -280,7 +292,7 @@ struct ChoiceEventOverlay: View {
         showEffects(before: before, after: session.state)
         footerReady = false
         // 選んだ瞬間に返事の1行目を出す（0 だと区切りの下が空のまま＝壊れて見えた・audit_intro_event B-01）
-        withAnimation(Theme.Motion.appear) { chosenID = id; afterShown = min(1, text.afterChoice[id]?.count ?? 0) }
+        withAnimation(Theme.Motion.appear) { chosenID = id; afterShown = chunkEnd(text.afterChoice[id] ?? [], from: 0) }
         armFooterIfNeeded()
     }
 
