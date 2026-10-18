@@ -136,7 +136,7 @@ enum CommandCatalog {
     static func extraCards(config: GameConfig, offer: OfferSpec?, money: Int, fatigued: Bool = false) -> [CommandVariant] {
         var cards: [CommandVariant] = []
         if let offer {
-            let blurb = offerBlurb(offer.name) + (fatigued ? "\n谷口「最近ネタやれてへんな」" : "")
+            let blurb = offerBlurb(offer.name)
             cards.append(CommandVariant(id: "offer", name: "オファー：\(offer.name)", desc: blurb,
                                         glyph: "star.circle.fill", action: .acceptOffer, isTrain: false))
         }

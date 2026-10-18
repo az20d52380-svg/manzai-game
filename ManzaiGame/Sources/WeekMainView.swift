@@ -849,10 +849,6 @@ struct WeekMainView: View {
                 Text("+" + Yen.man(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
                 Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .lineLimit(3).fixedSize(horizontal: false, vertical: true)
-                if session.offerFatigued {
-                    Text("谷口「最近ネタやれてへんな」").font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.shu)
-                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                }
             }
             .padding(6).frame(maxWidth: .infinity, alignment: .leading)
             .background(YoseColor.kinari)
