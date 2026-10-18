@@ -214,7 +214,7 @@ struct YoseYearTurnCurtainView: View {
 
                 ZStack(alignment: .top) {
                     // 下層：新年のめくり札（完全不透明・固定）
-                    mekuriCard(year: summary.newYear, caption: "春 ・ 第1週 開幕")
+                    mekuriCard(year: summary.newYear, caption: "4月 ・ 第1週")
                     // 上層：前年の札。上辺を軸に奥へ跳ね上がって消える（半透明では重ねない）
                     mekuriCard(year: summary.previousYear, caption: "全日程 終了")
                         .rotation3DEffect(.degrees(mekuriFlipped ? 90 : 0), axis: (x: 1, y: 0, z: 0), anchor: .top, perspective: 0.35)
@@ -247,18 +247,17 @@ struct YoseYearTurnCurtainView: View {
             HStack {
                 HStack(spacing: 6) {
                     Rectangle().fill(YoseColor.shu).frame(width: 4, height: 16)
-                    Text("\(summary.previousYear)年目の到達と引き継ぎ")
+                    Text("\(summary.previousYear)年目のおわり")
                         .font(YoseFont.gothic(15, weight: .heavy))
                         .foregroundStyle(YoseColor.sumi)
                 }
                 Spacer()
-                YoseTag(text: "実力・資金・ネタを継承", style: .solidEnji)
             }
 
             // 3連独立木札（実力 / 知名度 / 所持金）
             HStack(spacing: 8) {
                 metricKifuda(
-                    label: "引き継ぎ実力",
+                    label: "実力",
                     valueText: "\(summary.power)",
                     accent: YoseColor.enji
                 )
