@@ -352,6 +352,10 @@ final class WeekHintTests: IsolatedStoreTestCase {
         i.money = 140_000; XCTAssertNil(WeekHint.line(i))
         i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
     }
+    func testLivingForecast() {
+        var i = base(); i.livingInTwoWeeks = true
+        XCTAssertEqual(WeekHint.line(i), "再来週は月末の支払い（家賃など）14万円。")
+    }
     func testPartner() {
         var i = base(); i.weeksWithoutPartner = 6
         XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")

@@ -462,6 +462,7 @@ struct WeekMainView: View {
             netaFitsStage: cur.flatMap { n in stage.map { n.fits($0.length) } },
             stamina: s.stamina,
             livingThisWeek: session.week % session.config.livingInterval == 0,
+            livingInTwoWeeks: (session.week + 2) % session.config.livingInterval == 0,
             money: s.money, livingCost: session.config.livingCost,
             weeksWithoutPartner: session.weeksWithoutPartner,
             plusAvailable: expGrains > 0 && AbilityUpView.anyPlusEnabled(session, state: s),
