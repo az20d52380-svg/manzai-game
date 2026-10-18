@@ -27,7 +27,7 @@ struct GoldenPolicy: WeekPolicy {
 
 final class CareerGoldenTests: XCTestCase {
 
-    // gen_golden.py seed=424243 /【正典v3 2026-08-02・パワプロ式5通貨】準決74 決勝80(人気補正1.5込み) 復活76 / 上限カーブ(6.0,0.4,2.0)累計予算 / ハマ10%+12 / 生活ルール込み / エントリー費2,000 / 前年準々以上は1回戦シード / D=120 / 経験点通貨（稽古→5通貨→recommendedPlan即時全量注ぎ・abilityRecipes重み付きLeontief・供給0.48【仮】）（イベント層はgolden対象外・既定OFF）
+    // gen_golden.py seed=424243 /【正典v3 2026-08-02・パワプロ式5通貨】準決72 決勝80(人気補正1.5込み) 復活74 / 上限カーブ(6.0,0.4,2.0)累計予算 / ハマ10%+12 / 生活ルール込み / エントリー費2,000 / 前年準々以上は1回戦シード / D=120 / 経験点通貨（稽古→5通貨→recommendedPlan即時全量注ぎ・abilityRecipes重み付きLeontief・供給0.48【仮】）（イベント層はgolden対象外・既定OFF）
     // (year, week, money, stamina, fame, sense, idea, expr, chara, mental, compat)
     static let year1: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double)] = [
         (1, 1, 300000, 80.0, 3, 10, 11.254305555555556, 10, 10, 10, 5),
