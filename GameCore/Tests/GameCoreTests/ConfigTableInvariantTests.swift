@@ -38,4 +38,25 @@ final class ConfigTableInvariantTests: XCTestCase {
         for r in Rest.allCases { XCTAssertNotNil(cfg.rests[r], "\(r)") }
         for s in cfg.shopLineup { XCTAssertNotNil(cfg.items[s], "\(s)") }
     }
+    func testActionSigns() {
+        for (t, spec) in cfg.trainings {
+            XCTAssertGreaterThan(spec.main.1, 0, "\(t)")
+            XCTAssertGreaterThanOrEqual(spec.cost, 0, "\(t)")
+            XCTAssertLessThan(spec.stamina, 0, "\(t)")
+        }
+        // バイト：キツいほど稼げて体力も減る
+        let k = cfg.jobs[.キツい]!, m = cfg.jobs[.標準]!, e = cfg.jobs[.楽]!
+        XCTAssertGreaterThan(k.income, m.income); XCTAssertGreaterThan(m.income, e.income); XCTAssertGreaterThan(e.income, 0)
+        XCTAssertLessThan(k.stamina, m.stamina); XCTAssertLessThan(m.stamina, e.stamina); XCTAssertLessThan(e.stamina, 0)
+        // 休み：有料は無料の完全休養より戻りが大きい
+        for (r, v) in cfg.rests { XCTAssertGreaterThan(v.recovery, 0, "\(r)") }
+        for (r, cost) in cfg.restCosts {
+            XCTAssertGreaterThan(cost, 0, "\(r)")
+            XCTAssertGreaterThan(cfg.rests[r]!.recovery, cfg.rests[.完全休養]!.recovery, "\(r)")
+        }
+        for (i, spec) in cfg.items {
+            XCTAssertGreaterThan(spec.price, 0, "\(i)")
+            XCTAssertFalse(spec.summary.isEmpty, "\(i)")
+        }
+    }
 }
