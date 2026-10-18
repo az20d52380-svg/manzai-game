@@ -310,9 +310,11 @@ struct AbilityUpView: View {
 
     /// 押せない行の下に出す「何の粒があと何つ足りないか」と貯まる練習。足りない粒が無ければ nil
     static func shortageLines(_ a: Ability, state s: GameState, config cfg: GameConfig) -> [String] {
-        shortages(a, state: s, config: cfg).sorted { $0.short > $1.short }.prefix(2).map { sh in
-            "\(Theme.currencyChar(sh.currency))（\(sh.currency)）あと\(sh.short) → " + practices(for: sh.currency, config: cfg).joined(separator: "・")
-        }
+        let all = shortages(a, state: s, config: cfg).sorted { $0.short > $1.short }
+        guard let sh = all.first else { return [] }
+        // 読みにくいので不足の1つ目だけ。他にもあれば「ほか」で省略
+        let more = all.count > 1 ? "　ほか" : ""
+        return ["\(Theme.currencyChar(sh.currency))（\(sh.currency)）あと\(sh.short) → " + (practices(for: sh.currency, config: cfg).first ?? "") + more]
     }
 
     /// ＋が1つでも押せる状態か（週メインの「経験点が残ってる」を出す条件）
