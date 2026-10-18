@@ -90,9 +90,6 @@ struct WeekMainView: View {
         guard let w = ProcessInfo.processInfo.environment["MZ_WEEK"] else { return }
         switch w {
         case "practice": openCat = .練習
-        case "practice_sel":   // 目視用: 練習を1つ選んだ状態（増える経験点が黄色で出る）
-            openCat = .練習
-            Task { try? await Task.sleep(nanoseconds: 700_000_000); selectedPracticeID = CommandCatalog.cards(.練習, config: session.config, money: s.money).first { $0.isTrain }?.id }
         case "baito": openCat = .バイト
         case "rest": openCat = .休む
         case "netawrite": openCat = .ネタを書く; openNetaWrite = true
@@ -125,7 +122,6 @@ struct WeekMainView: View {
     /// 開いている4ボタンの下位一覧（nil＝4ボタン）。パワプロ式（オーナー指示 2026-10-12）
     @State private var openCat: CommandCategory?
     /// 練習の一覧で「選んだ（ハイライト中）」カードのID。もう一度押すと実行（パワプロの練習メニュー式・2026-10-18）
-    @State private var selectedPracticeID: String?
     /// 練習→ネタを書く の下の「どのネタを磨くか」一覧を開いているか
     @State private var openNetaWrite = false
     @State private var titleDiceStep = 0
@@ -657,7 +653,6 @@ struct WeekMainView: View {
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 6)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
         .animation(Theme.Motion.appearQuick, value: extras.map(\.id))
-        .onChange(of: openCat) { _, _ in selectedPracticeID = nil }
     }
 
     // MARK: ネタを書く（どのネタを磨くか／新しく書くか）
@@ -900,13 +895,6 @@ struct WeekMainView: View {
                 return
             }
             offerArmed = false
-            if openCat == .練習, v.isTrain, selectedPracticeID != v.id {
-                // 1回目＝選ぶ（経験点の増える分が上に出る）。同じカードをもう一度押すと実行
-                Sound.play(.tap)
-                withAnimation(.easeOut(duration: 0.15)) { selectedPracticeID = v.id }
-                return
-            }
-            selectedPracticeID = nil
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
         }
@@ -914,34 +902,24 @@ struct WeekMainView: View {
             actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact, wide: wide, row: row)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
-                .overlay { if selectedPracticeID == v.id { Rectangle().stroke(YoseColor.kinBright, lineWidth: 4).background(YoseColor.kinBright.opacity(0.12)).allowsHitTesting(false) } }
         }
         .buttonStyle(PressableStyle(enabled: !blocked))
         .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
     }
 
-    /// 練習を選ぶ画面の上段：経験点5種の今の持ち分。練習を選ぶと、増える分が黄色で横に出る（表示専用・RNG非消費）
+    /// 練習を選ぶ画面の上段：経験点5種の今の持ち分（増える分は各練習の札に出す・表示専用）
     private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
-        let sel = cards.first { $0.id == selectedPracticeID }
-        let after = sel.map { session.previewAfterPour($0.action, offer: activeOffer) }
-        return VStack(spacing: 4) {
-            HStack(spacing: 6) {
-                ForEach(ExpCurrency.allCases, id: \.self) { c in
-                    let gain = after.map { ExpDisplay.value($0[currency: c] - s[currency: c]) } ?? 0
-                    VStack(spacing: 1) {
-                        Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
-                            .frame(width: 22, height: 22).background(Self.expColor(c), in: Circle())
-                            .accessibilityLabel("\(c)")
-                        Text("\(ExpDisplay.value(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
-                            .lineLimit(1).minimumScaleFactor(0.7)
-                        Text(gain > 0 ? "+\(gain)" : " ").font(YoseFont.number(15, weight: .black)).foregroundStyle(YoseColor.kinBright)
-                            .lineLimit(1).minimumScaleFactor(0.7)
-                    }
-                    .frame(maxWidth: .infinity)
+        HStack(spacing: 6) {
+            ForEach(ExpCurrency.allCases, id: \.self) { c in
+                VStack(spacing: 1) {
+                    Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        .frame(width: 22, height: 22).background(Self.expColor(c), in: Circle())
+                        .accessibilityLabel("\(c)")
+                    Text("\(ExpDisplay.value(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
+                        .lineLimit(1).minimumScaleFactor(0.7)
                 }
+                .frame(maxWidth: .infinity)
             }
-            Text(sel == nil ? "練習を選ぶと、増える経験点が出る" : "「\(sel!.name)」をもう一度押すと始める")
-                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(.white.opacity(0.8)).lineLimit(1).minimumScaleFactor(0.8)
         }
         .padding(.horizontal, 8).padding(.vertical, 6)
         .background(YoseColor.sumi)
@@ -1062,6 +1040,18 @@ struct WeekMainView: View {
                 Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
             } else if !v.affordable {
                 Text("お金が足りない").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
+            }
+            if v.isTrain, openCat == .練習, !gated, v.affordable {
+                let gains = ExpCurrency.allCases.map { ($0, ExpDisplay.value(after[currency: $0] - s[currency: $0])) }.filter { $0.1 > 0 }
+                if !gains.isEmpty {   // 増える経験点を最初から札に出す（黄色・×10の表示値）
+                    HStack(spacing: 5) {
+                        ForEach(gains, id: \.0) { c, n in
+                            Text("\(Theme.currencyChar(c))+\(n)").font(YoseFont.number(12, weight: .black)).foregroundStyle(YoseColor.kinText)
+                                .padding(.horizontal, 4).padding(.vertical, 1).background(YoseColor.kinBright.opacity(0.35))
+                                .fixedSize()
+                        }
+                    }
+                }
             }
             if !wide, !row, !effects.isEmpty {
                 ViewThatFits(in: .horizontal) {   // 入りきらなければ2段に折る（札を「…」で切らない）
@@ -1509,7 +1499,7 @@ struct WeekMainView: View {
         // 手動の能力アップ：稽古で入る経験点を出す（パワプロの練習画面と同じ「何が貯まるか」）。大きい順に最大2つ
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
-        for (c, d) in gains where ExpDisplay.value(d) > 0 {
+        for (c, d) in gains where ExpDisplay.value(d) > 0 && !(v.isTrain && openCat == .練習) {
             out.append(CardEffect(text: "\(c) +\(ExpDisplay.value(d))", color: Self.expColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
