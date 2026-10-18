@@ -134,6 +134,9 @@ struct FinalistAnnounceView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// 自分たちの印＝コンビ名（長ければ5文字で省略）
+    private var selfLabel: String { combiName.count > 5 ? String(combiName.prefix(5)) + "…" : combiName }
+
     private func silhouette(_ s: Slot) -> some View {
         let on = stage == .read && isCalled(s)
         let done = stage == .after || (stage == .read && !dim && false)
@@ -148,11 +151,20 @@ struct FinalistAnnounceView: View {
             .overlay(alignment: .bottom) {
                 if s.isSelf { Capsule().stroke(YoseColor.kinBright, lineWidth: 1.5).frame(width: 34, height: 60).offset(y: 4) }
             }
-            .offset(y: on || (stage == .after && s.finalist) ? -8 : 0)
+            .offset(y: on || (stage == .after && s.finalist) ? (s.isSelf && on ? -14 : -8) : 0)
+            .shadow(color: s.isSelf && on ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)
             .opacity(lost ? 0.35 : 1)
-            Text(s.isSelf ? "自組" : "").font(YoseFont.gothic(9)).foregroundStyle(YoseColor.kin)
+            Text(" ").font(YoseFont.gothic(13))   // 名札の高さ確保（名札本体は overlay＝横にはみ出しても隣を押さない）
+                .overlay(alignment: .top) {
+                    if s.isSelf {
+                        Text(selfLabel).font(YoseFont.gothic(13).weight(.bold)).foregroundStyle(YoseColor.kinBright)
+                            .lineLimit(1).fixedSize()
+                            .shadow(color: YoseColor.kin.opacity(on ? 0.9 : 0.4), radius: on ? 6 : 2)
+                            .scaleEffect(on ? 1.18 : 1)
+                    }
+                }
         }
-        .animation(.easeOut(duration: 0.35), value: on)
+        .animation(s.isSelf ? .spring(response: 0.35, dampingFraction: 0.45) : .easeOut(duration: 0.35), value: on)
         .frame(width: 34)
         .accessibilityHidden(done)
     }
