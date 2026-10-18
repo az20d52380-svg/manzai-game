@@ -24,6 +24,7 @@ struct QualifierNoticeView: View {
     @State private var scanned = false          // 一覧を最後まで見終えた（自組が光る）
     @State private var msgs = 0                 // トークの表示済み件数
     @State private var chosen = false           // 「開く」を選んだ
+    @State private var chosenText = "開く"       // 吹き出しに出す自分の返事
     @State private var task: Task<Void, Never>?
 
     private var rowNames: [String] {
@@ -126,7 +127,7 @@ struct QualifierNoticeView: View {
                 VStack(spacing: 10) {
                     bubble(false, "見た？")
                     if msgs >= 1 { bubble(false, "まだ開いてない。こわくて") }
-                    if chosen { bubble(true, "開く") }
+                    if chosen { bubble(true, chosenText) }
                     if chosen && msgs >= 3 { Text("既読").font(YoseFont.gothic(10)).foregroundStyle(.white.opacity(0.4)).frame(maxWidth: .infinity, alignment: .trailing) }
                     ForEach(0..<max(0, msgs - 2), id: \.self) { i in
                         if i < resultLines.count { bubble(false, resultLines[i]) }
@@ -135,8 +136,8 @@ struct QualifierNoticeView: View {
             }
             if !chosen && msgs >= 1 {
                 HStack(spacing: 12) {
-                    choice("開く") { pickOpen() }
-                    choice("あとで") { pickOpen() }
+                    choice("開く") { pickOpen("開く") }
+                    choice("あとで") { pickOpen("……いま開く") }
                 }.padding(.vertical, 18).transition(.opacity)
             } else if msgs >= 2 + resultLines.count {
                 Button { finish() } label: {
@@ -201,8 +202,9 @@ struct QualifierNoticeView: View {
         }
     }
 
-    private func pickOpen() {
+    private func pickOpen(_ text: String = "開く") {
         guard !chosen else { return }
+        chosenText = text
         Sound.play(.tap)
         withAnimation { chosen = true; msgs = 2 }
         task?.cancel()
