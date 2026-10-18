@@ -265,7 +265,7 @@ struct FinalsBroadcastIntro: View {
                         .background(f.isSelf ? YoseColor.washiFeatured : YoseColor.washi)
                         .overlay(Rectangle().stroke(f.isSelf ? YoseColor.shu : YoseColor.kin, lineWidth: f.isSelf ? 3 : 1.5))
                         .overlay(alignment: .bottom) {
-                            if f.isSelf { Text("あなた").font(YoseFont.gothic(10, weight: .black)).foregroundStyle(YoseColor.kinari)
+                            if f.isSelf { Text("あなた").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
                                 .frame(maxWidth: .infinity).background(YoseColor.shu) }
                         }
                         .shadow(color: f.isSelf && on ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)
@@ -431,7 +431,7 @@ struct FinalsLiveBar: View {
         HStack(spacing: 8) {
             HStack(spacing: 5) {
                 Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
-                Text("LIVE 生放送").font(YoseFont.gothic(10, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+                Text("LIVE 生放送").font(YoseFont.gothic(11, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
             }
             .padding(.horizontal, 6).frame(height: 20)
             .background(YoseColor.shu)

@@ -132,7 +132,7 @@ struct ShopView: View {
                 Button { buy(item) } label: {
                     VStack(spacing: 0) {
                         // 値札の上辺に朱の小帯（白抜きの「購入」）＋下段に値段＝押すと買える札だと一目で分かる
-                        Text("購入").font(YoseFont.gothic(10, weight: .heavy)).foregroundStyle(ok ? YoseColor.kinari : YoseColor.kinari.opacity(0.8))
+                        Text("購入").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(ok ? YoseColor.kinari : YoseColor.kinari.opacity(0.8))
                             .frame(maxWidth: .infinity).frame(height: 16)
                             .background(ok ? YoseColor.shu : YoseColor.disabledText)
                         Text("¥\(price(item).formatted())").font(YoseFont.number(big ? 20 : 18, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)

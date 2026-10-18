@@ -52,7 +52,7 @@ struct YoseVitalMoneyBar: View {
             Spacer(minLength: 0)
             if let fame {
                 HStack(spacing: 3) {
-                    Text("知名度").font(YoseFont.gothic(10, weight: .bold)).lineLimit(1).fixedSize().foregroundStyle(YoseColor.kinari.opacity(0.8))
+                    Text("知名度").font(YoseFont.gothic(11, weight: .bold)).lineLimit(1).fixedSize().foregroundStyle(YoseColor.kinari.opacity(0.8))
                     Text("\(fame)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     if let fameDelta, fameDelta > 0 {
                         Text("↑+\(fameDelta)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.kinBright)

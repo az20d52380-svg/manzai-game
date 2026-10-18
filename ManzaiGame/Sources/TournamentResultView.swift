@@ -122,7 +122,7 @@ struct TournamentResultView: View {
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: signIn)
                     // 番組の下三分（小型）：LIVE札＋コンビ名＋結成年・週。点数は出さない
                     HStack(spacing: 8) {
-                        Text("LIVE 生放送").font(YoseFont.gothic(10, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Text("LIVE 生放送").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
                             .padding(.horizontal, 6).frame(height: 20).background(YoseColor.shu)
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
                         Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)

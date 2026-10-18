@@ -27,7 +27,7 @@ struct YoseHeaderBar: View {
                         .foregroundStyle(YoseColor.kin)
                         .shadow(color: YoseColor.kuroUrushi, radius: 0, x: 0, y: 1.5)
                     if let subtitle {
-                        Text(subtitle).font(YoseFont.gothic(10, weight: .bold))
+                        Text(subtitle).font(YoseFont.gothic(11, weight: .bold))
                             .foregroundStyle(YoseColor.kinari.opacity(0.85))
                     }
                 }

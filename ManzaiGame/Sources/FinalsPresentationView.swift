@@ -556,7 +556,7 @@ struct FinalsPresentationView: View {
                         }
                         .environment(\.layoutDirection, .rightToLeft)
                         Spacer(minLength: 0)
-                        if e.isSelf { Text("あなた").font(YoseFont.gothic(9, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        if e.isSelf { Text("あなた").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                             .frame(maxWidth: .infinity).padding(.vertical, 2).background(YoseColor.shu) }
                     }
                     .padding(.top, 9).padding(.horizontal, 2)
@@ -728,9 +728,9 @@ struct FinalsPresentationView: View {
                 .frame(maxWidth: .infinity).frame(minHeight: 34)
             HStack(alignment: .firstTextBaseline, spacing: 1) {
                 Text("\(e.total)").font(YoseFont.number(22, weight: .black)).foregroundStyle(e.isSelf ? YoseColor.shu : YoseColor.sumi)
-                Text("点").font(YoseFont.gothic(10, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Text("点").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
-            if e.isSelf { Text("あなた").font(YoseFont.gothic(9, weight: .black)).foregroundStyle(YoseColor.kinari)
+            if e.isSelf { Text("あなた").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
                 .frame(maxWidth: .infinity).background(YoseColor.shu) }
         }
         .padding(.vertical, 5).padding(.horizontal, 3)

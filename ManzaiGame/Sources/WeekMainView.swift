@@ -847,7 +847,7 @@ struct WeekMainView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(o.name).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1)
                 Text("+" + Yen.man(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
-                Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .lineLimit(3).fixedSize(horizontal: false, vertical: true)
             }
             .padding(6).frame(maxWidth: .infinity, alignment: .leading)
