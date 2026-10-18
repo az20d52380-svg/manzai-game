@@ -280,6 +280,12 @@ struct RootView: View {
                 case "0056": kind = .lostNotebook
                 case "0057": kind = .yearEndLive
                 case "weekend": kind = .weekendInvite
+                case "justLostRehearsal": kind = .justLostRehearsal
+                case "styleTalk": kind = .styleTalk
+                case "justPassedFork": kind = .justPassedFork
+                case "preTournamentEve": kind = .preTournamentEve
+                case "tsuukaBreak": kind = .tsuukaBreak
+                case "earlyFormality": kind = .earlyFormality
                 default:     kind = .brokeDrinkingInvite
                 }
                 session.debugForceEvent(kind)
