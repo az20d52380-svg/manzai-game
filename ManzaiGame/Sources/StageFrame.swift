@@ -132,15 +132,15 @@ struct StageFrame: View {
         let foot = h * floorTop + figH * 0.18
         let rival = mode == .spectator   // 客席から観る年は他組の衣装（自組の青・赤を使わない）
         let bow = mode == .loser   // 敗退は少しうつむく（傾けるだけ・暗くしない）
+        let outfit = StageOutfit.current
+        let ore = outfit.ore(rival: rival), tani = outfit.taniguchi(rival: rival)
         return ZStack {
             CenterMic(height: figH * 0.78).position(x: w * 0.5, y: foot - figH * 0.39)
-            ManzaiFigure(height: figH * 0.92, tilt: bow ? 6 : 2.2, accent: rival ? YoseColor.tokiwa : Color(hex: 0x2E55B0), breathe: 3.1,
-                         bodyColors: rival ? [Color(hex: 0x3F7A55), YoseColor.tokiwa] : [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                         headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+            ManzaiFigure(height: figH * 0.92, tilt: bow ? 6 : 2.2, accent: ore.accent, breathe: 3.1,
+                         bodyColors: ore.body, headColor: ore.head, hairColor: ore.hair)
                 .position(x: w * 0.5 - figH * 0.50, y: foot - figH * 0.46)
-            ManzaiFigure(height: figH, tilt: bow ? -6 : -2.6, accent: rival ? YoseColor.kuroUrushi : Color(hex: 0xB02318), breathe: 2.4,
-                         bodyColors: rival ? [Color(hex: 0x5A504A), YoseColor.kuroUrushi] : [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                         headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+            ManzaiFigure(height: figH, tilt: bow ? -6 : -2.6, accent: tani.accent, breathe: 2.4,
+                         bodyColors: tani.body, headColor: tani.head, hairColor: tani.hair)
                 .position(x: w * 0.5 + figH * 0.52, y: foot - figH * 0.50)
             if !rival {   // 自組の二人は足元に小さな名札（めくり）
                 StageFootTag(name: "俺", band: YoseColor.kuroUrushi).position(x: w * 0.5 - figH * 0.50, y: foot + 10)
