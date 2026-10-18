@@ -234,6 +234,24 @@ public enum GameEngine {
         return false
     }
 
+    /// §102 飲みの誘いの抽選。本編の乱数（runner の rng）は一切消費しない＝シード＋年週のハッシュで引く別の決定論。
+    /// 来なければ nil、来たら「行ったとき発想が付くか」を返す。Python: sim_career.invite_roll（同じ式・同値）
+    public static func rollInvite(seed: UInt64, year: Int, week: Int, config: GameConfig) -> Bool? {
+        guard config.inviteRate > 0 else { return nil }
+        let st = seed &+ UInt64(year * 1000 + week) &* 0xD1B5_4A32_D192_ED03
+        var g = SplitMix64(seed: st)
+        guard g.nextUniform() < config.inviteRate else { return nil }
+        return g.nextUniform() < config.inviteIdeaP
+    }
+
+    /// 誘いに「行く」確定効果（断るは何もしない）。Python: sim_career.invite_weekend
+    public static func applyInviteGo(idea: Bool, to s: inout GameState, config: GameConfig) {
+        s.money -= config.inviteMoney
+        add(.体力, config.inviteStamina, to: &s, config: config)
+        add(.ability(.メンタル), config.inviteMental, to: &s, config: config)
+        if idea { add(.ability(.発想), config.inviteIdea, to: &s, config: config) }
+    }
+
     /// 週末処理（Python: run_year 末尾）。生活費は livingInterval 週ごと。
     /// 正典v2: 所持金<0なら生活苦（体力・メンタル減）、夜逃げライン未満で true（キャリア終了）を返す
     @discardableResult

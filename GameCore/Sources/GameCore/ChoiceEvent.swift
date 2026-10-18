@@ -15,6 +15,7 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     case namelessReservationSlip  // 0028: 名前の無い予約票（確定発火=compat>=8・大会2-5週前・一発化。選択肢なしフレーバー）
     case taniguchiShortJob        // 0012: 谷口の耳寄りな話（確定発火=金欠<10万・相性8+・大会3週以内なし・選択肢あり）
     case riftWarning              // 0050: 会わない週が続いた（確定発火=riftWarned が初めて true になった週の次の週頭・キャリア1回・docs/endings_spec_v1 §4）
+    case weekendInvite            // §102: 先輩の飲みの誘い（週末に別乱数で不定期に来る・WeekRunner.pendingInvite が出所。効果は runner.applyInviteGo＝選択肢の効果は空）
     // --- 週次ランダム抽選プール（UI層RNGで発火＝golden非対象。効果は決定的delta＝golden不変） ---
     case brokeDrinkingInvite // 0011: 行けない飲み会（発火帯=所持金<5万・相性<上限）
     case senpaiMeishi        // 0013: 先輩の名刺（発火帯=所持金<20万・知名度<50）
@@ -360,6 +361,9 @@ public enum ChoiceEventTable {
                 ChoiceEventChoice(id: "A", effects: [.rift(-30), .stamina(-10)]),
                 ChoiceEventChoice(id: "B", effects: []),
             ]
+        case .weekendInvite:
+            // §102: A=行く(所持金-5,000/体力-10/メンタル+1/半分で発想+0.5＝GameSession が runner.applyInviteGo で適用)　B=断る(何も起きない)
+            return [ChoiceEventChoice(id: "A", effects: []), ChoiceEventChoice(id: "B", effects: [])]
         case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }

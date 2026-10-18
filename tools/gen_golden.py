@@ -24,6 +24,7 @@ import balance_sim as B
 import sim_career as C
 
 MASK = (1 << 64) - 1
+GOLDEN_SEED = 424243
 
 class SplitMix64:
     """Swift実装 (RandomSource.swift) と同一。random()の値もビット一致する"""
@@ -55,6 +56,9 @@ PATTERN = [("train", "ネタ作り"), ("train", "ネタ合わせ"), ("job", "標
 def year_budget(year):
     base, slope, floor = C.CAP_CURVE
     return sum(max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
+
+class _GoPolicy:
+    choose_invite = None   # golden 台本は誘いに「行く」
 
 def run_year(s, year, rng, log=None, gp_seed=False):
     s.stamina = 100.0
@@ -154,6 +158,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
             assert s.money >= C.BANKRUPT_LINE, f"goldenシードで夜逃げが発生（{year}年{week}週）。シードを変えること"
         if C.RIFT_ON:   # 途中解散（乱数なし・golden の行には出ない）
             assert not C.rift_weekend(s, year, compat0), f"goldenシードで途中解散が発生（{year}年{week}週）"
+        C.invite_weekend(s, _GoPolicy(), year, week, GOLDEN_SEED)   # §102 飲みの誘い（別乱数・golden 台本は「行く」）
 
         if log is not None:
             log.append((year, week, s))
@@ -169,7 +174,7 @@ def swift_row(year, week, snap):
     return f"        ({year}, {week}, {money}, {vals}),"
 
 def main():
-    seed = 424243
+    seed = GOLDEN_SEED
     rng = SplitMix64(seed)
     s = B.S()
     print(f"// gen_golden.py seed={seed} / 正典v2: 準決{C.GP_ROUNDS[-1][1]} 決勝{C.GP_FINAL_LINE} 復活{C.GP_REVIVAL_LINE} "
