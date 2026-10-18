@@ -338,6 +338,7 @@ struct NotebookView: View {
             }
             YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
             netaBar(label: "完成度", value: neta.polish, color: YoseColor.shu)
+            NetaStageBadge(netaID: neta.id, polish: neta.polish)
             netaBar(label: "客の反応", value: neta.buzz, color: YoseColor.kinBright)
             oroshiLine(neta)
             HStack(spacing: 8) {

@@ -657,17 +657,6 @@ struct WeekMainView: View {
 
     // MARK: ネタを書く（どのネタを磨くか／新しく書くか）
 
-    /// 完成度の段階名（表示のみ・閾値【仮】）。業界語を避けた普通の言葉（会話ルールv3）
-    static func netaStage(_ polish: Double) -> String {
-        switch polish {
-        case ..<25: return "書きかけ"
-        case ..<50: return "形になってきた"
-        case ..<75: return "仕上がってきた"
-        case ..<90: return "よく仕上がった"
-        default: return "完成"
-        }
-    }
-
     /// 書く対象のネタ（エンジンの規則どおり：勝負ネタ→無ければ枠が空いていれば新ネタ→満杯なら最後のネタ）
     private var writeTarget: Neta? {
         if newNetaTitle != nil { return nil }
@@ -718,10 +707,7 @@ struct WeekMainView: View {
                 HStack(spacing: 8) {
                     YoseGauge(value: n.polish, total: 100, fill: YoseColor.shu, height: 12, showTicks: true).frame(width: 130)
                     Text("完成度 \(Int(n.polish.rounded()))").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.shu).fixedSize()
-                    Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.sumi)
-                        .padding(.horizontal, 6).padding(.vertical, 2)
-                        .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1))
-                        .fixedSize()
+                    NetaStageBadge(netaID: n.id, polish: n.polish)
                     Spacer(minLength: 0)
                 }
             }
@@ -743,7 +729,7 @@ struct WeekMainView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Text("「\(n.name)」").font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi).lineLimit(1)
-                        Text(Self.netaStage(n.polish)).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                        NetaStageBadge(netaID: n.id, polish: n.polish)
                         Spacer()
                         Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     }

@@ -74,6 +74,7 @@ struct NetaPickRow: View {
                         .lineLimit(1).minimumScaleFactor(0.6)
                     Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
                         .lineLimit(1).fixedSize()
+                    NetaStageBadge(netaID: neta.id, polish: neta.polish)
                     Spacer(minLength: 0)
                     changeLabel
                 }
@@ -103,6 +104,7 @@ struct NetaPickRow: View {
                         .lineLimit(1).minimumScaleFactor(0.6)
                     Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
                         .lineLimit(1).fixedSize()
+                    NetaStageBadge(netaID: neta.id, polish: neta.polish)
                     Spacer(minLength: 0)
                     if isThis { YoseTag(text: "選択中", style: .outlineShu) }
                 }

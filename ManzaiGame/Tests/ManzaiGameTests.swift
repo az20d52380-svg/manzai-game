@@ -483,3 +483,16 @@ final class ExpDisplayTests: XCTestCase {
         }
     }
 }
+
+final class NetaStageTests: XCTestCase {
+    func testStageBoundaries() {
+        XCTAssertEqual(NetaStage.index(0), 0)
+        XCTAssertEqual(NetaStage.index(34.99), 0)
+        XCTAssertEqual(NetaStage.index(35), 1)
+        XCTAssertEqual(NetaStage.index(59.99), 1)
+        XCTAssertEqual(NetaStage.index(60), 2)
+        XCTAssertEqual(NetaStage.index(84.99), 2)
+        XCTAssertEqual(NetaStage.index(85), 3)
+        XCTAssertEqual(NetaStage.name(100), "仕上がった")
+    }
+}
