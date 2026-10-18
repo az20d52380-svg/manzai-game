@@ -1509,7 +1509,7 @@ final class GameSession {
             if pendingResult != nil { acknowledgeResult(); continue }
             switch phase {
             case .tournamentDecision: decideTournament(.夜行バス)
-            case .freeAction:         choose(.rest(.完全休養))   // 体力を保って稽古も混ぜたいが最短確認用
+            case .freeAction:         choose(state.stamina >= 40 ? .job(.標準) : .rest(.完全休養))   // 休むだけだと数年目で夜逃げの年になる（playtest_v11 #1）＝バイトと休みを交互に
             case .gpRound, .gpRevival, .gpFinal: advanceAuto()
             default: return
             }
