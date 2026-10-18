@@ -86,6 +86,10 @@ struct ShopView: View {
                             Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        if !ok, !here {   // 引っ越せない理由（あといくら）
+                            Text("あと ¥\((session.config.roomRents[i] - session.state.money).formatted()) あれば引っ越せる")
+                                .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                        }
                     }
                     Spacer(minLength: 0)
                     if !here {

@@ -66,6 +66,9 @@ struct AbilityUpView: View {
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
             }
+            #if DEBUG
+            .task { if ProcessInfo.processInfo.environment["MZ_SKILL"] == "scroll" { try? await Task.sleep(nanoseconds: 800_000_000); proxy.scrollTo("skills", anchor: .top) } }   // 目視用: 特技の段へ
+            #endif
             }
             footer
         }

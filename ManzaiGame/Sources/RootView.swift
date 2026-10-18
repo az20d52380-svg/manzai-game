@@ -135,6 +135,11 @@ struct RootView: View {
             if ui == "ending", session.week <= 1 {
                 forceChampion()   // S6b目視: 優勝データ（outcome.champion＋高残金）を用意
             }
+            if ui == "shop", session.week <= 1, let m = ProcessInfo.processInfo.environment["MZ_MONEY"].flatMap(Int.init) {
+                // 部屋選びの目視: MZ_MONEY=<円> で所持金を指定（例 20000＝引っ越せない灰色）
+                var st = GameState(config: GameConfig()); st.money = m
+                session = GameSession(startState: st)
+            }
             if ui == "allocate", session.week <= 1 {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
                 var st = GameSession.debugAllocationState()
