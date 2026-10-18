@@ -1256,6 +1256,21 @@ final class GameSession {
         if let kind = pendingChoiceEvent { dismissChoiceEvent(); _ = kind }
     }
 
+    /// DEBUG: オファーが来る週まで休んで進める（MZ_UI=offer の目視用）
+    func debugUntilOffer() {
+        var steps = 0
+        while !finished, steps < 120 {
+            steps += 1
+            if let kind = pendingChoiceEvent {
+                if let c = ChoiceEventTable.choices(for: kind, config: config).first(where: { $0.gate(state) }) { applyEventChoice(c.id) }
+                dismissChoiceEvent(); continue
+            }
+            guard case .freeAction(let o) = phase else { return }
+            if o != nil { return }
+            choose(.rest(.完全休養))
+        }
+    }
+
     /// DEBUG: 大会前の振り忘れの知らせ（MZ_UI=prestage）の目視用。練習（体力が落ちたら休む）で、最初の大会の
     /// weeksBefore 週前まで進める＝経験点が貯まったまま大会が近い状態。RNG は通常の週送りと同じ（golden非対象）。
     func debugAdvanceUntilStage(weeksBefore: Int, stageWeek: Int) {
