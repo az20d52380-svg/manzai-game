@@ -330,9 +330,9 @@ struct WeekMainView: View {
                     adviceBox(b).padding(YoseMetrics.screenMargin)
                 } else if let lines = session.weekBanter, !lines.isEmpty {
                     banterBox(lines).padding(YoseMetrics.screenMargin)
-                } else {
+                } else if offerCard == nil || openCat != nil {
                     monoBox.padding(YoseMetrics.screenMargin)
-                }
+                }   // オファーの帯が出ている週は独白を出さない（帯＋吹き出しで舞台の二人が隠れた・ui_sweep_2026-10-18）
                 }
                 .padding(.bottom, offerCard != nil && openCat == nil ? max(0, offerBandH + 14 - YoseMetrics.screenMargin) : 0)   // オファーの帯（下の余白4＋隙間10）の上に声を載せる
             }
