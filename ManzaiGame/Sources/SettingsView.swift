@@ -41,7 +41,7 @@ struct SettingsView: View {
                         }
                         section("購入") {
                             Button { Task { restoring = true; _ = await store.restore(); restoring = false } } label: {
-                                linkRow(restoring ? "復元しています…" : "購入を復元")
+                                linkRow(restoring ? "復元しています…" : "購入を復元", external: false)
                             }
                             .buttonStyle(.plain).disabled(restoring)
                             if let m = store.lastMessage {
@@ -185,9 +185,9 @@ struct SettingsView: View {
         v.wrappedValue = min(max(((v.wrappedValue + d) * 10).rounded() / 10, 0), 1)
     }
 
-    private func linkRow(_ label: String) -> some View {
+    private func linkRow(_ label: String, external: Bool = true) -> some View {
         HStack { Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi); Spacer()
-            Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }
+            if external { Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) } }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())   // 行の端も押せる
     }
