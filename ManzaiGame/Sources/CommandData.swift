@@ -122,10 +122,22 @@ enum CommandCatalog {
     }
 
     /// 下段の小カード。オファー週だけオファー。
-    static func extraCards(config: GameConfig, offer: OfferSpec?, money: Int) -> [CommandVariant] {
+    /// キュー96：オファーは仕事の名前＋短い説明。続けて受けていて次に受けると腕が落ちる時（fatigued）は谷口の一言を足す
+    static func offerBlurb(_ name: String) -> String {
+        switch name {
+        case "ひな壇": return "ひな壇に座って喋る。顔が売れて、喋りも磨かれる"
+        case "ラジオ": return "ラジオで喋る。軽い仕事で、喋りが磨かれる"
+        case "ロケ":   return "ロケに出る。お金になるけど、くたびれる"
+        case "営業":   return "地方の営業回り。一番お金になる"
+        default:       return name
+        }
+    }
+
+    static func extraCards(config: GameConfig, offer: OfferSpec?, money: Int, fatigued: Bool = false) -> [CommandVariant] {
         var cards: [CommandVariant] = []
         if let offer {
-            cards.append(CommandVariant(id: "offer", name: "オファー", desc: offer.name,
+            let blurb = offerBlurb(offer.name) + (fatigued ? "\n谷口「最近ネタやれてへんな」" : "")
+            cards.append(CommandVariant(id: "offer", name: "オファー：\(offer.name)", desc: blurb,
                                         glyph: "star.circle.fill", action: .acceptOffer, isTrain: false))
         }
         return cards   // バイトは4ボタンの1つへ移した（2026-10-12）

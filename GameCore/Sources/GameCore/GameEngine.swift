@@ -177,13 +177,26 @@ public enum GameEngine {
     }
 
     /// Python: do_offer
-    public static func applyOffer(_ o: OfferSpec, to s: inout GameState, config: GameConfig) {
+    /// atWeek（通算週）を渡すとテレビ慣れを判定・記録する（nil=従来どおり何もしない＝エンジン単体テスト用）
+    public static func applyOffer(_ o: OfferSpec, to s: inout GameState, config: GameConfig, atWeek: Int? = nil) {
         s.money += o.income
         add(.知名度, o.fame, to: &s, config: config)
         if let ab = o.ability {
             add(.ability(ab.0), ab.1, to: &s, config: config)
         }
         add(.体力, o.stamina, to: &s, config: config)
+        if let wk = atWeek {
+            if offerFatigued(state: s, atWeek: wk, config: config) {
+                add(.ability(.センス), -config.offerFatigueD, to: &s, config: config)
+                add(.ability(.表現), -config.offerFatigueD, to: &s, config: config)
+            }
+            s.offerWeeks = (s.offerWeeks ?? []).filter { wk - $0 < config.offerFatigueWindow } + [wk]
+        }
+    }
+
+    /// Python: offer_fatigued。次にオファーを受けると腕が落ちるか（テレビ慣れ）
+    public static func offerFatigued(state s: GameState, atWeek wk: Int, config: GameConfig) -> Bool {
+        (s.offerWeeks ?? []).filter { wk - $0 < config.offerFatigueWindow }.count >= config.offerFatigueK
     }
 
     /// Python: roll_offer。知名度帯で発生率が決まり、種類は50/50【仮】
@@ -194,7 +207,9 @@ public enum GameEngine {
             break
         }
         guard rng.nextUniform() < rate else { return nil }
-        return rng.nextUniform() < 0.5 ? config.offerMoney : config.offerExp
+        let isMoney = rng.nextUniform() < 0.5
+        let sub = rng.nextUniform() < 0.5 ? 1 : 0          // 名前を決める追加の乱数1回（キュー96）
+        return config.offersNamed[(isMoney ? 2 : 0) + sub]
     }
 
     /// Python: perform。スコア = 実力値 + 相性 + ブレ + ハマった夜 + 体力ペナルティ、ライン以上で通過。

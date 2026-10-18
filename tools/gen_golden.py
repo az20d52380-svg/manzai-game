@@ -127,6 +127,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 s._inj -= 1                       # 療養中（オファーは受けられない）
                 B.do_rest(s, "完全休養")
             elif offer is not None:
+                s._wk = (year - 1) * B.WEEKS + week
                 B.do_offer(s, offer)
             else:
                 act, arg = PATTERN[(week - 1) % len(PATTERN)]

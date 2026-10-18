@@ -137,13 +137,46 @@ final class CoverageGapTests: XCTestCase {
     func testRollOfferFameBandBoundary() {
         var s = GameState(config: cfg)
         s.fame = 20
-        var hit = SeqRandom(values: [0.149, 0.0])
+        var hit = SeqRandom(values: [0.149, 0.0, 0.0])
         XCTAssertNotNil(GameEngine.rollOffer(state: s, config: cfg, rng: &hit))
         var edge = SeqRandom(values: [0.15])
         XCTAssertNil(GameEngine.rollOffer(state: s, config: cfg, rng: &edge))
         XCTAssertEqual(edge.index, 1)   // 外れは1drawで終わる
-        var split = SeqRandom(values: [0.0, 0.5])
-        XCTAssertEqual(GameEngine.rollOffer(state: s, config: cfg, rng: &split)?.name, cfg.offerExp.name)   // 0.5 は経験重視側
+        var split = SeqRandom(values: [0.0, 0.5, 0.9])
+        XCTAssertEqual(GameEngine.rollOffer(state: s, config: cfg, rng: &split)?.name, "ひな壇")   // 0.5 は経験重視側（ひな壇/ラジオ）。追加の乱数0.9→ひな壇
+    }
+
+    /// キュー96：名前4種の振り分け（1draw目<0.5=お金側→ロケ/営業・それ以外=経験側→ひな壇/ラジオ。2draw目<0.5→後者（営業/ラジオ）・以上→前者（ロケ/ひな壇）＝Python の +(rng.random()<0.5)）
+    func testOfferNamedFourKinds() {
+        let s = GameState(config: cfg)
+        let cases: [(Double, Double, String)] = [(0.4, 0.7, "ロケ"), (0.4, 0.2, "営業"), (0.6, 0.7, "ひな壇"), (0.6, 0.2, "ラジオ")]
+        // 0.4/0.6 の並びは (率, お金/経験, 名前)。率は 0.01 で必ず当たる
+        for (kind, sub, name) in cases {
+            var r = SeqRandom(values: [0.01, kind, sub])
+            XCTAssertEqual(GameEngine.rollOffer(state: s, config: cfg, rng: &r)?.name, name)
+            XCTAssertEqual(r.index, 3)   // 当たりは3draw
+        }
+    }
+
+    /// キュー96：テレビ慣れ。直近6週に4回受けた後の5回目から、受けるたびにセンスと表現が0.5ずつ下がる。6週あければ戻る
+    func testOfferFatigueFromFifthWithinSixWeeks() {
+        var s = GameState(config: cfg)
+        s.stamina = 100
+        let o = cfg.offersNamed[2]   // ロケ（能力なし）
+        for wk in 1...4 {
+            XCTAssertFalse(GameEngine.offerFatigued(state: s, atWeek: wk, config: cfg))
+            let se = s.センス, ex = s.表現
+            GameEngine.applyOffer(o, to: &s, config: cfg, atWeek: wk)
+            XCTAssertEqual(s.センス, se, accuracy: 1e-12)
+            XCTAssertEqual(s.表現, ex, accuracy: 1e-12)
+        }
+        XCTAssertTrue(GameEngine.offerFatigued(state: s, atWeek: 5, config: cfg))
+        let se = s.センス, ex = s.表現
+        GameEngine.applyOffer(o, to: &s, config: cfg, atWeek: 5)
+        XCTAssertEqual(s.センス, se - 0.5, accuracy: 1e-9)
+        XCTAssertEqual(s.表現, ex - 0.5, accuracy: 1e-9)
+        // 十分あけると（週5から6週後=週11以降）慣れは消える
+        XCTAssertFalse(GameEngine.offerFatigued(state: s, atWeek: 20, config: cfg))
     }
 
     // MARK: 生活苦と夜逃げ

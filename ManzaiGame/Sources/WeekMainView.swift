@@ -141,7 +141,7 @@ struct WeekMainView: View {
         extraCards.first { if case .acceptOffer = $0.action { return true } else { return false } }
     }
     private var extraCards: [CommandVariant] {
-        CommandCatalog.extraCards(config: session.config, offer: offer, money: s.money)
+        CommandCatalog.extraCards(config: session.config, offer: offer, money: s.money, fatigued: session.offerFatigued)
     }
 
     var body: some View {
@@ -1003,7 +1003,7 @@ struct WeekMainView: View {
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
             if case .acceptOffer = v.action {
-                Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(1)   // オファー名（既存の OfferSpec.name）
+                Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
             } else if !dashed, !gated {
                 Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(row ? 1 : 2).fixedSize(horizontal: false, vertical: true)
             }
