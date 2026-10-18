@@ -83,4 +83,17 @@ final class ItemTests: XCTestCase {
         GameEngine.resetYearlyItems(&s)
         XCTAssertEqual(GameEngine.injuryProbMultiplier(state: s, config: config), 1.0)
     }
+
+    /// 売り場から外した品も、並べ直せば1回きり（レコーダー・稽古場の年契約）＝口は生きている
+    func testUnsoldOnceOnlyItemsWorkIfRelisted() {
+        var cfg = GameConfig()
+        cfg.shopLineup = ShopItem.allCases
+        var s = GameState(config: cfg); s.money = 10_000_000
+        for item in [ShopItem.中古のICレコーダー, .稽古場の年契約] {
+            XCTAssertTrue(GameEngine.buy(item, to: &s, config: cfg), "\(item) 1回目")
+            XCTAssertFalse(GameEngine.buy(item, to: &s, config: cfg), "\(item) 2回目は買えない")
+        }
+        XCTAssertEqual(s.hasRecorder, true)
+        XCTAssertEqual(s.studioActive, true)
+    }
 }
