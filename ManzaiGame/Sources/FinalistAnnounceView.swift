@@ -66,7 +66,7 @@ struct FinalistAnnounceView: View {
             if called == 0 { return "決勝に進む組が、読み上げられる。" }
             if let cur = readOrder.prefix(called).last { return cur.isSelf ? "——\(cur.name)。" : cur.name }
             return ""
-        case .after: return passed ? "以上の組が、決勝に進む。" : "以上の組が、決勝に進む。\n呼ばれなかった皆さん、敗者復活戦は決勝当日です。"
+        case .after: return passed ? "以上の組が、決勝に進む。" : "以上の組が、決勝に進む。\n呼ばれなかった皆さん、\n敗者復活戦は決勝当日です。"
         }
     }
 
