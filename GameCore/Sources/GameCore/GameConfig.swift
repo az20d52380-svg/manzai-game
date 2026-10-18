@@ -229,6 +229,10 @@ public struct GameConfig {
     // --- 生活費（Python: LIVING_COST / LIVING_INTERVAL） ---
     public var livingCost = 140_000
     public var livingInterval = 4
+    // --- 部屋の段（キュー90・§90。Python: ROOM_RENT / ROOM_HEAL）。0=安アパート（今）/1=ふつう/2=いい ---
+    public var roomRents = [0, 50_000, 150_000]   // 4週ごとの生活費への上乗せ【仮】
+    public var roomHeals = [0.0, 10.0, 20.0]      // 家で休む（完全休養・気分転換）の体力の戻りへの加算【仮】
+    public var roomBestMental = 1.0               // いい部屋の完全休養はメンタルも +1【仮】
 
     // --- 稽古（Python: TRAININGS）。正典v3: main/subは能力でなく経験点通貨を発行する（.currency）。
     //     量は旧版（能力直付け）を踏襲＝既存の較正値（expSupplyScale等）を出発点にできる【仮】。

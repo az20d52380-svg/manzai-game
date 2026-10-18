@@ -36,6 +36,11 @@ MENTAL_CAP      = 100      # メンタルはブレ幅式(1−メンタル/100)�
 
 LIVING_COST     = 140_000  # 4週ごと（マイナスOK・ペナルティなし＝仕様どおり）
 LIVING_INTERVAL = 4
+# 【キュー90・§90】部屋の段（状態 s.room=0..2・既定0＝安アパート＝今と同一）。Swift: GameConfig.roomRents/roomHeals
+ROOM_RENT = (0, 50_000, 150_000)   # 4週ごとの生活費への上乗せ
+ROOM_HEAL = (0, 10, 20)            # 家で休む（完全休養・気分転換）の体力の戻りへの加算
+ROOM_HOME_RESTS = ("完全休養", "気分転換")
+def room_rent(s): return ROOM_RENT[getattr(s, "room", 0) or 0]
 
 # --- 稽古: 主効果 / 副効果 / 費用 / 体力 / 知名度 ---
 # 正典v3（パワプロ式5通貨・docs/exp_currency_redesign_v0.md）: main/subは能力でなく経験点通貨を発行する。
@@ -448,8 +453,13 @@ def do_rest(s, name):
     if t:                                   # 銭湯の回数券（Item.swift 鏡像）
         rec += ITEM_SENTO_RECOVERY
         s.sento_tickets = t - 1
+    room = getattr(s, "room", 0) or 0
+    if room and name in ROOM_HOME_RESTS:
+        rec += ROOM_HEAL[room]
     add(s, "stamina", rec)
     add(s, k, v)
+    if room == 2 and name == "完全休養":
+        add(s, "mental", 1)
 
 def roll_offer(s, rng):
     rate = next(r for cap, r in OFFER_RATES if s.fame < cap)
@@ -605,7 +615,7 @@ def run_one(pol, seed):
         pour_all(s)   # 会計移設: 行動直後に粒を全量注ぐ（稽古以外の週は空注ぎ）
 
         if week % LIVING_INTERVAL == 0:
-            s.money -= LIVING_COST
+            s.money -= LIVING_COST + room_rent(s)
         s.min_money = min(s.min_money, s.money)
     return s
 

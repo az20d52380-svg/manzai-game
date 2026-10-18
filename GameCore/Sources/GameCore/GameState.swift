@@ -91,6 +91,8 @@ public struct GameState: Codable {
     public var shinkansenActive: Bool? = nil
     /// 稽古場の年契約（その年の稽古の主効果+1）
     public var studioActive: Bool? = nil
+    // --- 部屋の段（キュー90）：nil/0＝安アパート（今と同一）。古いセーブは nil ---
+    public var room: Int? = nil
 
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney
