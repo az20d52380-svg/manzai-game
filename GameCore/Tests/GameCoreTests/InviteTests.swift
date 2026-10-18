@@ -65,4 +65,20 @@ final class InviteTests: XCTestCase {
         accept.resolveInvite(accept: true)
         XCTAssertEqual(accept.state.money, before.money - 5_000)
     }
+
+    /// アプリ用の WeekRunner.applyInviteGo は GameEngine.applyInviteGo と同じ効果・乱数を引かない
+    func testRunnerApplyInviteGoMatchesEngine() throws {
+        let c = GameConfig()
+        for idea in [false, true] {
+            var r = WeekRunner(state: GameState(config: c), year: 1, config: c, rng: SplitMix64(seed: 3))
+            var expected = r.state
+            var probe = r.rng
+            r.applyInviteGo(idea: idea)
+            GameEngine.applyInviteGo(idea: idea, to: &expected, config: c)
+            let e = JSONEncoder(); e.outputFormatting = [.sortedKeys]
+            XCTAssertEqual(try e.encode(r.state), try e.encode(expected))
+            var after = r.rng
+            XCTAssertEqual(after.nextUInt64(), probe.nextUInt64())
+        }
+    }
 }

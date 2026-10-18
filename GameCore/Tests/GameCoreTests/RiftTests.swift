@@ -101,4 +101,22 @@ final class RiftTests: XCTestCase {
         _ = GameEngine.applyRiftWeekEnd(year: 2, to: &s, config: config)
         XCTAssertEqual(s.rift ?? 0, 10 + 0.5 * 15 / 20, accuracy: 1e-9)   // 一人の週は今どおり増える
     }
+
+    /// 週送り（runYear）でも、2年目に予告済みですれ違いが満ちたら解散で年が終わる（夜逃げ扱いではない）
+    func testRunYearEndsWithDissolvedOutcome() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.money = 10_000_000
+        s.compat = 0; s.rift = 99.99; s.riftWarned = true
+        var p = GoldenPolicy()
+        var r = SplitMix64(seed: 11)
+        var weeks = 0
+        let o = GameCareer.runYear(state: &s, year: 2, config: config, policy: &p, rng: &r,
+                                   onWeekEnd: { _, _ in weeks += 1 })
+        XCTAssertTrue(o.dissolved)
+        XCTAssertFalse(o.bankrupt)
+        XCTAssertFalse(o.champion)
+        XCTAssertEqual(s.dissolved, true)
+        XCTAssertLessThan(weeks, config.weeks, "年の途中で終わる")
+    }
 }
