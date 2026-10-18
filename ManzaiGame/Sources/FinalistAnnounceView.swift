@@ -63,10 +63,10 @@ struct FinalistAnnounceView: View {
         case .wait: return "準決勝の終演から、しばらく。"
         case .line: return "舞台に、準決勝を終えた組が並ぶ。"
         case .read:
-            if called == 0 { return "決勝に進む組を、読み上げます。" }
+            if called == 0 { return "決勝に進む組が、読み上げられる。" }
             if let cur = readOrder.prefix(called).last { return cur.isSelf ? "——\(cur.name)。" : cur.name }
             return ""
-        case .after: return passed ? "決勝の出場の意思を確認されます。" : "以上の組が、決勝に進みます。"
+        case .after: return passed ? "決勝に出るか、問われる。" : "以上の組が、決勝に進む。"
         }
     }
 

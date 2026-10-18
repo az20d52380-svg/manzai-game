@@ -130,7 +130,7 @@ struct QualifierNoticeView: View {
             ScrollView {
                 VStack(spacing: 10) {
                     bubble(false, "見た？")
-                    if msgs >= 1 { bubble(false, "まだ開いてない。こわくて") }
+                    if msgs >= 1 { bubble(false, "まだ開いてへん。こわいわ") }
                     if chosen { bubble(true, chosenText) }
                     if chosen && msgs >= 3 { Text("既読").font(YoseFont.gothic(10)).foregroundStyle(.white.opacity(0.4)).frame(maxWidth: .infinity, alignment: .trailing) }
                     ForEach(0..<max(0, msgs - 2), id: \.self) { i in
