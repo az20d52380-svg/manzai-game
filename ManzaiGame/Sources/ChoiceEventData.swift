@@ -637,7 +637,7 @@ enum ChoiceEventData {
             Advice(name: nil, text: "喫茶店。作家の戸田さんに呼ばれた昼。"),
             Advice(name: "戸田", text: "深夜ラジオに届くハガキの仕分け、手伝ってくれないかな。週に一回、夜中なんだ"),
             Advice(name: "俺", text: "夜中ですか。お金は出ますか"),
-            Advice(name: "戸田", text: "少しだけど出すよ。いろんな人の文章が読めるのも、勉強になると思う"),
+            Advice(name: "戸田", text: "少しだけど出すよ。夜食も付くから、気軽においで"),
             Advice(name: "谷口", text: "俺、夜はすぐ眠なるねん。お前が決めてええで"),
         ],
         choiceLabels: [
@@ -648,7 +648,7 @@ enum ChoiceEventData {
             "A": [
                 Advice(name: "俺", text: "やります。来週からお願いします"),
                 Advice(name: "戸田", text: "助かるよ。思ってるより、ハガキは多いからね"),
-                Advice(name: "谷口", text: "読んだ中でおもろいのあったら、俺にも教えてな"),
+                Advice(name: "谷口", text: "変わったハガキあったら、俺にも教えてな"),
             ],
             "B": [
                 Advice(name: "俺", text: "すみません。夜は二人で練習したいんです"),
@@ -896,7 +896,7 @@ enum ChoiceEventData {
             Advice(name: "小野寺", text: "久しぶり。高校で同じクラスだった小野寺だよ"),
             Advice(name: "俺", text: "小野寺か。来てくれたのか"),
             Advice(name: "小野寺", text: "会社の同期と五人で来た。このあと飲みに行くから、一緒に来いよ"),
-            Advice(name: "谷口", text: "俺は先に帰っとくわ。行くんやったら、明日の稽古に遅れんといてな"),
+            Advice(name: "谷口", text: "俺はどっちでもええで。行くんやったら、明日の稽古に遅れんといてな"),
         ],
         choiceLabels: [
             "A": "小野寺たちの飲み会に行く",
@@ -950,7 +950,7 @@ enum ChoiceEventData {
         title: "なくしたノート",
         setup: [
             Advice(name: nil, text: "駅の忘れ物の窓口。朝。"),
-            Advice(name: "谷口", text: "稽古のノート、ゆうべの電車の網棚に置いてきてしもてん"),
+            Advice(name: "谷口", text: "二人のノート、ゆうべの電車の網棚に置いてきてしもてん"),
             Advice(name: "俺", text: "組んだ日から書いてるノートだよな"),
             Advice(name: "駅員", text: "終点の駅に届いているそうです。取りに行くなら、今日中にお願いします"),
             Advice(name: "谷口", text: "終点まで一時間かかるんや。ほんまにごめん"),
@@ -980,7 +980,7 @@ enum ChoiceEventData {
             Advice(name: "野々村", text: "このあと、事務所の打ち上げがある。会費は一人五千円だ"),
             Advice(name: "俺", text: "野々村さん、事務所の人は全員来るんですか"),
             Advice(name: "野々村", text: "社長も来る。来年の話も、そこで出るかもしれないな"),
-            Advice(name: "谷口", text: "今年、年越しそば食べてへんかったな。駅前の店、まだ開いとるで"),
+            Advice(name: "谷口", text: "今年の年越しそば、まだやったな。駅前の店、まだ開いとるで"),
         ],
         choiceLabels: [
             "A": "打ち上げに最後まで残る",
