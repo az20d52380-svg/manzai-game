@@ -134,7 +134,7 @@ struct NotebookView: View {
             Text("相性").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .padding(.horizontal, 4).padding(.vertical, 1)
                 .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
-            Text("\(Int(s.compat.rounded()))").font(YoseFont.number(24, weight: .black)).foregroundStyle(YoseColor.shu)
+            Text("\(Int(s.compat.rounded()))").font(YoseFont.number(24, weight: .black)).foregroundStyle(YoseColor.sumi)   // 朱は「足りない」の色と紛れる（ui_sweep_2026-10-18 notebook）
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 10).padding(.vertical, 6)
