@@ -13,7 +13,7 @@ GameCore同期用 golden生成器【正典v2 2026-07-05改訂】
       → 療養中なら完全休養(残週-1・消費なし・オファーは受けられない)
       → 当選していれば受諾
       → 非当選: 週パターンの行動に体力ゲート(体力20未満の稽古→完全休養に差し替え・消費なし)
-        → 体調ダウン判定(体力20未満のキツいバイトのみ1draw。発生時: 完全休養+メンタル-5・以後2週療養)
+        → 体調ダウン判定(体力50未満の稽古・キツいバイトのみ1draw【§97】。発生時: 完全休養+メンタル-5・以後2週療養)
         → 実行（有料稽古が払えない時は完全休養にフォールバック。借金中は稽古効果×0.5）
    5) 週末: 4週ごとに生活費 → 所持金<0なら生活苦(体力-10/メンタル-3) → -100万未満で夜逃げ(キャリア終了。goldenシードでは起きない前提=assert)
 - perform = 出来ブレuniform(±B) 1draw → ハマった夜判定 1draw（10%で+12）。この2draw構造は全本番共通
@@ -24,6 +24,7 @@ import balance_sim as B
 import sim_career as C
 
 MASK = (1 << 64) - 1
+GOLDEN_SEED = 424243
 
 class SplitMix64:
     """Swift実装 (RandomSource.swift) と同一。random()の値もビット一致する"""
@@ -56,6 +57,9 @@ def year_budget(year):
     base, slope, floor = C.CAP_CURVE
     return sum(max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
 
+class _GoPolicy:
+    choose_invite = None   # golden 台本は誘いに「行く」
+
 def run_year(s, year, rng, log=None, gp_seed=False):
     s.stamina = 100.0
     B.YEAR_GROWTH_CAP = year_budget(year)   # キャリア累計予算（s._ygはリセットしない）
@@ -79,6 +83,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     s.money += t["prize"]
                     B.add(s, "fame", t["fame"])
                 acted = True
+                s._joint = True
 
         if not acted and gp_alive and gp_stage < len(C.GP_ROUNDS) and week == C.GP_ROUNDS[gp_stage][0]:
             if not gp_entry_paid and s.money < C.GP_ENTRY_FEE:
@@ -89,6 +94,9 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     gp_entry_paid = True
                 ok, _ = B.perform(s, C.GP_ROUNDS[gp_stage][1], rng)
                 acted = True
+                s._joint = True
+                if not ok:
+                    B.add(s, "compat", -C.GP_LOSS_COMPAT[gp_stage])   # §94 予選で落ちたら相性↓
                 if ok:
                     B.add(s, "fame", C.GP_ROUND_FAME)
                     gp_stage += 1
@@ -104,6 +112,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
             if revival:
                 ok, _ = B.perform(s, C.GP_REVIVAL_LINE, rng)
                 acted = True
+                s._joint = True
                 if ok:
                     B.add(s, "fame", C.GP_ROUND_FAME)
                     finalist = True
@@ -112,6 +121,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 eff_line = C.GP_FINAL_LINE - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
                 ok, _ = B.perform(s, eff_line, rng)
                 acted = True
+                s._joint = True
                 if ok:
                     s.money += C.GP_PRIZE
                     C.fame_champ(s)
@@ -123,6 +133,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 s._inj -= 1                       # 療養中（オファーは受けられない）
                 B.do_rest(s, "完全休養")
             elif offer is not None:
+                s._wk = (year - 1) * B.WEEKS + week
                 B.do_offer(s, offer)
             else:
                 act, arg = PATTERN[(week - 1) % len(PATTERN)]
@@ -136,6 +147,8 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                 if act == "train":
                     if not B.do_training(s, arg):
                         B.do_rest(s, "完全休養")
+                    elif arg in C.RIFT_JOINT_TRAIN:
+                        s._joint = True
                 elif act == "job":
                     B.do_job(s, arg)
                 else:
@@ -154,6 +167,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
             assert s.money >= C.BANKRUPT_LINE, f"goldenシードで夜逃げが発生（{year}年{week}週）。シードを変えること"
         if C.RIFT_ON:   # 途中解散（乱数なし・golden の行には出ない）
             assert not C.rift_weekend(s, year, compat0), f"goldenシードで途中解散が発生（{year}年{week}週）"
+        C.invite_weekend(s, _GoPolicy(), year, week, GOLDEN_SEED)   # §102 飲みの誘い（別乱数・golden 台本は「行く」）
 
         if log is not None:
             log.append((year, week, s))
@@ -169,7 +183,7 @@ def swift_row(year, week, snap):
     return f"        ({year}, {week}, {money}, {vals}),"
 
 def main():
-    seed = 424243
+    seed = GOLDEN_SEED
     rng = SplitMix64(seed)
     s = B.S()
     print(f"// gen_golden.py seed={seed} / 正典v2: 準決{C.GP_ROUNDS[-1][1]} 決勝{C.GP_FINAL_LINE} 復活{C.GP_REVIVAL_LINE} "

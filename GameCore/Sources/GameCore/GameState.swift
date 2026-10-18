@@ -25,6 +25,8 @@ public struct GameState: Codable {
     public var recoveryWeeks = 0
     /// 夜逃げ（破産）でキャリアが終了したか
     public var bankrupt = false
+    /// テレビ慣れ（キュー96）：直近でオファーを受けた通算週 ((年-1)*週数+週)。Codable は Optional（旧セーブ互換）
+    public var offerWeeks: [Int]? = nil
 
     // --- 経験点残高（正典v3・パワプロ式5通貨・docs/exp_currency_redesign_v0.md） ---
     // 会計の二層: 稼ぐ時は成長予算を消費せずここに貯まり、能力へ注ぐ瞬間だけ GameEngine.add()
@@ -65,8 +67,13 @@ public struct GameState: Codable {
     public var riftWarned: Bool?
     /// 週頭の相性（この週に相性が上がったかの判定用）
     public var riftWeekStartCompat: Double?
+    /// §94 この週に二人で舞台に立った（ネタ見せ会・フリーライブ・大会・GP）。週頭に false に戻す。Optional＝古いセーブ互換
+    public var riftJointWeek: Bool?
     /// 途中解散でキャリアが終わったか
     public var dissolved: Bool?
+
+    /// 覚えた特技（Skill.swift・キュー106。nil＝未習得＝今と同じ）
+    public var skills: [Skill]? = nil
 
     /// ネタ合わせ（磨き）の効果ブースト週（0016 書けた一本＝寝かせた効果）。>0 の間は applyNetaRevise の
     /// polish 上昇に config.netaBoostMult を掛ける。UI層イベント（GameSession）が設定し、週送りで1ずつ減る。
@@ -91,6 +98,8 @@ public struct GameState: Codable {
     public var shinkansenActive: Bool? = nil
     /// 稽古場の年契約（その年の稽古の主効果+1）
     public var studioActive: Bool? = nil
+    // --- 部屋の段（キュー90）：nil/0＝安アパート（今と同一）。古いセーブは nil ---
+    public var room: Int? = nil
 
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney

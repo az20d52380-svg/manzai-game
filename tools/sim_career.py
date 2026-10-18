@@ -51,15 +51,16 @@ BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 # 2層ブレ「ハマった夜」・生活ルール一式とセット）。イベント層ON計測で:
 # のんびり改=優勝0.3%/決勝到達22%・やり込み=2.1%/43%・トロフィー30ptで21.6%（exp_v2_anchor / exp_v2_meta）
 # 旧正典（準決86・決勝94・D解放）の実測値は docs の履歴注記を参照
+# 予選ライン−2（1回戦〜準決勝・復活。決勝80はそのまま）: 7本統合で下がった決勝到達率を今の帯に戻す根拠 docs/combined7_bands_v0.md 追記・候補 docs/candidate_v0.md
 GP_ROUNDS = [
     # (週, ライン, ラベル)      実在対応: 開催時期 / 通過組数(2025)。ライン【正典v2 2026-07-05】canonical_v2_spec
-    (30, 18, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
-    (39, 26, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
-    (41, 34, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
-    (43, 45, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
-    (45, 74, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
+    (30, 16, "GP1回戦"),      # 8月中旬       / 11,521 → 1,912 (16.6%)
+    (39, 24, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
+    (41, 32, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
+    (43, 43, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
+    (45, 72, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
 ]
-GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 76   # 敗者復活: 決勝-4【正典v2】
+GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 74   # 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
 GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 80   # 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 GP_ENTRY_FEE = 2_000    # 【正典v2】GPエントリー費（実在の賞レース準拠・1回戦週に徴収。払えなければその年は出場不可）
@@ -89,6 +90,8 @@ TOURNAMENTS = {
              ok=lambda year, s: year <= 5),           # 1〜5年目のみ
     38: dict(name="推薦制中堅賞",  line=33, prize=500_000, fame=FAME_MID,   osaka=False,
              ok=lambda year, s: s.fame >= 30),        # 知名度30以上【仮】
+    46: dict(name="寒梅漫才杯",    line=34, prize=250_000, fame=FAME_SMALL, osaka=False,
+             ok=lambda year, s: year <= 10),          # 芸歴10年内・GP準決勝の翌週【仮】キュー98 §98（balance_q93_98_measure_v0）
 }
 
 EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
@@ -115,11 +118,24 @@ RIFT_ON        = True       # 途中解散（すれ違いゲージ）docs/dissol
 RIFT_GAIN      = 0.5        # 相性が上がらなかった週の増え方 ×(上限−相性)/上限
 RIFT_HEAL      = 3.0        # 相性が上がった週の減り方
 RIFT_WARN      = 50.0       # 初めて越えた週末に予告（アプリ側の選択肢イベント）
+RIFT_JOINT_STILL = True     # §94 二人で舞台に立つ週（ネタ見せ会・フリーライブ・大会・GP）で相性が上がらなくても、すれ違いは増えない（減りもしない）
+GP_LOSS_COMPAT = (0.5, 0.5, 0.5, 0.25, 0.125)   # §94 GPの予選で落ちた時の相性の下げ幅（1〜3回戦・準々決勝・準決勝）。敗者復活・決勝・その他の大会の負けでは下げない
+RIFT_JOINT_TRAIN = ("ネタ見せ会", "フリーライブ")   # §94 舞台に立つ稽古
 RIFT_RESPOND   = False      # 実測用：予告に「向き合う」で応えるボット（rift −30・体力 −10）
+# --- §102 飲みの誘い（先輩・後輩）: 不定期に何度も来る軽い気分転換の選択。docs/balance_q93_98_measure_v0.md §102【仮】 ---
+INVITE_P       = 0.04       # 毎週末（rift_weekend の後）にこの率で誘いが来る（10年で約19回）
+INVITE_MONEY   = 5_000      # 行く: 所持金 −
+INVITE_STAMINA = -10        # 行く: 体力
+INVITE_MENTAL  = 1          # 行く: メンタル
+INVITE_IDEA    = 0.5        # 行く: 半分の確率で 発想 +
+INVITE_IDEA_P  = 0.5
+INVITE_GO      = True       # ボットの既定は「行く」（方針に choose_invite(s) があればそれを使う）。断る＝何も起きない
+RUN_INVITE_SEED = None      # run_career が差すキャリアのシード（None=誘いなし）。本編の乱数とは独立
+INVITE_COUNT   = 0          # 実測用: 来た回数
 BANKRUPT_LINE  = -1_000_000   # 【正典v2】夜逃げライン: 下回ったらキャリア強制終了（rule_holes_v0 §2）
 INJURY_ON      = True   # 【正典v2】低体力のキツいバイトに体調ダウン抽選（稽古はゲートで先に止まる）（rule_holes_v0。ゲーム内表記は「喉をやられた」「腰にきた」等——漫才師にケガという語は使わない）
-INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとダウン抽選
-INJURY_P_PER   = 0.02   # 不足1ptあたりのダウン確率（体力0で40%）【仮】
+INJURY_TH      = 50.0   # この体力未満で対象行動を選ぶとダウン抽選（§97実測: 20だと稽古ゲートに阻まれほぼ起きない→50）
+INJURY_P_PER   = 0.005  # 不足1ptあたりのダウン確率（体力0で25%・体力40で5%）（§97）
 INJURY_REST    = 3      # ダウン後の療養週数（行動強制）【仮】
 INJURY_MENTAL  = -5.0   # ダウン時のメンタル打撃【仮】
 INJURY_ABILITY = 0.0    # ダウン時のランダム演技能力の低下量（重症変種の比較用）【仮】
@@ -525,13 +541,83 @@ def enter_tournament(s, pol, t, rng):
             RUN_BOREDOM.clear()   # 飽きられ解除(b): 他大会での優勝＝再評価（dynasty §3-2）
     return True, ok
 
+_M64 = (1 << 64) - 1
+
+def _splitmix_u01(state, n):
+    """SplitMix64（Swift RandomSource.swift と同一）の n 番目(1始まり)の [0,1) 値。"""
+    st = state & _M64
+    z = 0
+    for _ in range(n):
+        st = (st + 0x9E3779B97F4A7C15) & _M64
+        z = st
+        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & _M64
+        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & _M64
+        z = z ^ (z >> 31)
+    return (z >> 11) * (1.0 / 9007199254740992.0)
+
+def invite_roll(seed, year, week):
+    """§102 誘いの抽選。本編の乱数とは別の決定論（シード+年週のハッシュ→SplitMix64）。(来たか, 発想が付くか)。
+    Swift: GameEngine.rollInvite（同じ式・同じ定数で同値）。"""
+    st = (seed + (year * 1000 + week) * 0xD1B54A32D192ED03) & _M64
+    if _splitmix_u01(st, 1) >= INVITE_P:
+        return None
+    return _splitmix_u01(st, 2) < INVITE_IDEA_P
+
+# --- キュー96（規律A・2026-10-18）：知名度が上がるほどオファーの札が増える（30未満=1枚／30〜55=2枚／55以上=3枚【仮】） ---
+OFFER_CARD_FAMES = (30, 55)                 # OFFER_RATES の区切り 10/30/55 に合わせる【仮】
+OFFER_CARD_SALT  = 0x5851F42D4C957F2D       # 誘い(§102)とは別の系列にする塩
+
+def offer_extra_count(fame):
+    return sum(1 for f in OFFER_CARD_FAMES if fame >= f)
+
+def extra_offers(seed, year, week, fame, first_name):
+    """追加の札（2枚目以降）。1枚目は本編の乱数（B.roll_offer）。ここは本編の乱数を一切消費しない別の決定論
+    （シード+年週+塩のハッシュ→SplitMix64）。1枚目と違う種類を、残りから floor(u*残り数) で引く。
+    Swift: GameEngine.extraOffers（同じ式・同値）。seed=None または枚数0 なら []。"""
+    n = offer_extra_count(fame)
+    if seed is None or n <= 0:
+        return []
+    st = (seed + (year * 1000 + week) * 0xD1B54A32D192ED03 + OFFER_CARD_SALT) & _M64
+    rest = [o["name"] for o in B.OFFERS_NAMED if o["name"] != first_name]
+    out = []
+    for k in range(1, n + 1):
+        i = int(_splitmix_u01(st, k) * len(rest))
+        nm = rest.pop(i)
+        out.append(dict(next(o for o in B.OFFERS_NAMED if o["name"] == nm)))
+    return out
+
+def invite_weekend(s, pol, year, week, seed):
+    """週末の誘い（rift_weekend の後）。来たら「行く／断る」をボットが選ぶ。Swift: WeekRunner.pendingInvite→resolveInvite"""
+    global INVITE_COUNT
+    if seed is None or INVITE_P <= 0:
+        return
+    idea = invite_roll(seed, year, week)
+    if idea is None:
+        return
+    INVITE_COUNT += 1
+    ch = getattr(pol, "choose_invite", None)
+    go = ch(s) if ch else INVITE_GO
+    if go:
+        s.money -= INVITE_MONEY
+        B.add(s, "stamina", INVITE_STAMINA)
+        B.add(s, "mental", INVITE_MENTAL)
+        if idea:
+            B.add(s, "idea", INVITE_IDEA)
+
 def rift_weekend(s, year, compat0):
     """途中解散のすれ違いゲージ（週末・生活費の後）。乱数なし。解散なら True。Swift: GameEngine.applyRiftWeekEnd"""
     r = getattr(s, "rift", 0.0)
+    joint = getattr(s, "_joint", False)   # §94 この週に二人で舞台に立ったか（run_year が立てる）
+    s._joint = False
     if s.compat > compat0:
         r = max(0.0, r - RIFT_HEAL)
+    elif joint and RIFT_JOINT_STILL:
+        pass                              # §94 二人の週はすれ違いがたまらない（増えない・減らない）
     else:
-        r = min(100.0, r + RIFT_GAIN * (B.COMPAT_CAP - s.compat) / B.COMPAT_CAP)
+        gain = RIFT_GAIN * (B.COMPAT_CAP - s.compat) / B.COMPAT_CAP
+        if B.has_skill(s, "相方思い"):
+            gain *= B.SKILL_RIFT_MULT
+        r = min(100.0, r + gain)
     if r >= RIFT_WARN and not getattr(s, "rift_warned", False):
         s.rift_warned = True
         if RIFT_RESPOND:
@@ -583,6 +669,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         t = TOURNAMENTS.get(week)
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
+            if acted: s._joint = True
             if RUN_TRACK is not None and acted:
                 RUN_TRACK.setdefault("year_entered", []).append(t["name"])
                 if won_t:
@@ -605,6 +692,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 line += _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, line, rng, final=False)
                 acted = True
+                s._joint = True
+                if not ok:
+                    B.add(s, "compat", -GP_LOSS_COMPAT[gp_stage])   # §94 予選で落ちたら相性↓
                 if ok:
                     if RUN_BOREDOM is not None:
                         RUN_BOREDOM[gp_stage] = 0    # 壁を越えたら既視感リセット
@@ -629,6 +719,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 rev_line = GP_REVIVAL_LINE + upset + _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, rev_line, rng, final=True)
                 acted = True
+                s._joint = True
                 REVIVAL_STATS["attempts"] += 1
                 if ok:
                     REVIVAL_STATS["passes"] += 1
@@ -643,6 +734,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 eff_line += _neta_line_adj(s, f"GP決勝{year}", rng, final=True)
                 ok, _ = _gp_perform(s, eff_line, rng, final=True)
                 acted = True
+                s._joint = True
                 if ok:
                     s.money += GP_PRIZE
                     fame_champ(s)
@@ -673,7 +765,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 act, arg = "rest", "完全休養"       # ハードゲート: 稽古ボタンが押せない（谷口が止める）
             if INJURY_ON and s.stamina < INJURY_TH and (
                     act == "train" or (act == "job" and arg == "キツい")):
-                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER:
+                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER * B.throat_mult(s) * (B.SKILL_INJURY_MULT if B.has_skill(s, "体が資本") else 1.0):
                     act, arg = "rest", "完全休養"   # 体調ダウン発生: 今週から療養
                     s._inj = INJURY_REST - 1
                     B.add(s, "mental", INJURY_MENTAL)
@@ -685,6 +777,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 if not B.do_training(s, arg):
                     B.do_rest(s, "完全休養")
                 else:
+                    if arg in RIFT_JOINT_TRAIN: s._joint = True
                     if NETA_ON:
                         _neta_on_train(s, arg)
                     if RUN_TRACK is not None:
@@ -693,6 +786,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 B.do_job(s, arg)
                 s._jobs = getattr(s, "_jobs", 0) + 1
             elif act == "offer" and offer:
+                s._wk = (year - 1) * B.WEEKS + week
                 B.do_offer(s, offer)
             elif act == "rest":
                 B.do_rest(s, arg)
@@ -742,7 +836,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     _apply_event(s, EVENT_TABLE[idx])
 
         if week % B.LIVING_INTERVAL == 0:
-            s.money -= B.LIVING_COST
+            s.money -= B.living_cost(s) + B.room_rent(s)
             if DEBT_LIFE_PEN is not None and s.money < 0:
                 dst, dmt = DEBT_LIFE_PEN   # 生活費が払えない月の生活苦【実験・既定OFF】
                 B.add(s, "stamina", dst)
@@ -753,13 +847,15 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         if RIFT_ON and rift_weekend(s, year, compat0):
             s._dissolved = True            # 途中解散: キャリア終了（夜逃げの後に判定）
             return False, gp_stage, finalist
+        invite_weekend(s, pol, year, week, RUN_INVITE_SEED)   # §102 飲みの誘い（別乱数・rift の後）
         s.min_money = min(s.min_money, s.money)
 
     return False, gp_stage, finalist
 
 def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     """1キャリア。(初優勝年 or None, 最終状態, 最高到達回戦数0〜5, 決勝経験) を返す"""
-    global RUN_EVENTS_FIRED, RUN_BOREDOM
+    global RUN_EVENTS_FIRED, RUN_BOREDOM, RUN_INVITE_SEED
+    RUN_INVITE_SEED = seed
     rng = random.Random(seed)
     s = new_state(init_ability, compat)
     if EVENTS_ON:

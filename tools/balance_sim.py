@@ -36,6 +36,11 @@ MENTAL_CAP      = 100      # メンタルはブレ幅式(1−メンタル/100)�
 
 LIVING_COST     = 140_000  # 4週ごと（マイナスOK・ペナルティなし＝仕様どおり）
 LIVING_INTERVAL = 4
+# 【キュー90・§90】部屋の段（状態 s.room=0..2・既定0＝安アパート＝今と同一）。Swift: GameConfig.roomRents/roomHeals
+ROOM_RENT = (0, 50_000, 150_000)   # 4週ごとの生活費への上乗せ
+ROOM_HEAL = (0, 10, 20)            # 家で休む（完全休養・気分転換）の体力の戻りへの加算
+ROOM_HOME_RESTS = ("完全休養", "気分転換")
+def room_rent(s): return ROOM_RENT[getattr(s, "room", 0) or 0]
 
 # --- 稽古: 主効果 / 副効果 / 費用 / 体力 / 知名度 ---
 # 正典v3（パワプロ式5通貨・docs/exp_currency_redesign_v0.md）: main/subは能力でなく経験点通貨を発行する。
@@ -77,6 +82,16 @@ JOBS = {
 # --- オファー（体力消費は仕様未定義→【仮】-20。種類の出現比は50/50【仮】） ---
 OFFER_MONEY = dict(name="お金重視", income=240_000, fame=1, ability=None,        stam=-20)
 OFFER_EXP   = dict(name="経験重視", income=120_000, fame=3, ability=("expr", 2), stam=-20)
+# キュー96（規律A・2026-10-18）：オファーに名前4種（平均は OFFER_MONEY/EXP と同じ）。EXP→ひな壇/ラジオ、MONEY→ロケ/営業（追加の乱数1回＝半々）
+OFFERS_NAMED = [
+    dict(name="ひな壇", income=120_000, fame=3, ability=("expr", 2), stam=-15),
+    dict(name="ラジオ", income=100_000, fame=2, ability=("expr", 2), stam=-10),
+    dict(name="ロケ",   income=220_000, fame=2, ability=None,        stam=-25),
+    dict(name="営業",   income=280_000, fame=1, ability=None,        stam=-20),
+]
+OFFER_FATIGUE_WINDOW = 6     # テレビ慣れ：直近6週（今週−受けた週 < 6）
+OFFER_FATIGUE_K      = 4     # その中に4回以上受けていたら、受けるたびに
+OFFER_FATIGUE_D      = 0.5   # センスと表現を0.5ずつ下げる
 OFFER_RATES = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]  # 区切り 20/50/80→10/30/55（キュー62・saturation §8）  # (知名度がこの値未満, 発生率/週)
 
 # --- 休む: (回復, 追加効果) ---
@@ -140,6 +155,36 @@ FAME_OTHER_CAP  = 80.0   # その他の伸びが鈍っていく先【仮】。Sw
 def clamp(v, lo, hi):
     return max(lo, min(hi, v))
 
+# 特技（キュー106・規律A）：余った経験点の使い道。各1回きり・覚えたらずっと効く。状態 s.skills（set・既定なし＝今と同じ）。
+# 費用は内部の単位（画面では×10）。Swift: Skill.swift。ボットは覚えない（golden不変）。
+SKILL_COST = {
+    "体が資本":     {"tanryoku": 4, "sonzaikan": 3},   # 体調ダウンの確率 ×0.7
+    "愛され芸人":   {"sonzaikan": 6},                   # 知名度の伸び ×1.1（正の増分だけ）
+    "やりくり上手": {"goi": 2, "maai": 4},              # 月末の生活費 −5%
+    "相方思い":     {"sonzaikan": 3, "maai": 4},        # すれ違いの増え ×0.8（増えた週だけ）
+}
+SKILL_INJURY_MULT, SKILL_FAME_MULT, SKILL_LIVING_MULT, SKILL_RIFT_MULT = 0.7, 1.1, 0.95, 0.8
+
+def has_skill(s, name):
+    return name in getattr(s, "skills", ())
+
+def learn_skill(s, name):
+    """特技を覚える（足りる時だけ費用を引く）。覚えたら True。Swift: GameEngine.learnSkill"""
+    if name not in SKILL_COST or has_skill(s, name):
+        return False
+    cost = SKILL_COST[name]
+    if any(getattr(s, CURRENCY_ATTR[c]) < v for c, v in cost.items()):
+        return False
+    for c, v in cost.items():
+        setattr(s, CURRENCY_ATTR[c], getattr(s, CURRENCY_ATTR[c]) - v)
+    if not hasattr(s, "skills"):
+        s.skills = set()
+    s.skills.add(name)
+    return True
+
+def living_cost(s):
+    return LIVING_COST * (SKILL_LIVING_MULT if has_skill(s, "やりくり上手") else 1.0)
+
 def add(s, key, amt):
     if key == "compat":
         if COMPAT_GROWS:
@@ -157,6 +202,8 @@ def add(s, key, amt):
         if amt > 0:
             d = max(0.0, 1 - s.fame / FAME_OTHER_CAP)
             amt = amt * FAME_OTHER_MULT * (d * d)
+            if has_skill(s, "愛され芸人"):
+                amt *= SKILL_FAME_MULT
         s.fame = clamp(s.fame + amt, 0, 100)
     else:
         # 能力5種: 成長逓減（正の上昇のみ）を掛けてから上限にクランプ
@@ -337,11 +384,13 @@ def do_training(s, name):
 # アイテム（GameCore/Item.swift の鏡像・docs/item_design_v0.md・全て【仮】）。購入は乱数を引かない
 # ============================================================
 ITEMS = {   # 名前: (価格, 年の上限 None=キャリア1回)
-    "栄養ドリンク": (3_000, 6), "銭湯の回数券": (10_000, 99), "中古のICレコーダー": (30_000, None),
+    "栄養ドリンク": (3_000, 6), "回復ドリンク大": (20_000, 4), "喉のケア用品": (20_000, 1), "銭湯の回数券": (10_000, 99), "中古のICレコーダー": (30_000, None),
     "新幹線回数券": (200_000, 1), "ネタ作家の勉強会": (150_000, 2), "ボイトレ短期集中": (250_000, 1),
     "稽古場の年契約": (2_400_000, 1),
 }
 ITEM_DRINK_STAMINA = 8.0
+ITEM_DRINK_L_STAMINA = 20.0
+ITEM_THROAT_INJURY_MULT = 0.5   # 喉のケア用品を今年持っていれば体調ダウン確率×0.5（item_counts は年初に消える）
 ITEM_SENTO_TICKETS = 4
 ITEM_SENTO_RECOVERY = 10.0
 ITEM_RECORDER_BONUS = 1.0
@@ -351,7 +400,7 @@ ITEM_VOICE = (4.0, 2.0)    # 間合い・語彙（通貨に直接）
 
 # お店で売る品（オーナー原則 2026-10-12「アイテムで能力は上がらない」・money_items_neta_v1 §3）。
 # 能力に効く4品（ICレコーダー・勉強会・ボイトレ・稽古場の年契約）は売らない。Swift: GameConfig.shopLineup と同値。
-SHOP_LINEUP = ["栄養ドリンク", "銭湯の回数券", "新幹線回数券"]
+SHOP_LINEUP = ["栄養ドリンク", "回復ドリンク大", "喉のケア用品", "銭湯の回数券", "新幹線回数券"]
 
 def can_buy(s, item):
     if item not in SHOP_LINEUP:
@@ -379,6 +428,10 @@ def buy_item(s, item):
     s.item_counts = counts
     if item == "栄養ドリンク":
         add(s, "stamina", ITEM_DRINK_STAMINA)
+    elif item == "回復ドリンク大":
+        add(s, "stamina", ITEM_DRINK_L_STAMINA)
+    elif item == "喉のケア用品":
+        pass   # 効果は item_counts の有無で体調ダウン判定が読む（throat_mult）
     elif item == "銭湯の回数券":
         s.sento_tickets = ITEM_SENTO_TICKETS
     elif item == "中古のICレコーダー":
@@ -392,6 +445,10 @@ def buy_item(s, item):
     elif item == "稽古場の年契約":
         s.studio_active = True
     return True
+
+def throat_mult(s):
+    """体調ダウン確率の係数。喉のケア用品をその年持っていれば0.5、なければ1（恒等）"""
+    return ITEM_THROAT_INJURY_MULT if (getattr(s, "item_counts", None) or {}).get("喉のケア用品", 0) > 0 else 1.0
 
 def reset_yearly_items(s):
     """年初（WeekRunner.init と同じ位置）。未購入は恒等"""
@@ -410,6 +467,18 @@ def do_offer(s, offer):
     if offer["ability"]:
         k, v = offer["ability"]; add(s, k, v)
     add(s, "stamina", offer["stam"])
+    wk = getattr(s, "_wk", None)          # 通算の週（呼び出し側が行動直前に s._wk=(年-1)*48+週 を入れる）
+    if wk is not None:
+        hist = getattr(s, "offer_weeks", None) or []
+        if offer_fatigued(s, wk):
+            add(s, "sense", -OFFER_FATIGUE_D); add(s, "expr", -OFFER_FATIGUE_D)
+        hist = [w for w in hist if wk - w < OFFER_FATIGUE_WINDOW] + [wk]
+        s.offer_weeks = hist
+
+def offer_fatigued(s, wk):
+    """次にオファーを受けると腕が落ちるか（テレビ慣れ）"""
+    hist = getattr(s, "offer_weeks", None) or []
+    return sum(1 for w in hist if wk - w < OFFER_FATIGUE_WINDOW) >= OFFER_FATIGUE_K
 
 # --- お金を払う休み（money_items_neta_v1 §2・オーナー案 2026-10-12）【値は仮】---
 # Swift: Rest.サウナ/.温泉に一泊（GameConfig.rests/restCosts）と同値。既定では RESTS に入れない＝既存の基準不変。
@@ -438,13 +507,20 @@ def do_rest(s, name):
     if t:                                   # 銭湯の回数券（Item.swift 鏡像）
         rec += ITEM_SENTO_RECOVERY
         s.sento_tickets = t - 1
+    room = getattr(s, "room", 0) or 0
+    if room and name in ROOM_HOME_RESTS:
+        rec += ROOM_HEAL[room]
     add(s, "stamina", rec)
     add(s, k, v)
+    if room == 2 and name == "完全休養":
+        add(s, "mental", 1)
 
 def roll_offer(s, rng):
     rate = next(r for cap, r in OFFER_RATES if s.fame < cap)
     if rng.random() < rate:
-        return dict(rng.choice([OFFER_MONEY, OFFER_EXP]))
+        base = rng.choice([OFFER_MONEY, OFFER_EXP])
+        i = (0 if base is OFFER_EXP else 2) + (1 if rng.random() < 0.5 else 0)   # 追加の乱数1回（名前）
+        return dict(OFFERS_NAMED[i])
     return None
 
 BURST_P     = 0.10   # 【正典v2】「ハマった夜」の発生率（勝負ごとの独立な運・メンタル非依存）
@@ -588,6 +664,7 @@ def run_one(pol, seed):
             elif act == "job":
                 do_job(s, arg)
             elif act == "offer" and offer:
+                s._wk = week
                 do_offer(s, offer)
             elif act == "rest":
                 do_rest(s, arg)
@@ -595,7 +672,7 @@ def run_one(pol, seed):
         pour_all(s)   # 会計移設: 行動直後に粒を全量注ぐ（稽古以外の週は空注ぎ）
 
         if week % LIVING_INTERVAL == 0:
-            s.money -= LIVING_COST
+            s.money -= living_cost(s) + room_rent(s)
         s.min_money = min(s.min_money, s.money)
     return s
 

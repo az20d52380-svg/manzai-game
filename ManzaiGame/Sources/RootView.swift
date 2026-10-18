@@ -135,10 +135,16 @@ struct RootView: View {
             if ui == "ending", session.week <= 1 {
                 forceChampion()   // S6b目視: 優勝データ（outcome.champion＋高残金）を用意
             }
+            if ui == "shop", session.week <= 1, let m = ProcessInfo.processInfo.environment["MZ_MONEY"].flatMap(Int.init) {
+                // 部屋選びの目視: MZ_MONEY=<円> で所持金を指定（例 20000＝引っ越せない灰色）
+                var st = GameState(config: GameConfig()); st.money = m
+                session = GameSession(startState: st)
+            }
             if ui == "allocate", session.week <= 1 {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
                 var st = GameSession.debugAllocationState()
                 if ProcessInfo.processInfo.environment["MZ_MODE"] == "short" { st.exp閃き = 2; st.exp語彙 = 3; st.exp間合い = 0.5; st.exp存在感 = 1; st.exp胆力 = 0 }   // 足りない行の目視
+                if ProcessInfo.processInfo.environment["MZ_SKILL"] != nil { st.skills = [.体が資本]; st.exp存在感 = 4 }   // 特技の段の目視: 覚えた印＋足りない灰色
                 session = GameSession(startState: st)
             }
             if ui == "stage" || ui == "juice", session.week <= 1, session.year == 1 {   // MZ_YEARS 後（2年目）は素の状態へ作り直さない
@@ -177,6 +183,7 @@ struct RootView: View {
                 case "living": session.debugFreeWeeks(3, .rest(.完全休養))
                 case "forecast": session.debugFreeWeeks(1, .rest(.完全休養))   // 第2週＝再来週が月末の支払い
                 case "partner": session.debugFreeWeeks(6, .rest(.完全休養))
+                case "injury": session.debugFreeWeeks(2, .job(.キツい))   // 体力30超〜50未満＝「無理すると倒れるで」
                 default: break
                 }
             }
@@ -209,6 +216,20 @@ struct RootView: View {
                 session = GameSession(startState: st)
                 session.debugAdvanceToPrelude(final: ui == "prelude_final")
                 if ui == "gpresult" { session.advanceAuto() }   // GP回戦の結果画面へ（目視）
+            }
+            if ui == "offer", session.week <= 1 {
+                // オファー札の目視: 知名度を上げ、直近にオファーを受けた履歴（谷口の一言が出る）を持たせて、オファーの来る週まで進める
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 100
+                if ProcessInfo.processInfo.environment["MZ_FRESH"] == nil { st.offerWeeks = [0, 0, 0, 0] }
+                session = GameSession(startState: st)
+                session.debugUntilOffer()
+            }
+            if ui == "gploss", session.week <= 1 {
+                // 予選落ちの谷口の一言（§94）の目視: 能力の低い素の状態でGP1回戦の結果画面まで進める
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
+                session = GameSession(startState: st)
+                session.debugAdvanceToPrelude(final: false)
+                session.advanceAuto()
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）
@@ -243,6 +264,7 @@ struct RootView: View {
                 case "0055": kind = .partnerFever
                 case "0056": kind = .lostNotebook
                 case "0057": kind = .yearEndLive
+                case "weekend": kind = .weekendInvite
                 default:     kind = .brokeDrinkingInvite
                 }
                 session.debugForceEvent(kind)

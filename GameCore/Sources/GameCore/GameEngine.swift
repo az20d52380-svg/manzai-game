@@ -57,6 +57,7 @@ public enum GameEngine {
             if amt > 0 {
                 let d = max(0.0, 1 - s.fame / config.fameOtherCap)
                 amt = amt * config.fameOtherMult * (d * d)
+                if s.has(.愛され芸人) { amt *= Skill.fameMult }
             }
             s.fame = clamp(s.fame + amt, 0, 100)
         }
@@ -148,18 +149,55 @@ public enum GameEngine {
             recovery += config.itemSentoRecovery
             s.sentoTickets = t - 1
         }
+        let room = s.room ?? 0
+        if room > 0, r == .完全休養 || r == .気分転換, room < config.roomHeals.count { recovery += config.roomHeals[room] }
         add(.体力, recovery, to: &s, config: config)
         add(spec.bonus.0, spec.bonus.1, to: &s, config: config)
+        if room >= 2, r == .完全休養 { add(.ability(.メンタル), config.roomBestMental, to: &s, config: config) }
+    }
+
+    /// 今の部屋の4週ごとの上乗せ（0=安アパート）
+    public static func roomRent(_ s: GameState, config: GameConfig) -> Int {
+        let r = s.room ?? 0
+        return r > 0 && r < config.roomRents.count ? config.roomRents[r] : 0
+    }
+
+    /// 部屋を選び直せるか。下げる・同じ段は常に可。上げる時は1か月分の上乗せ（その部屋の家賃上乗せ）が払える時だけ。
+    public static func canMoveRoom(to target: Int, state s: GameState, config: GameConfig) -> Bool {
+        guard target >= 0, target < config.roomRents.count else { return false }
+        if target <= (s.room ?? 0) { return true }
+        return s.money >= config.roomRents[target]
+    }
+
+    /// 部屋を選び直す（乱数なし・お金は引かない＝上乗せは次の生活費から）。選べたら true。
+    @discardableResult
+    public static func moveRoom(to target: Int, state s: inout GameState, config: GameConfig) -> Bool {
+        guard canMoveRoom(to: target, state: s, config: config) else { return false }
+        s.room = target == 0 ? nil : target
+        return true
     }
 
     /// Python: do_offer
-    public static func applyOffer(_ o: OfferSpec, to s: inout GameState, config: GameConfig) {
+    /// atWeek（通算週）を渡すとテレビ慣れを判定・記録する（nil=従来どおり何もしない＝エンジン単体テスト用）
+    public static func applyOffer(_ o: OfferSpec, to s: inout GameState, config: GameConfig, atWeek: Int? = nil) {
         s.money += o.income
         add(.知名度, o.fame, to: &s, config: config)
         if let ab = o.ability {
             add(.ability(ab.0), ab.1, to: &s, config: config)
         }
         add(.体力, o.stamina, to: &s, config: config)
+        if let wk = atWeek {
+            if offerFatigued(state: s, atWeek: wk, config: config) {
+                add(.ability(.センス), -config.offerFatigueD, to: &s, config: config)
+                add(.ability(.表現), -config.offerFatigueD, to: &s, config: config)
+            }
+            s.offerWeeks = (s.offerWeeks ?? []).filter { wk - $0 < config.offerFatigueWindow } + [wk]
+        }
+    }
+
+    /// Python: offer_fatigued。次にオファーを受けると腕が落ちるか（テレビ慣れ）
+    public static func offerFatigued(state s: GameState, atWeek wk: Int, config: GameConfig) -> Bool {
+        (s.offerWeeks ?? []).filter { wk - $0 < config.offerFatigueWindow }.count >= config.offerFatigueK
     }
 
     /// Python: roll_offer。知名度帯で発生率が決まり、種類は50/50【仮】
@@ -170,7 +208,25 @@ public enum GameEngine {
             break
         }
         guard rng.nextUniform() < rate else { return nil }
-        return rng.nextUniform() < 0.5 ? config.offerMoney : config.offerExp
+        let isMoney = rng.nextUniform() < 0.5
+        let sub = rng.nextUniform() < 0.5 ? 1 : 0          // 名前を決める追加の乱数1回（キュー96）
+        return config.offersNamed[(isMoney ? 2 : 0) + sub]
+    }
+
+    /// キュー96：追加の札（2枚目以降）。1枚目は本編の乱数（rollOffer）。ここは本編の乱数を消費しない別の決定論
+    /// （シード＋年週＋塩のハッシュ→SplitMix64）で、1枚目と違う種類を残りから floor(u×残り数) で引く。Python: sim_career.extra_offers（同値）
+    public static func extraOffers(first: OfferSpec, fame: Double, seed: UInt64, year: Int, week: Int, config: GameConfig) -> [OfferSpec] {
+        let n = config.offerCardFames.filter { fame >= $0 }.count
+        guard n > 0 else { return [] }
+        let st = seed &+ UInt64(year * 1000 + week) &* 0xD1B5_4A32_D192_ED03 &+ config.offerCardSalt
+        var g = SplitMix64(seed: st)
+        var rest = config.offersNamed.filter { $0.name != first.name }
+        var out: [OfferSpec] = []
+        for _ in 0..<n where !rest.isEmpty {
+            let i = min(rest.count - 1, Int(g.nextUniform() * Double(rest.count)))
+            out.append(rest.remove(at: i))
+        }
+        return out
     }
 
     /// Python: perform。スコア = 実力値 + 相性 + ブレ + ハマった夜 + 体力ペナルティ、ライン以上で通過。
@@ -219,10 +275,16 @@ public enum GameEngine {
     public static func applyRiftWeekEnd(year: Int, to s: inout GameState, config: GameConfig) -> Bool {
         guard config.riftOn else { return false }
         var r = s.rift ?? 0
+        let joint = s.riftJointWeek == true   // §94 この週に二人で舞台に立ったか
+        s.riftJointWeek = false
         if s.compat > (s.riftWeekStartCompat ?? s.compat) {
             r = max(0, r - config.riftHeal)
+        } else if joint && config.riftJointStill {
+            // §94 二人の週はすれ違いがたまらない（増えない・減らない）
         } else {
-            r = min(100, r + config.riftGain * (config.compatCap - s.compat) / config.compatCap)
+            var gain = config.riftGain * (config.compatCap - s.compat) / config.compatCap
+            if s.has(.相方思い) { gain *= Skill.riftMult }
+            r = min(100, r + gain)
         }
         if r >= config.riftWarn && s.riftWarned != true { s.riftWarned = true }
         if year < 2 { r = min(r, 99) }
@@ -234,12 +296,30 @@ public enum GameEngine {
         return false
     }
 
+    /// §102 飲みの誘いの抽選。本編の乱数（runner の rng）は一切消費しない＝シード＋年週のハッシュで引く別の決定論。
+    /// 来なければ nil、来たら「行ったとき発想が付くか」を返す。Python: sim_career.invite_roll（同じ式・同値）
+    public static func rollInvite(seed: UInt64, year: Int, week: Int, config: GameConfig) -> Bool? {
+        guard config.inviteRate > 0 else { return nil }
+        let st = seed &+ UInt64(year * 1000 + week) &* 0xD1B5_4A32_D192_ED03
+        var g = SplitMix64(seed: st)
+        guard g.nextUniform() < config.inviteRate else { return nil }
+        return g.nextUniform() < config.inviteIdeaP
+    }
+
+    /// 誘いに「行く」確定効果（断るは何もしない）。Python: sim_career.invite_weekend
+    public static func applyInviteGo(idea: Bool, to s: inout GameState, config: GameConfig) {
+        s.money -= config.inviteMoney
+        add(.体力, config.inviteStamina, to: &s, config: config)
+        add(.ability(.メンタル), config.inviteMental, to: &s, config: config)
+        if idea { add(.ability(.発想), config.inviteIdea, to: &s, config: config) }
+    }
+
     /// 週末処理（Python: run_year 末尾）。生活費は livingInterval 週ごと。
     /// 正典v2: 所持金<0なら生活苦（体力・メンタル減）、夜逃げライン未満で true（キャリア終了）を返す
     @discardableResult
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
-            s.money -= config.livingCost
+            s.money -= (s.has(.やりくり上手) ? Int((Double(config.livingCost) * Skill.livingMult).rounded()) : config.livingCost) + roomRent(s, config: config)
             if s.money < 0 {
                 add(.体力, config.debtLifeStamina, to: &s, config: config)
                 add(.ability(.メンタル), config.debtLifeMental, to: &s, config: config)

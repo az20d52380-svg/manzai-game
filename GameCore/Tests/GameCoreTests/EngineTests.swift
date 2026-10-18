@@ -137,13 +137,13 @@ final class EngineTests: XCTestCase {
         let config = GameConfig()
         let s = GameState(config: config)   // 知名度3 → 発生率0.05帯
 
-        var hit = SeqRandom(values: [0.049, 0.4])
+        var hit = SeqRandom(values: [0.049, 0.4, 0.9])
         let offer = GameEngine.rollOffer(state: s, config: config, rng: &hit)
-        XCTAssertEqual(offer?.name, config.offerMoney.name)
+        XCTAssertEqual(offer?.name, "ロケ")
 
-        var hitExp = SeqRandom(values: [0.049, 0.6])
+        var hitExp = SeqRandom(values: [0.049, 0.6, 0.1])
         let offer2 = GameEngine.rollOffer(state: s, config: config, rng: &hitExp)
-        XCTAssertEqual(offer2?.name, config.offerExp.name)
+        XCTAssertEqual(offer2?.name, "ラジオ")
 
         var miss = SeqRandom(values: [0.051])
         XCTAssertNil(GameEngine.rollOffer(state: s, config: config, rng: &miss))

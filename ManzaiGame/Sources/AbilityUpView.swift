@@ -44,16 +44,31 @@ struct AbilityUpView: View {
                 .overlay(alignment: .trailing) {
                     HintMarkButton { hint = Self.hintSpec }.padding(.trailing, 6).padding(.top, 20)
                 }
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 10) {
                     compareBox
                     matrixHeader
                     ForEach(Ability.allCases, id: \.self) { row($0) }
-                    Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
-                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                        .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
+                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                            .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+                        // 特技は画面の下に隠れやすい（目視 visual_check_q90_q106_v0）＝ここから飛べる
+                        Button { withAnimation { proxy.scrollTo("skills", anchor: .top) } } label: {
+                            Text("特技 ↓").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    skillsSection.id("skills")
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
+            }
+            #if DEBUG
+            .task { if ProcessInfo.processInfo.environment["MZ_SKILL"] == "scroll" { try? await Task.sleep(nanoseconds: 800_000_000); proxy.scrollTo("skills", anchor: .top) } }   // 目視用: 特技の段へ
+            #endif
             }
             footer
         }
@@ -68,6 +83,66 @@ struct AbilityUpView: View {
         #if DEBUG
         .task { if ProcessInfo.processInfo.environment["MZ_TAPS"] != nil { try? await Task.sleep(nanoseconds: 1_500_000_000); taps = [.センス, .発想, .センス] } }   // 目視用: ＋を押した後の状態
         #endif
+    }
+
+    // MARK: 特技（キュー106）：余った経験点の使い道。各1回きり・覚えたらずっと効く
+
+    @State private var skillToLearn: Skill? = nil
+
+    private var skillsSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("特技").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .padding(.top, 8)
+            Text("余った経験点で覚える。一度覚えたらずっと効く")
+                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(Skill.allCases, id: \.self) { skillCard($0) }
+        }
+        .confirmationDialog(skillToLearn.map { "「\($0.rawValue)」を覚える？" } ?? "", isPresented: Binding(
+            get: { skillToLearn != nil }, set: { if !$0 { skillToLearn = nil } }), titleVisibility: .visible) {
+            Button("覚える") {
+                guard let k = skillToLearn else { return }
+                if !taps.isEmpty { _ = session.allocate(taps); taps.removeAll() }   // 押した段を先に確定してから覚える
+                if session.learnSkill(k) { Haptics.tick() }
+                skillToLearn = nil
+            }
+            Button("やめる", role: .cancel) { skillToLearn = nil }
+        }
+    }
+
+    private func skillCard(_ k: Skill) -> some View {
+        let learned = base.has(k)
+        let affordable = GameEngine.canLearn(k, state: pv)
+        return Button { if affordable, !learned { skillToLearn = k } } label: {
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(k.rawValue).font(YoseFont.gothic(14, weight: .heavy))
+                    Text(k.summary).font(YoseFont.gothic(11, weight: .bold)).lineLimit(2)
+                    HStack(spacing: 4) {   // 費用は上の持ち分と同じ一字＋色（胆・存…）でそろえる
+                        Text("経験点").font(YoseFont.gothic(11, weight: .bold)).opacity(0.8)
+                        ForEach(Array(k.cost.enumerated()), id: \.offset) { _, c in
+                            HStack(spacing: 2) {
+                                Text(Theme.currencyChar(c.currency)).font(YoseFont.gothic(10, weight: .black)).foregroundStyle(.white)
+                                    .frame(width: 16, height: 16).background(wa(c.currency))
+                                Text("\(ExpDisplay.cost(c.amount, have: pv[currency: c.currency]))").font(YoseFont.number(12, weight: .heavy))
+                            }
+                        }
+                    }
+                }
+                Spacer(minLength: 4)
+                if learned {
+                    Text("覚えた").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(.white)
+                        .padding(.horizontal, 8).padding(.vertical, 3).background(YoseColor.shu)
+                }
+            }
+            .foregroundStyle(learned || affordable ? YoseColor.sumi : YoseColor.haiSumi)
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(learned ? YoseColor.kinBright.opacity(0.14) : (affordable ? YoseColor.washi : YoseColor.sumi.opacity(0.08)))
+            .overlay(Rectangle().stroke(YoseColor.sumi.opacity(affordable || learned ? 0.5 : 0.25), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .disabled(!learned && !affordable)   // 覚えた札は薄くせず（印を読めるように）、押しても何も起きない
     }
 
     static var hintSpec: HintSpec {

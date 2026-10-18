@@ -163,9 +163,11 @@ public struct GameConfig {
 
     // --- アイテム（Item.swift・docs/item_design_v0.md。全て【仮】）。Python: balance_sim.ITEMS ---
     /// お店で売る品（オーナー原則 2026-10-12「アイテムで能力は上がらない」）。能力に効く4品は売らない（持っている人の効果は残す）
-    public var shopLineup: [ShopItem] = [.栄養ドリンク, .銭湯の回数券, .新幹線回数券]
+    public var shopLineup: [ShopItem] = [.栄養ドリンク, .回復ドリンク大, .喉のケア用品, .銭湯の回数券, .新幹線回数券]
     public var items: [ShopItem: ItemSpec] = [
         .栄養ドリンク: ItemSpec(price: 3_000, yearlyLimit: 6, summary: "体力が少し戻る"),
+        .回復ドリンク大: ItemSpec(price: 20_000, yearlyLimit: 4, summary: "体力がしっかり戻る"),
+        .喉のケア用品: ItemSpec(price: 20_000, yearlyLimit: 1, summary: "今年は体調を崩しにくくなる"),
         .銭湯の回数券: ItemSpec(price: 10_000, yearlyLimit: 99, summary: "休む4回ぶん、回復が増える"),
         .中古のICレコーダー: ItemSpec(price: 30_000, yearlyLimit: nil, summary: "ネタ作りで閃きが少し多く出る（ずっと）"),
         .新幹線回数券: ItemSpec(price: 200_000, yearlyLimit: 1, summary: "今年の大阪遠征が交通費なし・疲れない"),
@@ -174,6 +176,8 @@ public struct GameConfig {
         .稽古場の年契約: ItemSpec(price: 2_400_000, yearlyLimit: 1, summary: "今年の稽古がすべて少し効く"),
     ]
     public var itemDrinkStamina = 8.0
+    public var itemDrinkLStamina = 20.0
+    public var itemThroatInjuryMult = 0.5   // 喉のケア用品：その年の体調ダウン確率の係数
     public var itemSentoTickets = 4
     public var itemSentoRecovery = 10.0
     public var itemRecorderBonus = 1.0     // ネタ作りの主効果（閃き）に足す生の量（供給スケール前）
@@ -194,13 +198,22 @@ public struct GameConfig {
     // --- 途中解散（すれ違いゲージ・docs/dissolution_rift_spec_v1.md）。Python: sim_career RIFT_*【仮】 ---
     public var riftOn = true
     public var riftGain = 0.5      // 相性が上がらなかった週 ×(上限−相性)/上限
+    // §102 飲みの誘い（先輩・後輩）。Python: sim_career.INVITE_*（docs/balance_q93_98_measure_v0.md §102）【仮】
+    public var inviteRate = 0.04        // 毎週末（解散判定の後）にこの率で誘い
+    public var inviteMoney = 5_000      // 行く: 所持金 −
+    public var inviteStamina = -10.0    // 行く: 体力
+    public var inviteMental = 1.0       // 行く: メンタル
+    public var inviteIdea = 0.5         // 行く: 半分の確率で 発想 +
+    public var inviteIdeaP = 0.5
     public var riftHeal = 3.0      // 相性が上がった週
+    public var riftJointStill = true   // §94 二人で舞台に立つ週は、相性が上がらなくてもすれ違いは増えない（減りもしない）
+    public var gpLossCompat: [Double] = [0.5, 0.5, 0.5, 0.25, 0.125]   // §94 GP予選で落ちた時の相性の下げ幅（回戦ごと）。敗者復活・決勝・他大会では下げない
     public var riftWarn = 50.0     // 初めて越えた週末に予告（アプリ側の選択肢イベント）
     /// 体力がこの値未満だと稽古を選べない（谷口が止める・sim_career.STAMINA_GATE と同期）
     public var staminaGate = 20.0
     /// 体調ダウン（「ケガ」という語は使わない）: 体力がこの値未満のキツいバイトで抽選（sim_career.INJURY_* と同期）
-    public var injuryThreshold = 20.0
-    public var injuryProbPerPoint = 0.02
+    public var injuryThreshold = 50.0
+    public var injuryProbPerPoint = 0.005
     public var injuryRestWeeks = 3
     public var injuryMentalHit = -5.0
 
@@ -218,6 +231,10 @@ public struct GameConfig {
     // --- 生活費（Python: LIVING_COST / LIVING_INTERVAL） ---
     public var livingCost = 140_000
     public var livingInterval = 4
+    // --- 部屋の段（キュー90・§90。Python: ROOM_RENT / ROOM_HEAL）。0=安アパート（今）/1=ふつう/2=いい ---
+    public var roomRents = [0, 50_000, 150_000]   // 4週ごとの生活費への上乗せ【仮】
+    public var roomHeals = [0.0, 10.0, 20.0]      // 家で休む（完全休養・気分転換）の体力の戻りへの加算【仮】
+    public var roomBestMental = 1.0               // いい部屋の完全休養はメンタルも +1【仮】
 
     // --- 稽古（Python: TRAININGS）。正典v3: main/subは能力でなく経験点通貨を発行する（.currency）。
     //     量は旧版（能力直付け）を踏襲＝既存の較正値（expSupplyScale等）を出発点にできる【仮】。
@@ -261,6 +278,21 @@ public struct GameConfig {
     // --- オファー（Python: OFFER_MONEY / OFFER_EXP / OFFER_RATES） ---
     public var offerMoney = OfferSpec(name: "お金重視", income: 240_000, fame: 1, ability: nil, stamina: -20)
     public var offerExp   = OfferSpec(name: "経験重視", income: 120_000, fame: 3, ability: (.表現, 2), stamina: -20)
+    /// キュー96：名前付き4種（Python: OFFERS_NAMED）。offerExp→[0,1]（ひな壇/ラジオ）・offerMoney→[2,3]（ロケ/営業）。名前を決める追加の乱数1回は rollOffer
+    public var offersNamed: [OfferSpec] = [
+        OfferSpec(name: "ひな壇", income: 120_000, fame: 3, ability: (.表現, 2), stamina: -15),
+        OfferSpec(name: "ラジオ", income: 100_000, fame: 2, ability: (.表現, 2), stamina: -10),
+        OfferSpec(name: "ロケ",   income: 220_000, fame: 2, ability: nil,        stamina: -25),
+        OfferSpec(name: "営業",   income: 280_000, fame: 1, ability: nil,        stamina: -20),
+    ]
+    /// キュー96：知名度がこの値以上になるごとにオファーの札が1枚増える（30未満=1枚／30〜55=2枚／55以上=3枚【仮】）。Python: OFFER_CARD_FAMES
+    public var offerCardFames: [Double] = [30, 55]
+    /// 追加の札の別系列の塩（誘い §102 とは別）。Python: OFFER_CARD_SALT
+    public var offerCardSalt: UInt64 = 0x5851_F42D_4C95_7F2D
+    /// テレビ慣れ：直近 offerFatigueWindow 週（今週−受けた週 < 値）に offerFatigueK 回以上受けていたら、受けるたびにセンスと表現を offerFatigueD ずつ下げる
+    public var offerFatigueWindow = 6
+    public var offerFatigueK = 4
+    public var offerFatigueD = 0.5
     /// (知名度がこの値未満, 発生率/週)
     public var offerRates: [(fameBelow: Double, rate: Double)] = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]   // 区切り 20/50/80→10/30/55（キュー62）
     /// 知名度の「その他の伸び」（大会・回戦・オファー・イベント）＝×本値×(1−知名度/fameOtherCap)²（キュー62 案G）。Python: FAME_OTHER_MULT／FAME_OTHER_CAP

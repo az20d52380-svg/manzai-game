@@ -47,6 +47,9 @@ final class GameSession {
     private(set) var lastDeltaWeek = -1
     /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
     private(set) var lossStreak = 0
+    /// §97 体調ダウンの知らせ待ち（表示専用）。倒れた週を pump が見つけたら、療養の週数をここに積む＝週メインが1回だけ知らせる
+    private(set) var injuryNoticeWeeks = 0
+    func clearInjuryNotice() { injuryNoticeWeeks = 0 }
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
     private(set) var justPassedStage = false
     /// 直近の大会で敗退したか（負けた翌週の一言＝温度事故の停止。justPassedと対称・行動すると失効）
@@ -86,6 +89,9 @@ final class GameSession {
     private var jobCount = 0
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
+    /// §102 週末に来た先輩の誘いを次の自由週の頭に札で出すための待ち（メモリのみ。アプリを落とすと流れる＝軽い誘いなので許容）と、行った時に発想が付くか
+    private var inviteWaiting = false
+    private var inviteIdea = false
     /// 週頭の掛け合い（俺⇄谷口の短い会話・タップ送り）。nil=この週は独白。行動すると失効。
     /// 発火はUI専用乱数（uiEventRng）＝runnerの乱数列に非干渉＝golden不変。イベント発火週は譲る。
     private(set) var weekBanter: [Advice]?
@@ -207,7 +213,7 @@ final class GameSession {
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
         let start = startState ?? GameState(config: cfg)
         self.state = start
-        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed))
+        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
         self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
@@ -338,7 +344,7 @@ final class GameSession {
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         // 生活費（livingInterval 週ごとの週末処理）は行動の差と分けて持つ（GameEngine.applyWeekEnd と同条件・表示専用）。
-        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? config.livingCost : 0
+        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? config.livingCost + GameEngine.roomRent(state, config: config) : 0   // 部屋の上乗せ込み
         lastMoneyDelta = state.money - before.money + lastLivingPaid
         lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
         lastFameDelta = state.fame - before.fame
@@ -365,6 +371,16 @@ final class GameSession {
 
     /// action を今の state に適用した「実行後の状態」を返す（乱数非消費・純関数）。
     /// offer プレビューは runner が pendingOffer を内部に隠すため、View から OfferSpec を渡す。
+    /// キュー96：次にオファーを受けると腕が落ちる（テレビ慣れ）か。乱数非消費
+    var offerFatigued: Bool {
+        GameEngine.offerFatigued(state: state, atWeek: (runner.year - 1) * config.weeks + runner.week, config: config)
+    }
+
+    /// キュー96：今週の札の一覧（2枚以上ある時だけ・先頭＝本編の乱数の札）。知名度で増える
+    var offerChoices: [OfferSpec]? { runner.offerChoices }
+    /// キュー96：札を選ぶ（受ける直前に呼ぶ）。乱数非消費
+    func chooseOffer(index: Int) { runner.chooseOffer(index: index) }
+
     func previewState(_ action: WeekAction, offer: OfferSpec? = nil) -> GameState {
         var s = state
         switch action {
@@ -492,6 +508,11 @@ final class GameSession {
     /// ツーカー帯初到達(一発・キャリア1回)。複数回呼ばれても保留が有れば再評価しない。
     private func evaluateChoiceEventFire() {
         guard pendingChoiceEvent == nil else { return }
+        if inviteWaiting {   // §102 週末に来た先輩の誘い（別乱数・runner.pendingInvite が出所）。次の自由週の頭で札を出す
+            inviteWaiting = false
+            pendingChoiceEvent = .weekendInvite
+            return
+        }
         #if DEBUG
         // 目視用：MZ_NOEVENT=1 で選択イベントを発火させない（MZ_UI=grown が起動直後にイベントで隠れた）。本導線は不変
         if ProcessInfo.processInfo.environment["MZ_NOEVENT"] != nil { return }
@@ -676,6 +697,7 @@ final class GameSession {
         let choices = ChoiceEventTable.choices(for: kind, config: config)
         guard let choice = choices.first(where: { $0.id == choiceID }), choice.gate(state) else { return }
         runner.applyEventEffects(choice.effects)
+        if kind == .weekendInvite, choiceID == "A" { runner.applyInviteGo(idea: inviteIdea) }   // §102 行く: 所持金-5,000・体力-10・メンタル+1・(半分で)発想+0.5
         state = runner.state
         switch kind {
         case .justLostRehearsal: justLostStage = false
@@ -696,6 +718,8 @@ final class GameSession {
             break   // 0023 廃止（抽選外）。古いセーブの保留中イベント互換のためケースだけ残す
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）
+        case .weekendInvite:
+            break   // §102 一回ごとの札＝フラグ不要（inviteWaiting は表示時に落とし済み）
         case .taniguchiShortJob:
             break   // 確定発火＝発火時に didFireTaniguchiJob 済み（A の compatFreeze は EventEffect が適用）
         }
@@ -806,6 +830,24 @@ final class GameSession {
     func buyItem(_ item: ShopItem) -> Bool {
         guard runner.applyItemPurchase(item) else { return false }
         state = runner.state
+        return true
+    }
+
+    /// 部屋を選び直す（お店・乱数なし）。選べたら true。
+    @discardableResult
+    func moveRoom(to target: Int) -> Bool {
+        guard runner.applyRoomMove(to: target) else { return false }
+        state = runner.state
+        saveNow()
+        return true
+    }
+
+    /// 特技を覚える（乱数非消費・golden不変）。覚えたら true
+    @discardableResult
+    func learnSkill(_ k: Skill) -> Bool {
+        guard runner.applyLearnSkill(k) else { return false }
+        state = runner.state
+        saveNow()
         return true
     }
 
@@ -930,7 +972,7 @@ final class GameSession {
     func startNextYear() {
         guard finished, !careerOver, let o = outcome else { return }
         var r = WeekRunner(state: runner.state, year: year + 1, config: config, rng: runner.rng,
-                           gpSeeded: o.roundsPassed >= 3)
+                           gpSeeded: o.roundsPassed >= 3, inviteSeed: runner.inviteSeed)
         yearStartState = r.state
         // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）
         finished = false
@@ -1118,6 +1160,9 @@ final class GameSession {
             case .weekDone(let summary):
                 state = summary.state
                 week = summary.week
+                if summary.results.contains(where: { $0.name == "体調ダウン" }) { injuryNoticeWeeks = config.injuryRestWeeks }
+                if summary.results.contains(where: { $0.name == "体調ダウン" || $0.name == "療養" }) { categoryLog[summary.week] = .kaifuku }   // 日程表に「回」を残す（療養週が空白にならない）
+                if let idea = runner.pendingInvite { inviteWaiting = true; inviteIdea = idea }   // §102 先輩の誘い（週末・別乱数）
                 if !summary.results.isEmpty {
                     log.append(summarize(summary))
                 }
@@ -1219,6 +1264,21 @@ final class GameSession {
             choose(action); done += 1
         }
         if let kind = pendingChoiceEvent { dismissChoiceEvent(); _ = kind }
+    }
+
+    /// DEBUG: オファーが来る週まで休んで進める（MZ_UI=offer の目視用）
+    func debugUntilOffer() {
+        var steps = 0
+        while !finished, steps < 120 {
+            steps += 1
+            if let kind = pendingChoiceEvent {
+                if let c = ChoiceEventTable.choices(for: kind, config: config).first(where: { $0.gate(state) }) { applyEventChoice(c.id) }
+                dismissChoiceEvent(); continue
+            }
+            guard case .freeAction(let o) = phase else { return }
+            if o != nil { return }
+            choose(.rest(.完全休養))
+        }
     }
 
     /// DEBUG: 大会前の振り忘れの知らせ（MZ_UI=prestage）の目視用。練習（体力が落ちたら休む）で、最初の大会の

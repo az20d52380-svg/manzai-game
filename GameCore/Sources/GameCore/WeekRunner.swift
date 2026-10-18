@@ -94,11 +94,17 @@ public struct WeekRunner<R: RandomSource> {
     private var weekResults: [StageResult] = []
     private var pendingSpec: TournamentSpec?
     private var pendingOffer: OfferSpec?
+    /// キュー96：今週の札の一覧（先頭＝本編の乱数の札・以降＝知名度で増える別乱数の札）。2枚以上ある時だけ。選ぶなら chooseOffer(index:)
+    public private(set) var offerChoices: [OfferSpec]?
     public enum AutoStage: Codable { case round, revival, final }
     private var pendingAuto: AutoStage?
     private var revivalTried = false
     private var finalTried = false
     private var finished: YearOutcome?
+    /// §102 誘い用のキャリアのシード（nil=誘いなし）。本編の rng とは独立の決定論。中断セーブに載る
+    public private(set) var inviteSeed: UInt64?
+    /// 週末に来た誘い（nil=なし）。値＝「行ったとき発想が付くか」。resolveInvite で解決するまで保留（解決せず begin() すると「断る」扱い）
+    public private(set) var pendingInvite: Bool?
 
     public init(
         state: GameState,
@@ -107,7 +113,8 @@ public struct WeekRunner<R: RandomSource> {
         rng: R,
         seedFinal: Bool = false,
         finalLineOverride: Double? = nil,
-        gpSeeded: Bool = false   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
+        gpSeeded: Bool = false,   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
+        inviteSeed: UInt64? = nil   // §102 飲みの誘いのシード（nil=誘いなし）
     ) {
         precondition(year >= 1, "year は1以上（成長予算の累計計算が前提）")
         var s = state
@@ -130,6 +137,7 @@ public struct WeekRunner<R: RandomSource> {
         self.year = year
         self.config = config
         self.rng = rng
+        self.inviteSeed = inviteSeed
         self.gpStage = gpSeeded ? 1 : 0   // シード組は2回戦から
         self.gpAlive = !seedFinal
         self.finalist = seedFinal
@@ -154,14 +162,17 @@ public struct WeekRunner<R: RandomSource> {
             finished = outcome
             return .yearDone(outcome)
         }
+        pendingInvite = nil    // 解決されなかった誘いは「断る」
         acted = false
         weekResults = []
         state.riftWeekStartCompat = state.compat   // 途中解散：この週に相性が上がったか（乱数なし）
+        state.riftJointWeek = false
         section = .tournament
         revivalTried = false
         finalTried = false
         pendingSpec = nil      // 呼び出し順ミスの残留状態を週頭で必ず掃除（レッドチーム指摘）
         pendingOffer = nil
+        offerChoices = nil
         pendingAuto = nil
         return proceed()
     }
@@ -182,6 +193,7 @@ public struct WeekRunner<R: RandomSource> {
                 let netaLine = spec.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
                 let result = GameEngine.perform(state, line: netaLine, config: config, rng: &rng)
                 markNetaUsed()
+                state.riftJointWeek = true   // §94 二人で舞台に立つ週
                 if result.passed {
                     state.money += spec.prize
                     GameEngine.add(.知名度, spec.fame, to: &state, config: config)
@@ -212,6 +224,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: roundLine, config: config, rng: &rng)
             markNetaUsed()
             acted = true
+            state.riftJointWeek = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 gpStage += 1
@@ -220,6 +233,9 @@ public struct WeekRunner<R: RandomSource> {
                     GameEngine.addFameBig(cal.fameFinalist, to: &state)   // 決勝進出（キュー62）
                 }
             } else {
+                if gpStage < config.gpLossCompat.count {
+                    GameEngine.add(.コンビ相性, -config.gpLossCompat[gpStage], to: &state, config: config)   // §94 予選で落ちたら相性↓
+                }
                 if gpStage == cal.gpRounds.count - 1 {
                     revival = true   // 準決勝敗退のみ敗者復活へ
                 }
@@ -232,6 +248,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: revivalLine, config: config, rng: &rng)
             markNetaUsed()
             acted = true
+            state.riftJointWeek = true
             if result.passed {
                 GameEngine.add(.知名度, cal.gpRoundFame, to: &state, config: config)
                 finalist = true
@@ -247,6 +264,7 @@ public struct WeekRunner<R: RandomSource> {
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
             markNetaUsed()
             acted = true
+            state.riftJointWeek = true
             weekResults.append(StageResult(name: "GP決勝", passed: result.passed,
                                            prize: result.passed ? cal.gpPrize : 0, margin: result.score - effLine, burst: result.burst))
             if result.passed {
@@ -266,6 +284,7 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
         let offer = pendingOffer
         pendingOffer = nil
+        offerChoices = nil
         lastTrainingDone = nil
         var action = action
         if case .train = action, state.stamina < config.staminaGate {
@@ -278,7 +297,7 @@ public struct WeekRunner<R: RandomSource> {
         default: risky = false
         }
         if risky, state.stamina < config.injuryThreshold,
-           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint {
+           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint * GameEngine.injuryProbMultiplier(state: state, config: config) * (state.has(.体が資本) ? Skill.injuryMult : 1.0) {
             action = .rest(.完全休養)                    // 体調ダウン発生（「喉をやられた」等）
             state.recoveryWeeks = config.injuryRestWeeks - 1
             GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &state, config: config)
@@ -287,13 +306,14 @@ public struct WeekRunner<R: RandomSource> {
         switch action {
         case .acceptOffer:
             if let o = offer {
-                GameEngine.applyOffer(o, to: &state, config: config)
+                GameEngine.applyOffer(o, to: &state, config: config, atWeek: (year - 1) * config.weeks + week)
             } else {
                 GameEngine.applyRest(.完全休養, to: &state, config: config)
             }
         case .train(let t):
             if GameEngine.applyTraining(t, to: &state, config: config) {
                 lastTrainingDone = t
+                if t == .ネタ見せ会 || t == .フリーライブ { state.riftJointWeek = true }   // §94
             } else {
                 GameEngine.applyRest(.完全休養, to: &state, config: config)   // 払えなければ休む（Python同様）
             }
@@ -356,6 +376,10 @@ public struct WeekRunner<R: RandomSource> {
                     weekResults.append(StageResult(name: "療養", passed: false, prize: 0, isStage: false))
                 } else {
                     pendingOffer = offer
+                    if let o = offer, let seed = inviteSeed {
+                        let ex = GameEngine.extraOffers(first: o, fame: state.fame, seed: seed, year: year, week: week, config: config)
+                        offerChoices = ex.isEmpty ? nil : [o] + ex
+                    }
                     return .freeAction(offer: offer)
                 }
             }
@@ -381,7 +405,30 @@ public struct WeekRunner<R: RandomSource> {
             finished = outcome
             return .yearDone(outcome)
         }
+        // §102 飲みの誘い（解散判定の後・乱数は別系統）。来たら保留し、UI/ポリシーが resolveInvite で選ぶ
+        if let seed = inviteSeed {
+            pendingInvite = GameEngine.rollInvite(seed: seed, year: year, week: week, config: config)
+        }
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
+    }
+
+    /// キュー96：札の一覧（1枚目＝本編の乱数で引いた札・2枚目以降＝別乱数）から index 番目を今週のオファーにする
+    /// （resolveAction(.acceptOffer) の前に呼ぶ）。RandomSource 非消費。一覧が無い週は何もしない。
+    public mutating func chooseOffer(index: Int) {
+        guard pendingOffer != nil, let c = offerChoices, c.indices.contains(index) else { return }
+        pendingOffer = c[index]
+    }
+
+    /// 誘いに「行く」効果だけを適用する（アプリは週を送った後に札で選ぶため、保留を介さず直接呼ぶ）。RandomSource 非消費
+    public mutating func applyInviteGo(idea: Bool) {
+        GameEngine.applyInviteGo(idea: idea, to: &state, config: config)
+    }
+
+    /// 誘いの回答。行く＝所持金−5,000・体力−10・メンタル+1・(半分で)発想+0.5／断る＝何も起きない。RandomSource 非消費。
+    public mutating func resolveInvite(accept: Bool) {
+        guard let idea = pendingInvite else { return }
+        pendingInvite = nil
+        if accept { GameEngine.applyInviteGo(idea: idea, to: &state, config: config) }
     }
 
     /// 選択肢イベントの確定効果を runner の権威 state に適用する（proposals/0024 ピース1）。
@@ -469,6 +516,18 @@ public struct WeekRunner<R: RandomSource> {
         GameEngine.buy(item, to: &state, config: config)
     }
 
+    /// 部屋を選び直す（乱数非消費・GameEngine.moveRoom）。選べなければ false
+    @discardableResult
+    public mutating func applyRoomMove(to target: Int) -> Bool {
+        GameEngine.moveRoom(to: target, state: &state, config: config)
+    }
+
+    /// 特技を覚える（乱数非消費・Skill.swift）。足りなければ false
+    @discardableResult
+    public mutating func applyLearnSkill(_ k: Skill) -> Bool {
+        GameEngine.learnSkill(k, to: &state)
+    }
+
     /// お店の「戻す」（UI層・2026-10-12）：店に入った時の状態へ戻してから、残った買い物を順に買い直す。
     /// 購入は乱数を引かない純関数（GameEngine.buy）なので、買い直しで元と同じ状態になる＝RNG・数式は不変（golden不変）。
     public mutating func replayItemPurchases(from start: GameState, _ items: [ShopItem]) {
@@ -524,6 +583,9 @@ public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
     public var revivalTried: Bool
     public var finalTried: Bool
     public var finished: YearOutcome?
+    public var inviteSeed: UInt64?     // §102（旧セーブには無い＝nil＝誘いなし）
+    public var pendingInvite: Bool?
+    public var offerChoices: [OfferSpec]?   // キュー96（旧セーブには無い＝nil）
 }
 
 extension WeekRunner where R: Codable {
@@ -534,7 +596,7 @@ extension WeekRunner where R: Codable {
                            finalist: finalist, revival: revival, section: section, acted: acted,
                            weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
                            pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
-                           finished: finished)
+                           finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite, offerChoices: offerChoices)
     }
 
     /// スナップショットからの復元（ロード用）。年初処理（体力全回復・成長予算の再計算）は走らせず、
@@ -561,7 +623,7 @@ extension WeekRunner where R: Codable {
             self.pendingSpec = nil
         }
         if let o = snap.pendingOffer {
-            self.pendingOffer = [config.offerMoney, config.offerExp].first { $0.name == o.name } ?? o
+            self.pendingOffer = (config.offersNamed + [config.offerMoney, config.offerExp]).first { $0.name == o.name } ?? o
         } else {
             self.pendingOffer = nil
         }
@@ -569,5 +631,8 @@ extension WeekRunner where R: Codable {
         self.revivalTried = snap.revivalTried
         self.finalTried = snap.finalTried
         self.finished = snap.finished
+        self.inviteSeed = snap.inviteSeed
+        self.pendingInvite = snap.pendingInvite
+        self.offerChoices = snap.offerChoices?.map { o in (config.offersNamed + [config.offerMoney, config.offerExp]).first { $0.name == o.name } ?? o }
     }
 }

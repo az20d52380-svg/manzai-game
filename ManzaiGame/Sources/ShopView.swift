@@ -20,6 +20,7 @@ struct ShopView: View {
             noren
             ScrollView {
                 VStack(spacing: 10) {
+                    roomSection
                     ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.leading)
@@ -45,6 +46,68 @@ struct ShopView: View {
         }
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 6)
         .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2).padding(.horizontal, YoseMetrics.screenMargin) }
+    }
+
+    // MARK: 部屋を選ぶ（キュー90・§90）
+    private static let roomNames = ["安アパート", "ふつうの部屋", "いい部屋"]
+
+    /// 家賃の行（金額は墨・太字で目立たせる）
+    private func roomRentText(_ i: Int) -> String {
+        let rent = session.config.roomRents[i]
+        return rent == 0 ? "家賃はいまのまま" : "家賃 +¥\(rent.formatted())（4週ごとの支払い）"
+    }
+
+    /// 暮らしの効果の行
+    private func roomHealText(_ i: Int) -> String? {
+        i == 0 ? nil : "家で休むと体力がよく戻る" + (i == 2 ? "（完全休養ならメンタルも少し上がる）" : "")
+    }
+
+    private var roomSection: some View {
+        let cur = session.state.room ?? 0
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .lastTextBaseline) {
+                Text("部屋を選ぶ").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Spacer()
+                Text("いつでも選び直せます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            }
+            ForEach(0..<Self.roomNames.count, id: \.self) { i in
+                let ok = GameEngine.canMoveRoom(to: i, state: session.state, config: session.config)
+                let here = i == cur
+                HStack(alignment: .center, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Text(Self.roomNames[i]).font(YoseFont.gothic(17, weight: .heavy))
+                                .foregroundStyle(ok || here ? YoseColor.sumi : YoseColor.disabledText)
+                            if here { YoseTag(text: "いま住んでいる", style: .outlineShu) }
+                        }
+                        Text(roomRentText(i)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let h = roomHealText(i) {
+                            Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        if !ok, !here {   // 引っ越せない理由（あといくら）
+                            Text("あと ¥\((session.config.roomRents[i] - session.state.money).formatted()) あれば引っ越せる")
+                                .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    if !here {
+                        Button { if session.moveRoom(to: i) { Haptics.tick() } } label: {
+                            Text(i < cur ? "戻る" : "引っ越す").font(YoseFont.gothic(14, weight: .heavy)).padding(.vertical, 6)
+                        }
+                        .buttonStyle(YoseButtonStyle(.kifuda)).frame(width: 96).disabled(!ok)
+                    }
+                }
+                .padding(.horizontal, YoseMetrics.padH).padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .yoseHarigami()
+            }
+            Text("上の部屋へは、増える家賃の1回ぶんを持っている時だけ引っ越せます。下の部屋へはお金がなくても戻れます。新しい家賃は次の支払い（4週ごと）からです。")
+                .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.bottom, 6)
     }
 
     private func price(_ item: ShopItem) -> Int { session.config.items[item]?.price ?? 0 }
