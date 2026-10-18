@@ -48,7 +48,7 @@
 46. [ ] （保留：判断待ち「名前の生成器 §8 の未決4点」が先）ライバル4組の演出（rival_scripts_v0 57項・UIへの差し込みのみ）。役柄テンプレ化（オーナー確定③/A2）で名前は生成器が出すため
 
 
-108. [ ] （道具・10/19 自走で発見）GoldenTests.swift の12週台本と CareerGoldenTests の表は「Python を回して貼り替え」の手順＝生成器が表を Swift の形で書き出して check_golden_sync で12週分も突き合わせるようにする（貼り間違いを防ぐ・式は変えない）。
+108. [済 10/19 次のコミット：gen_golden12.py＋check_golden_sync で12週も突き合わせ] （道具・10/19 自走で発見）GoldenTests.swift の12週台本と CareerGoldenTests の表は「Python を回して貼り替え」の手順＝生成器が表を Swift の形で書き出して check_golden_sync で12週分も突き合わせるようにする（貼り間違いを防ぐ・式は変えない）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 （聞く順と推奨のまとめ：`decision_brief_2026-10-14.md`）

@@ -68,6 +68,8 @@ s = B.S()
 # GoldenTests.swift の script と同じ12手を実行し、各週の全フィールドを repr で出力
 ```
 
+**現行の手順（キュー108）**: `cd tools && python3 gen_golden12.py` の出力（Swift の貼れる形）で `GoldenTests.swift` の script 表を置き換え→ `python3 check_golden_sync.py` が「12週台本 OK」を出すことを確認（空白差は無視・数値と並びは厳密一致）。
+
 （実行済みスクリプトはコミット `docs/gamecore_design.md` 追加時のメッセージ参照。手順化が必要になったら tools/gen_golden.py に切り出す）
 
 ## 【設計上の懸念】

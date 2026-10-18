@@ -29,6 +29,39 @@ def data_rows(text):
     return rows
 
 
+GOLDEN12 = HERE.parent / "GameCore/Tests/GameCoreTests/GoldenTests.swift"
+
+
+def _norm(s):
+    return re.sub(r"\s+", "", s)
+
+
+def check_12week():
+    """gen_golden12.py の出力と GoldenTests.swift の script 表を突き合わせる（空白は無視）。
+    0=一致 / 1=ずれ / 2=実行不能"""
+    gen = subprocess.run([sys.executable, str(HERE / "gen_golden12.py")],
+                         capture_output=True, text=True)
+    if gen.returncode != 0:
+        print("❌ gen_golden12.py が失敗:\n" + gen.stderr, file=sys.stderr)
+        return 2
+    if not GOLDEN12.exists():
+        print(f"❌ {GOLDEN12} が無い", file=sys.stderr)
+        return 2
+    swift = [_norm(l.strip()) for l in GOLDEN12.read_text(encoding="utf-8").splitlines()
+             if l.strip().startswith("(.")]
+    exp = [l.strip() for l in gen.stdout.splitlines() if l.strip()]
+    bad = 0
+    for i, e in enumerate(exp, 1):
+        if _norm(e) not in swift:
+            bad += 1
+            print(f"❌ 12週台本 ずれ: 第{i}週 Python={e}")
+    if bad:
+        print("   → python3 gen_golden12.py の出力で GoldenTests.swift の script を貼り替えること")
+        return 1
+    print(f"✅ 12週台本 OK（{len(exp)}週一致）")
+    return 0
+
+
 def main():
     gen = subprocess.run([sys.executable, str(HERE / "gen_golden.py")],
                          capture_output=True, text=True)
@@ -56,7 +89,7 @@ def main():
         return 1
 
     print(f"✅ golden同期OK: {len(expected)} 行すべて一致（Python正典 ⇄ Swift golden）")
-    return 0
+    return check_12week()
 
 
 if __name__ == "__main__":
