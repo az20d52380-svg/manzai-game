@@ -341,7 +341,7 @@ final class GameSession {
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         // 生活費（livingInterval 週ごとの週末処理）は行動の差と分けて持つ（GameEngine.applyWeekEnd と同条件・表示専用）。
-        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? config.livingCost : 0
+        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? config.livingCost + GameEngine.roomRent(state, config: config) : 0   // 部屋の上乗せ込み
         lastMoneyDelta = state.money - before.money + lastLivingPaid
         lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
         lastFameDelta = state.fame - before.fame
@@ -817,6 +817,15 @@ final class GameSession {
     func buyItem(_ item: ShopItem) -> Bool {
         guard runner.applyItemPurchase(item) else { return false }
         state = runner.state
+        return true
+    }
+
+    /// 部屋を選び直す（お店・乱数なし）。選べたら true。
+    @discardableResult
+    func moveRoom(to target: Int) -> Bool {
+        guard runner.applyRoomMove(to: target) else { return false }
+        state = runner.state
+        saveNow()
         return true
     }
 

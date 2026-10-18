@@ -492,6 +492,12 @@ public struct WeekRunner<R: RandomSource> {
         GameEngine.buy(item, to: &state, config: config)
     }
 
+    /// 部屋を選び直す（乱数非消費・GameEngine.moveRoom）。選べなければ false
+    @discardableResult
+    public mutating func applyRoomMove(to target: Int) -> Bool {
+        GameEngine.moveRoom(to: target, state: &state, config: config)
+    }
+
     /// お店の「戻す」（UI層・2026-10-12）：店に入った時の状態へ戻してから、残った買い物を順に買い直す。
     /// 購入は乱数を引かない純関数（GameEngine.buy）なので、買い直しで元と同じ状態になる＝RNG・数式は不変（golden不変）。
     public mutating func replayItemPurchases(from start: GameState, _ items: [ShopItem]) {

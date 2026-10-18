@@ -148,8 +148,32 @@ public enum GameEngine {
             recovery += config.itemSentoRecovery
             s.sentoTickets = t - 1
         }
+        let room = s.room ?? 0
+        if room > 0, r == .完全休養 || r == .気分転換, room < config.roomHeals.count { recovery += config.roomHeals[room] }
         add(.体力, recovery, to: &s, config: config)
         add(spec.bonus.0, spec.bonus.1, to: &s, config: config)
+        if room >= 2, r == .完全休養 { add(.ability(.メンタル), config.roomBestMental, to: &s, config: config) }
+    }
+
+    /// 今の部屋の4週ごとの上乗せ（0=安アパート）
+    public static func roomRent(_ s: GameState, config: GameConfig) -> Int {
+        let r = s.room ?? 0
+        return r > 0 && r < config.roomRents.count ? config.roomRents[r] : 0
+    }
+
+    /// 部屋を選び直せるか。下げる・同じ段は常に可。上げる時は1か月分の上乗せ（その部屋の家賃上乗せ）が払える時だけ。
+    public static func canMoveRoom(to target: Int, state s: GameState, config: GameConfig) -> Bool {
+        guard target >= 0, target < config.roomRents.count else { return false }
+        if target <= (s.room ?? 0) { return true }
+        return s.money >= config.roomRents[target]
+    }
+
+    /// 部屋を選び直す（乱数なし・お金は引かない＝上乗せは次の生活費から）。選べたら true。
+    @discardableResult
+    public static func moveRoom(to target: Int, state s: inout GameState, config: GameConfig) -> Bool {
+        guard canMoveRoom(to: target, state: s, config: config) else { return false }
+        s.room = target == 0 ? nil : target
+        return true
     }
 
     /// Python: do_offer
@@ -257,7 +281,7 @@ public enum GameEngine {
     @discardableResult
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
-            s.money -= config.livingCost
+            s.money -= config.livingCost + roomRent(s, config: config)
             if s.money < 0 {
                 add(.体力, config.debtLifeStamina, to: &s, config: config)
                 add(.ability(.メンタル), config.debtLifeMental, to: &s, config: config)
