@@ -155,12 +155,12 @@ struct CalendarView: View {
         return "大会"
     }
 
-    /// 上段に出す大会の略称（どの大会か）。春新人賞A→春新人A／大阪戎コンクール→大阪戎 など
+    /// 上段に出す大会の略称（どの大会か）。春新人賞A→春新人A／大阪戎コンクール→大阪戎／寒梅漫才杯→寒梅杯 など
     private func tournamentName(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "頂GP" }
         if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return GPName.short(cal.gpRoundNames[i]) }
         guard let n = cal.tournament(inWeek: w)?.name else { return "" }
-        return n.replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
+        return n.replacingOccurrences(of: "漫才杯", with: "杯").replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }
 
     private func showToast(_ t: String) {
