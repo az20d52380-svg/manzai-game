@@ -1361,6 +1361,39 @@ final class GameSession {
         return s   // growthBudget は WeekRunner が年初 year1 値(6.0)へ設定＝上の通貨総量がそれを上回る＝食い合いが立つ
     }
 
+    /// DEBUG: 指定週の大会の入口（tournamentDecision）まで、最初の大会等は夜行バスで流して進める（MZ_UI=wintercup の目視用）。
+    func debugAdvanceToTournamentEntry(week target: Int, maxSteps: Int = 600) {
+        var steps = 0
+        while !finished, steps < maxSteps {
+            steps += 1
+            if pendingResult != nil { acknowledgeResult(); continue }
+            switch phase {
+            case .tournamentDecision:
+                if nextStage?.week == target { return }
+                decideTournament(.夜行バス)
+            case .freeAction: choose(.job(.標準))
+            case .gpRound, .gpRevival, .gpFinal: advanceAuto()
+            default: return
+            }
+        }
+    }
+
+    /// DEBUG: 体調ダウンが起きるまで、体力の低い状態でキツいバイトを続ける（MZ_UI=injury の目視用）
+    func debugUntilInjury(maxSteps: Int = 200) {
+        var steps = 0
+        while !finished, steps < maxSteps, injuryNoticeWeeks == 0 {
+            steps += 1
+            if let kind = pendingChoiceEvent {
+                if let c = ChoiceEventTable.choices(for: kind, config: config).first(where: { $0.gate(state) }) { applyEventChoice(c.id) }
+                dismissChoiceEvent(); continue
+            }
+            if pendingResult != nil { acknowledgeResult(); continue }
+            if case .tournamentDecision = phase { decideTournament(nil); continue }
+            guard case .freeAction = phase else { return }
+            choose(.job(.キツい))
+        }
+    }
+
     /// DEBUG: 決勝優勝が確定する（winFinale）まで自動プレイ。自由週はバイトで破産回避。
     /// DEBUG: 本番前カード（gpRound / gpFinal）の手前で止まる（MZ_UI=prelude/prelude_final）
     func debugAdvanceToPrelude(final: Bool, maxSteps: Int = 500) {

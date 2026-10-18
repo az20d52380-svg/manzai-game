@@ -187,6 +187,20 @@ struct RootView: View {
                 default: break
                 }
             }
+            if ui == "wintercup", session.week <= 1 {
+                // 寒梅漫才杯（第46週）の目視: 能力マックスで入口まで進める。MZ_MODE=result で本番→結果の画面まで
+                var st = GameSession.debugMaxedState(); st.compat = 10; st.money = 500_000
+                session = GameSession(startState: st)
+                session.debugAdvanceToTournamentEntry(week: 46)
+                if ProcessInfo.processInfo.environment["MZ_MODE"] == "result" { session.decideTournament(.夜行バス) }
+            }
+            if ui == "injury", session.week <= 1 {
+                // 体調ダウンの知らせ＋療養週の目視: 体力を削った開始状態でキツいバイトを続け、倒れた直後で止める
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.stamina = 5
+                session = GameSession(startState: st)
+                session.debugUntilInjury()
+                if case .tournamentDecision = session.phase { session.decideTournament(nil) }   // 療養明けが大会の入口なら見送って週メインへ
+            }
             if ui == "juice" {
                 // ジュース目視: 2秒後にネタ作りを自動実行＝Beat2バースト＋パーティクル＋ピル跳ねをスクショで拾う
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
