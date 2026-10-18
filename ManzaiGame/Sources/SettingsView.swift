@@ -67,7 +67,7 @@ struct SettingsView: View {
                             careerSection(onQuitRun)
                         }
             // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
-            Spacer(minLength: 16)   // 権利表記は画面の下端に据える（下半分の空白を作らない）
+            Spacer(minLength: 16).frame(maxHeight: 40)   // 権利表記は中身の直下に近く置く（上に大きな空白を作らない）
             VStack(spacing: 4) {
                 Text("権利表記・バージョン").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 Rectangle().fill(YoseColor.kiDark).frame(height: 1).padding(.horizontal, 28)
