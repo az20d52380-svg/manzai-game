@@ -693,6 +693,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 B.do_job(s, arg)
                 s._jobs = getattr(s, "_jobs", 0) + 1
             elif act == "offer" and offer:
+                s._wk = (year - 1) * B.WEEKS + week
                 B.do_offer(s, offer)
             elif act == "rest":
                 B.do_rest(s, arg)

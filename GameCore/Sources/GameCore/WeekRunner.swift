@@ -287,7 +287,7 @@ public struct WeekRunner<R: RandomSource> {
         switch action {
         case .acceptOffer:
             if let o = offer {
-                GameEngine.applyOffer(o, to: &state, config: config)
+                GameEngine.applyOffer(o, to: &state, config: config, atWeek: (year - 1) * config.weeks + week)
             } else {
                 GameEngine.applyRest(.完全休養, to: &state, config: config)
             }
@@ -561,7 +561,7 @@ extension WeekRunner where R: Codable {
             self.pendingSpec = nil
         }
         if let o = snap.pendingOffer {
-            self.pendingOffer = [config.offerMoney, config.offerExp].first { $0.name == o.name } ?? o
+            self.pendingOffer = (config.offersNamed + [config.offerMoney, config.offerExp]).first { $0.name == o.name } ?? o
         } else {
             self.pendingOffer = nil
         }

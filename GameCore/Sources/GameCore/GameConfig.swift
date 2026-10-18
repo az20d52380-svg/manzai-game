@@ -261,6 +261,17 @@ public struct GameConfig {
     // --- オファー（Python: OFFER_MONEY / OFFER_EXP / OFFER_RATES） ---
     public var offerMoney = OfferSpec(name: "お金重視", income: 240_000, fame: 1, ability: nil, stamina: -20)
     public var offerExp   = OfferSpec(name: "経験重視", income: 120_000, fame: 3, ability: (.表現, 2), stamina: -20)
+    /// キュー96：名前付き4種（Python: OFFERS_NAMED）。offerExp→[0,1]（ひな壇/ラジオ）・offerMoney→[2,3]（ロケ/営業）。名前を決める追加の乱数1回は rollOffer
+    public var offersNamed: [OfferSpec] = [
+        OfferSpec(name: "ひな壇", income: 120_000, fame: 3, ability: (.表現, 2), stamina: -15),
+        OfferSpec(name: "ラジオ", income: 100_000, fame: 2, ability: (.表現, 2), stamina: -10),
+        OfferSpec(name: "ロケ",   income: 220_000, fame: 2, ability: nil,        stamina: -25),
+        OfferSpec(name: "営業",   income: 280_000, fame: 1, ability: nil,        stamina: -20),
+    ]
+    /// テレビ慣れ：直近 offerFatigueWindow 週（今週−受けた週 < 値）に offerFatigueK 回以上受けていたら、受けるたびにセンスと表現を offerFatigueD ずつ下げる
+    public var offerFatigueWindow = 6
+    public var offerFatigueK = 4
+    public var offerFatigueD = 0.5
     /// (知名度がこの値未満, 発生率/週)
     public var offerRates: [(fameBelow: Double, rate: Double)] = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]   // 区切り 20/50/80→10/30/55（キュー62）
     /// 知名度の「その他の伸び」（大会・回戦・オファー・イベント）＝×本値×(1−知名度/fameOtherCap)²（キュー62 案G）。Python: FAME_OTHER_MULT／FAME_OTHER_CAP

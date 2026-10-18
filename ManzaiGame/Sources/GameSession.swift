@@ -365,6 +365,11 @@ final class GameSession {
 
     /// action を今の state に適用した「実行後の状態」を返す（乱数非消費・純関数）。
     /// offer プレビューは runner が pendingOffer を内部に隠すため、View から OfferSpec を渡す。
+    /// キュー96：次にオファーを受けると腕が落ちる（テレビ慣れ）か。乱数非消費
+    var offerFatigued: Bool {
+        GameEngine.offerFatigued(state: state, atWeek: (runner.year - 1) * config.weeks + runner.week, config: config)
+    }
+
     func previewState(_ action: WeekAction, offer: OfferSpec? = nil) -> GameState {
         var s = state
         switch action {

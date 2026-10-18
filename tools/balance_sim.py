@@ -77,6 +77,16 @@ JOBS = {
 # --- オファー（体力消費は仕様未定義→【仮】-20。種類の出現比は50/50【仮】） ---
 OFFER_MONEY = dict(name="お金重視", income=240_000, fame=1, ability=None,        stam=-20)
 OFFER_EXP   = dict(name="経験重視", income=120_000, fame=3, ability=("expr", 2), stam=-20)
+# キュー96（規律A・2026-10-18）：オファーに名前4種（平均は OFFER_MONEY/EXP と同じ）。EXP→ひな壇/ラジオ、MONEY→ロケ/営業（追加の乱数1回＝半々）
+OFFERS_NAMED = [
+    dict(name="ひな壇", income=120_000, fame=3, ability=("expr", 2), stam=-15),
+    dict(name="ラジオ", income=100_000, fame=2, ability=("expr", 2), stam=-10),
+    dict(name="ロケ",   income=220_000, fame=2, ability=None,        stam=-25),
+    dict(name="営業",   income=280_000, fame=1, ability=None,        stam=-20),
+]
+OFFER_FATIGUE_WINDOW = 6     # テレビ慣れ：直近6週（今週−受けた週 < 6）
+OFFER_FATIGUE_K      = 4     # その中に4回以上受けていたら、受けるたびに
+OFFER_FATIGUE_D      = 0.5   # センスと表現を0.5ずつ下げる
 OFFER_RATES = [(10, 0.05), (30, 0.15), (55, 0.30), (999, 0.50)]  # 区切り 20/50/80→10/30/55（キュー62・saturation §8）  # (知名度がこの値未満, 発生率/週)
 
 # --- 休む: (回復, 追加効果) ---
@@ -410,6 +420,18 @@ def do_offer(s, offer):
     if offer["ability"]:
         k, v = offer["ability"]; add(s, k, v)
     add(s, "stamina", offer["stam"])
+    wk = getattr(s, "_wk", None)          # 通算の週（呼び出し側が行動直前に s._wk=(年-1)*48+週 を入れる）
+    if wk is not None:
+        hist = getattr(s, "offer_weeks", None) or []
+        if offer_fatigued(s, wk):
+            add(s, "sense", -OFFER_FATIGUE_D); add(s, "expr", -OFFER_FATIGUE_D)
+        hist = [w for w in hist if wk - w < OFFER_FATIGUE_WINDOW] + [wk]
+        s.offer_weeks = hist
+
+def offer_fatigued(s, wk):
+    """次にオファーを受けると腕が落ちるか（テレビ慣れ）"""
+    hist = getattr(s, "offer_weeks", None) or []
+    return sum(1 for w in hist if wk - w < OFFER_FATIGUE_WINDOW) >= OFFER_FATIGUE_K
 
 # --- お金を払う休み（money_items_neta_v1 §2・オーナー案 2026-10-12）【値は仮】---
 # Swift: Rest.サウナ/.温泉に一泊（GameConfig.rests/restCosts）と同値。既定では RESTS に入れない＝既存の基準不変。
@@ -444,7 +466,9 @@ def do_rest(s, name):
 def roll_offer(s, rng):
     rate = next(r for cap, r in OFFER_RATES if s.fame < cap)
     if rng.random() < rate:
-        return dict(rng.choice([OFFER_MONEY, OFFER_EXP]))
+        base = rng.choice([OFFER_MONEY, OFFER_EXP])
+        i = (0 if base is OFFER_EXP else 2) + (1 if rng.random() < 0.5 else 0)   # 追加の乱数1回（名前）
+        return dict(OFFERS_NAMED[i])
     return None
 
 BURST_P     = 0.10   # 【正典v2】「ハマった夜」の発生率（勝負ごとの独立な運・メンタル非依存）
@@ -588,6 +612,7 @@ def run_one(pol, seed):
             elif act == "job":
                 do_job(s, arg)
             elif act == "offer" and offer:
+                s._wk = week
                 do_offer(s, offer)
             elif act == "rest":
                 do_rest(s, arg)
