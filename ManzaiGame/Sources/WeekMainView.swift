@@ -479,7 +479,7 @@ struct WeekMainView: View {
             stamina: s.stamina,
             livingThisWeek: session.week % session.config.livingInterval == 0,
             livingInTwoWeeks: (session.week + 2) % session.config.livingInterval == 0,
-            money: s.money, livingCost: session.config.livingCost + GameEngine.roomRent(s, config: session.config),   // 部屋の上乗せ込み（実際の引き落としと一致）
+            money: s.money, livingCost: GameEngine.livingCostDue(s, config: session.config),   // 部屋の上乗せ込み（実際の引き落としと一致）
             weeksWithoutPartner: session.weeksWithoutPartner,
             plusAvailable: expGrains > 0 && AbilityUpView.anyPlusEnabled(session, state: s),
             expBannerShown: bannerShown))
@@ -1418,7 +1418,7 @@ struct WeekMainView: View {
 
     private func livingHint() -> HintSpec {
         let c = session.config
-        let living = c.livingCost + GameEngine.roomRent(session.state, config: c)
+        let living = GameEngine.livingCostDue(session.state, config: c)
         return HintSpec(key: "living", title: "生活費", rows: [
             .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(living / 10_000)万円が引かれる。今週がその週。"),
             .init(term: "借金", text: "お金が足りないと、足りない分が借金になる。"),

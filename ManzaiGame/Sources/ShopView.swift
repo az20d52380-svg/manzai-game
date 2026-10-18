@@ -93,7 +93,7 @@ struct ShopView: View {
                     }
                     Spacer(minLength: 0)
                     if !here {
-                        Button { if session.moveRoom(to: i) { Haptics.tick() } } label: {
+                        Button { if session.moveRoom(to: i) { visitStart?.room = session.state.room; Haptics.tick() } } label: {   // 引っ越しは「戻す」の対象外＝起点の部屋も今の部屋に（code_review_2026-10-19 §1-1）
                             Text(i < cur ? "戻る" : "引っ越す").font(YoseFont.gothic(14, weight: .heavy)).padding(.vertical, 6)
                         }
                         .buttonStyle(YoseButtonStyle(.kifuda)).frame(width: 96).disabled(!ok)

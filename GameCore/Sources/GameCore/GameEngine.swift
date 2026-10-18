@@ -171,6 +171,11 @@ public enum GameEngine {
 
     /// 部屋を選び直す（乱数なし・お金は引かない＝上乗せは次の生活費から）。選べたら true。
     @discardableResult
+    /// 月末の支払いの額（生活費・特技「やりくり上手」の割引込み＋部屋の上乗せ）。引き落としと画面の表示の両方がこれを使う。乱数なし
+    public static func livingCostDue(_ s: GameState, config: GameConfig) -> Int {
+        (s.has(.やりくり上手) ? Int((Double(config.livingCost) * Skill.livingMult).rounded()) : config.livingCost) + roomRent(s, config: config)
+    }
+
     public static func moveRoom(to target: Int, state s: inout GameState, config: GameConfig) -> Bool {
         guard canMoveRoom(to: target, state: s, config: config) else { return false }
         s.room = target == 0 ? nil : target
@@ -319,7 +324,7 @@ public enum GameEngine {
     @discardableResult
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
-            s.money -= (s.has(.やりくり上手) ? Int((Double(config.livingCost) * Skill.livingMult).rounded()) : config.livingCost) + roomRent(s, config: config)
+            s.money -= livingCostDue(s, config: config)
             if s.money < 0 {
                 add(.体力, config.debtLifeStamina, to: &s, config: config)
                 add(.ability(.メンタル), config.debtLifeMental, to: &s, config: config)

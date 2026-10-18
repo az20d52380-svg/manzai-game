@@ -53,4 +53,21 @@ final class RoomTests: XCTestCase {
         let old = try JSONDecoder().decode(GameState.self, from: JSONSerialization.data(withJSONObject: obj))
         XCTAssertEqual(GameEngine.roomRent(old, config: config), 0)
     }
+
+    /// 画面に出す支払いの額（livingCostDue）＝月末に実際に引かれる額（部屋・やりくり上手の組合せ全部）
+    func testLivingCostDueMatchesActualDeduction() {
+        let c = GameConfig()
+        for room in [nil, 1, 2] as [Int?] {
+            for thrifty in [false, true] {
+                var s = GameState(config: c)
+                s.money = 5_000_000; s.room = room
+                if thrifty { s.skills = [.やりくり上手] }
+                let due = GameEngine.livingCostDue(s, config: c)
+                let before = s.money
+                _ = GameEngine.applyWeekEnd(week: c.livingInterval, to: &s, config: c)
+                XCTAssertEqual(before - s.money, due, "room=\(String(describing: room)) thrifty=\(thrifty)")
+            }
+        }
+    }
 }
+
