@@ -334,7 +334,7 @@ struct WeekMainView: View {
                     monoBox.padding(YoseMetrics.screenMargin)
                 }
                 }
-                .padding(.bottom, offerCard != nil && openCat == nil ? max(0, offerBandH + 10 - YoseMetrics.screenMargin) : 0)   // オファーの帯（下の余白4＋隙間6）の上に声を載せる
+                .padding(.bottom, offerCard != nil && openCat == nil ? max(0, offerBandH + 14 - YoseMetrics.screenMargin) : 0)   // オファーの帯（下の余白4＋隙間10）の上に声を載せる
             }
             .overlay {
                 // Beat2 と同時: 集中線（漫画のドン！）＋二人の頭上で獲得チップ同色の火花。
