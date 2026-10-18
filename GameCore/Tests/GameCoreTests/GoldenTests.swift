@@ -4,7 +4,7 @@
 // 同じ行動列を実行して生成した。生成方法: docs/gamecore_design.md「golden値の再生成」を参照。
 // 正典v3 2026-08-02: 稽古は能力を直接 add せず通貨を発行し、行動直後に recommendedPlan で
 // abilityRecipes（Leontief重み付き）に従って注ぐ（WeekRunner と同順）。
-// この12週台本は growthBudget=nil（エンジン単体）なので予算②は通らず、逓減①→clamp③と供給スケール0.48【仮】が効く。
+// この12週台本は growthBudget=nil（エンジン単体）なので予算②は通らず、逓減①→clamp③と供給スケール0.384【仮・§93 R2M@0.8】が効く。
 // このテストが落ちたら Swift と Python の数式がズレている。
 
 import XCTest
@@ -32,18 +32,18 @@ final class GoldenTests: XCTestCase {
 
     // 12週の決定的な行動列（乱数不使用）。生活費は4週ごとに自動で引かれる
     let script: [(act: Act, exp: Expected)] = [
-        (.train(.ネタ作り),     Expected(money: 300000, stamina: 80, fame: 3, sense: 10, idea: 11.254305555555556, expr: 10, chara: 10, mental: 10, compat: 5)),
-        (.train(.ネタ合わせ),   Expected(money: 300000, stamina: 60, fame: 3, sense: 10, idea: 11.254305555555556, expr: 10, chara: 10, mental: 10, compat: 6)),
-        (.train(.フリーライブ),     Expected(money: 300000, stamina: 30, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 10, compat: 6)),
-        (.job(.標準),           Expected(money: 224000, stamina: 10, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 10, compat: 6)),
-        (.rest(.完全休養),      Expected(money: 224000, stamina: 70, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 11.833333333333334, compat: 6)),
-        (.train(.ネタ見せ会),     Expected(money: 144000, stamina: 40, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
-        (.train(.ランニング・サウナ), Expected(money: 64000, stamina: 30, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
-        (.job(.キツい),         Expected(money: 20000, stamina: 0, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 6)),
-        (.rest(.相方と過ごす),  Expected(money: 20000, stamina: 20, fame: 3.55584375, sense: 10, idea: 11.254305555555556, expr: 10, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
-        (.train(.ネタ作り),     Expected(money: 20000, stamina: 0, fame: 3.55584375, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
-        (.job(.楽),             Expected(money: 52000, stamina: 0, fame: 3.55584375, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 12.410222222222224, compat: 7)),
-        (.rest(.気分転換),      Expected(money: -88000, stamina: 25, fame: 3.55584375, sense: 12.905935079089506, idea: 11.254305555555556, expr: 11.254305555555556, chara: 11.66986111111111, mental: 10.306803703703705, compat: 7)),
+        (.train(.ネタ作り),     Expected(money: 300000, stamina: 80, fame: 3, sense: 10, idea: 10, expr: 10, chara: 10, mental: 10, compat: 5)),
+        (.train(.ネタ合わせ),   Expected(money: 300000, stamina: 60, fame: 3, sense: 10, idea: 11.403905555555555, expr: 10, chara: 10, mental: 10, compat: 6)),
+        (.train(.フリーライブ),     Expected(money: 300000, stamina: 30, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 10, compat: 6)),
+        (.job(.標準),           Expected(money: 224000, stamina: 10, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 10, compat: 6)),
+        (.rest(.完全休養),      Expected(money: 224000, stamina: 70, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 11.833333333333334, compat: 6)),
+        (.train(.ネタ見せ会),     Expected(money: 144000, stamina: 40, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 13.128028240740742, compat: 6)),
+        (.train(.ランニング・サウナ), Expected(money: 64000, stamina: 30, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 14.407226369381428, compat: 6)),
+        (.job(.キツい),         Expected(money: 20000, stamina: 0, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 14.407226369381428, compat: 6)),
+        (.rest(.相方と過ごす),  Expected(money: 20000, stamina: 20, fame: 3.55584375, sense: 10, idea: 11.403905555555555, expr: 10, chara: 11.05483888888889, mental: 14.407226369381428, compat: 7)),
+        (.train(.ネタ作り),     Expected(money: 20000, stamina: 0, fame: 3.55584375, sense: 12.186275462962962, idea: 11.403905555555555, expr: 11.75297222222222, chara: 11.05483888888889, mental: 14.407226369381428, compat: 7)),
+        (.job(.楽),             Expected(money: 52000, stamina: 0, fame: 3.55584375, sense: 12.186275462962962, idea: 11.403905555555555, expr: 11.75297222222222, chara: 11.05483888888889, mental: 14.407226369381428, compat: 7)),
+        (.rest(.気分転換),      Expected(money: -88000, stamina: 25, fame: 3.55584375, sense: 12.186275462962962, idea: 11.403905555555555, expr: 11.75297222222222, chara: 11.05483888888889, mental: 12.287166149636583, compat: 7)),
     ]
 
     func testTwelveWeekScriptMatchesPython() {
@@ -78,7 +78,7 @@ final class GoldenTests: XCTestCase {
         }
 
         // 最終状態での派生値も Python と一致すること
-        XCTAssertEqual(GameEngine.blurWidth(mental: s.メンタル), 18.453979444444442, accuracy: acc)
-        XCTAssertEqual(GameEngine.jitsuryoku(s, config: config), 11.812127745949073, accuracy: acc)
+        XCTAssertEqual(GameEngine.blurWidth(mental: s.メンタル), 18.15692507755451, accuracy: acc)
+        XCTAssertEqual(GameEngine.jitsuryoku(s, config: config), 11.673523194444442, accuracy: acc)
     }
 }

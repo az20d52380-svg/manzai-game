@@ -136,15 +136,15 @@ public struct GameConfig {
     /// 重みは同じ能力内で合計1.0を目安に【仮・sim較正で確定】。balance_sim.ABILITY_RECIPE と同期。
     /// オーナー指示（2026-08-02）「パワプロは経験値をパワーそのまま使わず筋力/技術等で振り分ける」への対応。
     public var abilityRecipes: [Ability: [(ExpCurrency, Double)]] = [
-        .センス:   [(.閃き, 0.45), (.間合い, 0.35), (.胆力, 0.20)],
-        .発想:     [(.閃き, 0.65), (.語彙, 0.35)],
-        .表現:     [(.語彙, 0.35), (.間合い, 0.65)],
-        .華:       [(.存在感, 0.70), (.閃き, 0.30)],
-        .メンタル: [(.存在感, 0.25), (.胆力, 0.75)],
+        .センス:   [(.閃き, 0.35), (.間合い, 0.40), (.胆力, 0.25)],
+        .発想:     [(.閃き, 0.60), (.語彙, 0.25), (.間合い, 0.15)],
+        .表現:     [(.語彙, 0.20), (.間合い, 0.60), (.胆力, 0.20)],
+        .華:       [(.存在感, 0.50), (.閃き, 0.20), (.間合い, 0.30)],
+        .メンタル: [(.存在感, 0.20), (.胆力, 0.80)],
     ]
     /// 稽古が発行する経験点通貨の供給スケール【仮・旧expSupplyScaleの較正値を継承】。creditCurrency が
     /// 通貨加算量に掛ける。balance_sim.EXP_SUPPLY_SCALE と同期。
-    public var expSupplyScale = 0.48
+    public var expSupplyScale = 0.384
     /// 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」への対応）:
     /// 現在ランクが高いほど1段あたりの通貨消費が重くなる階段状の倍率帯。パワプロ実機リサーチで確認済み
     /// （査定値表は現在ランクが上がるほど1段の必要経験点が段階的に増える・g→sで数倍）。
@@ -241,8 +241,8 @@ public struct GameConfig {
     //     ネタ合わせのsubは相性（.コンビ相性）＝経験点通貨ではなく経済外add直結のまま不変。 ---
     public var trainings: [Training: TrainingSpec] = [
         .ネタ作り:     TrainingSpec(main: (.currency(.閃き), 3),     sub: (.currency(.語彙), 1),   cost: 0,      stamina: -20, fame: 0),
-        .ネタ見せ会:     TrainingSpec(main: (.currency(.間合い), 6),   sub: (.currency(.胆力), 3),   cost: 80_000, stamina: -30, fame: 0),
-        .ネタ合わせ:   TrainingSpec(main: (.currency(.間合い), 3),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
+        .ネタ見せ会:     TrainingSpec(main: (.currency(.間合い), 4),   sub: (.currency(.胆力), 3),   cost: 80_000, stamina: -30, fame: 0),
+        .ネタ合わせ:   TrainingSpec(main: (.currency(.間合い), 2),   sub: (.コンビ相性, 1),        cost: 0,      stamina: -20, fame: 0),
         .ランニング・サウナ: TrainingSpec(main: (.currency(.胆力), 6),   sub: nil,                     cost: 80_000, stamina: -10, fame: 0),
         .フリーライブ:     TrainingSpec(main: (.currency(.存在感), 3), sub: (.currency(.間合い), 1), cost: 0,      stamina: -30, fame: 1),
         // 場所【仮】（Python: PLACE_TRAININGS と同値。golden/sim の既定ボットは使わない）

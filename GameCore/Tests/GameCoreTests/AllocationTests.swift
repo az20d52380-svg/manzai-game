@@ -61,16 +61,16 @@ final class AllocationTests: XCTestCase {
 
     /// pourStep はレシピの全通貨を同じ比率（Leontief）で同時消費する。単一通貨だけを払う旧仕様には戻れない。
     func testPourStepConsumesAllRecipeCurrenciesProportionally() {
-        let config = GameConfig()   // センス: 閃き0.45 / 間合い0.35 / 胆力0.20
+        let config = GameConfig()   // センス: 閃き0.35 / 間合い0.40 / 胆力0.25
         var s = GameState(config: config)
         s.growthBudget = nil        // 予算の影響を切って支払い比率だけ見る
         s.exp閃き = 10; s.exp間合い = 10; s.exp胆力 = 10   // 全通貨に余裕＝ボトルネックはallocationStep側
         let gain = GameEngine.pourStep(.センス, to: &s, config: config)
         XCTAssertGreaterThan(gain, 0)
-        // allocationStep=1.0 を各重みで按分して消費（10-1×0.45=9.55 等）
-        XCTAssertEqual(s.exp閃き, 10 - 1.0 * 0.45, accuracy: 1e-9)
-        XCTAssertEqual(s.exp間合い, 10 - 1.0 * 0.35, accuracy: 1e-9)
-        XCTAssertEqual(s.exp胆力, 10 - 1.0 * 0.20, accuracy: 1e-9)
+        // allocationStep=1.0 を各重みで按分して消費（10-1×0.35=9.65 等）
+        XCTAssertEqual(s.exp閃き, 10 - 1.0 * 0.35, accuracy: 1e-9)
+        XCTAssertEqual(s.exp間合い, 10 - 1.0 * 0.40, accuracy: 1e-9)
+        XCTAssertEqual(s.exp胆力, 10 - 1.0 * 0.25, accuracy: 1e-9)
     }
 
     /// 通貨のどれか1つでも0なら、その能力は一切伸びない（ボトルネック＝全通貨が揃って初めて伸びる）。
@@ -114,14 +114,14 @@ final class AllocationTests: XCTestCase {
 
     /// 段刻みループは一括 add() を決して上回らない（貯め込みの1点評価上振れが構造的に消えている）
     func testStepLoopNeverExceedsSingleShot() {
-        let config = GameConfig()   // 発想: 閃き0.65 / 語彙0.35
+        let config = GameConfig()   // 発想: 閃き0.60 / 語彙0.25 / 間合い0.15
         var single = GameState(config: config)
         single.growthBudget = 100   // 予算で切られない条件で逓減複利だけを見る
         GameEngine.add(.ability(.発想), 6, to: &single, config: config)
 
         var looped = GameState(config: config)
         looped.growthBudget = 100
-        looped.exp閃き = 6 * 0.65; looped.exp語彙 = 6 * 0.35   // ちょうど生量6ぶんの通貨を両方揃えて注ぐ
+        looped.exp閃き = 6 * 0.60; looped.exp語彙 = 6 * 0.25; looped.exp間合い = 6 * 0.15   // ちょうど生量6ぶんの通貨を両方揃えて注ぐ
         while GameEngine.pourStep(.発想, to: &looped, config: config) > 0 {}
         XCTAssertLessThanOrEqual(looped.発想, single.発想, "段刻みが一括評価を上回ったら1点評価ガードが壊れている")
         XCTAssertGreaterThan(looped.発想, GameState(config: config).発想, "注げてはいる")
@@ -145,18 +145,18 @@ final class AllocationTests: XCTestCase {
     /// 正典v3-1（2026-08-03オーナー指示「能力が上がるほど必要な経験点も変動する」）: 現在ランクが等級帯
     /// （G/F/E/D/C/B/A/S）を跨いで上がるほど、同じ1段あたりの通貨消費が重くなる（パワプロ実機の階段状カーブ）。
     func testPourStepCostsMoreCurrencyAtHigherRank() {
-        let config = GameConfig()   // 発想: 閃き0.65 / 語彙0.35。しきい値15/25/…でG→F→…と上がる
+        let config = GameConfig()   // 発想: 閃き0.60 / 語彙0.25 / 間合い0.15。しきい値15/25/…でG→F→…と上がる
         var low = GameState(config: config)
         low.growthBudget = nil
         low.発想 = 10   // G帯（倍率1.0）
-        low.exp閃き = 10; low.exp語彙 = 10
+        low.exp閃き = 10; low.exp語彙 = 10; low.exp間合い = 10
         let lowGain = GameEngine.pourStep(.発想, to: &low, config: config)
         let lowSpent = 10 - low.exp閃き
 
         var high = GameState(config: config)
         high.growthBudget = nil
         high.発想 = 50   // C帯（倍率2.0）
-        high.exp閃き = 10; high.exp語彙 = 10
+        high.exp閃き = 10; high.exp語彙 = 10; high.exp間合い = 10
         let highGain = GameEngine.pourStep(.発想, to: &high, config: config)
         let highSpent = 10 - high.exp閃き
 
