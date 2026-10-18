@@ -394,7 +394,7 @@ final class GameSession {
             GameEngine.applyRest(r, to: &s, config: config)
         case .acceptOffer:
             if let o = offer {
-                GameEngine.applyOffer(o, to: &s, config: config)
+                GameEngine.applyOffer(o, to: &s, config: config, atWeek: (year - 1) * config.weeks + week)   // テレビ慣れも予告に乗せる（実際の受諾＝WeekRunner と同じ・code_review_2026-10-19 §3-2）
             }
         }
         return s
