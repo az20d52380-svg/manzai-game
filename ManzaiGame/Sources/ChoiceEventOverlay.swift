@@ -71,6 +71,7 @@ struct ChoiceEventOverlay: View {
                                 chosenTag(text.choiceLabels[chosenID] ?? chosenID)
                             }
                         }
+                        Color.clear.frame(height: 0).id(Self.endAnchor)   // 送り先＝最後の行の下に余白を残す（行に合わせると選択肢の札と詰まる）
                     }
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14).padding(.bottom, 12)
                 }
@@ -107,17 +108,18 @@ struct ChoiceEventOverlay: View {
         }
     }
 
+    private static let endAnchor = "eventLinesEnd"
+
     private func scrollToLast(_ proxy: ScrollViewProxy) {
-        if let last = lines.last?.id {
-            withAnimation(Theme.Motion.appear) { proxy.scrollTo(last, anchor: .bottom) }
-        }
+        guard !lines.isEmpty else { return }
+        withAnimation(Theme.Motion.appear) { proxy.scrollTo(Self.endAnchor, anchor: .bottom) }
     }
 
     // MARK: 上＝題の札＋場面
 
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
-            .frame(height: footerReady && !session.availableEventChoices().isEmpty ? (text.setup.count >= 5 ? 216 : 262) : 320)   // 選択肢の帯が出る間は読み物の欄を広げる（地の文が5行以上なら更に縮めて、最初のト書きが絵の下に半分隠れないように）
+            .frame(height: footerReady && !session.availableEventChoices().isEmpty ? (text.setup.count >= 6 ? 196 : text.setup.count >= 5 ? 216 : 262) : 320)   // 選択肢の帯が出る間は読み物の欄を広げる（地の文が5行・6行以上なら段階的に縮めて、最初のト書きが絵の下に半分隠れないように）
             .animation(Theme.Motion.appear, value: footerReady)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
