@@ -278,7 +278,7 @@ public struct WeekRunner<R: RandomSource> {
         default: risky = false
         }
         if risky, state.stamina < config.injuryThreshold,
-           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint {
+           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint * GameEngine.injuryProbMultiplier(state: state, config: config) {
             action = .rest(.完全休養)                    // 体調ダウン発生（「喉をやられた」等）
             state.recoveryWeeks = config.injuryRestWeeks - 1
             GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &state, config: config)

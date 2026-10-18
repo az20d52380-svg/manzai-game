@@ -62,4 +62,25 @@ final class ItemTests: XCTestCase {
         XCTAssertEqual(a[currency: .間合い], b[currency: .間合い])
         XCTAssertNil(b.itemCounts)
     }
+
+    func testBigDrinkStaminaAndYearlyLimit() {
+        var s = GameState(config: config); s.money = 1_000_000; s.stamina = 10
+        XCTAssertTrue(GameEngine.buy(.回復ドリンク大, to: &s, config: config))
+        XCTAssertEqual(s.stamina, 30)
+        for _ in 0..<3 { XCTAssertTrue(GameEngine.buy(.回復ドリンク大, to: &s, config: config)) }
+        XCTAssertFalse(GameEngine.buy(.回復ドリンク大, to: &s, config: config))   // 年4本まで
+        XCTAssertEqual(s.money, 1_000_000 - 4 * 20_000)
+        GameEngine.resetYearlyItems(&s)
+        XCTAssertTrue(GameEngine.canBuy(.回復ドリンク大, state: s, config: config))
+    }
+
+    func testThroatCareHalvesInjuryProbThisYearOnly() {
+        var s = GameState(config: config); s.money = 100_000
+        XCTAssertEqual(GameEngine.injuryProbMultiplier(state: s, config: config), 1.0)
+        XCTAssertTrue(GameEngine.buy(.喉のケア用品, to: &s, config: config))
+        XCTAssertFalse(GameEngine.buy(.喉のケア用品, to: &s, config: config))   // 年1つ
+        XCTAssertEqual(GameEngine.injuryProbMultiplier(state: s, config: config), 0.5)
+        GameEngine.resetYearlyItems(&s)
+        XCTAssertEqual(GameEngine.injuryProbMultiplier(state: s, config: config), 1.0)
+    }
 }

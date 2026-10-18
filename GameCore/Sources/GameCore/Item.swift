@@ -6,6 +6,8 @@
 
 public enum ShopItem: String, CaseIterable, Codable {
     case 栄養ドリンク
+    case 回復ドリンク大
+    case 喉のケア用品
     case 銭湯の回数券
     case 中古のICレコーダー
     case 新幹線回数券
@@ -49,6 +51,10 @@ extension GameEngine {
         switch item {
         case .栄養ドリンク:
             add(.体力, config.itemDrinkStamina, to: &s, config: config)
+        case .回復ドリンク大:
+            add(.体力, config.itemDrinkLStamina, to: &s, config: config)
+        case .喉のケア用品:
+            break   // 効果は今年の購入回数（itemCounts・年初に消える）を体調ダウン判定が読む
         case .銭湯の回数券:
             s.sentoTickets = config.itemSentoTickets
         case .中古のICレコーダー:
@@ -65,6 +71,11 @@ extension GameEngine {
             s.studioActive = true
         }
         return true
+    }
+
+    /// 体調ダウン確率の係数。喉のケア用品をその年持っていれば半分、なければ恒等（乱数は引かない）。
+    public static func injuryProbMultiplier(state s: GameState, config: GameConfig) -> Double {
+        (s.itemCounts?[ShopItem.喉のケア用品.rawValue] ?? 0) > 0 ? config.itemThroatInjuryMult : 1.0
     }
 
     /// 年替わりで「その年だけ」の効果と回数を消す（WeekRunner の年初・sim の run_year 冒頭と同じ位置）。
