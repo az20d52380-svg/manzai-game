@@ -154,4 +154,30 @@ final class BoundaryGapTests: XCTestCase {
         s.netas = [Neta(id: 1, name: "試し", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1)]
         XCTAssertTrue(fire(.wroteOneTonight, s))
     }
+
+    /// 相方以外の人とのイベント（choice_events_others_v1 §2）の発火帯：内側で出て、境目の外で出ない
+    func testOthersEventBands() {
+        var s = GameState(config: cfg)
+        s.money = 100_000; s.fame = 20
+        // 劇場の椅子並べ：8週目から
+        XCTAssertFalse(fire(.stageCrewChairs, s, week: 7)); XCTAssertTrue(fire(.stageCrewChairs, s, week: 8))
+        // 作家のハガキ：知名度10以上・所持金20万未満
+        XCTAssertTrue(fire(.writerPostcards, s))
+        s.fame = 9.9; XCTAssertFalse(fire(.writerPostcards, s)); s.fame = 20
+        s.money = 200_000; XCTAssertFalse(fire(.writerPostcards, s)); s.money = 100_000
+        // 同期の合同ライブ：16週目から・知名度40未満・所持金2万以上
+        XCTAssertFalse(fire(.doukiJointLive, s, week: 15)); XCTAssertTrue(fire(.doukiJointLive, s, week: 16))
+        s.fame = 40; XCTAssertFalse(fire(.doukiJointLive, s, week: 16)); s.fame = 20
+        s.money = 19_999; XCTAssertFalse(fire(.doukiJointLive, s, week: 16)); s.money = 100_000
+        // バイト先の棚卸し：所持金15万未満
+        XCTAssertTrue(fire(.baitoInventory, s)); s.money = 150_000; XCTAssertFalse(fire(.baitoInventory, s)); s.money = 100_000
+        // 常連のみかん：知名度15以上
+        XCTAssertTrue(fire(.regularFanOranges, s)); s.fame = 14.9; XCTAssertFalse(fire(.regularFanOranges, s)); s.fame = 20
+        // 事務所のチケットノルマ：知名度30未満
+        XCTAssertTrue(fire(.officeTicketQuota, s)); s.fame = 30; XCTAssertFalse(fire(.officeTicketQuota, s)); s.fame = 20
+        // 劇場の改装：12週目から・知名度40未満
+        XCTAssertFalse(fire(.theaterRenovation, s, week: 11)); XCTAssertTrue(fire(.theaterRenovation, s, week: 12))
+        s.fame = 40; XCTAssertFalse(fire(.theaterRenovation, s, week: 12))
+    }
 }
+
