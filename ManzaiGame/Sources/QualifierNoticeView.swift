@@ -106,6 +106,10 @@ struct QualifierNoticeView: View {
                 }
             }
             .padding(.horizontal, 14)
+            if !scanned {
+                Text("タップで次へ").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(.white.opacity(0.55))
+                    .padding(.vertical, 22).transition(.opacity)
+            }
             if scanned {
                 Button { finish() } label: {
                     Text(passed ? "つづける" : "閉じる").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(passed ? YoseColor.kuroUrushi : YoseColor.washi)
