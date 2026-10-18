@@ -673,7 +673,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 act, arg = "rest", "完全休養"       # ハードゲート: 稽古ボタンが押せない（谷口が止める）
             if INJURY_ON and s.stamina < INJURY_TH and (
                     act == "train" or (act == "job" and arg == "キツい")):
-                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER:
+                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER * B.throat_mult(s):
                     act, arg = "rest", "完全休養"   # 体調ダウン発生: 今週から療養
                     s._inj = INJURY_REST - 1
                     B.add(s, "mental", INJURY_MENTAL)
