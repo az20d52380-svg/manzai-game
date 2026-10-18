@@ -47,11 +47,11 @@ final class BoundaryGapTests: XCTestCase {
         XCTAssertTrue(GameEngine.recommendedPlan(state: s, config: cfg).isEmpty)
     }
 
-    /// 閃き・語彙だけ持っている時、レシピに間合い・胆力・存在感が要る能力は選ばれない（発想だけ）
+    /// 閃き・語彙・間合いだけ持っている時、胆力・存在感が要る能力は選ばれない（発想だけ）
     func testRecommendedPlanSkipsUnaffordableAbilities() {
         var s = GameState(config: cfg)
         s.growthBudget = nil
-        s.exp閃き = 20; s.exp語彙 = 20
+        s.exp閃き = 20; s.exp語彙 = 20; s.exp間合い = 20   // 発想のレシピ（閃き・語彙・間合い）だけ揃う（§93）
         s.センス = 0; s.発想 = 30   // 現在値はセンスの方が低いが、センスは間合い・胆力が無く注げない
         let plan = GameEngine.recommendedPlan(state: s, config: cfg)
         XCTAssertFalse(plan.isEmpty)
