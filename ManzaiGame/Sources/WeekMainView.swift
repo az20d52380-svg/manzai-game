@@ -1385,9 +1385,8 @@ struct WeekMainView: View {
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
         if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
-            let n = session.injuryNoticeWeeks
             session.clearInjuryNotice()
-            injuryNotice = "無理がたたって、体を壊した。\(n)週は療養で、動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
+            injuryNotice = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。"
             return
         }
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
