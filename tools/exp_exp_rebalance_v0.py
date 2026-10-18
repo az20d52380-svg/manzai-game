@@ -7,6 +7,7 @@
   S   供給の付け替え：ネタ作り 閃3/語2・喫茶 閃3.5/語2.5・ファミレス 閃3/語2・勉強会 閃4/語5・ネタ見せ会 間4/胆3・ネタ合わせ 間2
   R   配合の付け替え（間合いを使う能力を増やす）：センス 閃.35/間.45/胆.20・表現 語.25/間.75・華 存.60/閃.20/間.20
   SR  S と R の両方
+  R2  配合の需要比を供給比に合わせる（RECIPE2）
   「@x」は供給スケール EXP_SUPPLY_SCALE を x 倍（詰まりが消えて伸びた分を戻す）"""
 import sys, copy
 import balance_sim as B
@@ -33,6 +34,15 @@ RECIPE = {
     "chara": [("sonzaikan", 0.60), ("hirameki", 0.20), ("maai", 0.20)],
 }
 
+# R2：配合の需要比を供給比（閃.23 語.08 間.31 存.09 胆.28・ローテ近似）に合わせる＝間合い・胆力を多くの能力で使う
+RECIPE2 = {
+    "sense": [("hirameki", 0.35), ("maai", 0.40), ("tanryoku", 0.25)],
+    "idea": [("hirameki", 0.60), ("goi", 0.25), ("maai", 0.15)],
+    "expr": [("goi", 0.20), ("maai", 0.60), ("tanryoku", 0.20)],
+    "chara": [("sonzaikan", 0.50), ("hirameki", 0.20), ("maai", 0.30)],
+    "mental": [("sonzaikan", 0.20), ("tanryoku", 0.80)],
+}
+
 def patch(v):
     saved = dict(tr=copy.deepcopy(B.TRAININGS), ptr=copy.deepcopy(B.PLACE_TRAININGS), rec=copy.deepcopy(B.ABILITY_RECIPE))
     if "S" in v:
@@ -41,7 +51,9 @@ def patch(v):
                 if name in tbl:
                     tbl[name]["main"] = main
                     if sub is not None: tbl[name]["sub"] = sub
-    if "R" in v:
+    if "R2" in v:
+        B.ABILITY_RECIPE.update(copy.deepcopy(RECIPE2))
+    elif "R" in v:
         B.ABILITY_RECIPE.update(copy.deepcopy(RECIPE))
     bots_v3.ISSUE = {t: bots_v3._issue(t) for t in B.TRAININGS}
     return saved
