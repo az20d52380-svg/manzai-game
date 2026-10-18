@@ -41,6 +41,26 @@ final class RunCareerTests: XCTestCase {
         XCTAssertEqual(r1.nextUInt64(), r2.nextUInt64(), "乱数の消費量も一致する")
     }
 
+    /// 夜逃げした年でキャリアが終わる＝優勝なし（nil）で、それ以降の年は回らない
+    func testRunCareerStopsOnBankruptcy() throws {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.money = config.bankruptLine - 1   // 1週目の週末で夜逃げ
+        var p = GoldenPolicy()
+        var r = SplitMix64(seed: 99)
+        let champ = GameCareer.runCareer(state: &s, years: 3, config: config, policy: &p, rng: &r)
+        XCTAssertNil(champ)
+
+        var s2 = GameState(config: config)
+        s2.money = config.bankruptLine - 1
+        var p2 = GoldenPolicy()
+        var r2 = SplitMix64(seed: 99)
+        let o = GameCareer.runYear(state: &s2, year: 1, config: config, policy: &p2, rng: &r2)
+        XCTAssertTrue(o.bankrupt)
+        XCTAssertEqual(try encoded(s), try encoded(s2), "1年目で終わり、2年目以降は回らない")
+        XCTAssertEqual(r.nextUInt64(), r2.nextUInt64())
+    }
+
     /// 同じシードなら同じキャリア（決定論）
     func testRunCareerIsDeterministic() throws {
         let config = GameConfig()
