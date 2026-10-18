@@ -278,7 +278,7 @@ public struct WeekRunner<R: RandomSource> {
         default: risky = false
         }
         if risky, state.stamina < config.injuryThreshold,
-           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint {
+           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint * (state.has(.体が資本) ? Skill.injuryMult : 1.0) {
             action = .rest(.完全休養)                    // 体調ダウン発生（「喉をやられた」等）
             state.recoveryWeeks = config.injuryRestWeeks - 1
             GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &state, config: config)
@@ -467,6 +467,12 @@ public struct WeekRunner<R: RandomSource> {
     @discardableResult
     public mutating func applyItemPurchase(_ item: ShopItem) -> Bool {
         GameEngine.buy(item, to: &state, config: config)
+    }
+
+    /// 特技を覚える（乱数非消費・Skill.swift）。足りなければ false
+    @discardableResult
+    public mutating func applyLearnSkill(_ k: Skill) -> Bool {
+        GameEngine.learnSkill(k, to: &state)
     }
 
     /// お店の「戻す」（UI層・2026-10-12）：店に入った時の状態へ戻してから、残った買い物を順に買い直す。

@@ -140,6 +140,36 @@ FAME_OTHER_CAP  = 80.0   # その他の伸びが鈍っていく先【仮】。Sw
 def clamp(v, lo, hi):
     return max(lo, min(hi, v))
 
+# 特技（キュー106・規律A）：余った経験点の使い道。各1回きり・覚えたらずっと効く。状態 s.skills（set・既定なし＝今と同じ）。
+# 費用は内部の単位（画面では×10）。Swift: Skill.swift。ボットは覚えない（golden不変）。
+SKILL_COST = {
+    "体が資本":     {"tanryoku": 4, "sonzaikan": 3},   # 体調ダウンの確率 ×0.7
+    "愛され芸人":   {"sonzaikan": 6},                   # 知名度の伸び ×1.1（正の増分だけ）
+    "やりくり上手": {"goi": 2, "maai": 4},              # 月末の生活費 −5%
+    "相方思い":     {"sonzaikan": 3, "maai": 4},        # すれ違いの増え ×0.8（増えた週だけ）
+}
+SKILL_INJURY_MULT, SKILL_FAME_MULT, SKILL_LIVING_MULT, SKILL_RIFT_MULT = 0.7, 1.1, 0.95, 0.8
+
+def has_skill(s, name):
+    return name in getattr(s, "skills", ())
+
+def learn_skill(s, name):
+    """特技を覚える（足りる時だけ費用を引く）。覚えたら True。Swift: GameEngine.learnSkill"""
+    if name not in SKILL_COST or has_skill(s, name):
+        return False
+    cost = SKILL_COST[name]
+    if any(getattr(s, CURRENCY_ATTR[c]) < v for c, v in cost.items()):
+        return False
+    for c, v in cost.items():
+        setattr(s, CURRENCY_ATTR[c], getattr(s, CURRENCY_ATTR[c]) - v)
+    if not hasattr(s, "skills"):
+        s.skills = set()
+    s.skills.add(name)
+    return True
+
+def living_cost(s):
+    return LIVING_COST * (SKILL_LIVING_MULT if has_skill(s, "やりくり上手") else 1.0)
+
 def add(s, key, amt):
     if key == "compat":
         if COMPAT_GROWS:
@@ -157,6 +187,8 @@ def add(s, key, amt):
         if amt > 0:
             d = max(0.0, 1 - s.fame / FAME_OTHER_CAP)
             amt = amt * FAME_OTHER_MULT * (d * d)
+            if has_skill(s, "愛され芸人"):
+                amt *= SKILL_FAME_MULT
         s.fame = clamp(s.fame + amt, 0, 100)
     else:
         # 能力5種: 成長逓減（正の上昇のみ）を掛けてから上限にクランプ
@@ -595,7 +627,7 @@ def run_one(pol, seed):
         pour_all(s)   # 会計移設: 行動直後に粒を全量注ぐ（稽古以外の週は空注ぎ）
 
         if week % LIVING_INTERVAL == 0:
-            s.money -= LIVING_COST
+            s.money -= living_cost(s)
         s.min_money = min(s.min_money, s.money)
     return s
 

@@ -52,6 +52,7 @@ struct AbilityUpView: View {
                     Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
                         .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+                    skillsSection
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
             }
@@ -68,6 +69,58 @@ struct AbilityUpView: View {
         #if DEBUG
         .task { if ProcessInfo.processInfo.environment["MZ_TAPS"] != nil { try? await Task.sleep(nanoseconds: 1_500_000_000); taps = [.センス, .発想, .センス] } }   // 目視用: ＋を押した後の状態
         #endif
+    }
+
+    // MARK: 特技（キュー106）：余った経験点の使い道。各1回きり・覚えたらずっと効く
+
+    @State private var skillToLearn: Skill? = nil
+
+    private var skillsSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("特技").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .padding(.top, 8)
+            Text("余った経験点で覚える。一度覚えたらずっと効く")
+                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(Skill.allCases, id: \.self) { skillCard($0) }
+        }
+        .confirmationDialog(skillToLearn.map { "「\($0.rawValue)」を覚える？" } ?? "", isPresented: Binding(
+            get: { skillToLearn != nil }, set: { if !$0 { skillToLearn = nil } }), titleVisibility: .visible) {
+            Button("覚える") {
+                guard let k = skillToLearn else { return }
+                if !taps.isEmpty { _ = session.allocate(taps); taps.removeAll() }   // 押した段を先に確定してから覚える
+                if session.learnSkill(k) { Haptics.tick() }
+                skillToLearn = nil
+            }
+            Button("やめる", role: .cancel) { skillToLearn = nil }
+        }
+    }
+
+    private func skillCard(_ k: Skill) -> some View {
+        let learned = base.has(k)
+        let affordable = GameEngine.canLearn(k, state: pv)
+        let costText = k.cost.map { "\(String(describing: $0.currency))\(ExpDisplay.cost($0.amount, have: pv[currency: $0.currency]))" }.joined(separator: "・")
+        return Button { if affordable { skillToLearn = k } } label: {
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(k.rawValue).font(YoseFont.gothic(14, weight: .heavy))
+                    Text(k.summary).font(YoseFont.gothic(11, weight: .bold)).lineLimit(2)
+                    Text("経験点 \(costText)").font(YoseFont.gothic(11, weight: .bold)).opacity(0.8)
+                }
+                Spacer(minLength: 4)
+                if learned {
+                    Text("覚えた").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(.white)
+                        .padding(.horizontal, 8).padding(.vertical, 3).background(YoseColor.shu)
+                }
+            }
+            .foregroundStyle(learned || affordable ? YoseColor.sumi : YoseColor.haiSumi)
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(learned ? YoseColor.kinBright.opacity(0.14) : (affordable ? YoseColor.washi : YoseColor.sumi.opacity(0.08)))
+            .overlay(Rectangle().stroke(YoseColor.sumi.opacity(affordable || learned ? 0.5 : 0.25), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .disabled(learned || !affordable)
     }
 
     static var hintSpec: HintSpec {

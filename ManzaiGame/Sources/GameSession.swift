@@ -809,6 +809,15 @@ final class GameSession {
         return true
     }
 
+    /// 特技を覚える（乱数非消費・golden不変）。覚えたら true
+    @discardableResult
+    func learnSkill(_ k: Skill) -> Bool {
+        guard runner.applyLearnSkill(k) else { return false }
+        state = runner.state
+        saveNow()
+        return true
+    }
+
     /// お店の「戻す」：店に入った時の状態 start から、残った買い物 items だけを順に買い直す（乱数非消費）
     func replayShopVisit(from start: GameState, _ items: [ShopItem]) {
         runner.replayItemPurchases(from: start, items)

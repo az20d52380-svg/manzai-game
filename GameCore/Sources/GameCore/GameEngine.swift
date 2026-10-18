@@ -57,6 +57,7 @@ public enum GameEngine {
             if amt > 0 {
                 let d = max(0.0, 1 - s.fame / config.fameOtherCap)
                 amt = amt * config.fameOtherMult * (d * d)
+                if s.has(.愛され芸人) { amt *= Skill.fameMult }
             }
             s.fame = clamp(s.fame + amt, 0, 100)
         }
@@ -222,7 +223,9 @@ public enum GameEngine {
         if s.compat > (s.riftWeekStartCompat ?? s.compat) {
             r = max(0, r - config.riftHeal)
         } else {
-            r = min(100, r + config.riftGain * (config.compatCap - s.compat) / config.compatCap)
+            var gain = config.riftGain * (config.compatCap - s.compat) / config.compatCap
+            if s.has(.相方思い) { gain *= Skill.riftMult }
+            r = min(100, r + gain)
         }
         if r >= config.riftWarn && s.riftWarned != true { s.riftWarned = true }
         if year < 2 { r = min(r, 99) }
@@ -239,7 +242,7 @@ public enum GameEngine {
     @discardableResult
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
-            s.money -= config.livingCost
+            s.money -= s.has(.やりくり上手) ? Int((Double(config.livingCost) * Skill.livingMult).rounded()) : config.livingCost
             if s.money < 0 {
                 add(.体力, config.debtLifeStamina, to: &s, config: config)
                 add(.ability(.メンタル), config.debtLifeMental, to: &s, config: config)
