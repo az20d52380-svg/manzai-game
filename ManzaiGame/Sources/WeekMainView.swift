@@ -27,6 +27,7 @@ struct WeekMainView: View {
     @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
     @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
     @State private var rentShownKey = 0
+    @State private var injuryNotice: String?   // §97 体調ダウンの知らせ（倒れた直後の週メインで1回・タップで閉じる）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
     @State private var youthNoticeYear = 0   // 「若手の大会は今年が最後」を出した年（年初に1回だけ）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
@@ -189,6 +190,14 @@ struct WeekMainView: View {
         .overlay { burstCostOverlay }
         .overlay {
             if let r = rent { RentStatementView(statement: r) { rent = nil }.transition(.opacity) }
+        }
+        .overlay {
+            if let m = injuryNotice {
+                YoseModal(title: "体調ダウン", primaryTitle: "わかった", primaryAction: { injuryNotice = nil }, cancelTitle: nil) {
+                    Text(m).font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                        .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
         .overlay {
             if let m = debtNotice {
@@ -465,7 +474,7 @@ struct WeekMainView: View {
             stamina: s.stamina,
             livingThisWeek: session.week % session.config.livingInterval == 0,
             livingInTwoWeeks: (session.week + 2) % session.config.livingInterval == 0,
-            money: s.money, livingCost: session.config.livingCost,
+            money: s.money, livingCost: session.config.livingCost + GameEngine.roomRent(s, config: session.config),   // 部屋の上乗せ込み（実際の引き落としと一致）
             weeksWithoutPartner: session.weeksWithoutPartner,
             plusAvailable: expGrains > 0 && AbilityUpView.anyPlusEnabled(session, state: s),
             expBannerShown: bannerShown))
@@ -1360,6 +1369,12 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
+        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
+            let n = session.injuryNoticeWeeks
+            session.clearInjuryNotice()
+            injuryNotice = "無理がたたって、体を壊した。\(n)週は療養で、動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
+            return
+        }
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
@@ -1388,8 +1403,9 @@ struct WeekMainView: View {
 
     private func livingHint() -> HintSpec {
         let c = session.config
+        let living = c.livingCost + GameEngine.roomRent(session.state, config: c)
         return HintSpec(key: "living", title: "生活費", rows: [
-            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(c.livingCost / 10_000)万円が引かれる。今週がその週。"),
+            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(living / 10_000)万円が引かれる。今週がその週。"),
             .init(term: "借金", text: "お金が足りないと、足りない分が借金になる。"),
         ])
     }

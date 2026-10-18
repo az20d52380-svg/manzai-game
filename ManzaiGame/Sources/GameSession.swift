@@ -47,6 +47,9 @@ final class GameSession {
     private(set) var lastDeltaWeek = -1
     /// 連敗数（大会・GPで敗退が続いた回数。心の声「何が足りないんだ…」用）
     private(set) var lossStreak = 0
+    /// §97 体調ダウンの知らせ待ち（表示専用）。倒れた週を pump が見つけたら、療養の週数をここに積む＝週メインが1回だけ知らせる
+    private(set) var injuryNoticeWeeks = 0
+    func clearInjuryNotice() { injuryNoticeWeeks = 0 }
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
     private(set) var justPassedStage = false
     /// 直近の大会で敗退したか（負けた翌週の一言＝温度事故の停止。justPassedと対称・行動すると失効）
@@ -1152,6 +1155,8 @@ final class GameSession {
             case .weekDone(let summary):
                 state = summary.state
                 week = summary.week
+                if summary.results.contains(where: { $0.name == "体調ダウン" }) { injuryNoticeWeeks = config.injuryRestWeeks }
+                if summary.results.contains(where: { $0.name == "体調ダウン" || $0.name == "療養" }) { categoryLog[summary.week] = .kaifuku }   // 日程表に「回」を残す（療養週が空白にならない）
                 if let idea = runner.pendingInvite { inviteWaiting = true; inviteIdea = idea }   // §102 先輩の誘い（週末・別乱数）
                 if !summary.results.isEmpty {
                     log.append(summarize(summary))
