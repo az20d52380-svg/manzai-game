@@ -247,6 +247,151 @@ def _honban_ahead(week):
     ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
     return min([w - week for w in ws if w > week] or [99])
 
+# --- 実測用: アプリ(GameSession.swift 週次抽選)と同じ選択肢イベント。既定OFF（False では従来と1ビットも変わらない）---
+# True の時だけ: 旧プール(EVENT_TABLE 18種＋OTHERS)と SEASONAL は使わず、固有9種＋相方以外16種＝25種を「週頭（行動前）の状態」で判定する。
+# 確定発火（justLost・styleTalk・passFork・前夜・earlyFormality・tsuuka・nameless・taniguchi）が立つ週は週次抽選を引かない。
+# 乱数は本編 rng と独立（s._app_rng）＝本編の乱数列は動かさない。riftWarning・weekendInvite は未対応（別実装 RIFT_ON / invite_weekend のまま）。
+# docs/events_app_parity_v0.md
+EVENTS_APP     = False
+APP_EVENT_CAP  = 15      # GameConfig.weeklyEventCap（確定発火は数えない）
+APP_UNIQUE = ["brokedrink", "meishi", "peerchair", "lineuptop", "greenroom", "lasttrain", "luckythird", "wrote", "photo"]
+APP_POOL   = APP_UNIQUE + OTHERS_EVENTS      # 25種
+
+def _app_state(s, seed=None):
+    a = s.__dict__.get("_app")
+    if a is None:
+        a = dict(fired=set(), count=0, loss=0, jp=False, jl=False, style_done=False,
+                 lost_fired=False, fork_fired=False, eve_fired=False, early_done=False,
+                 tsuuka_done=False, nameless_fired=False, tani_fired=False, counts={})
+        s._app = a
+        s._app_rng = random.Random(0xA11CE if seed is None else (seed * 2654435761 + 0x5EED) & 0xFFFFFFFF)
+    return a
+
+def _app_result(s, passed):
+    """大会・GPの結果（アプリ pump の lossStreak / justPassed / justLost 更新）"""
+    a = _app_state(s)
+    if passed:
+        a["loss"] = 0; a["jp"] = True; a["jl"] = False; a["style_done"] = False
+    else:
+        a["loss"] += 1; a["jp"] = False; a["jl"] = True
+
+def _app_stages(s, year, week, gp_alive, gp_stage, finalist, revival):
+    """GameSession.upcomingStages 相当（自由週＝今週は含めない）。[(週, 高格か)]"""
+    ms = []
+    if gp_alive:
+        for i in range(gp_stage, len(GP_ROUNDS)):
+            ms.append((GP_ROUNDS[i][0], i == len(GP_ROUNDS) - 1))
+    if finalist or gp_alive:
+        ms.append((GP_FINAL_WEEK, True))
+    elif revival:
+        ms.append((GP_REVIVAL_WEEK, True))
+    for w, t in TOURNAMENTS.items():
+        if t["ok"](year, s):
+            ms.append((w, True))
+    return sorted(m for m in ms if m[0] > week)
+
+def _app_band(k, s, week, year, ahead, nxt, a):
+    if k == "brokedrink": return s.money < 50_000 and s.compat < B.COMPAT_CAP
+    if k == "meishi":     return s.money < 200_000 and s.fame < 50
+    if k == "peerchair":  return week >= 20
+    if k == "lineuptop":  return s.fame < 20
+    if k == "greenroom":  return 8 <= int(s.compat) <= 14
+    if k == "lasttrain":  return s.fame < 20
+    if k == "luckythird":
+        return s.stamina >= 80 and a["loss"] == 0 and nxt is not None and 2 <= nxt[0] - week <= 4
+    if k == "wrote":      return bool(getattr(s, "netas", None))
+    if k == "photo":      return 20 <= s.fame <= 50
+    if k == "homecoming": return week >= 38 and ahead > 3          # アプリ: noTournamentWithin3Weeks（sim 旧は >=3）
+    return _others_fireable(k, s, week, year, ahead)
+
+def _app_weak4(s):
+    return min(["sense", "idea", "expr", "chara"], key=lambda x: getattr(s, x))
+
+def _app_apply(s, k):
+    """固有9種＋確定発火の効果（ChoiceEvent.swift と同値）。方針は _others_apply と同じ『余裕(体力50+等)があれば A』。None=効果なし/フレーバー"""
+    weaker = lambda: ("sense" if s.sense <= s.idea else "idea")
+    if k == "brokedrink":
+        if s.money >= 10_000: s.money -= 4000; B.add(s, "compat", 1); B.add(s, "mental", 1)
+        else: B.add(s, "idea", 1); B.add(s, "mental", -1)
+    elif k == "meishi":
+        if s.stamina >= 50: B.add(s, "chara", 1); B.add(s, "fame", 2); B.add(s, "mental", -1)
+        else: B.add(s, "stamina", 15); B.add(s, "mental", 1); B.add(s, "compat", 1)
+    elif k == "peerchair":
+        if s.stamina >= 50: B.add(s, "fame", 2); B.add(s, "stamina", -10); B.add(s, "mental", -1)
+        else: B.add(s, "mental", 1); B.add(s, "compat", 1)
+    elif k == "lasttrain":
+        if s.stamina >= 50: B.add(s, "mental", -2); B.add(s, "stamina", -5); B.add(s, weaker(), 2)
+        else: B.add(s, "stamina", 5); B.add(s, "mental", 1); B.add(s, "compat", 1); s.money -= 800
+    elif k == "wrote":      # B の『ネタ合わせ効果UP（netaBoost）』は sim に無い＝未モデル
+        if s.stamina >= 50: B.add(s, "idea", 2); B.add(s, "expr", 1); B.add(s, "stamina", -15)
+        else: B.add(s, "stamina", 5); B.add(s, "mental", 1)
+    elif k == "photo":
+        if s.stamina >= 50:
+            B.add(s, "chara", 2); B.add(s, "fame", 1); s.money += 10_000; B.add(s, "stamina", -5)
+            s._preocc = max(getattr(s, "_preocc", 0), 1)       # 今週の稽古は不可（アプリ preoccupiedWeeks=1）
+        else: B.add(s, weaker(), 1)
+    elif k == "justlost":
+        if s.stamina >= 50: B.add(s, _app_weak4(s), 2); B.add(s, "mental", -2); B.add(s, "stamina", -10)
+        elif s.money >= 1500: B.add(s, "compat", 2); B.add(s, "mental", 1); B.add(s, "stamina", 5); s.money -= 1500
+        else: B.add(s, "stamina", 15); B.add(s, "mental", 2)
+    elif k == "styletalk":   # A=発想+2/表現-1/相性-2 B=表現+2/相性+1/メンタル-1 → ボットは B（相性を削らない）
+        B.add(s, "expr", 2); B.add(s, "compat", 1); B.add(s, "mental", -1)
+    elif k == "passfork":
+        if s.stamina >= 50: B.add(s, "fame", 3); B.add(s, "stamina", -15); B.add(s, "mental", -1)
+        else: B.add(s, weaker(), 1); B.add(s, "compat", 1)
+    elif k == "eve":
+        if s.stamina >= 60: B.add(s, "expr", 1)
+        else: B.add(s, "stamina", 10); B.add(s, "mental", 1)
+    elif k == "tsuuka":
+        if s.stamina >= 50: B.add(s, "sense", 2); B.add(s, "compat", -1); B.add(s, "stamina", -10)
+        else: B.add(s, "expr", 2); B.add(s, "compat", 1)
+    elif k == "early":
+        if s.stamina >= 50: B.add(s, "compat", 2); B.add(s, "stamina", -15)
+        else: B.add(s, "stamina", 10); B.add(s, "mental", 1)
+    elif k == "tani":
+        if s.stamina >= 35: s.money += 150_000; B.add(s, "stamina", -15)
+        else: B.add(s, "mental", -1); B.add(s, "compat", 1)
+    # lineuptop / greenroom / luckythird / nameless はフレーバー（効果なし）
+
+def _app_week_event(s, year, week, stages, gp_alive):
+    """GameSession.evaluateChoiceEventFire（週頭＝行動前の状態）。確定発火→無ければ rollWeeklyRandomEvent"""
+    a = _app_state(s)
+    nxt = stages[0] if stages else None
+    ahead = (nxt[0] - week) if nxt else 99
+    def done(key):
+        a["counts"][key] = a["counts"].get(key, 0) + 1
+    if a["jl"] and not a["lost_fired"]:
+        a["lost_fired"] = True; _app_apply(s, "justlost"); a["jl"] = False; done("justlost"); return
+    if a["loss"] >= 3 and not a["style_done"]:
+        a["style_done"] = True; _app_apply(s, "styletalk"); done("styletalk"); return
+    if a["jp"] and not a["fork_fired"] and nxt and nxt[0] - week >= 3 and s.stamina >= 15:
+        a["fork_fired"] = True; _app_apply(s, "passfork"); a["jp"] = False; done("passfork"); return
+    if not a["eve_fired"] and nxt and nxt[0] - week == 1 and nxt[1]:
+        a["eve_fired"] = True; _app_apply(s, "eve"); done("eve"); return
+    if not a["early_done"] and year == 1 and 3 <= week < 15 and s.compat <= 7:
+        a["early_done"] = True; _app_apply(s, "early"); done("early"); return
+    if not a["tsuuka_done"] and s.compat >= 15:
+        a["tsuuka_done"] = True; _app_apply(s, "tsuuka"); done("tsuuka"); return
+    if not a["nameless_fired"] and s.compat >= 8 and nxt and 2 <= nxt[0] - week <= 5:
+        a["nameless_fired"] = True; done("nameless"); return
+    if not a["tani_fired"] and s.money < 100_000 and s.compat >= 8 and ahead > 3:
+        a["tani_fired"] = True; _app_apply(s, "tani"); done("tani"); return
+    # 週次ランダム抽選
+    if a["count"] >= APP_EVENT_CAP:
+        return
+    rng = s._app_rng
+    if rng.random() >= EVENT_RATE:
+        return
+    cands = [k for k in APP_POOL if k not in a["fired"]
+             and _app_band(k, s, week, year, ahead, nxt, a)
+             and (k != "yearend" or s.money >= 1500)]       # 選べる選択肢が無いイベントは出さない
+    if not cands:
+        return
+    k = cands[min(int(rng.random() * len(cands)), len(cands) - 1)]
+    a["fired"].add(k); a["count"] += 1; done(k)
+    if k in APP_UNIQUE: _app_apply(s, k)
+    else: _others_apply(s, k)
+
 # 季節催事（週固定・毎年）
 SEASONAL = {1: (0, 10, 0, None, 0), 26: (0, 0, 0, "mental", 2)}
 
@@ -670,6 +815,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
             if acted: s._joint = True
+            if acted and EVENTS_APP: _app_result(s, bool(won_t))
             if RUN_TRACK is not None and acted:
                 RUN_TRACK.setdefault("year_entered", []).append(t["name"])
                 if won_t:
@@ -693,6 +839,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 ok, _ = _gp_perform(s, line, rng, final=False)
                 acted = True
                 s._joint = True
+                if EVENTS_APP: _app_result(s, bool(ok))
                 if not ok:
                     B.add(s, "compat", -GP_LOSS_COMPAT[gp_stage])   # §94 予選で落ちたら相性↓
                 if ok:
@@ -720,6 +867,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 ok, _ = _gp_perform(s, rev_line, rng, final=True)
                 acted = True
                 s._joint = True
+                if EVENTS_APP: _app_result(s, bool(ok))
                 REVIVAL_STATS["attempts"] += 1
                 if ok:
                     REVIVAL_STATS["passes"] += 1
@@ -735,6 +883,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 ok, _ = _gp_perform(s, eff_line, rng, final=True)
                 acted = True
                 s._joint = True
+                if EVENTS_APP: _app_result(s, bool(ok))
                 if ok:
                     s.money += GP_PRIZE
                     fame_champ(s)
@@ -745,6 +894,10 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                             RUN_TRACK["grand_slam"] = True   # 六冠の年（出場全大会優勝+GP制覇）
                     return True, gp_stage, True      # 初優勝＝勇退
 
+        # --- アプリ版 選択肢イベント（週頭＝行動前。EVENTS_APP=True の時だけ） ---
+        app_free = EVENTS_APP and not acted
+        if app_free:
+            _app_week_event(s, year, week, _app_stages(s, year, week, gp_alive and gp_stage < len(GP_ROUNDS), gp_stage, finalist, revival), gp_alive)
         # --- 通常行動（大会がなかった週） ---
         if not acted:
             offer = B.roll_offer(s, rng)
@@ -763,6 +916,8 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
             act, arg = pol.choose(s, week, offer, rng)
             if STAMINA_GATE is not None and act == "train" and s.stamina < STAMINA_GATE:
                 act, arg = "rest", "完全休養"       # ハードゲート: 稽古ボタンが押せない（谷口が止める）
+            if EVENTS_APP and act == "train" and s.__dict__.get("_preocc", 0) > 0:
+                act, arg = "rest", "完全休養"       # 撮影で稽古枠が埋まった週（photoShootOffer A）
             if INJURY_ON and s.stamina < INJURY_TH and (
                     act == "train" or (act == "job" and arg == "キツい")):
                 if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER * B.throat_mult(s) * (B.SKILL_INJURY_MULT if B.has_skill(s, "体が資本") else 1.0):
@@ -795,7 +950,12 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         # 稽古以外の週は粒が無い＝空注ぎ（no-op）。人ボット・simボット・golden が同じ pour_all を使う。
         B.pour_all(s)
 
-        if EVENTS_ON:
+        if app_free:      # 自由週の行動が済んだ: 余韻フラグ失効・撮影ロック減算（アプリ choose / 週送り）
+            _a = _app_state(s)
+            _a["jp"] = False; _a["jl"] = False
+            if s.__dict__.get("_preocc", 0) > 0: s._preocc -= 1
+
+        if EVENTS_ON and not EVENTS_APP:
             if week in SEASONAL:
                 _apply_event(s, SEASONAL[week])
             forced = False
@@ -858,6 +1018,8 @@ def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     RUN_INVITE_SEED = seed
     rng = random.Random(seed)
     s = new_state(init_ability, compat)
+    if EVENTS_APP:
+        _app_state(s, seed)      # アプリ版イベントの状態と独立乱数（本編 rng は動かさない）
     if EVENTS_ON:
         RUN_EVENTS_FIRED = set()
     if BOREDOM_ON:
