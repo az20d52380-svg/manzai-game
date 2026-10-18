@@ -111,6 +111,7 @@ cd GameCore && swift test
 上の索引に無い docs/*.md の一覧（見出し1行目）。古い版を含む。数値の正本は `canonical_vN_spec.md`。
 
 - `agency_fanbase_design_v0.md` — 事務所・冠番組・ファン層設計 v0 — タレント化のジレンマ
+- `agency_options_v0.md` — 事務所の案 v0（1周目の大手の架空名・2周目以降の4種・キュー104）・2026-10-18
 - `art_order_sheet_v0.md` — アート発注書 v0（画像生成AI用プロンプト集）
 - `balance report v0.md` — バランス検証レポート v0（初回・実装前シミュレーション）
 - `booking_design_v0.md` — 予約仕事とバックれ・遅刻システム v0
