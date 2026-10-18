@@ -25,6 +25,8 @@ public struct GameState: Codable {
     public var recoveryWeeks = 0
     /// 夜逃げ（破産）でキャリアが終了したか
     public var bankrupt = false
+    /// テレビ慣れ（キュー96）：直近でオファーを受けた通算週 ((年-1)*週数+週)。Codable は Optional（旧セーブ互換）
+    public var offerWeeks: [Int]? = nil
 
     // --- 経験点残高（正典v3・パワプロ式5通貨・docs/exp_currency_redesign_v0.md） ---
     // 会計の二層: 稼ぐ時は成長予算を消費せずここに貯まり、能力へ注ぐ瞬間だけ GameEngine.add()
