@@ -590,7 +590,10 @@ def rift_weekend(s, year, compat0):
     elif joint and RIFT_JOINT_STILL:
         pass                              # §94 二人の週はすれ違いがたまらない（増えない・減らない）
     else:
-        r = min(100.0, r + RIFT_GAIN * (B.COMPAT_CAP - s.compat) / B.COMPAT_CAP)
+        gain = RIFT_GAIN * (B.COMPAT_CAP - s.compat) / B.COMPAT_CAP
+        if B.has_skill(s, "相方思い"):
+            gain *= B.SKILL_RIFT_MULT
+        r = min(100.0, r + gain)
     if r >= RIFT_WARN and not getattr(s, "rift_warned", False):
         s.rift_warned = True
         if RIFT_RESPOND:
@@ -738,7 +741,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 act, arg = "rest", "完全休養"       # ハードゲート: 稽古ボタンが押せない（谷口が止める）
             if INJURY_ON and s.stamina < INJURY_TH and (
                     act == "train" or (act == "job" and arg == "キツい")):
-                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER * B.throat_mult(s):
+                if rng.random() < (INJURY_TH - s.stamina) * INJURY_P_PER * B.throat_mult(s) * (B.SKILL_INJURY_MULT if B.has_skill(s, "体が資本") else 1.0):
                     act, arg = "rest", "完全休養"   # 体調ダウン発生: 今週から療養
                     s._inj = INJURY_REST - 1
                     B.add(s, "mental", INJURY_MENTAL)
@@ -809,7 +812,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     _apply_event(s, EVENT_TABLE[idx])
 
         if week % B.LIVING_INTERVAL == 0:
-            s.money -= B.LIVING_COST + B.room_rent(s)
+            s.money -= B.living_cost(s) + B.room_rent(s)
             if DEBT_LIFE_PEN is not None and s.money < 0:
                 dst, dmt = DEBT_LIFE_PEN   # 生活費が払えない月の生活苦【実験・既定OFF】
                 B.add(s, "stamina", dst)

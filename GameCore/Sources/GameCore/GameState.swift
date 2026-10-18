@@ -72,6 +72,9 @@ public struct GameState: Codable {
     /// 途中解散でキャリアが終わったか
     public var dissolved: Bool?
 
+    /// 覚えた特技（Skill.swift・キュー106。nil＝未習得＝今と同じ）
+    public var skills: [Skill]? = nil
+
     /// ネタ合わせ（磨き）の効果ブースト週（0016 書けた一本＝寝かせた効果）。>0 の間は applyNetaRevise の
     /// polish 上昇に config.netaBoostMult を掛ける。UI層イベント（GameSession）が設定し、週送りで1ずつ減る。
     /// ★golden不変: applyNetaRevise は golden 非経路（gen_golden はネタ個体を持たない＝revise 自体を呼ばない）。
