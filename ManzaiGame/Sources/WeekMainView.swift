@@ -155,7 +155,7 @@ struct WeekMainView: View {
             botbar
         }
         // 立っているイベントがまだ出ていない間（獲得の一拍待ち等）は週メインの操作を受けない＝直後に割り込まれてタップが消えない
-        .allowsHitTesting(!(session.pendingChoiceEvent != nil && !showEvent))
+        .allowsHitTesting(!(session.pendingChoiceEvent != nil && !showEvent && pulledID == nil))   // 札を引いている途中は止めない（出せないイベントで固まらない）
         // パワプロ・サクセスの文法＝日常パートは明るくポップ（暗転は本番系画面の語彙）。
         .background(Theme.kinari.ignoresSafeArea())
         .fullScreenCover(isPresented: $showNotebook) {
