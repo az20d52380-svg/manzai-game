@@ -420,7 +420,8 @@ struct WeekMainView: View {
 
     /// 常時目標バナー: 次の本番と残り週（残3週以下は「追い込み」の朱）。次が遠い週は仕込みの副目標を添える。
     @ViewBuilder private var goalBanner: some View {
-        if let m = nextMilestone() {
+        // 今年の大会が全部終わった後は、帯だけ年末までの週を出す（playtest_v11 #4。独白・経験点の注意は大会基準のまま）
+        if let m = bannerMilestone() {
             let hot = m.weeksLeft <= 3
             Button { instant { showCalendar = true } } label: {
                 VStack(spacing: 2) {
@@ -448,7 +449,7 @@ struct WeekMainView: View {
                             .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                             .frame(maxWidth: .infinity).padding(.vertical, 3)
                             .background(YoseColor.shu)
-                    } else if m.weeksLeft >= 6 {
+                    } else if m.weeksLeft >= 6 && nextMilestone() != nil {
                         Text(lullLine())
                             .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.85)).lineLimit(1).minimumScaleFactor(0.85)
                     }
@@ -1572,9 +1573,13 @@ struct WeekMainView: View {
     }
 
     /// 次の本番（GameSession.upcomingStages の先頭＝出場資格・GP敗退を反映済み・監査A-02/F-01）
+    /// 帯に出す目標：次の大会、無ければ年末
+    private func bannerMilestone() -> (name: String, weeksLeft: Int)? {
+        nextMilestone() ?? (name: "年末", weeksLeft: session.config.weeks - session.week)
+    }
+
     private func nextMilestone() -> (name: String, weeksLeft: Int)? {
-        // 今年の大会が全部終わった後は、年末までの週を出す（playtest_v11 #4：次の予定が消えていた）
-        session.nextStage.map { ($0.name, $0.week - session.week) } ?? ("年末", session.config.weeks - session.week)
+        session.nextStage.map { ($0.name, $0.week - session.week) }
     }
 }
 
