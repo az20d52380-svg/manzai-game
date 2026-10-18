@@ -11,7 +11,7 @@
 - その週に相性が上がった（相方と過ごす／ネタ合わせ 等で compat が増えた）→ `rift = max(0, rift − RIFT_HEAL)`。
 - 上がらなかった → `rift = min(100, rift + RIFT_GAIN × (COMPAT_CAP − compat) / COMPAT_CAP)`。
   - 相性が上限（20）なら増えない＝仲の良い二人は解散しない。
-- 値【仮】：RIFT_GAIN = 1.5、RIFT_HEAL = 3、COMPAT_CAP = 20。
+- 値【仮】：RIFT_GAIN = 0.5（実測 dissolution_rift_measure_v0 で 1.5 は強すぎ→0.5）、RIFT_HEAL = 3、COMPAT_CAP = 20。
 
 ## 予告と解散
 - rift が初めて 50 以上になった週末：**予告**（アプリ側の選択肢イベント「すれ違い」・1キャリア1回）。選択肢の効果はアプリ側（イベント層＝golden 対象外）：向き合う＝rift −30・体力 −10／流す＝何もなし。
