@@ -49,7 +49,7 @@ struct ShopView: View {
     }
 
     // MARK: 部屋を選ぶ（キュー90・§90）
-    private static let roomNames = ["安アパート", "ふつうの部屋", "いい部屋"]
+    static let roomNames = ["ボロアパート", "マンション", "タワーマンション"]
 
     /// 家賃の行（金額は墨・太字で目立たせる）
     private func roomRentText(_ i: Int) -> String {
@@ -59,7 +59,7 @@ struct ShopView: View {
 
     /// 暮らしの効果の行
     private func roomHealText(_ i: Int) -> String? {
-        i == 0 ? nil : "家で休むと体力がよく戻る" + (i == 2 ? "（完全休養ならメンタルも少し上がる）" : "")
+        i == 0 ? nil : (i == 2 ? "家で休むと体力がとてもよく回復する" : "家で休むと体力がよく回復する")
     }
 
     private var roomSection: some View {

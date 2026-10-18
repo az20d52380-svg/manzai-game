@@ -1217,7 +1217,8 @@ struct WeekMainView: View {
         let key = session.year * 1000 + session.week
         guard paid > 0, session.lastDeltaWeek == session.week, rentShownKey != key, !Task.isCancelled else { return }
         rentShownKey = key
-        withAnimation(.easeOut(duration: 0.2)) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: GameEngine.roomRent(s, config: session.config)) }
+        withAnimation(.easeOut(duration: 0.2)) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: GameEngine.roomRent(s, config: session.config),
+                                                                  roomName: ShopView.roomNames[min(max(s.room ?? 0, 0), ShopView.roomNames.count - 1)]) }
         while rent != nil && !Task.isCancelled { try? await Task.sleep(nanoseconds: 100_000_000) }
     }
 
