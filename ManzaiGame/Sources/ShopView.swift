@@ -57,6 +57,13 @@ struct ShopView: View {
         return rent == 0 ? "家賃はいまのまま" : "家賃 +¥\(rent.formatted())（4週ごとの支払い）"
     }
 
+    /// その部屋に住んだ時の4週ごとの支払いの合計（生活費・やりくり上手込み）
+    private func totalDue(room i: Int) -> Int {
+        var t = session.state
+        t.room = i == 0 ? nil : i
+        return GameEngine.livingCostDue(t, config: session.config)
+    }
+
     /// 暮らしの効果の行
     private func roomHealText(_ i: Int) -> String? {
         i == 0 ? nil : (i == 2 ? "家で休むと体力がとてもよく回復する" : "家で休むと体力がよく回復する")
@@ -82,6 +89,11 @@ struct ShopView: View {
                         }
                         Text(roomRentText(i)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .fixedSize(horizontal: false, vertical: true)
+                        if i > 0 {   // 生活費と合わせた支払いの合計（引っ越した後の苦しさが見えるように・code_review_2026-10-19 §3-3）
+                            Text("生活費と合わせると 4週で ¥\(totalDue(room: i).formatted())")
+                                .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         if let h = roomHealText(i) {
                             Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                                 .fixedSize(horizontal: false, vertical: true)
