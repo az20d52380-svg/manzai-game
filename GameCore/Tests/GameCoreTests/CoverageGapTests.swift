@@ -287,4 +287,23 @@ final class CoverageGapTests: XCTestCase {
             }
         }
     }
+
+    // キュー96：知名度で札が増える（30/55で2枚・3枚）・同じシードで同じ札・1枚目と被らない
+    func testOfferCardsGrowWithFame() {
+        let cfg = GameConfig()
+        let first = cfg.offersNamed[0]
+        let counts = [10.0, 29.9, 30, 54.9, 55, 80].map {
+            GameEngine.extraOffers(first: first, fame: $0, seed: 12345, year: 1, week: 5, config: cfg).count
+        }
+        XCTAssertEqual(counts, [0, 0, 1, 1, 2, 2])
+        for seed in UInt64(1)...40 {
+            let a = GameEngine.extraOffers(first: first, fame: 60, seed: seed, year: 2, week: 7, config: cfg)
+            let b = GameEngine.extraOffers(first: first, fame: 60, seed: seed, year: 2, week: 7, config: cfg)
+            XCTAssertEqual(a.map(\.name), b.map(\.name))
+            XCTAssertFalse(a.contains { $0.name == first.name })
+            XCTAssertEqual(Set(a.map(\.name)).count, a.count)
+        }
+        // Python: sim_career.extra_offers(12345,1,5,60,'ひな壇') == ['営業','ラジオ']
+        XCTAssertEqual(GameEngine.extraOffers(first: first, fame: 60, seed: 12345, year: 1, week: 5, config: cfg).map(\.name), ["営業", "ラジオ"])
+    }
 }

@@ -138,11 +138,15 @@ struct WeekMainView: View {
     private var mainCards: [CommandVariant] {
         CommandCatalog.mainCards(config: session.config, money: s.money)
     }
+    /// キュー96：今週の札（知名度で1〜3枚）。選んでいる札が activeOffer
+    @State private var offerPick = 0
+    private var offers: [OfferSpec] { session.offerChoices ?? (offer.map { [$0] } ?? []) }
+    private var activeOffer: OfferSpec? { offers.indices.contains(offerPick) ? offers[offerPick] : offer }
     private var offerCard: CommandVariant? {
         extraCards.first { if case .acceptOffer = $0.action { return true } else { return false } }
     }
     private var extraCards: [CommandVariant] {
-        CommandCatalog.extraCards(config: session.config, offer: offer, money: s.money, fatigued: session.offerFatigued)
+        CommandCatalog.extraCards(config: session.config, offer: activeOffer, money: s.money, fatigued: session.offerFatigued)
     }
 
     var body: some View {
@@ -306,6 +310,7 @@ struct WeekMainView: View {
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
         .onChange(of: session.year) { _, _ in maybeShowTiredNotice(); maybeShowLastYouthNotice() }
         .onChange(of: session.week) { _, _ in
+            offerPick = 0   // キュー96：週が変わったら札の選びを先頭に戻す
             banterIndex = 0
             Task { try? await Task.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
         }   // 掛け合いの読み位置は週頭でリセット
@@ -341,7 +346,10 @@ struct WeekMainView: View {
             .overlay(alignment: .bottom) {
                 // オファーの帯：舞台の下端（＝行動ボタンの直上）に載せる。レイアウトに参加しない＝ボタンの位置は動かない。下位一覧を開いている間は隠す
                 if openCat == nil, let o = offerCard {
-                    actionCard(o, compact: true, dashed: false, row: true)   // 全幅の2段（名前／効果と収入を1行）＝帯を低くして声と人物を押し上げない
+                    VStack(spacing: 4) {
+                        if offers.count > 1 { offerPicker }   // キュー96：知名度が上がると札が増える＝横に並べて1つ選ぶ（選ばなければ他の行動＝断る）
+                        actionCard(o, compact: true, dashed: false, row: true)   // 全幅の2段（名前／効果と収入を1行）＝帯を低くして声と人物を押し上げない
+                    }
                         .fixedSize(horizontal: false, vertical: true)
                         .background(GeometryReader { g in
                             Color.clear.onAppear { offerBandH = g.size.height }
@@ -829,6 +837,7 @@ struct WeekMainView: View {
             burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
             burstHold = true
             Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
+            if case .acceptOffer = v.action { session.chooseOffer(index: offerPick) }   // キュー96：選んだ札を今週のオファーにする
             session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
             if let p = pendingNetaTitle {   // 新しいネタに、プレイヤーが付けた題名を付ける
                 if session.activeNetas.contains(where: { $0.id == p.id }) { session.renameNeta(p.id, to: p.title) }
@@ -836,6 +845,39 @@ struct WeekMainView: View {
             }
             withAnimation(Theme.Motion.appear) { pulledID = nil; openCat = nil; openNetaWrite = false; newNetaTitle = nil; pickingNeta = false }   // 実行したら4ボタンへ戻る
         }
+    }
+
+    /// キュー96：オファーの札を横に並べる（仕事の名前・お金・説明・テレビ慣れの一言）。タップで選ぶ（受けるのは下の帯をもう一度押す）。
+    private var offerPicker: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<offers.count, id: \.self) { i in offerPickCard(i) }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func offerPickCard(_ i: Int) -> some View {
+        let o = offers[i]
+        let on = i == offerPick
+        return Button {
+            Sound.play(.tap)
+            offerPick = i
+            offerArmed = false
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(o.name).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1)
+                Text("+" + Yen.man(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
+                Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                    .lineLimit(3).fixedSize(horizontal: false, vertical: true)
+                if session.offerFatigued {
+                    Text("谷口「最近ネタやれてへんな」").font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.shu)
+                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(6).frame(maxWidth: .infinity, alignment: .leading)
+            .background(YoseColor.kinari)
+            .overlay(Rectangle().stroke(on ? YoseColor.kinBright : YoseColor.sumi, lineWidth: on ? 3 : 1.5))
+        }
+        .buttonStyle(.plain)
     }
 
     private func actionCard(_ v: CommandVariant, compact: Bool = false, dashed: Bool? = nil, wide: Bool = false, row: Bool = false) -> some View {
@@ -881,7 +923,7 @@ struct WeekMainView: View {
     /// 練習を選ぶ画面の上段：経験点5種の今の持ち分。練習を選ぶと、増える分が黄色で横に出る（表示専用・RNG非消費）
     private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
         let sel = cards.first { $0.id == selectedPracticeID }
-        let after = sel.map { session.previewAfterPour($0.action, offer: offer) }
+        let after = sel.map { session.previewAfterPour($0.action, offer: activeOffer) }
         return VStack(spacing: 4) {
             HStack(spacing: 6) {
                 ForEach(ExpCurrency.allCases, id: \.self) { c in
@@ -994,7 +1036,7 @@ struct WeekMainView: View {
     /// 条件付きの小カード（dashed）は金の破線を内側に引いて「今だけのカード」と分ける。
     /// wide は全幅の横長（バイト用）＝左に名前と説明・右に稼ぎの大きな数字。
     private func actionCardLabel(_ v: CommandVariant, gated: Bool, preoccupied: Bool, compact: Bool, dashed: Bool, wide: Bool = false, row: Bool = false) -> some View {
-        let after = session.previewAfterPour(v.action, offer: offer)
+        let after = session.previewAfterPour(v.action, offer: activeOffer)
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
         var stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())

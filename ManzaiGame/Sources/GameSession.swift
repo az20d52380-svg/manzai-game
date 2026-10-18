@@ -376,6 +376,11 @@ final class GameSession {
         GameEngine.offerFatigued(state: state, atWeek: (runner.year - 1) * config.weeks + runner.week, config: config)
     }
 
+    /// キュー96：今週の札の一覧（2枚以上ある時だけ・先頭＝本編の乱数の札）。知名度で増える
+    var offerChoices: [OfferSpec]? { runner.offerChoices }
+    /// キュー96：札を選ぶ（受ける直前に呼ぶ）。乱数非消費
+    func chooseOffer(index: Int) { runner.chooseOffer(index: index) }
+
     func previewState(_ action: WeekAction, offer: OfferSpec? = nil) -> GameState {
         var s = state
         switch action {

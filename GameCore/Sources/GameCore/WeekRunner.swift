@@ -94,6 +94,8 @@ public struct WeekRunner<R: RandomSource> {
     private var weekResults: [StageResult] = []
     private var pendingSpec: TournamentSpec?
     private var pendingOffer: OfferSpec?
+    /// キュー96：今週の札の一覧（先頭＝本編の乱数の札・以降＝知名度で増える別乱数の札）。2枚以上ある時だけ。選ぶなら chooseOffer(index:)
+    public private(set) var offerChoices: [OfferSpec]?
     public enum AutoStage: Codable { case round, revival, final }
     private var pendingAuto: AutoStage?
     private var revivalTried = false
@@ -170,6 +172,7 @@ public struct WeekRunner<R: RandomSource> {
         finalTried = false
         pendingSpec = nil      // 呼び出し順ミスの残留状態を週頭で必ず掃除（レッドチーム指摘）
         pendingOffer = nil
+        offerChoices = nil
         pendingAuto = nil
         return proceed()
     }
@@ -281,6 +284,7 @@ public struct WeekRunner<R: RandomSource> {
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
         let offer = pendingOffer
         pendingOffer = nil
+        offerChoices = nil
         lastTrainingDone = nil
         var action = action
         if case .train = action, state.stamina < config.staminaGate {
@@ -372,6 +376,10 @@ public struct WeekRunner<R: RandomSource> {
                     weekResults.append(StageResult(name: "療養", passed: false, prize: 0, isStage: false))
                 } else {
                     pendingOffer = offer
+                    if let o = offer, let seed = inviteSeed {
+                        let ex = GameEngine.extraOffers(first: o, fame: state.fame, seed: seed, year: year, week: week, config: config)
+                        offerChoices = ex.isEmpty ? nil : [o] + ex
+                    }
                     return .freeAction(offer: offer)
                 }
             }
@@ -402,6 +410,13 @@ public struct WeekRunner<R: RandomSource> {
             pendingInvite = GameEngine.rollInvite(seed: seed, year: year, week: week, config: config)
         }
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
+    }
+
+    /// キュー96：札の一覧（1枚目＝本編の乱数で引いた札・2枚目以降＝別乱数）から index 番目を今週のオファーにする
+    /// （resolveAction(.acceptOffer) の前に呼ぶ）。RandomSource 非消費。一覧が無い週は何もしない。
+    public mutating func chooseOffer(index: Int) {
+        guard pendingOffer != nil, let c = offerChoices, c.indices.contains(index) else { return }
+        pendingOffer = c[index]
     }
 
     /// 誘いに「行く」効果だけを適用する（アプリは週を送った後に札で選ぶため、保留を介さず直接呼ぶ）。RandomSource 非消費
@@ -570,6 +585,7 @@ public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
     public var finished: YearOutcome?
     public var inviteSeed: UInt64?     // §102（旧セーブには無い＝nil＝誘いなし）
     public var pendingInvite: Bool?
+    public var offerChoices: [OfferSpec]?   // キュー96（旧セーブには無い＝nil）
 }
 
 extension WeekRunner where R: Codable {
@@ -580,7 +596,7 @@ extension WeekRunner where R: Codable {
                            finalist: finalist, revival: revival, section: section, acted: acted,
                            weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
                            pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
-                           finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite)
+                           finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite, offerChoices: offerChoices)
     }
 
     /// スナップショットからの復元（ロード用）。年初処理（体力全回復・成長予算の再計算）は走らせず、
@@ -617,5 +633,6 @@ extension WeekRunner where R: Codable {
         self.finished = snap.finished
         self.inviteSeed = snap.inviteSeed
         self.pendingInvite = snap.pendingInvite
+        self.offerChoices = snap.offerChoices?.map { o in (config.offersNamed + [config.offerMoney, config.offerExp]).first { $0.name == o.name } ?? o }
     }
 }

@@ -213,6 +213,22 @@ public enum GameEngine {
         return config.offersNamed[(isMoney ? 2 : 0) + sub]
     }
 
+    /// キュー96：追加の札（2枚目以降）。1枚目は本編の乱数（rollOffer）。ここは本編の乱数を消費しない別の決定論
+    /// （シード＋年週＋塩のハッシュ→SplitMix64）で、1枚目と違う種類を残りから floor(u×残り数) で引く。Python: sim_career.extra_offers（同値）
+    public static func extraOffers(first: OfferSpec, fame: Double, seed: UInt64, year: Int, week: Int, config: GameConfig) -> [OfferSpec] {
+        let n = config.offerCardFames.filter { fame >= $0 }.count
+        guard n > 0 else { return [] }
+        let st = seed &+ UInt64(year * 1000 + week) &* 0xD1B5_4A32_D192_ED03 &+ config.offerCardSalt
+        var g = SplitMix64(seed: st)
+        var rest = config.offersNamed.filter { $0.name != first.name }
+        var out: [OfferSpec] = []
+        for _ in 0..<n where !rest.isEmpty {
+            let i = min(rest.count - 1, Int(g.nextUniform() * Double(rest.count)))
+            out.append(rest.remove(at: i))
+        }
+        return out
+    }
+
     /// Python: perform。スコア = 実力値 + 相性 + ブレ + ハマった夜 + 体力ペナルティ、ライン以上で通過。
     /// 乱数消費は常に2draw（出来ブレ→ハマ判定）——gen_golden.py の正典順序と同期
     public static func perform<R: RandomSource>(

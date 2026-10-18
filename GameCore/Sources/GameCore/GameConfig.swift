@@ -285,6 +285,10 @@ public struct GameConfig {
         OfferSpec(name: "ロケ",   income: 220_000, fame: 2, ability: nil,        stamina: -25),
         OfferSpec(name: "営業",   income: 280_000, fame: 1, ability: nil,        stamina: -20),
     ]
+    /// キュー96：知名度がこの値以上になるごとにオファーの札が1枚増える（30未満=1枚／30〜55=2枚／55以上=3枚【仮】）。Python: OFFER_CARD_FAMES
+    public var offerCardFames: [Double] = [30, 55]
+    /// 追加の札の別系列の塩（誘い §102 とは別）。Python: OFFER_CARD_SALT
+    public var offerCardSalt: UInt64 = 0x5851_F42D_4C95_7F2D
     /// テレビ慣れ：直近 offerFatigueWindow 週（今週−受けた週 < 値）に offerFatigueK 回以上受けていたら、受けるたびにセンスと表現を offerFatigueD ずつ下げる
     public var offerFatigueWindow = 6
     public var offerFatigueK = 4

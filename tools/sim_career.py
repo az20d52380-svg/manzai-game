@@ -563,6 +563,29 @@ def invite_roll(seed, year, week):
         return None
     return _splitmix_u01(st, 2) < INVITE_IDEA_P
 
+# --- キュー96（規律A・2026-10-18）：知名度が上がるほどオファーの札が増える（30未満=1枚／30〜55=2枚／55以上=3枚【仮】） ---
+OFFER_CARD_FAMES = (30, 55)                 # OFFER_RATES の区切り 10/30/55 に合わせる【仮】
+OFFER_CARD_SALT  = 0x5851F42D4C957F2D       # 誘い(§102)とは別の系列にする塩
+
+def offer_extra_count(fame):
+    return sum(1 for f in OFFER_CARD_FAMES if fame >= f)
+
+def extra_offers(seed, year, week, fame, first_name):
+    """追加の札（2枚目以降）。1枚目は本編の乱数（B.roll_offer）。ここは本編の乱数を一切消費しない別の決定論
+    （シード+年週+塩のハッシュ→SplitMix64）。1枚目と違う種類を、残りから floor(u*残り数) で引く。
+    Swift: GameEngine.extraOffers（同じ式・同値）。seed=None または枚数0 なら []。"""
+    n = offer_extra_count(fame)
+    if seed is None or n <= 0:
+        return []
+    st = (seed + (year * 1000 + week) * 0xD1B54A32D192ED03 + OFFER_CARD_SALT) & _M64
+    rest = [o["name"] for o in B.OFFERS_NAMED if o["name"] != first_name]
+    out = []
+    for k in range(1, n + 1):
+        i = int(_splitmix_u01(st, k) * len(rest))
+        nm = rest.pop(i)
+        out.append(dict(next(o for o in B.OFFERS_NAMED if o["name"] == nm)))
+    return out
+
 def invite_weekend(s, pol, year, week, seed):
     """週末の誘い（rift_weekend の後）。来たら「行く／断る」をボットが選ぶ。Swift: WeekRunner.pendingInvite→resolveInvite"""
     global INVITE_COUNT
