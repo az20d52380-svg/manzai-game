@@ -226,4 +226,20 @@ final class NetaTests: XCTestCase {
         s.netas[1].polish = 50
         XCTAssertEqual(GameEngine.netaScoreBonus(s, isFinal: true, config: config), -1.0, accuracy: 1e-9)
     }
+
+    /// 大会で選択中のネタを掛けると、その年が lastUsedTaikaiYear に付く（選んでいないネタには付かない）
+    func testTournamentMarksSelectedNetaYear() {
+        let config = GameConfig()
+        var s = GameState(config: config)
+        s.money = 10_000_000
+        s.netas = [Neta(id: 1, name: "掛ける", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1),
+                   Neta(id: 2, name: "掛けない", kata: .関係性, lengthFit: [.中尺], bornYear: 1)]
+        s.selectedNetaID = 1
+        var p = GoldenPolicy()
+        var r = SplitMix64(seed: 5)
+        _ = GameCareer.runYear(state: &s, year: 2, config: config, policy: &p, rng: &r)
+        XCTAssertEqual(s.netas.first { $0.id == 1 }?.lastUsedTaikaiYear, 2)
+        XCTAssertNil(s.netas.first { $0.id == 2 }?.lastUsedTaikaiYear)
+    }
 }
+
