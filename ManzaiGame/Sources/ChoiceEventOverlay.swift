@@ -117,7 +117,7 @@ struct ChoiceEventOverlay: View {
 
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
-            .frame(height: footerReady && !session.availableEventChoices().isEmpty ? 262 : 320)   // 選択肢の帯が出る間は読み物の欄を広げる
+            .frame(height: footerReady && !session.availableEventChoices().isEmpty ? (text.setup.count >= 5 ? 216 : 262) : 320)   // 選択肢の帯が出る間は読み物の欄を広げる（地の文が5行以上なら更に縮めて、最初のト書きが絵の下に半分隠れないように）
             .animation(Theme.Motion.appear, value: footerReady)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
