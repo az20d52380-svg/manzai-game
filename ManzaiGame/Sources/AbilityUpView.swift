@@ -44,17 +44,28 @@ struct AbilityUpView: View {
                 .overlay(alignment: .trailing) {
                     HintMarkButton { hint = Self.hintSpec }.padding(.trailing, 6).padding(.top, 20)
                 }
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 10) {
                     compareBox
                     matrixHeader
                     ForEach(Ability.allCases, id: \.self) { row($0) }
-                    Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
-                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                        .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
-                    skillsSection
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
+                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                            .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+                        // 特技は画面の下に隠れやすい（目視 visual_check_q90_q106_v0）＝ここから飛べる
+                        Button { withAnimation { proxy.scrollTo("skills", anchor: .top) } } label: {
+                            Text("特技 ↓").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    skillsSection.id("skills")
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
+            }
             }
             footer
         }
@@ -99,13 +110,21 @@ struct AbilityUpView: View {
     private func skillCard(_ k: Skill) -> some View {
         let learned = base.has(k)
         let affordable = GameEngine.canLearn(k, state: pv)
-        let costText = k.cost.map { "\(String(describing: $0.currency))\(ExpDisplay.cost($0.amount, have: pv[currency: $0.currency]))" }.joined(separator: "・")
         return Button { if affordable, !learned { skillToLearn = k } } label: {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(k.rawValue).font(YoseFont.gothic(14, weight: .heavy))
                     Text(k.summary).font(YoseFont.gothic(11, weight: .bold)).lineLimit(2)
-                    Text("経験点 \(costText)").font(YoseFont.gothic(11, weight: .bold)).opacity(0.8)
+                    HStack(spacing: 4) {   // 費用は上の持ち分と同じ一字＋色（胆・存…）でそろえる
+                        Text("経験点").font(YoseFont.gothic(11, weight: .bold)).opacity(0.8)
+                        ForEach(Array(k.cost.enumerated()), id: \.offset) { _, c in
+                            HStack(spacing: 2) {
+                                Text(Theme.currencyChar(c.currency)).font(YoseFont.gothic(10, weight: .black)).foregroundStyle(.white)
+                                    .frame(width: 16, height: 16).background(wa(c.currency))
+                                Text("\(ExpDisplay.cost(c.amount, have: pv[currency: c.currency]))").font(YoseFont.number(12, weight: .heavy))
+                            }
+                        }
+                    }
                 }
                 Spacer(minLength: 4)
                 if learned {

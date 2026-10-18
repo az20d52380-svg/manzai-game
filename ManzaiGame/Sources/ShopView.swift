@@ -51,12 +51,15 @@ struct ShopView: View {
     // MARK: 部屋を選ぶ（キュー90・§90）
     private static let roomNames = ["安アパート", "ふつうの部屋", "いい部屋"]
 
-    private func roomNote(_ i: Int) -> String {
-        let c = session.config
-        let rent = c.roomRents[i]
-        let rentText = rent == 0 ? "いまの家賃のまま" : "4週ごとの支払いに ¥\(rent.formatted()) 上乗せ"
-        let heal = i == 0 ? "" : "\n家で休むと体力がよく戻る" + (i == 2 ? "（完全休養は心も少し落ち着く）" : "")
-        return rentText + heal
+    /// 家賃の行（金額は墨・太字で目立たせる）
+    private func roomRentText(_ i: Int) -> String {
+        let rent = session.config.roomRents[i]
+        return rent == 0 ? "家賃はいまのまま" : "家賃 +¥\(rent.formatted())（4週ごとの支払い）"
+    }
+
+    /// 暮らしの効果の行
+    private func roomHealText(_ i: Int) -> String? {
+        i == 0 ? nil : "家で休むと体力がよく戻る" + (i == 2 ? "（完全休養ならメンタルも少し上がる）" : "")
     }
 
     private var roomSection: some View {
@@ -77,8 +80,12 @@ struct ShopView: View {
                                 .foregroundStyle(ok || here ? YoseColor.sumi : YoseColor.disabledText)
                             if here { YoseTag(text: "いま住んでいる", style: .outlineShu) }
                         }
-                        Text(roomNote(i)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        Text(roomRentText(i)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .fixedSize(horizontal: false, vertical: true)
+                        if let h = roomHealText(i) {
+                            Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     Spacer(minLength: 0)
                     if !here {
@@ -92,7 +99,7 @@ struct ShopView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .yoseHarigami()
             }
-            Text("上の部屋へ引っ越せるのは、その部屋の1か月ぶんの上乗せが払えるときだけ。下の部屋へはお金がなくても戻れます。上乗せは次の月末の支払いから、家賃に乗ります。")
+            Text("上の部屋へは、増える家賃の1回ぶんを持っている時だけ引っ越せます。下の部屋へはお金がなくても戻れます。新しい家賃は次の支払い（4週ごと）からです。")
                 .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .fixedSize(horizontal: false, vertical: true)
         }
