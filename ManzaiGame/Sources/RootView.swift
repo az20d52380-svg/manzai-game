@@ -168,13 +168,14 @@ struct RootView: View {
                 }
                 if kind == "stage" { for i in st.netas.indices { st.netas[i].lengthFit = [.短尺] } }
                 if kind == "stamina" { st.stamina = 20 }
-                if kind == "living" { st.money = 135_000 }
+                if kind == "living" || kind == "forecast" { st.money = 135_000 }
                 if kind == "plus" { let a = GameSession.debugAllocationState(); st.exp閃き = a.exp閃き; st.exp語彙 = a.exp語彙; st.exp間合い = a.exp間合い; st.exp存在感 = a.exp存在感; st.exp胆力 = a.exp胆力 }
                 session = GameSession(startState: st)
                 switch kind {
                 case "stage": if let w = session.nextStage?.week { session.debugAdvanceUntilStage(weeksBefore: 3, stageWeek: w) }
                 case "stamina": session.debugFreeWeeks(4, .job(.キツい))
                 case "living": session.debugFreeWeeks(3, .rest(.完全休養))
+                case "forecast": session.debugFreeWeeks(1, .rest(.完全休養))   // 第2週＝再来週が月末の支払い
                 case "partner": session.debugFreeWeeks(6, .rest(.完全休養))
                 default: break
                 }
