@@ -135,7 +135,7 @@ struct FinalistAnnounceView: View {
     }
 
     /// 自分たちの印＝コンビ名（長ければ5文字で省略）
-    private var selfLabel: String { combiName.count > 5 ? String(combiName.prefix(5)) + "…" : combiName }
+    private var selfLabel: String { combiName.count > 6 ? String(combiName.prefix(6)) + "…" : combiName }
 
     private func silhouette(_ s: Slot) -> some View {
         let on = stage == .read && isCalled(s)
