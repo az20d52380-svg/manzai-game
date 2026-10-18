@@ -53,6 +53,9 @@ struct AbilityUpView: View {
                 VStack(spacing: 10) {
                     rankStrip
                     summaryBox
+                    Text("各行の数字＝その能力を1上げるのに使う経験点（上の列と同じ並び）")   // 列の意味の凡例（ui_sweep_2026-10-18 allocate）
+                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .lineLimit(2).frame(maxWidth: .infinity, alignment: .trailing)
                     ForEach(Ability.allCases, id: \.self) { row($0) }
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
