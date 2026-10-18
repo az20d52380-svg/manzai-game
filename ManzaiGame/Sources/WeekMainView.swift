@@ -28,6 +28,7 @@ struct WeekMainView: View {
     @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
     @State private var rentShownKey = 0
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
+    @State private var youthNoticeYear = 0   // 「若手の大会は今年が最後」を出した年（年初に1回だけ）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
@@ -239,7 +240,7 @@ struct WeekMainView: View {
         .onChange(of: session.pendingChoiceEvent) { _, kind in
             if kind == nil { instant { showEvent = false }; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
-        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowDebtNotice(); try? await Task.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await Task.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 初回だけの説明（初週／最初の生活費の前の週）。獲得バースト・イベントが落ち着いてから。
             try? await Task.sleep(nanoseconds: 2_200_000_000)
@@ -292,7 +293,7 @@ struct WeekMainView: View {
             withAnimation(Theme.Motion.exit) { weekStampVisible = false }
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
-        .onChange(of: session.year) { _, _ in maybeShowTiredNotice() }
+        .onChange(of: session.year) { _, _ in maybeShowTiredNotice(); maybeShowLastYouthNotice() }
         .onChange(of: session.week) { _, _ in
             banterIndex = 0
             Task { try? await Task.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
@@ -1401,6 +1402,20 @@ struct WeekMainView: View {
         } else if !OneTimeHint.isDone("living"), session.week >= session.config.livingInterval,
                   session.week % session.config.livingInterval == 0 {
             hint = livingHint()
+        }
+    }
+
+    /// 若手の大会（芸歴の上限がある大会）に出られる最後の年の年初に1回だけ、谷口が一言知らせる（表示のみ・判定は不変）。
+    /// 飽きの知らせの toast と重なる時は、それが消えるのを待ってから出す。
+    private func maybeShowLastYouthNotice() {
+        let caps = session.config.calendar.tournaments.compactMap { t -> Int? in
+            if case .careerYearAtMost(let n) = t.eligibility, n < 10 { return n } else { return nil }
+        }
+        guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
+        youthNoticeYear = session.year
+        Task {
+            if toast != nil { try? await Task.sleep(nanoseconds: 4_500_000_000) }
+            showToast("谷口「若手限定の大会に出られるのは、今年が最後や」")
         }
     }
 
