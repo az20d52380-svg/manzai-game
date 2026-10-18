@@ -16,6 +16,8 @@ struct TournamentResultView: View {
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
     @State private var ctaPulse = false
+    @State private var showPass = false        // 回戦突破の祝い（次へ 押下で1度だけ・GPの通過のみ）
+    @State private var showBurstCutIn = false  // ハマった夜の斜めカットイン（判の叩きつけと同時に1度だけ）
     @State private var signIn = false          // 番組アイキャッチ：大会看板がドンと打ち出される
     @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
     @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
@@ -149,7 +151,8 @@ struct TournamentResultView: View {
                             settlementCard(r)
                                 .transition(.opacity)
                             Button {
-                                if climaxPages.isEmpty { session.acknowledgeResult() }
+                                if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(.easeIn(duration: 0.2)) { showPass = true } }
+                                else if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
                                 Text("次へ 進む ▶")
@@ -229,9 +232,21 @@ struct TournamentResultView: View {
         .onDisappear { revealTask?.cancel() }
         #if DEBUG
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal() }
+            if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
+        .overlay {
+            if showBurstCutIn { YoseBigSuccessCutIn(title: "ハマった夜！", showGains: false) { showBurstCutIn = false }.allowsHitTesting(false) }
+        }
+        .overlay {
+            if showPass {   // 回戦突破の祝い（通過の判の後・次へ の代わりに1度だけ）。タップで閉じて先へ
+                YosePassCelebrationView(duoName: session.combiName, roundName: r.name, judgeName: review.judge,
+                                        nextStep: "次戦へ", fameGain: Int(session.lastResultFameDelta.rounded()),
+                                        threshold: 0, power: Int(Ability.allCases.reduce(0.0) { $0 + summary.state[$1] }.rounded()),
+                                        judgeComment: review.text) { showPass = false; session.acknowledgeResult() }
+                    .transition(.opacity)
+            }
+        }
         .overlay {
             if let i = climaxIndex { climaxOverlay(i) }   // ⑪ 山場のタップ送り
         }
@@ -258,6 +273,7 @@ struct TournamentResultView: View {
         if Task.isCancelled { return }
         withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
         slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
+        if r.burst == true && !skipRequested { showBurstCutIn = true }   // ハマった夜＝斜めカットイン（約1秒で自動退場）
         if r.passed {
             confettiFire += 1; Haptics.rare()
             Sound.play(.taiko); Sound.play(.applauseHall)                // 通過＝太鼓ドン＋会場拍手

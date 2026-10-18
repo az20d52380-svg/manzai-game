@@ -213,7 +213,7 @@ struct FinalsPresentationView: View {
             if showChamp {   // 優勝の瞬間（金テープ・大判優勝めくり・賞金ボード・相方の言葉）。タップで即完成→もう一度タップで先へ
                 YoseChampionCelebrationView(tournamentName: "頂グランプリ 決勝戦", generationText: "結成\(session.year)年目",
                                             duoName: session.combiName, prizeAmountYen: session.config.calendar.gpPrize,
-                                            partnerName: Names.partner, partnerLine: "「……ほんまに、勝ったんやな」") {
+                                            partnerName: Names.partner, partnerLine: "「やったな。ほんまに、日本一や」") {
                     withAnimation(.easeOut(duration: 0.3)) { showChamp = false }
                     // 優勝年は全画面の後に「優勝は……！」の結果発表を重ねない（結果が2度伝わるため）＝そのまま番組エンディングへ
                     endingFull = FinalsSeen.first("ending") && !reduceMotion

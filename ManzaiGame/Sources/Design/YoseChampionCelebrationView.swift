@@ -46,7 +46,7 @@ public struct YoseChampionCelebrationView: View {
         duoName: String = "あなたのコンビ",
         prizeAmountYen: Int = 10_000_000,
         partnerName: String = "相方",
-        partnerLine: String = "「……なあ、腹減ったな。今夜はカウンターの回らん寿司、行こか」",
+        partnerLine: String = "「やったな。ここまで、ほんまによう頑張った」",
         mcName: String = "司会・鳴海",
         mcComment: String = "「決まりました！！今夜、幾千組の頂点に立ったのは——この2人です！」",
         onFinish: @escaping () -> Void = {}

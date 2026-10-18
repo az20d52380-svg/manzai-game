@@ -7,6 +7,7 @@ import GameCore
 struct RootView: View {
     @State private var session: GameSession
     @State private var started: Bool     // S1初回フロー完了で true（本編開始）
+    @State private var yearTurn: YearTurnSummary? = nil   // 年が変わる時の幕間（年末リザルト→「◯年目へ」の間に1度だけ重ねる）
     @State private var showEnding = false // キャリアの区切り→エンディング（8種・endings_spec）
     @Environment(\.scenePhase) private var scenePhase
 
@@ -118,6 +119,7 @@ struct RootView: View {
                     if session.watchingFinal { session.finishWatchingFinal(winner: "（見本）"); session.debugPlayToEnd() }
                 }
             }
+            if ui == "yearend", ProcessInfo.processInfo.environment["MZ_YEARTURN"] != nil, session.finished { beginYearTurn() }   // 年の幕間の目視（本編は「◯年目へ」で出る）
             if ui == "prestage", session.week <= 1 {
                 // 大会前の振り忘れの知らせの目視：最初の大会（春新人賞A）の1週前まで練習で進める
                 if let w = session.nextStage?.week {
@@ -265,6 +267,12 @@ struct RootView: View {
     @ViewBuilder private var mainFlow: some View {
         if started {
             content
+                .overlay {
+                    if let s = yearTurn {   // 年の幕間：ボタンで閉じて翌年へ
+                        YoseYearTurnCurtainView(summary: s) { yearTurn = nil; session.startNextYear() }
+                            .transition(.opacity)
+                    }
+                }
                 .overlay(alignment: .topTrailing) {
                     #if DEBUG
                     if ProcessInfo.processInfo.environment["MZ_NOCHIP"] == nil, !(session.finished && showEnding) { debugButton }   // 目視用: MZ_NOCHIP=1 で DEBUG チップを隠す
@@ -278,6 +286,14 @@ struct RootView: View {
                 withAnimation(.easeInOut(duration: 0.4)) { started = true }
             }
         }
+    }
+
+    /// 年末リザルトの「◯年目へ」：幕間を挟んでから翌年を立てる（表示だけ・状態は startNextYear まで不変）
+    private func beginYearTurn() {
+        let st = session.state
+        let power = Int(Ability.allCases.reduce(0.0) { $0 + st[$1] }.rounded())
+        yearTurn = YearTurnSummary(combiName: session.combiName, previousYear: session.year, newYear: session.year + 1,
+                                   power: power, fame: Int(st.fame.rounded()), money: st.money, netaCount: st.netas.count)
     }
 
     @ViewBuilder private var content: some View {
@@ -298,7 +314,7 @@ struct RootView: View {
                 YearResultView(session: session,
                                onRestart: { returnToTitle() },
                                onEnding: session.endingID != nil ? { showEnding = true } : nil,
-                               onNextYear: session.careerOver ? nil : { session.startNextYear() })
+                               onNextYear: session.careerOver ? nil : { beginYearTurn() })
             }
         } else if let result = session.pendingResult {
             if let r = result.results.last, r.name == "GP決勝", !r.passed {
