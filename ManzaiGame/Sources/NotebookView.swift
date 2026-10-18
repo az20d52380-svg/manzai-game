@@ -342,10 +342,6 @@ struct NotebookView: View {
             oroshiLine(neta)
             HStack(spacing: 8) {
                 Text("舞台 \(neta.stageCount)回").font(YoseFont.gothic(11, weight: .bold)).monospacedDigit().foregroundStyle(YoseColor.haiSumi)
-                if !neta.lengthFit.isEmpty {
-                    YoseTag(text: neta.lengthFit.map { NetaCatalog.displayName($0) }.joined(separator: " / "), style: .outlineSumi)   // 尺タグは1つの角札に統合
-                        .lineLimit(1)
-                }
                 Spacer()
                 netaBadges(neta)
             }

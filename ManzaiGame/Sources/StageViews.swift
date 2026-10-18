@@ -168,7 +168,6 @@ struct TournamentEntryView: View {
     /// 大会エントリーの用語説明（金額・体力は GameConfig から読む）
     static func hintSpec(_ cal: CalendarConfig) -> HintSpec {
         HintSpec(key: "entry", title: "大会エントリー", rows: [
-            .init(term: "舞台尺", text: "その舞台のネタの長さ。持ちネタの尺が合っているか、ネタを選ぶ所に出る。"),
             .init(term: "エントリー費", text: "出るだけで\(cal.entryFee.formatted())円かかる。足りないと出られない。"),
             .init(term: "交通費", text: "大阪の大会だけ。夜行バスは\(cal.busTravel.cost.formatted())円で体力を\(Int(-cal.busTravel.stamina))使う。新幹線は\(cal.trainTravel.cost.formatted())円で体力はそのまま。"),
             .init(term: "体力", text: "大会に出るのにも使う。0のまま出ることもできる。"),

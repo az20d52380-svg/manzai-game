@@ -286,12 +286,6 @@ final class PlaytestFixTests: IsolatedStoreTestCase {
         XCTAssertEqual(AbilityUpView.practices(for: .閃き, config: cfg).first, "ネタを書く")
         XCTAssertFalse(AbilityUpView.practices(for: .語彙, config: cfg).isEmpty)   // 語彙は副効果から引く
     }
-    func testLengthMismatchNote() {
-        let n = Neta(id: 1, name: "x", kata: .華先行, lengthFit: [.短尺], bornYear: 1)
-        XCTAssertNil(NetaPickRow.lengthMismatchNote(n, required: .短尺))
-        let note = NetaPickRow.lengthMismatchNote(n, required: .中尺)
-        XCTAssertTrue(note?.contains("ふつう") == true && note?.contains("短め") == true)
-    }
 }
 
 
@@ -347,13 +341,6 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base(); i.netaCount = 0
         XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
     }
-    func testLengthMismatch() {
-        var i = base(); i.stageWeeksLeft = 4; i.netaFitsStage = false; i.stageLength = .長尺
-        XCTAssertEqual(WeekHint.line(i), "次の大会は尺『長め』。合うネタがまだ無い。")
-        i.stageWeeksLeft = 5; XCTAssertNil(WeekHint.line(i))   // 5週先は出さない
-        i.stageWeeksLeft = 3; i.netaFitsStage = true; XCTAssertNil(WeekHint.line(i))
-        i.netaFitsStage = nil; XCTAssertNil(WeekHint.line(i))
-    }
     func testStamina() {
         var i = base(); i.stamina = 30
         XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
@@ -380,8 +367,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
         XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
-        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "次の大会は尺『ふつう』。合うネタがまだ無い。")
-        i.netaFitsStage = true; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
         i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
