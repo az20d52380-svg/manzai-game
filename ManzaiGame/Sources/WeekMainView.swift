@@ -1363,7 +1363,7 @@ struct WeekMainView: View {
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
-            riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。"
+            riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、たまらない。"
             return
         }
         guard let tier = session.debtNoticeTierToShow(money: s.money) else { return }

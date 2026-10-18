@@ -206,6 +206,8 @@ public struct GameConfig {
     public var inviteIdea = 0.5         // 行く: 半分の確率で 発想 +
     public var inviteIdeaP = 0.5
     public var riftHeal = 3.0      // 相性が上がった週
+    public var riftJointStill = true   // §94 二人で舞台に立つ週は、相性が上がらなくてもすれ違いは増えない（減りもしない）
+    public var gpLossCompat: [Double] = [0.5, 0.5, 0.5, 0.25, 0.125]   // §94 GP予選で落ちた時の相性の下げ幅（回戦ごと）。敗者復活・決勝・他大会では下げない
     public var riftWarn = 50.0     // 初めて越えた週末に予告（アプリ側の選択肢イベント）
     /// 体力がこの値未満だと稽古を選べない（谷口が止める・sim_career.STAMINA_GATE と同期）
     public var staminaGate = 20.0
