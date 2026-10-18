@@ -51,6 +51,7 @@ struct RootView: View {
                 .onAppear { if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { session.debugSeedKirokuLog() } }
             case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
             case "settings": SettingsView(onClose: {}, onQuitRun: {})   // S1b目視（MZ_STEP=0/1/2 で確認の段へ）
+            case "finalist_announce": FinalistAnnounceView(combiName: session.combiName, year: 1, passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 決勝進出者の発表の目視（MZ_PASS=0 で落選・MZ_HOLD_AT=n で読み上げn組目で止める）
             case "glossary": GlossaryView(onClose: {})                      // 用語集の目視
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視

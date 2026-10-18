@@ -88,6 +88,7 @@
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 		E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */; };
 		E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C2B6670FC11321C4559DCB /* Theme.swift */; };
+		EADAE9F564AE5007CBDB8773 /* FinalistAnnounceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24E06D95088D26FB3DC94453 /* FinalistAnnounceView.swift */; };
 		EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */; };
 		F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */; };
 		F33DD67A56FAEDBCFD666534 /* se_applause_hall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */; };
@@ -118,6 +119,7 @@
 		16007007DF00D086ECC94A4C /* EndingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndingViews.swift; sourceTree = "<group>"; };
 		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		2479B3303C35A9B094342137 /* se_cursor.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cursor.mp3; sourceTree = "<group>"; };
+		24E06D95088D26FB3DC94453 /* FinalistAnnounceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalistAnnounceView.swift; sourceTree = "<group>"; };
 		2AAFBC0284B7A53A0A48C18D /* S6bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S6bView.swift; sourceTree = "<group>"; };
 		2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
 		2DC7AD55C10948F6D9376264 /* se_deny.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_deny.mp3; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */,
 				16007007DF00D086ECC94A4C /* EndingViews.swift */,
 				08B86D882DE6689C655ADD0C /* FanReportData.swift */,
+				24E06D95088D26FB3DC94453 /* FinalistAnnounceView.swift */,
 				117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */,
 				599065030751D5F2DB350459 /* FinalsPresentationView.swift */,
 				5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */,
@@ -507,6 +510,7 @@
 				D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */,
 				557A44DC9CC271F9216143B1 /* EventBackgrounds.swift in Sources */,
 				7929C910D01A177FA32BE25C /* FanReportData.swift in Sources */,
+				EADAE9F564AE5007CBDB8773 /* FinalistAnnounceView.swift in Sources */,
 				25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */,
 				B5FF297729B861895AB02480 /* FinalsPresentationView.swift in Sources */,
 				877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */,

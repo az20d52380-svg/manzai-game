@@ -27,6 +27,8 @@ struct TournamentResultView: View {
     @State private var skipRequested = false
     /// 開演の儀が終わったか（儀式の相 → 開示列の順・X4-11：覆いの下で開示が先に終わらない）
     @State private var ceremonyDone = false
+    /// 頂GP 準決勝の後の決勝進出者の発表（M-1 方式）。済むまで判の演出を始めない。準決勝以外は最初から済み
+    @State private var announceDone = false
     /// 判の前に流す観客の声（fan_report_design §1）。shown=いま見えている枚数／tap=タップで送った回数／active=声の相か
     @State private var fanShown = 0
     @State private var fanTap = 0
@@ -38,6 +40,7 @@ struct TournamentResultView: View {
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
     private var result: StageResult { summary.results.last! }
+    private var needsAnnounce: Bool { result.name == "GP準決勝" }
     /// 判の前に流す観客の声（2〜4枚）。点数は出さない・乱数非消費（salt の剰余）
     private var fanVoices: [String] {
         let r = result
@@ -223,7 +226,7 @@ struct TournamentResultView: View {
         .onChange(of: revealed) { _, _ in stageChangedAt = Date() }
         .onChange(of: revealedReview) { _, _ in stageChangedAt = Date() }
         .overlay {
-            if !ceremonyDone {
+            if !ceremonyDone && (announceDone || !needsAnnounce) {
                 StageCeremony { ceremonyDone = true; beginReveal() }
                     .transition(.opacity)
             }
@@ -235,6 +238,14 @@ struct TournamentResultView: View {
             if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
+        .overlay {
+            if needsAnnounce && !announceDone {   // 判の前に、決勝進出者の発表（五十音順の読み上げ）
+                FinalistAnnounceView(combiName: session.combiName, year: summary.year, passed: result.passed) {
+                    withAnimation(.easeOut(duration: 0.3)) { announceDone = true }
+                }
+                .transition(.opacity)
+            }
+        }
         .overlay {
             if showBurstCutIn { YoseBigSuccessCutIn(title: "ハマった夜！", showGains: false) { showBurstCutIn = false }.allowsHitTesting(false) }
         }

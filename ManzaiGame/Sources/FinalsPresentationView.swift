@@ -1200,7 +1200,8 @@ struct FinalsData {
         var pool = FinalsData.npcNames.filter { $0 != selfName }   // 自組と同じ名前のモブを並べない（プレイヤーが同名を付けた時）
         for i in stride(from: pool.count - 1, through: 1, by: -1) { pool.swapAt(i, rng.int(0...i)) }
         let npcCount = spectator ? 10 : 9
-        let names = Array(pool.prefix(npcCount))
+        _ = pool   // 乱数列を従来どおり消費（以降の順位・点の並びを変えない）
+        let names = FinalsData.yearRoster(year: year, selfName: selfName, count: npcCount)   // 顔ぶれは年だけで決まる＝準決勝後の発表と一致
 
         // 自組の1本目の順位（内部の結果＝決勝の点差から）。優勝の年でも1本目1位とは限らない（R1 P7）
         let rank: Int
@@ -1318,6 +1319,13 @@ struct FinalsData {
 
     /// NPCコンビ名（架空・プレースホルダ枠。本来は name_generator が毎周生成）。年ごとにこの中から9〜10組を選ぶ
     /// 設計上の固有名（ライバル役の「静物画」「夜行列車」・後輩NPCの「雨宿り」）とは重ねない（2026-10-14 差し替え）
+    /// 今年の決勝の他組（年と自組名だけで決まる＝能力に依らない。準決勝後の決勝進出者の発表と同じ顔ぶれ）
+    static func yearRoster(year: Int, selfName: String, count: Int) -> [String] {
+        var rng = SeededRng(seed: UInt64(bitPattern: Int64(year &* 7919 &+ 0x2A6D)))
+        var pool = npcNames.filter { $0 != selfName }
+        for i in stride(from: pool.count - 1, through: 1, by: -1) { pool.swapAt(i, rng.int(0...i)) }
+        return Array(pool.prefix(count))
+    }
     static let npcNames = ["紺屋", "夜明けの犬", "サーカス", "青写真", "十三", "深夜のグラタン", "テレフォン", "北緯", "帰り道",
                            "灯台守", "三番線", "東口", "ペンギン座", "トランジスタ", "まどろみ", "夕凪", "赤鉛筆", "合鍵",
                            "日めくり", "回送電車", "白湯", "角部屋", "手旗信号", "満月書店", "栞", "小春日和", "遠回り", "置き手紙",
