@@ -116,6 +116,16 @@ RIFT_GAIN      = 0.5        # 相性が上がらなかった週の増え方 ×(�
 RIFT_HEAL      = 3.0        # 相性が上がった週の減り方
 RIFT_WARN      = 50.0       # 初めて越えた週末に予告（アプリ側の選択肢イベント）
 RIFT_RESPOND   = False      # 実測用：予告に「向き合う」で応えるボット（rift −30・体力 −10）
+# --- §102 飲みの誘い（先輩・後輩）: 不定期に何度も来る軽い気分転換の選択。docs/balance_q93_98_measure_v0.md §102【仮】 ---
+INVITE_P       = 0.04       # 毎週末（rift_weekend の後）にこの率で誘いが来る（10年で約19回）
+INVITE_MONEY   = 5_000      # 行く: 所持金 −
+INVITE_STAMINA = -10        # 行く: 体力
+INVITE_MENTAL  = 1          # 行く: メンタル
+INVITE_IDEA    = 0.5        # 行く: 半分の確率で 発想 +
+INVITE_IDEA_P  = 0.5
+INVITE_GO      = True       # ボットの既定は「行く」（方針に choose_invite(s) があればそれを使う）。断る＝何も起きない
+RUN_INVITE_SEED = None      # run_career が差すキャリアのシード（None=誘いなし）。本編の乱数とは独立
+INVITE_COUNT   = 0          # 実測用: 来た回数
 BANKRUPT_LINE  = -1_000_000   # 【正典v2】夜逃げライン: 下回ったらキャリア強制終了（rule_holes_v0 §2）
 INJURY_ON      = True   # 【正典v2】低体力のキツいバイトに体調ダウン抽選（稽古はゲートで先に止まる）（rule_holes_v0。ゲーム内表記は「喉をやられた」「腰にきた」等——漫才師にケガという語は使わない）
 INJURY_TH      = 20.0   # この体力未満で対象行動を選ぶとダウン抽選
@@ -525,6 +535,46 @@ def enter_tournament(s, pol, t, rng):
             RUN_BOREDOM.clear()   # 飽きられ解除(b): 他大会での優勝＝再評価（dynasty §3-2）
     return True, ok
 
+_M64 = (1 << 64) - 1
+
+def _splitmix_u01(state, n):
+    """SplitMix64（Swift RandomSource.swift と同一）の n 番目(1始まり)の [0,1) 値。"""
+    st = state & _M64
+    z = 0
+    for _ in range(n):
+        st = (st + 0x9E3779B97F4A7C15) & _M64
+        z = st
+        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & _M64
+        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & _M64
+        z = z ^ (z >> 31)
+    return (z >> 11) * (1.0 / 9007199254740992.0)
+
+def invite_roll(seed, year, week):
+    """§102 誘いの抽選。本編の乱数とは別の決定論（シード+年週のハッシュ→SplitMix64）。(来たか, 発想が付くか)。
+    Swift: GameEngine.rollInvite（同じ式・同じ定数で同値）。"""
+    st = (seed + (year * 1000 + week) * 0xD1B54A32D192ED03) & _M64
+    if _splitmix_u01(st, 1) >= INVITE_P:
+        return None
+    return _splitmix_u01(st, 2) < INVITE_IDEA_P
+
+def invite_weekend(s, pol, year, week, seed):
+    """週末の誘い（rift_weekend の後）。来たら「行く／断る」をボットが選ぶ。Swift: WeekRunner.pendingInvite→resolveInvite"""
+    global INVITE_COUNT
+    if seed is None or INVITE_P <= 0:
+        return
+    idea = invite_roll(seed, year, week)
+    if idea is None:
+        return
+    INVITE_COUNT += 1
+    ch = getattr(pol, "choose_invite", None)
+    go = ch(s) if ch else INVITE_GO
+    if go:
+        s.money -= INVITE_MONEY
+        B.add(s, "stamina", INVITE_STAMINA)
+        B.add(s, "mental", INVITE_MENTAL)
+        if idea:
+            B.add(s, "idea", INVITE_IDEA)
+
 def rift_weekend(s, year, compat0):
     """途中解散のすれ違いゲージ（週末・生活費の後）。乱数なし。解散なら True。Swift: GameEngine.applyRiftWeekEnd"""
     r = getattr(s, "rift", 0.0)
@@ -753,13 +803,15 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         if RIFT_ON and rift_weekend(s, year, compat0):
             s._dissolved = True            # 途中解散: キャリア終了（夜逃げの後に判定）
             return False, gp_stage, finalist
+        invite_weekend(s, pol, year, week, RUN_INVITE_SEED)   # §102 飲みの誘い（別乱数・rift の後）
         s.min_money = min(s.min_money, s.money)
 
     return False, gp_stage, finalist
 
 def run_career(pol, seed, init_ability=None, compat=None, money_log=None):
     """1キャリア。(初優勝年 or None, 最終状態, 最高到達回戦数0〜5, 決勝経験) を返す"""
-    global RUN_EVENTS_FIRED, RUN_BOREDOM
+    global RUN_EVENTS_FIRED, RUN_BOREDOM, RUN_INVITE_SEED
+    RUN_INVITE_SEED = seed
     rng = random.Random(seed)
     s = new_state(init_ability, compat)
     if EVENTS_ON:

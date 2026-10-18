@@ -99,6 +99,10 @@ public struct WeekRunner<R: RandomSource> {
     private var revivalTried = false
     private var finalTried = false
     private var finished: YearOutcome?
+    /// §102 誘い用のキャリアのシード（nil=誘いなし）。本編の rng とは独立の決定論。中断セーブに載る
+    public private(set) var inviteSeed: UInt64?
+    /// 週末に来た誘い（nil=なし）。値＝「行ったとき発想が付くか」。resolveInvite で解決するまで保留（解決せず begin() すると「断る」扱い）
+    public private(set) var pendingInvite: Bool?
 
     public init(
         state: GameState,
@@ -107,7 +111,8 @@ public struct WeekRunner<R: RandomSource> {
         rng: R,
         seedFinal: Bool = false,
         finalLineOverride: Double? = nil,
-        gpSeeded: Bool = false   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
+        gpSeeded: Bool = false,   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
+        inviteSeed: UInt64? = nil   // §102 飲みの誘いのシード（nil=誘いなし）
     ) {
         precondition(year >= 1, "year は1以上（成長予算の累計計算が前提）")
         var s = state
@@ -130,6 +135,7 @@ public struct WeekRunner<R: RandomSource> {
         self.year = year
         self.config = config
         self.rng = rng
+        self.inviteSeed = inviteSeed
         self.gpStage = gpSeeded ? 1 : 0   // シード組は2回戦から
         self.gpAlive = !seedFinal
         self.finalist = seedFinal
@@ -154,6 +160,7 @@ public struct WeekRunner<R: RandomSource> {
             finished = outcome
             return .yearDone(outcome)
         }
+        pendingInvite = nil    // 解決されなかった誘いは「断る」
         acted = false
         weekResults = []
         state.riftWeekStartCompat = state.compat   // 途中解散：この週に相性が上がったか（乱数なし）
@@ -381,7 +388,23 @@ public struct WeekRunner<R: RandomSource> {
             finished = outcome
             return .yearDone(outcome)
         }
+        // §102 飲みの誘い（解散判定の後・乱数は別系統）。来たら保留し、UI/ポリシーが resolveInvite で選ぶ
+        if let seed = inviteSeed {
+            pendingInvite = GameEngine.rollInvite(seed: seed, year: year, week: week, config: config)
+        }
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
+    }
+
+    /// 誘いに「行く」効果だけを適用する（アプリは週を送った後に札で選ぶため、保留を介さず直接呼ぶ）。RandomSource 非消費
+    public mutating func applyInviteGo(idea: Bool) {
+        GameEngine.applyInviteGo(idea: idea, to: &state, config: config)
+    }
+
+    /// 誘いの回答。行く＝所持金−5,000・体力−10・メンタル+1・(半分で)発想+0.5／断る＝何も起きない。RandomSource 非消費。
+    public mutating func resolveInvite(accept: Bool) {
+        guard let idea = pendingInvite else { return }
+        pendingInvite = nil
+        if accept { GameEngine.applyInviteGo(idea: idea, to: &state, config: config) }
     }
 
     /// 選択肢イベントの確定効果を runner の権威 state に適用する（proposals/0024 ピース1）。
@@ -524,6 +547,8 @@ public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
     public var revivalTried: Bool
     public var finalTried: Bool
     public var finished: YearOutcome?
+    public var inviteSeed: UInt64?     // §102（旧セーブには無い＝nil＝誘いなし）
+    public var pendingInvite: Bool?
 }
 
 extension WeekRunner where R: Codable {
@@ -534,7 +559,7 @@ extension WeekRunner where R: Codable {
                            finalist: finalist, revival: revival, section: section, acted: acted,
                            weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
                            pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
-                           finished: finished)
+                           finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite)
     }
 
     /// スナップショットからの復元（ロード用）。年初処理（体力全回復・成長予算の再計算）は走らせず、
@@ -569,5 +594,7 @@ extension WeekRunner where R: Codable {
         self.revivalTried = snap.revivalTried
         self.finalTried = snap.finalTried
         self.finished = snap.finished
+        self.inviteSeed = snap.inviteSeed
+        self.pendingInvite = snap.pendingInvite
     }
 }

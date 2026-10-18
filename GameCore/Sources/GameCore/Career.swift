@@ -17,6 +17,12 @@ public protocol WeekPolicy {
     mutating func action(week: Int, year: Int, state: GameState, offer: OfferSpec?) -> WeekAction
     /// 大会に出るか（nil=出場しない）。出るなら移動手段（東京開催では無視される）
     mutating func enterTournament(_ spec: TournamentSpec, year: Int, state: GameState) -> Travel?
+    /// §102 飲みの誘いに行くか。既定は「行く」（ボットの既定・golden 台本）
+    mutating func acceptInvite(state: GameState) -> Bool
+}
+
+extension WeekPolicy {
+    public mutating func acceptInvite(state: GameState) -> Bool { true }
 }
 
 public struct YearOutcome: Codable {
@@ -59,6 +65,7 @@ public enum GameCareer {
         seedFinal: Bool = false,
         finalLineOverride: Double? = nil,
         gpSeeded: Bool = false,
+        inviteSeed: UInt64? = nil,
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> YearOutcome {
         // 週処理の実体は WeekRunner（ステップ実行機）に一本化し、runYear はそれを policy で駆動する薄い委譲にする。
@@ -66,7 +73,7 @@ public enum GameCareer {
         // 等価性は WeekRunnerGoldenTests / CareerGoldenTests の3年ビット一致で二重に担保される。
         var runner = WeekRunner(state: s, year: year, config: config, rng: rng,
                                 seedFinal: seedFinal, finalLineOverride: finalLineOverride,
-                                gpSeeded: gpSeeded)
+                                gpSeeded: gpSeeded, inviteSeed: inviteSeed)
         var phase = runner.begin()
         while true {
             switch phase {
@@ -79,7 +86,8 @@ public enum GameCareer {
             case .gpRound, .gpRevival, .gpFinal:
                 phase = runner.resolveAuto()   // 回戦・敗者復活・決勝は入力不要（runYear では即消化）
             case .weekDone(let summary):
-                onWeekEnd?(summary.week, summary.state)
+                if runner.pendingInvite != nil { runner.resolveInvite(accept: policy.acceptInvite(state: runner.state)) }
+                onWeekEnd?(summary.week, runner.state)   // 誘いの効果を含む週末の状態
                 phase = runner.begin()
             case .yearDone(let outcome):
                 s = runner.state     // 年末（優勝/夜逃げ含む）の状態と乱数列を呼び出し側へ書き戻す
@@ -95,12 +103,13 @@ public enum GameCareer {
         years: Int,
         config: GameConfig,
         policy: inout P,
-        rng: inout R
+        rng: inout R,
+        inviteSeed: UInt64? = nil
     ) -> Int? {
         var prevStage = 0
         for year in 1...years {
             let outcome = runYear(state: &s, year: year, config: config, policy: &policy, rng: &rng,
-                                  gpSeeded: prevStage >= 3)
+                                  gpSeeded: prevStage >= 3, inviteSeed: inviteSeed)
             prevStage = outcome.roundsPassed
             if outcome.champion {
                 return year

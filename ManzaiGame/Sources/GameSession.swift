@@ -86,6 +86,9 @@ final class GameSession {
     private var jobCount = 0
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
+    /// §102 週末に来た先輩の誘いを次の自由週の頭に札で出すための待ち（メモリのみ。アプリを落とすと流れる＝軽い誘いなので許容）と、行った時に発想が付くか
+    private var inviteWaiting = false
+    private var inviteIdea = false
     /// 週頭の掛け合い（俺⇄谷口の短い会話・タップ送り）。nil=この週は独白。行動すると失効。
     /// 発火はUI専用乱数（uiEventRng）＝runnerの乱数列に非干渉＝golden不変。イベント発火週は譲る。
     private(set) var weekBanter: [Advice]?
@@ -207,7 +210,7 @@ final class GameSession {
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
         let start = startState ?? GameState(config: cfg)
         self.state = start
-        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed))
+        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
         self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
@@ -492,6 +495,11 @@ final class GameSession {
     /// ツーカー帯初到達(一発・キャリア1回)。複数回呼ばれても保留が有れば再評価しない。
     private func evaluateChoiceEventFire() {
         guard pendingChoiceEvent == nil else { return }
+        if inviteWaiting {   // §102 週末に来た先輩の誘い（別乱数・runner.pendingInvite が出所）。次の自由週の頭で札を出す
+            inviteWaiting = false
+            pendingChoiceEvent = .weekendInvite
+            return
+        }
         #if DEBUG
         // 目視用：MZ_NOEVENT=1 で選択イベントを発火させない（MZ_UI=grown が起動直後にイベントで隠れた）。本導線は不変
         if ProcessInfo.processInfo.environment["MZ_NOEVENT"] != nil { return }
@@ -676,6 +684,7 @@ final class GameSession {
         let choices = ChoiceEventTable.choices(for: kind, config: config)
         guard let choice = choices.first(where: { $0.id == choiceID }), choice.gate(state) else { return }
         runner.applyEventEffects(choice.effects)
+        if kind == .weekendInvite, choiceID == "A" { runner.applyInviteGo(idea: inviteIdea) }   // §102 行く: 所持金-5,000・体力-10・メンタル+1・(半分で)発想+0.5
         state = runner.state
         switch kind {
         case .justLostRehearsal: justLostStage = false
@@ -696,6 +705,8 @@ final class GameSession {
             break   // 0023 廃止（抽選外）。古いセーブの保留中イベント互換のためケースだけ残す
         case .namelessReservationSlip:
             break   // 選択肢なしフレーバー＝発火時に didFireNamelessSlip 済み（applyEventChoice は実際には呼ばれない）
+        case .weekendInvite:
+            break   // §102 一回ごとの札＝フラグ不要（inviteWaiting は表示時に落とし済み）
         case .taniguchiShortJob:
             break   // 確定発火＝発火時に didFireTaniguchiJob 済み（A の compatFreeze は EventEffect が適用）
         }
@@ -930,7 +941,7 @@ final class GameSession {
     func startNextYear() {
         guard finished, !careerOver, let o = outcome else { return }
         var r = WeekRunner(state: runner.state, year: year + 1, config: config, rng: runner.rng,
-                           gpSeeded: o.roundsPassed >= 3)
+                           gpSeeded: o.roundsPassed >= 3, inviteSeed: runner.inviteSeed)
         yearStartState = r.state
         // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）
         finished = false
@@ -1118,6 +1129,7 @@ final class GameSession {
             case .weekDone(let summary):
                 state = summary.state
                 week = summary.week
+                if let idea = runner.pendingInvite { inviteWaiting = true; inviteIdea = idea }   // §102 先輩の誘い（週末・別乱数）
                 if !summary.results.isEmpty {
                     log.append(summarize(summary))
                 }

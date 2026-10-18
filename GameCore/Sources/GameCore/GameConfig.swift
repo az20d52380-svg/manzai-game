@@ -194,6 +194,13 @@ public struct GameConfig {
     // --- 途中解散（すれ違いゲージ・docs/dissolution_rift_spec_v1.md）。Python: sim_career RIFT_*【仮】 ---
     public var riftOn = true
     public var riftGain = 0.5      // 相性が上がらなかった週 ×(上限−相性)/上限
+    // §102 飲みの誘い（先輩・後輩）。Python: sim_career.INVITE_*（docs/balance_q93_98_measure_v0.md §102）【仮】
+    public var inviteRate = 0.04        // 毎週末（解散判定の後）にこの率で誘い
+    public var inviteMoney = 5_000      // 行く: 所持金 −
+    public var inviteStamina = -10.0    // 行く: 体力
+    public var inviteMental = 1.0       // 行く: メンタル
+    public var inviteIdea = 0.5         // 行く: 半分の確率で 発想 +
+    public var inviteIdeaP = 0.5
     public var riftHeal = 3.0      // 相性が上がった週
     public var riftWarn = 50.0     // 初めて越えた週末に予告（アプリ側の選択肢イベント）
     /// 体力がこの値未満だと稽古を選べない（谷口が止める・sim_career.STAMINA_GATE と同期）
