@@ -873,12 +873,12 @@ struct WeekMainView: View {
         return VStack(spacing: 4) {
             HStack(spacing: 6) {
                 ForEach(ExpCurrency.allCases, id: \.self) { c in
-                    let gain = after.map { AbilityUpView.points($0[currency: c] - s[currency: c]) } ?? 0
+                    let gain = after.map { ExpDisplay.value($0[currency: c] - s[currency: c]) } ?? 0
                     VStack(spacing: 1) {
                         Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                             .frame(width: 22, height: 22).background(Self.expColor(c), in: Circle())
                             .accessibilityLabel("\(c)")
-                        Text("\(AbilityUpView.points(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
+                        Text("\(ExpDisplay.value(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
                             .lineLimit(1).minimumScaleFactor(0.7)
                         Text(gain > 0 ? "+\(gain)" : " ").font(YoseFont.number(15, weight: .black)).foregroundStyle(YoseColor.kinBright)
                             .lineLimit(1).minimumScaleFactor(0.7)
@@ -901,7 +901,7 @@ struct WeekMainView: View {
     }
 
     /// たまっている経験点の合計（粒・切り捨て）
-    private var expGrains: Int { AbilityUpView.points(s.expTotal) }
+    private var expGrains: Int { ExpDisplay.value(s.expTotal) }
 
     /// 4ボタンの1枚（パワプロ式）。押すと下位一覧へ。能力アップは経験点の振り分け画面（AllocationView）
     private func categoryTile(_ c: CommandCategory) -> some View {
@@ -1172,7 +1172,7 @@ struct WeekMainView: View {
         var parts: [String] = []
         let md = session.lastMoneyDelta
         if md != 0 { parts.append("所持金 \(signed(md))") }
-        let exp = AbilityUpView.points(session.lastGrainGains.reduce(0) { $0 + $1.amount })
+        let exp = ExpDisplay.value(session.lastGrainGains.reduce(0) { $0 + $1.amount })
         if exp > 0 { parts.append("経験点 +\(exp)") }
         let sd = session.lastStaminaDelta
         if sd != 0 { parts.append("体力 \(signed(sd))") }
@@ -1448,8 +1448,8 @@ struct WeekMainView: View {
         // 手動の能力アップ：稽古で入る経験点を出す（パワプロの練習画面と同じ「何が貯まるか」）。大きい順に最大2つ
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
-        for (c, d) in gains where AbilityUpView.points(d) > 0 {
-            out.append(CardEffect(text: "\(c) +\(AbilityUpView.points(d))", color: Self.expColor(c)))
+        for (c, d) in gains where ExpDisplay.value(d) > 0 {
+            out.append(CardEffect(text: "\(c) +\(ExpDisplay.value(d))", color: Self.expColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: YoseColor.shu)) }

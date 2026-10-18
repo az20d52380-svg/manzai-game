@@ -62,7 +62,7 @@ struct NotebookView: View {
         let cfg = session.config
         let budget = s.growthBudget ?? 0
         let full = budget > 0 && s.growthUsed >= budget * 0.98
-        let exp = AbilityUpView.points(s.expTotal)
+        let exp = ExpDisplay.value(s.expTotal)
         return VStack(spacing: 8) {
             HStack(spacing: 10) {
                 YosePowerBadge(power: Int(GameEngine.jitsuryoku(s, config: cfg).rounded()))

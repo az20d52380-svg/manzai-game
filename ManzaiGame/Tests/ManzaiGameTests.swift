@@ -452,3 +452,25 @@ final class RentStatementTests: IsolatedStoreTestCase {
         XCTAssertEqual(r.moneyBefore, -100_000); XCTAssertEqual(r.shortfall, 140_000)
     }
 }
+
+
+final class ExpDisplayTests: XCTestCase {
+    func testValueFloorsAfterScaling() {
+        XCTAssertEqual(ExpDisplay.value(1.44), 14)
+        XCTAssertEqual(ExpDisplay.value(2.88), 28)
+        XCTAssertEqual(ExpDisplay.value(0.0), 0)
+        XCTAssertEqual(ExpDisplay.value(1.0), 10)   // 浮動小数の誤差で9にならない
+    }
+    func testCostRoundsUpButNeverExceedsAffordableHave() {
+        XCTAssertEqual(ExpDisplay.cost(1.42, have: 5.0), 15)   // 余裕あり＝切り上げ
+        XCTAssertEqual(ExpDisplay.cost(1.42, have: 1.44), 14)  // 足りるのに15と出さない
+        XCTAssertEqual(ExpDisplay.cost(1.5, have: 1.44), 15)   // 足りない＝持ち分14 < 必要15
+    }
+    func testNoAffordableMismatch() {
+        for h in stride(from: 0.05, through: 6.0, by: 0.01) {
+            for a in stride(from: 0.05, through: 6.0, by: 0.07) where a <= h {
+                XCTAssertLessThanOrEqual(ExpDisplay.cost(a, have: h), max(1, ExpDisplay.value(h)))
+            }
+        }
+    }
+}

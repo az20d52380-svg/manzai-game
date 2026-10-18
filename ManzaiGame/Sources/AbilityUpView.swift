@@ -19,8 +19,8 @@ struct AbilityUpView: View {
     private var base: GameState { session.state }
     private var pv: GameState { session.previewAllocation(taps) }
 
-    /// 経験点の表示値（内部×10・切り捨て）
-    static func points(_ v: Double) -> Int { Int(v * 10 + 1e-6) }
+    /// 経験点の表示値（内部×10・切り捨て）。ExpDisplay.value へ集約
+    static func points(_ v: Double) -> Int { ExpDisplay.value(v) }
 
     /// 列の固定幅（Gemini r2）：能力名70・＋50・経験点5列は各42・列間6。現在の経験点の行と下の費用が同じ中心線に乗る
     @State private var pulse = false
@@ -178,15 +178,15 @@ struct AbilityUpView: View {
         var s = pv
         for _ in 0..<n { GameEngine.pourStep(a, to: &s, config: cfg) }
         let cost = ExpCurrency.allCases.compactMap { c -> (ExpCurrency, Int)? in
-            let d = Self.points(pv[currency: c]) - Self.points(s[currency: c])
-            return d > 0 ? (c, d) : nil
+            let d = pv[currency: c] - s[currency: c]
+            return d > 0.0001 ? (c, ExpDisplay.cost(d, have: pv[currency: c])) : nil
         }
         return (n, cost)
     }
 
     /// 届かない時に見せる次の+1の値札（いまの残高を無視して1段の重さ×段数の目安）
     private func priceTag(_ a: Ability) -> [(ExpCurrency, Int)] {
-        GameEngine.nextStepCost(a, state: pv, config: cfg).map { ($0.currency, max(1, Self.points(pv[currency: $0.currency]) - Self.points(pv[currency: $0.currency] - $0.amount))) }
+        GameEngine.nextStepCost(a, state: pv, config: cfg).map { ($0.currency, ExpDisplay.cost($0.amount, have: pv[currency: $0.currency])) }
     }
 
     private func plusTap(_ a: Ability, steps: Int) {
@@ -273,7 +273,7 @@ struct AbilityUpView: View {
     /// 次の+1の値札に対して、いま足りない粒（通貨, あと何点）。行の赤い印と同じ基準（1段の重さ ＞ いまの残高）。表示専用
     static func shortages(_ a: Ability, state s: GameState, config cfg: GameConfig) -> [(currency: ExpCurrency, short: Int)] {
         GameEngine.nextStepCost(a, state: s, config: cfg).compactMap { c in
-            let price = max(1, points(s[currency: c.currency]) - points(s[currency: c.currency] - c.amount))
+            let price = ExpDisplay.cost(c.amount, have: s[currency: c.currency])
             let have = points(s[currency: c.currency])
             return price > have ? (c.currency, price - have) : nil
         }
@@ -375,5 +375,18 @@ struct HexEmblem: Shape {
         p.addLine(to: CGPoint(x: r.minX, y: r.minY + h * 0.25))
         p.closeSubpath()
         return p
+    }
+}
+
+
+/// 経験点の表示用変換（内部値×10の整数）。画面に経験点の数を出す所はすべてここを通す。表示専用＝GameCore・判定は不変。
+/// 持ち分・増分は切り捨て、必要数は切り上げ（ただし内部で足りるなら持ち分の表示値を超えない）＝「14持ち・15必要なのに押せる」を出さない。
+enum ExpDisplay {
+    /// 持ち分・増分（合計は内部で足してから渡す＝掛けてから丸める）
+    static func value(_ raw: Double) -> Int { Int(raw * 10 + 1e-6) }
+    /// 必要数（切り上げ・最低1）。have＝その時の内部の持ち分。内部で足りる(amount<=have)なら持ち分の表示値以下に収める
+    static func cost(_ amount: Double, have: Double) -> Int {
+        let up = max(1, Int((amount * 10 - 1e-6).rounded(.up)))
+        return amount <= have + 1e-9 ? min(up, max(1, value(have))) : up
     }
 }
