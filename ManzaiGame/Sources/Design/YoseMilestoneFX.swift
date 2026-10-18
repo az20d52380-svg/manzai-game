@@ -126,7 +126,7 @@ struct YosePassCelebrationView: View {
                 VStack(spacing: 26) {
                     signboard
                     resultCard
-                    reviewCard
+                    if !judgeComment.isEmpty { reviewCard }
                     bonusPlate
                 }
                 .padding(.horizontal, 22)
@@ -235,9 +235,11 @@ struct YosePassCelebrationView: View {
 
     private var bonusPlate: some View {
         HStack(spacing: 10) {
-            Text("通過").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
-                .padding(.horizontal, 6).padding(.vertical, 2).background(YoseColor.shu)
-            Text("知名度 +\(fameGain)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
+            if fameGain > 0 {
+                Text("通過").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
+                    .padding(.horizontal, 6).padding(.vertical, 2).background(YoseColor.shu)
+                Text("知名度 +\(fameGain)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
+            }
             Spacer()
             Text(nextStep).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinari)
             Image(systemName: "play.fill").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.kinBright).accessibilityHidden(true)
