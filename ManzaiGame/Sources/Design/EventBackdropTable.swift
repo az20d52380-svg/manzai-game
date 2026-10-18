@@ -12,7 +12,7 @@ extension EventBackdrop {
         case .preTournamentEve:        return .init(.street, .night)    // 推定: 稽古場の帰り道・夜
         case .tsuukaBreak:             return .init(.keikoba, .day)     // 稽古場・昼休み
         case .earlyFormality:          return .init(.keikoba, .day)     // 稽古場・昼
-        case .weekendInvite:           return .init(.street, .night)    // 劇場の裏口・夜（§102）
+        case .weekendInvite:           return .init(.theaterOutside, .night) // 劇場の裏口・夜（§102）＝街の通りだとト書きとずれた（10/19 目視）
         case .brokeDrinkingInvite:     return .init(.street, .night)    // 推定: 稽古場の帰り道・夜
         case .senpaiMeishi:            return .init(.yakiniku, .day)    // 焼肉屋・先輩のおごりの昼
         case .peerFoldedChair:         return .init(.keikoba, .day)     // 推定: 時間帯の記述なし→昼

@@ -243,8 +243,8 @@ enum ChoiceEventData {
             Advice(name: "谷口", text: "俺は行ってもええと思てる。お前はどうする"),
         ],
         choiceLabels: [
-            "A": "行く（5,000円）",
-            "B": "断る",
+            "A": "先輩と飲みに行く（5,000円）",
+            "B": "今夜は断って帰る",
         ],
         afterChoice: [
             "A": [
