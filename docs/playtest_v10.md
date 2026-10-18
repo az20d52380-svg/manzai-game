@@ -63,3 +63,4 @@
 - 週メインで右上の「🏆優勝／💪無双」の札が実力の札に重なる画面がある（weeknetas）が、DEBUG だけの札＝製品版には出ない。直さない。
 - judging・living・loser・partner・spectator・stage・pass・preshow 等は既定の状態だと週メインのまま（別の環境変数が要るフック）。今回は中まで見ていない。
 重大（高）0件・中0件・低0件（新規なし）。
+- （v10f 続き）舞台の状態5つ（MZ_UI=frame MZ_MODE=preshow/judging/winner/loser/spectator）と合否演出の通過側（MZ_UI=pass・結果の優勝画面まで）：文字切れ・重なりなし。frame の winner/loser は見本の札「予選通過！！／予選敗退」が一発勝負の大会名（春新人賞A）と並ぶが、見本用のフック＝本編の文言ではない。
