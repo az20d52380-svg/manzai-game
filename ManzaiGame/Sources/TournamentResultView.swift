@@ -110,7 +110,7 @@ struct TournamentResultView: View {
 
                 VStack(spacing: 0) {
                     // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
-                    StageSign(title: r.name, subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
+                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
                         .padding(.top, 8)
                         .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: signIn)
@@ -240,7 +240,7 @@ struct TournamentResultView: View {
         }
         .overlay {
             if showPass {   // 回戦突破の祝い（通過の判の後・次へ の代わりに1度だけ）。タップで閉じて先へ
-                YosePassCelebrationView(duoName: session.combiName, roundName: r.name, judgeName: review.judge,
+                YosePassCelebrationView(duoName: session.combiName, roundName: GPName.display(r.name), judgeName: review.judge,
                                         nextStep: "次戦へ", fameGain: Int(session.lastResultFameDelta.rounded()),
                                         threshold: 0, power: Int(Ability.allCases.reduce(0.0) { $0 + summary.state[$1] }.rounded()),
                                         judgeComment: review.text) { showPass = false; session.acknowledgeResult() }

@@ -295,7 +295,7 @@ struct FinalsPresentationView: View {
     /// 番組タイトル（黒×金の中継グラフィック）
     private var broadcastTitle: some View {
         VStack(spacing: 6) {
-            StageSign(title: "頂 グランプリ", subtitle: spectator ? "客席から観戦中" : nil, tag: "決勝", outlined: true)
+            StageSign(title: "頂グランプリ", subtitle: spectator ? "客席から観戦中" : nil, tag: "決勝", outlined: true)
                 .padding(.horizontal, -4)
             if spectator {
                 Text("※ 予選敗退のため、客席から決勝を観戦しています")

@@ -629,7 +629,7 @@ final class GameSession {
         if runner.isGPAlive {
             for i in runner.gpRoundsPassed..<cal.gpRounds.count {
                 let name = i < cal.gpRoundNames.count ? cal.gpRoundNames[i] : "頂GP\(i + 1)回戦"
-                ms.append(StageInfo(week: cal.gpRounds[i].week, name: name, line: cal.gpRounds[i].line,
+                ms.append(StageInfo(week: cal.gpRounds[i].week, name: GPName.display(name), line: cal.gpRounds[i].line,
                                     highStakes: i == cal.gpRounds.count - 1, isGP: true,
                                     length: NetaCatalog.lengthForGPRound(index: i)))
             }
@@ -885,7 +885,7 @@ final class GameSession {
     func finishWatchingFinal(winner: String) {
         watchingFinal = false
         didWatchFinal = true
-        log.append("第\(week)週: 頂GP決勝 優勝「\(winner)」（客席から）")
+        log.append("第\(week)週: 頂GP 決勝 優勝「\(winner)」（客席から）")
         saveNow()
     }
 
@@ -1152,7 +1152,7 @@ final class GameSession {
                                                   bankrupt: outcome.bankrupt,
                                                   prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0),
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
-                                                      || log.contains { $0.contains(config.calendar.gpRoundNames.first ?? "GP1回戦") },
+                                                      || log.contains { $0.contains(GPName.display(config.calendar.gpRoundNames.first ?? "GP1回戦")) },
                                                   dissolved: outcome.dissolved ? true : nil))
                 }
                 if outcome.champion {
@@ -1161,7 +1161,7 @@ final class GameSession {
                     // GP決勝の優勝は WeekRunner が週の結果を返さず即 yearDone になる（Calendar の即時リターン）＝
                     // .weekDone 経由の記録（出来事ログ・賞金年計）に載らない。表示用の記録だけここで足す（GameCore 不変）。
                     week = runner.week
-                    log.append("第\(runner.week)週: 頂GP決勝 優勝 +\(config.calendar.gpPrize / 10000)万")
+                    log.append("第\(runner.week)週: 頂GP 決勝 優勝 +\(config.calendar.gpPrize / 10000)万")
                     totalPrize += config.calendar.gpPrize
                     winFinale = true   // 優勝＝「勝ち版」演出を挟んでから S4 へ
                 } else {
@@ -1247,8 +1247,8 @@ final class GameSession {
 
     /// DEBUG: ネタ帳「大会の記録」（MZ_UI=notebook MZ_TAB=kiroku）の目視用に、判の4種（通過/敗退/休/優勝）を踏む記録を積む。
     func debugSeedKirokuLog() {
-        log = ["第12週: GP1回戦 通過", "第20週: GP2回戦 敗退", "第30週: 体調ダウン 休",
-               "第44週: 頂GP決勝 優勝「ひだまり座」（客席から）", "第44週: 頂GP決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
+        log = ["第12週: 頂GP 1回戦 通過", "第20週: 頂GP 2回戦 敗退", "第30週: 体調ダウン 休",
+               "第44週: 頂GP 決勝 優勝「ひだまり座」（客席から）", "第44週: 頂GP 決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
     }
 
     /// DEBUG: ネタ帳（MZ_UI=neta）の目視用に持ちネタを積んだ開始状態。全状態（鉄板/おろし前/擦り切れ/保管庫）を
@@ -1428,7 +1428,7 @@ final class GameSession {
         let parts = s.results.map { r -> String in
             let mark = r.isStage ? (r.passed ? (r.prize > 0 ? "優勝" : "通過") : "敗退") : "休"   // 賞金の出る勝ち＝その大会の優勝（結果の札と同じ言葉）   // 体調ダウン/療養は合否でなく「休」（監査§1-4-5・Fable13§2）
             let prize = r.prize > 0 ? " +\(r.prize / 10000)万" : ""
-            return "\(r.name) \(mark)\(prize)"
+            return "\(GPName.display(r.name)) \(mark)\(prize)"
         }
         return "第\(s.week)週: " + parts.joined(separator: " / ")
     }

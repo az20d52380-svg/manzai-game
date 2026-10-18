@@ -298,7 +298,7 @@ final class PlaytestFixTests: IsolatedStoreTestCase {
 /// 実プレイ点検 v2 の直し：年末の独白の条件（その年の戦績）・使った文を避ける選び方・観客の声。
 final class PlaytestFixV2Tests: IsolatedStoreTestCase {
     func testStageRecordCountsWinsAndLosses() {
-        let log = ["第10週: 春新人賞A 通過", "第15週: 春新人賞B 敗退 / 夏の賞 優勝 +25万", "第20週: 体調 休", "第46週: 頂GP決勝 優勝「夕凪」（客席から）"]
+        let log = ["第10週: 春新人賞A 通過", "第15週: 春新人賞B 敗退 / 夏の賞 優勝 +25万", "第20週: 体調 休", "第46週: 頂GP 決勝 優勝「夕凪」（客席から）"]
         let r = YearResultView.stageRecord(log: log)
         XCTAssertEqual(r.wins, 2)
         XCTAssertEqual(r.losses, 1)

@@ -151,14 +151,14 @@ struct CalendarView: View {
 
     private func tournamentLabel(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "決勝" }
-        if cal.gpRounds.contains(where: { $0.week == w }) { return "GP" }
+        if cal.gpRounds.contains(where: { $0.week == w }) { return "頂GP" }
         return "大会"
     }
 
     /// 上段に出す大会の略称（どの大会か）。春新人賞A→春新人A／大阪戎コンクール→大阪戎 など
     private func tournamentName(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "頂GP" }
-        if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return cal.gpRoundNames[i] }
+        if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return GPName.short(cal.gpRoundNames[i]) }
         guard let n = cal.tournament(inWeek: w)?.name else { return "" }
         return n.replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }

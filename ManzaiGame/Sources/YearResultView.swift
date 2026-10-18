@@ -236,7 +236,7 @@ struct YearResultView: View {
     static func eventLines(_ log: [String], limit: Int = 3) -> [String] {
         // 決勝に立った年は、決勝の行（敗退も含む）を必ず1枠確保する（賞金大会の優勝に押し出されて決勝に触れない年末にしない）
         var chosen = Set<Int>()
-        if let f = log.indices.last(where: { log[$0].contains("GP決勝") && !log[$0].contains("客席") }) { chosen.insert(f) }
+        if let f = log.indices.last(where: { (log[$0].contains("GP 決勝") || log[$0].contains("GP決勝")) && !log[$0].contains("客席") }) { chosen.insert(f) }
         for i in log.indices.filter({ log[$0].contains("優勝") && !log[$0].contains("客席") }).reversed() where chosen.count < limit { chosen.insert(i) }
         for i in log.indices.reversed() where chosen.count < limit { chosen.insert(i) }
         return chosen.sorted().map { log[$0] }

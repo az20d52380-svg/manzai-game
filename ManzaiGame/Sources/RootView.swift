@@ -198,12 +198,13 @@ struct RootView: View {
                 // netaentry＝その持ちネタのまま最初の大会の入口で止める（入口のネタ選びの目視・2026-10-14）
                 if ui == "netaentry" { session.debugAdvanceToFirstResult(stopAtEntry: true) }
             }
-            if ui == "prelude" || ui == "prelude_final", session.week <= 1 {
+            if ui == "prelude" || ui == "prelude_final" || ui == "gpresult", session.week <= 1 {
                 // 本番前カード（ネタ選び）の目視: 能力マックスで GP の本番前（prelude_final＝決勝）まで進める
                 var st = GameSession.debugMaxedState(); let ns = GameSession.debugNetaState()
                 st.netas = ns.netas; st.nextNetaID = ns.nextNetaID; st.selectedNetaID = ns.selectedNetaID; st.archivedNetas = ns.archivedNetas
                 session = GameSession(startState: st)
                 session.debugAdvanceToPrelude(final: ui == "prelude_final")
+                if ui == "gpresult" { session.advanceAuto() }   // GP回戦の結果画面へ（目視）
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）

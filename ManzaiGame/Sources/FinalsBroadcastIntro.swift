@@ -134,7 +134,7 @@ struct FinalsBroadcastIntro: View {
     private var titleView: some View {
         VStack(spacing: 10) {
             YoseTag(text: "決勝", style: .solidEnji)
-            YoseOutlinedText(text: "頂 グランプリ", font: YoseFont.gothic(34, weight: .black), fill: YoseColor.kinBright,
+            YoseOutlinedText(text: "頂グランプリ", font: YoseFont.gothic(34, weight: .black), fill: YoseColor.kinBright,
                              outlineColor: YoseColor.kuroUrushi, outlineWidth: 2, dropShadowY: 3).tracking(3)
             Text("〜 漫才の頂、ここに決まる 〜").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.washi)
         }

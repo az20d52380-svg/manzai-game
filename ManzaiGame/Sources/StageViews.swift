@@ -258,6 +258,19 @@ struct TournamentEntryView: View {
 
 // MARK: GP本番前カード（回戦・敗者復活・決勝の「本番へ」）
 
+/// 大会名の表示変換（内部キー "GP1回戦" "GP決勝" 等は変えず、画面に出す所だけ「頂GP 1回戦」にする）
+enum GPName {
+    static func display(_ key: String) -> String {
+        guard key.hasPrefix("GP") else { return key }
+        return "頂GP " + key.dropFirst(2)
+    }
+    /// 狭い所用（空白なし）
+    static func short(_ key: String) -> String {
+        guard key.hasPrefix("GP") else { return key }
+        return "頂" + key
+    }
+}
+
 struct StagePreludeView: View {
     @Bindable var session: GameSession
     let title: String
@@ -275,7 +288,7 @@ struct StagePreludeView: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            EntryHeader(tag: "頂 グランプリ", name: title)
+            EntryHeader(tag: "頂グランプリ", name: GPName.display(title))
 
             LineBoard(week: session.week,
                       stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
