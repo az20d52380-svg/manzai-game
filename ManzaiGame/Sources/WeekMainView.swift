@@ -25,6 +25,8 @@ struct WeekMainView: View {
     @State private var toast: String?
     @State private var hint: HintSpec?       // 初回だけの短い説明（初週・生活費の前の週。`？` からも開く）
     @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
+    @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
+    @State private var rentShownKey = 0
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
@@ -95,6 +97,11 @@ struct WeekMainView: View {
         case "settings": showSettings = true
         case "notebook": showNotebook = true
         case "calendar": showCalendar = true
+        case "rent":   // 月末の支払いの目視: 休むカードを1回実行（MZ_UI=rent と併用）
+            Task {
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                if let v = CommandCatalog.cards(.休む, config: session.config, money: s.money).first { perform(v) }
+            }
         case "autojob":   // 結果札の目視: 2.5秒おきにバイトを自動実行（結果→次週のイベントの順を撮る）
             Task {
                 for _ in 0..<3 {
@@ -173,6 +180,9 @@ struct WeekMainView: View {
         }
         .overlay { burstCostOverlay }
         .overlay {
+            if let r = rent { RentStatementView(statement: r) { rent = nil }.transition(.opacity) }
+        }
+        .overlay {
             if let m = debtNotice {
                 YoseModal(title: "借金", primaryTitle: "わかった", primaryAction: { debtNotice = nil }, cancelTitle: nil) {
                     Text(m).font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
@@ -217,6 +227,8 @@ struct WeekMainView: View {
             Task {
                 try? await Task.sleep(nanoseconds: 300_000_000)
                 syncEventPresentation()
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                maybeShowDebtNotice()   // 支払いの画面の後に借金の知らせ（イベントが立っていれば出ない）
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
@@ -250,7 +262,7 @@ struct WeekMainView: View {
             let chips = makeBurstChips()
             let line = makeResultLine()
             resultName = nil
-            guard !chips.isEmpty || line != nil else { clearBeat(); return }
+            guard !chips.isEmpty || line != nil else { clearBeat(); await presentRent(); return }
             burstChips = chips
             if let line { withAnimation(Theme.Motion.appear) { resultLine = line } }
             defer { if resultLine != nil { withAnimation(Theme.Motion.exit) { resultLine = nil } } }
@@ -265,6 +277,7 @@ struct WeekMainView: View {
             clearBeat()
             burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
             try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
+            await presentRent()   // 生活費の週末：獲得の後・次の週のイベントより前に支払いの画面
         }
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
@@ -1119,11 +1132,19 @@ struct WeekMainView: View {
         if exp > 0 { parts.append("経験点 +\(exp)") }
         let sd = session.lastStaminaDelta
         if sd != 0 { parts.append("体力 \(signed(sd))") }
-        let living = session.lastLivingPaid
-        guard !parts.isEmpty || living > 0 else { return nil }
-        let main = ([name] + parts.prefix(2)).joined(separator: "　")
-        // 生活費（週末処理）は行動の差と混ぜず、別の行で出す
-        return living > 0 ? main + "\n生活費 \(signed(-living))" : main
+        guard !parts.isEmpty else { return nil }
+        // 生活費（週末処理）は「月末の支払い」の画面で見せる＝ここには出さない
+        return ([name] + parts.prefix(2)).joined(separator: "　")
+    }
+
+    /// 生活費の週末なら、支払いの画面を出して閉じるまで待つ（獲得バーストの後・イベントより前）。1週1回。
+    private func presentRent() async {
+        let paid = session.lastLivingPaid
+        let key = session.year * 1000 + session.week
+        guard paid > 0, session.lastDeltaWeek == session.week, rentShownKey != key, !Task.isCancelled else { return }
+        rentShownKey = key
+        withAnimation(.easeOut(duration: 0.2)) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money) }
+        while rent != nil && !Task.isCancelled { try? await Task.sleep(nanoseconds: 100_000_000) }
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
@@ -1292,7 +1313,7 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
-        guard debtNotice == nil, riftNotice == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
             riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。"
@@ -1321,14 +1342,14 @@ struct WeekMainView: View {
     private func livingHint() -> HintSpec {
         let c = session.config
         return HintSpec(key: "living", title: "生活費", rows: [
-            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに\(c.livingCost / 10_000)万円が引かれる。今週がその週。"),
+            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(c.livingCost / 10_000)万円が引かれる。今週がその週。"),
             .init(term: "借金", text: "お金が足りないと、足りない分が借金になる。"),
         ])
     }
 
     /// 初回だけ出す短い説明（初週＝実力/相性/体力/経験点、最初の生活費の週＝引き落とし）。他の知らせと重ねない。
     private func maybeShowFirstHints() {
-        guard !OneTimeHint.suppressedForDebug, hint == nil, debtNotice == nil, riftNotice == nil, toast == nil,
+        guard !OneTimeHint.suppressedForDebug, hint == nil, rent == nil, debtNotice == nil, riftNotice == nil, toast == nil,
               session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil,
               !showAllocation, !showShop, !showNotebook, !showCalendar, !showSettings,
               case .freeAction = session.phase, session.year == 1 else { return }

@@ -147,6 +147,13 @@ struct RootView: View {
                 st.money = Int(ProcessInfo.processInfo.environment["MZ_MONEY"] ?? "") ?? -100_000
                 session = GameSession(startState: st)
             }
+            if ui == "rent", session.week <= 1, session.year == 1 {
+                // 月末の支払いの目視: MZ_MONEY=<円>（既定 200000＝払える／例 110000＝足りない）。第4週で休む行動を自動実行する（MZ_WEEK=rent）
+                var st = GameState(config: session.config); st.compat = 10
+                st.money = Int(ProcessInfo.processInfo.environment["MZ_MONEY"] ?? "") ?? 200_000
+                session = GameSession(startState: st)
+                session.debugFreeWeeks(session.config.livingInterval - 1, .rest(.完全休養))
+            }
             if ui == "weekhint", session.week <= 1, session.year == 1 {
                 // 週メインの一行案内の目視: MZ_WH=neta0/stage/stamina/living/partner/plus で各条件の状態を作る
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000

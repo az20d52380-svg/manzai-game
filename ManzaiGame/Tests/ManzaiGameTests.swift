@@ -450,3 +450,24 @@ final class PlaytestV4FixTests: IsolatedStoreTestCase {
         XCTAssertTrue(YearResultView.yeFinalLost.allSatisfy { $0.contains("決勝") })
     }
 }
+
+/// 月末の支払い（生活費の演出）：内訳の合計と足りない額
+final class RentStatementTests: IsolatedStoreTestCase {
+    func testBreakdownSumsToLivingCost() {
+        for total in [140_000, 100_000, 123_457, 1, 0] {
+            XCTAssertEqual(RentStatement.breakdown(total: total).reduce(0) { $0 + $1.amount }, total)
+        }
+        let d = RentStatement.breakdown(total: GameConfig().livingCost).map(\.amount)
+        XCTAssertEqual(d, [60_000, 40_000, 20_000, 20_000])
+    }
+    func testShortfall() {
+        var r = RentStatement.make(livingCost: 140_000, moneyAfter: 60_000)
+        XCTAssertEqual(r.moneyBefore, 200_000); XCTAssertEqual(r.shortfall, 0); XCTAssertTrue(r.paid)
+        r = RentStatement.make(livingCost: 140_000, moneyAfter: 0)
+        XCTAssertEqual(r.shortfall, 0)
+        r = RentStatement.make(livingCost: 140_000, moneyAfter: -30_000)
+        XCTAssertEqual(r.shortfall, 30_000); XCTAssertFalse(r.paid)
+        r = RentStatement.make(livingCost: 140_000, moneyAfter: -240_000)
+        XCTAssertEqual(r.moneyBefore, -100_000); XCTAssertEqual(r.shortfall, 140_000)
+    }
+}

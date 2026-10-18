@@ -17,6 +17,7 @@
 		15D990101F298A4DE2CC6010 /* WeekHint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9906C18C1D125D16D6DEA7D0 /* WeekHint.swift */; };
 		1AF6138DFD7BF866327A2154 /* se_kira.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6083AAF4C14A5E6DFED2E5DF /* se_kira.mp3 */; };
 		1CD9067C8E549F3017A17AC5 /* bgm_finals.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */; };
+		1D30D20BAFD909F2362AD94E /* RentStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3213AB05FF12A1A58A5D85AF /* RentStatement.swift */; };
 		1D5713E40EEA45D0B98E861B /* TalkParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5B0AD382326CD111BFDE10 /* TalkParts.swift */; };
 		1FCCD2091EABB90AE69CD4DA /* se_cancel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */; };
 		20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */; };
@@ -121,6 +122,7 @@
 		2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
 		2DC7AD55C10948F6D9376264 /* se_deny.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_deny.mp3; sourceTree = "<group>"; };
 		318839C80DE7D3B33B89A595 /* se_don.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_don.mp3; sourceTree = "<group>"; };
+		3213AB05FF12A1A58A5D85AF /* RentStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RentStatement.swift; sourceTree = "<group>"; };
 		32A860D27554F188BD2E3F64 /* se_fanfare.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_fanfare.mp3; sourceTree = "<group>"; };
 		3B1F087A453470E4CF970A6B /* StageScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageScene.swift; sourceTree = "<group>"; };
 		3E034762E4A6192639CA2DCF /* WaIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaIcons.swift; sourceTree = "<group>"; };
@@ -271,6 +273,7 @@
 				66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */,
 				DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */,
 				F840A919C087A92A94339899 /* RadarChart.swift */,
+				3213AB05FF12A1A58A5D85AF /* RentStatement.swift */,
 				5F49ED139642FC2518E962F8 /* RootView.swift */,
 				2AAFBC0284B7A53A0A48C18D /* S6bView.swift */,
 				A799C1CDD04C665A5DE37ABB /* SettingsView.swift */,
@@ -518,6 +521,7 @@
 				EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */,
 				DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */,
 				9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */,
+				1D30D20BAFD909F2362AD94E /* RentStatement.swift in Sources */,
 				2A0C4D15DED110C70394538A /* RootView.swift in Sources */,
 				9FB3C8B8D6363401D9B7EEFD /* S6bView.swift in Sources */,
 				420B5A106DD13DE092D75077 /* SettingsView.swift in Sources */,
