@@ -133,11 +133,11 @@ struct TournamentResultView: View {
                     .background(YoseColor.kuroUrushi.opacity(0.9))
                     .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 6)
-                    stepDots.padding(.top, 6)
+                    if !needsAnnounce { stepDots.padding(.top, 6) }
 
                     // 結果額縁（大会名のすぐ下・二人の頭の上）＋一言の墨帯
                     VStack(spacing: 10) {
-                        if !needsQual { verdictPlate(passed: r.passed) }   // 予選は通知で結果を先に知っている＝判の文字は出さない（客席の反応と講評だけ）
+                        if !needsQual && !needsAnnounce { verdictPlate(passed: r.passed) }   // 予選は通知で結果を先に知っている＝判の文字は出さない（客席の反応と講評だけ）
                         if revealed {
                             StageTelopBelt(text: r.passed ? "——どっと沸いた！" : missLine(r))
                                 .transition(.opacity)
@@ -289,10 +289,10 @@ struct TournamentResultView: View {
     private func runReveal() async {
         let r = result
         withAnimation(.easeOut(duration: 0.35)) { revealedWave = true }  // ①波形が先
-        if r.passed { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
+        if r.passed && !needsAnnounce { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
         await pause(0.9)
         if Task.isCancelled { return }
-        await runFanVoices()                                             // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
+        if !needsAnnounce { await runFanVoices() }                       // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
         if Task.isCancelled { return }
         if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
         await pause(0.7)
@@ -300,7 +300,9 @@ struct TournamentResultView: View {
         withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
         slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
         if r.burst == true && !skipRequested { showBurstCutIn = true }   // ハマった夜＝斜めカットイン（約1秒で自動退場）
-        if r.passed {
+        if needsAnnounce {
+            // 準決勝は発表で結果が分かっている＝客席の反応・判の叩きつけは出さない（講評・結果の札は続けて出す）
+        } else if r.passed {
             if needsQual { Sound.play(.applauseHall) }                   // 予選＝拍手と歓声だけ（判の文字・紙吹雪・太鼓なし）
             else { confettiFire += 1; Haptics.rare(); Sound.play(.taiko); Sound.play(.applauseHall) }   // 通過＝太鼓ドン＋会場拍手
         } else {

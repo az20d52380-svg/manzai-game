@@ -66,7 +66,7 @@ struct FinalistAnnounceView: View {
             if called == 0 { return "決勝に進む組が、読み上げられる。" }
             if let cur = readOrder.prefix(called).last { return cur.isSelf ? "——\(cur.name)。" : cur.name }
             return ""
-        case .after: return passed ? "決勝に出るか、問われる。" : "以上の組が、決勝に進む。"
+        case .after: return "以上の組が、決勝に進む。"
         }
     }
 
@@ -78,22 +78,15 @@ struct FinalistAnnounceView: View {
                 if stage == .wait {
                     Image(systemName: "building.columns").font(.system(size: 54)).foregroundStyle(YoseColor.kin.opacity(0.6))
                         .transition(.opacity)
+                    Text(caption).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.washi)
+                        .multilineTextAlignment(.center).frame(minHeight: 44).id(caption).transition(.opacity)
                 } else {
+                    mcBlock.transition(.opacity)
                     lineUp.transition(.opacity)
                 }
-                Text(caption)
-                    .font(YoseFont.mincho(stage == .read && called > 0 ? 30 : 17))
-                    .foregroundStyle(selfCalled && stage == .read && readOrder.prefix(called).last?.isSelf == true ? YoseColor.kinBright : YoseColor.washi)
-                    .multilineTextAlignment(.center).frame(minHeight: 44)
-                    .id(caption).transition(.opacity)
                 Spacer()
-                if stage == .after && passed {
-                    Button { Sound.play(.success); onFinish() } label: {
-                        Text("出ます").font(YoseFont.gothic(18, weight: .heavy)).foregroundStyle(YoseColor.kuroUrushi)
-                            .padding(.horizontal, 48).padding(.vertical, 12).background(YoseColor.kinBright, in: Capsule())
-                    }.transition(.opacity)
-                } else if stage == .after {
-                    Button { onFinish() } label: {
+                if stage == .after {
+                    Button { if passed { Sound.play(.success) }; onFinish() } label: {
                         Text("つづける").font(YoseFont.gothic(16)).foregroundStyle(YoseColor.washi)
                             .padding(.horizontal, 40).padding(.vertical, 11).overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.6)))
                     }.transition(.opacity)
@@ -118,6 +111,34 @@ struct FinalistAnnounceView: View {
             if let n = Int(ProcessInfo.processInfo.environment["MZ_HOLD_AT"] ?? "") { task?.cancel(); stage = .read; called = n }
         }
         #endif
+    }
+
+    /// 司会（MC）：マイクを持つ人物と、読み上げの吹き出し（名前は1組ずつ）
+    private var mcBlock: some View {
+        let big = stage == .read && called > 0
+        let hot = selfCalled && stage == .read && readOrder.prefix(called).last?.isSelf == true
+        return VStack(spacing: 6) {
+            HStack(alignment: .bottom, spacing: 10) {
+                VStack(spacing: 2) {
+                    ZStack(alignment: .top) {
+                        Capsule().fill(YoseColor.kin.opacity(0.9)).frame(width: 40, height: 66)
+                        Circle().fill(YoseColor.kinBright).frame(width: 24, height: 24).offset(y: -13)
+                        Image(systemName: "mic.fill").font(.system(size: 16)).foregroundStyle(YoseColor.kuroUrushi).offset(x: 18, y: 30)
+                    }.frame(height: 76)
+                    Text("司会").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kin)
+                }
+                Text(caption)
+                    .font(YoseFont.mincho(big ? 26 : 16))
+                    .foregroundStyle(hot ? YoseColor.kinBright : YoseColor.kuroUrushi)
+                    .multilineTextAlignment(.center).minimumScaleFactor(0.6)
+                    .frame(maxWidth: .infinity, minHeight: 64)
+                    .padding(.horizontal, 12).padding(.vertical, 10)
+                    .background(hot ? Color.black.opacity(0.85) : YoseColor.washi.opacity(0.95), in: RoundedRectangle(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(YoseColor.kin, lineWidth: hot ? 2 : 1))
+                    .id(caption).transition(.opacity)
+            }
+        }
+        .padding(.bottom, 8)
     }
 
     /// 並び：2段のシルエット。呼ばれた組は半歩前へ出て光る（名前は小さく添える）
