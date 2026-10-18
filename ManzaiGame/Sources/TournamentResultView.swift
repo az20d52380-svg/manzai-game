@@ -29,6 +29,9 @@ struct TournamentResultView: View {
     @State private var ceremonyDone = false
     /// 頂GP 準決勝の後の決勝進出者の発表（M-1 方式）。済むまで判の演出を始めない。準決勝以外は最初から済み
     @State private var announceDone = false
+    /// 頂GP 予選（1回戦〜準々決勝）の知らせ方（通知→通過者一覧／相方のメッセージ）。済むまで判の演出を始めない
+    @State private var qualDone = false
+    private var needsQual: Bool { QualifierNoticeView.applies(result.name) }
     /// 判の前に流す観客の声（fan_report_design §1）。shown=いま見えている枚数／tap=タップで送った回数／active=声の相か
     @State private var fanShown = 0
     @State private var fanTap = 0
@@ -226,7 +229,7 @@ struct TournamentResultView: View {
         .onChange(of: revealed) { _, _ in stageChangedAt = Date() }
         .onChange(of: revealedReview) { _, _ in stageChangedAt = Date() }
         .overlay {
-            if !ceremonyDone && (announceDone || !needsAnnounce) {
+            if !ceremonyDone && (announceDone || !needsAnnounce) && (qualDone || !needsQual) {
                 StageCeremony { ceremonyDone = true; beginReveal() }
                     .transition(.opacity)
             }
@@ -238,6 +241,14 @@ struct TournamentResultView: View {
             if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
+        .overlay {
+            if needsQual && !qualDone {   // 判の前に、予選の結果の知らせ（通知→一覧／相方のメッセージ）
+                QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: summary.year, roundName: result.name, passed: result.passed) {
+                    withAnimation(.easeOut(duration: 0.3)) { qualDone = true }
+                }
+                .transition(.opacity)
+            }
+        }
         .overlay {
             if needsAnnounce && !announceDone {   // 判の前に、決勝進出者の発表（五十音順の読み上げ）
                 FinalistAnnounceView(combiName: session.combiName, year: summary.year, passed: result.passed) {

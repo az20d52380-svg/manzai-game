@@ -22,7 +22,7 @@ struct FinalistAnnounceView: View {
     /// 読み上げの1組（五十音順）。自組も同じ並びに入る
     private struct Slot: Identifiable { let id: Int; let name: String; let yomi: String; let isSelf: Bool; let finalist: Bool }
 
-    private static let yomi: [String: String] = [
+    static let yomi: [String: String] = [
         "紺屋": "こうや", "夜明けの犬": "よあけのいぬ", "サーカス": "さあかす", "青写真": "あおじゃしん", "十三": "じゅうそう",
         "深夜のグラタン": "しんやのぐらたん", "テレフォン": "てれふぉん", "北緯": "ほくい", "帰り道": "かえりみち",
         "灯台守": "とうだいもり", "三番線": "さんばんせん", "東口": "ひがしぐち", "ペンギン座": "ぺんぎんざ", "トランジスタ": "とらんじすた",
