@@ -740,7 +740,7 @@ struct IntroFlowView: View {
                          together: false),
         ReminiscenceCard(caption: "放課後の廊下。",
                          mood: .after, speaker: "谷口", line: "コンビ、組まへんか"),
-        ReminiscenceCard(caption: "数年後。小さな劇場の楽屋。", mood: .eve,
+        ReminiscenceCard(caption: "数年後。吉竹興行に所属して、小さな劇場の楽屋。", mood: .eve,
                          talk: [Advice(name: "谷口", text: "緊張してきたわ。手、冷たいねん"),
                                 Advice(name: "俺", text: "水、飲んどけよ。次が出番だぞ"),
                                 Advice(name: "谷口", text: "せやな。ほな、行こか")]),

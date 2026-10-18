@@ -378,7 +378,7 @@ enum ChoiceEventData {
     private static let photoShootOffer = ChoiceEventText(
         title: "撮影の話",
         setup: [
-            Advice(name: nil, text: "事務所。昼。"),
+            Advice(name: nil, text: "吉竹興行の事務所。昼。"),
             Advice(name: "マネージャー", text: "情報誌の撮影の話が来てる。その週は撮影で埋まるけど、どうする"),
             Advice(name: "俺", text: "その週は、稽古できないですね"),
             Advice(name: "谷口", text: "撮られるのは慣れてへんけど、お金は出るらしいで"),
