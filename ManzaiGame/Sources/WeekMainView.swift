@@ -1573,7 +1573,8 @@ struct WeekMainView: View {
 
     /// 次の本番（GameSession.upcomingStages の先頭＝出場資格・GP敗退を反映済み・監査A-02/F-01）
     private func nextMilestone() -> (name: String, weeksLeft: Int)? {
-        session.nextStage.map { ($0.name, $0.week - session.week) }
+        // 今年の大会が全部終わった後は、年末までの週を出す（playtest_v11 #4：次の予定が消えていた）
+        session.nextStage.map { ($0.name, $0.week - session.week) } ?? ("年末", session.config.weeks - session.week)
     }
 }
 
