@@ -137,7 +137,7 @@ struct TournamentResultView: View {
 
                     // 結果額縁（大会名のすぐ下・二人の頭の上）＋一言の墨帯
                     VStack(spacing: 10) {
-                        verdictPlate(passed: r.passed)
+                        if !needsQual { verdictPlate(passed: r.passed) }   // 予選は通知で結果を先に知っている＝判の文字は出さない（客席の反応と講評だけ）
                         if revealed {
                             StageTelopBelt(text: r.passed ? "——どっと沸いた！" : missLine(r))
                                 .transition(.opacity)
@@ -301,11 +301,11 @@ struct TournamentResultView: View {
         slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
         if r.burst == true && !skipRequested { showBurstCutIn = true }   // ハマった夜＝斜めカットイン（約1秒で自動退場）
         if r.passed {
-            confettiFire += 1; Haptics.rare()
-            Sound.play(.taiko); Sound.play(.applauseHall)                // 通過＝太鼓ドン＋会場拍手
+            if needsQual { Sound.play(.applauseHall) }                   // 予選＝拍手と歓声だけ（判の文字・紙吹雪・太鼓なし）
+            else { confettiFire += 1; Haptics.rare(); Sound.play(.taiko); Sound.play(.applauseHall) }   // 通過＝太鼓ドン＋会場拍手
         } else {
-            Haptics.confirm()
-            Sound.play(.taiko2)                                          // 敗退＝重いドドン（拍手なし＝静けさ）
+            if !needsQual { Haptics.confirm(); Sound.play(.taiko2) }     // 予選の敗退は静かな客席だけ
+            // 敗退＝重いドドン（拍手なし＝静けさ）
         }
         try? await Task.sleep(nanoseconds: 400_000_000)                  // 判の解放は畳まない（0.4s は必ず見せる）
         if Task.isCancelled { return }
