@@ -1386,7 +1386,7 @@ struct WeekMainView: View {
     private func maybeShowDebtNotice() {
         if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
             session.clearInjuryNotice()
-            injuryNotice = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。"
+            injuryNotice = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
             return
         }
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
