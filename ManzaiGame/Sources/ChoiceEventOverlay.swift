@@ -45,6 +45,8 @@ struct ChoiceEventOverlay: View {
         }
         return out
     }
+    /// 効果の無い会話だけの出来事（選択肢なしフレーバー）＝台詞を全部1枚に並べ、1回のタップで閉じる
+    private var isFlavor: Bool { session.availableEventChoices().isEmpty }
     private var setupDone: Bool { setupShown >= text.setup.count }
     private var afterDone: Bool {
         guard let chosenID else { return false }
@@ -62,7 +64,7 @@ struct ChoiceEventOverlay: View {
                     VStack(spacing: 16) {
                         ForEach(Array(lines.enumerated()), id: \.element.id) { i, line in
                             lineView(line.advice, isLatest: i == lines.count - 1)
-                                .opacity(i >= lines.count - 2 ? 1 : 0.72)   // 直近2件以外は薄く（読み戻せる）
+                                .opacity(i >= lines.count - 2 || isFlavor ? 1 : 0.72)   // 直近2件以外は薄く（読み戻せる）
                                 .id(line.id)
                                 .transition(.opacity.combined(with: .offset(y: 8)))
                             if line.id == text.setup.count - 1, let chosenID {
@@ -93,6 +95,7 @@ struct ChoiceEventOverlay: View {
         .onTapGesture { advance() }
         .onAppear {
             Sound.play(.event)   // イベント発生の一音
+            if isFlavor { setupShown = text.setup.count }   // 選択肢なし＝全部並べる
             #if DEBUG
             // 目視フック: MZ_EVSTEP=99 で地の文を送り切る／MZ_EVPICK=1 で最初の選択肢を選んで返事まで送り切る
             if ProcessInfo.processInfo.environment["MZ_EVSTEP"] != nil { setupShown = text.setup.count }
@@ -260,6 +263,9 @@ struct ChoiceEventOverlay: View {
     // MARK: 進行
 
     private func advance() {
+        if isFlavor && footerReady && !hasMore && chosenID == nil {   // 並べた1枚は、1回のタップで閉じる
+            session.dismissChoiceEvent(); onClose(); return
+        }
         guard hasMore else { return }
         Sound.play(.cursor)
         withAnimation(Theme.Motion.appear) {
