@@ -4,7 +4,7 @@
 
 ## A. 最初の5手（この順・省略しない）
 1. `~/.claude/CLAUDE.md` を読む（特にルール1〜24＝止めない運用・自動再開・トークン節約）。
-2. `cd ~/manzai-game && git pull --rebase`。`docs/handoff_*.md` の一番新しいもの（今は handoff_2026-10-18.md） → `docs/AUTOPILOT.md`（§中断中・§キューの未済・§判断待ち）だけ読む。設計docは見出し→該当節だけ。
+2. `cd ~/manzai-game && git pull --rebase`。`docs/handoff_*.md` の一番新しいもの（今は handoff_2026-10-18b.md） → `docs/AUTOPILOT.md`（§中断中・§キューの未済・§判断待ち）だけ読む。設計docは見出し→該当節だけ。
 3. `get_usage` を読む → 下の C の表で「作業してよいか」を決める。
 4. 定期タスク（list_scheduled_tasks）が enabled で nextRunAt が未来か確かめる（無ければ作り直す＝1時間ごと・使用量の線を見てすぐ終わる回）。
 5. オーナーに「前回からの進み（コミット数・主な済）」と「判断待ちの1問目」を短く出す（ルール14）。**返事は待たずに**キューの上から作業を始める（質問は文書に並べる・止めてと言われた後にまとめて聞く）。
