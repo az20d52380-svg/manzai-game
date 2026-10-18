@@ -29,8 +29,11 @@ struct RentStatement: Equatable {
     }
 
     /// moneyAfter は支払い後の所持金（週末処理済みの state.money）。
-    static func make(livingCost: Int, moneyAfter: Int) -> RentStatement {
-        RentStatement(lines: breakdown(total: livingCost), total: livingCost,
+    /// roomExtra は部屋の上乗せ（livingCost は上乗せ込みの合計）。「家賃」の行にだけ乗る。
+    static func make(livingCost: Int, moneyAfter: Int, roomExtra: Int = 0) -> RentStatement {
+        var lines = breakdown(total: livingCost - roomExtra)
+        if roomExtra > 0, !lines.isEmpty { lines[0] = Line(label: lines[0].label, amount: lines[0].amount + roomExtra) }
+        return RentStatement(lines: lines, total: livingCost,
                       moneyBefore: moneyAfter + livingCost, moneyAfter: moneyAfter)
     }
 

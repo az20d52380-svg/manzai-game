@@ -742,7 +742,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     _apply_event(s, EVENT_TABLE[idx])
 
         if week % B.LIVING_INTERVAL == 0:
-            s.money -= B.LIVING_COST
+            s.money -= B.LIVING_COST + B.room_rent(s)
             if DEBT_LIFE_PEN is not None and s.money < 0:
                 dst, dmt = DEBT_LIFE_PEN   # 生活費が払えない月の生活苦【実験・既定OFF】
                 B.add(s, "stamina", dst)

@@ -20,6 +20,7 @@ struct ShopView: View {
             noren
             ScrollView {
                 VStack(spacing: 10) {
+                    roomSection
                     ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.leading)
@@ -45,6 +46,57 @@ struct ShopView: View {
         }
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 6)
         .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2).padding(.horizontal, YoseMetrics.screenMargin) }
+    }
+
+    // MARK: 部屋を選ぶ（キュー90・§90）
+    private static let roomNames = ["安アパート", "ふつうの部屋", "いい部屋"]
+
+    private func roomNote(_ i: Int) -> String {
+        let c = session.config
+        let rent = c.roomRents[i]
+        let rentText = rent == 0 ? "いまの家賃のまま" : "4週ごとの支払いに ¥\(rent.formatted()) 上乗せ"
+        let heal = i == 0 ? "" : "\n家で休むと体力がよく戻る" + (i == 2 ? "（完全休養は心も少し落ち着く）" : "")
+        return rentText + heal
+    }
+
+    private var roomSection: some View {
+        let cur = session.state.room ?? 0
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .lastTextBaseline) {
+                Text("部屋を選ぶ").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Spacer()
+                Text("いつでも選び直せます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            }
+            ForEach(0..<Self.roomNames.count, id: \.self) { i in
+                let ok = GameEngine.canMoveRoom(to: i, state: session.state, config: session.config)
+                let here = i == cur
+                HStack(alignment: .center, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Text(Self.roomNames[i]).font(YoseFont.gothic(17, weight: .heavy))
+                                .foregroundStyle(ok || here ? YoseColor.sumi : YoseColor.disabledText)
+                            if here { YoseTag(text: "いま住んでいる", style: .outlineShu) }
+                        }
+                        Text(roomNote(i)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    if !here {
+                        Button { if session.moveRoom(to: i) { Haptics.tick() } } label: {
+                            Text(i < cur ? "戻る" : "引っ越す").font(YoseFont.gothic(14, weight: .heavy)).padding(.vertical, 6)
+                        }
+                        .buttonStyle(YoseButtonStyle(.kifuda)).frame(width: 96).disabled(!ok)
+                    }
+                }
+                .padding(.horizontal, YoseMetrics.padH).padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .yoseHarigami()
+            }
+            Text("上の部屋へ引っ越せるのは、その部屋の1か月ぶんの上乗せが払えるときだけ。下の部屋へはお金がなくても戻れます。上乗せは次の月末の支払いから、家賃に乗ります。")
+                .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.bottom, 6)
     }
 
     private func price(_ item: ShopItem) -> Int { session.config.items[item]?.price ?? 0 }
