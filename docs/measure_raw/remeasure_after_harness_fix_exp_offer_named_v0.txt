@@ -1,0 +1,32 @@
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/pool.py", line 48, in mapstar
+    return list(map(*args))
+  File "/Users/hujiko/manzai-game/tools/exp_offer_named_v0.py", line 54, in one
+    first, s, stage, ever = C.run_career(pol, C.BASE_SEED + i)
+  File "/Users/hujiko/manzai-game/tools/sim_career.py", line 1042, in run_career
+    won, stage, finalist = run_year(pol, s, year, rng, gp_seed=(prev_stage >= 3))
+  File "/Users/hujiko/manzai-game/tools/exp_balance_snapshot_v0.py", line 36, in run_year
+    r = o(pol, s, year, rng, **kw)
+  File "/Users/hujiko/manzai-game/tools/sim_career.py", line 903, in run_year
+    offer = B.roll_offer(s, rng)
+  File "/Users/hujiko/manzai-game/tools/exp_offer_named_v0.py", line 37, in roll
+    o = dict(NAMED[[B.OFFER_EXP["name"], B.OFFER_MONEY["name"]].index(o["name"]) * 2 + (rng.random() < 0.5)])
+ValueError: 'ラジオ' is not in list
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/hujiko/manzai-game/tools/exp_offer_named_v0.py", line 72, in <module>
+    main()
+  File "/Users/hujiko/manzai-game/tools/exp_offer_named_v0.py", line 65, in main
+    res = pool.map(one, [(v, b, n) for v in variants for b in BOTS], chunksize=1)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/pool.py", line 364, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/pool.py", line 771, in get
+    raise self._value
+ValueError: 'ラジオ' is not in list
