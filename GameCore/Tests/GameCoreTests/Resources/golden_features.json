@@ -1,0 +1,5150 @@
+{
+ "version": 1,
+ "scripts": [
+  {
+   "name": "room0_home_rests",
+   "init": {
+    "room": 0
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0,
+       "mental": 10.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 80.0,
+      "fame": 3.0,
+      "mental": 11.833333333333334,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 11.833333333333334,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 55.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "相方と過ごす"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "room1_home_rests",
+   "init": {
+    "room": 1
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0,
+       "mental": 10.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 90.0,
+      "fame": 3.0,
+      "mental": 11.833333333333334,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 11.833333333333334,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 65.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "相方と過ごす"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "room2_home_rests",
+   "init": {
+    "room": 2
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0,
+       "mental": 10.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 75.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "相方と過ごす"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "living_room0_yarikuri",
+   "init": {
+    "room": 0,
+    "money": 1000000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 140000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 3
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 860000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 8
+     },
+     "state": {
+      "money": 720000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_goi": 2.0,
+       "exp_maai": 4.0
+      }
+     },
+     "state": {
+      "money": 720000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 2.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "やりくり上手"
+     },
+     "state": {
+      "money": 720000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 720000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 133000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 3
+     },
+     "state": {
+      "money": 720000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 587000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 8
+     },
+     "state": {
+      "money": 454000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "living_room1_yarikuri",
+   "init": {
+    "room": 1,
+    "money": 1000000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 190000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 810000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_goi": 2.0,
+       "exp_maai": 4.0
+      }
+     },
+     "state": {
+      "money": 810000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 2.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "やりくり上手"
+     },
+     "state": {
+      "money": 810000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 810000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 183000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 8
+     },
+     "state": {
+      "money": 627000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "living_room2_yarikuri",
+   "init": {
+    "room": 2,
+    "money": 1000000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 290000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_goi": 2.0,
+       "exp_maai": 4.0
+      }
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 2.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "やりくり上手"
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 283000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 8
+     },
+     "state": {
+      "money": 427000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "injury_mult_skill_throat",
+   "init": {},
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 0.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 0.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 0.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.25
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.15
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 40.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.05
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 49.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 49.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 49.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.005
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_tanryoku": 4.0,
+       "exp_sonzaikan": 3.0,
+       "money": 100000
+      }
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 49.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 3.0,
+      "exp_tanryoku": 4.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "体が資本"
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 49.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 0.0
+      }
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 0.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 0.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.175
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.105
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 40.0
+      }
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 100000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.034999999999999996
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "喉のケア用品"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 0.0
+      }
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 0.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 0.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0875
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0525
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 40.0
+      }
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {
+       "喉のケア用品": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.017499999999999998
+    },
+    {
+     "op": {
+      "op": "new_year"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 40.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "injury_prob"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.105
+    }
+   ]
+  },
+  {
+   "name": "fame_base",
+   "init": {},
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "fame": 3.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": 2.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 4.1116875,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": -1.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.1116875000000004,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "fame": 30.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 30.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": 2.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 30.46875,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": -1.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 29.46875,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "fame": 60.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 60.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": 2.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 60.075,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": -1.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 59.075,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "fame_aisare",
+   "init": {},
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_sonzaikan": 6.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 6.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "愛され芸人"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "fame": 3.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": 2.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 4.22285625,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": -1.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.2228562500000004,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "fame": 30.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 30.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": 2.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 30.515625,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": -1.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 29.515625,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "fame": 60.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 60.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": 2.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 60.0825,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "fame",
+      "amt": -1.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 59.0825,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "rift_base",
+   "init": {
+    "rift": 60.0,
+    "compat": 5.0
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 5.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.375,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 5.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.375,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.75,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 10.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 10.0,
+      "rift": 60.75,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 10.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 10.0,
+      "rift": 61.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 15.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 15.0,
+      "rift": 61.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 15.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 15.0,
+      "rift": 61.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 20.0,
+      "rift": 61.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 20.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 20.0,
+      "rift": 61.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0,
+      "joint": true
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 20.0,
+      "rift": 58.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 8.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 8.0,
+      "rift": 58.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 8.0,
+      "rift": 55.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 5.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 55.125,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 1,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 55.5,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 1,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 55.875,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 1,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 56.25,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 56.625,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 57.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 57.375,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "rift_aitaomoi",
+   "init": {
+    "rift": 60.0,
+    "compat": 5.0
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_sonzaikan": 3.0,
+       "exp_maai": 4.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 3.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "相方思い"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 5.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.3,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 5.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.3,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 60.599999999999994,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 10.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 10.0,
+      "rift": 60.599999999999994,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 10.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 10.0,
+      "rift": 60.8,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 15.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 15.0,
+      "rift": 60.8,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 15.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 15.0,
+      "rift": 60.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 20.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 20.0,
+      "rift": 60.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 20.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 20.0,
+      "rift": 60.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0,
+      "joint": true
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 20.0,
+      "rift": 57.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 8.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 8.0,
+      "rift": 57.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 8.0,
+      "rift": 54.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "compat": 5.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 54.9,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 1,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 55.199999999999996,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 1,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 55.49999999999999,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 1,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 55.79999999999999,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 56.09999999999999,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 56.399999999999984,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rift",
+      "year": 3,
+      "compat0": 5.0
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 56.69999999999998,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "相方思い"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "items_drinks",
+   "init": {
+    "money": 500000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 10.0
+      }
+     },
+     "state": {
+      "money": 500000.0,
+      "stamina": 10.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 497000.0,
+      "stamina": 18.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 494000.0,
+      "stamina": 26.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 2
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 491000.0,
+      "stamina": 34.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 3
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 488000.0,
+      "stamina": 42.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 4
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 485000.0,
+      "stamina": 50.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 5
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 482000.0,
+      "stamina": 58.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 482000.0,
+      "stamina": 58.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "回復ドリンク大"
+     },
+     "state": {
+      "money": 462000.0,
+      "stamina": 78.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "回復ドリンク大": 1,
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "回復ドリンク大"
+     },
+     "state": {
+      "money": 442000.0,
+      "stamina": 98.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "回復ドリンク大": 2,
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "回復ドリンク大"
+     },
+     "state": {
+      "money": 422000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "回復ドリンク大": 3,
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "回復ドリンク大"
+     },
+     "state": {
+      "money": 402000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "回復ドリンク大": 4,
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "回復ドリンク大"
+     },
+     "state": {
+      "money": 402000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "回復ドリンク大": 4,
+       "栄養ドリンク": 6
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "new_year"
+     },
+     "state": {
+      "money": 402000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 399000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "栄養ドリンク": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "回復ドリンク大"
+     },
+     "state": {
+      "money": 379000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "回復ドリンク大": 1,
+       "栄養ドリンク": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    }
+   ]
+  },
+  {
+   "name": "items_sento_room0",
+   "init": {
+    "money": 100000,
+    "room": 0
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "buy",
+      "item": "銭湯の回数券"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "銭湯の回数券"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 90.0,
+      "fame": 3.0,
+      "mental": 11.833333333333334,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 3.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 11.833333333333334,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 3.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 65.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 2.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 2.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "相方と過ごす"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 50.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 1.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 1.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 90.0,
+      "fame": 3.0,
+      "mental": 14.522476851851852,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 14.522476851851852,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 55.0,
+      "fame": 3.0,
+      "mental": 15.401456211419754,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "銭湯の回数券"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 55.0,
+      "fame": 3.0,
+      "mental": 15.401456211419754,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 2
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    }
+   ]
+  },
+  {
+   "name": "items_sento_room2",
+   "init": {
+    "money": 100000,
+    "room": 2
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "buy",
+      "item": "銭湯の回数券"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "銭湯の回数券"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 3.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 12.734722222222222,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 3.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 85.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 2.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 2.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "相方と過ごす"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 50.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 1.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 13.628599537037037,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 1.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "完全休養"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 16.273110742991253,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "stamina": 20.0
+      }
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 20.0,
+      "fame": 3.0,
+      "mental": 16.273110742991253,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "rest",
+      "name": "気分転換"
+     },
+     "state": {
+      "money": 90000.0,
+      "stamina": 75.0,
+      "fame": 3.0,
+      "mental": 17.13750148679966,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "銭湯の回数券"
+     },
+     "state": {
+      "money": 80000.0,
+      "stamina": 75.0,
+      "fame": 3.0,
+      "mental": 17.13750148679966,
+      "compat": 6.0,
+      "rift": 0.0,
+      "sento": 4.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {
+       "銭湯の回数券": 2
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    }
+   ]
+  },
+  {
+   "name": "items_shinkansen_throat",
+   "init": {
+    "money": 700000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "buy",
+      "item": "新幹線回数券"
+     },
+     "state": {
+      "money": 500000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "新幹線回数券"
+     },
+     "state": {
+      "money": 500000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "喉のケア用品"
+     },
+     "state": {
+      "money": 480000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "喉のケア用品": 1,
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "喉のケア用品"
+     },
+     "state": {
+      "money": 480000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "喉のケア用品": 1,
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "中古のICレコーダー"
+     },
+     "state": {
+      "money": 480000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "喉のケア用品": 1,
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "ネタ作家の勉強会"
+     },
+     "state": {
+      "money": 480000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "喉のケア用品": 1,
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "new_year"
+     },
+     "state": {
+      "money": 480000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "新幹線回数券"
+     },
+     "state": {
+      "money": 280000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "喉のケア用品"
+     },
+     "state": {
+      "money": 260000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 1.0,
+      "skills": [],
+      "counts": {
+       "喉のケア用品": 1,
+       "新幹線回数券": 1
+      },
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    }
+   ]
+  },
+  {
+   "name": "items_no_money",
+   "init": {
+    "money": 2999
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "buy",
+      "item": "栄養ドリンク"
+     },
+     "state": {
+      "money": 2999.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "buy",
+      "item": "新幹線回数券"
+     },
+     "state": {
+      "money": 2999.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    }
+   ]
+  },
+  {
+   "name": "skills_learn",
+   "init": {},
+   "steps": [
+    {
+     "op": {
+      "op": "learn",
+      "skill": "愛され芸人"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "set",
+      "v": {
+       "exp_tanryoku": 5.0,
+       "exp_sonzaikan": 10.0,
+       "exp_goi": 2.0,
+       "exp_maai": 8.0
+      }
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 2.0,
+      "exp_maai": 8.0,
+      "exp_sonzaikan": 10.0,
+      "exp_tanryoku": 5.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "体が資本"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 2.0,
+      "exp_maai": 8.0,
+      "exp_sonzaikan": 7.0,
+      "exp_tanryoku": 1.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "愛され芸人"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "体が資本",
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 2.0,
+      "exp_maai": 8.0,
+      "exp_sonzaikan": 1.0,
+      "exp_tanryoku": 1.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "やりくり上手"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手",
+       "体が資本",
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 1.0,
+      "exp_tanryoku": 1.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "相方思い"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手",
+       "体が資本",
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 1.0,
+      "exp_tanryoku": 1.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "体が資本"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手",
+       "体が資本",
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 1.0,
+      "exp_tanryoku": 1.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "learn",
+      "skill": "相方思い"
+     },
+     "state": {
+      "money": 300000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [
+       "やりくり上手",
+       "体が資本",
+       "愛され芸人"
+      ],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 4.0,
+      "exp_sonzaikan": 1.0,
+      "exp_tanryoku": 1.0
+     },
+     "value": 0.0
+    }
+   ]
+  }
+ ]
+}
