@@ -185,25 +185,15 @@ struct YosePassCelebrationView: View {
             .frame(width: 320, height: 320).allowsHitTesting(false) }
     }
 
-    // 中：結果カード（通過基準 ▶ 発揮実力）
+    // 中：結果カード（数字と基準は出さない＝合否だけ）
     private var resultCard: some View {
         ZStack(alignment: .trailing) {
             VStack(spacing: 10) {
                 Text(duoName).font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
-                HStack(alignment: .lastTextBaseline, spacing: 12) {
-                    VStack(spacing: 2) {
-                        Text("通過基準").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                        Text("\(threshold)").font(YoseFont.number(34, weight: .black)).foregroundStyle(YoseColor.haiSumi)
-                    }
-                    Image(systemName: "play.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(revealed ? YoseColor.shu : YoseColor.kin).accessibilityHidden(true)
-                    VStack(spacing: 2) {
-                        Text("発揮実力").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                        Text("\(shownPower)").font(YoseFont.number(58, weight: .black))
-                            .foregroundStyle(revealed ? YoseColor.shu : YoseColor.sumi)
-                            .contentTransition(.numericText(value: Double(shownPower)))
-                            .scaleEffect(revealed ? 1.0 : 0.96)
-                    }
-                }
+                Text(roundName).font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Text("通過").font(YoseFont.number(44, weight: .black))
+                    .foregroundStyle(revealed ? YoseColor.shu : YoseColor.sumi)
+                    .scaleEffect(revealed ? 1.0 : 0.96)
             }
             .padding(.vertical, 16).padding(.leading, 20).padding(.trailing, 92)
             .frame(maxWidth: .infinity)

@@ -139,11 +139,9 @@ private struct EntryHeader: View {
     }
 }
 
-/// 通過ライン ▶ いまの実力 の対比木札（％は出さない・賞金と週は角札）
+/// 週・賞金の木札（実力の数字と通過ラインは出さない）
 private struct LineBoard: View {
     let week: Int
-    let line: Int
-    let power: Int
     var prize: String? = nil
     /// 左端の朱札（GP本番前は「頂GP 決勝」等）。nil なら出さない
     var stageTag: String? = nil
@@ -154,22 +152,6 @@ private struct LineBoard: View {
                 YoseTag(text: "第\(week)週", style: .outlineSumi)
                 Spacer()
                 if let prize { YoseTag(text: "賞金 \(prize)", style: .outlineKin) }
-            }
-            HStack(alignment: .center, spacing: 12) {
-                Spacer(minLength: 0)
-                Text("通過ライン").font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi)
-                Text("\(line)").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.5)
-                Text("▶").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.haiSumi)
-                // 木札の中に木札を入れない：実力は平らな角札ラベル＋大きな数字を同じ札の上に直接並べる
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
-                        .padding(.horizontal, 4).padding(.vertical, 1)
-                        .background(YoseColor.enji.opacity(0.12))
-                        .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
-                    Text("\(power)").font(YoseFont.number(30, weight: .black)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.5)
-                }
-                if power < line { YoseTag(text: "あと\(line - power)不足", style: .outlineShu) }
-                Spacer(minLength: 0)
             }
         }
         .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
@@ -186,7 +168,6 @@ struct TournamentEntryView: View {
     /// 大会エントリーの用語説明（金額・体力は GameConfig から読む）
     static func hintSpec(_ cal: CalendarConfig) -> HintSpec {
         HintSpec(key: "entry", title: "大会エントリー", rows: [
-            .init(term: "通過ライン", text: "実力（相性をふくむ）がこの数字を超えるほど、通過しやすい。"),
             .init(term: "舞台尺", text: "その舞台のネタの長さ。持ちネタの尺が合っているか、ネタを選ぶ所に出る。"),
             .init(term: "エントリー費", text: "出るだけで\(cal.entryFee.formatted())円かかる。足りないと出られない。"),
             .init(term: "交通費", text: "大阪の大会だけ。夜行バスは\(cal.busTravel.cost.formatted())円で体力を\(Int(-cal.busTravel.stamina))使う。新幹線は\(cal.trainTravel.cost.formatted())円で体力はそのまま。"),
@@ -201,11 +182,8 @@ struct TournamentEntryView: View {
                     HintMarkButton { hint = Self.hintSpec(session.config.calendar) }.padding(.trailing, 6).padding(.top, 4)
                 }
 
-            // 監査B-04: 通過ラインと同じ単位（実力値＋相性）で「いまの実力」を並べる。ブレ・ネタ補正は出さない。
             // G4: 大会結果でも同じ2つを同じ大きさで再掲する（大きくしない＝見込みに寄せない・X2-02）
-            LineBoard(week: spec.week, line: Int(spec.line),
-                      power: Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()),
-                      prize: Yen.man(spec.prize))
+            LineBoard(week: spec.week, prize: Yen.man(spec.prize))
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）
@@ -288,13 +266,6 @@ struct StagePreludeView: View {
     /// この舞台の目安尺（v2 §4-1補・表示のみ）。nil なら尺の言及をしない
     var requiredLength: NetaLength? = nil
 
-    /// 表示用の通過ライン（名目値。結果画面と同じ単位）。回戦＝その週／敗者復活／決勝。見つからなければ出さない
-    private var nominalLine: Int? {
-        let cal = session.config.calendar
-        if isFinal { return Int(cal.gpFinalLine) }
-        if title == "敗者復活" { return Int(cal.gpRevivalLine) }
-        return cal.gpRounds.first { $0.week == session.week }.map { Int($0.line) }
-    }
     /// 本番へボタンの下に出す一言＝押せるまま・結果を言葉で明示（ネタ無しは上乗せなし）
     private var goNote: String? {
         if session.selectedNeta == nil { return "ネタ無しで出る（上乗せなし）" }
@@ -306,13 +277,9 @@ struct StagePreludeView: View {
         VStack(spacing: 14) {
             EntryHeader(tag: "頂 グランプリ", name: title)
 
-            // ゲームが持っている事実だけ：通過ライン▶いまの実力（審査傾向のような元データの無い物は置かない・％なし）
-            if let line = nominalLine {
-                LineBoard(week: session.week, line: line,
-                          power: Int((GameEngine.jitsuryoku(session.state, config: session.config) + session.state.compat).rounded()),
-                          stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
-                    .padding(.horizontal, YoseMetrics.screenMargin)
-            }
+            LineBoard(week: session.week,
+                      stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
+                .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補/§4-2・golden非干渉）
             VStack(spacing: 10) {

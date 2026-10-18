@@ -78,20 +78,6 @@ struct TournamentResultView: View {
     /// 大会の格の金属色（道中＝銅／GP＝銀。金は決勝の夜だけ・§4-1）
     private var metal: Color { isMidTournament ? Theme.bronze : Theme.silver }
 
-    /// 入口と同じ単位の「通過ライン」（名目値。道中＝大会の値／GP回戦＝その週の値／敗者復活）。無ければ出さない
-    private var displayLine: Double? {
-        let cal = session.config.calendar
-        if let t = cal.tournament(inWeek: summary.week) { return t.line }
-        if result.name == "敗者復活" { return cal.gpRevivalLine }
-        return cal.gpRounds.first { $0.week == summary.week }?.line
-    }
-    /// 入口と同じ「いまの実力」（実力値＋相性）
-    private var currentPower: Int { Self.displayPower(summary.state, config: session.config) }
-    /// 入場前の札（StageViews）と同じ式。結果カードもこの関数だけを通す（単体テストで固定）
-    static func displayPower(_ state: GameState, config: GameConfig) -> Int {
-        Int((GameEngine.jitsuryoku(state, config: config) + state.compat).rounded())
-    }
-
     var body: some View {
         let r = result
         let review = JudgeData.review(passed: r.passed, state: summary.state, salt: summary.year * 131 + summary.week,
@@ -407,43 +393,14 @@ struct TournamentResultView: View {
         .padding(.horizontal, YoseMetrics.screenMargin + 6)
     }
 
-    /// 「実力」は出場前の札と同じ値（実力値＋相性）。合否は ネタの出来・当夜のブレ込みなので、数字と食い違う時だけ理由を添える
-    static func powerNote(passed: Bool, power: Int, line: Double?) -> String? {
-        guard let line else { return nil }
-        if passed && Double(power) < line { return "実力はラインに届かなくても、ネタの出来と当夜の客席で突破" }
-        if !passed && Double(power) >= line { return "実力はラインを越えていたが、当夜のブレで届かず" }
-        return nil
-    }
-    private func powerNote(_ r: StageResult) -> String? { Self.powerNote(passed: r.passed, power: currentPower, line: displayLine) }
-
-    /// 結果・精算の2段貼り紙（上段：通過ライン▶実力＋突破判子／下段：賞金・知名度）。審査員の点数は出さない
+    /// 結果・精算の2段貼り紙（上段：突破判子／下段：賞金・知名度）。数字と基準は出さない
     private func settlementCard(_ r: StageResult) -> some View {
         let hasPrize = r.prize > 0
         let hasFame = session.lastResultFameDelta >= 0.5
         return VStack(spacing: 0) {
-            HStack(alignment: .lastTextBaseline, spacing: 14) {
-                if let line = displayLine {
-                    VStack(spacing: 0) {
-                        Text("通過ライン").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                        Text("\(Int(line))").font(YoseFont.numLarge).foregroundStyle(YoseColor.sumi)
-                    }
-                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(16), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
-                        .alignmentGuide(.lastTextBaseline) { $0[.bottom] + 8 }
-                }
-                VStack(spacing: 0) {
-                    Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
-                    // 実力は「得たもの」ではなく入場前と同じ現在値＝数え上げない（数え上げ中の途中の数字が「実力14」と読まれた＝playtest_v6 W27）
-                    Text("\(currentPower)").monospacedDigit()
-                        .font(YoseFont.numHero).foregroundStyle(r.passed ? YoseColor.shu : YoseColor.haiSumi)
-                }
-                if r.passed && displayLine != nil {
-                    YoseHankoStamp(text: "突破", angle: -8).alignmentGuide(.lastTextBaseline) { $0[.bottom] + 4 }
-                }
-            }
-            .frame(maxWidth: .infinity).padding(.vertical, 10)
-            if let note = powerNote(r) {   // 実力（出場前と同じ値）と合否がずれた時だけ、理由を一言で
-                Text(note).font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                    .multilineTextAlignment(.center).padding(.horizontal, 12).padding(.bottom, 8)
+            if r.passed {
+                YoseHankoStamp(text: "突破", angle: -8)
+                    .frame(maxWidth: .infinity).padding(.vertical, 10)
             }
             if hasPrize || hasFame {
                 Rectangle().fill(YoseColor.kiDark).frame(height: 1)
@@ -465,7 +422,7 @@ struct TournamentResultView: View {
             }
         }
         .yoseHarigami(isFeatured: r.passed)   // 突破・賞金の下段を主役に（講評の貼り紙は普通の枠）
-        .overlay { if r.passed { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5).allowsHitTesting(false) } }   // 通過ラインを越えたら枠が金に光る
+        .overlay { if r.passed { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5).allowsHitTesting(false) } }   // 通過したら枠が金に光る
         .shadow(color: r.passed ? YoseColor.kinBright.opacity(0.7) : .clear, radius: 9)
         .padding(.bottom, 2)
     }

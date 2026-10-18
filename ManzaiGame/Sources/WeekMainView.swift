@@ -1311,7 +1311,7 @@ struct WeekMainView: View {
 
     static var firstWeekHint: HintSpec {
         HintSpec(key: "firstWeek", title: "はじめに", rows: [
-            .init(term: "実力", text: "コンビの強さ。大会では「通過ライン」に届くほど勝ち上がれる。"),
+            .init(term: "実力", text: "コンビの強さ。大会では高いほど勝ち上がりやすい。"),
             .init(term: "相性", text: "二人の息の合い方。相方と合わせたり、休んだりで上がる。"),
             .init(term: "体力", text: "行動すると減る。休むと戻る。"),
             .init(term: "経験点", text: "練習やネタ書きでたまる。「能力アップ」で使うと実力が伸びる。"),
