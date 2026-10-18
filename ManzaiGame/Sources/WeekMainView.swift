@@ -88,6 +88,9 @@ struct WeekMainView: View {
         guard let w = ProcessInfo.processInfo.environment["MZ_WEEK"] else { return }
         switch w {
         case "practice": openCat = .練習
+        case "practice_sel":   // 目視用: 練習を1つ選んだ状態（増える経験点が黄色で出る）
+            openCat = .練習
+            Task { try? await Task.sleep(nanoseconds: 700_000_000); selectedPracticeID = CommandCatalog.cards(.練習, config: session.config, money: s.money).first { $0.isTrain }?.id }
         case "baito": openCat = .バイト
         case "rest": openCat = .休む
         case "netawrite": openCat = .ネタを書く; openNetaWrite = true
@@ -119,6 +122,8 @@ struct WeekMainView: View {
     private var s: GameState { session.state }
     /// 開いている4ボタンの下位一覧（nil＝4ボタン）。パワプロ式（オーナー指示 2026-10-12）
     @State private var openCat: CommandCategory?
+    /// 練習の一覧で「選んだ（ハイライト中）」カードのID。もう一度押すと実行（パワプロの練習メニュー式・2026-10-18）
+    @State private var selectedPracticeID: String?
     /// 練習→ネタを書く の下の「どのネタを磨くか」一覧を開いているか
     @State private var openNetaWrite = false
     @State private var titleDiceStep = 0
@@ -600,6 +605,7 @@ struct WeekMainView: View {
                     netaWriteList.transition(.move(edge: .trailing).combined(with: .opacity))
                 } else {
                     let cardList = CommandCatalog.cards(cat, config: session.config, money: s.money)
+                    if cat == .練習 { practiceExpPanel(cardList) }
                     let lastAlone = cat != .バイト && cardList.count > 2 && cardList.count % 2 == 1   // 奇数枚の最後は2列ぶち抜き（空きマスを作らない）
                     VStack(spacing: 8) {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: cat == .バイト ? 1 : 2), spacing: 8) {
@@ -630,6 +636,7 @@ struct WeekMainView: View {
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 6)
         .background(LinearGradient(colors: [.clear, Color(hex: 0xFFEFDD)], startPoint: .top, endPoint: .center))
         .animation(Theme.Motion.appearQuick, value: extras.map(\.id))
+        .onChange(of: openCat) { _, _ in selectedPracticeID = nil }
     }
 
     // MARK: ネタを書く（どのネタを磨くか／新しく書くか）
@@ -838,6 +845,13 @@ struct WeekMainView: View {
                 return
             }
             offerArmed = false
+            if openCat == .練習, v.isTrain, selectedPracticeID != v.id {
+                // 1回目＝選ぶ（経験点の増える分が上に出る）。同じカードをもう一度押すと実行
+                Sound.play(.tap)
+                withAnimation(.easeOut(duration: 0.15)) { selectedPracticeID = v.id }
+                return
+            }
+            selectedPracticeID = nil
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
         }
@@ -845,9 +859,38 @@ struct WeekMainView: View {
             actionCardLabel(v, gated: gated, preoccupied: preoccupied, compact: compact, dashed: dashed ?? compact, wide: wide, row: row)
                 .scaleEffect(pulledID == v.id ? 1.06 : 1)   // 実行時に軽くポップ（引き抜きの手応え・0.12s budget内）
                 .opacity(pulledID == v.id ? 0 : 1)
+                .overlay { if selectedPracticeID == v.id { Rectangle().stroke(YoseColor.kinBright, lineWidth: 4).background(YoseColor.kinBright.opacity(0.12)).allowsHitTesting(false) } }
         }
         .buttonStyle(PressableStyle(enabled: !blocked))
         .modifier(ShakeEffect(animatableData: shakeSeed[v.id] ?? 0))
+    }
+
+    /// 練習を選ぶ画面の上段：経験点5種の今の持ち分。練習を選ぶと、増える分が黄色で横に出る（表示専用・RNG非消費）
+    private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
+        let sel = cards.first { $0.id == selectedPracticeID }
+        let after = sel.map { session.previewAfterPour($0.action, offer: offer) }
+        return VStack(spacing: 4) {
+            HStack(spacing: 6) {
+                ForEach(ExpCurrency.allCases, id: \.self) { c in
+                    let gain = after.map { AbilityUpView.points($0[currency: c] - s[currency: c]) } ?? 0
+                    VStack(spacing: 1) {
+                        Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                            .frame(width: 22, height: 22).background(Self.expColor(c), in: Circle())
+                            .accessibilityLabel("\(c)")
+                        Text("\(AbilityUpView.points(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                        Text(gain > 0 ? "+\(gain)" : " ").font(YoseFont.number(15, weight: .black)).foregroundStyle(YoseColor.kinBright)
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            Text(sel == nil ? "練習を選ぶと、増える経験点が出る" : "「\(sel!.name)」をもう一度押すと始める")
+                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(.white.opacity(0.8)).lineLimit(1).minimumScaleFactor(0.8)
+        }
+        .padding(.horizontal, 8).padding(.vertical, 6)
+        .background(YoseColor.sumi)
+        .overlay(Rectangle().stroke(YoseColor.kinBright.opacity(0.6), lineWidth: 1.5))
     }
 
     /// 大会が近く（2週以内）、まだ振れる経験点がある＝バナーと能力アップの縁で知らせる（振るのは自分）

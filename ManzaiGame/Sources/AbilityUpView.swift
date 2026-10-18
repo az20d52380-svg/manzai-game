@@ -23,11 +23,6 @@ struct AbilityUpView: View {
     static func points(_ v: Double) -> Int { Int(v * 10 + 1e-6) }
 
     /// 列の固定幅（Gemini r2）：能力名70・＋50・経験点5列は各42・列間6。現在の経験点の行と下の費用が同じ中心線に乗る
-    private let nameW: CGFloat = 66
-    private let plusW: CGFloat = 74   // ［−］34＋隙間2＋［＋］38 で固定（幅は絶対に変えない・Gemini r6）
-    private let colW: CGFloat = 38
-    private let minusW: CGFloat = 34
-    private let colGap: CGFloat = 6
     @State private var pulse = false
     @State private var hint: HintSpec?   // 初めて開いた時だけの説明（`？` で読み返せる）
     @State private var bumped: Ability? = nil
@@ -51,12 +46,12 @@ struct AbilityUpView: View {
                 }
             ScrollView {
                 VStack(spacing: 10) {
-                    rankStrip
-                    summaryBox
-                    Text("各行の数字＝その能力を1上げるのに使う経験点（上の列と同じ並び）")   // 列の意味の凡例（ui_sweep_2026-10-18 allocate）
-                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                        .lineLimit(2).frame(maxWidth: .infinity, alignment: .trailing)
+                    compareBox
+                    matrixHeader
                     ForEach(Ability.allCases, id: \.self) { row($0) }
+                    Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
+                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12).padding(.bottom, 16)
             }
@@ -82,33 +77,6 @@ struct AbilityUpView: View {
             .init(term: "おまかせ", text: "迷ったら「おまかせ」。自動で割り振る。「確定」を押すまで決まらない。"),
             .init(term: "ランク", text: "G、F……と上がっていく。「Fまで5」は、Fに上がるまでの残り。"),
         ])
-    }
-
-    /// いちばん上：能力ごとのランクと次のランクまでのゲージ
-    private var rankStrip: some View {
-        HStack(spacing: 6) {
-            ForEach(Ability.allCases, id: \.self) { a in
-                let v = pv[a]
-                let grade = Theme.rank(v)
-                let cap = a == .メンタル ? cfg.mentalCap : cfg.abilityCap
-                VStack(spacing: 4) {
-                    Text("\(a)").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.8)
-                    Text(grade).font(YoseFont.number(24, weight: .heavy)).foregroundStyle(Self.emblemText(grade))
-                        .frame(width: 42, height: 46)
-                        .background(HexEmblem().fill(Self.emblemFill(grade)))
-                        .overlay(HexEmblem().stroke(Self.emblemRim(grade), lineWidth: 2))
-                    let prog = Theme.rankProgress(v, cap: cap)
-                    YoseGauge(value: prog, total: 1, fill: prog >= 0.7 ? YoseColor.kinBright : YoseColor.enji, height: 8, showTicks: false)
-                    if let n = Self.nextGrade(v, cap: cap) {
-                        Text("\(n.name)まで\(n.remain)").font(YoseFont.gothic(10.5, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.8)
-                    } else {
-                        Text("最高").font(YoseFont.gothic(10.5, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                    }
-                }
-                .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 3)
-                .yoseKifuda()
-            }
-        }
     }
 
     /// ランクの色（墓石に見えないよう、G/F=真鍮・E/D=青銅・A=朱＋金枠・S=黄金）
@@ -137,59 +105,71 @@ struct AbilityUpView: View {
         }
     }
 
-    /// 統合ヘッダー箱（型B）：左＝実力（振った後の伸びも）／右＝所持している経験点5色。下の行の費用列と同じ幅・中心線でそろえる
-    private var summaryBox: some View {
-        let before = Int(GameEngine.jitsuryoku(base, config: cfg).rounded())
-        let after = Int(GameEngine.jitsuryoku(pv, config: cfg).rounded())
-        return HStack(spacing: 0) {
-            VStack(spacing: 2) {
-                Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
-                    .padding(.horizontal, 5).padding(.vertical, 1)
-                    .background(YoseColor.enji.opacity(0.12))
-                    .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
-                if after != before {
-                    // 確定前に伸びが見える：42 → 45
-                    HStack(spacing: 3) {
-                        Text("\(before)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
-                        Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
-                        Text("\(after)").font(YoseFont.number(26, weight: .black)).foregroundStyle(YoseColor.shu)
-                            .contentTransition(.numericText())
-                    }
-                    Text("+\(after - before)").font(YoseFont.number(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
-                        .transition(.scale.combined(with: .opacity))
-                } else {
-                    Text("\(before)").font(YoseFont.numHero).foregroundStyle(YoseColor.sumi)
+    /// 上段：「現在」と「能力アップ後」の2段（能力5つのランクと値）。上がる所は色と↑矢印（全画面のランクアップ演出は出さない）
+    private var compareBox: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                Color.clear.frame(width: 52, height: 1)
+                ForEach(Ability.allCases, id: \.self) { a in
+                    Text("\(a)").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        .lineLimit(1).minimumScaleFactor(0.7).frame(maxWidth: .infinity)
                 }
             }
-            .frame(width: nameW + colGap + plusW + 6).frame(maxHeight: .infinity)
-            .background(YoseColor.ki)
-            .overlay(alignment: .trailing) { Rectangle().fill(YoseColor.sumi).frame(width: 2) }
-            HStack(spacing: colGap) {
-                ForEach(ExpCurrency.allCases, id: \.self) { c in
-                    let spent = Self.points(base[currency: c]) - Self.points(pv[currency: c])
-                    VStack(spacing: 2) {
-                        Text(Theme.currencyChar(c)).font(YoseFont.gothic(15, weight: .black)).foregroundStyle(YoseColor.kinari)
-                            .frame(width: 26, height: 26)
-                            .background(wa(c), in: Circle())
-                            .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5))
-                            .accessibilityLabel("\(c)")
-                        Text("\(Self.points(pv[currency: c]))").font(YoseFont.number(17, weight: .heavy))
-                            .foregroundStyle(YoseColor.sumi).minimumScaleFactor(0.7).lineLimit(1)
-                        Text(spent > 0 ? "-\(spent)" : " ").font(YoseFont.number(10, weight: .heavy))
-                            .foregroundStyle(YoseColor.shu).minimumScaleFactor(0.7).lineLimit(1)
-                    }
-                    .frame(width: colW)
-                }
-            }
-            .padding(.trailing, 6).padding(.leading, 6)
-            .frame(maxHeight: .infinity)
+            .padding(.vertical, 4).background(YoseColor.ki)
+            compareRow(title: "現在", state: base, after: false)
+            Rectangle().fill(YoseColor.sumi).frame(height: 1.5)
+            compareRow(title: "アップ後", state: pv, after: true)
         }
-        .frame(height: 78)
         .background(YoseColor.washi)
-        .clipShape(Rectangle())
         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-        .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
-        .animation(.easeOut(duration: 0.25), value: after)
+        .animation(.easeOut(duration: 0.25), value: taps.count)
+    }
+
+    private func compareRow(title: String, state s: GameState, after: Bool) -> some View {
+        HStack(spacing: 0) {
+            Text(title).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(after ? YoseColor.shu : YoseColor.haiSumi)
+                .lineLimit(1).minimumScaleFactor(0.7).frame(width: 52)
+            ForEach(Ability.allCases, id: \.self) { a in
+                let v = Int(s[a].rounded())
+                let g = Theme.rank(s[a])
+                let up = after && Theme.rank(base[a]) != g
+                let raised = after && v > Int(base[a].rounded())
+                VStack(spacing: 0) {
+                    HStack(spacing: 1) {
+                        Text(g).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(up ? YoseColor.shu : YoseColor.sumi)
+                        if up { Image(systemName: "arrow.up").font(.system(size: Font.mzScaled(10), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true) }
+                    }
+                    HStack(spacing: 1) {
+                        Text("\(v)").font(YoseFont.number(13, weight: .bold)).foregroundStyle(raised ? YoseColor.shu : YoseColor.haiSumi)
+                        if raised { Image(systemName: "arrow.up").font(.system(size: Font.mzScaled(8), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true) }
+                    }
+                }
+                .frame(maxWidth: .infinity).padding(.vertical, 4)
+                .background(up ? YoseColor.kinBright.opacity(0.3) : (raised ? YoseColor.kinBright.opacity(0.12) : Color.clear))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(a) \(title) \(g) \(v)\(up ? "、ランクアップ" : "")")
+            }
+        }
+    }
+
+    /// 下の表の見出し：横＝経験点5種（今の持ち分・使った分は減って見える）
+    private var matrixHeader: some View {
+        HStack(spacing: 4) {
+            Text("持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                .frame(width: 58 + 4 + 28 + 4 + 36 + 4, alignment: .leading).padding(.leading, 6)
+            ForEach(ExpCurrency.allCases, id: \.self) { c in
+                VStack(spacing: 1) {
+                    Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        .frame(width: 22, height: 22).background(wa(c), in: Circle())
+                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel("\(c)")
+                    Text("\(Self.points(pv[currency: c]))").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(.white)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.vertical, 5).padding(.trailing, 4)
+        .background(YoseColor.sumi)
     }
 
     /// 次の+1 に要る経験点（通貨ごと）と段数。nil＝届かない
@@ -209,114 +189,85 @@ struct AbilityUpView: View {
         GameEngine.nextStepCost(a, state: pv, config: cfg).map { ($0.currency, max(1, Self.points(pv[currency: $0.currency]) - Self.points(pv[currency: $0.currency] - $0.amount))) }
     }
 
+    private func plusTap(_ a: Ability, steps: Int) {
+        Haptics.confirm()
+        flash = a
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+            taps += Array(repeating: a, count: steps)
+            bumped = a
+        }
+        Task { try? await Task.sleep(nanoseconds: 100_000_000); withAnimation(.spring(response: 0.25, dampingFraction: 0.5)) { bumped = nil } }
+        Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(.easeOut(duration: 0.25)) { flash = nil } }
+    }
+
     private func row(_ a: Ability) -> some View {
         let v = pv[a]
         let gained = Int(v.rounded()) - Int(base[a].rounded())
         let next = nextPlusOne(a)
         let tag = next?.cost ?? priceTag(a)
         let canTap = next != nil
-        let steps = next?.steps
-        let content = HStack(spacing: colGap) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(a)").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.7)
-                HStack(spacing: 1) {
-                    if gained > 0 {
-                        Text("\(Int(base[a].rounded()))→").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).fixedSize()
-                    }
-                    Text("\(Int(v.rounded()))").font(YoseFont.number(19, weight: .black)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.sumi).lineLimit(1).fixedSize()
-                        .contentTransition(.numericText())
-                        .scaleEffect(bumped == a ? 1.3 : 1, anchor: .leading)
-                    if gained > 0 {
-                        Text("+\(gained)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.shu).lineLimit(1).fixedSize()
-                            .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                // 現在値のミニバー（枠＋朱の塗り・長さは全能力共通の物差し）
-                Rectangle().fill(YoseColor.ginNezu).frame(width: 48, height: 4)
-                    .overlay(alignment: .leading) { Rectangle().fill(YoseColor.shu).frame(width: 48 * min(1, max(0, v / 120)), height: 4) }
-                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
+        let canUndo = gained > 0
+        let line = HStack(spacing: 4) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(a)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
+                Text("\(Int(v.rounded()))").font(YoseFont.number(16, weight: .black)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.haiSumi)
+                    .lineLimit(1).contentTransition(.numericText()).scaleEffect(bumped == a ? 1.25 : 1, anchor: .leading)
             }
-            .frame(width: nameW, alignment: .leading)
-            plusMark(canTap: canTap)
-            ForEach(ExpCurrency.allCases, id: \.self) { c in
-                let n = tag.first(where: { $0.0 == c })?.1
-                let have = Self.points(pv[currency: c])
-                let short = n != nil && n! > have
-                Group {
-                    if let n {
-                        Text("\(n)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(short ? YoseColor.shu : YoseColor.sumi)
-                            .minimumScaleFactor(0.7).lineLimit(1)
-                            .frame(width: colW, height: 40)
-                            .background(short ? YoseColor.shu.opacity(0.18) : wa(c).opacity(0.12))
-                            .overlay(Rectangle().stroke(short ? YoseColor.shu : wa(c), lineWidth: short ? 2 : 1))
-                            .overlay(alignment: .topTrailing) { if short { Circle().fill(YoseColor.shu).frame(width: 7, height: 7).offset(x: -2, y: 2) } }   // 足りない粒の目印
-                    } else {
-                        Text("・").font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.ginNezu)   // 消費しない列は箱を置かない
-                            .frame(width: colW, height: 40)
-                    }
-                }
-            }
-        }
-        .padding(.leading, 6).padding(.trailing, 6).padding(.vertical, 8)
-        .background(flash == a ? YoseColor.kinBright.opacity(0.35) : (gained > 0 ? YoseColor.kinBright.opacity(0.14) : Color.clear))
-        .overlay(alignment: .leading) { if gained > 0 { Rectangle().fill(YoseColor.shu).frame(width: 4) } }   // 変更中の行
-        .animation(.spring(response: 0.3, dampingFraction: 0.55), value: gained)
-        .contentShape(Rectangle())
-        let main = Button {
-            guard let n = steps else { return }
-            Haptics.confirm()   // 中程度の衝撃
-            flash = a
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-                taps += Array(repeating: a, count: n)
-                bumped = a    // 能力値が一瞬ふくらんで戻る
-            }
-            Task { try? await Task.sleep(nanoseconds: 100_000_000); withAnimation(.spring(response: 0.25, dampingFraction: 0.5)) { bumped = nil } }
-            Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(.easeOut(duration: 0.25)) { flash = nil } }
-        } label: { content.yoseHarigami() }
-        .buttonStyle(PressableStyle(scale: 0.98, enabled: canTap))
-        .disabled(!canTap)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(a)、いま\(Int(v.rounded()))\(gained > 0 ? "、\(gained)上げる予定" : "")")
-        .accessibilityHint(canTap ? "押すと能力を上げる" : "経験点が足りない")
-        let caption = canTap ? [] : Self.shortageLines(a, state: pv, config: cfg)
-        return VStack(alignment: .leading, spacing: 2) { main.overlay(alignment: .leading) {
-            // ［−］：常に同じ場所に出す（振った分をまるごと戻す）。振っていない時は灰色で押せない＝幅も位置も動かない
-            let canUndo = gained > 0
+            .frame(width: 58, alignment: .leading)
             Button {
                 Haptics.tick()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
             } label: {
-                Image(systemName: "minus").font(.system(size: Font.mzScaled(16), weight: .black))
+                Image(systemName: "minus").font(.system(size: Font.mzScaled(13), weight: .black))
                     .foregroundStyle(canUndo ? YoseColor.sumi : YoseColor.disabledText)
-                    .frame(width: minusW, height: 46)
+                    .frame(width: 28, height: 40)
                     .background(Rectangle().fill(canUndo ? YoseColor.ki : YoseColor.ginNezu))
-                    .overlay { if !canUndo { YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4).clipped() } }
-                    .overlay(Rectangle().stroke(canUndo ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canUndo ? 2 : 1.5))
-                    .shadow(color: canUndo ? YoseColor.sumi : .clear, radius: 0, y: 2)
+                    .overlay(Rectangle().stroke(canUndo ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canUndo ? 2 : 1))
             }
-            .buttonStyle(PressableStyle(enabled: canUndo))
-            .disabled(!canUndo)
+            .buttonStyle(PressableStyle(enabled: canUndo)).disabled(!canUndo)
             .accessibilityLabel("\(a)を元に戻す")
-            .padding(.leading, 6 + nameW + colGap).padding(.bottom, 2)
+            Button { if let n = next?.steps { plusTap(a, steps: n) } } label: {
+                Image(systemName: "plus").font(.system(size: Font.mzScaled(18), weight: .black))
+                    .foregroundStyle(canTap ? YoseColor.kinari : YoseColor.disabledText)
+                    .frame(width: 36, height: 40)
+                    .background(Rectangle().fill(canTap ? YoseColor.shu : YoseColor.ginNezu))
+                    .overlay { if !canTap { YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4).clipped() } }
+                    .overlay(Rectangle().stroke(canTap ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canTap ? 2 : 1))
+                    .shadow(color: canTap ? YoseColor.sumi : .clear, radius: 0, y: 2)
+            }
+            .buttonStyle(PressableStyle(scale: 0.95, enabled: canTap)).disabled(!canTap)
+            .accessibilityLabel("\(a)を上げる")
+            .accessibilityHint(canTap ? "経験点を使って1上げる" : "経験点が足りない")
+            ForEach(ExpCurrency.allCases, id: \.self) { c in
+                let n = tag.first(where: { $0.0 == c })?.1
+                let short = n != nil && n! > Self.points(pv[currency: c])
+                Group {
+                    if let n {
+                        Text("\(n)").font(YoseFont.number(15, weight: .heavy))
+                            .foregroundStyle(short ? YoseColor.disabledText : YoseColor.sumi)
+                            .minimumScaleFactor(0.7).lineLimit(1)
+                            .frame(maxWidth: .infinity, minHeight: 40)
+                            .background(short ? YoseColor.ginNezu : wa(c).opacity(0.18))
+                            .overlay(Rectangle().stroke(short ? YoseColor.haiSumi.opacity(0.5) : wa(c), lineWidth: 1))
+                    } else {
+                        Text("-").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.ginNezu)
+                            .frame(maxWidth: .infinity, minHeight: 40)
+                    }
+                }
+            }
         }
-            ForEach(caption, id: \.self) { line in
-                Text(line).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.shu)
+        .padding(.leading, 6).padding(.trailing, 4).padding(.vertical, 4)
+        .background(flash == a ? YoseColor.kinBright.opacity(0.35) : (gained > 0 ? YoseColor.kinBright.opacity(0.14) : YoseColor.washi))
+        .overlay(alignment: .leading) { if gained > 0 { Rectangle().fill(YoseColor.shu).frame(width: 4) } }
+        .overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.35), lineWidth: 1))
+        let caption = canTap ? [] : Self.shortageLines(a, state: pv, config: cfg)
+        return VStack(alignment: .leading, spacing: 2) {
+            line
+            ForEach(caption, id: \.self) { l in
+                Text(l).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.shu)
                     .lineLimit(2).minimumScaleFactor(0.8).padding(.horizontal, 8)
             }
         }
-    }
-
-    /// ＋の印（行全体がボタン。押せる＝朱の立体／足りない＝灰で形は残す）
-    private func plusMark(canTap: Bool) -> some View {
-        Image(systemName: "plus").font(.system(size: Font.mzScaled(20), weight: .black))
-            .foregroundStyle(canTap ? YoseColor.kinari : YoseColor.disabledText)
-            .frame(width: plusW - minusW - 2, height: 46)
-            .background(Rectangle().fill(canTap ? YoseColor.shu : YoseColor.ginNezu))
-            .overlay { if !canTap { YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4).clipped() } }
-            .overlay(Rectangle().stroke(canTap ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canTap ? 2 : 1.5))
-            .shadow(color: canTap ? YoseColor.sumi : .clear, radius: 0, y: 2)
-            .frame(width: plusW, height: 46, alignment: .trailing)   // 左の minusW＋隙間は［−］の場所（常に固定）
-            .padding(.bottom, 2)
     }
 
     /// 次の+1の値札に対して、いま足りない粒（通貨, あと何点）。行の赤い印と同じ基準（1段の重さ ＞ いまの残高）。表示専用
