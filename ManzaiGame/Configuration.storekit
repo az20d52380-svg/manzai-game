@@ -1,0 +1,77 @@
+{
+  "identifier": "ManzaiLocal",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "480",
+      "familyShareable": false,
+      "internalID": "551563823",
+      "localizations": [
+        {
+          "description": "広告カット（仮）",
+          "displayName": "広告カット（仮）",
+          "locale": "ja"
+        }
+      ],
+      "productID": "com.manzaigame.mvp.adfree",
+      "referenceName": "広告カット（仮）",
+      "type": "NonConsumable"
+    },
+    {
+      "displayPrice": "480",
+      "familyShareable": false,
+      "internalID": "137805243",
+      "localizations": [
+        {
+          "description": "事務所選び（仮）",
+          "displayName": "事務所選び（仮）",
+          "locale": "ja"
+        }
+      ],
+      "productID": "com.manzaigame.mvp.agency",
+      "referenceName": "事務所選び（仮）",
+      "type": "NonConsumable"
+    },
+    {
+      "displayPrice": "120",
+      "familyShareable": false,
+      "internalID": "919633992",
+      "localizations": [
+        {
+          "description": "衣装・袴（仮）",
+          "displayName": "衣装・袴（仮）",
+          "locale": "ja"
+        }
+      ],
+      "productID": "com.manzaigame.mvp.costume.hakama",
+      "referenceName": "衣装・袴（仮）",
+      "type": "NonConsumable"
+    },
+    {
+      "displayPrice": "120",
+      "familyShareable": false,
+      "internalID": "237069394",
+      "localizations": [
+        {
+          "description": "衣装・ヒョウ柄（仮）",
+          "displayName": "衣装・ヒョウ柄（仮）",
+          "locale": "ja"
+        }
+      ],
+      "productID": "com.manzaigame.mvp.costume.leopard",
+      "referenceName": "衣装・ヒョウ柄（仮）",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "ja_JP",
+    "_storefront": "JPN",
+    "_askToBuyEnabled": false
+  },
+  "subscriptionGroups": [],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

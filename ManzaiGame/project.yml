@@ -51,6 +51,9 @@ schemes:
     build:
       targets:
         ManzaiGame: all
+    run:
+      storeKitConfiguration: Configuration.storekit    # ローカルの購入テスト設定（値段は仮）
     test:
       targets:
         - ManzaiGameTests
+      storeKitConfiguration: Configuration.storekit

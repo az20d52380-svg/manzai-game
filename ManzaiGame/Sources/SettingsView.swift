@@ -14,6 +14,8 @@ struct SettingsView: View {
     @AppStorage("vol_se") private var se: Double = 0.8
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
+    @StateObject private var store = StoreManager.shared
+    @State private var restoring = false
     private enum FullCover: String, Identifiable { case glossary, endingBook; var id: String { rawValue } }
     @State private var cover: FullCover?
 
@@ -36,6 +38,15 @@ struct SettingsView: View {
                             Rectangle().fill(YoseColor.kiDark).frame(height: 1)
                             volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
+                        }
+                        section("購入") {
+                            Button { Task { restoring = true; _ = await store.restore(); restoring = false } } label: {
+                                linkRow(restoring ? "復元しています…" : "購入を復元")
+                            }
+                            .buttonStyle(.plain).disabled(restoring)
+                            if let m = store.lastMessage {
+                                Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
+                            }
                         }
                         section("遊び方") {
                             Button { cover = .glossary } label: { linkRow("用語集") }

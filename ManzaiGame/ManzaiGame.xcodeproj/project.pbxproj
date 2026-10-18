@@ -48,6 +48,7 @@
 		59987E59328228E8608387EF /* WaIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E034762E4A6192639CA2DCF /* WaIcons.swift */; };
 		5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915FB4D3357203506A4F5A67 /* IntroFlow.swift */; };
 		5DB922218F668B8CC8DDF60E /* se_taiko2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */; };
+		5EA1A814CA2CFA7DF978D4CA /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B3D0E4892F3438C35FA663 /* StoreManager.swift */; };
 		6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D08F932A4334F422E73881 /* JudgeData.swift */; };
 		6C7AE0E5AF2E0E84B8B2FE89 /* se_applause_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */; };
 		70D5CD0C4FBD5217C11058D4 /* YoseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D87A214DB8E1FE8512D92D /* YoseComponents.swift */; };
@@ -56,7 +57,9 @@
 		78C8C1B88DF1C8660332C114 /* YoseYearTurnCurtain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84CB9905639D09C704FC9DB /* YoseYearTurnCurtain.swift */; };
 		7929C910D01A177FA32BE25C /* FanReportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08B86D882DE6689C655ADD0C /* FanReportData.swift */; };
 		7A33BA9747B3D7310837D74E /* se_money.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = DA0693E895C9B421B8BE4EAB /* se_money.mp3 */; };
+		7D0469CAD091DB56A51DF6D3 /* StageOutfit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */; };
 		7E26DA2DFACB9136A1D39FDD /* se_success.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */; };
+		8013960EC63623D66E7F0C6D /* StoreIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B680F784150145461F1B91 /* StoreIDs.swift */; };
 		877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */; };
 		8A594478EA03EF55A5AEACB6 /* ChoiceEventData.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */; };
 		8B6790D2107EF19DC87AA12A /* MPLUSRounded1c-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7ABBF9FD27D827A700C7A2A7 /* MPLUSRounded1c-ExtraBold.ttf */; };
@@ -165,6 +168,7 @@
 		A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TournamentResultView.swift; sourceTree = "<group>"; };
 		A799C1CDD04C665A5DE37ABB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameTests.swift; sourceTree = "<group>"; };
+		A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageOutfit.swift; sourceTree = "<group>"; };
 		ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventData.swift; sourceTree = "<group>"; };
 		AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_drumroll.mp3; sourceTree = "<group>"; };
 		AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_mid.mp3; sourceTree = "<group>"; };
@@ -190,7 +194,9 @@
 		DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandData.swift; sourceTree = "<group>"; };
 		DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookView.swift; sourceTree = "<group>"; };
 		DEAB942AD0DB2AB951504DBE /* MPLUSRounded1c-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Bold.ttf"; sourceTree = "<group>"; };
+		E1B680F784150145461F1B91 /* StoreIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreIDs.swift; sourceTree = "<group>"; };
 		E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_taiko2.mp3; sourceTree = "<group>"; };
+		E3B3D0E4892F3438C35FA663 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
 		E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventOverlay.swift; sourceTree = "<group>"; };
 		E51A2C162CC3B1876C83692B /* ManzaiGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ManzaiGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseGameParts.swift; sourceTree = "<group>"; };
@@ -299,6 +305,7 @@
 				B18155352CE011A350B1DEC6 /* WeekMainView.swift */,
 				A274A5E67200827BEBFC258E /* YearResultView.swift */,
 				D01A5C6E6DC045637494A4EE /* Design */,
+				734E0FBC1D89EFBB0B5DE8F6 /* Store */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -321,6 +328,16 @@
 				7E9074D521E24C7B5B3FE240 /* MPLUSRounded1c-Medium.ttf */,
 			);
 			path = Fonts;
+			sourceTree = "<group>";
+		};
+		734E0FBC1D89EFBB0B5DE8F6 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */,
+				E1B680F784150145461F1B91 /* StoreIDs.swift */,
+				E3B3D0E4892F3438C35FA663 /* StoreManager.swift */,
+			);
+			path = Store;
 			sourceTree = "<group>";
 		};
 		7B411AEBB469FC2723056E31 = {
@@ -540,8 +557,11 @@
 				C135C70C43982811F7AD0254 /* ShopView.swift in Sources */,
 				07755E46FD8EC92ACE98C353 /* SoundManager.swift in Sources */,
 				FEC32EB9053F087229AB0EC2 /* StageFrame.swift in Sources */,
+				7D0469CAD091DB56A51DF6D3 /* StageOutfit.swift in Sources */,
 				21E800CFC18797B54C85B120 /* StageScene.swift in Sources */,
 				0925CDD9634B4E4FADD702CC /* StageViews.swift in Sources */,
+				8013960EC63623D66E7F0C6D /* StoreIDs.swift in Sources */,
+				5EA1A814CA2CFA7DF978D4CA /* StoreManager.swift in Sources */,
 				1D5713E40EEA45D0B98E861B /* TalkParts.swift in Sources */,
 				E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */,
 				E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */,
