@@ -260,6 +260,7 @@ struct RootView: View {
                 case "0029": kind = .luckyThirdLine
                 case "0016": kind = .wroteOneTonight
                 case "0012": kind = .taniguchiShortJob
+                case "0023": kind = .regularEmployment
                 case "0022": kind = .photoShootOffer
                 case "0041": kind = .kouhaiInvite
                 case "0042": kind = .senpaiAllNight

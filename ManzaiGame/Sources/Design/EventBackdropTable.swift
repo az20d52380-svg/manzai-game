@@ -21,7 +21,7 @@ extension EventBackdrop {
         case .photoShootOffer:         return .init(.office, .day)      // 事務所・昼
         case .taniguchiShortJob:       return .init(.keikoba, .day)     // 稽古場・月末の昼
         case .wroteOneTonight:         return .init(.famires, .night)   // 深夜のファミレス
-        case .regularEmployment:       return .init(.office, .day)      // 推定: バイト先の休憩室→事務所に近い・昼休み
+        case .regularEmployment:       return .init(.famires, .day)     // バイト先の休憩室・昼休み（事務所は番付ボードがあり芸能事務所に見えた＝0055 と同じバイト先のファミレスに・10/19）
         case .lastTrainReview:         return .init(.station, .night)   // 駅のホーム・ライブ帰りの夜
         case .luckyThirdLine:          return .init(.keikoba, .day)     // 稽古場・昼すぎ
         case .greenroomSilentTen:      return .init(.gakuya, .evening)  // 推定: 劇場の楽屋・ライブが終わった後→夕
