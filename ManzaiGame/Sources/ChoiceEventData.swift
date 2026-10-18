@@ -25,7 +25,7 @@ enum ChoiceEventData {
         case .lastTrainReview: return .station
         case .wroteOneTonight: return .famires
         case .photoShootOffer: return .office
-        case .preTournamentEve, .brokeDrinkingInvite, .justLostRehearsal:
+        case .preTournamentEve, .brokeDrinkingInvite, .justLostRehearsal, .weekendInvite:
             return .dusk
         default:
             return .keiko
@@ -41,6 +41,7 @@ enum ChoiceEventData {
         case .tsuukaBreak: return tsuukaBreak
         case .earlyFormality: return earlyFormality
         case .brokeDrinkingInvite: return brokeDrinkingInvite
+        case .weekendInvite: return weekendInvite
         case .senpaiMeishi: return senpaiMeishi
         case .peerFoldedChair: return peerFoldedChair
         case .namelessReservationSlip: return namelessReservationSlip
@@ -229,6 +230,30 @@ enum ChoiceEventData {
             "B": [
                 Advice(name: "俺", text: "今日は帰って寝るよ。また今度な"),
                 Advice(name: "谷口", text: "わかりました。ほな、また今度"),
+            ],
+        ]
+    )
+
+    // MARK: §102 先輩の誘い（週末に不定期に来る軽い気分転換。ボケない・短く）
+    private static let weekendInvite = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。先輩が声をかけてきた。"),
+            Advice(name: "先輩", text: "今夜、軽く飲みに行かへんか。割り勘でええよ"),
+            Advice(name: "谷口", text: "俺は行ってもええと思てる。お前はどうする"),
+        ],
+        choiceLabels: [
+            "A": "行く（5,000円）",
+            "B": "断る",
+        ],
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。たまには気分転換も必要です"),
+                Advice(name: "谷口", text: "ほな行こか。ええ夜になるとええな"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜はやめておきます。また誘ってください"),
+                Advice(name: "先輩", text: "おう、またな"),
             ],
         ]
     )

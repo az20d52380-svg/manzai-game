@@ -18,7 +18,7 @@ final class WeekRunnerGoldenTests: XCTestCase {
         gpSeeded: Bool = false,
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> (outcome: YearOutcome, state: GameState, rng: SplitMix64) {
-        var runner = WeekRunner(state: state, year: year, config: config, rng: rng, gpSeeded: gpSeeded)
+        var runner = WeekRunner(state: state, year: year, config: config, rng: rng, gpSeeded: gpSeeded, inviteSeed: 424243)
         var phase = runner.begin()
         while true {
             switch phase {
@@ -31,7 +31,8 @@ final class WeekRunnerGoldenTests: XCTestCase {
             case .gpRound, .gpRevival, .gpFinal:
                 phase = runner.resolveAuto()
             case .weekDone(let summary):
-                onWeekEnd?(summary.week, summary.state)
+                if runner.pendingInvite != nil { runner.resolveInvite(accept: true) }   // §102 golden 台本は「行く」
+                onWeekEnd?(summary.week, runner.state)
                 phase = runner.begin()
             case .yearDone(let outcome):
                 return (outcome, runner.state, runner.rng)
