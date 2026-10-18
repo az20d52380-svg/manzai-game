@@ -82,7 +82,7 @@
 - 広告の会社の登録・プライバシーポリシーの URL・アプリ名「ふたり寄席」でよいか（store_listing_draft_v0）
 
 ## 済
-- 10/18 自走の回：テスト追加 CalendarInvariantTests（大会カレンダーの整合・165 green）＋点検＝本体 163 green・候補ブランチ claude/q-candidate 180 green（変更なし）
+- 10/18 自走の回：テスト追加 CalendarInvariantTests・ConfigTableInvariantTests（カレンダーと設定表の整合・169 green）＋点検＝本体 163 green・候補ブランチ claude/q-candidate 180 green（変更なし）
 - 済の記録は docs/AUTOPILOT_done.md へ移した（10/18）。新しく済んだ物は、キューの行を消してここに1行（コミット）。
 - 91 済 4fd44d1：画面の「粒」→「経験点」・週メインの能力アップの札に経験点の数を出さない（未振分がある時だけ「振れる経験点あり」）
 - 104 済 a18021b
