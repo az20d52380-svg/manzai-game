@@ -1,7 +1,7 @@
 // FinalistAnnounceView.swift
 // 頂GP 準決勝の後の「決勝進出者の発表」（docs/result_reveal_m1_research_v0.md §3）。4画面・約40秒。
 // 表示だけ：判定・乱数・golden には触れない。読み上げは五十音順＝成績の手がかりにしない。
-// 数字・順位・点・通過ライン・決勝の枠数は出さない。敗者復活の案内は出さない（オーナー確認待ち）。
+// 数字・順位・点・通過ライン・決勝の枠数は出さない。敗者復活の案内は、呼ばれなかった時だけ司会が最後に一言（Q14）。
 
 import SwiftUI
 
@@ -66,7 +66,7 @@ struct FinalistAnnounceView: View {
             if called == 0 { return "決勝に進む組が、読み上げられる。" }
             if let cur = readOrder.prefix(called).last { return cur.isSelf ? "——\(cur.name)。" : cur.name }
             return ""
-        case .after: return "以上の組が、決勝に進む。"
+        case .after: return passed ? "以上の組が、決勝に進む。" : "以上の組が、決勝に進む。\n呼ばれなかった皆さん、敗者復活戦は決勝当日です。"
         }
     }
 
