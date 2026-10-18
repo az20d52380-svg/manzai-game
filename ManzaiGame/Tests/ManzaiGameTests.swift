@@ -437,17 +437,12 @@ final class PlaytestV4FixTests: IsolatedStoreTestCase {
         XCTAssertEqual(l.count, 3)
         XCTAssertTrue(l.contains(log[5]))
     }
-    func testFinalsYearMonologPool() {
-        XCTAssertEqual(YearResultView.finalsPool(champion: false, reachedFinal: true), YearResultView.yeFinalLost)
-        XCTAssertEqual(YearResultView.finalsPool(champion: true, reachedFinal: true), YearResultView.yeChampion)
-        XCTAssertNil(YearResultView.finalsPool(champion: false, reachedFinal: false))
-        for line in YearResultView.yeFinalLost + YearResultView.yeChampion {
-            XCTAssertFalse(line.contains("去年"))   // 1年目の決勝でも出る
-            XCTAssertFalse(line.contains("笑"))
-        }
-        // 戦績フィルタで消えない（負けを語る行を含まない）
-        XCTAssertEqual(YearResultView.filterByRecord(YearResultView.yeFinalLost, wins: 6, losses: 1), YearResultView.yeFinalLost)
-        XCTAssertTrue(YearResultView.yeFinalLost.allSatisfy { $0.contains("決勝") })
+    func testFinalsYearHasNoMonolog() {
+        XCTAssertTrue(YearResultView.silentFinalsYear(bankrupt: false, dissolved: false, champion: false, reachedFinal: true))
+        XCTAssertTrue(YearResultView.silentFinalsYear(bankrupt: false, dissolved: false, champion: true, reachedFinal: true))
+        XCTAssertFalse(YearResultView.silentFinalsYear(bankrupt: false, dissolved: false, champion: false, reachedFinal: false))
+        XCTAssertFalse(YearResultView.silentFinalsYear(bankrupt: true, dissolved: false, champion: false, reachedFinal: true))
+        XCTAssertFalse(YearResultView.silentFinalsYear(bankrupt: false, dissolved: true, champion: false, reachedFinal: true))
     }
 }
 
