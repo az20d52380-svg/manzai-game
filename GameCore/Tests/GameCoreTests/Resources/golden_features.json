@@ -12843,6 +12843,2558 @@
      ]
     }
    ]
-  }
+  },
+  "event_effects": [
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "justlost",
+    "kind": "justLostRehearsal",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 27.0,
+     "mental": 58.0,
+     "stamina": 80.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "styletalk",
+    "kind": "styleTalk",
+    "side": "B",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 37.0,
+     "chara": 25.0,
+     "mental": 59.0,
+     "stamina": 90.0,
+     "money": 500000.0,
+     "compat": 6.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "passfork",
+    "kind": "justPassedFork",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 59.0,
+     "stamina": 75.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 43.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "eve",
+    "kind": "preTournamentEve",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 36.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "tsuuka",
+    "kind": "tsuukaBreak",
+    "side": "A",
+    "post": {
+     "sense": 42.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 500000.0,
+     "compat": 4.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "early",
+    "kind": "earlyFormality",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 75.0,
+     "money": 500000.0,
+     "compat": 7.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "tani",
+    "kind": "taniguchiShortJob",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 75.0,
+     "money": 650000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "brokedrink",
+    "kind": "brokeDrinkingInvite",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 61.0,
+     "stamina": 90.0,
+     "money": 496000.0,
+     "compat": 6.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "meishi",
+    "kind": "senpaiMeishi",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 26.0,
+     "mental": 59.0,
+     "stamina": 90.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 42.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "peerchair",
+    "kind": "peerFoldedChair",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 59.0,
+     "stamina": 80.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 42.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "lasttrain",
+    "kind": "lastTrainReview",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 32.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 58.0,
+     "stamina": 85.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "wrote",
+    "kind": "wroteOneTonight",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 32.0,
+     "expr": 36.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 75.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "photo",
+    "kind": "photoShootOffer",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 27.0,
+     "mental": 60.0,
+     "stamina": 85.0,
+     "money": 510000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 1
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "kouhai",
+    "kind": "kouhaiInvite",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 26.0,
+     "mental": 61.0,
+     "stamina": 90.0,
+     "money": 492000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "senpai",
+    "kind": "senpaiAllNight",
+    "side": "A",
+    "post": {
+     "sense": 41.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 61.0,
+     "stamina": 75.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "crew",
+    "kind": "stageCrewChairs",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "postcard",
+    "kind": "writerPostcards",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 31.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 515000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "douki",
+    "kind": "doukiJointLive",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 490000.0,
+     "compat": 5.0,
+     "fame": 42.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "inventory",
+    "kind": "baitoInventory",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 75.0,
+     "money": 520000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "homecoming",
+    "kind": "homecomingCall",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 61.0,
+     "stamina": 100.0,
+     "money": 488000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "fan",
+    "kind": "regularFanOranges",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 26.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 495000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "ticket",
+    "kind": "officeTicketQuota",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "festival",
+    "kind": "summerFestivalGig",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 75.0,
+     "money": 512000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "tv",
+    "kind": "doukiOnTV",
+    "side": "A",
+    "post": {
+     "sense": 41.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 59.0,
+     "stamina": 90.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "renovation",
+    "kind": "theaterRenovation",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 492000.0,
+     "compat": 5.0,
+     "fame": 42.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "classmate",
+    "kind": "classmateInAudience",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 61.0,
+     "stamina": 80.0,
+     "money": 500000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "fever",
+    "kind": "partnerFever",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 85.0,
+     "money": 498000.0,
+     "compat": 7.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "notebook",
+    "kind": "lostNotebook",
+    "side": "A",
+    "post": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 61.0,
+     "stamina": 80.0,
+     "money": 498500.0,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "hi",
+    "init": {
+     "sense": 40.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 90.0,
+     "money": 500000,
+     "compat": 5.0,
+     "fame": 40.0
+    },
+    "key": "yearend",
+    "kind": "yearEndLive",
+    "side": "A",
+    "post": {
+     "sense": 41.0,
+     "idea": 30.0,
+     "expr": 35.0,
+     "chara": 25.0,
+     "mental": 60.0,
+     "stamina": 80.0,
+     "money": 495000.0,
+     "compat": 5.0,
+     "fame": 41.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "justlost",
+    "kind": "justLostRehearsal",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 22.0,
+     "stamina": 35.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "styletalk",
+    "kind": "styleTalk",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 14.0,
+     "chara": 8.0,
+     "mental": 19.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "passfork",
+    "kind": "justPassedFork",
+    "side": "B",
+    "post": {
+     "sense": 11.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "eve",
+    "kind": "preTournamentEve",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 30.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "tsuuka",
+    "kind": "tsuukaBreak",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 14.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "early",
+    "kind": "earlyFormality",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 30.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "tani",
+    "kind": "taniguchiShortJob",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 19.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "brokedrink",
+    "kind": "brokeDrinkingInvite",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 11.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 19.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "meishi",
+    "kind": "senpaiMeishi",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 35.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "peerchair",
+    "kind": "peerFoldedChair",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "lasttrain",
+    "kind": "lastTrainReview",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 25.0,
+     "money": 0.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "wrote",
+    "kind": "wroteOneTonight",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 25.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 2,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "photo",
+    "kind": "photoShootOffer",
+    "side": "B",
+    "post": {
+     "sense": 11.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "kouhai",
+    "kind": "kouhaiInvite",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 7.0,
+     "mental": 19.0,
+     "stamina": 25.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "senpai",
+    "kind": "senpaiAllNight",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "crew",
+    "kind": "stageCrewChairs",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 25.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "postcard",
+    "kind": "writerPostcards",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "douki",
+    "kind": "doukiJointLive",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "inventory",
+    "kind": "baitoInventory",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 13.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "homecoming",
+    "kind": "homecomingCall",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 13.0,
+     "chara": 8.0,
+     "mental": 19.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "fan",
+    "kind": "regularFanOranges",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "festival",
+    "kind": "summerFestivalGig",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 21.0,
+     "stamina": 30.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "tv",
+    "kind": "doukiOnTV",
+    "side": "A",
+    "post": {
+     "sense": 11.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 19.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "renovation",
+    "kind": "theaterRenovation",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 13.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 15.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "classmate",
+    "kind": "classmateInAudience",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 25.0,
+     "money": 800.0,
+     "compat": 4.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "fever",
+    "kind": "partnerFever",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 13.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "lo",
+    "init": {
+     "sense": 10.0,
+     "idea": 10.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 20.0,
+     "stamina": 20.0,
+     "money": 800,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "key": "notebook",
+    "kind": "lostNotebook",
+    "side": "B",
+    "post": {
+     "sense": 10.0,
+     "idea": 11.0,
+     "expr": 12.0,
+     "chara": 8.0,
+     "mental": 19.0,
+     "stamina": 20.0,
+     "money": 800.0,
+     "compat": 3.0,
+     "fame": 5.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "justlost",
+    "kind": "justLostRehearsal",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 119.5,
+     "chara": 119.0,
+     "mental": 97.0,
+     "stamina": 45.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "styletalk",
+    "kind": "styleTalk",
+    "side": "B",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 119.5,
+     "chara": 119.0,
+     "mental": 98.0,
+     "stamina": 55.0,
+     "money": 60000.0,
+     "compat": 20.0,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "passfork",
+    "kind": "justPassedFork",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 98.0,
+     "stamina": 40.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 100.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "eve",
+    "kind": "preTournamentEve",
+    "side": "B",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 100.0,
+     "stamina": 65.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "tsuuka",
+    "kind": "tsuukaBreak",
+    "side": "A",
+    "post": {
+     "sense": 120.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 60000.0,
+     "compat": 18.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "early",
+    "kind": "earlyFormality",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 40.0,
+     "money": 60000.0,
+     "compat": 20.0,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "tani",
+    "kind": "taniguchiShortJob",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 40.0,
+     "money": 210000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "brokedrink",
+    "kind": "brokeDrinkingInvite",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 100.0,
+     "stamina": 55.0,
+     "money": 56000.0,
+     "compat": 20.0,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "meishi",
+    "kind": "senpaiMeishi",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 120.0,
+     "mental": 98.0,
+     "stamina": 55.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 100.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "peerchair",
+    "kind": "peerFoldedChair",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 98.0,
+     "stamina": 45.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 100.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "lasttrain",
+    "kind": "lastTrainReview",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 120.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 97.0,
+     "stamina": 50.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "wrote",
+    "kind": "wroteOneTonight",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 120.0,
+     "expr": 118.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 40.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "photo",
+    "kind": "photoShootOffer",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 120.0,
+     "mental": 99.0,
+     "stamina": 50.0,
+     "money": 70000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 1
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "kouhai",
+    "kind": "kouhaiInvite",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 120.0,
+     "mental": 100.0,
+     "stamina": 55.0,
+     "money": 52000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "senpai",
+    "kind": "senpaiAllNight",
+    "side": "B",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "crew",
+    "kind": "stageCrewChairs",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "postcard",
+    "kind": "writerPostcards",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 119.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 75000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "douki",
+    "kind": "doukiJointLive",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 50000.0,
+     "compat": 19.5,
+     "fame": 100.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "inventory",
+    "kind": "baitoInventory",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 40.0,
+     "money": 80000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "homecoming",
+    "kind": "homecomingCall",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 100.0,
+     "stamina": 70.0,
+     "money": 48000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "fan",
+    "kind": "regularFanOranges",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 120.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 55000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "ticket",
+    "kind": "officeTicketQuota",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "festival",
+    "kind": "summerFestivalGig",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 40.0,
+     "money": 72000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "tv",
+    "kind": "doukiOnTV",
+    "side": "A",
+    "post": {
+     "sense": 120.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 98.0,
+     "stamina": 55.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "renovation",
+    "kind": "theaterRenovation",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 52000.0,
+     "compat": 19.5,
+     "fame": 100.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "classmate",
+    "kind": "classmateInAudience",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 100.0,
+     "stamina": 45.0,
+     "money": 60000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "fever",
+    "kind": "partnerFever",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 50.0,
+     "money": 58000.0,
+     "compat": 20.0,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "notebook",
+    "kind": "lostNotebook",
+    "side": "A",
+    "post": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 100.0,
+     "stamina": 45.0,
+     "money": 58500.0,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   },
+   {
+    "state": "edge",
+    "init": {
+     "sense": 119.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 55.0,
+     "money": 60000,
+     "compat": 19.5,
+     "fame": 98.0
+    },
+    "key": "yearend",
+    "kind": "yearEndLive",
+    "side": "A",
+    "post": {
+     "sense": 120.0,
+     "idea": 118.0,
+     "expr": 117.5,
+     "chara": 119.0,
+     "mental": 99.0,
+     "stamina": 45.0,
+     "money": 55000.0,
+     "compat": 19.5,
+     "fame": 99.0
+    },
+    "neta_boost": 0,
+    "preocc": 0
+   }
+  ]
  }
 }

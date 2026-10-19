@@ -227,4 +227,40 @@ final class FeatureGoldenTests: XCTestCase {
             }
         }
     }
+
+    /// 選択イベントの効果：同じ開始状態に、sim の方針が選ぶ側の effects を applyEventEffect で当てた結果が Python（EVENTS_APP=True）と一致
+    func testEventEffectsGolden() throws {
+        let cases = try XCTUnwrap(try loadExt()["event_effects"] as? [[String: Any]])
+        let config = GameConfig()
+        XCTAssertGreaterThanOrEqual(cases.count, 80)
+        var kinds = Set<String>()
+        for (i, c) in cases.enumerated() {
+            let kindName = c["kind"] as! String
+            let side = c["side"] as! String
+            let kind = try XCTUnwrap(ChoiceEventKind(rawValue: kindName), "unknown kind \(kindName)")
+            let ini = c["init"] as! [String: Any]
+            var s = GameState(config: config)
+            s.センス = num(ini["sense"]); s.発想 = num(ini["idea"]); s.表現 = num(ini["expr"]); s.華 = num(ini["chara"])
+            s.メンタル = num(ini["mental"]); s.stamina = num(ini["stamina"]); s.money = Int(num(ini["money"]))
+            s.compat = num(ini["compat"]); s.fame = num(ini["fame"])
+            let choice = try XCTUnwrap(ChoiceEventTable.choices(for: kind, config: config).first { $0.id == side }, "no choice \(side)")
+            XCTAssertTrue(choice.gate(s), "[event case\(i) \(c["key"]!) \(c["state"]!)] gate closed for side \(side)")
+            for e in choice.effects { s.applyEventEffect(e, config: config) }
+            let p = c["post"] as! [String: Any]
+            let tag = "[event case\(i) \(c["key"]!)/\(kindName) \(side) \(c["state"]!)]"
+            XCTAssertEqual(s.センス, num(p["sense"]), accuracy: 1e-9, "\(tag) sense")
+            XCTAssertEqual(s.発想, num(p["idea"]), accuracy: 1e-9, "\(tag) idea")
+            XCTAssertEqual(s.表現, num(p["expr"]), accuracy: 1e-9, "\(tag) expr")
+            XCTAssertEqual(s.華, num(p["chara"]), accuracy: 1e-9, "\(tag) chara")
+            XCTAssertEqual(s.メンタル, num(p["mental"]), accuracy: 1e-9, "\(tag) mental")
+            XCTAssertEqual(s.stamina, num(p["stamina"]), accuracy: 1e-9, "\(tag) stamina")
+            XCTAssertEqual(Double(s.money), num(p["money"]), accuracy: 1e-9, "\(tag) money")
+            XCTAssertEqual(s.compat, num(p["compat"]), accuracy: 1e-9, "\(tag) compat")
+            XCTAssertEqual(s.fame, num(p["fame"]), accuracy: 1e-9, "\(tag) fame")
+            XCTAssertEqual(s.netaBoostWeeks, (c["neta_boost"] as! NSNumber).intValue, "\(tag) netaBoost")
+            XCTAssertEqual(s.preoccupiedWeeks, (c["preocc"] as! NSNumber).intValue, "\(tag) preoccupied")
+            kinds.insert(kindName)
+        }
+        XCTAssertEqual(kinds.count, 29, "守ったイベント数")
+    }
 }

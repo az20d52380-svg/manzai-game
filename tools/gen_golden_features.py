@@ -146,11 +146,77 @@ def offer_scripts():
                 out["fatigue"].append(dict(name=f"{nm}_f{int(fame0)}_{sp['name']}", fame0=fame0, offer=sp["name"], steps=steps))
     return out
 
+# ---------------------------------------------------------------------------------------------
+# 選択イベントの効果（10/19・docs/golden_event_effects_1019_v0.md）：決まった開始状態に、sim の方針が選ぶ側の効果を
+# EVENTS_APP=True の _app_apply / _others_apply で当てた後の状態。乱数なし。side は sim の分岐（体力・所持金）と同じ条件を
+# ここで写したラベル（Swift はこの側の effects を applyEventEffect で当てる＝側の取り違えは状態の食い違いとして表に出る）。
+# 方針が何も起こさない状態（ticket の体力<50かつ所持金<6000／yearend の所持金<1500）は対象外。sim が選ばない側は対象外。
+# ---------------------------------------------------------------------------------------------
+EV_STATES = {
+    "hi":   dict(sense=40.0, idea=30.0, expr=35.0, chara=25.0, mental=60.0, stamina=90.0, money=500_000, compat=5.0, fame=40.0),
+    "lo":   dict(sense=10.0, idea=10.0, expr=12.0, chara=8.0, mental=20.0, stamina=20.0, money=800, compat=3.0, fame=5.0),
+    "edge": dict(sense=119.0, idea=118.0, expr=117.5, chara=119.0, mental=99.0, stamina=55.0, money=60_000, compat=19.5, fame=98.0),
+}
+# (python key, Swift ChoiceEventKind, 適用関数, 側を返す関数(s)→'A'/'B'/'C'/None)
+_EV = [
+    ("justlost",  "justLostRehearsal", "app", lambda s: "A" if s.stamina >= 50 else ("C" if s.money >= 1500 else "B")),
+    ("styletalk", "styleTalk",         "app", lambda s: "B"),
+    ("passfork",  "justPassedFork",    "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("eve",       "preTournamentEve",  "app", lambda s: "A" if s.stamina >= 60 else "B"),
+    ("tsuuka",    "tsuukaBreak",       "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("early",     "earlyFormality",    "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("tani",      "taniguchiShortJob", "app", lambda s: "A" if s.stamina >= 35 else "B"),
+    ("brokedrink","brokeDrinkingInvite","app", lambda s: "A" if s.money >= 10_000 else "B"),
+    ("meishi",    "senpaiMeishi",      "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("peerchair", "peerFoldedChair",   "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("lasttrain", "lastTrainReview",   "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("wrote",     "wroteOneTonight",   "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("photo",     "photoShootOffer",   "app", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("kouhai",    "kouhaiInvite",      "oth", lambda s: "A" if s.money >= 50_000 else "B"),
+    ("senpai",    "senpaiAllNight",    "oth", lambda s: "A" if s.stamina >= 60 else "B"),
+    ("crew",      "stageCrewChairs",   "oth", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("postcard",  "writerPostcards",   "oth", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("douki",     "doukiJointLive",    "oth", lambda s: "A" if (s.money >= 50_000 and s.stamina >= 50) else "B"),
+    ("inventory", "baitoInventory",    "oth", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("homecoming","homecomingCall",    "oth", lambda s: "A" if s.money >= 50_000 else "B"),
+    ("fan",       "regularFanOranges", "oth", lambda s: "A" if s.money >= 30_000 else "B"),
+    ("ticket",    "officeTicketQuota", "oth", lambda s: "A" if s.stamina >= 50 else ("B" if s.money >= 6000 else None)),
+    ("festival",  "summerFestivalGig", "oth", lambda s: "A" if s.stamina >= 55 else "B"),
+    ("tv",        "doukiOnTV",         "oth", lambda s: "A" if (s.stamina >= 50 or s.money < 1000) else "B"),
+    ("renovation","theaterRenovation", "oth", lambda s: "A" if (s.money >= 50_000 and s.stamina >= 50) else "B"),
+    ("classmate", "classmateInAudience","oth", lambda s: "A" if s.stamina >= 50 else "B"),
+    ("fever",     "partnerFever",      "oth", lambda s: "A" if s.money >= 2000 else "B"),
+    ("notebook",  "lostNotebook",      "oth", lambda s: "A" if (s.stamina >= 50 and s.money >= 1500) else "B"),
+    ("yearend",   "yearEndLive",       "oth", lambda s: "A" if s.money >= 50_000 else ("B" if s.money >= 1500 else None)),
+]
+
+def event_effect_cases():
+    out = []
+    saved = C.EVENTS_APP
+    C.EVENTS_APP = True
+    try:
+        for sn, init in EV_STATES.items():
+            for key, kind, fn, side in _EV:
+                s = B.S()
+                for k, v in init.items(): setattr(s, k, v)
+                s.money = int(s.money)
+                sd = side(s)
+                if sd is None: continue
+                (C._app_apply if fn == "app" else C._others_apply)(s, key)
+                out.append(dict(state=sn, init=init, key=key, kind=kind, side=sd,
+                                post=dict(sense=float(s.sense), idea=float(s.idea), expr=float(s.expr), chara=float(s.chara),
+                                          mental=float(s.mental), stamina=float(s.stamina), money=float(s.money),
+                                          compat=float(s.compat), fame=float(s.fame)),
+                                neta_boost=int(getattr(s, "_neta_boost", 0) or 0), preocc=int(getattr(s, "_preocc", 0) or 0)))
+    finally:
+        C.EVENTS_APP = saved
+    return out
+
 def ext_main():
     saved = (C.NETA_V2,)
     C.NETA_V2 = True
     try:
-        return dict(neta_bonus=neta_bonus_cases(), neta_grow=neta_grow_scripts(), offers=offer_scripts())
+        return dict(neta_bonus=neta_bonus_cases(), neta_grow=neta_grow_scripts(), offers=offer_scripts(), event_effects=event_effect_cases())
     finally:
         C.NETA_V2, = saved
 
@@ -231,7 +297,7 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     ext = ext_main()
     OUT.write_text(json.dumps(dict(version=2, scripts=S, ext=ext), ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"wrote {OUT} ({len(S)} scripts, {sum(len(x['steps']) for x in S)} steps; ext: {len(ext['neta_bonus'])} neta cases, {len(ext['neta_grow'])} grow, {len(ext['offers']['extra'])} extra, {len(ext['offers']['fatigue'])} fatigue)")
+    print(f"wrote {OUT} ({len(S)} scripts, {sum(len(x['steps']) for x in S)} steps; ext: {len(ext['neta_bonus'])} neta cases, {len(ext['neta_grow'])} grow, {len(ext['offers']['extra'])} extra, {len(ext['offers']['fatigue'])} fatigue, {len(ext['event_effects'])} event effects)")
 
 if __name__ == "__main__":
     main()
