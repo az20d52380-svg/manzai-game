@@ -28,11 +28,22 @@ struct QualifierNoticeView: View {
     @State private var task: Task<Void, Never>?
 
     private var rowNames: [String] {
-        let mobs = FinalsData.yearRoster(year: year &+ roundName.count &* 31, selfName: combiName, count: passed ? 8 : 9)
+        let n = listLength
+        let mobs = FinalsData.yearRoster(year: year &+ roundName.count &* 31, selfName: combiName, count: passed ? n - 1 : n)
         var arr = mobs
         if passed { arr.append(combiName) }
         let selfY = combiName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? combiName
         return arr.sorted { (FinalistAnnounceView.yomi[$0] ?? selfY) < (FinalistAnnounceView.yomi[$1] ?? selfY) }
+    }
+
+    /// 一覧の組数（本編は9）。DEBUG の MZ_QUAL_LONG=1 は判断待ち110の見せ物＝回戦が上がるほど短い長い一覧（1回戦45・2回戦35・3回戦25・qualifier_list_research_v0 §5）
+    private var listLength: Int {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_QUAL_LONG"] == "1" {
+            switch roundName { case "GP1回戦": return 45; case "GP2回戦": return 35; default: return 25 }
+        }
+        #endif
+        return 9
     }
 
     private var resultLines: [String] { passed ? ["あった！", "名前、あった！！", "やった……"] : ["…………", "次いこ"] }
@@ -89,6 +100,7 @@ struct QualifierNoticeView: View {
                 Text("頂GP公式").font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.kin)
                 Text("\(roundLabel) 通過者").font(YoseFont.mincho(22)).foregroundStyle(.white)
             }.padding(.top, 96).padding(.bottom, 14)
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(rowNames, id: \.self) { n in
@@ -104,6 +116,10 @@ struct QualifierNoticeView: View {
                         Divider().background(.white.opacity(0.12))
                     }
                 }
+            }
+            .onChange(of: scanned) { _, on in   // 長い一覧（DEBUG の見せ物）では、見つかった時に自組の行まで送る
+                if on && passed && rowNames.count > 12 { withAnimation(.easeInOut(duration: 0.6)) { proxy.scrollTo(combiName, anchor: .center) } }
+            }
             }
             .padding(.horizontal, 14)
             if !scanned {

@@ -38,3 +38,7 @@
 - https://yutura.net/news/archives/83759 （1回戦敗退後の動画）
 - https://gendai.media/articles/-/98716 （予選の概況）
 - https://www.sakigake.jp/news/article/20261004OR0022/ （2026年エントリー数・2回戦開始）
+
+## §6 見せ物（10/19 自走・DEBUG 限定・本編は9組のまま）
+- `MZ_UI=qual_notice MZ_OPEN=1 MZ_QUAL_LONG=1` で長い一覧（1回戦45・2回戦35・3回戦25組）。見つかったら自組の行まで送る。スクショ docs/qualifier_list_long_sample.png。
+- 気づき：初期のコンビ名「あなたのコンビ」は五十音で上の方に来るので、長くしても探す手間が出にくい。名前を変えた人ほど探す体験になる。
