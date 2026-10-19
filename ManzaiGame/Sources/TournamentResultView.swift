@@ -127,7 +127,7 @@ struct TournamentResultView: View {
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
                         Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)
                         Spacer(minLength: 4)
-                        Text("結成\(summary.year)年目　第\(summary.week)週").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
+                        Text("結成\(summary.year)年目　第\(summary.week)週").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1).minimumScaleFactor(0.85)
                     }
                     .padding(.horizontal, 10).frame(height: 28)
                     .background(YoseColor.kuroUrushi.opacity(0.9))
