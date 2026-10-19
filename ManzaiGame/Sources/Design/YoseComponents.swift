@@ -222,6 +222,7 @@ struct YoseTag: View {
             case .outlineShu: return (YoseColor.shu, YoseColor.shu.opacity(0.12), YoseColor.shu)
             case .outlineKin: return (YoseColor.kinText, YoseColor.kin.opacity(0.18), YoseColor.kin)
             case .outlineSumi: return (YoseColor.sumi, YoseColor.ki.opacity(0.45), YoseColor.sumi)
+            case .outlineHai: return (YoseColor.haiSumi, YoseColor.haiSumi.opacity(0.12), YoseColor.haiSumi)
             }
         }()
         Text(text)

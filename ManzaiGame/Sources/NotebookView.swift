@@ -267,6 +267,7 @@ struct NotebookView: View {
         case "優勝": YoseHankoStamp(text: "優勝", angle: -4)
         case "通過": YoseTag(text: "通過", style: .solidEnji)
         case "敗退": YoseTag(text: "敗退", style: .outlineSumi)
+        case "観戦": YoseTag(text: "観戦", style: .outlineHai)   // 客席から観た年＝出場していない灰色の札（「休」ではない）
         default: YoseTag(text: mark, style: .outlineSumi)
         }
     }
