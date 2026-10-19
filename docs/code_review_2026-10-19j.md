@@ -41,3 +41,6 @@
 - StageFrame.swift：見た目のみ（数値・判定なし）。`UserDefaults` の seenKey 以外に本編へ影響する物なし。DEBUG の `MZ_*` 参照は対象外も含め全て `#if DEBUG` 内（AbilityUpView・EndingViews・ChoiceEventOverlay・FinalistAnnounceView・Endings・FinalsBroadcastIntro・FinalsPresentationView を確認）。
 - AbilityUpView の値札／押せる判定：`costOfNextStep`（pourStep の再生）で押せる／押せないを決め、足りない粒の表示は押せない行にだけ出る。ExpDisplay.cost の「持ち分を超えない」補正で「持ち14・必要15なのに押せる」は出ない。
 - 小さな注意（実害なし）：WeekHint.line の `money < 0` 判定が2か所に重複（:34 と :36 の2つ目は到達しない）。`CommandCatalog.netaWrite` は呼び手なし。
+
+## 直した所（10/19 自走・ビルド OK・目視は未）
+- §1〜§3 を直し案どおりに。§4（借金の知らせの数字の直書き）は今は一致＝設定を動かす時に一緒に直す。
