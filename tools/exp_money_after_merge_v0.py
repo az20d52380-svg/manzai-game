@@ -51,8 +51,8 @@ def one(args):
         if all_on and s.stamina < 40 and st["drink"] < DRINK[2] and s.money >= DRINK[0] * 3:
             s.money -= DRINK[0]; B.add(s, "stamina", DRINK[1]); st["drink"] += 1
         return out
-    def rest(s, nm):
-        o_rest(s, nm)
+    def rest(s, nm, use_ticket=True):
+        o_rest(s, nm, use_ticket=use_ticket)
         if nm in HOME and st["room"]:
             B.add(s, "stamina", HEAL[st["room"]])
             if st["room"] == 2 and nm == "完全休養": B.add(s, "mental", 1)
