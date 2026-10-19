@@ -135,7 +135,7 @@ struct AbilityUpView: View {
                         ForEach(Array(k.cost.enumerated()), id: \.offset) { _, c in
                             let lack = ExpDisplay.cost(c.amount, have: pv[currency: c.currency]) - ExpDisplay.value(pv[currency: c.currency])
                             if c.amount > pv[currency: c.currency] + 1e-9, lack > 0 {
-                                Text("\(String(describing: c.currency)) あと\(lack)").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                                Text("\(c.currency.displayName) あと\(lack)").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
                             }
                         }
                     }
@@ -157,7 +157,7 @@ struct AbilityUpView: View {
 
     static var hintSpec: HintSpec {
         HintSpec(key: "abilityUp", title: "能力アップ", rows: [
-            .init(term: "経験点", text: "練習やネタ書きでたまる。閃・語・間・存・胆の数字が、いま持っている分。"),
+            .init(term: "経験点", text: "練習やネタ書きでたまる。種・帳・間・見・場の数字が、いま持っている分。"),
             .init(term: "＋", text: "能力の「＋」で経験点を使うと、その能力が上がり、実力が伸びる。"),
             .init(term: "おまかせ", text: "迷ったら「おまかせ」。自動で割り振る。「確定」を押すまで決まらない。"),
             .init(term: "ランク", text: "G、F……と上がっていく。「Fまで5」は、Fに上がるまでの残り。"),
@@ -246,7 +246,7 @@ struct AbilityUpView: View {
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .frame(width: 22, height: 22).background(wa(c), in: Circle())
-                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel(String(describing: c))
+                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel(c.displayName)
                     Text("\(Self.points(pv[currency: c]))").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
@@ -399,7 +399,7 @@ struct AbilityUpView: View {
         guard let sh = all.first else { return [] }
         // 読みにくいので不足の1つ目だけ。他にもあれば「ほか」で省略
         let more = all.count > 1 ? "　ほか" : ""
-        return ["\(Theme.currencyChar(sh.currency))（\(sh.currency)）あと\(sh.short) → " + (practices(for: sh.currency, config: cfg).first ?? "") + more]
+        return ["\(Theme.currencyChar(sh.currency))（\(sh.currency.displayName)）あと\(sh.short) → " + (practices(for: sh.currency, config: cfg).first ?? "") + more]
     }
 
     /// ＋が1つでも押せる状態か（週メインの「経験点が残ってる」を出す条件）

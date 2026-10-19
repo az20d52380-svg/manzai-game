@@ -22,6 +22,17 @@ public enum ExpCurrency: CaseIterable, Hashable, Codable {
     case 間合い
     case 存在感
     case 胆力
+
+    /// 画面に出す名前（表示専用。内部の識別子・セーブ・式は不変）
+    public var displayName: String {
+        switch self {
+        case .閃き: return "ネタ種"
+        case .語彙: return "ことば帳"
+        case .間合い: return "間（ま）"
+        case .存在感: return "見せ場"
+        case .胆力: return "場数"
+        }
+    }
 }
 
 /// 増減の対象となるステータスの鍵（Python: add() の key）
@@ -169,10 +180,10 @@ public struct GameConfig {
         .回復ドリンク大: ItemSpec(price: 20_000, yearlyLimit: 4, summary: "体力がしっかり戻る"),
         .喉のケア用品: ItemSpec(price: 20_000, yearlyLimit: 1, summary: "今年は体調を崩しにくくなる"),
         .銭湯の回数券: ItemSpec(price: 10_000, yearlyLimit: 99, summary: "休む4回ぶん、回復が増える"),
-        .中古のICレコーダー: ItemSpec(price: 30_000, yearlyLimit: nil, summary: "ネタ作りで閃きが少し多く出る（ずっと）"),
+        .中古のICレコーダー: ItemSpec(price: 30_000, yearlyLimit: nil, summary: "ネタ作りでネタ種が少し多く出る（ずっと）"),
         .新幹線回数券: ItemSpec(price: 200_000, yearlyLimit: 1, summary: "今年の大阪遠征が交通費なし・疲れない"),
-        .ネタ作家の勉強会: ItemSpec(price: 150_000, yearlyLimit: 2, summary: "閃きと語彙の経験点"),
-        .ボイトレ短期集中: ItemSpec(price: 250_000, yearlyLimit: 1, summary: "間合いと語彙の経験点"),
+        .ネタ作家の勉強会: ItemSpec(price: 150_000, yearlyLimit: 2, summary: "ネタ種とことば帳の経験点"),
+        .ボイトレ短期集中: ItemSpec(price: 250_000, yearlyLimit: 1, summary: "間（ま）とことば帳の経験点"),
         .稽古場の年契約: ItemSpec(price: 2_400_000, yearlyLimit: 1, summary: "今年の稽古がすべて少し効く"),
     ]
     public var itemDrinkStamina = 8.0

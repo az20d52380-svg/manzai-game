@@ -298,7 +298,7 @@ struct YosePassCelebrationView: View {
 
 struct YoseBigSuccessCutIn: View {
     var title: String = "手応え抜群！ハマった！！"
-    var gains: [(String, Int)] = [("閃", 6), ("語", 4), ("間", 5), ("存", 3), ("胆", 2)]
+    var gains: [(String, Int)] = [("種", 6), ("帳", 4), ("間", 5), ("見", 3), ("場", 2)]
     var showGains: Bool = true     // false＝帯だけ（本番のハマった夜：獲得倍率は練習の話なので出さない）
     var onFinish: () -> Void = {}
 

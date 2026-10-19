@@ -105,11 +105,11 @@ enum Theme {
     /// 通貨の1文字ラベル（色弱アクセシビリティ対応・能力バッジと同じ文法）
     static func currencyChar(_ c: ExpCurrency) -> String {
         switch c {
-        case .閃き: return "閃"
-        case .語彙: return "語"
+        case .閃き: return "種"
+        case .語彙: return "帳"
         case .間合い: return "間"
-        case .存在感: return "存"
-        case .胆力: return "胆"
+        case .存在感: return "見"
+        case .胆力: return "場"
         }
     }
 
