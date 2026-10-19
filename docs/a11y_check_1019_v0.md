@@ -44,3 +44,7 @@
 3. #8（自組の強調が色のみ）。
 4. reduceMotion 一括（#1, #6, #13, #16 の animation）。
 未確認：実機の VoiceOver 通し確認はしていない（静的読みのみ。確度「高」はコード上の事実、「中」は挙動推定を含む）。
+
+## 直した所（10/19 自走・ビルド OK・実機の VoiceOver では未確認）
+- 自動で進む／閉じる画面：RentStatement と FinalsBroadcastEnding は VoiceOver 中に自動で閉じない＋ダブルタップで閉じる。FinalistAnnounce（組名・段の切り替え）と QualifierNotice（一覧の結果・相方の返事）は announcement で伝える。
+- 残り（ラベル・Dynamic Type・reduceMotion の個別の所見）は次の回で。
