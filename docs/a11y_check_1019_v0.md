@@ -1,6 +1,6 @@
 # a11y 点検 a11y_check_1019_v0（2026-10-19・読み取りのみ・コードは未変更）
 
-**件数：全17件（高 10／中 7）。** 対象＝10/17 以降に触れた画面。特に QualifierNoticeView・FinalistAnnounceView・FinalsBroadcastIntro・RentStatement・YoseYearTurnCurtain。
+**件数：全17件（高 11／中 6）。ほか §6 に中の短評3系統。** 対象＝10/17 以降に触れた画面。特に QualifierNoticeView・FinalistAnnounceView・FinalsBroadcastIntro・RentStatement・YoseYearTurnCurtain。
 基準＝a11y_audit_v1 の決まり：①固定 `.system(size:)` は使わず `Font.mzScaled`（YoseFont.gothic/mincho/number 経由）②記号アイコンは `accessibilityHidden(true)` ③意味のある要素は label を付け、色だけで区別しない ④reduceMotion では TimelineView を pause／繰り返しアニメ・大きな動きを止める。
 節：§1 FinalistAnnounceView／§2 QualifierNoticeView／§3 FinalsBroadcastIntro／§4 RentStatement／§5 YearTurn（問題なし寄り）／§6 その他の画面／§7 直す順の案
 
