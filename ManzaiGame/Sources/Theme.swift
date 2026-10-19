@@ -181,7 +181,7 @@ extension Theme {
         static let s32: CGFloat = 32
     }
 
-    /// Radius: rPill=カプセル（Capsuleで表現）／card=16／btn=12／board=12／sheet=24／stamp=4（角判）
+    /// Radius: rPill=カプセル（Capsuleで表現）／card=3／btn=3／board=3／sheet=4／stamp=4（角判）。寄席看板風に角を立てた値（以前は 16/12/12/24）
     enum Rad {
         static let card: CGFloat = 3
         static let btn: CGFloat = 3
@@ -397,7 +397,7 @@ extension Theme {
 }
 
 /// 文字の段（K2）: display 34 Black／title 20 ExtraBold／body 17／sub 13 Bold。1画面で3段まで。12pt 未満は使わない。
-/// 第1便は固定 pt（Dynamic Type 追従は第2便）。body は台詞＝Bold・地の文＝Medium。
+/// 文字の大きさの設定に追従する（Font.maru → mzScaled・最大1.35倍）。body は台詞＝Bold・地の文＝Medium。
 enum TypeStep {
     case display, title, body, bodyMedium, sub
     var size: CGFloat {
