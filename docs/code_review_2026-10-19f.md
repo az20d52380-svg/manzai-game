@@ -39,3 +39,7 @@
 - **StageCeremony／FinalsBroadcastIntro／FinalsPresentationView の duck/hushSE**：非構造化 Task は必ず `hushSE(false)`・`duck(1)` まで走り、`finish()` も復帰する。画面が途中で消えると duck が残る経路は理屈上あるが、現状の呼び出し順では確認できず（未報告）。
 - **SE プール**：空き面の再利用と最大3面。音量0で早期 return。問題なし。
 - **FinalsSeen.first／OneTimeHint**：副作用つきだが `body` の外（onAppear／関数内）でしか呼ばれていない。
+
+## 直した所（10/19 自走・ビルド OK）
+- §1〜§6 を直した。§2・§3 はアプリ側（GameSession の選択と NetaPickRow の候補）で整えた＝GameCore・golden は不変。
+- 未対応：§7「新しく書く」で勝負ネタが外れる（書く対象と大会のネタを分けるかは作りの判断）→ AUTOPILOT キュー114。年の切り替えで2本目を消すかも同じ判断に含める。
