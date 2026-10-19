@@ -307,6 +307,7 @@ struct RootView: View {
 
     /// エンディング／夜逃げ・解散のあと：タイトルへ戻る（「はじめる」→導入→名前決めからやり直す）
     private func returnToTitle() {
+        Sound.stopBGM()   // 決勝・緊張の曲をタイトルへ持ち越さない（code_review_2026-10-19f §6）
         showEnding = false
         session = GameSession()
         withAnimation(.easeInOut(duration: 0.3)) { started = false }

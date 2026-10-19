@@ -10,7 +10,7 @@ struct SettingsView: View {
     var onClose: () -> Void
     /// 進行中に開いた時だけ渡す（「この年をやめてタイトルへ」・監査G-04）。タイトル画面からは nil。
     var onQuitRun: (() -> Void)? = nil
-    @AppStorage("vol_bgm") private var bgm: Double = 0.7
+    @AppStorage("vol_bgm") private var bgm: Double = 0.6   // SoundManager の既定（0.6）とそろえる（code_review_2026-10-19f §1）
     @AppStorage("vol_se") private var se: Double = 0.8
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0

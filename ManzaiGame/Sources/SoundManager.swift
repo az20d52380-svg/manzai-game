@@ -101,7 +101,7 @@ final class SoundEngine {
 
     func playBGM(_ track: BGM) {
         guard currentBGM != track else {
-            if let p = bgmPlayer { cancelFade(p); p.volume = bgmVolume * duckFactor }   // 同曲なら音量だけ追従
+            if let p = bgmPlayer { cancelFade(p); p.volume = bgmVolume * duckFactor; if !p.isPlaying { p.play() } }   // 同曲なら音量だけ追従。電話等の割り込みで止まっていたら続きから鳴らし直す（code_review_2026-10-19f §4）
             return
         }
         currentBGM = track
@@ -145,7 +145,7 @@ final class SoundEngine {
         let steps = max(1, Int(duration / 0.05))
         var n = 0
         let key = ObjectIdentifier(p)
-        fadeTimers[key] = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] t in
+        let timer = Timer(timeInterval: 0.05, repeats: true) { [weak self] t in
             n += 1
             p.volume = start + (target - start) * Float(n) / Float(steps)
             if n >= steps {
@@ -154,6 +154,8 @@ final class SoundEngine {
                 if stopAtEnd { p.stop() }
             }
         }
+        RunLoop.main.add(timer, forMode: .common)   // スクロール中も止まらない（code_review_2026-10-19f §5）
+        fadeTimers[key] = timer
     }
 
     private func fadeIn(_ p: AVAudioPlayer, to target: Float, over duration: TimeInterval) {
