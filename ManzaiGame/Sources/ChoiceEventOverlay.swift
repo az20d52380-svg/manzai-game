@@ -249,7 +249,7 @@ struct ChoiceEventOverlay: View {
                 }
             }
         }
-        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 6).padding(.bottom, 14)
+        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14).padding(.bottom, 14)   // 上 6→14：会話5行の札で最後の吹き出しと選択肢がくっつかない（event_card_audit_1019 §1）
         .frame(minHeight: 40)
         .animation(Theme.Motion.appear, value: footerReady)
     }
