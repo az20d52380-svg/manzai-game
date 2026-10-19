@@ -1687,14 +1687,15 @@ extension GameSession {
                  line("double ack: second moved \(s.week - w1) \(s.week == w1 ? "ok" : "NG")") } else { line("double ack: no result") } }
         // イベントを選んだ直後の保存に保留イベントが残らない＝落として再起動しても選び直せない（code_review_2026-10-19c §1-1）
         if ProcessInfo.processInfo.environment["MZ_ALLOWSAVE"] == nil { line("choice-applied save: skip（MZ_ALLOWSAVE=1 で確かめる＝自己点検はセーブを書かない）") } else {
-        do { let s = GameSession(startState: GameSession.debugMaxedState())
+        do { let backup = UserDefaults.standard.data(forKey: "manzai.save.v1")   // 遊び途中のセーブを退避して最後に戻す（review_today_fixes_1019b §1）
+             defer { if let backup { UserDefaults.standard.set(backup, forKey: "manzai.save.v1") } else { UserDefaults.standard.removeObject(forKey: "manzai.save.v1") } }
+             let s = GameSession(startState: GameSession.debugMaxedState())
              if let (kind, c) = ChoiceEventKind.allCases.lazy.compactMap({ k -> (ChoiceEventKind, ChoiceEventChoice)? in s.debugForceEvent(k); return s.availableEventChoices().first.map { (k, $0) } }).first {
                  s.debugForceEvent(kind); s.applyEventChoice(c.id); s.saveNow()
                  let l = GameSession.loadedOrNew()
                  line("choice-applied save: \(kind) restored=\(l.isRestored) pending=\(String(describing: l.pendingChoiceEvent)) \(l.isRestored && l.pendingChoiceEvent == nil ? "ok" : "NG")")
                  s.dismissChoiceEvent()
-             } else { line("choice-applied save: no event") }
-             UserDefaults.standard.removeObject(forKey: "manzai.save.v1") } }
+             } else { line("choice-applied save: no event") } } }
         // 決勝の7審査員の点の和＝合計（code_review_2026-10-19h §1：頭打ちで和がずれた）。強い状態×優勝/上位×年1〜40
         var judgeSumBad = 0
         for y in 1...40 {
