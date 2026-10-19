@@ -32,6 +32,17 @@ enum ChoiceEventData {
         }
     }
 
+    /// 選んだ後の札に添える一言（数字に出ない効果だけ。効果そのものは GameCore の ChoiceEvent が持つ＝ここは表示のみ）
+    static func hiddenEffectNote(for kind: ChoiceEventKind, choice id: String) -> String? {
+        switch (kind, id) {
+        case (.regularEmployment, "A"): return "芸に回せる余力が少し減った"
+        case (.wroteOneTonight, "B"):   return "来週のネタ合わせが捗りそう"
+        case (.photoShootOffer, "A"):   return "その週は稽古に出られない"
+        case (.riftWarning, "A"):       return "二人の空気が少しほどけた"
+        default: return nil
+        }
+    }
+
     static func text(for kind: ChoiceEventKind) -> ChoiceEventText {
         switch kind {
         case .justLostRehearsal: return justLostRehearsal

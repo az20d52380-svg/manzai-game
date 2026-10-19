@@ -300,7 +300,7 @@ struct ChoiceEventOverlay: View {
     private func choose(_ id: String) {
         let before = session.state
         session.applyEventChoice(id)
-        showEffects(before: before, after: session.state)
+        showEffects(before: before, after: session.state, choice: id)
         footerReady = false
         // 選んだ瞬間に返事の1行目を出す（0 だと区切りの下が空のまま＝壊れて見えた・audit_intro_event B-01）
         withAnimation(Theme.Motion.appear) { chosenID = id; afterShown = chunkEnd(text.afterChoice[id] ?? [], from: 0) }
@@ -308,7 +308,7 @@ struct ChoiceEventOverlay: View {
     }
 
     /// 選択の前後の差から効果チップを組む（表示専用・RNG非消費）。伸びを先に、最大3枚。
-    private func showEffects(before b: GameState, after a: GameState) {
+    private func showEffects(before b: GameState, after a: GameState, choice: String) {
         var ups: [(String, Color)] = [], downs: [(String, Color)] = []
         func add(_ name: String, _ d: Double, _ c: Color) {
             if d > 0.001 { ups.append(("\(name) ↑", c)) } else if d < -0.001 { downs.append(("\(name) ↓", c)) }
@@ -318,7 +318,9 @@ struct ChoiceEventOverlay: View {
         add("知名度", a.fame - b.fame, Theme.goldDeep)
         add("体力", a.stamina - b.stamina, Theme.mentalDeep)
         add("所持金", Double(a.money - b.money), Theme.moneyDeep)
-        let all = (ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }).prefix(3)
+        var all = Array((ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }).prefix(3))
+        // 数字に出ない効果（来週の効き・余力・拘束・空気）は一言の札で添える（効果自体は不変・数字なし）
+        if let note = ChoiceEventData.hiddenEffectNote(for: kind, choice: choice) { all.append((note, false, Theme.mentalDeep)) }
         guard !all.isEmpty else { return }
         Sound.play(ups.isEmpty ? .pop : .grain)
         withAnimation(Theme.Motion.emphSpring) {
