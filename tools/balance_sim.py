@@ -495,7 +495,7 @@ def enable_paid_rests(on=True):
         else:
             RESTS.pop(k, None)
 
-def do_rest(s, name):
+def do_rest(s, name, use_ticket=True):
     cost = REST_COST.get(name, 0)
     if cost > 0:
         if s.money < cost:          # 払えなければ家で寝る（Swift applyRest と同じ）
@@ -504,7 +504,7 @@ def do_rest(s, name):
             s.money -= cost
     rec, (k, v) = RESTS[name]
     t = getattr(s, "sento_tickets", None)
-    if t:                                   # 銭湯の回数券（Item.swift 鏡像）
+    if t and use_ticket:                    # 銭湯の回数券（Item.swift 鏡像）。選んでいない療養週は使わない（WeekRunner applyRest useTicket:false・gamecore_review_1019 F3）
         rec += ITEM_SENTO_RECOVERY
         s.sento_tickets = t - 1
     room = getattr(s, "room", 0) or 0

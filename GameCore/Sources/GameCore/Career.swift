@@ -114,8 +114,8 @@ public enum GameCareer {
             if outcome.champion {
                 return year
             }
-            if outcome.bankrupt {
-                return nil   // 夜逃げ＝キャリア終了（Python: run_career の _bankrupt break と同期）
+            if outcome.bankrupt || outcome.dissolved {
+                return nil   // 夜逃げ・途中解散＝キャリア終了（Python: run_career の _bankrupt or _dissolved break と同期・gamecore_review_1019 F1）
             }
         }
         return nil

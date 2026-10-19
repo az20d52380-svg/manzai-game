@@ -924,7 +924,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 acted = True
         if not acted and INJURY_ON and getattr(s, "_inj", 0) > 0:
             s._inj -= 1                      # 療養中: 行動選択できず休むだけ
-            B.do_rest(s, "完全休養")
+            B.do_rest(s, "完全休養", use_ticket=False)   # アプリ A-10：選んでいない療養週は回数券を使わない
             acted = True
         if not acted:
             act, arg = pol.choose(s, week, offer, rng)
