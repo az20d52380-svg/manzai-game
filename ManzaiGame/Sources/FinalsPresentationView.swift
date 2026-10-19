@@ -571,12 +571,12 @@ struct FinalsPresentationView: View {
             mcBubble(FinalsMC.call(order: d.order, name: session.combiName))
                 .padding(.top, 4).opacity(lotRevealed ? 1 : 0)
         }
-        .task { await runLot() }
+        .task(id: ceremonyDone) { if ceremonyDone { await runLot() } }   // 番組導入が明けてからくじを引く（裏で出順が出てしまっていた・code_review_2026-10-19h §2）
     }
 
     /// 出番くじ（§4-8）。心拍の振動（ドクン…ドクン）→出順が出る。初回は4拍・2回目以降は1拍。タップで畳める。
     private func runLot() async {
-        guard !lotRevealed else { return }
+        guard !lotRevealed, !spectator, beat == .lot else { return }   // 観客版は出番くじが無い＝初回フルの印を消費しない（code_review_2026-10-19h §3）
         let full = FinalsSeen.first("lot") && !reduceMotion
         for _ in 0..<(full ? 4 : 1) {
             guard !Task.isCancelled, !lotRevealed else { return }
@@ -1244,14 +1244,18 @@ struct FinalsData {
             Spec(name: "天堂寺 銀郎",    bias: -2, axis: Double(s.センス),        color: Theme.cSense,  noise: 1),
         ]
         let raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-$0.noise...$0.noise)) }
-        var ints = raw.map { Int($0.rounded()) }
+        var ints = raw.map { max(50, min(99, Int($0.rounded()))) }   // 先に 50〜99 に収めてから合計に合わせる（後で頭打ちすると7人の和が合計とずれた・code_review_2026-10-19h §1）
         if !spectator {
-            // Σ=S へ丸め補正
+            // Σ=S へ丸め補正（50〜99 の中でだけ動かす。乱数は使わない）
             var diff = total - ints.reduce(0, +)
             var idx = 0
-            while diff != 0 && idx < 100 { let k = idx % 7; ints[k] += diff > 0 ? 1 : -1; diff += diff > 0 ? -1 : 1; idx += 1 }
+            while diff != 0 && idx < 700 {
+                let k = idx % 7
+                if diff > 0, ints[k] < 99 { ints[k] += 1; diff -= 1 }
+                else if diff < 0, ints[k] > 50 { ints[k] -= 1; diff += 1 }
+                idx += 1
+            }
         }
-        ints = ints.map { max(50, min(99, $0)) }
         self.judges = zip(specs, ints).map { JudgeScore(name: $0.name, score: $1, axisColor: $0.color) }
 
         // 他組の合計: 自組より上に (rank−1) 組、残りは下（観客モードは10組を帯の中で）。同点は作らない
