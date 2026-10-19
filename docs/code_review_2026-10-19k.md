@@ -34,3 +34,6 @@
 - YoseConfettiView の `frozen` は再アクティブ化で戻らないが、全呼び出し元が `if revealed/badgeLanded { ... }` で作り直すため実害なし。
 - YosePassCelebrationView の `shownPower` は画面に出していない（数字非表示の仕様）ため GameCore との食い違いは起きない。
 - DEBUG 漏れ：なし（YoseFXPreview は本編側から呼ばれていない）。
+
+## 扱い（10/19 自走・ビルド OK）
+- §1・§2 直した。§3（爆ぜた後も再描画が続く＝電池の無駄）・§4（動きを減らす設定で印の拡縮が止まらない）は軽微＝そのまま（次に演出を触る時にまとめて）。
