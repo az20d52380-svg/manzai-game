@@ -263,4 +263,64 @@ final class FeatureGoldenTests: XCTestCase {
         }
         XCTAssertEqual(kinds.count, 29, "守ったイベント数")
     }
+
+    // MARK: 体調ダウン（乱数の抽選）×喉のケア用品×特技「体が資本」（10/19・docs/golden_injury_1019_v0.md）
+    // 体力を低く保つ台本で乱数込みの1年（大会・GP・オファー・誘い込み）を回し、週ごとの全状態と体調ダウン回数を Python（gen_golden.run_year）と比べる。
+
+    private struct InjuryPolicy: WeekPolicy {
+        // tools/gen_golden_features.py の INJURY_PATTERN と同一（9週周期）
+        static let pattern: [WeekAction] = [
+            .train(.ネタ作り), .train(.ネタ合わせ), .train(.フリーライブ), .job(.キツい), .train(.ネタ見せ会),
+            .job(.キツい), .train(.ネタ作り), .job(.キツい), .rest(.完全休養),
+        ]
+        mutating func action(week: Int, year: Int, state: GameState, offer: OfferSpec?) -> WeekAction {
+            offer != nil ? .acceptOffer : Self.pattern[(week - 1) % Self.pattern.count]
+        }
+        mutating func enterTournament(_ spec: TournamentSpec, year: Int, state: GameState) -> Travel? { .夜行バス }
+    }
+
+    func testInjuryDrawGolden() throws {
+        let scripts = try XCTUnwrap(try loadExt()["injury"] as? [[String: Any]])
+        XCTAssertEqual(scripts.count, 8)
+        let config = GameConfig()
+        var distinctCounts = Set<Int>()
+        for sc in scripts {
+            let name = sc["name"] as! String
+            var s = GameState(config: config)
+            if sc["skill"] as! Bool { s.skills = [.体が資本] }
+            var runner = WeekRunner(state: s, year: 1, config: config, rng: SplitMix64(seed: UInt64(sc["seed"] as! String)!), inviteSeed: 424243)
+            if sc["item"] as! Bool { XCTAssertTrue(runner.applyItemPurchase(.喉のケア用品), "\(name) 購入") }   // 年初リセットの後・1週目の前
+            var policy = InjuryPolicy()
+            let weeks = sc["weeks"] as! [[NSNumber]]
+            var idx = 0, injuries = 0
+            var phase = runner.begin()
+            loop: while true {
+                switch phase {
+                case .tournamentDecision(let spec):
+                    phase = runner.resolveTournament(travel: policy.enterTournament(spec, year: 1, state: runner.state))
+                case .freeAction(let offer):
+                    phase = runner.resolveAction(policy.action(week: runner.week, year: 1, state: runner.state, offer: offer))
+                case .gpRound, .gpRevival, .gpFinal:
+                    phase = runner.resolveAuto()
+                case .weekDone(let summary):
+                    if runner.pendingInvite != nil { runner.resolveInvite(accept: policy.acceptInvite(state: runner.state)) }
+                    injuries += summary.results.filter { $0.name == "体調ダウン" }.count
+                    let e = weeks[idx].map { $0.doubleValue }, g = runner.state, tag = "[\(name) w\(idx + 1)]"
+                    XCTAssertEqual(g.money, Int(e[0]), "\(tag) money")
+                    let got = [g.stamina, g.fame, g.センス, g.発想, g.表現, g.華, g.メンタル, g.compat]
+                    for (k, label) in ["stamina", "fame", "センス", "発想", "表現", "華", "メンタル", "compat"].enumerated() {
+                        XCTAssertEqual(got[k], e[k + 1], accuracy: 1e-9, "\(tag) \(label)")
+                    }
+                    idx += 1
+                    phase = runner.begin()
+                case .yearDone:
+                    break loop
+                }
+            }
+            XCTAssertEqual(idx, 48, "\(name) 週数")
+            XCTAssertEqual(injuries, (sc["injuries"] as! NSNumber).intValue, "\(name) 体調ダウン回数")
+            distinctCounts.insert(injuries)
+        }
+        XCTAssertGreaterThanOrEqual(distinctCounts.count, 3, "用品・特技で抽選結果が変わる台本であること")
+    }
 }

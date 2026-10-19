@@ -212,11 +212,40 @@ def event_effect_cases():
         C.EVENTS_APP = saved
     return out
 
+# ---------------------------------------------------------------------------------------------
+# 体調ダウン（乱数の抽選）×喉のケア用品×特技「体が資本」（10/19・docs/golden_injury_1019_v0.md）：gen_golden.run_year（乱数込みの1年・
+# 大会/GP/オファー/誘い込み）を、体力を低く保つ台本で回し、週ごとの全状態と体調ダウン回数を記録する。
+# 同じ乱数列でも「確率×0.5（用品）／×0.7（特技）」で抽選の当たり外れが変わる種を選んだ（用品なし3回→用品1回／特技2回／両方1回）。
+# ---------------------------------------------------------------------------------------------
+INJURY_PATTERN = [("train", "ネタ作り"), ("train", "ネタ合わせ"), ("train", "フリーライブ"), ("job", "キツい"), ("train", "ネタ見せ会"),
+                  ("job", "キツい"), ("train", "ネタ作り"), ("job", "キツい"), ("rest", "完全休養")]
+INJURY_SEEDS = [52, 54]
+
+def injury_scripts():
+    import gen_golden as G
+    out = []
+    saved = getattr(B, "YEAR_GROWTH_CAP", None)
+    try:
+        for seed in INJURY_SEEDS:
+            for item, skill in ((False, False), (True, False), (False, True), (True, True)):
+                s = B.S()
+                if item: assert B.buy_item(s, "喉のケア用品")
+                if skill: s.skills = {"体が資本"}
+                log, tr = [], {}
+                champ, stage = G.run_year(s, 1, G.SplitMix64(seed), log=log, trace=tr, pattern=INJURY_PATTERN)
+                assert not champ and len(log) == 48
+                out.append(dict(name=f"injury_seed{seed}_{'item' if item else 'noitem'}_{'skill' if skill else 'noskill'}",
+                                seed=str(seed), item=item, skill=skill, injuries=tr.get("injuries", 0), stage=stage,
+                                weeks=[[float(v) for v in snap] for (_, _, snap) in log]))
+    finally:
+        B.YEAR_GROWTH_CAP = saved
+    return out
+
 def ext_main():
     saved = (C.NETA_V2,)
     C.NETA_V2 = True
     try:
-        return dict(neta_bonus=neta_bonus_cases(), neta_grow=neta_grow_scripts(), offers=offer_scripts(), event_effects=event_effect_cases())
+        return dict(neta_bonus=neta_bonus_cases(), neta_grow=neta_grow_scripts(), offers=offer_scripts(), event_effects=event_effect_cases(), injury=injury_scripts())
     finally:
         C.NETA_V2, = saved
 

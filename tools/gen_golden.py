@@ -60,7 +60,7 @@ def year_budget(year):
 class _GoPolicy:
     choose_invite = None   # golden 台本は誘いに「行く」
 
-def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line=None, trace=None):
+def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line=None, trace=None, pattern=None):
     s.stamina = 100.0
     B.YEAR_GROWTH_CAP = year_budget(year)   # キャリア累計予算（s._ygはリセットしない）
     gp_stage = 1 if gp_seed else 0   # シード組（前年準々以上）は2回戦から
@@ -139,14 +139,16 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
                 s._wk = (year - 1) * B.WEEKS + week
                 B.do_offer(s, offer)
             else:
-                act, arg = PATTERN[(week - 1) % len(PATTERN)]
+                act, arg = (pattern or PATTERN)[(week - 1) % len(pattern or PATTERN)]
                 if act == "train" and s.stamina < C.STAMINA_GATE:
                     act, arg = "rest", "完全休養"   # 体力ゲート（谷口が止める）
                 if s.stamina < C.INJURY_TH and (act == "train" or (act == "job" and arg == "キツい")):
-                    if rng.random() < (C.INJURY_TH - s.stamina) * C.INJURY_P_PER:
+                    if rng.random() < (C.INJURY_TH - s.stamina) * C.INJURY_P_PER * B.throat_mult(s) * (B.SKILL_INJURY_MULT if B.has_skill(s, "体が資本") else 1.0):   # 喉のケア用品・特技（未所持は×1＝既存goldenは不変・sim_career/Swiftと同式）
                         act, arg = "rest", "完全休養"   # 体調ダウン発生
                         s._inj = C.INJURY_REST - 1
                         B.add(s, "mental", C.INJURY_MENTAL)
+                        if trace is not None:
+                            trace["injuries"] = trace.get("injuries", 0) + 1   # 体調ダウン回数（体調ダウン golden 用・RNG非消費）
                 if act == "train":
                     if not B.do_training(s, arg):
                         B.do_rest(s, "完全休養")
