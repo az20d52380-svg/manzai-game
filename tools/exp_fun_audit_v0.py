@@ -93,10 +93,10 @@ def install():
         if R.cur is None: R.begin()
         R.cur["offer"] = True
         return o["offer"](s, off)
-    def do_rest(s, nm):
+    def do_rest(s, nm, use_ticket=True):
         if R.cur is not None and R.cur["reason"] is None:
             R.cur["reason"] = "inj"; R.cur["inj"] = True; R.cur["cat"] = "rest"; R.cur["key"] = "rest:療養"
-        return o["rest"](s, nm)
+        return o["rest"](s, nm, use_ticket=use_ticket)
     C.run_year, B.pour_all, C.enter_tournament, C._gp_perform, C._apply_event, B.do_offer, B.do_rest = \
         run_year, pour, enter, gp, ev, do_offer, do_rest
     return o

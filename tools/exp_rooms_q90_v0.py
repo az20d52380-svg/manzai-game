@@ -39,8 +39,8 @@ def one(args):
         if st["w"] % 4 == 0:
             s.money -= rent[st["room"]]
         return o_rw(s, year, c0)
-    def rest(s, nm):
-        o_rest(s, nm)
+    def rest(s, nm, use_ticket=True):
+        o_rest(s, nm, use_ticket=use_ticket)
         if nm in HOME and st["room"]:
             B.add(s, "stamina", heal[st["room"]])
             if st["room"] == 2 and nm == "完全休養":
