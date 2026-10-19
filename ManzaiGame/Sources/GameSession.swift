@@ -1679,6 +1679,15 @@ extension GameSession {
              } else { line("oldsave: no save written") }
              UserDefaults.standard.removeObject(forKey: "manzai.save.v1"); UserDefaults.standard.removeObject(forKey: "manzai.save.v1.broken") }
         GameSession.store.removeObject(forKey: EndingBook.key)
+        // 決勝の7審査員の点の和＝合計（code_review_2026-10-19h §1：頭打ちで和がずれた）。強い状態×優勝/上位×年1〜40
+        var judgeSumBad = 0
+        for y in 1...40 {
+            for champ in [true, false] {
+                let d = FinalsData(state: GameSession.debugMaxedState(), champion: champ, year: y, selfName: "あなたのコンビ")
+                if d.judges.reduce(0, { $0 + $1.score }) != d.total { judgeSumBad += 1 }
+            }
+        }
+        line("finals judge sum mismatch=\(judgeSumBad)/80 \(judgeSumBad == 0 ? "ok" : "NG")")
         line("DONE")
     }
 }
