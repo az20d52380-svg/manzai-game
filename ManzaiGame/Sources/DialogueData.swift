@@ -64,14 +64,14 @@ enum DialogueData {
         }
         // 負けた翌週の一言（温度事故の停止）＝連敗プールより先。lossStreakで単発/反復を分ける（0003・Fable13便）。
         if justLost {
-            return Advice(name: "俺", text: pick(lossStreak >= 2 ? justLostRepeat : justLostSingle, salt: Int(state.fame) &+ lossStreak &+ week,
+            return Advice(name: "俺", text: pick(lossStreak >= 2 ? justLostRepeat : justLostSingle, salt: Int(state.fame.isFinite ? state.fame : 0) &+ lossStreak &+ week,
                                                 scene: lossStreak >= 2 ? "mono.justLostRepeat" : "mono.justLostSingle", picker))
         }
         if lossStreak >= 2 {
             return Advice(name: "俺", text: pick(losing, salt: lossStreak &+ week, scene: "mono.losing", picker))
         }
         if justPassed {
-            return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame) &+ week, scene: "mono.passed", picker))
+            return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame.isFinite ? state.fame : 0) &+ week, scene: "mono.passed", picker))
         }
         if let m = nextMilestone, m.weeksLeft == 2 {   // 1週前は掛け合い/平常に譲る（最頻出の単一行の間引き・監査D-04）
             // 弱点が無い（全能力ほぼ同値）週は弱点句を省く（監査B-03）

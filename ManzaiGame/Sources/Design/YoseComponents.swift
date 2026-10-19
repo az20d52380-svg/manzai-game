@@ -43,6 +43,7 @@ struct YoseHeaderBar: View {
                         .frame(width: 64, height: 28)
                         .background(YoseColor.kuroUrushi.opacity(0.6))
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
+                        .padding(.vertical, 8).contentShape(Rectangle()).padding(.vertical, -8)   // 見た目は28pt・押せる範囲は44pt（19l §2-3）
                 }
             }
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 3)

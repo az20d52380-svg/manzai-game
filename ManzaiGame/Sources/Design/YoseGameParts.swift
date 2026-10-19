@@ -97,6 +97,7 @@ struct YoseTopTabBar: View {
                         }
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(sel ? .isSelected : [])   // 読み上げで今のタブが分かるように（19l §2-2）
             }
         }
         .frame(height: 42)
@@ -197,6 +198,7 @@ struct YoseToast: View {
         .background(YoseColor.kuroUrushi)
         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
         .background(Rectangle().fill(YoseColor.sumi).offset(y: 2))
+        .onAppear { UIAccessibility.post(notification: .announcement, argument: message) }   // 1.8秒で消えるので読み上げにも流す（19l §2-1）
     }
 }
 
