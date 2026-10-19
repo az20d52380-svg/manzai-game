@@ -35,9 +35,10 @@ struct YoseVitalMoneyBar: View {
     var fame: Int? = nil
     var fameDelta: Int? = nil
     var staminaColor: Color = Color(hex: 0x3E8E57)   // 黒帯の上でも満タンが読める若竹色
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize   // 起動中に文字の大きさを変えた時も描き直す（19l §2-9）
 
     var body: some View {
-        let big = Font.mzScaled(10) > 11   // 大きい文字サイズでは体力ゲージを縮めて、知名度・借金・所持金を潰さない
+        let big = dynamicTypeSize >= .large && Font.mzScaled(10) > 11   // 大きい文字サイズでは体力ゲージを縮めて、知名度・借金・所持金を潰さない
         HStack(spacing: big ? 8 : 12) {
             HStack(spacing: 6) {
                 Text("体力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin).fixedSize()
