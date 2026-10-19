@@ -39,6 +39,10 @@ struct TournamentResultView: View {
     /// 画面の段（儀式が終わった・判が出た）が切り替わった時刻。直後 0.4 秒のタップは誤タップとして無視する（結果板・講評を飛ばさない）。
     @State private var stageChangedAt = Date.distantPast
     private func tapAccepted() -> Bool { Date().timeIntervalSince(stageChangedAt) >= 0.4 }
+    /// 結果・講評・精算が出そろった直後 0.8 秒は「次へ 進む」を受け付けない（「次の声へ」の連打が同じ位置の出口に流れて結果を飛ばすのを防ぐ）
+    @State private var nextArmed = false
+    /// 1周目だけ受け付けない（図鑑に終わりが1つも無い間＝周回する人は連打で飛ばしてよい・オーナー 10/20）
+    @State private var isFirstLap = EndingBook.load().isEmpty
 
     /// この週の代表結果（複数戦なら最後＝最新）。非空はGameSession.pump()の`!big.isEmpty`ガードで
     /// pendingResult生成時に保証済み（WeekSummary.resultsは型としては0件も許すが、この経路では届かない）。
@@ -161,6 +165,7 @@ struct TournamentResultView: View {
                             settlementCard(r)
                                 .transition(.opacity)
                             Button {
+                                guard nextArmed || !isFirstLap else { return }
                                 if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(.easeIn(duration: 0.2)) { showPass = true } }
                                 else if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
@@ -234,6 +239,12 @@ struct TournamentResultView: View {
         .onChange(of: ceremonyDone) { _, _ in stageChangedAt = Date() }
         .onChange(of: revealed) { _, _ in stageChangedAt = Date() }
         .onChange(of: revealedReview) { _, _ in stageChangedAt = Date() }
+        .onChange(of: revealedRest) { _, v in
+            stageChangedAt = Date()
+            guard v else { return }
+            nextArmed = false
+            Task { try? await Task.sleep(nanoseconds: 800_000_000); nextArmed = true }
+        }
         .overlay {
             if !ceremonyDone && (announceDone || !needsAnnounce) && (qualDone || !needsQual) {
                 StageCeremony { ceremonyDone = true; beginReveal() }
