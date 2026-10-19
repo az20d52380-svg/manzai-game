@@ -72,7 +72,7 @@ struct FinalsBroadcastIntro: View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
                 Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
-                Text("LIVE 生放送").font(YoseFont.gothic(11, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
             }
             .padding(.horizontal, 7).padding(.vertical, 4)
             .background(YoseColor.shu)
@@ -207,7 +207,7 @@ struct FinalsBroadcastIntro: View {
                                 let parts = judges[i].split(separator: " ").map(String.init)
                                 VStack(spacing: 1) {
                                     Text(parts[0]).font(YoseFont.mincho(13)).lineLimit(1).minimumScaleFactor(0.7)
-                                    Text(parts.count > 1 ? parts[1] : "").font(YoseFont.mincho(10)).lineLimit(1).minimumScaleFactor(0.7)
+                                    Text(parts.count > 1 ? parts[1] : "").font(YoseFont.mincho(12)).lineLimit(1).minimumScaleFactor(0.7)
                                 }
                                 .foregroundStyle(on ? YoseColor.sumi : YoseColor.haiSumi)
                                 .frame(maxWidth: .infinity).frame(height: 46)
@@ -229,7 +229,7 @@ struct FinalsBroadcastIntro: View {
             Group {
                 if cur >= 0 {
                     VStack(spacing: 4) {
-                        Text("審査員").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kin)
+                        Text("審査員").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kin)
                         Text(judges[cur]).font(YoseFont.mincho(34)).foregroundStyle(YoseColor.kinari).tracking(2)
                     }
                     .padding(.vertical, 14).frame(maxWidth: .infinity)
@@ -265,7 +265,7 @@ struct FinalsBroadcastIntro: View {
                         .background(f.isSelf ? YoseColor.washiFeatured : YoseColor.washi)
                         .overlay(Rectangle().stroke(f.isSelf ? YoseColor.shu : YoseColor.kin, lineWidth: f.isSelf ? 3 : 1.5))
                         .overlay(alignment: .bottom) {
-                            if f.isSelf { Text("あなた").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
+                            if f.isSelf { Text("あなた").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                                 .frame(maxWidth: .infinity).background(YoseColor.shu) }
                         }
                         .shadow(color: f.isSelf && on ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)
@@ -432,7 +432,7 @@ struct FinalsLiveBar: View {
         HStack(spacing: 8) {
             HStack(spacing: 5) {
                 Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
-                Text("LIVE 生放送").font(YoseFont.gothic(11, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
             }
             .padding(.horizontal, 6).frame(height: 20)
             .background(YoseColor.shu)
@@ -440,7 +440,7 @@ struct FinalsLiveBar: View {
             Text(scene).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinBright).lineLimit(1)
             Spacer(minLength: 4)
             if let trailing {
-                Text(trailing).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1)
+                Text(trailing).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1)
             }
         }
         .padding(.horizontal, 8).frame(height: 26)
@@ -557,7 +557,7 @@ struct FinalsBroadcastEnding: View {
                     }
                     if !allNames.isEmpty {   // 本日の出場組（クレジット）
                         Text("出場  " + allNames.joined(separator: "・"))
-                            .font(YoseFont.mincho(11)).foregroundStyle(YoseColor.ginNezu).multilineTextAlignment(.center)
+                            .font(YoseFont.mincho(12)).foregroundStyle(YoseColor.ginNezu).multilineTextAlignment(.center)
                             .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0)
                     }
                 }
