@@ -236,7 +236,28 @@ public struct EventStageBackdropView: View {
         self.backdrop = backdrop
     }
 
+    /// 小物は高さ220前提の固定 pt で置いてある。高さを縮める呼び手（文字を大きくした設定のイベント札など）では
+    /// 220 の高さで描いてから全体を縮め、小物どうしが重なるのを防ぐ（code_review_2026-10-19m §1-2・visual_check_bg_h130_v0）
+    static let designHeight: CGFloat = 220
+
     public var body: some View {
+        GeometryReader { geo in
+            let h = geo.size.height, w = geo.size.width
+            if h > 0, h < Self.designHeight {
+                let s = h / Self.designHeight
+                scene
+                    .frame(width: w / s, height: Self.designHeight)
+                    .scaleEffect(s, anchor: .topLeading)
+                    .frame(width: w, height: h, alignment: .topLeading)
+            } else {
+                scene
+            }
+        }
+        .clipped()
+        .accessibilityHidden(true)
+    }
+
+    private var scene: some View {
         Group {
             switch backdrop.place {
             case .keikoba:   KeikobaBackdrop()
@@ -261,7 +282,6 @@ public struct EventStageBackdropView: View {
         .eventTimeTint(backdrop.time, strength: backdrop.place.nightStrength)
         .overlay { EventGlowLayer(place: backdrop.place, time: backdrop.time) }   // 夜の暗転の「上」に光源を置く
         .clipped()
-        .accessibilityHidden(true)
     }
 }
 
