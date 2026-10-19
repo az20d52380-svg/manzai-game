@@ -15,7 +15,12 @@ struct S6bView: View {
 
     @State private var phase: Phase = {
         #if DEBUG
-        if ProcessInfo.processInfo.environment["MZ_S6B_PHASE"] == "montage" { return .montage }   // 回想の目視用
+        switch ProcessInfo.processInfo.environment["MZ_S6B_PHASE"] {   // 目視用: montage / nenpyou / wall から始める
+        case "montage": return .montage
+        case "nenpyou": return .nenpyou
+        case "wall": return .wall
+        default: break
+        }
         #endif
         return .kougyou
     }()
@@ -164,7 +169,7 @@ struct S6bView: View {
     private var nenpyou: some View {
         VStack(spacing: Theme.Sp.s16) {
             Spacer()
-            Text("年表").font(.maru(12)).tracking(2).foregroundStyle(.white.opacity(0.5))
+            Text("年表").font(.maru(12)).tracking(2).foregroundStyle(.white.opacity(0.75))   // 暗い地で読める濃さに（0.5 は沈んだ）
             // 1年＝1行（結成からの頂グランプリの到達）。最後の行が優勝の年
             VStack(spacing: 6) {
                 ForEach(session.yearHistory, id: \.year) { r in
@@ -180,9 +185,9 @@ struct S6bView: View {
             .padding(.horizontal, Theme.Sp.s24)
 
             Text("—— \(session.combiName) ——").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.8)).padding(.top, Theme.Sp.s24)
-            Text("結成からの記録").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.6))
+            Text("結成からの記録").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.75))
             Spacer()
-            Text("タップで進む").font(.maru(11)).foregroundStyle(.white.opacity(0.45)).padding(.bottom, Theme.Sp.s24)
+            Text("タップで進む").font(.maru(12)).foregroundStyle(.white.opacity(0.7))   // 12pt 未満は使わない（TypeStep の決まり）.padding(.bottom, Theme.Sp.s24)
         }
         .contentShape(Rectangle()).onTapGesture { advance(.wall) }
     }
@@ -203,7 +208,7 @@ struct S6bView: View {
                             Capsule().fill(.black.opacity(0.55)).frame(width: 44, height: 100)
                         }.offset(y: 20)
                     )
-                    .overlay(Text(session.combiName).font(.maru(11)).foregroundStyle(.black.opacity(0.6)).offset(y: 78))
+                    .overlay(Text(session.combiName).font(.maru(12)).foregroundStyle(.black.opacity(0.7)).offset(y: 78))
                 Circle().fill(Theme.verm).frame(width: 10, height: 10).offset(y: -4)   // ピン
             }
             .scaleEffect(burned ? 1 : 1.05).opacity(burned ? 1 : 0)
