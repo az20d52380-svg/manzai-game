@@ -53,17 +53,27 @@ final class CoverageSTests: XCTestCase {
         var r = prepared(money: fee + bus.cost)
         let res = results(r.resolveTournament(travel: .夜行バス))
         XCTAssertEqual(res.count, 1)
-        XCTAssertEqual(r.state.money, res[0].passed ? res[0].prize : 0)   // 0円から賞金だけ
+        var base = prepared(money: fee + bus.cost)          // 同条件で不出場にした週末の所持金（生活費込み）
+        _ = base.resolveTournament(travel: nil)
+        _ = base.resolveAction(.rest(.完全休養))   // 不出場なら自由行動週になる
+        let prize = res[0].passed ? res[0].prize : 0
+        XCTAssertEqual(r.state.money, base.state.money - fee - bus.cost + prize)
     }
 
     func testShinkansenTicketMakesTravelFree() {
         let fee = cfg.calendar.entryFee
         var r = prepared(money: fee, ticket: true)          // 交通費0＝エントリー費ちょうどで出られる
-        let st = r.state.stamina
         let res = results(r.resolveTournament(travel: .夜行バス))   // バスを選んでも回数券が優先
         XCTAssertEqual(res.count, 1)
-        XCTAssertEqual(r.state.money, res[0].passed ? res[0].prize : 0)
-        XCTAssertGreaterThanOrEqual(r.state.stamina, st)    // 夜行バスの体力-25は掛からない
+        var base = prepared(money: fee, ticket: true)
+        _ = base.resolveTournament(travel: nil)
+        _ = base.resolveAction(.rest(.完全休養))   // 不出場なら自由行動週になる
+        let prize = res[0].passed ? res[0].prize : 0
+        XCTAssertEqual(r.state.money, base.state.money - fee + prize)   // 交通費は引かれない
+        var bus = prepared(money: 1_000_000)                // 同じ乱数・同じ状態でチケット無しのバス
+        let busRes = results(bus.resolveTournament(travel: .夜行バス))
+        XCTAssertEqual(busRes[0].passed, res[0].passed)
+        XCTAssertEqual(r.state.stamina - bus.state.stamina, 25, accuracy: 1e-9)   // バスの体力-25が掛からない
     }
 
     func testShinkansenTicketStillNeedsEntryFee() {
