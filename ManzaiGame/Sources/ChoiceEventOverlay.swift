@@ -16,6 +16,7 @@ struct ChoiceEventOverlay: View {
     @Bindable var session: GameSession
     let kind: ChoiceEventKind
     var onClose: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var text: ChoiceEventText { ChoiceEventData.text(for: kind) }
     private var scene: EventScene { ChoiceEventData.scene(for: kind) }
@@ -108,6 +109,14 @@ struct ChoiceEventOverlay: View {
         }
     }
 
+    /// 場面の絵の高さ。選択肢の帯が出る間は読み物の欄を広げる（地の文が5行・6行以上なら段階的に縮めて、最初のト書きが絵の下に半分隠れないように）。
+    /// 文字を大きくした設定では行が増えるので、さらに絵を縮めて本文の欄を広げる（dynamic_type_audit_1019 M1）
+    private var backdropHeight: CGFloat {
+        var h: CGFloat = footerReady && !session.availableEventChoices().isEmpty ? (text.setup.count >= 6 ? 196 : text.setup.count >= 5 ? 216 : 262) : 320
+        if dynamicTypeSize.isAccessibilitySize { h = min(h, 130) } else if dynamicTypeSize >= .xxLarge { h = min(h, 170) }
+        return h
+    }
+
     private static let endAnchor = "eventLinesEnd"
 
     private func scrollToLast(_ proxy: ScrollViewProxy) {
@@ -119,7 +128,7 @@ struct ChoiceEventOverlay: View {
 
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
-            .frame(height: footerReady && !session.availableEventChoices().isEmpty ? (text.setup.count >= 6 ? 196 : text.setup.count >= 5 ? 216 : 262) : 320)   // 選択肢の帯が出る間は読み物の欄を広げる（地の文が5行・6行以上なら段階的に縮めて、最初のト書きが絵の下に半分隠れないように）
+            .frame(height: backdropHeight)
             .animation(Theme.Motion.appear, value: footerReady)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
