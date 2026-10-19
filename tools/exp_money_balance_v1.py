@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 【動かない・10/19 確認】知名度の式が balance_sim に移り C.FAME_OTHER_MULT が無い。結果は当時の docs に記録済み＝再実行するなら直してから。
 """キュー61 お金の使い道の釣り合い（バイト vs ネタ・練習）の実測。数値は全て【仮】・決定ではない。
 usage: python3 exp_money_balance_v1.py [n] [案名,...]   既定値は変えず、実験の中だけで値を差し替えて戻す。
 前提＝ネタ込み(NETA_V2・飽きD)＋知名度案G＋EVENTS_ON＋お金の使い道 全部あり(回数上限なし)。

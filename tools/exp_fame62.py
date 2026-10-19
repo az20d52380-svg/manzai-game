@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 【動かない・10/19 確認】知名度の式が balance_sim に移り C.FAME_OTHER_MULT が無い。結果は当時の docs に記録済み＝再実行するなら直してから。
 # -*- coding: utf-8 -*-
 """
 【注 2026-10-15】ブランチ q60-62-impl 以降は知名度の逓減が balance_sim.add に移り、ここの C.FAME_OTHER_MULT 等の差し替えは効かない（結果は docs/q60_q62_proposal_v0.md に記録済み）。

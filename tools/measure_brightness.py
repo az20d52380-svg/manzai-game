@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 【動かない・10/19 確認】一時ファイルのスクショ前提（単体では動かない）。結果は当時の docs に記録済み＝再実行するなら直してから。
 """本番画面の明るさの検収（見た目の作り直し v1・docs/visual_genre_overhaul_v1.md §4-1）。
 
 使い方: python3 tools/measure_brightness.py feedback_shots/overhaul_v1/after_*.png
