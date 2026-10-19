@@ -359,7 +359,7 @@ struct EndingGalleryView: View {
                 }
             }
             .padding(8)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)   // 同じ段の札の背丈をそろえる（ui_audit_1019 §1）
             .yoseHarigami()
             .contentShape(Rectangle())   // 枠の全体を押せる
         }
