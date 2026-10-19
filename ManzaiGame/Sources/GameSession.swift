@@ -313,6 +313,7 @@ final class GameSession {
         // WeekMainView が稽古カードをグレーにするので通常ここには来ないが、二重の安全網（谷口の体力ゲートと同型）。
         if state.preoccupiedWeeks > 0, case .train = action { action = .rest(.完全休養) }
         lastAction = action
+        let prevWithoutPartner = weeksWithoutPartner
         switch action {   // 週メインの一行案内用（表示専用）
         case .train(.ネタ合わせ), .rest(.相方と過ごす): weeksWithoutPartner = 0
         default: weeksWithoutPartner += 1
@@ -326,6 +327,7 @@ final class GameSession {
         phase = runner.resolveAction(action)
         // 練習が休みに差し替わった週（体力ゲート・体調ダウン・お金不足）は、日程の印も「回復」で残す（稽古の印が付いていた）
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
+        if case .train(.ネタ合わせ) = action, runner.lastTrainingDone == nil { weeksWithoutPartner = prevWithoutPartner + 1 }   // 休みに差し替わった週は相方と合わせていない（code_review_2026-10-19j §3）
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
         pump()
         lastGains = Ability.allCases.compactMap { a in

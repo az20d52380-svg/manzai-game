@@ -1003,7 +1003,14 @@ struct WeekMainView: View {
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
         var stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
-        if case .rest(let r) = v.action, let rec = session.config.rests[r]?.recovery { stamDelta = Int(rec.rounded()) }   // 回復量は体力が満タンでも数字で見せる
+        if case .rest(let r) = v.action, let rec = session.config.rests[r]?.recovery {   // 回復量は体力が満タンでも数字で見せる
+            // 部屋の上乗せ・銭湯の回数券も GameEngine.applyRest と同じく足す（code_review_2026-10-19j §2）
+            let room = s.room ?? 0
+            let roomHeal = (room > 0 && (r == .完全休養 || r == .気分転換) && room < session.config.roomHeals.count) ? session.config.roomHeals[room] : 0
+            let ticket = (s.sentoTickets ?? 0) > 0 ? session.config.itemSentoRecovery : 0
+            stamDelta = Int((rec + roomHeal + ticket).rounded())
+        }
+        if !v.affordable { stamDelta = 0 }   // 払えない札は何も起きない＝休養に差し替えた見積もりの「体力 +」を出さない（§1）
         let tint = cardTint(v)
         let iconBox = Image(systemName: v.glyph)
             .font(.system(size: Font.mzScaled(compact ? 12 : 14), weight: .bold)).foregroundStyle(YoseColor.kinari)
