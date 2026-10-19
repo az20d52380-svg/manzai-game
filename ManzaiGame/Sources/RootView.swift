@@ -37,7 +37,10 @@ struct RootView: View {
                 let time = EventTimeOfDay(rawValue: ProcessInfo.processInfo.environment["MZ_BGTIME"] ?? "day") ?? .day
                 ZStack {
                     YoseColor.kinari.ignoresSafeArea()
-                    EventStageBackdropView(backdrop: EventBackdrop(place, time, sign: ProcessInfo.processInfo.environment["MZ_BGSIGN"])).frame(height: 220)
+                    // MZ_BGH=130 / MZ_BGW=320 で高さ・幅を縮めた時の重なりを見る（code_review_2026-10-19m §1-2）
+                    let bgH = Double(ProcessInfo.processInfo.environment["MZ_BGH"] ?? "") ?? 220
+                    let bgW = Double(ProcessInfo.processInfo.environment["MZ_BGW"] ?? "")
+                    EventStageBackdropView(backdrop: EventBackdrop(place, time, sign: ProcessInfo.processInfo.environment["MZ_BGSIGN"])).frame(width: bgW.map { CGFloat($0) }, height: CGFloat(bgH))
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                 }
             } else {
