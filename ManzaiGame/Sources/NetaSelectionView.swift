@@ -72,12 +72,16 @@ struct NetaPickRow: View {
         }
     }
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     @ViewBuilder private var currentSummary: some View {
         if let neta = selected {
             VStack(alignment: .leading, spacing: 6) {
+                let bigText = dynamicTypeSize >= .xxLarge   // 大きい文字では名前が「商店…」と切れる＝名前だけ上の段に出す（既定の大きさは従来どおり）
+                let nameText = Text(neta.name).font(YoseFont.netaTitle).foregroundStyle(YoseColor.sumi)
+                if bigText { nameText.lineLimit(2) }
                 HStack(spacing: 10) {
-                    Text(neta.name).font(YoseFont.netaTitle).foregroundStyle(YoseColor.sumi)
-                        .lineLimit(1).minimumScaleFactor(0.6)
+                    if !bigText { nameText.lineLimit(1).minimumScaleFactor(0.6) }
                     Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
                         .lineLimit(1).fixedSize()
                     NetaStageBadge(netaID: neta.id, polish: neta.polish)
