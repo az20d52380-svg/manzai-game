@@ -40,3 +40,6 @@
 - AbilityUpView の `.task` 内 `Task.sleep` は、閉じた後に `hint = …` を立てるがビューは破棄済みで実害なし。`plusTap` の `Task` も同様（bumped/flash を触るだけ）。
 - ShopView の「戻す」：`visitStart.room` を引っ越し時に更新しているため、引っ越し後に戻しても部屋は巻き戻らない（-19 §1-1 の直しが効いている）。`roomRents`（3要素）と `roomNames`（3要素）の長さは一致。
 - CalendarView：`gpRoundNames[i]` は範囲チェック済み。週数 48 固定のグリッドは `config.weeks = 48` と一致。
+
+## 直した所（10/19 自走・ビルド OK）
+- §1〜§5 すべて直し案どおり（空白だけの名前・二重の結成・トーストの消去・確定の二度押し・お店の保存）。タップでの確認は未。
