@@ -107,3 +107,5 @@ TypeStep（Theme.swift）の決まり「12pt 未満は使わない」に反す�
 - CalendarView 3件→12（cf117bb）／例外なし
 - NotebookView 5件→12（3724974）／例外なし（neta 画面は目視フックで別タブに直行できず未確認）
 - EndingViews 5件→12（844b4bd）／例外なし。図鑑の種別バッジは 12 に上げ lineLimit(1)+minimumScaleFactor(0.85) 併用。目視は省略（ビルドのみ）
+- YearResultView 6件→12／例外1（三角アイコン109行）・TournamentResultView 3件→12・YoseGameParts 2件→12（41行は閾値判定の式で文字ではないので不変）・YoseComponents 4件→12（役割ラベルは lineLimit(1)+minimumScaleFactor(0.85)）／例外1（三角アイコン320行）。目視は catalog のみ（崩れなし）、年末・大会・週の画面はフック無しでビルドのみ
+- MZ_UI=neta が持ち札タブに行かない件：持ち札直行は既に MZ_UI=neta_list（または MZ_TAB=neta）で可能＝コード変更なし。neta_list で目視済（崩れなし）
