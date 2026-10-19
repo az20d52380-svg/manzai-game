@@ -18,3 +18,6 @@ iPhone 17・縮小1枚ずつ。見た点＝はみ出し・…切れ・重なり�
 | 選択イベント | MZ_UI=event MZ_EV=0014 / 0023 / 0041 | ○ | 駅・休憩室・楽屋とも崩れなし | - |
 
 結論：崩れ0件。
+
+## 親の追記（10/20）
+- stamina/forecast/partner/living/injury は `MZ_UI=<名前>` ではなく **`MZ_UI=weekhint MZ_WH=<名前>`** のフック（MZ_UI=stamina 等は存在しない case＝ふつうの第1週が出る）。正しいフックで stamina（第5週・体力0・休演の判）と partner（第7週）を目視＝崩れなし。DEBUG の「優勝／無双」の札が実力の札に少し重なるのは DEBUG 版だけ。
