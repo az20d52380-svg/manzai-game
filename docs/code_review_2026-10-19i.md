@@ -28,3 +28,7 @@
 - 二重タップ：場面カード最後の onComplete／S6b の `advance`／「もう一度」の `returnToTitle` が2回走っても、go(.art) の重複と GameSession の作り直しが2回になるだけで害なし。
 - 閉じた後に走る Task：EndingViews・S6bView・Endings に `Task`／`asyncAfter` は無い（`withAnimation(.delay)` のみ）。RootView の `soakLoop` の sleep は DEBUG 限定。
 - EndingBook の保存：1要素でも読めないと全体が `[:]` になり次の record で上書きされる作りだが、現状 `EndingRecord` のスキーマは変わっておらず実害なし（将来項目を足す時は `decodeIfPresent` に）。
+
+## 扱い（10/19 自走）
+- §2 直した（returnToTitle で NetaStage.lastSeen を空に）。
+- §1（年末で落ちると図鑑の記録とセーブが消える）は直し方に判断が要る：セーブを消すのをエンディングに入るまで遅らせる（復元の経路が増える）か、年末の時点で図鑑に記録する（エンディング画面の記録と二重にならない印が要る）。起きるのは区切りの年末で落ちた時だけ → AUTOPILOT キュー117。
