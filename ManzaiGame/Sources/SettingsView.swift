@@ -69,12 +69,12 @@ struct SettingsView: View {
             // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
             Spacer(minLength: 16).frame(maxHeight: 40)   // 権利表記は中身の直下に近く置く（上に大きな空白を作らない）
             VStack(spacing: 4) {
-                Text("権利表記・バージョン").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Text("権利表記・バージョン").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 Rectangle().fill(YoseColor.kiDark).frame(height: 1).padding(.horizontal, 28)
                 Text("音楽: 魔王魂 ／ 効果音: 効果音ラボ・On-Jin")
-                    .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                    .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
                 Text("\(AppInfo.displayName) v\(AppInfo.version)")
-                    .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                    .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity).padding(12).frame(minHeight: 64)
