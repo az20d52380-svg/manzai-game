@@ -78,14 +78,14 @@ struct EndingFlowView: View {
                         .multilineTextAlignment(.center).padding(.horizontal, 28)
                 }
                 HStack(spacing: 8) {
-                    Text("No.\(ending.number)　\(ending.title)").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kin)
+                    Text("No.\(ending.number)　\(ending.title)").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kin)
                         .padding(.horizontal, 8).padding(.vertical, 3)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))   // 暗い地では濃い金文字が沈むため明るい金
                     Text(ending.kind.label).font(YoseFont.captionBold).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 8).padding(.vertical, 3).background(ending.kind.color)
                 }
                 if !replay {
-                    Text("エンディング図鑑に記録しました").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.65))
+                    Text("エンディング図鑑に記録しました").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.65))
                 }
                 Spacer()
                 Button(action: onFinish) { Text(replay ? "とじる" : "もう一度 ▶") }
@@ -344,17 +344,17 @@ struct EndingGalleryView: View {
                 HStack(spacing: 5) {
                     Text("No.\(id.number)").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
                     if rec != nil {
-                        Text(id.kind.label).font(YoseFont.gothic(10, weight: .heavy)).foregroundStyle(.white)
+                        Text(id.kind.label).font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.85).foregroundStyle(.white)
                             .padding(.horizontal, 5).padding(.vertical, 1).background(id.kind.color)
                     }
                 }
                 if let rec {
                     Text(id.title).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi).lineLimit(1)
                     Text("\(Self.dateText(rec.firstSeenAt))　\(rec.count)回　相方：\(rec.lastPartnerName)")
-                        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7)
+                        .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7)
                 } else {
                     Text("？？？").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.haiSumi)
-                    Text(id.hint).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                    Text(id.hint).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         .lineLimit(3).fixedSize(horizontal: false, vertical: true)
                 }
             }
