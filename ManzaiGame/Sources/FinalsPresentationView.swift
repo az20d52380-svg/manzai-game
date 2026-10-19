@@ -192,6 +192,7 @@ struct FinalsPresentationView: View {
         .screenFlash(trigger: slamFire, color: Color(hex: 0xFFE9C4), strength: 0.30)
         .contentShape(Rectangle())
         .onTapGesture { if ceremonyDone { advance() } }
+        .accessibilityAction(named: "次へ") { if ceremonyDone { advance() } }
         // 長押し＝その場面の残りを一気にめくる早送り（ビートは飛ばさない＝決勝演出の規則・K6/R2-01）
         .onLongPressGesture(minimumDuration: 0.5) { if ceremonyDone { fastForwardBeat() } }
         .overlay {

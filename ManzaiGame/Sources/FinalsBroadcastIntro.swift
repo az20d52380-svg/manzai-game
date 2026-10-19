@@ -63,7 +63,7 @@ struct FinalsBroadcastIntro: View {
             if !(ProcessInfo.processInfo.environment["MZ_FIN"] ?? "").isEmpty { short = false }   // 目視用: MZ_FIN 指定中は常にフル
             #endif
             stage = startStage
-            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true }
+            if reduceMotion { blink = true } else { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } }
         }
     }
 
@@ -80,7 +80,7 @@ struct FinalsBroadcastIntro: View {
             Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
             Spacer()
             Button { finish() } label: {
-                Text("スキップ ▶▶").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     .padding(.horizontal, 10).frame(height: 30)
                     .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
             }
@@ -123,8 +123,8 @@ struct FinalsBroadcastIntro: View {
                     .opacity(step > i ? 1 : 0)
                     .scaleEffect(last && step > i ? (slam ? 1.0 : 1.35) : 1)
                     .offset(y: last && step > i ? (slam ? 0 : 4) : 0)
-                    .animation(.easeOut(duration: 0.35), value: step)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.55), value: slam)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: step)
+                    .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.55), value: slam)
             }
             Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 70, height: 1).opacity(step > 0 ? 1 : 0)
         }
@@ -144,7 +144,7 @@ struct FinalsBroadcastIntro: View {
         .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.6), lineWidth: 1).padding(6))
         .scaleEffect(titleIn ? 1.0 : 0.85)
         .opacity(titleIn ? 1 : 0)
-        .animation(.spring(response: 0.45, dampingFraction: 0.6), value: titleIn)
+        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.6), value: titleIn)
     }
 
     /// 審査員席（場面2）。並びは採点開票・票めくりの7枠と同じ＝右端が天堂寺。点灯ごとに se_spot_light_on。
@@ -192,7 +192,7 @@ struct FinalsBroadcastIntro: View {
                                     .scaleEffect(isCur ? 1.12 : 1, anchor: .bottom)
                                     .zIndex(isCur ? 1 : 0)
                             }
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: step)
+                            .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.7), value: step)
                         }
                     }
                     .padding(.horizontal, 6)
@@ -206,8 +206,8 @@ struct FinalsBroadcastIntro: View {
                                 let on = step > i
                                 let parts = judges[i].split(separator: " ").map(String.init)
                                 VStack(spacing: 1) {
-                                    Text(parts[0]).font(YoseFont.mincho(13)).lineLimit(1).minimumScaleFactor(0.5)
-                                    Text(parts.count > 1 ? parts[1] : "").font(YoseFont.mincho(10)).lineLimit(1).minimumScaleFactor(0.5)
+                                    Text(parts[0]).font(YoseFont.mincho(13)).lineLimit(1).minimumScaleFactor(0.7)
+                                    Text(parts.count > 1 ? parts[1] : "").font(YoseFont.mincho(10)).lineLimit(1).minimumScaleFactor(0.7)
                                 }
                                 .foregroundStyle(on ? YoseColor.sumi : YoseColor.haiSumi)
                                 .frame(maxWidth: .infinity).frame(height: 46)
@@ -244,7 +244,7 @@ struct FinalsBroadcastIntro: View {
             }
             .frame(height: 110).padding(.top, 26)
         }
-        .animation(.easeOut(duration: 0.2), value: step)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: step)
     }
 
     /// 進出10組（場面3）。めくり札が順に返る se_mekuri_flip_fast、自組の着地で重低音。
@@ -271,7 +271,7 @@ struct FinalsBroadcastIntro: View {
                         .shadow(color: f.isSelf && on ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)
                         .opacity(on ? 1 : 0.0)
                         .scaleEffect(on ? 1 : (f.isSelf ? 1.8 : 0.9))
-                        .animation(.spring(response: 0.3, dampingFraction: 0.65), value: step)
+                        .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.65), value: step)
                 }
             }
         }
@@ -299,7 +299,7 @@ struct FinalsBroadcastIntro: View {
 
     // MARK: 背景（金粉・サーチライト）
     private var sparks: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20)) { ctx in
+        TimelineView(.animation(minimumInterval: 1.0 / 20, paused: reduceMotion)) { ctx in
             Canvas { g, size in
                 let t = ctx.date.timeIntervalSinceReferenceDate
                 for i in 0..<36 {
@@ -327,7 +327,7 @@ struct FinalsBroadcastIntro: View {
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
-        .animation(.easeOut(duration: 0.9), value: lit)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.9), value: lit)
     }
 
     // MARK: 進行
@@ -342,10 +342,10 @@ struct FinalsBroadcastIntro: View {
             let n = vtrLines.count
             for i in 0..<n {
                 guard !Task.isCancelled else { return }
-                withAnimation { step = i + 1 }
+                withAnimation(reduceMotion ? nil : .default) { step = i + 1 }
                 if i == n - 1 {
                     Haptics.rare()       // se_taiko_grand_hit（決め太鼓）
-                    withAnimation { slam = true }
+                    withAnimation(reduceMotion ? nil : .default) { slam = true }
                 } else { Haptics.confirm() }   // se_shaku_wooden_clap（拍子木）
                 await pause(short ? 1.3 : 2.1)
             }
@@ -362,7 +362,7 @@ struct FinalsBroadcastIntro: View {
         case .judges:
             for i in 0..<7 {
                 guard !Task.isCancelled else { return }
-                withAnimation { step = i + 1 }
+                withAnimation(reduceMotion ? nil : .default) { step = i + 1 }
                 if i == 6 { UIImpactFeedbackGenerator(style: .rigid).impactOccurred() } else { Haptics.tick() }   // se_spot_light_on
                 await pause(short ? 0.15 : 1.1)
             }
@@ -373,7 +373,7 @@ struct FinalsBroadcastIntro: View {
                 guard !Task.isCancelled else { return }
                 let isSelf = finalists[i].isSelf
                 if isSelf { await pause(short ? 0.1 : 0.4) }
-                withAnimation { step = i + 1 }
+                withAnimation(reduceMotion ? nil : .default) { step = i + 1 }
                 if isSelf { Haptics.rare() } else { UISelectionFeedbackGenerator().selectionChanged() }   // se_mekuri_flip_fast
                 await pause(short ? 0.1 : 0.22)
             }
@@ -424,6 +424,7 @@ struct JudgeSpotCone: Shape {
 }
 
 struct FinalsLiveBar: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let scene: String
     var trailing: String? = nil
     @State private var blink = false
@@ -445,12 +446,13 @@ struct FinalsLiveBar: View {
         .padding(.horizontal, 8).frame(height: 26)
         .background(YoseColor.kuroUrushi.opacity(0.88))
         .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1) }
-        .onAppear { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } }
+        .onAppear { if reduceMotion { blink = true } else { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } } }
     }
 }
 
 /// スタジオ照明（§4-2）。舞台の上に重ねる：金サーチライト4本。最終決戦は真紅×群青に替わる（§4-9）。
 struct FinalsStudioLights: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var duel: Bool
     var body: some View {
         GeometryReader { geo in
@@ -472,12 +474,13 @@ struct FinalsStudioLights: View {
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
-        .animation(.easeInOut(duration: 0.6), value: duel)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.6), value: duel)
     }
 }
 
 /// 登場の扉（§4-8）。閉じた2枚の扉が割れて逆光が差し、紹介テロップが出る。open が true で割れる。
 struct FinalsEntranceDoors: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let open: Bool
     let order: Int
     let name: String
@@ -493,7 +496,7 @@ struct FinalsEntranceDoors: View {
                     door.offset(x: open ? geo.size.width * 0.52 : 0)
                 }
                 .opacity(open ? 0 : 1)
-                .animation(.easeInOut(duration: 0.9), value: open)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.9), value: open)
             }
             .overlay(alignment: .top) {
                 VStack(spacing: 4) {   // 紹介テロップ（肩書・連続出場の元データは無いので、出番と結成年数だけ）
@@ -507,7 +510,7 @@ struct FinalsEntranceDoors: View {
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                 .padding(.top, 70)
                 .opacity(open ? 1 : 0.0).offset(y: open ? 0 : 14)
-                .animation(.easeOut(duration: 0.4).delay(0.5), value: open)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.4).delay(0.5), value: open)
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
@@ -521,6 +524,7 @@ struct FinalsEntranceDoors: View {
 
 /// 番組のエンディング（§1 場面12）。優勝組・最終決戦の3組・本日の出場組を見せて「放送はここまで」。タップ／スキップで即閉じる。
 struct FinalsBroadcastEnding: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
     let winnerName: String
     let champion: Bool
@@ -557,7 +561,7 @@ struct FinalsBroadcastEnding: View {
                             .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0)
                     }
                 }
-                .animation(.easeOut(duration: 0.4), value: step)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
                 Spacer(minLength: 0)
                 HStack(spacing: 0) {
                     Text("司会 鳴海").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
@@ -566,12 +570,12 @@ struct FinalsBroadcastEnding: View {
                         .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 44).background(YoseColor.washi)
                 }
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
-                .opacity(step >= 3 ? 1 : 0).animation(.easeOut(duration: 0.4), value: step)
+                .opacity(step >= 3 ? 1 : 0).animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 26)
             }
             VStack { HStack { Spacer()
                 Button { finish() } label: {
-                    Text("スキップ ▶▶").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                    Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).frame(height: 28)
                         .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
                 }.padding(.trailing, 8).padding(.top, 34)

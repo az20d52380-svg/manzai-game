@@ -125,18 +125,18 @@ struct RentStatementView: View {
             money = Double(statement.moneyBefore)
             let step: UInt64 = reduceMotion ? 0 : 90_000_000
             for _ in statement.lines {
-                withAnimation(.easeOut(duration: 0.15)) { shownRows += 1 }
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { shownRows += 1 }
                 try? await Task.sleep(nanoseconds: step)
                 if Task.isCancelled { return }   // タップで閉じた後に音・振動・onDone が後から走らない（code_review_2026-10-19b §1-1）
             }
-            withAnimation(.easeOut(duration: 0.15)) { showTotal = true }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { showTotal = true }
             try? await Task.sleep(nanoseconds: 250_000_000)
             if Task.isCancelled { return }
             Sound.play(.money)
-            withAnimation(.easeOut(duration: 0.45)) { money = Double(statement.moneyAfter) }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.45)) { money = Double(statement.moneyAfter) }
             try? await Task.sleep(nanoseconds: 500_000_000)
             if Task.isCancelled { return }
-            withAnimation { settled = true }
+            withAnimation(reduceMotion ? nil : .default) { settled = true }
             if shortfallMode { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             if Task.isCancelled || voiceOver { return }   // VoiceOver 中は自動で閉じない＝読み終えてから閉じる（a11y_check_1019）

@@ -230,11 +230,13 @@ struct WeekMainView: View {
             if pulledID != nil {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture { beatTask?.cancel() }
+                    .accessibilityHidden(true)
             } else if burstHold {
                 // 獲得チップ中のタップ：舞台側（上半分）だけで畳む。下の行動ボタンは覆わない（押した行動は tapOrQueue が畳んで予約実行）
                 GeometryReader { g in
                     Color.clear.contentShape(Rectangle()).frame(height: g.size.height * 0.5)
                         .onTapGesture { burstSkip = true }
+                        .accessibilityHidden(true)
                 }
             }
         }

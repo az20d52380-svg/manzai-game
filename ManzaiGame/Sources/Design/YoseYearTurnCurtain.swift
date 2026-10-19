@@ -115,12 +115,12 @@ struct YoseYearTurnCurtainView: View {
             // 開幕時の左右引き幕（定式幕ワイプ：0.22sで閉じて0.22sで開く）
             GeometryReader { geo in
                 HStack(spacing: 0) {
-                    curtainPanel
+                    curtainPanel.accessibilityHidden(true)
                         .frame(width: geo.size.width / 2)
                         .overlay(alignment: .trailing) { curtainSeam(leading: false) }
                         .offset(x: curtainClosed ? 0 : -geo.size.width / 2 - 10)
 
-                    curtainPanel
+                    curtainPanel.accessibilityHidden(true)
                         .frame(width: geo.size.width / 2)
                         .overlay(alignment: .leading) { curtainSeam(leading: true) }
                         .offset(x: curtainClosed ? 0 : geo.size.width / 2 + 10)

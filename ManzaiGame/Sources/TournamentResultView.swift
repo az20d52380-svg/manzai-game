@@ -193,6 +193,7 @@ struct TournamentResultView: View {
             if !revealed {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture { guard tapAccepted() else { return }; if fanActive { fanTap += 1 } else { skipRequested = true } }   // 声の相は1枚ずつ送る
+                    .accessibilityHidden(true)
             }
         }
         .overlay(alignment: .bottom) {
@@ -227,6 +228,7 @@ struct TournamentResultView: View {
             if revealed && !revealedRest && ceremonyDone {
                 Color.clear.contentShape(Rectangle())
                     .onTapGesture { guard tapAccepted() else { return }; finishReveal() }
+                    .accessibilityHidden(true)
             }
         }
         .onChange(of: ceremonyDone) { _, _ in stageChangedAt = Date() }

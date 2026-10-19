@@ -48,3 +48,7 @@
 ## 直した所（10/19 自走・ビルド OK・実機の VoiceOver では未確認）
 - 自動で進む／閉じる画面：RentStatement と FinalsBroadcastEnding は VoiceOver 中に自動で閉じない＋ダブルタップで閉じる。FinalistAnnounce（組名・段の切り替え）と QualifierNotice（一覧の結果・相方の返事）は announcement で伝える。
 - 残り（ラベル・Dynamic Type・reduceMotion の個別の所見）は次の回で。
+
+## 直した所（2回目）
+- 直した：#1（FinalistAnnounce の withAnimation／spring を reduceMotion で無効）、#3（building.columns・mic.fill を hidden＋mzScaled）、#4（シルエットを常に hidden＝caption に一本化）、#5（「飛ばす」2か所に 44pt の当たり）、#6（QualifierNotice の withAnimation を reduceMotion で無効）、#7（通知ボタンに label・アイコン hidden）、#8（通過者の行に label「あなたたち」＋選択 trait）、#9（一覧に「次へ」action）、#10（21:04 を mzScaled＋hidden）、#11（吹き出しに「自分／相方名」label）、#12（スキップ ▶▶ に label「スキップ」）、#13（金粉 TimelineView を paused／blink は reduceMotion で点滅しない／サーチライト等の .animation を無効）、#15（mincho 13/10 の下限 0.5→0.7）、#16 のうち animation 部分（RentStatement の withAnimation を reduceMotion で無効）、#17（YearTurnCurtain の curtainPanel を hidden）。§6：NotebookView の「改名」札に label「題名を直す」＋button trait／Color.clear 全面タップ4か所（TournamentResultView×2・WeekMainView×2）を hidden／FinalsPresentationView に「次へ」action。
+- 未対応：#12 の高さ 28〜30pt のまま（枠の高さを変えると見た目が変わるため）／#4 の selfLabel の `fixedSize`（隣へのはみ出し対策は見た目が変わるため）／#2 と #14 の VoiceOver 稼働中の自動進行の全面停止（進行の仕様に触れるため）／#16 の YoseStampImpactModifier 内の spring（共有部品・scale は reduceMotion で既に固定）／#17 の全面 onTapGesture（Button に集約すると画面全体のタップ挙動が変わるため）／WeekMainView の他の Color.clear タップへの「次へ」action（意味が場面ごとに違うため）。

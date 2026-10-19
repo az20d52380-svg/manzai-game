@@ -334,6 +334,7 @@ struct NotebookView: View {
                 if renamingID != neta.id {
                     YoseTag(text: "改名", style: .outlineSumi)   // 名前タップと同じ＝題名を直す入口を札で示す
                         .onTapGesture { renameDraft = neta.name; renamingID = neta.id }
+                        .accessibilityLabel("題名を直す").accessibilityAddTraits(.isButton)
                 }
             }
             YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)

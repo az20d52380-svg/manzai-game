@@ -18,6 +18,7 @@ struct FinalistAnnounceView: View {
     @State private var dim = false           // 最後の2組の溜め
     @State private var task: Task<Void, Never>?
     @State private var skipStep = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 読み上げの1組（五十音順）。自組も同じ並びに入る
     private struct Slot: Identifiable { let id: Int; let name: String; let yomi: String; let isSelf: Bool; let finalist: Bool }
@@ -76,7 +77,7 @@ struct FinalistAnnounceView: View {
             VStack(spacing: 18) {
                 Spacer(minLength: 90)
                 if stage == .wait {
-                    Image(systemName: "building.columns").font(.system(size: 54)).foregroundStyle(YoseColor.kin.opacity(0.6))
+                    Image(systemName: "building.columns").font(.system(size: Font.mzScaled(54))).accessibilityHidden(true).foregroundStyle(YoseColor.kin.opacity(0.6))
                         .transition(.opacity)
                     Text(caption).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.washi)
                         .multilineTextAlignment(.center).frame(minHeight: 44).id(caption).transition(.opacity)
@@ -99,6 +100,7 @@ struct FinalistAnnounceView: View {
                 Button { skipAll() } label: {
                     Text("飛ばす").font(YoseFont.gothic(13)).foregroundStyle(YoseColor.ginNezu).padding(.horizontal, 12).padding(.vertical, 6)
                         .overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.5)))
+                        .frame(minHeight: 44).contentShape(Rectangle())
                 }
             }.padding(.top, 54).padding(.trailing, 16); Spacer() }.transition(.opacity) }
         }
@@ -125,7 +127,7 @@ struct FinalistAnnounceView: View {
                     ZStack(alignment: .top) {
                         Capsule().fill(YoseColor.kin.opacity(0.9)).frame(width: 40, height: 66)
                         Circle().fill(YoseColor.kinBright).frame(width: 24, height: 24).offset(y: -13)
-                        Image(systemName: "mic.fill").font(.system(size: 16)).foregroundStyle(YoseColor.kuroUrushi).offset(x: 18, y: 30)
+                        Image(systemName: "mic.fill").font(.system(size: Font.mzScaled(16))).accessibilityHidden(true).foregroundStyle(YoseColor.kuroUrushi).offset(x: 18, y: 30)
                     }.frame(height: 76)
                     Text("司会").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kin)
                 }
@@ -188,9 +190,9 @@ struct FinalistAnnounceView: View {
                     }
                 }
         }
-        .animation(s.isSelf ? .spring(response: 0.35, dampingFraction: 0.45) : .easeOut(duration: 0.35), value: on)
+        .animation(reduceMotion ? nil : (s.isSelf ? .spring(response: 0.35, dampingFraction: 0.45) : .easeOut(duration: 0.35)), value: on)
         .frame(width: 38)
-        .accessibilityHidden(done)
+        .accessibilityHidden(true)   // 図形は caption に一本化
     }
 
     // MARK: 進行
@@ -212,24 +214,24 @@ struct FinalistAnnounceView: View {
         Sound.bgm(.tension)
         await pause(4)                                                      // ① 待ちの1枚
         if Task.isCancelled { return }
-        withAnimation(.easeInOut(duration: 0.5)) { stage = .line }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.5)) { stage = .line }
         Sound.play(.cursor)
         await pause(5)                                                      // ② 並ぶ
         if Task.isCancelled { return }
-        withAnimation(.easeInOut(duration: 0.4)) { stage = .read }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.4)) { stage = .read }
         await pause(2.5)
         let order = readOrder
         for i in 0..<order.count {                                          // ③ 読み上げ（最後の2組に溜め）
             if Task.isCancelled { return }
             let last2 = i >= order.count - 2
-            if last2 { withAnimation(.easeInOut(duration: 0.6)) { dim = true }; Sound.play(.drumroll); await pause(1.6) }
+            if last2 { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.6)) { dim = true }; Sound.play(.drumroll); await pause(1.6) }
             if Task.isCancelled { return }
-            withAnimation(.easeOut(duration: 0.3)) { called = i + 1 }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) { called = i + 1 }
             if order[i].isSelf { Sound.play(.success); Haptics.rare() } else { Sound.play(.tap) }
             await pause(last2 ? 2.4 : 1.7)
         }
         if Task.isCancelled { return }
-        withAnimation(.easeInOut(duration: 0.8)) { dim = false; stage = .after }   // ④
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.8)) { dim = false; stage = .after }   // ④
         if passed { Sound.play(.applauseSmall) }
     }
 
@@ -237,6 +239,6 @@ struct FinalistAnnounceView: View {
 
     private func skipAll() {
         task?.cancel()
-        withAnimation(.easeInOut(duration: 0.3)) { dim = false; called = readOrder.count; stage = .after }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) { dim = false; called = readOrder.count; stage = .after }
     }
 }

@@ -26,6 +26,7 @@ struct QualifierNoticeView: View {
     @State private var chosen = false           // 「開く」を選んだ
     @State private var chosenText = "開く"       // 吹き出しに出す自分の返事
     @State private var task: Task<Void, Never>?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var rowNames: [String] {
         let n = listLength
@@ -60,6 +61,7 @@ struct QualifierNoticeView: View {
                 Button { finish() } label: {
                     Text("飛ばす").font(YoseFont.gothic(13)).foregroundStyle(YoseColor.ginNezu).padding(.horizontal, 12).padding(.vertical, 6)
                         .overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.5)))
+                        .frame(minHeight: 44).contentShape(Rectangle())
                 }
             }.padding(.top, 54).padding(.trailing, 16); Spacer() }.transition(.opacity) }
         }
@@ -77,13 +79,13 @@ struct QualifierNoticeView: View {
     private var lockScreen: some View {
         VStack(spacing: 6) {
             Spacer().frame(height: 110)
-            Text("21:04").font(.system(size: 72, weight: .thin)).foregroundStyle(.white.opacity(0.9))
+            Text("21:04").font(.system(size: Font.mzScaled(72), weight: .thin)).accessibilityHidden(true).foregroundStyle(.white.opacity(0.9))
             Spacer()
             if noticeIn {
                 Button { open() } label: {
                     HStack(alignment: .top, spacing: 10) {
                         RoundedRectangle(cornerRadius: 9).fill(YoseColor.kin).frame(width: 38, height: 38)
-                            .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").foregroundStyle(YoseColor.kuroUrushi))
+                            .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))
                         VStack(alignment: .leading, spacing: 3) {
                             HStack { Text(isChat ? partnerName : "頂GP公式").font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(11)).foregroundStyle(.white.opacity(0.5)) }
                             Text(isChat ? "見た？" : "【結果発表】\(roundLabel)の通過者を掲載しました").font(YoseFont.gothic(13)).multilineTextAlignment(.leading)
@@ -92,6 +94,7 @@ struct QualifierNoticeView: View {
                     .padding(12).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                     .padding(.horizontal, 14)
                 }
+                .accessibilityLabel(isChat ? "\(partnerName)からの通知を開く。見た？" : "頂GP公式からの通知を開く。\(roundLabel)の通過者を掲載しました")
                 .buttonStyle(.plain).transition(.move(edge: .top).combined(with: .opacity))
                 Text("通知をタップ").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.45)).padding(.top, 8)
             }
@@ -119,12 +122,15 @@ struct QualifierNoticeView: View {
                         .background(me && scanned ? YoseColor.kin.opacity(0.22) : .clear)
                         .overlay(RoundedRectangle(cornerRadius: 6).stroke(YoseColor.kinBright.opacity(me && scanned ? 0.9 : 0), lineWidth: 1.5))
                         .shadow(color: YoseColor.kinBright.opacity(me && scanned ? 0.7 : 0), radius: 10)
-                        Divider().background(.white.opacity(0.12))
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(me ? "\(n)、あなたたち" : n)
+                        .accessibilityAddTraits(me && scanned ? .isSelected : [])
+                        Divider().background(.white.opacity(0.12)).accessibilityHidden(true)
                     }
                 }
             }
             .onChange(of: scanned) { _, on in   // 長い一覧（DEBUG の見せ物）では、見つかった時に自組の行まで送る
-                if on && passed && rowNames.count > 12 { withAnimation(.easeInOut(duration: 0.6)) { proxy.scrollTo(combiName, anchor: .center) } }
+                if on && passed && rowNames.count > 12 { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.6)) { proxy.scrollTo(combiName, anchor: .center) } }
             }
             }
             .padding(.horizontal, 14)
@@ -142,7 +148,8 @@ struct QualifierNoticeView: View {
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { if !scanned { withAnimation { scanned = true } } }
+        .onTapGesture { if !scanned { withAnimation(reduceMotion ? nil : .default) { scanned = true } } }
+        .accessibilityAction(named: "次へ") { if !scanned { scanned = true } }
     }
 
     // MARK: 相方とのトーク
@@ -179,6 +186,7 @@ struct QualifierNoticeView: View {
         HStack {
             if mine { Spacer() }
             Text(t).font(YoseFont.gothic(15)).foregroundStyle(mine ? YoseColor.kuroUrushi : .white)
+                .accessibilityLabel(mine ? "自分、\(t)" : "\(partnerName)、\(t)")
                 .padding(.horizontal, 14).padding(.vertical, 9)
                 .background(mine ? YoseColor.kinBright : Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 16))
             if !mine { Spacer() }
@@ -205,7 +213,7 @@ struct QualifierNoticeView: View {
         task = Task {
             try? await Task.sleep(nanoseconds: 1_200_000_000)
             if Task.isCancelled { return }
-            withAnimation(.spring(duration: 0.5)) { noticeIn = true }
+            withAnimation(reduceMotion ? nil : .spring(duration: 0.5)) { noticeIn = true }
             Sound.play(.cursor); Haptics.rare()
         }
     }
@@ -214,15 +222,15 @@ struct QualifierNoticeView: View {
         guard stage == .lock else { return }
         task?.cancel()
         Sound.play(.tap)
-        withAnimation(.easeInOut(duration: 0.35)) { stage = isChat ? .chat : .list }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.35)) { stage = isChat ? .chat : .list }
         task = Task {
             if isChat {
                 try? await Task.sleep(nanoseconds: 900_000_000)
-                withAnimation { msgs = 1 }
+                withAnimation(reduceMotion ? nil : .default) { msgs = 1 }
             } else {
                 try? await Task.sleep(nanoseconds: 3_200_000_000)   // 目で探す間
                 if Task.isCancelled { return }
-                withAnimation(.easeOut(duration: 0.4)) { scanned = true }
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.4)) { scanned = true }
                 if passed { Sound.play(.success); Haptics.rare() }
             }
         }
@@ -232,13 +240,13 @@ struct QualifierNoticeView: View {
         guard !chosen else { return }
         chosenText = text
         Sound.play(.tap)
-        withAnimation { chosen = true; msgs = 2 }
+        withAnimation(reduceMotion ? nil : .default) { chosen = true; msgs = 2 }
         task?.cancel()
         task = Task {
             try? await Task.sleep(nanoseconds: passed ? 1_100_000_000 : 2_600_000_000)   // 落選は既読のまま無音の間
             for i in 0..<resultLines.count {
                 if Task.isCancelled { return }
-                withAnimation { msgs = 3 + i }
+                withAnimation(reduceMotion ? nil : .default) { msgs = 3 + i }
                 if passed { Sound.play(.tap) }
                 try? await Task.sleep(nanoseconds: passed ? 800_000_000 : 1_400_000_000)
             }
