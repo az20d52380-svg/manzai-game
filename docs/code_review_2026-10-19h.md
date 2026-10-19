@@ -33,3 +33,7 @@
 - 観客版と出場版：観客は `shown = 0`／`boardAuto = true` で開始し先の組・ネタ・採点を通らない。`champion` は `!spectator &&` 付き、`finishResult` は観客→`onFinishSpectating`、優勝→`acknowledgeWin`、負け→`acknowledgeResult`。
 - 優勝の夜：`goNext` は `beat` を `.duel` のまま `showChamp` へ（`.result` の画面は挟まない）。その上のオーバーレイがタップを受けるので二重に進まない。
 - BGM：`Sound.bgm(.finals)` は onAppear の1回。出た先の週画面が `.daily` に戻す（WeekMainView:308）。
+
+## 直した所（10/19 自走・ビルド OK・目視は未）
+- §1：先に 50〜99 に収めてから、50〜99 の中でだけ合計に合わせる（乱数は使わない＝出る点の並びは従来と同じ乱数から）。§2：くじは ceremonyDone の後（.task(id:)）。§3：観客版は runLot を走らせない。
+- 決勝の盤面まで出す目視フックが無い（MZ_UI=ending は優勝後の S6b）＝タップできる回で優勝夜の7人の和と合計を確認する。
