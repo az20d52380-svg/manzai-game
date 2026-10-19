@@ -253,7 +253,7 @@ struct NotebookView: View {
 
     private func kirokuStat(_ label: String, _ value: String, _ unit: String) -> some View {
         VStack(spacing: 2) {
-            Text(label).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            Text(label).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(value).font(YoseFont.number(24, weight: .black)).foregroundStyle(unit == "万" ? YoseColor.shu : YoseColor.sumi)
                 Text(unit).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
@@ -343,7 +343,7 @@ struct NotebookView: View {
             netaBar(label: "客の反応", value: neta.buzz, color: YoseColor.kinBright)
             oroshiLine(neta)
             HStack(spacing: 8) {
-                Text("舞台 \(neta.stageCount)回").font(YoseFont.gothic(11, weight: .bold)).monospacedDigit().foregroundStyle(YoseColor.haiSumi)
+                Text("舞台 \(neta.stageCount)回").font(YoseFont.gothic(12, weight: .bold)).monospacedDigit().foregroundStyle(YoseColor.haiSumi)
                 Spacer()
                 netaBadges(neta)
             }
@@ -374,7 +374,7 @@ struct NotebookView: View {
     /// ネタおろし（初披露）直後だけの一言（v2 §3-2補2・行動すると失効＝justPassedと同型）
     @ViewBuilder private func oroshiLine(_ neta: Neta) -> some View {
         if session.justOroshiNeta?.id == neta.id, let text = session.justOroshiNeta?.text {
-            Text(text).font(.system(size: Font.mzScaled(11.5), design: .serif)).foregroundStyle(Theme.inkDim)
+            Text(text).font(.system(size: Font.mzScaled(12), design: .serif)).foregroundStyle(Theme.inkDim)
                 .transition(.opacity)
         }
     }
@@ -472,9 +472,9 @@ struct NotebookView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(neta.name).font(.maru(15, weight: .black)).foregroundStyle(Theme.sumi)
                 HStack(spacing: 6) {
-                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(11)).foregroundStyle(Theme.inkSub)
+                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(12)).foregroundStyle(Theme.inkSub)
                     if revival {
-                        Text("もう一度").font(.maru(11, weight: .black)).foregroundStyle(Theme.verm)
+                        Text("もう一度").font(.maru(12, weight: .black)).foregroundStyle(Theme.verm)
                     }
                 }
             }
