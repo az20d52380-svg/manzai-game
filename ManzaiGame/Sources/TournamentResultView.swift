@@ -122,12 +122,12 @@ struct TournamentResultView: View {
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: signIn)
                     // 番組の下三分（小型）：LIVE札＋コンビ名＋結成年・週。点数は出さない
                     HStack(spacing: 8) {
-                        Text("LIVE 生放送").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                             .padding(.horizontal, 6).frame(height: 20).background(YoseColor.shu)
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
                         Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)
                         Spacer(minLength: 4)
-                        Text("結成\(summary.year)年目　第\(summary.week)週").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
+                        Text("結成\(summary.year)年目　第\(summary.week)週").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
                     }
                     .padding(.horizontal, 10).frame(height: 28)
                     .background(YoseColor.kuroUrushi.opacity(0.9))
@@ -363,7 +363,7 @@ struct TournamentResultView: View {
         let names = ["① 客席の反応", "② 結果発表", "③ 講評・精算"]
         return HStack(spacing: 5) {
             ForEach(0..<3, id: \.self) { i in
-                Text(names[i]).font(YoseFont.gothic(11, weight: .heavy))
+                Text(names[i]).font(YoseFont.gothic(12, weight: .heavy))
                     .foregroundStyle(i == cur ? YoseColor.kinari : YoseColor.sumi.opacity(0.75))
                     .frame(maxWidth: .infinity).frame(height: 22)
                     .background(i == cur ? YoseColor.shu : YoseColor.ki)
