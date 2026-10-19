@@ -851,7 +851,7 @@ struct WeekMainView: View {
                 Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .lineLimit(3).fixedSize(horizontal: false, vertical: true)
             }
-            .padding(6).frame(maxWidth: .infinity, alignment: .leading)
+            .padding(6).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)   // 3枚の背丈をそろえる（ui_audit_1019 §3）
             .background(YoseColor.kinari)
             .overlay(Rectangle().stroke(on ? YoseColor.kinBright : YoseColor.sumi, lineWidth: on ? 3 : 1.5))
         }
