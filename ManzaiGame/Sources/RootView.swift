@@ -342,9 +342,10 @@ struct RootView: View {
     /// 年末リザルトの「◯年目へ」：幕間を挟んでから翌年を立てる（表示だけ・状態は startNextYear まで不変）
     private func beginYearTurn() {
         let st = session.state
-        let power = Int(Ability.allCases.reduce(0.0) { $0 + st[$1] }.rounded())
+        let power = Int(GameEngine.jitsuryoku(st, config: session.config).rounded())   // 手帳・週メインと同じ「実力」（19l §1-1）
         yearTurn = YearTurnSummary(combiName: session.combiName, previousYear: session.year, newYear: session.year + 1,
-                                   power: power, fame: Int(st.fame.rounded()), money: st.money, netaCount: st.netas.count)
+                                   power: power, fame: Int(st.fame.rounded()), money: st.money, netaCount: st.netas.count,
+                                   maxStamina: Int(session.config.initStamina))
     }
 
     @ViewBuilder private var content: some View {

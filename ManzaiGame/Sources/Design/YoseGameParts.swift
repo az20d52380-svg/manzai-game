@@ -156,7 +156,11 @@ struct YoseModal<Content: View>: View {
                     .frame(maxWidth: .infinity).frame(height: 40).background(YoseColor.enji)
                     .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
                 VStack(spacing: 16) {
-                    content
+                    // 大きい文字で縦にあふれる時だけ本文をスクロールにし、ボタン行は常に見える所に残す（19l §1-2）
+                    ViewThatFits(in: .vertical) {
+                        content
+                        ScrollView { content }.scrollBounceBehavior(.basedOnSize)
+                    }
                     HStack(spacing: 10) {
                         if let cancelTitle, let cancelAction {
                             Button(cancelTitle, action: cancelAction)
@@ -174,6 +178,9 @@ struct YoseModal<Content: View>: View {
             .overlay(RoundedRectangle(cornerRadius: YoseMetrics.radius).stroke(YoseColor.sumi, lineWidth: 2.5))
             .background(RoundedRectangle(cornerRadius: YoseMetrics.radius).fill(YoseColor.sumi).offset(y: 4))
             .padding(.horizontal, 24)
+            .padding(.vertical, 24)
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(.isModal)   // 読み上げが背面の画面へ出ないように（19l §1-2）
         }
     }
 }

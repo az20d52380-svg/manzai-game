@@ -134,6 +134,8 @@ struct YoseYearTurnCurtainView: View {
         .onTapGesture {
             triggerStart()
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)   // 背面の年末リザルトを読ませない（19l §1-4）
         .task {
             await playTransitionSequence()
         }
@@ -215,8 +217,11 @@ struct YoseYearTurnCurtainView: View {
                 ZStack(alignment: .top) {
                     // 下層：新年のめくり札（完全不透明・固定）
                     mekuriCard(year: summary.newYear, caption: "4月 ・ 第1週")
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("結成\(summary.newYear)年目　4月 第1週")
                     // 上層：前年の札。上辺を軸に奥へ跳ね上がって消える（半透明では重ねない）
                     mekuriCard(year: summary.previousYear, caption: "全日程 終了")
+                        .accessibilityHidden(true)   // めくれて消える前年の札は読ませない（19l §1-4）
                         .rotation3DEffect(.degrees(mekuriFlipped ? 90 : 0), axis: (x: 1, y: 0, z: 0), anchor: .top, perspective: 0.35)
                         .opacity(mekuriFlipped ? 0 : 1)
                         .animation(.linear(duration: 0.01).delay(mekuriFlipped ? 0.2 : 0), value: mekuriFlipped)
@@ -372,33 +377,38 @@ struct YoseYearTurnCurtainView: View {
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
 
         // 0.00〜0.32s: 幕が閉じたまま静止（溜め）→ ピンスポットが点る
-        try? await Task.sleep(nanoseconds: 320_000_000)
+        guard await pause(320_000_000) else { return }
         withAnimation(.easeOut(duration: 0.3)) { spotOn = true }
 
         // 0.32s: 定式幕が左右へ引き開けられる
         withAnimation(.easeInOut(duration: 0.30)) { curtainClosed = false }
 
         // 0.78s: めくり札が上辺を軸にパタン！＋金火花＋揺れ
-        try? await Task.sleep(nanoseconds: 460_000_000)
+        guard await pause(460_000_000) else { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         withAnimation(.spring(response: 0.26, dampingFraction: 0.62)) { mekuriFlipped = true }
         burstTrigger += 1
         withAnimation(.linear(duration: 0.04)) { shakeY = 5 }
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        guard await pause(50_000_000) else { return }
         withAnimation(.linear(duration: 0.05)) { shakeY = -3 }
-        try? await Task.sleep(nanoseconds: 55_000_000)
+        guard await pause(55_000_000) else { return }
         withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
 
         // 1.0s: 朱印『開幕』
-        try? await Task.sleep(nanoseconds: 110_000_000)
+        guard await pause(110_000_000) else { return }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { stamped = true }
         burstTrigger += 1
         withAnimation(.linear(duration: 0.04)) { shakeY = 3 }
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        guard await pause(50_000_000) else { return }
         withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        guard await pause(100_000_000) else { return }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { contentAppeared = true }
+    }
+
+    /// 待つ。閉じられて Task が取り消されたら false（残りの触覚・揺れを鳴らさない＝code_review_2026-10-19l §1-3）
+    private func pause(_ ns: UInt64) async -> Bool {
+        do { try await Task.sleep(nanoseconds: ns); return true } catch { return false }
     }
 
     private func triggerStart() {
