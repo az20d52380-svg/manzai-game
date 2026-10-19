@@ -311,7 +311,7 @@ struct StagePreludeView: View {
                 if isFinal {
                     NetaPickRow(session: session, title: "決勝・2本目（温存の一手）",
                                 requiredLength: requiredLength, selected: session.selectedNeta2,
-                                onSelect: { session.selectNeta2($0) })
+                                onSelect: { session.selectNeta2($0) }, excludeID: session.selectedNeta?.id)
                 }
             }
             .padding(.horizontal, YoseMetrics.screenMargin)

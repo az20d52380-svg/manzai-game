@@ -810,6 +810,7 @@ final class GameSession {
     /// 「今かけるネタ」を選ぶ（大会入口・持ちネタ帳から。保管庫のネタでも可＝自動でアクティブへ呼び戻さない・
     /// 呼び戻しは recallNeta を先に呼ぶ設計。ここはアクティブ枠内のIDのみ有効）。
     func selectNeta(_ id: Int?) {
+        if let id, id == state.selectedNetaID2 { runner.applyNetaSelect2(id: nil) }   // 1本目に2本目と同じネタ＝2本目を外す（同じネタ2本で減点を免れない・code_review_2026-10-19f §2）
         runner.applyNetaSelect(id: id)
         state = runner.state
         saveNow()
@@ -817,6 +818,7 @@ final class GameSession {
 
     /// 決勝の2本目を選ぶ（v2 §4-2）
     func selectNeta2(_ id: Int?) {
+        if let id, id == state.selectedNetaID { return }   // 1本目と同じネタは2本目にできない（§2）
         runner.applyNetaSelect2(id: id)
         state = runner.state
         saveNow()
@@ -874,6 +876,7 @@ final class GameSession {
 
     /// アクティブ枠→保管庫（削除でも封印でもない・いつでも呼び戻せる・v2 §2-2）
     func retireNeta(_ id: Int) {
+        if state.selectedNetaID2 == id { runner.applyNetaSelect2(id: nil) }   // しまったネタが2本目に残って、出した時に黙って復活しない（code_review_2026-10-19f §3）
         runner.applyNetaRetire(id: id)
         state = runner.state
         saveNow()

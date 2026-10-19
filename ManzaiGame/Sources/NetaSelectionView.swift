@@ -12,6 +12,7 @@ struct NetaPickRow: View {
     let requiredLength: NetaLength?     // nil = 尺の言及なし
     let selected: Neta?
     let onSelect: (Int) -> Void
+    var excludeID: Int? = nil           // 決勝の2本目：1本目と同じネタは候補に出さない（code_review_2026-10-19f §2）
 
     @State private var expanded = false
 
@@ -32,7 +33,7 @@ struct NetaPickRow: View {
                     if session.activeNetas.isEmpty {
                         Text("——まだ、ネタは無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)
                     } else {
-                        ForEach(session.activeNetas) { neta in
+                        ForEach(session.activeNetas.filter { $0.id != excludeID }) { neta in
                             candidateRow(neta)
                         }
                     }
