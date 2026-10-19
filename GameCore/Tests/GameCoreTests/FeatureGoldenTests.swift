@@ -113,4 +113,118 @@ final class FeatureGoldenTests: XCTestCase {
         }
         print("FeatureGolden: \(scripts.count) scripts, \(checked) values compared")
     }
+    // MARK: 拡張台本（10/19）：ネタの補正・飽き・書く/ライブの伸び／追加の札・テレビ慣れ（期待値は gen_golden_features.py の ext）
+
+    private func loadExt() throws -> [String: Any] {
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Resources/golden_features.json")
+        let root = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        return try XCTUnwrap(root["ext"] as? [String: Any])
+    }
+    private func num(_ v: Any?) -> Double { (v as! NSNumber).doubleValue }
+    private func mkNeta(_ id: Int, _ d: [String: Any]) -> Neta {
+        var n = Neta(id: id, name: "n\(id)", kata: .王道しゃべくり, lengthFit: [.中尺], bornYear: 1)
+        n.polish = num(d["comp"]); n.buzz = num(d["buzz"]); n.tiredYears = (d["tired"] as! NSNumber).intValue
+        return n
+    }
+
+    func testNetaBonusGolden() throws {
+        let cases = try XCTUnwrap(try loadExt()["neta_bonus"] as? [[String: Any]])
+        let config = GameConfig()
+        XCTAssertGreaterThanOrEqual(cases.count, 30)
+        for (i, c) in cases.enumerated() {
+            var s = GameState(config: config)
+            let kind = c["kind"] as! String
+            if kind == "bonus" {
+                s.netas = [mkNeta(1, c)]; s.selectedNetaID = 1
+                let got = GameEngine.netaScoreBonus(s, isFinal: false, config: config)
+                XCTAssertEqual(got, num(c["value"]), accuracy: 1e-9, "[bonus case\(i)] \(c)")
+            } else {
+                let ds = c["netas"] as! [[String: Any]]
+                s.netas = ds.enumerated().map { mkNeta($0.offset + 1, $0.element) }
+                if let p = c["pick"] as? NSNumber { s.selectedNetaID = p.intValue + 1 }
+                if let q = c["second"] as? NSNumber { s.selectedNetaID2 = q.intValue + 1 }
+                let got = GameEngine.netaScoreBonus(s, isFinal: true, config: config)
+                XCTAssertEqual(got, num(c["value"]), accuracy: 1e-9, "[final case\(i)] \(c)")
+            }
+        }
+    }
+
+    func testNetaGrowGolden() throws {
+        let scripts = try XCTUnwrap(try loadExt()["neta_grow"] as? [[String: Any]])
+        let config = GameConfig()
+        let places: [String: Training] = ["喫茶店で書く": .喫茶店で書く, "ファミレスで書く": .ファミレスで書く]
+        for sc in scripts {
+            let name = sc["name"] as! String
+            var s = GameState(config: config)
+            for (k, v) in sc["init"] as! [String: Any] {
+                switch k {
+                case "sense": s.センス = num(v)
+                case "idea": s.発想 = num(v)
+                case "expr": s.表現 = num(v)
+                case "chara": s.華 = num(v)
+                default: XCTFail("unknown init \(k)")
+                }
+            }
+            var r = WeekRunner(state: s, year: 1, config: config, rng: SplitMix64(seed: 1))
+            for (i, st) in (sc["steps"] as! [[String: Any]]).enumerated() {
+                let tr = st["train"] as! String
+                let idx = (st["idx"] as! NSNumber).intValue
+                if st["ev"] as! String == "new" {
+                    _ = r.applyNetaCreate(kata: .王道しゃべくり, lengthFit: [.中尺], name: "n")
+                } else if tr == "ネタ見せ会" || tr == "フリーライブ" {
+                    r.applyNetaLive(id: r.state.netas[idx].id, hard: tr == "ネタ見せ会")
+                } else if tr == "ネタ作り" {
+                    r.applyNetaRevise(id: r.state.netas[idx].id)
+                } else {
+                    r.applyNetaRevise(id: r.state.netas[idx].id, gain: config.netaPlaceGain[places[tr]!])
+                }
+                let tag = "[\(name) step\(i) \(tr)]"
+                let pol = (st["polish"] as! [NSNumber]).map { $0.doubleValue }
+                let buz = (st["buzz"] as! [NSNumber]).map { $0.doubleValue }
+                XCTAssertEqual(r.state.netas.count, pol.count, "\(tag) count")
+                for (j, n) in r.state.netas.enumerated() where j < pol.count {
+                    XCTAssertEqual(n.polish, pol[j], accuracy: 1e-9, "\(tag) polish[\(j)]")
+                    XCTAssertEqual(n.buzz, buz[j], accuracy: 1e-9, "\(tag) buzz[\(j)]")
+                }
+            }
+        }
+    }
+
+    func testExtraOffersGolden() throws {
+        let cases = try XCTUnwrap(try loadExt()["offers"] as? [String: Any])["extra"] as! [[String: Any]]
+        let config = GameConfig()
+        XCTAssertGreaterThanOrEqual(cases.count, 100)
+        for (i, c) in cases.enumerated() {
+            let first = try XCTUnwrap(config.offersNamed.first { $0.name == (c["first"] as! String) })
+            let seed = try XCTUnwrap(UInt64(c["seed"] as! String))
+            let got = GameEngine.extraOffers(first: first, fame: num(c["fame"]), seed: seed,
+                                             year: (c["year"] as! NSNumber).intValue, week: (c["week"] as! NSNumber).intValue, config: config)
+            let tag = "[extra case\(i) \(c["first"]!) fame\(c["fame"]!) seed\(c["seed"]!)]"
+            XCTAssertEqual(got.map { $0.name }, c["names"] as! [String], tag)
+            XCTAssertEqual(got.map { Double($0.income) }, (c["income"] as! [NSNumber]).map { $0.doubleValue }, tag)
+            XCTAssertEqual(got.map { $0.fame }, (c["gfame"] as! [NSNumber]).map { $0.doubleValue }, tag)
+            XCTAssertEqual(got.map { $0.stamina }, (c["stam"] as! [NSNumber]).map { $0.doubleValue }, tag)
+        }
+    }
+
+    func testOfferFatigueGolden() throws {
+        let cases = try XCTUnwrap(try loadExt()["offers"] as? [String: Any])["fatigue"] as! [[String: Any]]
+        let config = GameConfig()
+        for c in cases {
+            let name = c["name"] as! String
+            let spec = try XCTUnwrap(config.offersNamed.first { $0.name == (c["offer"] as! String) })
+            var s = GameState(config: config)
+            s.fame = num(c["fame0"]); s.money = 1000
+            for (i, st) in (c["steps"] as! [[String: Any]]).enumerated() {
+                GameEngine.applyOffer(spec, to: &s, config: config, atWeek: (st["wk"] as! NSNumber).intValue)
+                let tag = "[\(name) step\(i)]"
+                XCTAssertEqual(Double(s.money), num(st["money"]), accuracy: 1e-9, "\(tag) money")
+                XCTAssertEqual(s.fame, num(st["fame"]), accuracy: 1e-9, "\(tag) fame")
+                XCTAssertEqual(s.stamina, num(st["stamina"]), accuracy: 1e-9, "\(tag) stamina")
+                XCTAssertEqual(s.センス, num(st["sense"]), accuracy: 1e-9, "\(tag) sense")
+                XCTAssertEqual(s.表現, num(st["expr"]), accuracy: 1e-9, "\(tag) expr")
+                XCTAssertEqual(s.offerWeeks ?? [], (st["weeks"] as! [NSNumber]).map { $0.intValue }, "\(tag) offerWeeks")
+            }
+        }
+    }
 }

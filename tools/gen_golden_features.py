@@ -62,6 +62,98 @@ def run(name, init, ops):
         steps.append(dict(op=op, state=snap(s), value=val))
     return dict(name=name, init=init, steps=steps)
 
+# ---------------------------------------------------------------------------------------------
+# 拡張台本（10/19）：ネタの補正・飽き・書く/ライブの伸び（NETA_V2＝アプリと同じ式）／追加の札・テレビ慣れ。乱数なし（追加の札は
+# シード→ハッシュのみで本編の乱数は消費しない決定論）。Python の関数をそのまま呼ぶ。生成器内でだけ NETA_V2 を立て、終わったら戻す。
+# ---------------------------------------------------------------------------------------------
+def _mk_neta(d):
+    return dict(comp=float(d["comp"]), buzz=float(d["buzz"]), fresh=0.0, used=set(), tired=int(d.get("tired", 0)))
+
+def neta_bonus_cases():
+    out = []
+    # 補正＝(完成度-50)×0.04＋(手応え-50)×0.02 を±5で頭打ち、飽き1段ごとに-1
+    for comp, buzz in ((30, 0), (50, 50), (80, 60), (100, 100), (0, 0), (60, 40), (100, 0), (0, 100)):
+        for tired in (0, 1, 2, 3):
+            n = _mk_neta(dict(comp=comp, buzz=buzz, tired=tired))
+            out.append(dict(kind="bonus", comp=float(comp), buzz=float(buzz), tired=tired, value=float(C._neta_bonus(n, "x"))))
+    # 決勝：1本目はボットと同じく補正最大を選ぶ／2本目は残りの完成度最大。2本目が無い・60未満は-3
+    sets = [
+        [], [dict(comp=70, buzz=50)],
+        [dict(comp=70, buzz=50), dict(comp=59.9, buzz=0)],
+        [dict(comp=70, buzz=50), dict(comp=60, buzz=0)],
+        [dict(comp=40, buzz=20), dict(comp=90, buzz=80, tired=2)],
+        [dict(comp=90, buzz=80, tired=2), dict(comp=75, buzz=10, tired=1), dict(comp=65, buzz=90)],
+        [dict(comp=100, buzz=100), dict(comp=100, buzz=100, tired=1)],
+    ]
+    for sp in sets:
+        s = B.S(); s.netas = [_mk_neta(x) for x in sp]
+        adj = C._neta_line_adj(s, "x", None, final=True)
+        pick = next((i for i, n in enumerate(s.netas) if n.get("used_y")), None)
+        second = None
+        if pick is not None:
+            others = [i for i in range(len(s.netas)) if i != pick]
+            if others: second = max(others, key=lambda i: s.netas[i]["comp"])
+        out.append(dict(kind="final", netas=[dict(comp=float(x["comp"]), buzz=float(x["buzz"]), tired=int(x.get("tired", 0))) for x in sp],
+                        pick=pick, second=second, value=float(-adj)))
+    return out
+
+def neta_grow_scripts():
+    """書く場所ごとの完成度の伸び（新規2本→最低完成度に上乗せ・100で頭打ち）と、ネタ見せ会/フリーライブの手応え・完成度の伸び"""
+    out = []
+    trains = ["ネタ作り", "喫茶店で書く", "ファミレスで書く", "ネタ作り", "喫茶店で書く", "ファミレスで書く"]
+    trains += ["ネタ見せ会", "フリーライブ", "ネタ見せ会", "フリーライブ", "フリーライブ"] + ["ファミレスで書く", "ネタ見せ会"] * 8
+    for name, init in (("grow_default", {}), ("grow_strong", dict(sense=60.0, idea=55.0, expr=50.0, chara=45.0))):
+        s = B.S()
+        for k, v in init.items(): setattr(s, k, v)
+        s.netas = []
+        steps = []
+        for tr in trains:
+            before = [dict(n) for n in s.netas]
+            C._neta_on_train(s, tr)
+            if len(s.netas) > len(before): idx = len(s.netas) - 1; ev = "new"
+            else:
+                diff = [i for i, (a, b) in enumerate(zip(before, s.netas)) if a["comp"] != b["comp"] or a["buzz"] != b["buzz"]]
+                ev = "touch"
+                idx = diff[0] if diff else min(range(len(s.netas)), key=lambda i: before[i]["comp"])   # 100頭打ちで変化なしの週
+            steps.append(dict(train=tr, idx=idx, ev=ev, polish=[n["comp"] for n in s.netas], buzz=[n["buzz"] for n in s.netas]))
+        out.append(dict(name=name, init=init, steps=steps))
+    return out
+
+def offer_scripts():
+    out = {"extra": [], "fatigue": []}
+    seeds = [1, 12345, 2**40 + 7, 2**63 + 12345, 0xFFFFFFFFFFFFFFF0]
+    for first in ("ひな壇", "ラジオ", "ロケ", "営業"):
+        for fame in (0.0, 29.9, 30.0, 54.9, 55.0, 99.0):
+            for seed in seeds:
+                for (y, w) in ((1, 5), (3, 48)):
+                    got = C.extra_offers(seed, y, w, fame, first)
+                    out["extra"].append(dict(seed=str(seed), year=y, week=w, fame=fame, first=first,
+                                             names=[o["name"] for o in got],
+                                             income=[float(o["income"]) for o in got], gfame=[float(o["fame"]) for o in got],
+                                             stam=[float(o["stam"]) for o in got]))
+    # テレビ慣れ：直近6週に4回受けた次から、受けるたびに センス・表現 -0.5。窓（今週-受けた週<6）の境目と所持金・知名度の加算
+    seqs = {"dense": [1, 2, 3, 4, 5, 6, 7], "window_edge": [1, 2, 3, 4, 10, 11, 12, 13, 14], "sparse": [1, 7, 13, 19, 25, 31]}
+    for nm, wks in seqs.items():
+        for fame0 in (0.0, 50.0):
+            for sp in B.OFFERS_NAMED:
+                s = B.S(); s.fame = fame0; s.money = 1000
+                steps = []
+                for wk in wks:
+                    s._wk = wk
+                    B.do_offer(s, sp)
+                    steps.append(dict(wk=wk, money=float(s.money), fame=float(s.fame), stamina=float(s.stamina),
+                                      sense=float(s.sense), expr=float(s.expr), weeks=list(s.offer_weeks)))
+                out["fatigue"].append(dict(name=f"{nm}_f{int(fame0)}_{sp['name']}", fame0=fame0, offer=sp["name"], steps=steps))
+    return out
+
+def ext_main():
+    saved = (C.NETA_V2,)
+    C.NETA_V2 = True
+    try:
+        return dict(neta_bonus=neta_bonus_cases(), neta_grow=neta_grow_scripts(), offers=offer_scripts())
+    finally:
+        C.NETA_V2, = saved
+
 def main():
     S = []
     # 1-3 部屋ごと×家で休む（完全休養・気分転換・相方と過ごす）
@@ -137,8 +229,9 @@ def main():
     S.append(run("skills_learn", dict(), ops))
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(dict(version=1, scripts=S), ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"wrote {OUT} ({len(S)} scripts, {sum(len(x['steps']) for x in S)} steps)")
+    ext = ext_main()
+    OUT.write_text(json.dumps(dict(version=2, scripts=S, ext=ext), ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"wrote {OUT} ({len(S)} scripts, {sum(len(x['steps']) for x in S)} steps; ext: {len(ext['neta_bonus'])} neta cases, {len(ext['neta_grow'])} grow, {len(ext['offers']['extra'])} extra, {len(ext['offers']['fatigue'])} fatigue)")
 
 if __name__ == "__main__":
     main()
