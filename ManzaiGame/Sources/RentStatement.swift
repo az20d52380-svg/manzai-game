@@ -125,15 +125,19 @@ struct RentStatementView: View {
             for _ in statement.lines {
                 withAnimation(.easeOut(duration: 0.15)) { shownRows += 1 }
                 try? await Task.sleep(nanoseconds: step)
+                if Task.isCancelled { return }   // タップで閉じた後に音・振動・onDone が後から走らない（code_review_2026-10-19b §1-1）
             }
             withAnimation(.easeOut(duration: 0.15)) { showTotal = true }
             try? await Task.sleep(nanoseconds: 250_000_000)
+            if Task.isCancelled { return }
             Sound.play(.money)
             withAnimation(.easeOut(duration: 0.45)) { money = Double(statement.moneyAfter) }
             try? await Task.sleep(nanoseconds: 500_000_000)
+            if Task.isCancelled { return }
             withAnimation { settled = true }
             if shortfallMode { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
             try? await Task.sleep(nanoseconds: 1_000_000_000)
+            if Task.isCancelled { return }
             onDone()
         }
     }

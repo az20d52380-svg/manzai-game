@@ -236,6 +236,7 @@ struct QualifierNoticeView: View {
                 if passed { Sound.play(.tap) }
                 try? await Task.sleep(nanoseconds: passed ? 800_000_000 : 1_400_000_000)
             }
+            if Task.isCancelled { return }   // 閉じた後に成功音が鳴らない（code_review_2026-10-19b §1-3）
             if passed { Sound.play(.success) }
         }
     }
