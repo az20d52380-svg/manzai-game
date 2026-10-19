@@ -521,6 +521,7 @@ struct FinalsEntranceDoors: View {
 
 /// 番組のエンディング（§1 場面12）。優勝組・最終決戦の3組・本日の出場組を見せて「放送はここまで」。タップ／スキップで即閉じる。
 struct FinalsBroadcastEnding: View {
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
     let winnerName: String
     let champion: Bool
     let spectator: Bool
@@ -585,8 +586,10 @@ struct FinalsBroadcastEnding: View {
                 step = i   // se_applause_hall（余韻の拍手・最初の1回）
             }
             try? await Task.sleep(nanoseconds: UInt64((short ? 0.7 : 1.8) * 1_000_000_000))
+            if Task.isCancelled || voiceOver { return }   // VoiceOver 中は自動で閉じない（スキップ／タップで閉じる・a11y_check_1019）
             finish()
         }
+        .accessibilityAction { finish() }
     }
     private func finish() { guard !done else { return }; done = true; onDone() }
 }

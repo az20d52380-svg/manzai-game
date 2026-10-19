@@ -65,6 +65,12 @@ struct QualifierNoticeView: View {
         }
         .onAppear { start() }
         .onDisappear { task?.cancel() }
+        .onChange(of: scanned) { _, on in   // 一覧の結果を VoiceOver にも伝える（a11y_check_1019）
+            if on { UIAccessibility.post(notification: .announcement, argument: passed ? "通過者の中に、\(combiName)の名前がある。" : "通過者の中に、\(combiName)の名前は無い。") }
+        }
+        .onChange(of: msgs) { _, n in
+            if n >= 3, n - 3 < resultLines.count { UIAccessibility.post(notification: .announcement, argument: "\(partnerName)：\(resultLines[n - 3])") }
+        }
     }
 
     // MARK: ロック画面＋通知

@@ -47,6 +47,7 @@ struct RentStatement: Equatable {
 /// 支払い画面。約2秒で自動で閉じる。タップで即閉じ（早送り）。
 struct RentStatementView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
     let statement: RentStatement
     let onDone: () -> Void
 
@@ -117,6 +118,7 @@ struct RentStatementView: View {
             .onTapGesture { onDone() }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityAction { onDone() }   // ダブルタップで閉じる
         .accessibilityLabel(statement.paid ? "月末の支払い。合計\(statement.total)円。今月も払えた。"
                             : "月末の支払い。合計\(statement.total)円。\(statement.shortfall)円足りない。")
         .task {
@@ -137,7 +139,7 @@ struct RentStatementView: View {
             withAnimation { settled = true }
             if shortfallMode { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
             try? await Task.sleep(nanoseconds: 1_000_000_000)
-            if Task.isCancelled { return }
+            if Task.isCancelled || voiceOver { return }   // VoiceOver 中は自動で閉じない＝読み終えてから閉じる（a11y_check_1019）
             onDone()
         }
     }
