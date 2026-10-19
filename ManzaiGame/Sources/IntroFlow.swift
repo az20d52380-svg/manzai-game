@@ -493,6 +493,8 @@ struct NameEntryView: View {
     @State private var myName = ""
     @State private var partnerName = ""
     @State private var inkWet = false
+    @State private var decided = false   // 「結成する！」の二度押しで onDecide が2回走らない（code_review_2026-10-19e §2）
+    private var nameBlank: Bool { name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }   // 空白だけは未入力と同じ扱い（§1）
     @FocusState private var focused: Bool
 
     private static let candidates = ["なんば亭", "ぽんぽこ座", "ドラ焼き兄弟", "三時のおやつ", "ひだまり劇場",
@@ -581,7 +583,7 @@ struct NameEntryView: View {
                         Spacer()
                         ZStack {
                             Rectangle().stroke(YoseColor.kiDark, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-                            if name.isEmpty {
+                            if nameBlank {
                                 Text("結成印").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi.opacity(0.6))
                             } else {
                                 YoseHankoStamp(text: "結成", isSquare: true, angle: -7)
@@ -589,7 +591,7 @@ struct NameEntryView: View {
                             }
                         }
                         .frame(width: 72, height: 72)
-                        .animation(Theme.Motion.appearQuick, value: name.isEmpty)
+                        .animation(Theme.Motion.appearQuick, value: nameBlank)
                     }
                     .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 14)
                 }
@@ -599,7 +601,7 @@ struct NameEntryView: View {
                 .padding(.top, 8)
                 Spacer(minLength: 0)
                 // 書類（結成届）に名前を書いたら、いちばん下の主ボタンで出す＝視線が上から下へ流れる
-                if name.isEmpty {
+                if nameBlank {
                     Text("名前を書くと「結成する！」が押せます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.shu)
                 }
                 Button(action: decide) {
@@ -607,7 +609,7 @@ struct NameEntryView: View {
                         .frame(maxWidth: .infinity, minHeight: 56)
                 }
                 .buttonStyle(YoseButtonStyle(.primary))
-                .disabled(name.isEmpty)
+                .disabled(nameBlank)
                 .padding(.horizontal, YoseMetrics.screenMargin)
                 .padding(.bottom, 16)
             }
@@ -635,8 +637,10 @@ struct NameEntryView: View {
     }
 
     private func decide() {
+        guard !decided else { return }
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
+        decided = true
         withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName)) }
