@@ -894,6 +894,7 @@ final class GameSession {
 
     /// S3結果画面の「次へ」。結果を閉じて次週へ進める
     func acknowledgeResult() {
+        guard pendingResult != nil else { return }   // 最後のページの二度タップで週が2つ進まない（呼び手はすべて結果を見せている時だけ・code_review_2026-10-19c §2-2／19d）
         pendingResult = nil
         phase = runner.begin()
         pump()
