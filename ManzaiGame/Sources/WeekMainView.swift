@@ -929,6 +929,9 @@ struct WeekMainView: View {
             case .ネタを書く:
                 if gated { return "" }   // 理由は「出張中/休演」テープ1枚で言う（二重の文字を出さない）
                 if let n = session.selectedNeta { return "\(session.activeNetas.count)本 ・ 勝負ネタ「\(n.name)」" }
+                #if DEBUG
+                if ProcessInfo.processInfo.environment["MZ_DEDUP"] == "sub", session.activeNetas.isEmpty { return "0本" }   // キュー111 の見本：ボタンの小さい字の方を短く
+                #endif
                 return session.activeNetas.isEmpty ? "まだネタがない。まず一本" : "\(session.activeNetas.count)本 書いた"
             case .練習: return gated ? "" : "合わせ・舞台 ほか"
             case .バイト: return "お金を稼ぐ"   // 6枚とも2段（名前＋一言）に揃える（監査 r4 04）
