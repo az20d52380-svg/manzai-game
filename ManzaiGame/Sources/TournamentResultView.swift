@@ -591,7 +591,7 @@ enum ClimaxData {
         ClimaxPage(speaker: "谷口", text: "……決勝、見ていくか？"),
         ClimaxPage(speaker: "俺", text: "見よう。来年、あそこに立つために。"),
         ClimaxPage(speaker: nil, text: "決勝会場。立ち見の列の後ろ。"),
-        ClimaxPage(speaker: "谷口", text: "優勝したとこ、ほんまにすごかったな"),
+        ClimaxPage(speaker: "谷口", text: "優勝したとこ、本当にすごかったな"),
         ClimaxPage(speaker: "俺", text: "ああ。しばらく声が出なかった"),
         ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
         ClimaxPage(speaker: "谷口", text: "悔しいな。来年は、絶対あっち側に立とな"),

@@ -150,16 +150,16 @@ struct S6bView: View {
         [
             ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。",   // 字幕どおりの場所の絵（code_review_2026-10-19m §1-3・時間帯は「終電なくなった」から夜）
                              talk: [Advice(name: "俺", text: "終電なくなった。今日はここで寝る"),
-                                    Advice(name: "谷口", text: "ええよ。押し入れに毛布ある")],
+                                    Advice(name: "谷口", text: "いいよ。押し入れに毛布がある")],
                              backdrop: .init(.apartment, .night)),
             ReminiscenceCard(caption: "大会の帰り。夜の電車。",
-                             talk: [Advice(name: "谷口", text: "終電、間に合うてよかったな"),
+                             talk: [Advice(name: "谷口", text: "終電、間に合ってよかったな"),
                                     Advice(name: "俺", text: "ああ。来年も、また出よう")],
                              backdrop: .init(.train, .night)),
             ReminiscenceCard(caption: "いつものファミレス。同じ席。",   // 推定: 時間帯の記述なし→夕
-                             talk: [Advice(name: "谷口", text: "いつもの、ドリンクバーでええ？"),
+                             talk: [Advice(name: "谷口", text: "いつもの、ドリンクバーでいい？"),
                                     Advice(name: "俺", text: "うん。今日は長くなりそうだし"),
-                                    Advice(name: "谷口", text: "ほな、二つ頼むわ")],
+                                    Advice(name: "谷口", text: "じゃあ、二つ頼むよ")],
                              backdrop: .init(.famires, .evening)),
         ]
     }

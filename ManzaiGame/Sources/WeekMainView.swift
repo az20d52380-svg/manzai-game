@@ -1474,7 +1474,7 @@ struct WeekMainView: View {
         youthNoticeYear = session.year
         Task {
             if toast != nil { try? await Task.sleep(nanoseconds: 4_500_000_000) }
-            showToast("谷口「若手限定の大会に出られるのは、今年が最後や」")
+            showToast("谷口「若手限定の大会に出られるのは、今年が最後だ」")
         }
     }
 

@@ -16,7 +16,7 @@ public struct YoseChampionCelebrationView: View {
     public let duoName: String             // 例：「満月ロケット」
     public let prizeAmountYen: Int         // 例：10_000_000
     public let partnerName: String         // 例：「谷口」
-    public let partnerLine: String         // 例：「……なあ、腹減ったな。焼肉、特上頼んでええか？」
+    public let partnerLine: String         // 例：「……なあ、腹減ったな。焼肉、特上頼んでいいか？」
     public let mcName: String              // 例：「司会・鳴海」
     public let mcComment: String           // 例：「見事4票獲得！今年の漫才日本一は『満月ロケット』です！！」
     public let onFinish: () -> Void
@@ -46,7 +46,7 @@ public struct YoseChampionCelebrationView: View {
         duoName: String = "あなたのコンビ",
         prizeAmountYen: Int = 10_000_000,
         partnerName: String = "相方",
-        partnerLine: String = "「やったな。ここまで、ほんまによう頑張った」",
+        partnerLine: String = "「やったな。ここまで、本当によく頑張った」",
         mcName: String = "司会・鳴海",
         mcComment: String = "「決まりました！！今夜、幾千組の頂点に立ったのは——この2人です！」",
         onFinish: @escaping () -> Void = {}

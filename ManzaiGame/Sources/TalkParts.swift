@@ -55,7 +55,7 @@ struct TalkBubble: View {
     let advice: Advice
     var showCue: Bool = false
     var faceSize: CGFloat = 54
-    /// 決め台詞（回想の「コンビ、組まへんか」など1回きりの台詞）は title 段より大きい22pt
+    /// 決め台詞（回想の「コンビ、組まないか」など1回きりの台詞）は title 段より大きい22pt
     var large: Bool = false
 
     private var name: String { advice.name ?? "俺" }

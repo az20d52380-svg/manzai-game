@@ -187,7 +187,7 @@ struct RootView: View {
                 case "living": session.debugFreeWeeks(3, .rest(.完全休養))
                 case "forecast": session.debugFreeWeeks(1, .rest(.完全休養))   // 第2週＝再来週が月末の支払い
                 case "partner": session.debugFreeWeeks(6, .rest(.完全休養))
-                case "injury": session.debugFreeWeeks(2, .job(.キツい))   // 体力30超〜50未満＝「無理すると倒れるで」
+                case "injury": session.debugFreeWeeks(2, .job(.キツい))   // 体力30超〜50未満＝「無理すると倒れるぞ」
                 default: break
                 }
             }
