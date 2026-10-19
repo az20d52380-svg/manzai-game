@@ -114,7 +114,7 @@ struct YosePassCelebrationView: View {
                     Rectangle().fill(YoseColor.shu).frame(width: 6, height: 6)
                     Text(roundName).font(YoseFont.gothic(14, weight: .heavy)).tracking(1.5).foregroundStyle(YoseColor.kinBright)
                     Spacer()
-                    Text("合否判定").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                    Text("合否判定").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 7).padding(.vertical, 3).background(YoseColor.enji)
                         .overlay(Rectangle().stroke(YoseColor.kinBright, lineWidth: 1))
                 }
@@ -159,7 +159,7 @@ struct YosePassCelebrationView: View {
                 ctx.stroke(p, with: .color(YoseColor.enji.opacity(0.35)), lineWidth: 1)
             }
             VStack(spacing: 2) {
-                Text("◆ 漫 才 の 頂 、 こ こ に 決 ま る ◆").font(YoseFont.gothic(10, weight: .heavy)).tracking(1.5)
+                Text("◆ 漫 才 の 頂 、 こ こ に 決 ま る ◆").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
                     .foregroundStyle(YoseColor.kin.opacity(revealed ? 1 : 0.25))
                 ZStack {
                     Text("判 定 中").font(YoseFont.mincho(30)).tracking(10).foregroundStyle(YoseColor.kin.opacity(0.35))
@@ -213,7 +213,7 @@ struct YosePassCelebrationView: View {
         ZStack(alignment: .topTrailing) {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    Text("審査員講評").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
+                    Text("審査員講評").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 6).padding(.vertical, 2).background(YoseColor.enji)
                     Text(judgeName.replacingOccurrences(of: "審査員・", with: "")).font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.sumi)
                 }
@@ -236,13 +236,13 @@ struct YosePassCelebrationView: View {
     private var bonusPlate: some View {
         HStack(spacing: 10) {
             if fameGain > 0 {
-                Text("通過").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
+                Text("通過").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                     .padding(.horizontal, 6).padding(.vertical, 2).background(YoseColor.shu)
                 Text("知名度 +\(fameGain)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
             }
             Spacer()
             Text(nextStep).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-            Image(systemName: "play.fill").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.kinBright).accessibilityHidden(true)
+            Image(systemName: "play.fill").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.kinBright).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(YoseColor.kuroUrushi)
@@ -391,7 +391,7 @@ struct YoseBigSuccessCutIn: View {
             HStack(spacing: 8) {
                 ForEach(Array(gains.enumerated()), id: \.offset) { i, g in
                     VStack(spacing: 1) {
-                        Text(g.0).font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.sumi.opacity(0.7))
+                        Text(g.0).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.sumi.opacity(0.7))
                         Text("+\(g.1)").font(YoseFont.number(21, weight: .black)).foregroundStyle(YoseColor.shu)
                     }
                     .frame(width: 54, height: 50)
