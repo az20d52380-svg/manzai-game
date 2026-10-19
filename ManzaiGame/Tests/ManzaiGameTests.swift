@@ -564,14 +564,16 @@ final class SessionGuardTests20261019: IsolatedStoreTestCase {
     func testApplyEventChoiceTwiceAppliesOnce() throws {
         let s = GameSession(startState: GameSession.debugMaxedState())
         var found = false
+        let enc = JSONEncoder()
+        enc.outputFormatting = .sortedKeys   // itemCounts（辞書）の並びが呼ぶたびに変わり、同じ中身でも別バイトになる
         for kind in ChoiceEventKind.allCases {
             s.debugForceEvent(kind)
             guard let c = s.availableEventChoices().first else { continue }
-            let before = try JSONEncoder().encode(s.state)
+            let before = try enc.encode(s.state)
             s.applyEventChoice(c.id)
-            let once = try JSONEncoder().encode(s.state)
+            let once = try enc.encode(s.state)
             s.applyEventChoice(c.id)
-            let twice = try JSONEncoder().encode(s.state)
+            let twice = try enc.encode(s.state)
             XCTAssertEqual(once, twice, "\(kind) の二度呼びで効果が二重にかかった")
             if once != before { found = true; break }   // 状態が動く選択肢で一度確かめれば足りる
         }
