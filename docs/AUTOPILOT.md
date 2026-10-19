@@ -47,6 +47,7 @@
 60. [済 7363d83（案D を正典に）・10/19 測り直し q60_q62_remeasure_v1] 案と実測済（q60_q62_proposal_v0・推奨：飽きD）→オーナー回答待ち→規律A。【オーナー決定 2026-10-15・エフォート最大・規律A】ネタ補正：「同じネタを毎年やってたら飽きられる」＝年をまたいで同じネタを使い回すと客の反応（buzz）が落ちる（同じ年の中では減らない）。手順：sim_career の NETA_V2 に「前の年に大会で使ったネタは年初に buzz −D」を入れ D を実測（帯：やり込み初回優勝 3〜5%目安・neta_bonus_remeasure）→ GameCore（年初処理・Codable は Optional）→ golden 確認 → swift test。決めた D はオーナーに報告。
 46. [ ] （保留：判断待ち「名前の生成器 §8 の未決4点」が先）ライバル4組の演出（rival_scripts_v0 57項・UIへの差し込みのみ）。役柄テンプレ化（オーナー確定③/A2）で名前は生成器が出すため
 
+109. [ ] （10/19 深夜の目視で発見・表示だけ）決勝進出者の発表画面（MZ_UI=finalist_announce）の軽微な直し：「司会」ラベルとマイクが吹き出しに近い／「あなたのコンビ」ラベルが左端ぎりぎり／灰色シルエットが暗背景で沈む／下半分が空白（docs/visual_check_finalist_announce_v0.md）。仮デザインなので Gemini 往復（キュー72）とまとめてもよい。
 
 108. [済 10/19 次のコミット：gen_golden12.py＋check_golden_sync で12週も突き合わせ] （道具・10/19 自走で発見）GoldenTests.swift の12週台本と CareerGoldenTests の表は「Python を回して貼り替え」の手順＝生成器が表を Swift の形で書き出して check_golden_sync で12週分も突き合わせるようにする（貼り間違いを防ぐ・式は変えない）。
 
