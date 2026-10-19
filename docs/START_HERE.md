@@ -353,6 +353,7 @@ cd GameCore && swift test
 - `uiux_not_ai_research_v0.md` — 「AIっぽくない」UI/UX リサーチ v0（2026-10-15）
 - `uiux_sweep_1019_v0.md` — UI/UX 点検 2026-10-19（iPhone 17・MZ_UI フック・縮小スクショ）
 - `small_font_inventory_v0.md` — 12pt 未満の文字の棚卸し（TypeStep の決まり違反・約95か所・画面ごとに直す）
+- `visual_check_after_12pt_v0.md` — 12pt 直し後の回帰目視（未見の画面すべて・崩れ0件）
 - `visual_check_q90_q106_v0.md` — 目視 q-candidate（q90 部屋選び / q106 特技）v0
 - `yearend_monolog_finals_v1.md` — 年末の独白：頂グランプリの決勝に立った年（v1・2026-10-16）
 - `milestone_events_drafts_v0.md` — 空白の週に置く小さな節目イベントの下書き12本（キュー78・fun_audit §3-3 案1・未採用＝オーナー確認待ち）v0・2026-10-19
