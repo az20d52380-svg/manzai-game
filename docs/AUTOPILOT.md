@@ -13,6 +13,7 @@
 - テスト：GameCore の未カバーの所に swift test を足す（式・golden は触らない）
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
+- 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
 - 実測の決まり（2026-10-19 追記）：アプリの帯に近いのは EVENTS_APP=True（イベントの抽選をアプリと同じに）。既定にするかはオーナー判断待ち＝それまでは帯を測る時に False/True を併記する。
