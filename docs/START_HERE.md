@@ -361,6 +361,7 @@ cd GameCore && swift test
 - `event_gate_parity_v0.md`・`events_app_parity_v0.md` — 選択肢イベントの発火のアプリ⇄Python 一致点検と、アプリと同じ抽選（EVENTS_APP）での帯の比較 v0・2026-10-19
 - `milestone_events_drafts_v1.md`・`milestone_events_redteam_v0.md` — 節目イベントの下書きの書き直し v1 とレッドチーム採点・2026-10-19
 - `diag_fame_mult_v0.md` — 知名度「その他の伸び」×0.6 と ×1.0 で決勝到達が逆転する理由の診断（10/19）
+- `visual_check_finalist_announce_v0.md`・`visual_check_qual_notice_v0.md` — 10/19 自走の目視（決勝進出者の発表の直し・予選の知らせ4状態）
 - `events_app_ablation_v0.md` — EVENTS_APP のどのイベントが決勝到達・所持金を押し上げたか（確定発火の効果がほぼ全部）
 - `measure_harness_fix_v0.md` — 測定道具の修理：並列実行の上書き漏れ（maxtasksperchild=1＋chunksize=1）
 - `q60_q62_remeasure_v1.md` — キュー60×62 の測り直し（全部入り×ネタ込み×EVENTS_APP False/True）
