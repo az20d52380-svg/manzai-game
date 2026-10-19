@@ -95,12 +95,12 @@ struct FinalistAnnounceView: View {
             }
             .padding(.horizontal, 16)
             Color.black.opacity(dim ? 0.45 : 0).ignoresSafeArea().allowsHitTesting(false)   // 最後の2組の溜め
-            VStack { HStack { Spacer()
+            if stage != .after { VStack { HStack { Spacer()   // 終わりの画面では消す（「つづける」と並んで迷う・playtest_v12 §2-1）
                 Button { skipAll() } label: {
                     Text("飛ばす").font(YoseFont.gothic(13)).foregroundStyle(YoseColor.ginNezu).padding(.horizontal, 12).padding(.vertical, 6)
                         .overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.5)))
                 }
-            }.padding(.top, 54).padding(.trailing, 16); Spacer() }
+            }.padding(.top, 54).padding(.trailing, 16); Spacer() }.transition(.opacity) }
         }
         .contentShape(Rectangle())
         .onTapGesture { tapAdvance() }

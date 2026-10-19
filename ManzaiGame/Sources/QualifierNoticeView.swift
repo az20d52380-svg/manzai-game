@@ -45,12 +45,12 @@ struct QualifierNoticeView: View {
             case .list: listScreen.transition(.opacity)
             case .chat: chatScreen.transition(.opacity)
             }
-            VStack { HStack { Spacer()
+            if !atEnd { VStack { HStack { Spacer()
                 Button { finish() } label: {
                     Text("飛ばす").font(YoseFont.gothic(13)).foregroundStyle(YoseColor.ginNezu).padding(.horizontal, 12).padding(.vertical, 6)
                         .overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.5)))
                 }
-            }.padding(.top, 54).padding(.trailing, 16); Spacer() }
+            }.padding(.top, 54).padding(.trailing, 16); Spacer() }.transition(.opacity) }
         }
         .onAppear { start() }
         .onDisappear { task?.cancel() }
@@ -224,5 +224,7 @@ struct QualifierNoticeView: View {
         }
     }
 
+    /// 終わりのボタン（つづける／閉じる）が出た後は「飛ばす」を消す（playtest_v12 §2-4：押す意味が無い）
+    private var atEnd: Bool { (stage == .list && scanned) || (stage == .chat && chosen && msgs >= 2 + resultLines.count) }
     private func finish() { task?.cancel(); onFinish() }
 }
