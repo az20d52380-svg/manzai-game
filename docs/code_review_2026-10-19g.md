@@ -39,3 +39,7 @@
 - **CalendarView**：`categoryLog` は辞書なので範囲外なし。トーストの消去タイマーはトークンで保護済み（閉じた後は状態を書くだけ）。月ラベルの式（第1週=4月）は正しい。
 - **AbilityUpView**：`previewAllocation` と `allocate` は同じ `pourStep` の再生。特技の「覚える」は先に割り振りを確定してから `learnSkill`（見積もり `pv` と確定後の状態が一致）。`confirm()` は先に `taps` を空にしており二度押し対策済み。ヒントの `.task` は閉じた後に `@State` を書くだけ。DEBUG の `MZ_SKILL`／`MZ_TAPS` は `#if DEBUG` の中。
 - **TournamentEntryView**：東京開催の `money >= entryFee` は WeekRunner.swift:186 と一致。`OneTimeHint.suppressedForDebug` はリリースでは `false` 固定。
+
+## 直した所（10/19 自走・ビルド OK）
+- §1 回数券の年の大阪の入口（ボタン1つ・エントリー費のみ・体力温存）。§2 香盤はこれからの週だけ出場条件で塗る（目視：1年目の推薦制の週が塗られない）。§3 札名を「今年の出場」に。
+- §4（手で選んだ未披露ネタが入口で最高完成度に戻る）は作りの判断 → キュー114 にまとめる。
