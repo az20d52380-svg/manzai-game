@@ -435,7 +435,9 @@ struct AbilityUpView: View {
 
     /// 確定＝押した段をそのまま反映（RNG非消費）。何も押していなければ閉じるだけ
     private func confirm() {
-        if !taps.isEmpty { _ = session.allocate(taps) }
+        let t = taps
+        taps.removeAll()   // 先に空にする＝「確定」の二度押しで同じ割り振りを2回かけない（code_review_2026-10-19e §4）
+        if !t.isEmpty { _ = session.allocate(t) }
         onClose()
     }
 }

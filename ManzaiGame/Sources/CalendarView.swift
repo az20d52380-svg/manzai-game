@@ -13,6 +13,7 @@ struct CalendarView: View {
 
     @State private var breathe = false
     @State private var toast: String?
+    @State private var toastToken = UUID()   // 後のトーストを先の消去タイマーが早く消さない（code_review_2026-10-19e §3）
 
     private var cal: CalendarConfig { session.config.calendar }
     private var weeks: Int { session.config.weeks }
@@ -158,8 +159,10 @@ struct CalendarView: View {
     }
 
     private func showToast(_ t: String) {
+        let token = UUID()
+        toastToken = token
         withAnimation(.easeOut(duration: 0.2)) { toast = t }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { withAnimation { toast = nil } }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation { toast = nil } } }
     }
 
     private func isTournamentWeek(_ w: Int) -> Bool {
