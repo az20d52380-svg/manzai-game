@@ -242,16 +242,14 @@ public struct EventStageBackdropView: View {
 
     public var body: some View {
         GeometryReader { geo in
-            let h = geo.size.height, w = geo.size.width
-            if h > 0, h < Self.designHeight {
-                let s = h / Self.designHeight
-                scene
-                    .frame(width: w / s, height: Self.designHeight)
-                    .scaleEffect(s, anchor: .topLeading)
-                    .frame(width: w, height: h, alignment: .topLeading)
-            } else {
-                scene
-            }
+            // if/else で分けると、イベント札の高さが 320→196 に動く時に描き方が切り替わってフェードが挟まる＝常に同じ形で描く（220以上は s=1）
+            let h = max(geo.size.height, 1), w = geo.size.width
+            let drawH = max(h, Self.designHeight)
+            let s = h / drawH
+            scene
+                .frame(width: w / s, height: drawH)
+                .scaleEffect(s, anchor: .topLeading)
+                .frame(width: w, height: h, alignment: .topLeading)
         }
         .clipped()
         .accessibilityHidden(true)
