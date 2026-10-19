@@ -508,11 +508,6 @@ final class GameSession {
     /// ツーカー帯初到達(一発・キャリア1回)。複数回呼ばれても保留が有れば再評価しない。
     private func evaluateChoiceEventFire() {
         guard pendingChoiceEvent == nil else { return }
-        if inviteWaiting {   // §102 週末に来た先輩の誘い（別乱数・runner.pendingInvite が出所）。次の自由週の頭で札を出す
-            inviteWaiting = false
-            pendingChoiceEvent = .weekendInvite
-            return
-        }
         #if DEBUG
         // 目視用：MZ_NOEVENT=1 で選択イベントを発火させない（MZ_UI=grown が起動直後にイベントで隠れた）。本導線は不変
         if ProcessInfo.processInfo.environment["MZ_NOEVENT"] != nil { return }
@@ -546,6 +541,11 @@ final class GameSession {
             // 0012: 金欠×相性8+×今後3週に大会なし（3週凍結が直近大会の追い込みを食い潰さない・proposalレッドA-1）。
             pendingChoiceEvent = .taniguchiShortJob
             didFireTaniguchiJob = true
+        } else if inviteWaiting {
+            // §102 週末に来た先輩の誘い（別乱数・runner.pendingInvite が出所）。確定発火が無い自由週の頭で札を出す。
+            // 確定発火（前夜・負けた後・通過の分かれ道等）はその週を逃すと二度と出ないので先に出し、誘いは次の空いた週へ送る（code_review_2026-10-19b §1）
+            inviteWaiting = false
+            pendingChoiceEvent = .weekendInvite
         } else {
             // 確定発火なし → 週次ランダム抽選（UI乱数・golden非干渉）。1週1回だけ引く。
             rollWeeklyRandomEvent()
