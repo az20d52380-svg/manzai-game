@@ -46,7 +46,7 @@ enum YoseFont {
     static let buttonMain = gothic(16, weight: .heavy)
     static let dialogueBody = mincho(15)
     static let bodyBold = gothic(14, weight: .bold)
-    static let captionBold = gothic(11, weight: .bold)
+    static let captionBold = gothic(12, weight: .bold)
     static let numHero = number(32, weight: .black)
     static let numLarge = number(22, weight: .heavy)
     static let numMedium = number(16, weight: .heavy)

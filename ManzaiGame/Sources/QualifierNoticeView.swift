@@ -87,7 +87,7 @@ struct QualifierNoticeView: View {
                         RoundedRectangle(cornerRadius: 9).fill(YoseColor.kin).frame(width: 38, height: 38)
                             .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))
                         VStack(alignment: .leading, spacing: 3) {
-                            HStack { Text(isChat ? partnerName : "頂GP公式").font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(11)).foregroundStyle(.white.opacity(0.5)) }
+                            HStack { Text(isChat ? partnerName : "頂GP公式").font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.5)) }
                             Text(isChat ? "見た？" : "【結果発表】\(roundLabel)の通過者を掲載しました").font(YoseFont.gothic(13)).multilineTextAlignment(.leading)
                         }.foregroundStyle(.white)
                     }
@@ -161,7 +161,7 @@ struct QualifierNoticeView: View {
                     bubble(false, "見た？")
                     if msgs >= 1 { bubble(false, "まだ開いてへん。こわいわ") }
                     if chosen { bubble(true, chosenText) }
-                    if chosen && msgs >= 3 { Text("既読").font(YoseFont.gothic(10)).foregroundStyle(.white.opacity(0.4)).frame(maxWidth: .infinity, alignment: .trailing) }
+                    if chosen && msgs >= 3 { Text("既読").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.4)).frame(maxWidth: .infinity, alignment: .trailing) }
                     ForEach(0..<max(0, msgs - 2), id: \.self) { i in
                         if i < resultLines.count { bubble(false, resultLines[i]) }
                     }

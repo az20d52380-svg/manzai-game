@@ -112,7 +112,7 @@ struct RadarChart: View {
                 let v = pt(i, f)
                 ctx.fill(Path(ellipseIn: CGRect(x: v.x - 3, y: v.y - 3, width: 6, height: 6)), with: .color(axes[i].color))
                 let lp = pt(i, 1.16)
-                ctx.draw(Text(axes[i].name).font(.maru(10)).foregroundStyle(axes[i].color),
+                ctx.draw(Text(axes[i].name).font(.maru(12)).foregroundStyle(axes[i].color),
                          at: lp, anchor: .center)
             }
         }

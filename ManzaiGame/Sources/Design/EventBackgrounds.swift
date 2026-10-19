@@ -497,7 +497,7 @@ private struct StationSign: View {
             Rectangle().fill(YoseColor.shu).frame(height: 10)
             VStack(spacing: 1) {
                 Text("なんば").font(YoseFont.gothic(16, weight: .black)).foregroundStyle(YoseColor.sumi)
-                Text("◀ 大国町　　心斎橋 ▶").font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Text("◀ 大国町　　心斎橋 ▶").font(YoseFont.gothic(9, weight: .bold)).foregroundStyle(YoseColor.haiSumi)   // 12pt 未満の例外：絵の中の看板・部屋番号（12だと絵が壊れる）
             }
             .padding(.bottom, 12)
         }
@@ -1506,7 +1506,7 @@ private struct StreetBackdrop: View {
                     Rectangle().fill(Color(hex: 0x6E7B80)).frame(width: 52, height: groundY - 130)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                         .overlay(alignment: .top) {
-                            Text("101").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.sumi)
+                            Text("101").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.sumi)   // 12pt 未満の例外：絵の中の看板・部屋番号（12だと絵が壊れる）
                                 .padding(.horizontal, 3).background(YoseColor.washi).padding(.top, 5)
                         }
                         .position(x: w * 0.40, y: 130 + (groundY - 130) / 2)

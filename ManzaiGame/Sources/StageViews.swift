@@ -77,7 +77,7 @@ struct WaveformView: View {
                 HStack {
                     Text("ツカミ"); Spacer(); Text("中盤"); Spacer(); Text("オチ")
                 }
-                .font(.maru(10)).foregroundStyle(.white.opacity(0.45)).offset(y: 14)
+                .font(.maru(12)).foregroundStyle(.white.opacity(0.45)).offset(y: 14)
             }
         }
         .padding(compact ? 2 : 12)
@@ -329,7 +329,7 @@ struct StagePreludeView: View {
                 VStack(spacing: 2) {
                     Text("本番へ ▶").font(YoseFont.gothic(18, weight: .heavy))
                     if let note = goNote {
-                        Text(note).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                        Text(note).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
                             .padding(.horizontal, 8).padding(.vertical, 2)
                             .background(YoseColor.kuroUrushi.opacity(0.45))
                     }

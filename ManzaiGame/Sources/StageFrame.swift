@@ -402,7 +402,7 @@ struct StageLowerBand: View {
     var body: some View {
         HStack(spacing: 10) {
             Rectangle().fill(YoseColor.shu).frame(width: 6)
-            if let left { Text(left).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin) }
+            if let left { Text(left).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin) }
             Text(name).font(YoseFont.mincho(16)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.7)
             Spacer(minLength: 6)
             Text(tag).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)

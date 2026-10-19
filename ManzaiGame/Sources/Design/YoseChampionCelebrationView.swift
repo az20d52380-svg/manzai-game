@@ -187,7 +187,7 @@ public struct YoseChampionCelebrationView: View {
                     .fill(Color.white)
                     .frame(width: 6, height: 6)
                 Text("LIVE 生放送")
-                    .font(YoseFont.gothic(11, weight: .black))
+                    .font(YoseFont.gothic(12, weight: .black))
                     .foregroundStyle(YoseColor.kinari)
             }
             .padding(.horizontal, 7)
@@ -203,7 +203,7 @@ public struct YoseChampionCelebrationView: View {
             Spacer()
 
             Text(isCompleted ? "タップで進む ▶" : "スキップ ▶▶")
-                .font(YoseFont.gothic(11, weight: .heavy))
+                .font(YoseFont.gothic(12, weight: .heavy))
                 .foregroundStyle(YoseColor.sumi)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -278,7 +278,7 @@ public struct YoseChampionCelebrationView: View {
                     if phase >= 4 {
                         VStack(spacing: 4) {
                             Text("CHAMPION DUO")
-                                .font(YoseFont.gothic(10, weight: .black))
+                                .font(YoseFont.gothic(12, weight: .black))
                                 .tracking(2.0)
                                 .foregroundStyle(YoseColor.shu)
 

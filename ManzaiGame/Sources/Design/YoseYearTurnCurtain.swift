@@ -300,7 +300,7 @@ struct YoseYearTurnCurtainView: View {
     private func metricKifuda(label: String, valueText: String, accent: Color) -> some View {
         VStack(spacing: 4) {
             Text(label)
-                .font(YoseFont.gothic(11, weight: .bold))
+                .font(YoseFont.gothic(12, weight: .bold))
                 .foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(1)
 

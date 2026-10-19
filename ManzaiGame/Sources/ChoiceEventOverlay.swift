@@ -135,7 +135,7 @@ struct ChoiceEventOverlay: View {
                 HStack(spacing: 6) {
                     Text(backdrop.place.label).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(width: 1, height: 10)
-                    Text(backdrop.time.label).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.enji)
+                    Text(backdrop.time.label).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.enji)
                 }
                 .padding(.horizontal, 10).padding(.vertical, 5)
                 .yoseKifuda()

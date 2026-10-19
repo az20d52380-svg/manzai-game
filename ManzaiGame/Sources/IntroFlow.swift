@@ -584,7 +584,7 @@ struct NameEntryView: View {
                         ZStack {
                             Rectangle().stroke(YoseColor.kiDark, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
                             if nameBlank {
-                                Text("結成印").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi.opacity(0.6))
+                                Text("結成印").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi.opacity(0.6))
                             } else {
                                 YoseHankoStamp(text: "結成", isSquare: true, angle: -7)
                                     .transition(.scale(scale: 1.6).combined(with: .opacity))
@@ -626,7 +626,7 @@ struct NameEntryView: View {
                 .font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                 .multilineTextAlignment(.trailing).lineLimit(1).minimumScaleFactor(0.6)
                 .submitLabel(.done).tint(YoseColor.shu)
-            Text("（6字まで）").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            Text("（6字まで）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
         .frame(maxWidth: 190)
     }
