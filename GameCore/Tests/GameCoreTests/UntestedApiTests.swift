@@ -76,9 +76,10 @@ final class UntestedApiTests: XCTestCase {
 
     func testBuyFailureLeavesStateUnchanged() throws {
         var s = GameState(config: cfg); s.money = 2_999
-        let snap = try JSONEncoder().encode(s)
+        let enc = JSONEncoder(); enc.outputFormatting = .sortedKeys   // 辞書（itemCounts）の並びでバイトが揺れないように
+        let snap = try enc.encode(s)
         XCTAssertFalse(GameEngine.buy(.栄養ドリンク, to: &s, config: cfg))      // 3,000円に1円足りない
-        XCTAssertEqual(try JSONEncoder().encode(s), snap)
+        XCTAssertEqual(try enc.encode(s), snap)
     }
 
     func testDrinkStaminaClampsAt100AndStillCostsMoney() {
