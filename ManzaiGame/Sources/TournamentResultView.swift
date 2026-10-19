@@ -570,7 +570,7 @@ struct ClimaxPage {
 enum ClimaxData {
     /// 準決敗退（週45）の前段。敗者復活の枠が残る＝ここでは泣かせず軽く受ける。
     static let semifinalLoss: [ClimaxPage] = [
-        ClimaxPage(speaker: nil, text: "準決勝で落ちた。でも、敗者復活に回れる。\n決勝の日の昼が勝負だ。今夜のうちに稽古を組み直そう。"),
+        ClimaxPage(speaker: nil, text: "準決勝で落ちた。でも、敗者復活に回れる。\n決勝の日の昼が勝負だ。今夜は早く寝よう。"),
     ]
     /// 敗者復活の敗北（週47・決勝と同日の昼）＝1年版デモの実質最終戦。話者ごと1ページ（本文はFable doc02・Skill採点済）。
     static let revivalLoss: [ClimaxPage] = [
@@ -579,7 +579,7 @@ enum ClimaxData {
         ClimaxPage(speaker: "俺", text: "見よう。来年、あそこに立つために。"),
         ClimaxPage(speaker: nil, text: "決勝会場。立ち見の列の後ろ。"),
         ClimaxPage(speaker: "谷口", text: "優勝したとこ、ほんまにすごかったな"),
-        ClimaxPage(speaker: "俺", text: "ああ。今の俺たちとは、まだ差がある"),
+        ClimaxPage(speaker: "俺", text: "ああ。しばらく声が出なかった"),
         ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
         ClimaxPage(speaker: "谷口", text: "悔しいな。来年は、絶対あっち側に立とな"),
         ClimaxPage(speaker: "俺", text: "ああ。何か食って帰ろう"),

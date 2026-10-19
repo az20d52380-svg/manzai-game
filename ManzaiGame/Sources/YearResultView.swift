@@ -367,7 +367,7 @@ struct YearResultView: View {
     private static let loseLeaning: Set<String> = [
         "今年は、思ったほど勝ち進めなかった。谷口が落ち込んでないか心配だ。",
         "今年は、予選で落ちる日が多かった。落ちた大会の名前を、手帳に書き出しておこう。",
-        "一年目は悔しい。来年は稽古を増やそう。",
+        "一年目が終わった。年明けは少し休んで、また動こう。",
     ]
     /// 勝ちが負けより多い年は、負けを語る独白を外す（外すと空になる時は元のまま）。
     static func filterByRecord(_ pool: [String], wins: Int, losses: Int) -> [String] {
@@ -400,7 +400,7 @@ struct YearResultView: View {
     ]
     private static let yeFirstStall = [  // 停滞年（1年目）
         "最初の一年が終わった。春からのことを、谷口と相談しよう。",
-        "一年目は悔しい。来年は稽古を増やそう。",
+        "一年目が終わった。年明けは少し休んで、また動こう。",
     ]
     private static let yeBankrupt = [  // 貧乏年
         "家賃が、もう払えない。今夜のうちに荷物をまとめよう。",
