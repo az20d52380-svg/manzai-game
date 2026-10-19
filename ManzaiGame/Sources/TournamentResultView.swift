@@ -582,7 +582,7 @@ enum ClimaxData {
         ClimaxPage(speaker: "俺", text: "ああ。今の俺たちとは、まだ差がある"),
         ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
         ClimaxPage(speaker: "谷口", text: "悔しいな。来年は、絶対あっち側に立とな"),
-        ClimaxPage(speaker: "俺", text: "ああ。次の合わせ、いつにする"),
+        ClimaxPage(speaker: "俺", text: "ああ。何か食って帰ろう"),
     ]
     /// 本番結果から山場ページを選ぶ（発火A=準決敗退／発火B=敗者復活敗退）。該当なし=空＝通常の「次へ」。
     static func pages(for r: StageResult) -> [ClimaxPage] {
