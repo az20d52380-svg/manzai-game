@@ -337,9 +337,9 @@ def _app_apply(s, k):
     elif k == "lasttrain":
         if s.stamina >= 50: _ev_add(s, "mental", -2); _ev_add(s, "stamina", -5); _ev_add(s, weaker(), 2)
         else: _ev_add(s, "stamina", 5); _ev_add(s, "mental", 1); _ev_add(s, "compat", 1); s.money -= 800
-    elif k == "wrote":      # B の『ネタ合わせ効果UP（netaBoost）』は sim に無い＝未モデル
+    elif k == "wrote":      # B は『ネタ書きの伸び ×NETA_BOOST_MULT を NETA_BOOST_WEEKS 週』（GameConfig.netaBoostMult/Weeks・WeekRunner.applyNetaRevise）
         if s.stamina >= 50: _ev_add(s, "idea", 2); _ev_add(s, "expr", 1); _ev_add(s, "stamina", -15)
-        else: _ev_add(s, "stamina", 5); _ev_add(s, "mental", 1)
+        else: _ev_add(s, "stamina", 5); _ev_add(s, "mental", 1); s._neta_boost = max(getattr(s, "_neta_boost", 0), NETA_BOOST_WEEKS)
     elif k == "photo":
         if s.stamina >= 50:
             _ev_add(s, "chara", 2); _ev_add(s, "fame", 1); s.money += 10_000; _ev_add(s, "stamina", -5)
@@ -370,6 +370,7 @@ def _app_apply(s, k):
 
 def _app_week_event(s, year, week, stages, gp_alive):
     """GameSession.evaluateChoiceEventFire（週頭＝行動前の状態）。確定発火→無ければ rollWeeklyRandomEvent"""
+    if getattr(s, "_neta_boost", 0) > 0: s._neta_boost -= 1   # GameSession.tickNetaBoost（週が明けて1減る＝自由週ごと）
     a = _app_state(s)
     nxt = stages[0] if stages else None
     ahead = (nxt[0] - week) if nxt else 99
@@ -488,6 +489,7 @@ NETA_V2            = False
 NETA_SKIP_NEGATIVE = False  # 補正がマイナスのネタは掛けない（ネタなし＝0）。「粗いネタを選ぶと損」の差を測る
 V2_NEW_POLISH = 30.0
 V2_REVISE     = 8.0
+NETA_BOOST_MULT, NETA_BOOST_WEEKS = 1.6, 2   # GameConfig.netaBoostMult / netaBoostWeeks（0016 書けた一本 B・events_parity_check_1019）
 V2_LIVE_SHOW  = 12.0
 V2_LIVE_FREE  = 6.0
 V2_ALPHA      = 0.4
@@ -580,7 +582,8 @@ def _neta_on_train(s, arg):
                 s.netas[s.netas.index(max(tired, key=lambda x: x["tired"]))] = _neta_new()
             else:
                 n = min(s.netas, key=lambda x: x["comp"])
-                n["comp"] = min(100.0, n["comp"] + V2_WRITE_GAIN[arg])
+                boost = NETA_BOOST_MULT if getattr(s, "_neta_boost", 0) > 0 else 1.0   # 0016 書けた一本 B（アプリ版イベントのみ立つ＝既定では恒等）
+                n["comp"] = min(100.0, n["comp"] + V2_WRITE_GAIN[arg] * boost)
         elif arg == "ネタ見せ会" and s.netas:
             _v2_live(s, max(s.netas, key=lambda x: x["comp"]), V2_LIVE_SHOW)
         elif arg == "フリーライブ" and s.netas:

@@ -76,3 +76,6 @@
 | yearEndLive | A センス+1/知名度+1/所持金-5000/体力-10（gate 5000）、B 相性+1/メンタル+1/所持金-1500（gate 1500）。週33〜36・どちらか選べる時だけ | yearend：同値・所持金1500未満は出さない | 一致 |
 
 （regularEmployment は上記のとおり両方無効。）効果の加減算＋clamp（能力0〜120・メンタル0〜100・相性0〜20・体力/知名度0〜100・所持金は無制限）は `_ev_add` と `applyEventEffect` で一致。
+
+## 直した所（10/19 自走）
+- 不一致1件（wrote B のネタ合わせ効果UP）を実測機に入れた：NETA_BOOST_MULT=1.6・NETA_BOOST_WEEKS=2、自由週の頭で1減る（GameSession.tickNetaBoost と同じ並び）。EVENTS_APP=True の時だけ立つ＝既定と golden は不変（check_golden_sync 一致）。n=100 で動作確認。
