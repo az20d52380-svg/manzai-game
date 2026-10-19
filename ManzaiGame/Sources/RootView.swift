@@ -59,6 +59,7 @@ struct RootView: View {
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "intro": ReminiscencePlayer(cards: IntroFlowView.cards, onComplete: {}) // 導入の回想カード目視
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
+            case "finals": FinalsPresentationView(session: session)        // 決勝演出の目視（.taskで優勝の夜を用意・審査員点の和と合計の確認用）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
             case "intro_title", "intro_name": IntroFlowView { _, _, _ in }          // タイトル／名前決めの目視
@@ -132,7 +133,7 @@ struct RootView: View {
             if ui == "calendar", session.week <= 1 {
                 session.debugAdvanceToFirstResult()   // 数週バイトで進める（過去週の色ドット＋大会週の目視）
             }
-            if ui == "ending", session.week <= 1 {
+            if ui == "ending" || ui == "finals", session.week <= 1 {
                 forceChampion()   // S6b目視: 優勝データ（outcome.champion＋高残金）を用意
             }
             if ui == "shop", session.week <= 1, let m = ProcessInfo.processInfo.environment["MZ_MONEY"].flatMap(Int.init) {
