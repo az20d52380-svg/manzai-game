@@ -21,3 +21,23 @@ iPhone 17・縮小1枚ずつ。見た点＝はみ出し・…切れ・重なり�
 
 ## 親の追記（10/20）
 - stamina/forecast/partner/living/injury は `MZ_UI=<名前>` ではなく **`MZ_UI=weekhint MZ_WH=<名前>`** のフック（MZ_UI=stamina 等は存在しない case＝ふつうの第1週が出る）。正しいフックで stamina（第5週・体力0・休演の判）と partner（第7週）を目視＝崩れなし。DEBUG の「優勝／無双」の札が実力の札に少し重なるのは DEBUG 版だけ。
+
+## 大きい文字（xxL）
+
+content_size を large（開始前の値）→ extra-extra-large で確認し、**最後に large へ戻した（確認済）**。
+
+| 画面 | フック | 結果 | 所見 | コミット |
+|---|---|---|---|---|
+| 週の画面 | MZ_UI=weekhint MZ_WH=living | ○ | 相方の台詞欄が2行に折れるが読める | - |
+| 能力アップ | allocate | ○ | 崩れなし | - |
+| コンビ手帳 | notebook | ○ | 崩れなし | - |
+| 年間香盤 | calendar | ○ | 崩れなし | - |
+| 設定 | settings | ○ | 崩れなし | - |
+| 年末総決算 | yearend | ○ | 崩れなし | - |
+| ネタ選び | netaentry | 直した | ネタ名が「商店…」と切れた→名前を上の段へ（xxL以上だけ） | 本ファイルと同じ push の「ネタ名」コミット |
+| 買い物 | shop | ○ | 崩れなし | - |
+| 大会の結果 | MZ_SMOKE=1 | 直した | 帯の「第12週」が「第1…」と切れた→minimumScaleFactor(0.85) | 「大会結果の帯」コミット |
+| エンディング年表 | MZ_UI=ending MZ_S6B_PHASE=nenpyou | ○ | 崩れなし | - |
+| 選択イベント | MZ_UI=event MZ_EV=0014 | ○ | 崩れなし | - |
+
+メモ：大会結果の「①客席の反応／②結果発表／③講評」の段表示の右端は DEBUG チップ（優勝・無双）が重なって見えるだけ（本編には出ない）。
