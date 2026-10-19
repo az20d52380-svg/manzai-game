@@ -35,3 +35,8 @@
 - DEBUG 限定：これら5ファイルの `environment[`／`MZ_*` は全て `#if DEBUG` の中（`debugForceFanReport` は #else で false）。
 - お店：`canBuy` が disabled を決め、`buyItem` が false なら `purchases` に積まない。連打で二重に買えるのは在庫・金額が `canBuy` と `applyItemPurchase` の両方で検査されるので不可。「戻す」は起点（visitStart）から買い直すだけで、引っ越しは起点の部屋も更新済み（19 §1-1）。買い物は即セーブしないが、RootView の scenePhase(.background) 保存が拾う。
 - NotebookView：改名は `renameNeta` が空文字を弾く。型変更・しまう・勝負ネタは各々 saveNow 済み。戦績の通算賞金は log（その年の分・万）＋yearHistory の円÷10000 で単位が揃い、年が明けると log は空になる（GameSession.swift:987）ので二重計上しない（年の途中で ノートは開けるが、yearDone〜次年開始の間は開けない）。
+
+## 直した所（10/19 自走・ビルド OK）
+- 二度タップで週が2つ進む：acknowledgeResult に `guard pendingResult != nil`（呼び手は TournamentResultView 3か所・決勝の負け版・自動送り＝全て結果を見せている時だけと RootView で確認）。
+- 決勝のネタ場面の大歓声・年末の判のファンファーレ：.task に移して、送ったら取り消す。
+- 目視・タップ確認は未（年末画面のフックが無い・定期の回はタップ不可）。
