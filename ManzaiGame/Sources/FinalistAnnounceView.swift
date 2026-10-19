@@ -165,7 +165,6 @@ struct FinalistAnnounceView: View {
 
     private func silhouette(_ s: Slot) -> some View {
         let on = stage == .read && isCalled(s)
-        let done = stage == .after || (stage == .read && !dim && false)
         let lost = stage == .after && !s.finalist
         return VStack(spacing: 3) {
             ZStack(alignment: .top) {

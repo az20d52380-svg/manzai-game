@@ -276,7 +276,7 @@ struct WeekMainView: View {
             burstSkip = false
             defer { if gen == burstGen { burstHold = false } }
             // 後始末（一言を消す等）は世代が一致する時だけ＝旧週のタスクの続きが次週の Beat1 を消さない（X4-04）。
-            func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
+            @MainActor func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
             guard session.lastDeltaWeek == session.week else { resultName = nil; clearBeat(); return }
             let chips = makeBurstChips()
             let line = makeResultLine()
@@ -911,7 +911,7 @@ struct WeekMainView: View {
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .frame(width: 22, height: 22).background(Self.expColor(c), in: Circle())
-                        .accessibilityLabel("\(c)")
+                        .accessibilityLabel(String(describing: c))
                     Text("\(ExpDisplay.value(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }

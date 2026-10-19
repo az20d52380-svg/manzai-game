@@ -232,7 +232,7 @@ struct AbilityUpView: View {
                 .frame(maxWidth: .infinity).padding(.vertical, 4)
                 .background(up ? YoseColor.kinBright.opacity(0.3) : (raised ? YoseColor.kinBright.opacity(0.12) : Color.clear))
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(a) \(title) \(g) \(v)\(up ? "、ランクアップ" : "")")
+                .accessibilityLabel(String("\(a) \(title) \(g) \(v)\(up ? "、ランクアップ" : "")"))
             }
         }
     }
@@ -246,7 +246,7 @@ struct AbilityUpView: View {
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .frame(width: 22, height: 22).background(wa(c), in: Circle())
-                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel("\(c)")
+                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel(String(describing: c))
                     Text("\(Self.points(pv[currency: c]))").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
@@ -310,7 +310,7 @@ struct AbilityUpView: View {
                     .overlay(Rectangle().stroke(canUndo ? YoseColor.sumi : YoseColor.haiSumi, lineWidth: canUndo ? 2 : 1))
             }
             .buttonStyle(PressableStyle(enabled: canUndo)).disabled(!canUndo)
-            .accessibilityLabel("\(a)を元に戻す")
+            .accessibilityLabel(String("\(a)を元に戻す"))
             Button { if let n = next?.steps { plusTap(a, steps: n) } } label: {
                 Image(systemName: "plus").font(.system(size: Font.mzScaled(18), weight: .black))
                     .foregroundStyle(canTap ? YoseColor.kinari : YoseColor.disabledText)
@@ -321,7 +321,7 @@ struct AbilityUpView: View {
                     .shadow(color: canTap ? YoseColor.sumi : .clear, radius: 0, y: 2)
             }
             .buttonStyle(PressableStyle(scale: 0.95, enabled: canTap)).disabled(!canTap)
-            .accessibilityLabel("\(a)を上げる")
+            .accessibilityLabel(String("\(a)を上げる"))
             .accessibilityHint(canTap ? "経験点を使って1上げる" : "経験点が足りない")
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 let n = tag.first(where: { $0.0 == c })?.1
