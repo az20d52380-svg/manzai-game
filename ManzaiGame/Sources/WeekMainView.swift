@@ -349,9 +349,9 @@ struct WeekMainView: View {
                         #if DEBUG
                         if ProcessInfo.processInfo.environment["MZ_TVTIRED"] != nil {   // キュー112 の見本：テレビ慣れを状態名で小さく出す（数字・％なし）。本編には出さない
                             HStack(spacing: 6) {
-                                Text("テレビ慣れ").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                                Text("テレビ慣れ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                                     .padding(.horizontal, 6).padding(.vertical, 2).background(YoseColor.shu)
-                                Text(session.offerFatigued ? "続けて受けると、センスと表現が少し鈍る" : "（今は平気）").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                                Text(session.offerFatigued ? "続けて受けると、センスと表現が少し鈍る" : "（今は平気）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
                                 Spacer(minLength: 0)
                             }
                             .padding(.horizontal, 8).padding(.vertical, 4).background(YoseColor.kinari)
@@ -440,7 +440,7 @@ struct WeekMainView: View {
             Button { instant { showCalendar = true } } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
-                        Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)
+                        Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
                             .foregroundStyle(hot ? YoseColor.shu : YoseColor.kin)
                         if m.weeksLeft <= 0 {
                             Text("\(m.name)　今週！")
@@ -465,7 +465,7 @@ struct WeekMainView: View {
                             .background(YoseColor.shu)
                     } else if m.weeksLeft >= 6 && nextMilestone() != nil {
                         Text(lullLine())
-                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.85)).lineLimit(1).minimumScaleFactor(0.85)
+                            .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.85)).lineLimit(1).minimumScaleFactor(0.85)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -547,7 +547,7 @@ struct WeekMainView: View {
         let shown = gainsVisible && session.lastDeltaWeek == session.week ? min(gainFill, fill) : 0
         return VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(name).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                Text(name).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
                     .padding(.horizontal, 4).padding(.vertical, 1)
                     .background(YoseColor.enji.opacity(0.12))
                     .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
@@ -862,7 +862,7 @@ struct WeekMainView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(o.name).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1)
                 Text("+" + Yen.man(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
-                Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .lineLimit(3).fixedSize(horizontal: false, vertical: true)
             }
             .padding(6).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)   // 3枚の背丈をそろえる（ui_audit_1019 §3）
@@ -987,7 +987,7 @@ struct WeekMainView: View {
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
                 if !sub.isEmpty {
-                    Text(sub).font(YoseFont.gothic(11, weight: .bold))
+                    Text(sub).font(YoseFont.gothic(12, weight: .bold))
                         .foregroundStyle(gated ? YoseColor.shu : ready ? YoseColor.kinText : YoseColor.haiSumi)
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
@@ -1039,14 +1039,14 @@ struct WeekMainView: View {
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
             if case .acceptOffer = v.action {
-                Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
+                Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
             } else if !dashed, !gated {
-                Text(v.desc).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(row ? 1 : 2).fixedSize(horizontal: false, vertical: true)
+                Text(v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(row ? 1 : 2).fixedSize(horizontal: false, vertical: true)
             }
             if gated {
                 Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
             } else if !v.affordable {
-                Text("お金が足りない").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                Text("お金が足りない").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
             }
             if v.isTrain, openCat == .練習, !gated, v.affordable {
                 let gains = ExpCurrency.allCases.map { ($0, ExpDisplay.value(after[currency: $0] - s[currency: $0])) }.filter { $0.1 > 0 }
@@ -1106,7 +1106,7 @@ struct WeekMainView: View {
                         if moneyDelta != 0 {
                             HStack(spacing: 6) {
                                 if moneyDelta > 0 {
-                                    Text("収入").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(Color(hex: 0x7A6218))
+                                    Text("収入").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(Color(hex: 0x7A6218))
                                         .padding(.horizontal, 5).padding(.vertical, 1)
                                         .background(YoseColor.kin.opacity(0.25))
                                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
@@ -1568,7 +1568,7 @@ struct WeekMainView: View {
         } } label: {
             // 条件付きの小カード（オファー/バイト）と同じ顔＝常設6枚の下に破線で並ぶ
             HStack(spacing: 7) {
-                Image(systemName: "forward.end.fill").font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)
+                Image(systemName: "forward.end.fill").font(.system(size: Font.mzScaled(11), weight: .bold)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
                     .frame(width: 26, height: 26)
                     .background(YoseColor.haiSumi)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -1655,7 +1655,7 @@ struct BounceArrow: View {
     @State private var up = false
     var body: some View {
         Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
-            .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)
+            .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)   // 12pt 未満の例外：アイコン記号（文字ではない）
             .offset(y: up ? 2.5 : -1.5)
             .onAppear { guard !reduceMotion else { return }; withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
     }
