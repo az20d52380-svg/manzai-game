@@ -16,6 +16,7 @@ import GameCore
 
 struct WeekMainView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize   // AX の大きさで行動ボタンの副題を2行まで
     @Bindable var session: GameSession
     let offer: OfferSpec?
 
@@ -989,7 +990,7 @@ struct WeekMainView: View {
                 if !sub.isEmpty {
                     Text(sub).font(YoseFont.gothic(12, weight: .bold))
                         .foregroundStyle(gated ? YoseColor.shu : ready ? YoseColor.kinText : YoseColor.haiSumi)
-                        .lineLimit(1).minimumScaleFactor(0.8)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // AX の大きさでは勝負ネタの名前が … で切れた＝2行まで（visual_check_after_12pt_v0 §AX）
                 }
             }
             .frame(maxWidth: .infinity)
