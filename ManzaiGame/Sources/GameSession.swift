@@ -1072,7 +1072,7 @@ final class GameSession {
         var usedFanLines: [String]?       // このキャリアで出した観客の声（旧セーブ＝nil）
         var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
         var weeksWithoutPartner: Int?     // 相方と過ごさない週の連続数（旧セーブ＝nil＝0）
-        var injuryNoticeWeeks: Int? = nil // 体調ダウンの知らせ待ち（旧セーブ＝nil＝0・code_review_2026-10-19c §2-4）
+        var injuryNoticeWeeks: Int?       // 体調ダウンの知らせ待ち（旧セーブ＝nil＝0・code_review_2026-10-19c §2-4）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
