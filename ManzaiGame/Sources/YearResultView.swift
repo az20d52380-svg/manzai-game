@@ -42,7 +42,7 @@ struct YearResultView: View {
             .overlay(alignment: .bottom) {   // まだ下に続く合図（見出しがフッターで切れて見えない）
                 VStack(spacing: 0) {
                     LinearGradient(colors: [YoseColor.kinari.opacity(0), YoseColor.kinari], startPoint: .top, endPoint: .bottom).frame(height: 40)
-                    Text("▼ 下にも続きます").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                    Text("▼ 下にも続きます").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                         .frame(maxWidth: .infinity).padding(.bottom, 3).background(YoseColor.kinari)
                 }
                 .allowsHitTesting(false)
@@ -101,12 +101,12 @@ struct YearResultView: View {
                 let up = from != to
                 let cap = a == .メンタル ? session.config.mentalCap : session.config.abilityCap
                 HStack(spacing: 8) {
-                    Text(String("\(a)".prefix(1))).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(.white)
+                    Text(String("\(a)".prefix(1))).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(.white)
                         .frame(width: 18, height: 18).background(abilityColor(a))
                     Text("\(a)").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                         .frame(width: 54, alignment: .leading).lineLimit(1).minimumScaleFactor(0.7)
                     gradeChip(from, dim: true)
-                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(9))).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(9))).foregroundStyle(YoseColor.shu).accessibilityHidden(true)   // 12pt 未満の例外：三角アイコン（文字ではなく記号）
                     gradeChip(to, dim: !up, up: up)
                     YoseGauge(value: Theme.rankProgress(s[a], cap: cap), total: 1, fill: abilityColor(a), height: 12)
                     Text(up ? "↑" : " ").font(YoseFont.gothic(14, weight: .black)).foregroundStyle(YoseColor.shu).frame(width: 14)
@@ -177,7 +177,7 @@ struct YearResultView: View {
                 .padding(.leading, 14).padding(.trailing, 4)
                 .scaleEffect(stampIn ? 1 : 1.6).opacity(stampIn ? 1 : 0)
             VStack(alignment: .leading, spacing: 3) {
-                Text("\(session.year)年目 ・ 年次リザルト").font(YoseFont.gothic(11, weight: .heavy))
+                Text("\(session.year)年目 ・ 年次リザルト").font(YoseFont.gothic(12, weight: .heavy))
                     .foregroundStyle(passed ? YoseColor.kin : YoseColor.ginNezu)
                 Text(reachSub()).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinari)
                     .lineLimit(2).minimumScaleFactor(0.7).fixedSize(horizontal: false, vertical: true)
@@ -255,7 +255,7 @@ struct YearResultView: View {
                     // 「第43週: GP準々決勝 通過」→ 左に黒漆の週札・右に本文（文言は変えない）
                     if let r = line.range(of: ": ") ?? line.range(of: "：", options: []), line.hasPrefix("第"), line[..<r.lowerBound].hasSuffix("週") {
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(String(line[..<r.lowerBound])).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                            Text(String(line[..<r.lowerBound])).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
                                 .padding(.horizontal, 6).padding(.vertical, 2).frame(minWidth: 48)
                                 .background(YoseColor.kuroUrushi)
                             Text(String(line[r.upperBound...])).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
@@ -269,7 +269,7 @@ struct YearResultView: View {
                 }
             }
             if session.log.count > lines.count {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
-                Text("ほか\(session.log.count - lines.count)大会").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                Text("ほか\(session.log.count - lines.count)大会").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -291,7 +291,7 @@ struct YearResultView: View {
 
     private func total(_ k: String, _ v: Int, yen: Bool, delta: Int? = nil) -> some View {
         VStack(spacing: 3) {
-            Text(k).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.enji)
+            Text(k).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
             CountUpText(value: v, yen: yen)
                 .font(YoseFont.numMedium).foregroundStyle(v < 0 ? YoseColor.shu : YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.6)
