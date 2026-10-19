@@ -364,7 +364,7 @@ cd GameCore && swift test
 - `visual_check_finalist_announce_v0.md`・`visual_check_qual_notice_v0.md` — 10/19 自走の目視（決勝進出者の発表の直し・予選の知らせ4状態）
 - `playtest_v12.md`・`dialogue_score_1019b_v0.md`・`judge_comment_score_v3.md`・`ui_audit_1019_v0.md` — 10/19 朝の自走の点検・採点（直した所は各文書の末尾）
 - `qualifier_list_research_v0.md` — 予選の通過者の知らされ方（一覧の長さ・地区別・発表の場）のリサーチ（キュー110 の材料・10/19）
-- `blank_weeks_measure_v1.md`・`code_review_2026-10-19b.md` — 何も起きない週の実測（3案）・10/18以降の差分のコード点検（10/19）
+- `blank_weeks_measure_v1.md`・`code_review_2026-10-19b.md`・`code_review_2026-10-19c.md` — 何も起きない週の実測（3案）・10/18以降の差分と GameSession/WeekMainView のコード点検（10/19）
 - `events_app_ablation_v0.md` — EVENTS_APP のどのイベントが決勝到達・所持金を押し上げたか（確定発火の効果がほぼ全部）
 - `measure_harness_fix_v0.md` — 測定道具の修理：並列実行の上書き漏れ（maxtasksperchild=1＋chunksize=1）
 - `q60_q62_remeasure_v1.md` — キュー60×62 の測り直し（全部入り×ネタ込み×EVENTS_APP False/True）

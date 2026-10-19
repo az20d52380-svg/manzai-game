@@ -40,3 +40,8 @@
 - 範囲外：`banterBox` は `isEmpty` を先に除く。`offerPick` は `offerChoices.indices.contains` と `runner.chooseOffer` の範囲チェックで守られている。`upcomingStages` の `gpRoundsPassed..<count` は passed が count を超えない限り安全。
 - Task：`perform` の `beatTask` は取り消されても `choose` を一度だけ走らせる設計で、Beat1 中は全面のタップ受けが他のカードを止める。`.task(id: session.week)` 系は `defer` で `burstHold` を必ず下ろす。`presentRent` の取り消し漏れは 19b §1-1 に既出。
 - 週送りの二重実行（カード側）：`actionCard` の `run` は `pulledID == nil`・`!burstHold`・保留なしを見る。`tapOrQueue` の予約実行も `run` の中で再判定される。
+
+## 直した所（10/19 自走・ビルド OK・旧セーブの読み込み確認）
+- §1-1：選択済みの印（choiceApplied）＝その間は保留イベントを保存しない・二度押しでも二重にかけない。
+- §2-3：startNextYear で hasYearStart を戻す。§2-4：injuryNoticeWeeks を保存（Optional）。
+- 未対応：§2-2（「次へ」の二重呼び）＝ acknowledgeResult に `guard pendingResult != nil` を入れると、結果なしで呼ばれる経路があれば進めなくなる恐れ＝タップで通し確認できる回に回す（AUTOPILOT キュー113）。
