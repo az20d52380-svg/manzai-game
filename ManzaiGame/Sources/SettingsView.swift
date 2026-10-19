@@ -110,13 +110,13 @@ struct SettingsView: View {
         }
     }
 
-    /// 最初からやり直す（確認2段・セーブは onQuitRun＝GameSession.abandonRun が消してタイトルへ戻す）
+    /// コンビを解散する＝最初からやり直す（確認1段・セーブは onQuitRun＝GameSession.abandonRun が消してタイトルへ戻す）
     @ViewBuilder
     private func restartBlock(_ onQuitRun: @escaping () -> Void) -> some View {
         Button { restartStep = 1 } label: {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle.fill").font(.system(size: Font.mzScaled(14), weight: .black)).accessibilityHidden(true)
-                Text("最初からやり直す")
+                Text("コンビを解散する")
             }
             .foregroundStyle(YoseColor.shu)
             .frame(maxWidth: .infinity)
@@ -132,7 +132,7 @@ struct SettingsView: View {
                 Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)
                 Text("このキャリア").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
             }
-            Text("※いまのコンビの進行データが初期化されます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            Text("※解散すると、いまのコンビの記録は消えて最初からになります（図鑑・衣装・購入は残ります）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             restartBlock(onQuitRun)
         }
     }
@@ -141,13 +141,12 @@ struct SettingsView: View {
     @ViewBuilder
     private var restartModal: some View {
         if let onQuitRun {
-            YoseModal(title: "キャリアのやり直し",
-                      primaryTitle: restartStep == 1 ? "やり直す" : "記録を消してやり直す",
-                      primaryAction: { if restartStep == 1 { restartStep = 2 } else { onQuitRun() } },
-                      cancelTitle: "もどる", cancelAction: { restartStep = 0 }) {
-                Text(restartStep == 1 ? "最初からやり直しますか？\n今のコンビの記録は消えます。"
-                                      : "本当に消しますか？\nもとには戻せません。")
-                    .font(YoseFont.bodyBold).foregroundStyle(restartStep == 1 ? YoseColor.sumi : YoseColor.shu)
+            YoseModal(title: "コンビを解散する",
+                      primaryTitle: "解散する",
+                      primaryAction: { onQuitRun() },
+                      cancelTitle: "やめる", cancelAction: { restartStep = 0 }) {
+                Text("今のコンビの記録は消えて、最初からになります。\n（エンディング図鑑・衣装・購入は残ります）")
+                    .font(YoseFont.bodyBold).foregroundStyle(YoseColor.shu)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity)
