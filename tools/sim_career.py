@@ -199,7 +199,8 @@ def _ev_add(s, key, amt):
     if not EVENTS_APP:
         return B.add(s, key, amt)
     if key == "compat":
-        s.compat = B.clamp(s.compat + amt, 0, B.COMPAT_CAP)
+        if B.COMPAT_GROWS:   # 相性を育てない設定ではイベントでも動かさない（B.add と同じ・review_today_fixes_1019 §5）
+            s.compat = B.clamp(s.compat + amt, 0, B.COMPAT_CAP)
     elif key in ("stamina", "fame"):
         setattr(s, key, B.clamp(getattr(s, key) + amt, 0, 100))
     else:
