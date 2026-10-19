@@ -13,7 +13,12 @@ struct S6bView: View {
     var finishLabel = "また、幕が上がる ▶"
     var onFinish: () -> Void   // 緞帳→S1顔合わせ（MVPはもう一度＝新周回）
 
-    @State private var phase: Phase = .kougyou
+    @State private var phase: Phase = {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_S6B_PHASE"] == "montage" { return .montage }   // 回想の目視用
+        #endif
+        return .kougyou
+    }()
     private enum Phase { case kougyou, montage, nenpyou, wall }
 
     private var s: GameState { session.state }
@@ -29,7 +34,7 @@ struct S6bView: View {
             switch phase {
             case .kougyou: kougyou.transition(.opacity)
             case .montage:
-                ReminiscencePlayer(cards: montageCards) { advance(.nenpyou) }.transition(.opacity)
+                ReminiscencePlayer(cards: montageCards, title: "これまでの話") { advance(.nenpyou) }   // 既定の「はじまりの話」は導入の題＝エンディングの振り返りには合わない.transition(.opacity)
             case .nenpyou: nenpyou.transition(.opacity)
             case .wall: wall.transition(.opacity)
             }
@@ -138,16 +143,19 @@ struct S6bView: View {
 
     private var montageCards: [ReminiscenceCard] {
         [
-            ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。",
+            ReminiscenceCard(caption: "組んだばかりの頃。谷口の部屋。",   // 字幕どおりの場所の絵（code_review_2026-10-19m §1-3・時間帯は「終電なくなった」から夜）
                              talk: [Advice(name: "俺", text: "終電なくなった。今日はここで寝る"),
-                                    Advice(name: "谷口", text: "ええよ。押し入れに毛布ある")]),
+                                    Advice(name: "谷口", text: "ええよ。押し入れに毛布ある")],
+                             backdrop: .init(.apartment, .night)),
             ReminiscenceCard(caption: "大会の帰り。夜の電車。",
                              talk: [Advice(name: "谷口", text: "終電、間に合うてよかったな"),
-                                    Advice(name: "俺", text: "ああ。来年も、また出よう")]),
-            ReminiscenceCard(caption: "いつものファミレス。同じ席。",
+                                    Advice(name: "俺", text: "ああ。来年も、また出よう")],
+                             backdrop: .init(.train, .night)),
+            ReminiscenceCard(caption: "いつものファミレス。同じ席。",   // 推定: 時間帯の記述なし→夕
                              talk: [Advice(name: "谷口", text: "いつもの、ドリンクバーでええ？"),
                                     Advice(name: "俺", text: "うん。今日は長くなりそうだし"),
-                                    Advice(name: "谷口", text: "ほな、二つ頼むわ")]),
+                                    Advice(name: "谷口", text: "ほな、二つ頼むわ")],
+                             backdrop: .init(.famires, .evening)),
         ]
     }
 
