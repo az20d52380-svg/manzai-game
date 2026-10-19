@@ -38,7 +38,7 @@ final class StoreManager: ObservableObject {
             let list = try await Product.products(for: StoreIDs.all)
             products = Dictionary(uniqueKeysWithValues: list.map { ($0.id, $0) })
         } catch {
-            lastMessage = "商品情報を取得できませんでした"
+            // 画面を開いただけの読み込み失敗では知らせを立てない（オフライン起動で出続けた・code_review_2026-10-19b §2-5）。購入・復元を押した時だけ知らせる
         }
         await updateEntitlements()
     }
@@ -74,6 +74,8 @@ final class StoreManager: ObservableObject {
             await updateEntitlements()
             lastMessage = ownedIDs.isEmpty ? "復元できる購入はありませんでした" : "購入を復元しました"
             return true
+        } catch StoreKitError.userCancelled {
+            return false   // 自分でやめた時は何も出さない
         } catch {
             lastMessage = "復元できませんでした。通信状況を確かめて、もう一度お試しください"
             return false

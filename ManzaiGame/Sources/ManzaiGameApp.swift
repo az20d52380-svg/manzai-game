@@ -7,6 +7,7 @@ import SwiftUI
 struct ManzaiGameApp: App {
     init() {
         FontLoader.registerAll()   // ゲームフォント（M PLUS Rounded 1c）をプロセス登録
+        _ = StoreManager.shared     // 起動時から Transaction.updates を聞く（承認待ち・別端末の購入を取りこぼさない・code_review_2026-10-19b §2-6）
     }
     var body: some Scene {
         WindowGroup {
