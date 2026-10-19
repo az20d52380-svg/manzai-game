@@ -41,3 +41,7 @@
 - https://game.watch.impress.co.jp/docs/kikaku/1593642.html
 - https://yuhikaku.com/articles/-/28402
 注：altema yaruki は直接取得が403、内容は検索要約に基づく。画面の細部（アイコン形状）は未確認なので、確定前に実画面で確認を。
+
+## §5 見本（10/19 自走・DEBUG だけ・本編は不変）
+- `MZ_UI=offer MZ_TVTIRED=1` でオファーの帯の上に「テレビ慣れ｜続けて受けると、センスと表現が少し鈍る」を出す（数字・％なし・状態名＋一文）。docs/tvtired_q112_sample.png。
+- 出すなら：段階（3段の印）にするか、この一文だけにするか。文言は仮。
