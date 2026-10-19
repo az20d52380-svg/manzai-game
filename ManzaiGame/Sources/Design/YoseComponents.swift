@@ -210,7 +210,7 @@ struct YoseHarigamiCard<Content: View>: View {
 }
 
 // MARK: ⑤⑥ タグ・判子
-enum YoseTagStyle { case solidEnji, outlineShu, outlineKin, outlineSumi }
+enum YoseTagStyle { case solidEnji, outlineShu, outlineKin, outlineSumi, outlineHai }
 
 struct YoseTag: View {
     let text: String
