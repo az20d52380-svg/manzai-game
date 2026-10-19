@@ -194,10 +194,11 @@ struct YoseNumberPopModifier<V: Equatable>: ViewModifier {
     var scalePeak: CGFloat = 1.24
 
     @State private var isPopping: Bool = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isPopping ? scalePeak : 1.0)
+            .scaleEffect(isPopping && !reduceMotion ? scalePeak : 1.0)   // 動きを減らす設定では跳ねない（色の点滅だけ・§4）
             .background(
                 RoundedRectangle(cornerRadius: 2)
                     .fill(highlightColor.opacity(isPopping ? 0.38 : 0.0))
@@ -451,6 +452,7 @@ struct YoseAnimatedHanko: View {
     var angle: Double = -6
     var playHapticsAndSound: Bool = true
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var burstTrigger: Int = 0
 
     init(
@@ -480,9 +482,9 @@ struct YoseAnimatedHanko: View {
             .frame(width: 90, height: 90)
 
             YoseHankoStamp(text: text, isSquare: isSquare, angle: angle)
-                .scaleEffect(isStamped ? 1.0 : 2.35)
+                .scaleEffect(isStamped || reduceMotion ? 1.0 : 2.35)   // 動きを減らす設定では拡縮せずに現れる（code_review_2026-10-19k §4）
                 .opacity(isStamped ? 1.0 : 0.0)
-                .animation(.spring(response: 0.22, dampingFraction: 0.54), value: isStamped)
+                .animation(reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.22, dampingFraction: 0.54), value: isStamped)
         }
         .onChange(of: isStamped) { _, stamped in
             if stamped {
