@@ -136,3 +136,4 @@
 ## 直した所（10/19 自走）
 - F1（Swift runCareer を解散で止める）・F2（実測機のイベント効果をアプリに合わせる＝events_app_raw_effect_v0）・F3（Python の療養週は回数券を使わない）。golden 一致・268 green。
 - 残り（F4〜F15）は情報・実害小＝そのまま。
+- 追記（10/19 夕）：F11 直した（c23af64）。F7 は CodableLegacyTests（93c6f4c）で守りができた。F9 はアプリ側で選べなくした（1f660b5・selftest/アプリテストあり）＝コア側の歯止めは未。F6 は王者編を入れる時に。
