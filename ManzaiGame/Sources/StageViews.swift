@@ -178,7 +178,7 @@ struct TournamentEntryView: View {
         VStack(spacing: 14) {
             EntryHeader(tag: spec.osaka ? "大阪遠征" : "エントリー", name: spec.name)
                 .overlay(alignment: .topTrailing) {
-                    HintMarkButton { hint = Self.hintSpec(session.config.calendar) }.padding(.trailing, 6).padding(.top, 4)
+                    HintMarkButton { hint = Self.hintSpec(session.config.calendar) }.padding(.trailing, 8).padding(.top, 60)   // 見出しは画面の上端まで伸びる（ignoresSafeArea）＝上の臙脂の帯52pt の下に置く（4 だと電池の表示に重なった）
                 }
 
             // G4: 大会結果でも同じ2つを同じ大きさで再掲する（大きくしない＝見込みに寄せない・X2-02）
