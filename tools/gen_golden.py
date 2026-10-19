@@ -60,12 +60,13 @@ def year_budget(year):
 class _GoPolicy:
     choose_invite = None   # golden 台本は誘いに「行く」
 
-def run_year(s, year, rng, log=None, gp_seed=False):
+def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line=None, trace=None):
     s.stamina = 100.0
     B.YEAR_GROWTH_CAP = year_budget(year)   # キャリア累計予算（s._ygはリセットしない）
     gp_stage = 1 if gp_seed else 0   # シード組（前年準々以上）は2回戦から
     gp_entry_paid = False
-    gp_alive, finalist, revival = True, False, False
+    gp_alive, finalist, revival = (not seed_final), seed_final, False   # 王者シード: 予選免除・決勝直行
+    line_final = C.GP_FINAL_LINE if final_line is None else final_line   # 王者ライン上書き（飽きられ）
     for week in range(1, B.WEEKS + 1):
         compat0 = s.compat   # 途中解散（rift）の判定用
         acted = False
@@ -109,6 +110,8 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     gp_alive = False
 
         if week == C.GP_FINAL_WEEK:
+            if trace is not None:
+                trace.update(revival=revival, finalist=finalist)
             if revival:
                 ok, _ = B.perform(s, C.GP_REVIVAL_LINE, rng)
                 acted = True
@@ -118,7 +121,7 @@ def run_year(s, year, rng, log=None, gp_seed=False):
                     finalist = True
                     C._fame_big(s, C.FAME_FINALIST)
             if finalist:
-                eff_line = C.GP_FINAL_LINE - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
+                eff_line = line_final - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
                 ok, _ = B.perform(s, eff_line, rng)
                 acted = True
                 s._joint = True
@@ -182,6 +185,27 @@ def swift_row(year, week, snap):
     vals = ", ".join(f"{v!r}" for v in rest)
     return f"        ({year}, {week}, {money}, {vals}),"
 
+# 分岐 golden（2026-10-19追加・既存3年の出力は不変）: 3年台本が通らない大会分岐を別の種で通す。
+# 各年 (seed_final, final_line) を台本で指定。gp_seed は main と同じく前年到達回戦>=3 から自動。
+# 行 = (種, 年, 年末スナップショット9値..., 通過回戦数, 優勝0/1)。探索: find_golden_seeds_v0.py / メモ: docs/golden_branch_seeds_1019_v0.md
+BRANCH_SCRIPTS = [
+    ("敗者復活(3年目)・GPシード(4年目)", 1, [(False, None)] * 4),
+    ("王者シード(2年目・優勝)・王者ライン上書き(3年目・不通過)", 424243, [(False, None), (True, -999.0), (True, 999.0)]),
+]
+
+def run_branch_scripts():
+    for label, seed, plan in BRANCH_SCRIPTS:
+        print(f"// branch seed={seed}: {label} / plan(seedFinal,finalLine)={plan}")
+        rng = SplitMix64(seed)
+        s = B.S()
+        prev = 0
+        for y, (sf, fl) in enumerate(plan, 1):
+            champ, stage = run_year(s, y, rng, gp_seed=(prev >= 3), seed_final=sf, final_line=fl)
+            prev = stage
+            snap = snapshot(s)
+            vals = ", ".join(f"{v!r}" for v in snap)
+            print(f"        ({seed}, {y}, {vals}, {stage}, {int(champ)}),")
+
 def main():
     seed = GOLDEN_SEED
     rng = SplitMix64(seed)
@@ -202,6 +226,7 @@ def main():
             vals = ", ".join(f"{v!r}" for v in snap[1:])
             print(f"// year {year} end（yearEnds形式・そのまま貼る）:")
             print(f"        ({year}, {snap[0]}, {vals}),")
+    run_branch_scripts()
 
 if __name__ == "__main__":
     main()

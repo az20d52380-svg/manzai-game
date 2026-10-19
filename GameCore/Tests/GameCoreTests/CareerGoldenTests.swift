@@ -132,4 +132,49 @@ final class CareerGoldenTests: XCTestCase {
                         mental: expected.8, compat: expected.9, "y\(expected.0)end")
         }
     }
+
+    // 分岐 golden（tools/gen_golden.py BRANCH_SCRIPTS・2026-10-19）: 3年台本が通らない 敗者復活 / GPシード(gpSeeded) / 王者シード(seedFinal) / ライン上書き を通す。
+    // (seed, year, money, stamina, fame, sense, idea, expr, chara, mental, compat, roundsPassed, champion0/1)
+    // 台本A: seed=1・4年とも通常（3年目に敗者復活・4年目は前年到達>=3でシード）
+    static let branchA: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)] = [
+        (1, 1, -397000, 90, 8.260638993670993, 13.449904932656036, 13.099634137863639, 14.85702510025723, 13.332194364279514, 2.4248990154945176, 11.0, 0, 0),
+        (1, 2, -66000, 0, 18.714192949650624, 13.449904932656036, 16.47451234767657, 23.331703157184677, 17.12748819457815, 0, 17.0, 0, 0),
+        (1, 3, 499000, 75, 28.37177448474992, 16.656766905003593, 17.845561949385747, 24.291089303689308, 17.12748819457815, 23.91494410413394, 19.875, 4, 0),
+        (1, 4, 3789000, 60, 42.33739827258378, 16.656766905003593, 19.11717927101391, 37.726641767110415, 17.12748819457815, 39.09498282383368, 19.75, 3, 0),
+    ]
+    // 台本B: seed=424243・1年目通常 / 2年目 seedFinal+ライン-999（優勝して即終了）/ 3年目 seedFinal+ライン999（決勝で落ちる）
+    static let branchB: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)] = [
+        (424243, 1, 295000, 65, 13.337221098801248, 13.277634289940876, 12.494308543595679, 14.848954899691359, 12.755578414554064, 28.182736837658187, 10.5, 0, 0),
+        (424243, 2, 6394000, 90, 34.920394961160234, 18.19883517414202, 18.291039475260607, 20.28846710345416, 13.520542043643546, 41.378356406297826, 15.5, 0, 1),
+        (424243, 3, 7423000, 40, 41.9590414399111, 19.33166684257791, 20.691632218510286, 30.21235505396111, 15.792285020445266, 49.26928741075736, 19.5, 0, 0),
+    ]
+
+    private func runBranch(seed: UInt64, plan: [(Bool, Double?)],
+                           expected: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)]) {
+        let config = GameConfig()
+        var rng = SplitMix64(seed: seed)
+        var policy = GoldenPolicy()
+        var s = GameState(config: config)
+        var prev = 0
+        for (i, e) in expected.enumerated() {
+            let y = i + 1
+            XCTAssertEqual(e.1, y)
+            let o = GameCareer.runYear(state: &s, year: y, config: config, policy: &policy, rng: &rng,
+                                       seedFinal: plan[i].0, finalLineOverride: plan[i].1,
+                                       gpSeeded: prev >= 3, inviteSeed: 424243)
+            prev = o.roundsPassed
+            XCTAssertEqual(o.roundsPassed, e.11, "seed\(seed) y\(y) roundsPassed")
+            XCTAssertEqual(o.champion ? 1 : 0, e.12, "seed\(seed) y\(y) champion")
+            assertState(s, money: e.2, stamina: e.3, fame: e.4, sense: e.5, idea: e.6, expr: e.7,
+                        chara: e.8, mental: e.9, compat: e.10, "branch seed\(seed) y\(y)")
+        }
+    }
+
+    func testBranchRevivalAndGpSeed() {
+        runBranch(seed: 1, plan: Array(repeating: (false, nil), count: 4), expected: Self.branchA)
+    }
+
+    func testBranchSeedFinalAndLineOverride() {
+        runBranch(seed: 424243, plan: [(false, nil), (true, -999), (true, 999)], expected: Self.branchB)
+    }
 }
