@@ -27,3 +27,8 @@
 - **L2（低）weekend（先輩から誘い）：セリフ枠とボタンの間が大きく空く**（本文1行のため）。直し案：本文を中央寄せにするかボタンを枠直下へ。ファイル：EventView 系。画像なし（致命的でない）。
 - **L3（低）stage フックは週メインしか出ない**（`ui=="stage"` は初期化専用で、舞台の演出は出ない）。決勝の舞台そのものの目視は `frame` モードで代替。
 - **L4（低）forecast：月末の支払いポップアップに閉じるボタンが見えない**（撮影時点＝起動3秒後。自動で閉じる前提ならOK、未確認）。直し案：ボタンの有無を確認。画像 docs/finals_screens_audit_1019_forecast.png
+
+## 扱い（10/19 自走）
+- 中（週の画面の実力・相性の札が相方の頭に重なる）：以前からの配置。舞台の絵と札の置き場の作り直し（Gemini 往復・キュー72）とまとめる。
+- 低4件：notif は本編の流れから外してある画面（IntroFlow の NotificationPromptView）＝使う時に直す。weekend の空き・forecast の閉じるボタン・stage フックは軽微のまま。
+- 目視フックの正しい呼び方（次の回のため）：決勝の演出は MZ_UI=frame MZ_MODE=<judging/winner/loser/spectator/preshow>、週のひと言は MZ_UI=weekhint MZ_WH=<stamina/living/forecast/partner>。
