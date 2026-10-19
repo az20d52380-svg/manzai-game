@@ -42,7 +42,7 @@ struct AbilityUpView: View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "能力アップ")
                 .overlay(alignment: .trailing) {
-                    HintMarkButton { hint = Self.hintSpec }.padding(.trailing, 6).padding(.top, 20)
+                    HintMarkButton { hint = Self.hintSpec }.padding(.trailing, 8).padding(.top, 2)   // 題「能力アップ」と同じ高さ（top 20 だと下の金線にかかった）
                 }
             ScrollViewReader { proxy in
             ScrollView {
