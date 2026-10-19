@@ -160,7 +160,10 @@ struct YoseBurstParticles: View {
         .onChange(of: trigger) { _, _ in
             guard !reduceMotion else { return }
             regenerateSeeds()
-            burstStart = Date()
+            let start = Date()
+            burstStart = start
+            // 爆ぜ終わったら止める（TimelineView が 60fps で描き続けて電池を使っていた・code_review_2026-10-19k §3）。次の発火が来ていれば触らない
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.05) { if burstStart == start { burstStart = nil } }
         }
     }
 
