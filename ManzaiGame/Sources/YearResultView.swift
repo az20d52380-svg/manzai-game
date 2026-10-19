@@ -450,7 +450,7 @@ struct YearResultView: View {
         if o.bankrupt { return "所持金が尽きてキャリア終了" }
         if o.dissolved { return "すれ違いが続き、コンビを解散した" }
         if o.reachedFinal { return "決勝の舞台に立った" }
-        if notEnteredGP { return "エントリー費が払えず、頂グランプリに出られなかった" }
+        if notEnteredGP { return "エントリー費が払えず、\n頂グランプリに出られなかった" }
         return "頂グランプリ 到達段階"
     }
 
