@@ -26,7 +26,7 @@ enum WeekHint {
     }
 
     static let staminaLow = 30.0
-    static let injuryWarn = 50.0   // GameConfig.injuryThreshold と同値（体調ダウンの対象線・％は出さない）
+    static let injuryWarn = GameConfig().injuryThreshold   // 体調ダウンの対象線（GameConfig から取る＝直書きで別管理にしない・code_review_2026-10-19b §2-8）。％は出さない
     static let stageNearWeeks = 4
     static let partnerGapWeeks = 6
 
