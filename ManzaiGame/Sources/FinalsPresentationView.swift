@@ -557,7 +557,7 @@ struct FinalsPresentationView: View {
                         }
                         .environment(\.layoutDirection, .rightToLeft)
                         Spacer(minLength: 0)
-                        if e.isSelf { Text("あなた").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        if e.isSelf { Text("あなた").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                             .frame(maxWidth: .infinity).padding(.vertical, 2).background(YoseColor.shu) }
                     }
                     .padding(.top, 9).padding(.horizontal, 2)
@@ -728,9 +728,9 @@ struct FinalsPresentationView: View {
                 .frame(maxWidth: .infinity).frame(minHeight: 34)
             HStack(alignment: .firstTextBaseline, spacing: 1) {
                 Text("\(e.total)").font(YoseFont.number(22, weight: .black)).foregroundStyle(e.isSelf ? YoseColor.shu : YoseColor.sumi)
-                Text("点").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Text("点").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
-            if e.isSelf { Text("あなた").font(YoseFont.gothic(11, weight: .black)).foregroundStyle(YoseColor.kinari)
+            if e.isSelf { Text("あなた").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                 .frame(maxWidth: .infinity).background(YoseColor.shu) }
         }
         .padding(.vertical, 5).padding(.horizontal, 3)
@@ -862,7 +862,7 @@ struct FinalsPresentationView: View {
             }
             // 合計の電光計器箱（黒漆＋二重金枠）。7人目が開くまで伏せる
             VStack(spacing: 0) {
-                Text("合計").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                Text("合計").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Group {
                         if allShown { RollingNumberText(value: totalCount, prefix: "", suffix: "") }   // 0→合計へ電光カウントアップ
@@ -917,7 +917,7 @@ struct FinalsPresentationView: View {
         let parts = name.split(separator: " ").map(String.init)
         return VStack(spacing: 0) {
             Text(parts.first ?? name).font(YoseFont.mincho(14)).lineLimit(1).minimumScaleFactor(0.6)
-            Text(parts.count > 1 ? parts[1] : " ").font(YoseFont.mincho(10)).lineLimit(1).minimumScaleFactor(0.6)
+            Text(parts.count > 1 ? parts[1] : " ").font(YoseFont.mincho(12)).lineLimit(1).minimumScaleFactor(0.6)
         }
         .foregroundStyle(dim ? YoseColor.ginNezu : YoseColor.kinari)
         .frame(maxWidth: .infinity).frame(height: 34)
@@ -931,7 +931,7 @@ struct FinalsPresentationView: View {
                 .frame(height: 34)
             judgeNamePlate(j.name)
             if let kata {
-                Text(NetaCatalog.affinity(kata, judge: j.name)).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kinText)
+                Text(NetaCatalog.affinity(kata, judge: j.name)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
                     .lineLimit(1).minimumScaleFactor(0.6)
             }
         }
@@ -1004,7 +1004,7 @@ struct FinalsPresentationView: View {
                         votePlate(shown: shown, voteName: names.count > vote ? names[vote] : "—", forUs: vote == d.selfDuelIndex)
                         // 姓をそのまま出す（2文字で切ると天堂寺→「天堂」・神楽坂→「神楽」と別の語に読めた）
                         Text(String(d.judges[i].name.split(separator: " ").first ?? Substring(d.judges[i].name)))
-                            .font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+                            .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
                             .lineLimit(1).minimumScaleFactor(0.6)
                             .frame(maxWidth: .infinity).frame(height: 26)
                             .background(YoseColor.kuroUrushi)
