@@ -103,3 +103,7 @@ TypeStep（Theme.swift）の決まり「12pt 未満は使わない」に反す�
 
 ## 進み
 - エンディング S6bView の2か所は f45ac7e で済。
+- SettingsView 3件→12（ed7576a）／例外なし
+- CalendarView 3件→12（cf117bb）／例外なし
+- NotebookView 5件→12（3724974）／例外なし（neta 画面は目視フックで別タブに直行できず未確認）
+- EndingViews 5件→12（844b4bd）／例外なし。図鑑の種別バッジは 12 に上げ lineLimit(1)+minimumScaleFactor(0.85) 併用。目視は省略（ビルドのみ）
