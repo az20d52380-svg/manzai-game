@@ -132,3 +132,7 @@
 - 選択肢イベントの効果と発火帯（`ChoiceEventTests`）
 - 敗者復活・王者シード（`seedFinal`）・ライン上書き・GPシード（`gpSeeded`）の各分岐（3年 golden は台本上、通る分岐だけ）
 - 療養週の回数券（F3）・体調ダウンの特技/喉のケア倍率（`golden_features` は決定的な式のみで、乱数判定は未カバー）
+
+## 直した所（10/19 自走）
+- F1（Swift runCareer を解散で止める）・F2（実測機のイベント効果をアプリに合わせる＝events_app_raw_effect_v0）・F3（Python の療養週は回数券を使わない）。golden 一致・268 green。
+- 残り（F4〜F15）は情報・実害小＝そのまま。
