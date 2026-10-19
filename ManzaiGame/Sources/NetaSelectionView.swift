@@ -45,6 +45,9 @@ struct NetaPickRow: View {
         .padding(.horizontal, YoseMetrics.padH).padding(.vertical, YoseMetrics.padV)
         .frame(maxWidth: .infinity, alignment: .leading)
         .yoseHarigami(isFeatured: selected != nil)   // 未選択は朱の特別枠にしない（選んだ札と見分ける）
+        #if DEBUG
+        .onAppear { if ProcessInfo.processInfo.environment["MZ_NETA_OPEN"] != nil { expanded = true } }   // 目視用：候補を開いた状態で出す（タップできない回の確認）
+        #endif
     }
 
     private var changeLabel: some View {
