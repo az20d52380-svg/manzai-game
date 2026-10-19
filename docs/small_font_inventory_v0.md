@@ -110,3 +110,4 @@ TypeStep（Theme.swift）の決まり「12pt 未満は使わない」に反す�
 - YearResultView 6件→12／例外1（三角アイコン109行）・TournamentResultView 3件→12・YoseGameParts 2件→12（41行は閾値判定の式で文字ではないので不変）・YoseComponents 4件→12（役割ラベルは lineLimit(1)+minimumScaleFactor(0.85)）／例外1（三角アイコン320行）。目視は catalog のみ（崩れなし）、年末・大会・週の画面はフック無しでビルドのみ
 - MZ_UI=neta が持ち札タブに行かない件：持ち札直行は既に MZ_UI=neta_list（または MZ_TAB=neta）で可能＝コード変更なし。neta_list で目視済（崩れなし）
 - （親の確認 10/20）週の画面の黒帯（YoseGameParts）を MZ_UI=living で目視・崩れなし。図鑑（MZ_UI=endingbook）も崩れなし。**年末の結果（YearResultView）・大会の結果（TournamentResultView）は直行フックが無く未目視**＝タップできる回か、フックを足す時に見る。
+- 3束目：WeekMainView 10件→12／例外3（アイコン443・1571・1658行）・AbilityUpView 9件→12（通貨バッジは lineLimit(1)+minimumScaleFactor(0.85)）／例外1（矢印225行）・YoseRankUpOverlay 5件→12／例外1（矢印231行）・YoseMilestoneFX 5件→12／例外1（再生アイコン245行）。目視 living/allocate/MZ_FX=rankup/pass いずれも崩れなし
