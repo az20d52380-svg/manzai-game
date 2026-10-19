@@ -46,7 +46,7 @@ struct FinalistAnnounceView: View {
         var seed = UInt64(bitPattern: Int64(year &* 2654435761 &+ 17))
         func nx() -> Int { seed = seed &* 6364136223846793005 &+ 1442695040888963407; return Int((seed >> 33) % 1000) }
         for i in stride(from: arr.count - 1, through: 1, by: -1) { arr.swapAt(i, nx() % (i + 1)) }
-        if let si = arr.firstIndex(where: { $0.isSelf }) { arr.swapAt(si, arr.count / 2) }
+        if let si = arr.firstIndex(where: { $0.isSelf }) { arr.swapAt(si, arr.count / 2 + arr.count / 4) }   // 前列の真ん中寄り（列の端だと名札が画面からはみ出す）
         return arr
     }
     /// 読み上げ順（五十音順）。自組は名前を読みに直せない＝先頭の仮名で置く（読みは名前そのものに近い仮名と見なす）
@@ -74,7 +74,7 @@ struct FinalistAnnounceView: View {
         ZStack {
             LinearGradient(colors: [YoseColor.kuroUrushi, Color(hex: 0x2A211C)], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
             VStack(spacing: 18) {
-                Spacer(minLength: 60)
+                Spacer(minLength: 90)
                 if stage == .wait {
                     Image(systemName: "building.columns").font(.system(size: 54)).foregroundStyle(YoseColor.kin.opacity(0.6))
                         .transition(.opacity)
@@ -91,7 +91,7 @@ struct FinalistAnnounceView: View {
                             .padding(.horizontal, 40).padding(.vertical, 11).overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.6)))
                     }.transition(.opacity)
                 }
-                Spacer(minLength: 30)
+                Color.clear.frame(height: 30)   // 固定：上下の余白を上と真ん中の Spacer で等分＝並びが画面の中ほどに来る
             }
             .padding(.horizontal, 16)
             Color.black.opacity(dim ? 0.45 : 0).ignoresSafeArea().allowsHitTesting(false)   // 最後の2組の溜め
@@ -118,7 +118,7 @@ struct FinalistAnnounceView: View {
         let big = stage == .read && called > 0
         let hot = selfCalled && stage == .read && readOrder.prefix(called).last?.isSelf == true
         return VStack(spacing: 6) {
-            HStack(alignment: .bottom, spacing: 10) {
+            HStack(alignment: .bottom, spacing: 16) {
                 VStack(spacing: 2) {
                     ZStack(alignment: .top) {
                         Capsule().fill(YoseColor.kin.opacity(0.9)).frame(width: 40, height: 66)
@@ -127,6 +127,7 @@ struct FinalistAnnounceView: View {
                     }.frame(height: 76)
                     Text("司会").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kin)
                 }
+                .frame(width: 56)
                 Text(caption)
                     .font(YoseFont.mincho(big ? 26 : 16))
                     .foregroundStyle(hot ? YoseColor.kinBright : YoseColor.kuroUrushi)
@@ -138,14 +139,14 @@ struct FinalistAnnounceView: View {
                     .id(caption).transition(.opacity)
             }
         }
-        .padding(.bottom, 8)
+        .padding(.bottom, 20)
     }
 
     /// 並び：2段のシルエット。呼ばれた組は半歩前へ出て光る（名前は小さく添える）
     private var lineUp: some View {
         let all = slots
         let rows = [Array(all.prefix(all.count / 2)), Array(all.suffix(all.count - all.count / 2))]
-        return VStack(spacing: 14) {
+        return VStack(spacing: 26) {
             ForEach(0..<2, id: \.self) { r in
                 HStack(spacing: 8) {
                     ForEach(rows[r]) { s in silhouette(s) }
@@ -164,13 +165,13 @@ struct FinalistAnnounceView: View {
         let lost = stage == .after && !s.finalist
         return VStack(spacing: 3) {
             ZStack(alignment: .top) {
-                Capsule().fill(on || (stage == .after && s.finalist) ? YoseColor.kin.opacity(0.9) : YoseColor.haiSumi.opacity(0.75))
-                    .frame(width: 26, height: 44)
-                Circle().fill(on || (stage == .after && s.finalist) ? YoseColor.kinBright : YoseColor.haiSumi).frame(width: 15, height: 15).offset(y: -9)
+                Capsule().fill(on || (stage == .after && s.finalist) ? YoseColor.kin.opacity(0.9) : YoseColor.ginNezu.opacity(0.42))
+                    .frame(width: 30, height: 50)
+                Circle().fill(on || (stage == .after && s.finalist) ? YoseColor.kinBright : YoseColor.ginNezu.opacity(0.6)).frame(width: 17, height: 17).offset(y: -10)
             }
-            .frame(height: 52)
+            .frame(height: 60)
             .overlay(alignment: .bottom) {
-                if s.isSelf { Capsule().stroke(YoseColor.kinBright, lineWidth: 1.5).frame(width: 34, height: 60).offset(y: 4) }
+                if s.isSelf { Capsule().stroke(YoseColor.kinBright, lineWidth: 1.5).frame(width: 38, height: 68).offset(y: 4) }
             }
             .offset(y: on || (stage == .after && s.finalist) ? (s.isSelf && on ? -14 : -8) : 0)
             .shadow(color: s.isSelf && on ? YoseColor.kinBright.opacity(0.9) : .clear, radius: 10)
@@ -186,7 +187,7 @@ struct FinalistAnnounceView: View {
                 }
         }
         .animation(s.isSelf ? .spring(response: 0.35, dampingFraction: 0.45) : .easeOut(duration: 0.35), value: on)
-        .frame(width: 34)
+        .frame(width: 38)
         .accessibilityHidden(done)
     }
 
