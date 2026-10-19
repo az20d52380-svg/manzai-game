@@ -270,7 +270,7 @@ struct TournamentResultView: View {
             if showPass {   // 回戦突破の祝い（通過の判の後・次へ の代わりに1度だけ）。タップで閉じて先へ
                 YosePassCelebrationView(duoName: session.combiName, roundName: GPName.display(r.name), judgeName: review.judge,
                                         nextStep: "次戦へ", fameGain: 0,   // 講評・知名度は判の画面で出し済み＝重複させない
-                                        threshold: 0, power: Int(Ability.allCases.reduce(0.0) { $0 + summary.state[$1] }.rounded()),
+                                        threshold: 0, power: Int(GameEngine.jitsuryoku(summary.state, config: session.config).rounded()),   // 手帳と同じ実力（画面には出ない・19l §1-1 と同型）
                                         judgeComment: "") { showPass = false; session.acknowledgeResult() }
                     .transition(.opacity)
             }
