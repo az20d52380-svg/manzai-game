@@ -54,3 +54,4 @@ content_size を large（開始前の値）→ extra-extra-large で確認し、
 | 年末総決算 | yearend | ○ | 「到達段階」が帯内で2行・右端が DEBUG チップに重なる（DEBUGのみ）。「2年目へ」押せる |
 | ネタ選び | netaentry | ○ | 名前は上段・交通費行は2行に折れるが読める。「見送る」押せる |
 | 選択イベント | MZ_UI=event MZ_EV=0014 | ○ | 「次へ進む」押せる |
+- （親 10/20）行動ボタンの副題の切れは AX の時だけ2行にして解消（accessibility-large で目視・content_size は large に戻した）。
