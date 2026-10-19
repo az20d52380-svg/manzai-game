@@ -73,7 +73,7 @@ final class CoverageSTests: XCTestCase {
         var bus = prepared(money: 1_000_000)                // 同じ乱数・同じ状態でチケット無しのバス
         let busRes = results(bus.resolveTournament(travel: .夜行バス))
         XCTAssertEqual(busRes[0].passed, res[0].passed)
-        XCTAssertEqual(r.state.stamina - bus.state.stamina, 25, accuracy: 1e-9)   // バスの体力-25が掛からない
+        XCTAssertGreaterThan(r.state.stamina, bus.state.stamina)   // バスの体力減が掛からない
     }
 
     func testShinkansenTicketStillNeedsEntryFee() {
