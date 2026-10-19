@@ -343,7 +343,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testInjuryWarn() {
         var i = base(); i.stamina = 45
-        XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるで。")
+        XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるぞ。")
     }
     func testNoNeta() {
         var i = base(); i.netaCount = 0
@@ -352,7 +352,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     func testStamina() {
         var i = base(); i.stamina = 30
         XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
-        i.stamina = 31; XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるで。")   // 体調ダウンの注意（体力50未満・§97）
+        i.stamina = 31; XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるぞ。")   // 体調ダウンの注意（体力50未満・§97）
         i.stamina = 50; XCTAssertNil(WeekHint.line(i))
     }
     func testLiving() {
