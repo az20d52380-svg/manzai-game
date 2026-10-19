@@ -93,10 +93,6 @@ enum FanReportData {
         "隣の席の人が声出して〈名〉にウケてた。会場人気と合否は別って、毎年学んでるのに。",
     ]
 
-    private static func pick(_ pool: [String], _ k: Int, _ salt: Int) -> String {
-        let n = pool.count
-        return pool[(((salt + k) % n) + n) % n]
-    }
 
     /// 判の前に流す観客の声（2〜4枚）。salt 剰余だけで選ぶ＝乱数非消費・同じ週は同じ声。
     /// 通過＝点差が大きければ熱狂／小さければ手応え。敗退＝あと一歩なら五分五分／遠ければ不発。ハマった夜は必ず先頭に。

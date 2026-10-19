@@ -20,16 +20,6 @@ enum DialogueData {
     /// 乱数は使わない（salt の剰余とずらしだけ）。直近の記録は GameSession が持つ。
     typealias Picker = (_ scene: String, _ count: Int, _ salt: Int) -> Int
 
-    /// 直近 recent に含まれない番号を、salt の剰余の位置から順にずらして探す。全部が直近なら剰余の位置のまま。
-    static func indexAvoiding(count: Int, salt: Int, recent: [Int]) -> Int {
-        guard count > 0 else { return 0 }
-        let start = ((salt % count) + count) % count
-        for d in 0..<count {
-            let i = (start + d) % count
-            if !recent.contains(i) { return i }
-        }
-        return start
-    }
     /// 同じキャリアで使った番号 used（古い順）を避ける。salt の剰余の位置から順に、未使用の最初の番号を返す。
     /// 全部使い済み（プールが尽きた）なら最も古く使った番号（used の先頭）から使い回す。乱数は使わない。
     static func indexAvoidingUsed(count: Int, salt: Int, used: [Int]) -> Int {
@@ -41,8 +31,6 @@ enum DialogueData {
         }
         return used.first(where: { $0 >= 0 && $0 < count }) ?? start
     }
-    /// 場面ごとに覚える直近の件数＝文の数の半分（1本だけなら0）。
-    static func recentLimit(count: Int) -> Int { count / 2 }
 
     // MARK: 週頭（行動前）の状態駆動モノローグ
 
