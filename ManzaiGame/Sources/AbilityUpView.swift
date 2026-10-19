@@ -52,7 +52,7 @@ struct AbilityUpView: View {
                     ForEach(Ability.allCases, id: \.self) { row($0) }
                     HStack(alignment: .top, spacing: 8) {
                         Text("数字＝その能力を1上げるのに使う経験点。灰色は持ち分が足りない")
-                            .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                            .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                             .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
                         // 特技は画面の下に隠れやすい（目視 visual_check_q90_q106_v0）＝ここから飛べる
                         Button { withAnimation { proxy.scrollTo("skills", anchor: .top) } } label: {
@@ -94,7 +94,7 @@ struct AbilityUpView: View {
             Text("特技").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .padding(.top, 8)
             Text("余った経験点で覚える。一度覚えたらずっと効く")
-                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
             ForEach(Skill.allCases, id: \.self) { skillCard($0) }
         }
@@ -117,12 +117,12 @@ struct AbilityUpView: View {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(k.rawValue).font(YoseFont.gothic(14, weight: .heavy))
-                    Text(k.summary).font(YoseFont.gothic(11, weight: .bold)).lineLimit(2)
+                    Text(k.summary).font(YoseFont.gothic(12, weight: .bold)).lineLimit(2)
                     HStack(spacing: 4) {   // 費用は上の持ち分と同じ一字＋色（胆・存…）でそろえる
-                        Text("経験点").font(YoseFont.gothic(11, weight: .bold)).opacity(0.8)
+                        Text("経験点").font(YoseFont.gothic(12, weight: .bold)).opacity(0.8)
                         ForEach(Array(k.cost.enumerated()), id: \.offset) { _, c in
                             HStack(spacing: 2) {
-                                Text(Theme.currencyChar(c.currency)).font(YoseFont.gothic(10, weight: .black)).foregroundStyle(.white)
+                                Text(Theme.currencyChar(c.currency)).font(YoseFont.gothic(12, weight: .black)).lineLimit(1).minimumScaleFactor(0.85).foregroundStyle(.white)
                                     .frame(width: 16, height: 16).background(wa(c.currency))
                                 Text("\(ExpDisplay.cost(c.amount, have: pv[currency: c.currency]))").font(YoseFont.number(12, weight: .heavy))
                             }
@@ -135,7 +135,7 @@ struct AbilityUpView: View {
                         ForEach(Array(k.cost.enumerated()), id: \.offset) { _, c in
                             let lack = ExpDisplay.cost(c.amount, have: pv[currency: c.currency]) - ExpDisplay.value(pv[currency: c.currency])
                             if c.amount > pv[currency: c.currency] + 1e-9, lack > 0 {
-                                Text("\(String(describing: c.currency)) あと\(lack)").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                                Text("\(String(describing: c.currency)) あと\(lack)").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
                             }
                         }
                     }
@@ -196,7 +196,7 @@ struct AbilityUpView: View {
             HStack(spacing: 0) {
                 Color.clear.frame(width: 52, height: 1)
                 ForEach(Ability.allCases, id: \.self) { a in
-                    Text("\(a)").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    Text("\(a)").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                         .lineLimit(1).minimumScaleFactor(0.7).frame(maxWidth: .infinity)
                 }
             }
@@ -212,7 +212,7 @@ struct AbilityUpView: View {
 
     private func compareRow(title: String, state s: GameState, after: Bool) -> some View {
         HStack(spacing: 0) {
-            Text(title).font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(after ? YoseColor.shu : YoseColor.haiSumi)
+            Text(title).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(after ? YoseColor.shu : YoseColor.haiSumi)
                 .lineLimit(1).minimumScaleFactor(0.7).frame(width: 52)
             ForEach(Ability.allCases, id: \.self) { a in
                 let v = Int(s[a].rounded())
@@ -222,7 +222,7 @@ struct AbilityUpView: View {
                 VStack(spacing: 0) {
                     HStack(spacing: 1) {
                         Text(g).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(up ? YoseColor.shu : YoseColor.sumi)
-                        if up { Image(systemName: "arrow.up").font(.system(size: Font.mzScaled(10), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true) }
+                        if up { Image(systemName: "arrow.up").font(.system(size: Font.mzScaled(10), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true) }   // 12pt 未満の例外：アイコン記号（文字ではない）
                     }
                     HStack(spacing: 1) {
                         Text("\(v)").font(YoseFont.number(13, weight: .bold)).foregroundStyle(raised ? YoseColor.shu : YoseColor.haiSumi)
@@ -349,7 +349,7 @@ struct AbilityUpView: View {
         return VStack(alignment: .leading, spacing: 2) {
             line
             ForEach(caption, id: \.self) { l in
-                Text(l).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.shu)
+                Text(l).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.shu)
                     .lineLimit(2).minimumScaleFactor(0.8).padding(.horizontal, 8)
             }
         }
