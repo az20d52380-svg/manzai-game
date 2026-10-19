@@ -61,7 +61,7 @@ struct CalendarView: View {
                 Text("月").frame(width: 42)
                 ForEach(1...4, id: \.self) { n in Text("第\(n)週").frame(maxWidth: .infinity) }
             }
-            .font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.kin)
+            .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
             .frame(height: 24).background(YoseColor.kuroUrushi)
             ForEach(0..<12, id: \.self) { row in
                 HStack(spacing: 0) {
@@ -93,7 +93,7 @@ struct CalendarView: View {
             if isTournament {
                 Rectangle().fill(isPast ? YoseColor.shu.opacity(0.55) : YoseColor.shu)   // 大会週＝朱の色面
                 VStack(spacing: 0) {
-                    Text(tournamentName(w)).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                    Text(tournamentName(w)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
                         .lineLimit(1).minimumScaleFactor(0.7)
                     Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         .lineLimit(1)
@@ -138,7 +138,7 @@ struct CalendarView: View {
             HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
             HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
         }
-        .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.sumi)
+        .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
         .padding(.horizontal, 10).padding(.vertical, 8)
         .frame(maxWidth: .infinity)
         .yoseKifuda()
