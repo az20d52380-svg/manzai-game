@@ -13,6 +13,8 @@ import sim_career as C
 
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = HERE.parent / "GameCore/Tests/GameCoreTests/Resources/golden_features.json"
+import os
+if os.environ.get("GOLDEN_FEATURES_OUT"): OUT = pathlib.Path(os.environ["GOLDEN_FEATURES_OUT"])   # check_golden_sync が一時ファイルへ書かせて突き合わせる
 
 CUR = ["hirameki", "goi", "maai", "sonzaikan", "tanryoku"]
 

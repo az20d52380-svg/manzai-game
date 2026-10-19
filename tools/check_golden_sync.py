@@ -89,7 +89,27 @@ def main():
         return 1
 
     print(f"✅ golden同期OK: {len(expected)} 行すべて一致（Python正典 ⇄ Swift golden）")
-    return check_12week()
+    rc = check_12week()
+    return rc or check_features()
+
+
+def check_features():
+    """gen_golden_features.py を一時ファイルへ書かせ、golden_features.json と中身を突き合わせる（再生成忘れを拾う・10/19）。
+    0=一致 / 1=ずれ / 2=実行不能"""
+    import json, os, tempfile
+    committed = HERE.parent / "GameCore/Tests/GameCoreTests/Resources/golden_features.json"
+    with tempfile.TemporaryDirectory() as d:
+        tmp = pathlib.Path(d) / "gf.json"
+        r = subprocess.run([sys.executable, str(HERE / "gen_golden_features.py")], cwd=HERE,
+                           env=dict(os.environ, GOLDEN_FEATURES_OUT=str(tmp)), capture_output=True, text=True)
+        if r.returncode != 0 or not tmp.exists():
+            print("❌ gen_golden_features.py を実行できない", file=sys.stderr); print(r.stderr[-500:], file=sys.stderr)
+            return 2
+        if json.loads(tmp.read_text(encoding="utf-8")) != json.loads(committed.read_text(encoding="utf-8")):
+            print("❌ golden_features drift: cd tools && python3 gen_golden_features.py で再生成し swift test（規律A）")
+            return 1
+    print("✅ golden_features 一致（部屋・特技・店の台本）")
+    return 0
 
 
 if __name__ == "__main__":
