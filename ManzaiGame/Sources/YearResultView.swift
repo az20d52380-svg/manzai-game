@@ -61,11 +61,13 @@ struct YearResultView: View {
         }
         .onAppear {
             withAnimation(.easeOut(duration: Theme.Motion.emph)) { appear = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) { stampIn = true }
-                Haptics.confirm()   // 年1回の重み
-                if o?.champion == true { confettiFire += 1; Sound.play(.fanfare) }
-            }
+        }
+        .task {   // 判は0.4秒後。すぐ送った時は取り消す（遅れてファンファーレが鳴らない・code_review_2026-10-19d）
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            if Task.isCancelled { return }
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) { stampIn = true }
+            Haptics.confirm()   // 年1回の重み
+            if o?.champion == true { confettiFire += 1; Sound.play(.fanfare) }
         }
     }
 

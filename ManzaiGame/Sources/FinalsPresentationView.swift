@@ -613,12 +613,11 @@ struct FinalsPresentationView: View {
             }
             Spacer(minLength: 200)
         }
-        .onAppear {
+        .task {   // .task＝場面を送ったら取り消される（送った後の採点で大歓声が鳴らない・code_review_2026-10-19d）
             Sound.play(.cheerMid)
-            Task {
-                try? await Task.sleep(nanoseconds: 800_000_000)
-                Sound.play(.cheerBig)
-            }
+            try? await Task.sleep(nanoseconds: 800_000_000)
+            if Task.isCancelled { return }
+            Sound.play(.cheerBig)
         }
     }
 
