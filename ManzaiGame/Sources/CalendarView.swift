@@ -166,7 +166,11 @@ struct CalendarView: View {
     }
 
     private func isTournamentWeek(_ w: Int) -> Bool {
-        if cal.tournament(inWeek: w) != nil { return true }
+        if let spec = cal.tournament(inWeek: w) {
+            // これからの週は、今の状態で出られる大会だけ塗る（推薦制・若手限定で入口が出ない週を「大会」と見せない・code_review_2026-10-19g §2）。過ぎた週は従来どおり
+            if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
+            return true
+        }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
         return w == cal.gpFinalWeek
     }
