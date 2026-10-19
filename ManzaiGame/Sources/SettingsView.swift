@@ -224,7 +224,7 @@ struct GlossaryView: View {
         ]),
         Group(title: "暮らし", rows: [
             ("知名度", "どれだけ知られているか（0〜100）。舞台に立つと上がる。決勝では高いほど有利になる。"),
-            ("所持金と生活費", "バイトや賞金で増える。\(GameConfig().livingInterval)週に1度、週の終わりに\(GameConfig().livingCost / 10_000)万円の生活費が引かれる。"),
+            ("所持金と生活費", "バイトや賞金で増える。\(GameConfig().livingInterval)週に1度、週の終わりに生活費が引かれる（基本は\(GameConfig().livingCost / 10_000)万円。住む部屋で増える）。"),
             ("借金と夜逃げ", "お金が足りないと借金になる。借金が\(-GameConfig().bankruptLine / 10_000)万円を超えると夜逃げになり、芸人は続けられない。"),
         ]),
         Group(title: "コンビ", rows: [
