@@ -182,7 +182,7 @@ struct YoseRankUpOverlay: View {
             ZStack(alignment: .topTrailing) {
                 HStack(spacing: 8) {
                     VStack(spacing: 4) {
-                        Text("旧").font(YoseFont.gothic(10, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        Text("旧").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         rankTablet(item.fromRank, size: 50, glyph: 28, bright: false)
                     }
                     HStack(spacing: 3) {
@@ -195,7 +195,7 @@ struct YoseRankUpOverlay: View {
                     }
                     .padding(.top, 16)
                     VStack(spacing: 12) {
-                        Text("新ランク").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                        Text("新ランク").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
                         ZStack {
                             Rectangle().fill(YoseColor.kinari).overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.35), lineWidth: 1.5))
                                 .frame(width: 100, height: 100)
@@ -228,14 +228,14 @@ struct YoseRankUpOverlay: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(item.abilityName).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                     Text("\(item.beforeValue)").font(YoseFont.number(18, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
-                    Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
+                    Image(systemName: "arrow.right").font(.system(size: Font.mzScaled(11), weight: .black)).foregroundStyle(YoseColor.shu).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
                     Text(stamped ? "\(shownValue)" : "？？").font(YoseFont.number(26, weight: .black)).foregroundStyle(YoseColor.sumi)
                         .contentTransition(.numericText(value: Double(shownValue)))
                 }
                 .frame(maxWidth: .infinity)
                 Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 28)
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text("実力").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.enji)
+                    Text("実力").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji)
                         .padding(.horizontal, 4).padding(.vertical, 1)
                         .overlay(Rectangle().stroke(YoseColor.enji, lineWidth: 1))
                     Text(stamped ? "\(totalPower)" : "\(totalPower - powerDelta)").font(YoseFont.number(22, weight: .black)).foregroundStyle(YoseColor.sumi)
@@ -253,11 +253,11 @@ struct YoseRankUpOverlay: View {
 
             if !subItems.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("同時昇格").font(YoseFont.gothic(11, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                    Text("同時昇格").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                     HStack(spacing: 6) {
                         ForEach(subItems) { sub in
                             HStack(spacing: 4) {
-                                Text(sub.abilityShort).font(YoseFont.gothic(10, weight: .black)).foregroundStyle(YoseColor.kinari)
+                                Text(sub.abilityShort).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                                     .frame(width: 18, height: 18).background(sub.abilityColor)
                                 Text("\(sub.fromRank)▶\(sub.toRank)").font(YoseFont.gothic(13, weight: .black)).foregroundStyle(YoseColor.shu)
                             }
