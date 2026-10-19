@@ -89,6 +89,8 @@ final class GameSession {
     private var jobCount = 0
     /// 週頭に確定発火した保留中の選択肢イベント（nil=無し）。choose 側でなく自由週の描画時に1件だけ立てる。
     private(set) var pendingChoiceEvent: ChoiceEventKind?
+    /// 選んで効果を適用済み（選択後の会話を見せている間）。この間は保存に保留イベントを入れない＝落として再起動しても選び直して二重にかからない（code_review_2026-10-19c §1-1）
+    private var choiceApplied = false
     /// §102 週末に来た先輩の誘いを次の自由週の頭に札で出すための待ち（メモリのみ。アプリを落とすと流れる＝軽い誘いなので許容）と、行った時に発想が付くか
     private var inviteWaiting = false
     private var inviteIdea = false
@@ -277,6 +279,7 @@ final class GameSession {
         self.usedFanLines = save.usedFanLines ?? []
         self.shownOnce = Set(save.shownOnce ?? [])
         self.weeksWithoutPartner = save.weeksWithoutPartner ?? 0
+        self.injuryNoticeWeeks = save.injuryNoticeWeeks ?? 0
         checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
@@ -693,9 +696,10 @@ final class GameSession {
     /// pendingChoiceEvent はここでは落とさない＝選択後の会話をオーバーレイに見せ切ってから
     /// dismissChoiceEvent() で閉じる（先に落とすと .fullScreenCover(item:) が即座に閉じてしまう）。
     func applyEventChoice(_ choiceID: String) {
-        guard let kind = pendingChoiceEvent else { return }
+        guard let kind = pendingChoiceEvent, !choiceApplied else { return }   // 二度押しで二重にかけない
         let choices = ChoiceEventTable.choices(for: kind, config: config)
         guard let choice = choices.first(where: { $0.id == choiceID }), choice.gate(state) else { return }
+        choiceApplied = true
         runner.applyEventEffects(choice.effects)
         if kind == .weekendInvite, choiceID == "A" { runner.applyInviteGo(idea: inviteIdea) }   // §102 行く: 所持金-5,000・体力-10・メンタル+1・(半分で)発想+0.5
         state = runner.state
@@ -729,6 +733,7 @@ final class GameSession {
     /// 選択後の会話を見終えてオーバーレイを閉じる（UI側の「閉じる」タップから呼ぶ）
     func dismissChoiceEvent() {
         pendingChoiceEvent = nil
+        choiceApplied = false
         saveNow()   // 閉じた状態を保存（復帰時に選択済みイベントが再表示されないように）
     }
 
@@ -974,6 +979,7 @@ final class GameSession {
         var r = WeekRunner(state: runner.state, year: year + 1, config: config, rng: runner.rng,
                            gpSeeded: o.roundsPassed >= 3, inviteSeed: runner.inviteSeed)
         yearStartState = r.state
+        hasYearStart = true   // 旧セーブ（年初の状態なし）から続けた時も、次の年からは年末の差分を出す（code_review_2026-10-19c §2-3）
         // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）
         finished = false
         outcome = nil
@@ -1000,6 +1006,7 @@ final class GameSession {
         weekBanter = nil
         stablePicks = [:]   // 使った文の記録（usedPicks）はキャリア通算＝年が替わっても消さない
         pendingChoiceEvent = nil
+        choiceApplied = false
         lastEventRollWeek = -1
         lastBanterRollWeek = -1
         let first = r.begin()
@@ -1059,6 +1066,7 @@ final class GameSession {
         var usedFanLines: [String]?       // このキャリアで出した観客の声（旧セーブ＝nil）
         var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
         var weeksWithoutPartner: Int?     // 相方と過ごさない週の連続数（旧セーブ＝nil＝0）
+        var injuryNoticeWeeks: Int? = nil // 体調ダウンの知らせ待ち（旧セーブ＝nil＝0・code_review_2026-10-19c §2-4）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1114,7 +1122,7 @@ final class GameSession {
                             didFireTaniguchiJob: didFireTaniguchiJob, uiEventRng: uiEventRng,
                             firedWeeklyEvents: firedWeeklyEvents, weeklyEventFiredCount: weeklyEventFiredCount,
                             lastEventRollWeek: lastEventRollWeek, jobCount: jobCount,
-                            pendingChoiceEvent: pendingChoiceEvent, weekBanter: weekBanter,
+                            pendingChoiceEvent: choiceApplied ? nil : pendingChoiceEvent, weekBanter: weekBanter,
                             lastBanterRollWeek: lastBanterRollWeek, categoryLog: categoryLog,
                             totalPrize: totalPrize, combiName: combiName,
                             version: Self.saveVersion,
@@ -1124,7 +1132,8 @@ final class GameSession {
                             debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName,
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
-                            usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner)
+                            usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
+                            injuryNoticeWeeks: injuryNoticeWeeks)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
