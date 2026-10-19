@@ -47,7 +47,7 @@ def one(args):
     def dj(s, nm): cnt["job"] += 1; cnt["all"] += 1; return oj(s, nm)
     def dt(s, nm):
         r = ot(s, nm); cnt["all"] += 1; return r
-    def dr(s, nm): cnt["all"] += 1; return orr(s, nm)
+    def dr(s, nm, use_ticket=True): cnt["all"] += 1; return orr(s, nm, use_ticket=use_ticket)
     def do_(s, o): cnt["all"] += 1; return oo(s, o)
     B.do_job, B.do_training, B.do_rest, B.do_offer = dj, dt, dr, do_
     pol = make2(name); recs = []
