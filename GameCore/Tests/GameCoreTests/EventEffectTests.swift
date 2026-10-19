@@ -81,4 +81,18 @@ final class EventEffectTests: XCTestCase {
         s.applyEventEffect(.rift(200), config: cfg)
         XCTAssertEqual(s.rift ?? -1, 100, accuracy: 1e-9)
     }
+
+    /// 所持金はクランプ無し（負可）・知名度は 0..100・メンタルは mentalCap で頭打ち
+    func testMoneyUnclampedFameAndMentalCapped() {
+        var s = GameState(config: cfg)
+        s.money = 1_000; s.fame = 95; s.メンタル = cfg.mentalCap - 1
+        for e in [EventEffect.money(-5_000), .fame(20), .ability(.メンタル, 10)] {
+            s.applyEventEffect(e, config: cfg)
+        }
+        XCTAssertEqual(s.money, -4_000)
+        XCTAssertEqual(s.fame, 100, accuracy: 1e-9)
+        XCTAssertEqual(s.メンタル, cfg.mentalCap, accuracy: 1e-9)
+        s.applyEventEffect(.fame(-500), config: cfg)
+        XCTAssertEqual(s.fame, 0, accuracy: 1e-9)
+    }
 }
