@@ -5,6 +5,8 @@ usage: python3 exp_tourney_exp_1020_v0.py [n=300] [variants=stage1|all|a,b,..] [
   配り方 a=5通貨に均等(各1/5) / b=不足しやすい語彙・胆力・存在感に厚く(各0.3・閃き間合い各0.05) / c=均等だが大会の種類で量を変える(道中大会×0.5・GP予選×1・GP復活/決勝×2)
   量 s/m/l = k=1/2/4。単位U=稽古1回分（主+副=生4点・供給スケールは稽古と同じ credit_currency 経由）
   配る量(U×k)：出場 0.25／道中大会の勝ち +0.75（出場込みで勝ち計1.0）／GP回戦 i(1〜5)の通過 +0.25×i／敗者復活の通過 +1.25／GP決勝の優勝 +3.0
+  p1/p2/p4 = パワプロ準拠（5通貨均等）：量=U×縮め率(1・1/2・1/4)×［道中大会 勝1.0・負0.5／GP回戦i 通過 1+0.35(i-1)・敗退はその半分／復活通過2.4／決勝 優勝3.0・敗退1.5］
+  +L{d} = GPの全回戦・復活・決勝のラインを +d（予選・決勝ライン補正）
   @k = RANK_COST_BANDS の最初の帯(能力0〜15・G→F)の倍率を ×k（k=1.0/0.85/0.7）
 測定R：1年目だけ（各能力の最初の昇格週の中央値・全能力/演技4・年末全G%・センスF以上%・1年目に配った経験点(U)）
 測定B：全キャリア（優勝/決勝/解散%）。ボット4種×ネタ無/込。ボットは差し替えの後に作る・Pool(maxtasksperchild=1)"""
@@ -23,20 +25,23 @@ AB = R.AB
 ABJ = {"sense": "センス", "idea": "発想", "expr": "表現", "chara": "華", "mental": "メンタル"}
 _BANDS0 = list(B.RANK_COST_BANDS)
 U = 4.0   # 稽古1回分（主+副の生の合計。例 ネタ作り 3+1）
-LEVEL = {"s": 1.0, "m": 2.0, "l": 4.0}
+LEVEL = {"s": 1.0, "m": 2.0, "l": 4.0, "q": 0.25, "t": 0.1, "v": 0.05, "1": 1.0, "2": 0.5, "4": 0.25}   # 1/2/4 は p（パワプロ準拠）の縮め率 ×1/×1/2/×1/4   # q/t/v = 小の1/4・1/10・1/20（2回目の追加測定）
+_GP0 = (list(C.GP_ROUNDS), C.GP_REVIVAL_LINE, C.GP_FINAL_LINE)
 DIST = {"a": {c: 0.2 for c in B.CURRENCIES},
         "b": {"hirameki": 0.05, "goi": 0.3, "maai": 0.05, "sonzaikan": 0.3, "tanryoku": 0.3},
-        "c": {c: 0.2 for c in B.CURRENCIES}}
+        "c": {c: 0.2 for c in B.CURRENCIES}, "p": {c: 0.2 for c in B.CURRENCIES}}
 TYPEW_C = {"road": 0.5, "round": 1.0, "final": 2.0}
 STAGE1 = ["A", "A@0.85", "A@0.7"] + [d + l for d in "abc" for l in "sml"]
 
 def parse(var):
-    k = 1.0
+    k = 1.0; dl = 0.0
+    if "+L" in var: var, ls = var.split("+L"); dl = float(ls)   # +L{d}: GPの全回戦・復活・決勝のラインを +d
     if "@" in var: var, ks = var.split("@"); k = float(ks)
-    return var, k
+    return var, k, dl
 
 def apply(var):
-    v, k = parse(var)
+    v, k, dl = parse(var)
+    C.GP_ROUNDS[:] = [(w, ln + dl, lb) for (w, ln, lb) in _GP0[0]]; C.GP_REVIVAL_LINE = _GP0[1] + dl; C.GP_FINAL_LINE = _GP0[2] + dl
     B.RANK_COST_BANDS[:] = [(t, m * k if i == 0 else m) for i, (t, m) in enumerate(_BANDS0)]
     bots_v3.ISSUE = {t: bots_v3._issue(t) for t in B.TRAININGS}
     return v
@@ -46,7 +51,8 @@ def install_exp(v, acc):
     if v == "A": return
     dist, k = DIST[v[0]], LEVEL[v[1]]
     st = dict(i=0, rev=False)
-    def give(units, typ):
+    def give(units, typ, pw=None):
+        if v[0] == "p": units = pw   # パワプロ準拠は下で U 倍率を直接渡す（負けは半分）
         w = TYPEW_C[typ] if v[0] == "c" else 1.0
         tot = units * k * w
         acc["tot"] += tot
@@ -56,19 +62,19 @@ def install_exp(v, acc):
     def enter(s, pol, t, rng):
         acted, won = o_enter(s, pol, t, rng)
         if acted:
-            s_ref[0] = s; give(0.25 + (0.75 if won else 0), "road")
+            s_ref[0] = s; give(0.25 + (0.75 if won else 0), "road", 1.0 if won else 0.5)
         return acted, won
     def gp(s, line, rng, final):
         ok, sc = o_gp(s, line, rng, final)
         s_ref[0] = s
         if not final:
             st["i"] += 1; i = st["i"]
-            give(0.25 + (0.25 * i if ok else 0), "round")
+            give(0.25 + (0.25 * i if ok else 0), "round", (1 + 0.35 * (i - 1)) * (1.0 if ok else 0.5))
             if not ok and i == 5: st["rev"] = True
         elif st["rev"]:
-            st["rev"] = False; give(0.25 + (1.25 if ok else 0), "final")
+            st["rev"] = False; give(0.25 + (1.25 if ok else 0), "final", 2.4 * (1.0 if ok else 0.5))
         else:
-            give(0.25 + (3.0 if ok else 0), "final")
+            give(0.25 + (3.0 if ok else 0), "final", 3.0 if ok else 1.5)
         return ok, sc
     def run_year(pol, s, year, rng, **kw):
         st["i"] = 1 if kw.get("gp_seed") else 0; st["rev"] = False
