@@ -192,56 +192,70 @@ def _others_fireable(k, s, week, year, honban_ahead):
     if k == "notebook":  return week >= 10 and bool(getattr(s, "netas", None))
     if k == "yearend":   return 33 <= week <= 36 and s.money >= 1500   # 選択肢が全部お金ゲート＝1500未満は出さない（全イベント共通の決まり）
     return False
+def _ev_add(s, key, amt):
+    """選択肢イベントの効果1件。EVENTS_APP=True ではアプリ（ChoiceEventEffect.swift applyEventEffect）と同じ
+    『素の加減算＋clamp』＝成長逓減・年予算・知名度の鈍化・相性凍結を通さない（gamecore_review_1019 F2）。
+    EVENTS_APP=False（sim 独自のイベント模型）は従来どおり B.add。gen_golden はイベントを回さない＝golden 不変。"""
+    if not EVENTS_APP:
+        return B.add(s, key, amt)
+    if key == "compat":
+        s.compat = B.clamp(s.compat + amt, 0, B.COMPAT_CAP)
+    elif key in ("stamina", "fame"):
+        setattr(s, key, B.clamp(getattr(s, key) + amt, 0, 100))
+    else:
+        cap = B.MENTAL_CAP if key == "mental" else B.ABILITY_CAP
+        setattr(s, key, B.clamp(getattr(s, key) + amt, 0, cap))
+
 def _others_apply(s, k):
     """ボット共通の方針: 余裕(お金5万+/体力50+)があれば人の方（A）へ、なければ B。効果はChoiceEvent.swiftの値"""
     A = lambda: None
     if k == "kouhai":
-        if s.money >= 50_000: s.money -= 8000; B.add(s, "chara", 1); B.add(s, "mental", 1)
-        else: B.add(s, "chara", -1); B.add(s, "mental", -1); B.add(s, "stamina", 5)
+        if s.money >= 50_000: s.money -= 8000; _ev_add(s, "chara", 1); _ev_add(s, "mental", 1)
+        else: _ev_add(s, "chara", -1); _ev_add(s, "mental", -1); _ev_add(s, "stamina", 5)
     elif k == "senpai":
-        if s.stamina >= 60: B.add(s, "sense", 1); B.add(s, "mental", 1); B.add(s, "stamina", -15)
+        if s.stamina >= 60: _ev_add(s, "sense", 1); _ev_add(s, "mental", 1); _ev_add(s, "stamina", -15)
     elif k == "crew":
-        if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "stamina", -10)
-        else: B.add(s, "stamina", 5)
+        if s.stamina >= 50: _ev_add(s, "fame", 1); _ev_add(s, "stamina", -10)
+        else: _ev_add(s, "stamina", 5)
     elif k == "postcard":
-        if s.stamina >= 50: s.money += 15_000; B.add(s, "idea", 1); B.add(s, "stamina", -10)
-        else: B.add(s, "compat", 1)
+        if s.stamina >= 50: s.money += 15_000; _ev_add(s, "idea", 1); _ev_add(s, "stamina", -10)
+        else: _ev_add(s, "compat", 1)
     elif k == "douki":
-        if s.money >= 50_000 and s.stamina >= 50: B.add(s, "fame", 2); s.money -= 10_000; B.add(s, "stamina", -10)
-        else: B.add(s, "compat", 1)
+        if s.money >= 50_000 and s.stamina >= 50: _ev_add(s, "fame", 2); s.money -= 10_000; _ev_add(s, "stamina", -10)
+        else: _ev_add(s, "compat", 1)
     elif k == "inventory":
-        if s.stamina >= 50: s.money += 20_000; B.add(s, "stamina", -15)
-        else: B.add(s, "expr", 1)
+        if s.stamina >= 50: s.money += 20_000; _ev_add(s, "stamina", -15)
+        else: _ev_add(s, "expr", 1)
     elif k == "homecoming":
-        if s.money >= 50_000: B.add(s, "stamina", 15); B.add(s, "mental", 1); s.money -= 12_000
-        else: B.add(s, "expr", 1); B.add(s, "mental", -1)
+        if s.money >= 50_000: _ev_add(s, "stamina", 15); _ev_add(s, "mental", 1); s.money -= 12_000
+        else: _ev_add(s, "expr", 1); _ev_add(s, "mental", -1)
     elif k == "fan":
-        if s.money >= 30_000: B.add(s, "chara", 1); B.add(s, "fame", 1); s.money -= 5000
+        if s.money >= 30_000: _ev_add(s, "chara", 1); _ev_add(s, "fame", 1); s.money -= 5000
     elif k == "ticket":
-        if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "stamina", -10)
-        elif s.money >= 6000: s.money -= 6000; B.add(s, "expr", 1)
+        if s.stamina >= 50: _ev_add(s, "fame", 1); _ev_add(s, "stamina", -10)
+        elif s.money >= 6000: s.money -= 6000; _ev_add(s, "expr", 1)
     # 第2束 0051〜0057（効果は ChoiceEvent.swift と同値。方針は同じ「余裕があれば人・外の方（A）」）
     elif k == "festival":
-        if s.stamina >= 55: s.money += 12_000; B.add(s, "fame", 1); B.add(s, "stamina", -15)
-        else: B.add(s, "stamina", 10); B.add(s, "mental", 1)
+        if s.stamina >= 55: s.money += 12_000; _ev_add(s, "fame", 1); _ev_add(s, "stamina", -15)
+        else: _ev_add(s, "stamina", 10); _ev_add(s, "mental", 1)
     elif k == "tv":
-        if s.stamina >= 50 or s.money < 1000: B.add(s, "sense", 1); B.add(s, "mental", -1)
-        else: B.add(s, "stamina", 10); B.add(s, "mental", 1); s.money -= 1000
+        if s.stamina >= 50 or s.money < 1000: _ev_add(s, "sense", 1); _ev_add(s, "mental", -1)
+        else: _ev_add(s, "stamina", 10); _ev_add(s, "mental", 1); s.money -= 1000
     elif k == "renovation":
-        if s.money >= 50_000 and s.stamina >= 50: B.add(s, "fame", 2); s.money -= 8000; B.add(s, "stamina", -10)
-        else: B.add(s, "expr", 1); B.add(s, "stamina", -5)
+        if s.money >= 50_000 and s.stamina >= 50: _ev_add(s, "fame", 2); s.money -= 8000; _ev_add(s, "stamina", -10)
+        else: _ev_add(s, "expr", 1); _ev_add(s, "stamina", -5)
     elif k == "classmate":
-        if s.stamina >= 50: B.add(s, "fame", 1); B.add(s, "mental", 1); B.add(s, "stamina", -10)
-        else: B.add(s, "compat", 1); B.add(s, "stamina", 5)
+        if s.stamina >= 50: _ev_add(s, "fame", 1); _ev_add(s, "mental", 1); _ev_add(s, "stamina", -10)
+        else: _ev_add(s, "compat", 1); _ev_add(s, "stamina", 5)
     elif k == "fever":
-        if s.money >= 2000: B.add(s, "compat", 2); s.money -= 2000; B.add(s, "stamina", -5)
-        else: B.add(s, "expr", 1)
+        if s.money >= 2000: _ev_add(s, "compat", 2); s.money -= 2000; _ev_add(s, "stamina", -5)
+        else: _ev_add(s, "expr", 1)
     elif k == "notebook":
-        if s.stamina >= 50 and s.money >= 1500: B.add(s, "mental", 1); B.add(s, "stamina", -10); s.money -= 1500
-        else: B.add(s, "idea", 1); B.add(s, "mental", -1)
+        if s.stamina >= 50 and s.money >= 1500: _ev_add(s, "mental", 1); _ev_add(s, "stamina", -10); s.money -= 1500
+        else: _ev_add(s, "idea", 1); _ev_add(s, "mental", -1)
     elif k == "yearend":
-        if s.money >= 50_000: B.add(s, "sense", 1); B.add(s, "fame", 1); s.money -= 5000; B.add(s, "stamina", -10)
-        elif s.money >= 1500: B.add(s, "compat", 1); B.add(s, "mental", 1); s.money -= 1500
+        if s.money >= 50_000: _ev_add(s, "sense", 1); _ev_add(s, "fame", 1); s.money -= 5000; _ev_add(s, "stamina", -10)
+        elif s.money >= 1500: _ev_add(s, "compat", 1); _ev_add(s, "mental", 1); s.money -= 1500
 
 def _honban_ahead(week):
     ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
@@ -311,46 +325,46 @@ def _app_apply(s, k):
     """固有9種＋確定発火の効果（ChoiceEvent.swift と同値）。方針は _others_apply と同じ『余裕(体力50+等)があれば A』。None=効果なし/フレーバー"""
     weaker = lambda: ("sense" if s.sense <= s.idea else "idea")
     if k == "brokedrink":
-        if s.money >= 10_000: s.money -= 4000; B.add(s, "compat", 1); B.add(s, "mental", 1)
-        else: B.add(s, "idea", 1); B.add(s, "mental", -1)
+        if s.money >= 10_000: s.money -= 4000; _ev_add(s, "compat", 1); _ev_add(s, "mental", 1)
+        else: _ev_add(s, "idea", 1); _ev_add(s, "mental", -1)
     elif k == "meishi":
-        if s.stamina >= 50: B.add(s, "chara", 1); B.add(s, "fame", 2); B.add(s, "mental", -1)
-        else: B.add(s, "stamina", 15); B.add(s, "mental", 1); B.add(s, "compat", 1)
+        if s.stamina >= 50: _ev_add(s, "chara", 1); _ev_add(s, "fame", 2); _ev_add(s, "mental", -1)
+        else: _ev_add(s, "stamina", 15); _ev_add(s, "mental", 1); _ev_add(s, "compat", 1)
     elif k == "peerchair":
-        if s.stamina >= 50: B.add(s, "fame", 2); B.add(s, "stamina", -10); B.add(s, "mental", -1)
-        else: B.add(s, "mental", 1); B.add(s, "compat", 1)
+        if s.stamina >= 50: _ev_add(s, "fame", 2); _ev_add(s, "stamina", -10); _ev_add(s, "mental", -1)
+        else: _ev_add(s, "mental", 1); _ev_add(s, "compat", 1)
     elif k == "lasttrain":
-        if s.stamina >= 50: B.add(s, "mental", -2); B.add(s, "stamina", -5); B.add(s, weaker(), 2)
-        else: B.add(s, "stamina", 5); B.add(s, "mental", 1); B.add(s, "compat", 1); s.money -= 800
+        if s.stamina >= 50: _ev_add(s, "mental", -2); _ev_add(s, "stamina", -5); _ev_add(s, weaker(), 2)
+        else: _ev_add(s, "stamina", 5); _ev_add(s, "mental", 1); _ev_add(s, "compat", 1); s.money -= 800
     elif k == "wrote":      # B の『ネタ合わせ効果UP（netaBoost）』は sim に無い＝未モデル
-        if s.stamina >= 50: B.add(s, "idea", 2); B.add(s, "expr", 1); B.add(s, "stamina", -15)
-        else: B.add(s, "stamina", 5); B.add(s, "mental", 1)
+        if s.stamina >= 50: _ev_add(s, "idea", 2); _ev_add(s, "expr", 1); _ev_add(s, "stamina", -15)
+        else: _ev_add(s, "stamina", 5); _ev_add(s, "mental", 1)
     elif k == "photo":
         if s.stamina >= 50:
-            B.add(s, "chara", 2); B.add(s, "fame", 1); s.money += 10_000; B.add(s, "stamina", -5)
+            _ev_add(s, "chara", 2); _ev_add(s, "fame", 1); s.money += 10_000; _ev_add(s, "stamina", -5)
             s._preocc = max(getattr(s, "_preocc", 0), 1)       # 今週の稽古は不可（アプリ preoccupiedWeeks=1）
-        else: B.add(s, weaker(), 1)
+        else: _ev_add(s, weaker(), 1)
     elif k == "justlost":
-        if s.stamina >= 50: B.add(s, _app_weak4(s), 2); B.add(s, "mental", -2); B.add(s, "stamina", -10)
-        elif s.money >= 1500: B.add(s, "compat", 2); B.add(s, "mental", 1); B.add(s, "stamina", 5); s.money -= 1500
-        else: B.add(s, "stamina", 15); B.add(s, "mental", 2)
+        if s.stamina >= 50: _ev_add(s, _app_weak4(s), 2); _ev_add(s, "mental", -2); _ev_add(s, "stamina", -10)
+        elif s.money >= 1500: _ev_add(s, "compat", 2); _ev_add(s, "mental", 1); _ev_add(s, "stamina", 5); s.money -= 1500
+        else: _ev_add(s, "stamina", 15); _ev_add(s, "mental", 2)
     elif k == "styletalk":   # A=発想+2/表現-1/相性-2 B=表現+2/相性+1/メンタル-1 → ボットは B（相性を削らない）
-        B.add(s, "expr", 2); B.add(s, "compat", 1); B.add(s, "mental", -1)
+        _ev_add(s, "expr", 2); _ev_add(s, "compat", 1); _ev_add(s, "mental", -1)
     elif k == "passfork":
-        if s.stamina >= 50: B.add(s, "fame", 3); B.add(s, "stamina", -15); B.add(s, "mental", -1)
-        else: B.add(s, weaker(), 1); B.add(s, "compat", 1)
+        if s.stamina >= 50: _ev_add(s, "fame", 3); _ev_add(s, "stamina", -15); _ev_add(s, "mental", -1)
+        else: _ev_add(s, weaker(), 1); _ev_add(s, "compat", 1)
     elif k == "eve":
-        if s.stamina >= 60: B.add(s, "expr", 1)
-        else: B.add(s, "stamina", 10); B.add(s, "mental", 1)
+        if s.stamina >= 60: _ev_add(s, "expr", 1)
+        else: _ev_add(s, "stamina", 10); _ev_add(s, "mental", 1)
     elif k == "tsuuka":
-        if s.stamina >= 50: B.add(s, "sense", 2); B.add(s, "compat", -1); B.add(s, "stamina", -10)
-        else: B.add(s, "expr", 2); B.add(s, "compat", 1)
+        if s.stamina >= 50: _ev_add(s, "sense", 2); _ev_add(s, "compat", -1); _ev_add(s, "stamina", -10)
+        else: _ev_add(s, "expr", 2); _ev_add(s, "compat", 1)
     elif k == "early":
-        if s.stamina >= 50: B.add(s, "compat", 2); B.add(s, "stamina", -15)
-        else: B.add(s, "stamina", 10); B.add(s, "mental", 1)
+        if s.stamina >= 50: _ev_add(s, "compat", 2); _ev_add(s, "stamina", -15)
+        else: _ev_add(s, "stamina", 10); _ev_add(s, "mental", 1)
     elif k == "tani":
-        if s.stamina >= 35: s.money += 150_000; B.add(s, "stamina", -15)
-        else: B.add(s, "mental", -1); B.add(s, "compat", 1)
+        if s.stamina >= 35: s.money += 150_000; _ev_add(s, "stamina", -15)
+        else: _ev_add(s, "mental", -1); _ev_add(s, "compat", 1)
     # lineuptop / greenroom / luckythird / nameless はフレーバー（効果なし）
 
 def _app_week_event(s, year, week, stages, gp_alive):
