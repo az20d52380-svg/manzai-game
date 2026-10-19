@@ -747,7 +747,8 @@ struct IntroFlowView: View {
         ReminiscenceCard(caption: "数年後。吉竹興行に所属して、小さな劇場の楽屋。", mood: .eve,
                          talk: [Advice(name: "谷口", text: "緊張してきたわ。手、冷たいねん"),
                                 Advice(name: "俺", text: "水、飲んどけよ。次が出番だぞ"),
-                                Advice(name: "谷口", text: "せやな。ほな、行こか")]),
+                                Advice(name: "谷口", text: "せやな。ほな、行こか")],
+                         backdrop: .init(.gakuya, .evening)),   // 字幕どおり楽屋の絵（教室・廊下は絵が無いので夕景のまま）・mood .eve に合わせて夕
     ]
 
     var body: some View {
