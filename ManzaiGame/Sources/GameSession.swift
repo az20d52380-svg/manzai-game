@@ -835,6 +835,7 @@ final class GameSession {
     func buyItem(_ item: ShopItem) -> Bool {
         guard runner.applyItemPurchase(item) else { return false }
         state = runner.state
+        saveNow()   // 買い物を保存（落とした時に消えない・乱数非消費・code_review_2026-10-19e §5）
         return true
     }
 
@@ -860,6 +861,7 @@ final class GameSession {
     func replayShopVisit(from start: GameState, _ items: [ShopItem]) {
         runner.replayItemPurchases(from: start, items)
         state = runner.state
+        saveNow()
     }
 
     func renameNeta(_ id: Int, to name: String) {
