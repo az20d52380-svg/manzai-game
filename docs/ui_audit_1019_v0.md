@@ -1,0 +1,30 @@
+# UI目視点検 2026-10-19（iPhone 17・MZ_UIフック・タップ無し・コード変更なし）
+
+対象18画面（10/17以降に触ったファイル由来）。qual_notice・finalist_announce は除外。
+重要度：高0／中0／低4。
+
+| 画面(フック) | 結果 |
+|---|---|
+| calendar（年間香盤） | 崩れなし |
+| settings | 崩れなし（下半分は余白が広いが問題なし） |
+| qual_line | 崩れなし |
+| glossary | 崩れなし |
+| shop | 崩れなし（下はスクロール） |
+| notif | 崩れなし（右余白も左と対称を実測確認） |
+| allocate | 崩れなし（特技欄が下端で切れるのはスクロール前提） |
+| neta | 崩れなし（MZ_TAB未指定で能力タブ） |
+| gpresult | 崩れなし |
+| yearend | 崩れなし |
+| prelude_final | 崩れなし |
+| ending | 崩れなし |
+| pass | 崩れなし（右の🏆💪チップはDEBUG限定。3タブ見出し「③講評・精算」と重なるが本番では出ない） |
+| injury | 崩れなし（モーダルは文が長めだが読める） |
+| endingbook | 所見1 |
+| offer | 所見2・3 |
+| rent / weekhint | 所見4 |
+
+## 所見
+1. **低・endingbook**：2列グリッドで左右のカードの高さが揃わず（右列は題が2行で背が高い）、行ごとに上端が数pxずれて段違いに見える。直し案：カード高さを固定（minHeight）か説明行を2行分確保。EndingViews.swift（LazyVGrid）。docs/ui_audit_1019_endingbook.png
+2. **低・offer**：オファー3枚の札が舞台の中央（寄席看板・相方の背中）に重なり、選んだ札の詳細カードも同じ説明文を繰り返す（札と詳細で重複）。直し案：詳細カードの説明は札と違う情報（条件）だけにするか、札の説明を省く。WeekMainView.swift。docs/ui_audit_1019_offer.png
+3. **低・offer**：札の説明が幅の狭い札内で3行に折り返し、3枚で行数が揃わない。直し案：説明を1〜2行に詰めるか最小高さを揃える。WeekMainView.swift。
+4. **低・rent/weekhint**：相方の吹き出しが2行になると▼が文末と同じ行で窮屈、また「まだネタが無い。まずはネタを書こう。」とボタン副題「まだネタがない。まず一本」が同内容で二重。直し案：どちらかを省く。WeekMainView.swift / WeekHint.swift。
