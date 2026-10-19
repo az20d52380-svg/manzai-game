@@ -32,6 +32,8 @@ struct NetaPickRow: View {
                 VStack(spacing: 6) {
                     if session.activeNetas.isEmpty {
                         Text("——まだ、ネタは無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)
+                    } else if session.activeNetas.allSatisfy({ $0.id == excludeID }) {
+                        Text("——ほかにかけるネタが無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)   // 2本目：1本目と同じは選べない＝空のまま無言にしない（review_today_fixes_1019 §1）
                     } else {
                         ForEach(session.activeNetas.filter { $0.id != excludeID }) { neta in
                             candidateRow(neta)
