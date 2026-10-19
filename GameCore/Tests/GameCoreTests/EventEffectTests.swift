@@ -69,4 +69,16 @@ final class EventEffectTests: XCTestCase {
         r.applyEventEffects([.ability(.発想, 2)])
         XCTAssertEqual(r.state.発想, 42, accuracy: 1e-9)
     }
+
+    /// 0050: すれ違いゲージ（rift）は nil を0扱いで加減算し 0..100 に clamp（乱数なし）
+    func testRiftEffectClampsFromNil() {
+        var s = GameState(config: cfg)
+        s.rift = nil
+        s.applyEventEffect(.rift(-5), config: cfg)
+        XCTAssertEqual(s.rift ?? -1, 0, accuracy: 1e-9)
+        s.applyEventEffect(.rift(30), config: cfg)
+        XCTAssertEqual(s.rift ?? -1, 30, accuracy: 1e-9)
+        s.applyEventEffect(.rift(200), config: cfg)
+        XCTAssertEqual(s.rift ?? -1, 100, accuracy: 1e-9)
+    }
 }
