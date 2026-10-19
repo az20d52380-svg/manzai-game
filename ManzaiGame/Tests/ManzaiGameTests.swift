@@ -500,3 +500,109 @@ final class NetaStageTests: XCTestCase {
         XCTAssertEqual(NetaStage.name(100), "仕上がった")
     }
 }
+
+/// 2026-10-19 に直した GameSession の動き（二度押し・ネタ選択の重複・休みへの差し替え）を守る
+final class SessionGuardTests20261019: IsolatedStoreTestCase {
+    private func neta(_ id: Int, polish: Double = 50) -> Neta {
+        var n = Neta(id: id, name: "ネタ\(id)", kata: .瞬発, lengthFit: [.短尺], bornYear: 1)
+        n.polish = polish
+        return n
+    }
+    private func threeNetaSession() -> GameSession {
+        var st = GameState(config: GameConfig())
+        st.netas = [neta(0), neta(1), neta(2)]
+        st.nextNetaID = 3
+        st.selectedNetaID = 0
+        return GameSession(startState: st)
+    }
+
+    func testAcknowledgeResultTwiceAdvancesOnce() {
+        let s = GameSession(startState: GameSession.debugMaxedState())
+        s.debugAdvanceToFirstResult()
+        XCTAssertNotNil(s.pendingResult)
+        s.acknowledgeResult()
+        let w = s.week
+        s.acknowledgeResult()
+        XCTAssertEqual(s.week, w)
+        XCTAssertNil(s.pendingResult)
+    }
+
+    func testSelectNeta2RejectsSameAsFirst() {
+        let s = threeNetaSession()
+        s.selectNeta2(0)
+        XCTAssertNil(s.state.selectedNetaID2)
+        s.selectNeta2(1)
+        XCTAssertEqual(s.state.selectedNetaID2, 1)
+    }
+
+    func testSelectNetaDropsSecondWhenSame() {
+        let s = threeNetaSession()
+        s.selectNeta2(1)
+        s.selectNeta(1)
+        XCTAssertEqual(s.state.selectedNetaID, 1)
+        XCTAssertNil(s.state.selectedNetaID2)
+    }
+
+    func testRetireSecondNetaClearsSecond() {
+        let s = threeNetaSession()
+        s.selectNeta2(1)
+        s.retireNeta(1)
+        XCTAssertNil(s.state.selectedNetaID2)
+        XCTAssertFalse(s.state.netas.contains { $0.id == 1 })
+    }
+
+    func testEnsureStageNetaDefaultFixesSameFirstAndSecond() {
+        var st = GameState(config: GameConfig())
+        st.netas = [neta(0), neta(1)]
+        st.selectedNetaID = 0
+        st.selectedNetaID2 = 0   // 旧セーブの1本目＝2本目
+        let s = GameSession(startState: st)
+        s.ensureStageNetaDefault()
+        XCTAssertNil(s.state.selectedNetaID2)
+    }
+
+    func testApplyEventChoiceTwiceAppliesOnce() throws {
+        let s = GameSession(startState: GameSession.debugMaxedState())
+        var found = false
+        for kind in ChoiceEventKind.allCases {
+            s.debugForceEvent(kind)
+            guard let c = s.availableEventChoices().first else { continue }
+            let before = try JSONEncoder().encode(s.state)
+            s.applyEventChoice(c.id)
+            let once = try JSONEncoder().encode(s.state)
+            s.applyEventChoice(c.id)
+            let twice = try JSONEncoder().encode(s.state)
+            XCTAssertEqual(once, twice, "\(kind) の二度呼びで効果が二重にかかった")
+            if once != before { found = true; break }   // 状態が動く選択肢で一度確かめれば足りる
+        }
+        XCTAssertTrue(found)
+    }
+
+    func testBuyItemSuccessSpendsMoney() throws {
+        var st = GameState(config: GameConfig())
+        st.money = 1_000_000
+        let s = GameSession(startState: st)
+        let item = try XCTUnwrap(s.config.shopLineup.first { GameEngine.canBuy($0, state: s.state, config: s.config) })
+        let price = try XCTUnwrap(s.config.items[item]).price
+        XCTAssertTrue(s.buyItem(item))
+        XCTAssertEqual(s.state.money, 1_000_000 - price)
+    }
+
+    func testRehearsalReplacedByRestCountsAsWeekWithoutPartner() {
+        // 体力ゲート（体力 < staminaGate）で稽古が休みに差し替わる。キツいバイトで体力を削ってから、ネタ合わせを選ぶ
+        let s = GameSession(startState: GameState(config: GameConfig()))
+        var guardSteps = 0
+        while s.state.stamina >= s.config.staminaGate, !s.finished, guardSteps < 30 {
+            guardSteps += 1
+            s.debugFreeWeeks(1, .job(.キツい))
+        }
+        guard case .freeAction = s.phase, s.state.stamina < s.config.staminaGate, s.pendingChoiceEvent == nil, s.pendingResult == nil else {
+            return XCTFail("体力を削れなかった/自由週ではない: \(s.phase) \(s.state.stamina)")
+        }
+        let before = s.state.stamina
+        let prev = s.weeksWithoutPartner
+        s.choose(.train(.ネタ合わせ))
+        XCTAssertGreaterThan(s.state.stamina, before)   // ネタ合わせは体力-20＝増えた＝休みに差し替わった
+        XCTAssertEqual(s.weeksWithoutPartner, prev + 1)
+    }
+}
