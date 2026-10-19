@@ -409,7 +409,12 @@ struct YoseBigSuccessCutIn: View {
     }
 
     private func run() async {
-        if reduceMotion { lines = true; bandIn = true; stamped = true; popped = true; return }
+        if reduceMotion {   // 動きを減らす設定でも、止め絵を見せてから必ず閉じる（onFinish を呼ばずに残り続けた・code_review_2026-10-19k §1）
+            lines = true; bandIn = true; stamped = true; popped = true
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            if !Task.isCancelled { onFinish() }
+            return
+        }
         // 0.00s 白金フラッシュ＋外周集中線
         flash = 0.22; withAnimation(.easeOut(duration: 0.2)) { flash = 0 }
         withAnimation(.easeOut(duration: 0.08)) { lines = true }
@@ -435,6 +440,7 @@ struct YoseBigSuccessCutIn: View {
         try? await Task.sleep(nanoseconds: 700_000_000)
         withAnimation(.easeIn(duration: 0.16)) { bandOut = true }
         try? await Task.sleep(nanoseconds: 180_000_000)
+        if Task.isCancelled { return }   // 取り消された後に onFinish を余計に呼ばない（§2）
         onFinish()
     }
 }
