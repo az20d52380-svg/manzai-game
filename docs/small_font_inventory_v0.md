@@ -111,3 +111,4 @@ TypeStep（Theme.swift）の決まり「12pt 未満は使わない」に反す�
 - MZ_UI=neta が持ち札タブに行かない件：持ち札直行は既に MZ_UI=neta_list（または MZ_TAB=neta）で可能＝コード変更なし。neta_list で目視済（崩れなし）
 - （親の確認 10/20）週の画面の黒帯（YoseGameParts）を MZ_UI=living で目視・崩れなし。図鑑（MZ_UI=endingbook）も崩れなし。**年末の結果（YearResultView）・大会の結果（TournamentResultView）は直行フックが無く未目視**＝タップできる回か、フックを足す時に見る。
 - 3束目：WeekMainView 10件→12／例外3（アイコン443・1571・1658行）・AbilityUpView 9件→12（通貨バッジは lineLimit(1)+minimumScaleFactor(0.85)）／例外1（矢印225行）・YoseRankUpOverlay 5件→12／例外1（矢印231行）・YoseMilestoneFX 5件→12／例外1（再生アイコン245行）。目視 living/allocate/MZ_FX=rankup/pass いずれも崩れなし
+- 4束目（最後）：Finals 2ファイル・Shop・Stage系・Qualifier・Radar・IntroFlow・ChoiceEvent・Champion・YearTurn・YoseTokens(captionBold 11→12) ほかを12に。例外4（RootView DEBUGチップ・TalkParts三角・EventBackgrounds 看板/部屋番号2）＋YoseGameParts41行は式。目視 finals/qual_notice/champion 崩れなし。**残り0（例外はコメント付き。grep の残りは YoseGameParts41の式のみ）**
