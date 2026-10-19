@@ -1463,6 +1463,7 @@ private struct StreetBackdrop: View {
                     ZStack {
                         Rectangle().fill(YoseColor.kuroUrushi)
                         Text(sign).font(YoseFont.gothic(18, weight: .black)).foregroundStyle(YoseColor.kinBright)
+                            .lineLimit(1).minimumScaleFactor(0.5).padding(.horizontal, 4)   // 文字を大きくしても固定枠から切れない（19m §1-1）
                     }
                     .frame(width: 112, height: 30).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2)).position(x: w * 0.40, y: 64)
                     HStack(spacing: 0) {
