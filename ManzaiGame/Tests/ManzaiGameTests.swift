@@ -75,6 +75,37 @@ final class NamesTests: IsolatedStoreTestCase {
         XCTAssertEqual(GameSession(restoring: old).comboKind, .maleMale)
         XCTAssertEqual(Names.show("{me}"), "俺")
     }
+    /// 出会い方（キュー63）：保存往復・旧セーブ＝nil＝①高校の同級生
+    func testOldSaveIsHighSchoolAndMeetingRoundTrips() throws {
+        let s = GameSession(meetingKind: .afterBreakup)
+        s.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
+        XCTAssertEqual(o["meetingKind"] as? String, "afterBreakup")
+        XCTAssertEqual(GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: d)).meetingKind, .afterBreakup)
+        o.removeValue(forKey: "meetingKind")
+        let old = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: o))
+        XCTAssertNil(old.meetingKind)
+        XCTAssertEqual(GameSession(restoring: old).meetingKind, .highSchool)
+        XCTAssertEqual(GameSession().meetingKind, .highSchool)
+    }
+    /// 出会い方の回想：どの型も3枚・吹き出し3／1／3・1吹き出し2文40字以内・ト書き30字以内・①は今の文のまま
+    func testMeetingCardsShape() {
+        XCTAssertEqual(IntroFlowView.cards.first?.talk.first?.text, "その消しゴム、落としたよ")
+        for m in MeetingKind.allCases {
+            let c = m.cards
+            XCTAssertEqual(c.count, 3, m.rawValue)
+            XCTAssertEqual(c.map { $0.talk.isEmpty ? ($0.line == nil ? 0 : 1) : $0.talk.count }, [3, 1, 3], m.rawValue)
+            XCTAssertEqual(c.last?.backdrop?.place, .gakuya, m.rawValue)
+            for card in c {
+                XCTAssertLessThanOrEqual(card.caption.count, 30, card.caption)
+                for t in card.talk.map(\.text) + [card.line].compactMap({ $0 }) {
+                    XCTAssertLessThanOrEqual(t.count, 40, t)
+                    XCTAssertLessThanOrEqual(t.filter { "。？！".contains($0) }.count, 2, t)
+                }
+            }
+        }
+    }
 
     func testDefaultsUnchanged() {
         Names.set(me: nil, partner: nil)

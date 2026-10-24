@@ -55,6 +55,7 @@
 		74DDE7A5903D2D4934E9536F /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = 27B231D4CDB45E90519F75D6 /* GameCore */; };
 		78C7F495D368DDFE1BD4AAC9 /* YoseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */; };
 		78C8C1B88DF1C8660332C114 /* YoseYearTurnCurtain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84CB9905639D09C704FC9DB /* YoseYearTurnCurtain.swift */; };
+		7925116C6D907BF9D2036CEE /* MeetingKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DF85596F9C0B35A83AC7E1 /* MeetingKind.swift */; };
 		7929C910D01A177FA32BE25C /* FanReportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08B86D882DE6689C655ADD0C /* FanReportData.swift */; };
 		7A33BA9747B3D7310837D74E /* se_money.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = DA0693E895C9B421B8BE4EAB /* se_money.mp3 */; };
 		7D0469CAD091DB56A51DF6D3 /* StageOutfit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */; };
@@ -184,6 +185,7 @@
 		B3922B827A8BB6C8A1576AAC /* YoseMilestoneFX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseMilestoneFX.swift; sourceTree = "<group>"; };
 		B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_success.mp3; sourceTree = "<group>"; };
 		B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_small.mp3; sourceTree = "<group>"; };
+		B7DF85596F9C0B35A83AC7E1 /* MeetingKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingKind.swift; sourceTree = "<group>"; };
 		BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBackdropTable.swift; sourceTree = "<group>"; };
 		C0518515B27DFACD1B80A893 /* se_rankup.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_rankup.mp3; sourceTree = "<group>"; };
 		C28779B3A3A70B4A8256AD4F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -287,6 +289,7 @@
 				F5D08F932A4334F422E73881 /* JudgeData.swift */,
 				F6A618381798F759B9F5580F /* Juice.swift */,
 				0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */,
+				B7DF85596F9C0B35A83AC7E1 /* MeetingKind.swift */,
 				D8BA6562B8B9B90803319E52 /* Names.swift */,
 				03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */,
 				66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */,
@@ -551,6 +554,7 @@
 				6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */,
 				4340CE1B5B2F1D0D2E931667 /* Juice.swift in Sources */,
 				54AEEB5805E21D970D9266D8 /* ManzaiGameApp.swift in Sources */,
+				7925116C6D907BF9D2036CEE /* MeetingKind.swift in Sources */,
 				C712E78003F444653742469B /* Names.swift in Sources */,
 				20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */,
 				EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */,

@@ -1,6 +1,6 @@
 // IntroFlow.swift
 // S1 タイトル／コンビ結成（正本: uiux_vision_reply_part2 §S1）。新規開始の初回フロー:
-// KVタイトル →「はじめる」→ 回想3カット(紙芝居) → コンビ名入力見開き →（onComplete）→ 育成メイン。
+// KVタイトル →「はじめる」→ コンビの形 → コンビ名入力見開き（出会い方も選ぶ）→ 回想3カット(紙芝居・選んだ型) →（onComplete）→ 育成メイン。
 // 中断セーブがある時は RootView がこのフローを飛ばして続きから再開する。
 // セーブ/つづきから・顔合わせ・名鑑・排出・壁写真は永続レイヤ未実装のため本編送り（§0）。
 // ReminiscencePlayer は §依頼6 の共用部品①（S6b年表・優勝エピローグでも使う）。KV/立ち絵は【仮】プレースホルダ。
@@ -485,8 +485,9 @@ struct S1TitleView: View {
 
 struct NameEntryView: View {
     var comboKind: ComboKind = .maleMale   // 結成届の薄い文字（俺／私）を形に合わせる
-    var onDecide: (String, String?, String?) -> Void   // コンビ名・自分の名前・相方の名前（空欄＝nil）
+    var onDecide: (String, String?, String?, MeetingKind) -> Void   // コンビ名・自分の名前・相方の名前（空欄＝nil）・出会い方
     @State private var name = ""
+    @State private var meeting: MeetingKind = .highSchool   // 出会い方（既定＝①高校の同級生・表示専用）
     @State private var myName = ""
     @State private var partnerName = ""
     @State private var inkWet = false
@@ -566,6 +567,11 @@ struct NameEntryView: View {
                         nameField($partnerName, prompt: "谷口")
                     }.padding(.horizontal, 14)
                     Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
+                    HStack { Text("出会い").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
+                        Spacer()
+                        meetingMenu
+                    }.padding(.horizontal, 14)
+                    Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
                     HStack { Text("結成日").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
                         Spacer()
                         Text("1年目　第1週").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
@@ -628,6 +634,23 @@ struct NameEntryView: View {
         .frame(maxWidth: 190)
     }
 
+    /// 出会い方の選択（結成届の1行・押すと4つから選べる。決めた後の回想がこの型で流れる）
+    private var meetingMenu: some View {
+        Menu {
+            Picker("出会い方", selection: $meeting) {
+                ForEach(MeetingKind.allCases, id: \.self) { m in Text(m.label).tag(m) }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(meeting.label).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                Image(systemName: "chevron.up.chevron.down").font(.system(size: Font.mzScaled(11), weight: .bold))
+                    .foregroundStyle(YoseColor.haiSumi)
+            }
+        }
+        .accessibilityLabel("出会い方、\(meeting.label)")
+    }
+
     private var rivet: some View {
         Circle().fill(YoseColor.kuroUrushi).frame(width: 8, height: 8)
             .overlay(Circle().stroke(YoseColor.kin, lineWidth: 1))
@@ -640,12 +663,12 @@ struct NameEntryView: View {
         decided = true
         withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName)) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meeting) }
     }
 }
 
 
-// MARK: フロー統合（title → reminiscence → nameEntry → onComplete(name)）
+// MARK: フロー統合（title → comboKind → nameEntry（名前＋出会い方）→ reminiscence → onComplete）
 
 // MARK: S1c 通知許諾プリプロンプト（白面カード・イラスト無し・「消えます」/残り時間は出さない）
 
@@ -714,11 +737,23 @@ struct NotificationPromptView: View {
 }
 
 struct IntroFlowView: View {
-    var onComplete: (String, String?, String?, ComboKind) -> Void
+    var onComplete: (String, String?, String?, ComboKind, MeetingKind) -> Void
     @State private var stage: Stage = IntroFlowView.initialStage
     @State private var name = "あなたのコンビ"
+    @State private var myName: String? = nil
+    @State private var partnerName: String? = nil
     @State private var kind: ComboKind = .maleMale
-    private enum Stage { case title, comboKind, reminiscence, nameEntry, notif }
+    @State private var meeting: MeetingKind = IntroFlowView.initialMeeting
+    private enum Stage { case title, comboKind, nameEntry, reminiscence, notif }
+
+    private func finish() { onComplete(name, myName, partnerName, kind, meeting) }
+
+    private static var initialMeeting: MeetingKind {
+        #if DEBUG
+        if let m = MeetingKind.debugForced { return m }
+        #endif
+        return .highSchool
+    }
 
     /// 導入（回想3場面）を最後まで見た記録。周回をまたぐ（GameSession.store＝UserDefaults）。2周目以降だけ「とばす ▶」を出す。
     static let seenKey = "manzai.introSeen.v1"
@@ -729,26 +764,13 @@ struct IntroFlowView: View {
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_UI"] == "intro_name" { return .nameEntry }   // 目視用: 名前決めへ直行
         if ProcessInfo.processInfo.environment["MZ_UI"] == "combokind" { return .comboKind }   // 目視用: コンビの形を選ぶ画面へ直行
+        if MeetingKind.debugForced != nil { return .reminiscence }   // 目視用: MZ_MEET=1〜4 で回想をその型で直接流す
         #endif
         return .title
     }
 
-    static let cards = [
-        // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた）。10/25 語尾だけ男女どちらでも通る形に（combo_gender_v0 §8）
-        ReminiscenceCard(caption: "高校の教室。休み時間。",
-                         mood: .noon,
-                         talk: [Advice(name: "谷口", text: "その消しゴム、落としたよ"),
-                                Advice(name: "俺", text: "あ、ありがとう。隣のクラスの？"),
-                                Advice(name: "谷口", text: "谷口っていうんだ。購買、一緒に行かない？")],
-                         together: false),
-        ReminiscenceCard(caption: "放課後の廊下。",
-                         mood: .after, speaker: "谷口", line: "コンビ、組まない？"),
-        ReminiscenceCard(caption: "数年後。吉竹興行に所属して、小さな劇場の楽屋。", mood: .eve,
-                         talk: [Advice(name: "谷口", text: "緊張してきた。手、冷たいんだ"),
-                                Advice(name: "俺", text: "水、飲んどきなよ。次が出番だよ"),
-                                Advice(name: "谷口", text: "そうだね。じゃあ、行こうか")],
-                         backdrop: .init(.gakuya, .evening)),   // 字幕どおり楽屋の絵（教室・廊下は絵が無いので夕景のまま）・mood .eve に合わせて夕
-    ]
+    /// ①高校の同級生の回想（RootView の MZ_UI=intro 目視・旧呼び出し用）。型ごとの文は MeetingKind.cards
+    static var cards: [ReminiscenceCard] { MeetingKind.highSchool.cards }
 
     var body: some View {
         ZStack {
@@ -759,26 +781,29 @@ struct IntroFlowView: View {
             case .comboKind:
                 ComboKindPickerView { k in
                     kind = k
-                    Names.setKind(k)   // 回想の「俺／私」・顔・衣装が選んだ形で出る
+                    Names.setKind(k)   // 結成届・回想の「俺／私」・顔・衣装が選んだ形で出る
+                    withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry }
+                }
+                .transition(.opacity)
+            case .nameEntry:
+                // 名前と出会い方を決めてから回想（キュー63・オーナー決定 10/20）。回想は入れた名前・選んだ型で流す
+                NameEntryView(comboKind: kind) { n, me, partner, m in
+                    name = n.isEmpty ? "あなたのコンビ" : n
+                    myName = me; partnerName = partner; meeting = m
+                    Names.set(me: me, partner: partner)
                     withAnimation(.easeInOut(duration: 0.4)) { stage = .reminiscence }
                 }
                 .transition(.opacity)
             case .reminiscence:
                 ReminiscencePlayer(
-                    cards: Self.cards,
-                    onComplete: { Self.markIntroSeen(); withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } },
-                    onSkip: Self.hasSeenIntro ? { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } } : nil)
+                    cards: meeting.cards,
+                    onComplete: { Self.markIntroSeen(); finish() },
+                    onSkip: Self.hasSeenIntro ? { finish() } : nil)
                     .transition(.opacity)
-            case .nameEntry:
-                NameEntryView(comboKind: kind) { n, me, partner in
-                    name = n.isEmpty ? "あなたのコンビ" : n
-                    onComplete(name, me, partner, kind)
-                }
-                .transition(.opacity)
             case .notif:
                 // 通知機能が1本も実装されていない間は許諾を求めない（初週前の摩擦だけが残るため導線から外す）。
                 // NotificationPromptView 本体と MZ_UI=notif は通知実装時に復帰させる（休眠温存）。
-                NotificationPromptView { onComplete(name, nil, nil, kind) }
+                NotificationPromptView { finish() }
                     .transition(.opacity)
             }
         }

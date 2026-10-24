@@ -61,12 +61,12 @@ struct RootView: View {
             case "glossary": GlossaryView(onClose: {})                      // 用語集の目視
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
-            case "intro": ReminiscencePlayer(cards: IntroFlowView.cards, onComplete: {}) // 導入の回想カード目視
+            case "intro": ReminiscencePlayer(cards: (MeetingKind.debugForced ?? .highSchool).cards, onComplete: {}) // 導入の回想カード目視（MZ_MEET=1〜4 で型）
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
             case "finals": FinalsPresentationView(session: session)        // 決勝演出の目視（.taskで優勝の夜を用意・審査員点の和と合計の確認用）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
-            case "intro_title", "intro_name", "combokind": IntroFlowView { _, _, _, _ in }          // タイトル／名前決めの目視
+            case "intro_title", "intro_name", "combokind": IntroFlowView { _, _, _, _, _ in }          // タイトル／名前決めの目視
             case "endingbook": EndingGalleryView(onClose: {})               // エンディング図鑑の目視（MZ_BOOKSEEN=1,3,7 で見た扱いの見本）
             case "catalog": YoseCatalogView()                               // デザイン部品見本
             case "frame": StageFramePreview(mode: debugFrameMode)                  // 本番の舞台の部品目視（MZ_MODE で状態）
@@ -334,10 +334,10 @@ struct RootView: View {
                     #endif
                 }
         } else {
-            IntroFlowView { name, me, partner, kind in          // S1: KV→回想→名入力（コンビ名・自分の名前・相方の名前）
+            IntroFlowView { name, me, partner, kind, meeting in          // S1: KV→回想→名入力（コンビ名・自分の名前・相方の名前）
                 // 初回もランダムシード（「もう一度」と同じ）。固定424242だと全プレイヤーの初年が同一乱数になる。
                 // DEBUGの MZ_SMOKE/MZ_UI 経路は上の .task が固定シードの session をそのまま使う＝決定的なまま。
-                session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name, myName: me, partnerName: partner, comboKind: kind)
+                session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name, myName: me, partnerName: partner, comboKind: kind, meetingKind: meeting)
                 withAnimation(.easeInOut(duration: 0.4)) { started = true }
             }
         }
@@ -440,7 +440,7 @@ struct RootView: View {
                     showEnding = false
                     rounds += 1
                     if rounds % 2 == 0 { forceChampion() }
-                    else { session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: s.combiName, myName: s.myName, partnerName: s.partnerName, comboKind: s.comboKind) }
+                    else { session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: s.combiName, myName: s.myName, partnerName: s.partnerName, comboKind: s.comboKind, meetingKind: s.meetingKind) }
                 } else { s.startNextYear() }
                 continue
             }

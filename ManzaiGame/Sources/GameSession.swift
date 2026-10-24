@@ -183,6 +183,8 @@ final class GameSession {
     let partnerName: String?
     /// コンビの形（旧セーブ＝男コンビ・表示専用・golden非対象）
     let comboKind: ComboKind
+    /// 相方との出会い方（導入の回想の型・旧セーブ＝①高校の同級生・表示専用・golden非対象）
+    let meetingKind: MeetingKind
     /// 中断セーブから復元されたセッションか（RootView が IntroFlow をスキップする判定に使う）
     let isRestored: Bool
 
@@ -191,7 +193,7 @@ final class GameSession {
 
     init(seed: UInt64 = 424242, config: GameConfig = GameConfig(), startState: GameState? = nil,
          combiName: String = "あなたのコンビ", myName: String? = nil, partnerName: String? = nil,
-         comboKind: ComboKind = .maleMale) {
+         comboKind: ComboKind = .maleMale, meetingKind: MeetingKind = .highSchool) {
         // 実ゲームも自動注ぎ（A「削る」スライス1・fun_uiux_overhaul_v0 §5-1 A列）＝稽古で稼いだ粒は行動直後に
         // recommendedPlan で全量注がれ、のばす画面（AllocationView）は通らない。GameConfig 既定値（true）と同じ＝
         // sim/golden の前提と実ゲームが一致する（golden 不変）。明示しておくのは、既定値が将来変わっても実ゲームを固定するため。
@@ -221,6 +223,7 @@ final class GameSession {
         if let k = ProcessInfo.processInfo.environment["MZ_KIND"].flatMap({ ComboKind(rawValue: $0) }) { comboKind = k }   // 目視用: MZ_KIND=femaleFemale 等
         #endif
         self.comboKind = comboKind
+        self.meetingKind = meetingKind
         Names.set(me: myName, partner: partnerName)
         Names.setKind(comboKind)
         self.isRestored = false
@@ -246,6 +249,7 @@ final class GameSession {
         self.myName = save.myName
         self.partnerName = save.partnerName
         self.comboKind = ComboKind.from(save.comboKind)
+        self.meetingKind = MeetingKind.from(save.meetingKind)
         Names.set(me: save.myName, partner: save.partnerName)
         Names.setKind(self.comboKind)
         self.isRestored = true
@@ -1113,6 +1117,7 @@ final class GameSession {
         var myName: String?        // 自分の名前（旧セーブ＝nil＝俺）
         var partnerName: String?   // 相方の名前（旧セーブ＝nil＝谷口）
         var comboKind: String?     // コンビの形 ComboKind.rawValue（旧セーブ＝nil＝男コンビ）
+        var meetingKind: String?   // 出会い方 MeetingKind.rawValue（旧セーブ＝nil＝高校の同級生）
         var didFireRiftWarn: Bool? // 途中解散の予告を出したか（旧セーブ＝nil＝まだ）
         var riftWarnChoice: String? // 予告の選択 "A"/"B"（旧セーブ＝nil）
         var didShowRiftHint: Bool?  // 予告の後の知らせを出したか（旧セーブ＝nil＝まだ）
@@ -1184,7 +1189,7 @@ final class GameSession {
                             didFireLostRehearsal: didFireLostRehearsal, didFirePassFork: didFirePassFork,
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
                             yearStartState: yearStartState, yearHistory: yearHistory,
-                            debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName, comboKind: comboKind.rawValue,
+                            debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName, comboKind: comboKind.rawValue, meetingKind: meetingKind.rawValue,
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
@@ -1716,7 +1721,7 @@ extension GameSession {
         do { var st = GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
              let s = GameSession(startState: st); s.debugAdvanceYears(1); s.saveNow()
              if let d = UserDefaults.standard.data(forKey: "manzai.save.v1"), var o = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
-                 for k in ["version", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName", "comboKind", "didFireRiftWarn", "riftWarnChoice", "didShowRiftHint", "didFireLostRehearsal", "didFirePassFork", "didFireEve", "didWatchFinal"] { o.removeValue(forKey: k) }
+                 for k in ["version", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName", "comboKind", "meetingKind", "didFireRiftWarn", "riftWarnChoice", "didShowRiftHint", "didFireLostRehearsal", "didFirePassFork", "didFireEve", "didWatchFinal"] { o.removeValue(forKey: k) }
                  if var r = o["runner"] as? [String: Any], var stt = r["state"] as? [String: Any] {
                      for k in ["rift", "riftWarned", "riftWeekStartCompat", "dissolved"] { stt.removeValue(forKey: k) }
                      r["state"] = stt; o["runner"] = r
