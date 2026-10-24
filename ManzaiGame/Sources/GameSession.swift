@@ -951,6 +951,22 @@ final class GameSession {
         abandoned = true
     }
 
+    /// 設定の「解散」の別れの場面に出す、この周の最高成績1行（表示専用・乱数なし）。
+    /// 終わった年（yearHistory）＋進行中の年の頂GPの到達から一番上を選ぶ。大会に一度も出ていなければ nil
+    var bestRunLine: String? {
+        var recs = yearHistory.filter { $0.enteredGP != false }
+            .map { YearRecord(year: $0.year, roundsPassed: $0.roundsPassed, reachedFinal: $0.reachedFinal,
+                              champion: $0.champion, bankrupt: false, prize: 0) }   // 夜逃げ・解散の印は外して到達だけを比べる
+        if !finished, runner.gpRoundsPassed > 0 || runner.isFinalist {
+            recs.append(YearRecord(year: year, roundsPassed: runner.gpRoundsPassed, reachedFinal: runner.isFinalist,
+                                   champion: false, bankrupt: false, prize: 0))
+        }
+        func rank(_ r: YearRecord) -> Int { r.champion ? 100 : (r.reachedFinal ? 50 : r.roundsPassed) }
+        guard let best = recs.max(by: { rank($0) < rank($1) || (rank($0) == rank($1) && $0.year > $1.year) }) else { return nil }
+        let label = best.champion ? "優勝" : YearResultView.reachLabel(best, names: config.calendar.gpRoundNames)
+        return "\(best.year)年目　頂GP \(label)"
+    }
+
     /// 「勝ち版」決勝演出の「次へ」。年末結果（S4）へ
     func acknowledgeWin() {
         winFinale = false

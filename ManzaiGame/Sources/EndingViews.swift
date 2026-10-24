@@ -371,3 +371,50 @@ struct EndingGalleryView: View {
         return f.string(from: d)
     }
 }
+
+// MARK: - 設定の「解散」の後の別れの場面（オーナー決定 10/20・図鑑に入れない）
+
+/// 場面カード1枚→この周の最高成績1行→タイトルへ。EndingBook には記録しない（連打で図鑑が埋まるのを防ぐ）
+struct DisbandFarewellView: View {
+    let bestLine: String?
+    var onFinish: () -> Void
+    @State private var showSummary = false
+
+    static let card = ReminiscenceCard(
+        caption: "夕方。いつもの稽古場。", mood: .after,
+        talk: [Advice(name: "俺", text: "話がある。コンビは今日で終わりにしよう"),
+               Advice(name: "谷口", text: "……そうか。わかった"),
+               Advice(name: "谷口", text: "今までありがとう。体には気をつけろよ"),
+               Advice(name: "俺", text: "そっちもな。じゃあ、また")],
+        together: true, backdrop: EventBackdrop(.keikoba, .evening))
+
+    var body: some View {
+        ZStack {
+            if showSummary { summary } else {
+                ReminiscencePlayer(cards: [Self.card], title: "解散", onComplete: {
+                    withAnimation(.easeInOut(duration: 0.4)) { showSummary = true }
+                })
+            }
+        }
+        .transition(.opacity)
+        #if DEBUG
+        .onAppear { if ProcessInfo.processInfo.environment["MZ_ENDSTEP"] == "art" { showSummary = true } }   // 目視用: 成績の一行へ直行
+        #endif
+    }
+
+    private var summary: some View {
+        ZStack {
+            LinearGradient(colors: [YoseColor.kuroUrushi, YoseColor.enji.opacity(0.8)], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            VStack(spacing: 14) {
+                Spacer()
+                Text("この周の最高成績").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.kin)
+                Text(bestLine ?? "大会の記録はまだない").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.kinari)
+                    .multilineTextAlignment(.center).padding(.horizontal, 28)
+                Spacer()
+                Button(action: onFinish) { Text("タイトルへ ▶") }
+                    .buttonStyle(YoseButtonStyle(.primary))
+                    .padding(.horizontal, 14).padding(.bottom, 30)
+            }
+        }
+    }
+}

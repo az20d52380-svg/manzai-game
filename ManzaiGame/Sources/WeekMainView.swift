@@ -80,6 +80,7 @@ struct WeekMainView: View {
     @State private var offerBandH: CGFloat = 0
     /// 進行中の設定（監査G-04）
     @State private var showSettings = false
+    @State private var showFarewell = false   // 設定の「解散」の後の別れの場面（図鑑に入れない）
     /// 買い物（ShopView・アイテム）
     @State private var showShop = false
     /// 能力アップ（AllocationView・経験点を能力に振る）
@@ -186,7 +187,13 @@ struct WeekMainView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(onClose: { showSettings = false },
-                         onQuitRun: { showSettings = false; session.abandonRun() })
+                         onQuitRun: { showSettings = false; showFarewell = true })
+        }
+        .overlay {
+            if showFarewell {
+                DisbandFarewellView(bestLine: session.bestRunLine) { session.abandonRun() }
+                    .zIndex(10)
+            }
         }
         .overlay { burstCostOverlay }
         .overlay {
