@@ -383,9 +383,9 @@ struct DisbandFarewellView: View {
     static let card = ReminiscenceCard(
         caption: "夕方。いつもの稽古場。", mood: .after,
         talk: [Advice(name: "俺", text: "話がある。コンビは今日で終わりにしよう"),
-               Advice(name: "谷口", text: "……そうか。わかった"),
-               Advice(name: "谷口", text: "今までありがとう。体には気をつけろよ"),
-               Advice(name: "俺", text: "そっちもな。じゃあ、また")],
+               Advice(name: "谷口", text: "……そっか。わかった"),
+               Advice(name: "谷口", text: "今までありがとう。体には気をつけてね"),
+               Advice(name: "俺", text: "そっちもね。じゃあ、また")],
         together: true, backdrop: EventBackdrop(.keikoba, .evening))
 
     var body: some View {

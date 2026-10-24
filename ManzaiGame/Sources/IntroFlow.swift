@@ -734,19 +734,19 @@ struct IntroFlowView: View {
     }
 
     static let cards = [
-        // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた・語は1字も変えない）
+        // 文言は既存のまま（2枚目の台詞だけ谷口の吹き出しへ分けた）。10/25 語尾だけ男女どちらでも通る形に（combo_gender_v0 §8）
         ReminiscenceCard(caption: "高校の教室。休み時間。",
                          mood: .noon,
                          talk: [Advice(name: "谷口", text: "その消しゴム、落としたよ"),
                                 Advice(name: "俺", text: "あ、ありがとう。隣のクラスの？"),
-                                Advice(name: "谷口", text: "谷口だ。購買、一緒に行かない？")],
+                                Advice(name: "谷口", text: "谷口っていうんだ。購買、一緒に行かない？")],
                          together: false),
         ReminiscenceCard(caption: "放課後の廊下。",
-                         mood: .after, speaker: "谷口", line: "コンビ、組まないか"),
+                         mood: .after, speaker: "谷口", line: "コンビ、組まない？"),
         ReminiscenceCard(caption: "数年後。吉竹興行に所属して、小さな劇場の楽屋。", mood: .eve,
                          talk: [Advice(name: "谷口", text: "緊張してきた。手、冷たいんだ"),
-                                Advice(name: "俺", text: "水、飲んどけよ。次が出番だぞ"),
-                                Advice(name: "谷口", text: "そうだな。じゃあ、行こうか")],
+                                Advice(name: "俺", text: "水、飲んどきなよ。次が出番だよ"),
+                                Advice(name: "谷口", text: "そうだね。じゃあ、行こうか")],
                          backdrop: .init(.gakuya, .evening)),   // 字幕どおり楽屋の絵（教室・廊下は絵が無いので夕景のまま）・mood .eve に合わせて夕
     ]
 

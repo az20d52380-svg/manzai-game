@@ -1126,7 +1126,7 @@ struct FinalsPresentationView: View {
                         .padding(.horizontal, 10).padding(.vertical, 3)
                         .background(YoseColor.kuroUrushi)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
-                    YoseSpeechBox(speaker: "谷口", text: "……本当に、勝ったんだな", roleLabel: "相方")
+                    YoseSpeechBox(speaker: "谷口", text: "……本当に、勝ったんだね", roleLabel: "相方")
                 }
             } else if spectator {
                 // 固定の一文：このキャリアで二度目以降は出さない（毎年同じ最後の一行にならない）

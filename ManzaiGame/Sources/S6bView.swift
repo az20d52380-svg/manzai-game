@@ -153,8 +153,8 @@ struct S6bView: View {
                                     Advice(name: "谷口", text: "いいよ。押し入れに毛布がある")],
                              backdrop: .init(.apartment, .night)),
             ReminiscenceCard(caption: "大会の帰り。夜の電車。",
-                             talk: [Advice(name: "谷口", text: "終電、間に合ってよかったな"),
-                                    Advice(name: "俺", text: "ああ。来年も、また出よう")],
+                             talk: [Advice(name: "谷口", text: "終電、間に合ってよかったね"),
+                                    Advice(name: "俺", text: "うん。来年も、また出よう")],
                              backdrop: .init(.train, .night)),
             ReminiscenceCard(caption: "いつものファミレス。同じ席。",   // 推定: 時間帯の記述なし→夕
                              talk: [Advice(name: "谷口", text: "いつもの、ドリンクバーでいい？"),
