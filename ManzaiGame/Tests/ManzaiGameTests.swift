@@ -607,4 +607,30 @@ final class SessionGuardTests20261019: IsolatedStoreTestCase {
         XCTAssertGreaterThan(s.state.stamina, before)   // ネタ合わせは体力-20＝増えた＝休みに差し替わった
         XCTAssertEqual(s.weeksWithoutPartner, prev + 1)
     }
+
+    // キュー116: 決勝の審査員の点と7票（表示のみ・勝敗は GameCore の champion/margin のまま）
+    func testFinalsJudgeVotesAbilityBased() {
+        var weak = GameState(config: GameConfig())
+        weak.センス = 60; weak.発想 = 60; weak.表現 = 60; weak.華 = 50; weak.メンタル = 50; weak.compat = 8
+        for y in 1...40 {
+            // MAX・優勝・大差 → 補正なしで7-0
+            let mx = FinalsData(state: GameSession.debugMaxedState(), champion: true, margin: 30, year: y, selfName: "あなたのコンビ", polish: 100)
+            XCTAssertEqual(mx.finalVotes, 7, "year \(y)")
+            XCTAssertEqual(mx.judges.reduce(0) { $0 + $1.score }, mx.total)
+            for st in [GameSession.debugMaxedState(), weak] {
+                for (champ, m) in [(true, 2.0), (true, 12.0), (false, -2.0), (false, -12.0)] {
+                    let d = FinalsData(state: st, champion: champ, margin: m, year: y, selfName: "あなたのコンビ", polish: 55)
+                    XCTAssertEqual(d.judges.reduce(0) { $0 + $1.score }, d.total)
+                    XCTAssertEqual(d.judgeVotes.count, 7)
+                    if let si = d.selfDuelIndex {
+                        let own = d.judgeVotes.filter { $0 == si }.count
+                        if champ { XCTAssertGreaterThanOrEqual(own, 4); XCTAssertEqual(d.winnerIndex, si) }
+                        else { XCTAssertLessThanOrEqual(own, 3); XCTAssertNotEqual(d.winnerIndex, si) }
+                    } else { XCTAssertFalse(champ) }
+                }
+            }
+        }
+        // 重み表は行合計1
+        for w in FinalsData.judgeWeights { XCTAssertEqual(w.reduce(0, +), 1.0, accuracy: 1e-9) }
+    }
 }

@@ -79,11 +79,12 @@ struct FinalsPresentationView: View {
         #if DEBUG
         // 目視用: MZ_FMARGIN=点差 で決勝の結果を差し替える（負＝敗退。-2 なら最終決戦で惜敗、-20 なら1本目で敗退）
         if let m = Double(ProcessInfo.processInfo.environment["MZ_FMARGIN"] ?? ""), !spectator {
-            return FinalsData(state: s, champion: m > 0, margin: m, year: session.year, selfName: session.combiName)
+            return FinalsData(state: s, champion: m > 0, margin: m, year: session.year, selfName: session.combiName, polish: session.selectedNeta?.polish ?? 60)
         }
         #endif
         return FinalsData(state: s, champion: !spectator && session.winFinale, spectator: spectator,
-                          margin: spectator ? nil : margin, year: session.year, selfName: session.combiName)
+                          margin: spectator ? nil : margin, year: session.year, selfName: session.combiName,
+                          polish: session.selectedNeta?.polish ?? 60)
     }
     /// 1組の表示名（自組は付けたコンビ名）
     private func displayName(_ e: FinalsEntry) -> String { e.isSelf ? session.combiName : e.name }
@@ -1182,6 +1183,8 @@ struct FinalsData {
     var voteOrder: [Int] = []
     /// 優勝コンビ（duelEntries の添字）
     var winnerIndex: Int = 0
+    /// 審査員ごとの最終決戦の投票先（duelEntries の添字・審査員の並び順）
+    var judgeVotes: [Int] = []
     /// 自組が最終決戦に立つか
     var selfInDuel: Bool { duelEntries.contains { $0.isSelf } }
     /// 最終決戦での自組の添字（立たない年は nil）
@@ -1189,7 +1192,7 @@ struct FinalsData {
 
     /// - margin: GameCore の決勝のスコアと実効ラインの差（正＝優勝）。順位をこの差に沿わせる＝見せ札が内部の結果と矛盾しない
     /// - year: 年ごとに決勝の顔ぶれと出順を変える（毎年同じ10組にしない）
-    init(state s: GameState, champion: Bool, spectator: Bool = false, margin: Double? = nil, year: Int = 1, selfName: String = "") {
+    init(state s: GameState, champion: Bool, spectator: Bool = false, margin: Double? = nil, year: Int = 1, selfName: String = "", polish: Double = 60) {
         self.champion = champion
         // UI専用RNG（能力と年から決定的にseed＝再現可・GameCoreの乱数列に非干渉）
         var rng = SeededRng(seed: UInt64(bitPattern: Int64(
@@ -1228,22 +1231,22 @@ struct FinalsData {
         self.order = myOrder
         self.boardRank = rank
 
-        // 7審査員（自組の採点）: raw = S/7 + 人格bias + 重視軸tilt + ノイズ → Σ=S補正 → [50,99]クランプ
+        // 7審査員（自組の採点・キュー116 案A/B1）: raw = S/7 + (p_j − 平均p) + 小さなノイズ → [50,99] → Σ=S補正
+        // p_j = Σ 重み表[j][i] × 項目i（能力/上限・相性/20・選んだネタの完成度/100）。重み表は judgeWeights（1か所・全て【仮】）
         let base = Double(max(total, 600)) / 7.0
-        let perfAvg = (Double(s.発想) + Double(s.センス) + Double(s.表現) + Double(s.華)) / 4.0
-        func tilt(_ v: Double) -> Double { max(-3, min(3, (v - perfAvg) / 10.0)) }
-        struct Spec { let name: String; let bias: Double; let axis: Double; let color: Color; let noise: Int }
+        struct Spec { let name: String; let color: Color; let noise: Int }
         // 固定嗜好: 振れ幅は審査員ごとに固定（神楽坂=変わり者好き±3・天堂寺=辛口で最小±1・他±2）＝統合設計 §2-5
         let specs: [Spec] = [
-            Spec(name: "音羽 ルリ",      bias: 1,  axis: Double(s.華),            color: Theme.cChara,  noise: 2),
-            Spec(name: "白波 剛",        bias: 2,  axis: Double(s.表現),          color: Theme.cExpr,   noise: 2),
-            Spec(name: "卯月 走太",      bias: 0,  axis: Double(s.発想),          color: Theme.cIdea,   noise: 2),
-            Spec(name: "花園 千代",      bias: 1,  axis: Double(s.compat) * 6,     color: Theme.verm,    noise: 2),
-            Spec(name: "目白 慧",        bias: -1, axis: Double(s.発想),          color: Theme.cIdea,   noise: 2),
-            Spec(name: "神楽坂 とんぼ",  bias: 0,  axis: Double(s.メンタル),      color: Theme.cMental, noise: 3),
-            Spec(name: "天堂寺 銀郎",    bias: -2, axis: Double(s.センス),        color: Theme.cSense,  noise: 1),
+            Spec(name: "音羽 ルリ",      color: Theme.cChara,  noise: 2),
+            Spec(name: "白波 剛",        color: Theme.cExpr,   noise: 2),
+            Spec(name: "卯月 走太",      color: Theme.cIdea,   noise: 2),
+            Spec(name: "花園 千代",      color: Theme.verm,    noise: 2),
+            Spec(name: "目白 慧",        color: Theme.cIdea,   noise: 2),
+            Spec(name: "神楽坂 とんぼ",  color: Theme.cMental, noise: 3),
+            Spec(name: "天堂寺 銀郎",    color: Theme.cSense,  noise: 1),
         ]
-        let raw = specs.map { base + $0.bias + tilt($0.axis) + Double(rng.int(-$0.noise...$0.noise)) }
+        let deltas = FinalsData.judgeDeltas(state: s, polish: polish)
+        let raw = specs.enumerated().map { base + deltas[$0.offset] + Double(rng.int(-$0.element.noise...$0.element.noise)) }
         var ints = raw.map { max(50, min(99, Int($0.rounded()))) }   // 先に 50〜99 に収めてから合計に合わせる（後で頭打ちすると7人の和が合計とずれた・code_review_2026-10-19h §1）
         if !spectator {
             // Σ=S へ丸め補正（50〜99 の中でだけ動かす。乱数は使わない）
@@ -1291,34 +1294,92 @@ struct FinalsData {
         let duel = Array(ranked.prefix(3))
         self.duelEntries = duel
         let selfIdx = duel.firstIndex { $0.isSelf }
-        let winner: Int
-        if champion, let si = selfIdx {
-            winner = si
-        } else {
-            // 自組以外の誰か（1本目の順位が高いほど勝ちやすい・表示だけ）
-            let cands = (0..<3).filter { $0 != selfIdx }
-            let roll = rng.int(1...10)
-            winner = roll <= 5 ? cands[0] : (roll <= 8 || cands.count < 3 ? cands[min(1, cands.count - 1)] : cands[2])
+        // 審査員ごとの個人点（キュー116）: 自組＝S/7＋能力×重みの偏り＋決勝の出来(margin)、他組＝その組のS/7＋組ごとにseed固定の偏り
+        let mgain = max(-30, min(30, margin ?? 0)) * 0.2
+        var duelScores: [[Double]] = []
+        for e in duel {
+            if e.isSelf {
+                duelScores.append(deltas.map { Double(total) / 7.0 + $0 + mgain })
+            } else {
+                var er = SeededRng(seed: UInt64(bitPattern: Int64(
+                    e.name.unicodeScalars.reduce(0) { $0 &* 31 &+ Int($1.value) } &+ year &* 7919 &+ 0x51ED)))
+                duelScores.append((0..<7).map { _ in Double(e.total) / 7.0 + Double(er.int(-15...15)) / 10.0 })
+            }
         }
+        // 各審査員は個人点が最高の組へ投票（同点は添字の小さい方）
+        func bestIndex(_ j: Int, excluding ex: Int? = nil) -> Int {
+            var best = -1
+            for i in 0..<3 where i != ex {
+                if best < 0 || duelScores[i][j] > duelScores[best][j] { best = i }
+            }
+            return best
+        }
+        var votes: [Int] = (0..<7).map { bestIndex($0) }
+        // 補正1段（勝敗は GameCore が決めた通り）: 優勝なら自組が最低4票／負けなら自組が過半数にならず首位でもない
+        if let si = selfIdx {
+            func cnt(_ i: Int) -> Int { votes.filter { $0 == i }.count }
+            func topOtherCount() -> Int { (0..<3).filter { $0 != si }.map { cnt($0) }.max() ?? 0 }
+            if champion {
+                while cnt(si) < 4 {
+                    // 自組との差が小さい審査員から倒す
+                    var pick = -1
+                    var pickGap = Double.infinity
+                    for j in 0..<7 where votes[j] != si {
+                        let gap: Double = duelScores[votes[j]][j] - duelScores[si][j]
+                        if gap < pickGap { pick = j; pickGap = gap }
+                    }
+                    if pick < 0 { break }
+                    votes[pick] = si
+                }
+            } else {
+                while cnt(si) > 3 || cnt(si) >= topOtherCount() {
+                    var pick = -1
+                    var pickGap = Double.infinity
+                    for j in 0..<7 where votes[j] == si {
+                        let other = bestIndex(j, excluding: si)
+                        let gap: Double = duelScores[si][j] - duelScores[other][j]
+                        if gap < pickGap { pick = j; pickGap = gap }
+                    }
+                    if pick < 0 { break }
+                    votes[pick] = bestIndex(pick, excluding: si)
+                }
+            }
+        }
+        let counts = (0..<3).map { i in votes.filter { $0 == i }.count }
+        var winner = (0..<3).max { counts[$0] < counts[$1] || (counts[$0] == counts[$1] && $0 > $1) }!
+        if champion, let si = selfIdx { winner = si }
+        else if let si = selfIdx, winner == si { winner = (0..<3).filter { $0 != si }.max { counts[$0] < counts[$1] }! }
         self.winnerIndex = winner
-        // 勝者は必ず過半数。全員一致（7票）は現実にほぼ無い（オーナー指摘 2026-10-10）＝決勝で圧倒した時だけ
-        let m = margin ?? 0
-        let w: Int
-        if champion, selfIdx == winner {
-            w = m >= 20 ? rng.int(6...7) : (m >= 10 ? rng.int(5...6) : rng.int(4...5))
-        } else {
-            w = rng.int(4...6)
-        }
-        self.finalVotes = selfIdx == nil ? 0 : (selfIdx == winner ? w : 0)
-        var counts = [0, 0, 0]
-        counts[winner] = w
-        let others = (0..<3).filter { $0 != winner }
-        let a = rng.int(0...(7 - w))
-        counts[others[0]] = a
-        counts[others[1]] = 7 - w - a
-        var vorder = counts.enumerated().flatMap { Array(repeating: $0.offset, count: $0.element) }
+        self.judgeVotes = votes
+        self.finalVotes = selfIdx == nil ? 0 : (selfIdx == winner ? counts[winner] : 0)
+        var vorder = votes
         for i in stride(from: 6, through: 1, by: -1) { vorder.swapAt(i, rng.int(0...i)) }
         self.voteOrder = vorder
+    }
+
+    // MARK: 審査員ごとの重み（キュー116・案A/B1・docs/judge_scoring_1020_v0.md §7）
+    /// 項目の並び: センス, 発想, 表現, 華, 相性, 完成度(選んだネタのpolish), メンタル。行合計1。【仮】
+    /// 7人の平均 ≒ 今の全体重み（センス.30/発想.30/表現.25/華.15）の約0.8倍＋相性・完成度・メンタルを少し。
+    /// 行順は審査員の並び（音羽/白波/卯月/花園/目白/神楽坂/天堂寺）＝重視軸は 華/表現/発想/相性/発想/メンタル/センス。
+    static let judgeWeights: [[Double]] = [
+        [0.20, 0.20, 0.17, 0.30, 0.05, 0.06, 0.02],
+        [0.20, 0.20, 0.32, 0.12, 0.05, 0.06, 0.05],
+        [0.22, 0.36, 0.18, 0.08, 0.04, 0.10, 0.02],
+        [0.24, 0.24, 0.20, 0.10, 0.14, 0.06, 0.02],
+        [0.24, 0.32, 0.20, 0.10, 0.04, 0.08, 0.02],
+        [0.22, 0.22, 0.18, 0.10, 0.04, 0.06, 0.18],
+        [0.38, 0.20, 0.14, 0.06, 0.04, 0.12, 0.06],
+    ]
+    /// 個人点の偏りの強さ（満点換算1.0あたりの点）と上限【仮】
+    static let judgeDeltaK = 60.0, judgeDeltaCap = 2.5
+
+    /// 審査員ごとの (p_j − 平均p) を点に直した偏り（Σは約0）。能力は上限120・相性は20・完成度は100で0〜1に正規化
+    static func judgeDeltas(state s: GameState, polish: Double) -> [Double] {
+        func n(_ v: Double, _ m: Double) -> Double { max(0, min(1, v / m)) }
+        let x = [n(s.センス, 120), n(s.発想, 120), n(s.表現, 120), n(s.華, 120), n(s.compat, 20), n(polish, 100), n(s.メンタル, 120)]
+        let p = judgeWeights.map { w in zip(w, x).reduce(0) { $0 + $1.0 * $1.1 } }
+        let mean = p.reduce(0, +) / Double(p.count)
+        return p.map { max(-judgeDeltaCap, min(judgeDeltaCap, ($0 - mean) * judgeDeltaK)) }
     }
 
     /// NPCコンビ名（架空・プレースホルダ枠。本来は name_generator が毎周生成）。年ごとにこの中から9〜10組を選ぶ
