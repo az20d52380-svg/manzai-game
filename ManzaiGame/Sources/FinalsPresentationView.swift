@@ -1345,10 +1345,28 @@ struct FinalsData {
                 }
             }
         }
-        let counts = (0..<3).map { i in votes.filter { $0 == i }.count }
-        var winner = (0..<3).max { counts[$0] < counts[$1] || (counts[$0] == counts[$1] && $0 > $1) }!
+        // 勝者を決める（自組優勝＝自組／負け＝自組以外の最多票／観客版＝最多票。同数は添字の小さい方）
+        func countsNow() -> [Int] { (0..<3).map { i in votes.filter { $0 == i }.count } }
+        let pre = countsNow()
+        var winner: Int
         if champion, let si = selfIdx { winner = si }
-        else if let si = selfIdx, winner == si { winner = (0..<3).filter { $0 != si }.max { counts[$0] < counts[$1] }! }
+        else {
+            let cands = (0..<3).filter { $0 != selfIdx }
+            winner = cands.max { pre[$0] < pre[$1] || (pre[$0] == pre[$1] && $0 > $1) }!
+        }
+        // 最終補正: 勝者が4票（過半数）未満なら、勝者との個人点の差が小さい審査員から1人ずつ勝者へ倒す
+        // （演出は「4票目で決着」前提。他組から動かすだけなので自組の「3票以下・首位でない」は保たれる）
+        while votes.filter({ $0 == winner }).count < 4 {
+            var pick = -1
+            var pickGap = Double.infinity
+            for j in 0..<7 where votes[j] != winner {
+                let gap: Double = duelScores[votes[j]][j] - duelScores[winner][j]
+                if gap < pickGap { pick = j; pickGap = gap }
+            }
+            if pick < 0 { break }
+            votes[pick] = winner
+        }
+        let counts = countsNow()
         self.winnerIndex = winner
         self.judgeVotes = votes
         self.finalVotes = selfIdx == nil ? 0 : (selfIdx == winner ? counts[winner] : 0)

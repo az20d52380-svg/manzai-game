@@ -704,12 +704,23 @@ final class SessionGuardTests20261019: IsolatedStoreTestCase {
                     let d = FinalsData(state: st, champion: champ, margin: m, year: y, selfName: "あなたのコンビ", polish: 55)
                     XCTAssertEqual(d.judges.reduce(0) { $0 + $1.score }, d.total)
                     XCTAssertEqual(d.judgeVotes.count, 7)
+                    XCTAssertGreaterThanOrEqual(d.judgeVotes.filter { $0 == d.winnerIndex }.count, 4, "勝者4票以上 year \(y) champ \(champ) m \(m)")
+                    XCTAssertEqual((0..<3).reduce(0) { a, i in a + d.judgeVotes.filter { $0 == i }.count }, 7)
                     if let si = d.selfDuelIndex {
                         let own = d.judgeVotes.filter { $0 == si }.count
                         if champ { XCTAssertGreaterThanOrEqual(own, 4); XCTAssertEqual(d.winnerIndex, si) }
                         else { XCTAssertLessThanOrEqual(own, 3); XCTAssertNotEqual(d.winnerIndex, si) }
                     } else { XCTAssertFalse(champ) }
                 }
+            }
+        }
+        // 観客版（自組が決勝にいない）でも勝者は4票以上・7票の合計が7
+        for y in 1...60 {
+            for st in [GameSession.debugMaxedState(), weak] {
+                let d = FinalsData(state: st, champion: false, spectator: true, margin: nil, year: y, selfName: "あなたのコンビ", polish: 55)
+                XCTAssertNil(d.selfDuelIndex)
+                XCTAssertEqual((0..<3).reduce(0) { a, i in a + d.judgeVotes.filter { $0 == i }.count }, 7)
+                XCTAssertGreaterThanOrEqual(d.judgeVotes.filter { $0 == d.winnerIndex }.count, 4, "観客版 year \(y)")
             }
         }
         // 重み表は行合計1
