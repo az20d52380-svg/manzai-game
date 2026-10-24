@@ -799,7 +799,9 @@ final class GameSession {
                 let kata = NetaCatalog.autoKata(forID: state.nextNetaID)
                 let id = runner.applyNetaCreate(kata: kata, lengthFit: NetaCatalog.defaultLengthFit(for: kata),
                                                  name: NetaCatalog.autoName(forID: state.nextNetaID))
-                writeNetaID = id; writeNewNeta = false   // 書いたネタは「書く対象」へ。勝負ネタ(selectedNetaID)は触らない
+                writeNetaID = id; writeNewNeta = false   // 書いたネタは「書く対象」へ。手で選んだ勝負ネタ(selectedNetaID)は触らない
+                // 勝負ネタが未選択(nil)の時だけ、新しく書いたネタを勝負ネタにも入れる（大会の入口画面を通らない経路＝GPの回戦/決勝/敗者復活/自動進行でも補正0にならない・code_review_2026-10-25 §2）
+                if runner.state.selectedNetaID == nil { runner.applyNetaSelect(id: id) }
             } else if let last = state.netas.last {
                 runner.applyNetaRevise(id: last.id, gain: placeGain)
             }

@@ -471,6 +471,28 @@ final class PlaytestV4FixTests: IsolatedStoreTestCase {
         s.selectNeta(nil); s.ensureStageNetaDefault()
         XCTAssertEqual(s.selectedNeta?.id, 0)   // 選び忘れは一番高い物
     }
+    /// code_review_2026-10-25 §2: 最初に書いたネタは、勝負ネタが空(nil)なら勝負ネタにも入る。手で選んだ勝負ネタは動かさない。
+    func testFirstWrittenNetaBecomesStageNetaOnlyWhenEmpty() {
+        let s = GameSession(startState: GameState(config: GameConfig()))
+        var guardN = 0
+        while guardN < 400 {
+            guardN += 1
+            if s.pendingChoiceEvent != nil { s.dismissChoiceEvent(); continue }
+            if s.pendingResult != nil { s.acknowledgeResult(); continue }
+            if case .freeAction = s.phase { break }
+            switch s.phase {
+            case .tournamentDecision: s.decideTournament(.新幹線)
+            case .gpRound, .gpRevival, .gpFinal: s.advanceAuto()
+            default: guardN = 400
+            }
+        }
+        guard case .freeAction = s.phase, s.state.netas.isEmpty else { return XCTFail("自由週ではない/ネタが既にある: \(s.phase)") }
+        XCTAssertNil(s.state.selectedNetaID)
+        s.choose(.train(.ネタ作り))
+        guard let first = s.state.netas.first else { return XCTFail("ネタが書かれていない") }
+        XCTAssertEqual(s.state.selectedNetaID, first.id)   // 空だったので勝負ネタにも入る
+        XCTAssertEqual(s.writeTargetID, first.id)
+    }
     func testWriteTargetIsSeparateFromStageNeta() {
         var st = GameState(config: GameConfig())
         var a = Neta(id: 0, name: "A", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1); a.polish = 80

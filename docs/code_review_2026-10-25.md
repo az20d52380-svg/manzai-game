@@ -79,3 +79,7 @@
 1. 件数: 高 0／中 3（§1・§2・§3）／低 7。
 2. 一番重いのは §1: 最終決戦で勝者が 3票（または 3-3 の同数）になり得て、「4票目で決着」の演出が出ない。観客版には補正が無い。
 3. GameCore の golden・乱数は無事（351テスト 0失敗）。セーブ互換は問題なし。
+
+## §直した所
+- §1（7b011b3）: FinalsPresentationView の最終決戦の票。勝者を先に決め（自組優勝＝自組／負け＝自組以外の最多票／観客版＝最多票）、勝者が4票未満なら「勝者との個人点の差が小さい審査員から1人ずつ勝者へ倒す」最後の補正を全ケースに適用。他組から動かすだけなので「自組は3票以下・首位でない」は保たれる。テスト: testFinalsJudgeVotesAbilityBased に「勝者4票以上・7票の合計7」（負け/優勝の各年）と観客版 60年分を追加。
+- §2: 方式＝「勝負ネタが nil の時だけ、新しく書いたネタを勝負ネタにも入れる」（GameSession.applyNetaWork の ネタ作り系）。手で選んだ勝負ネタは動かさない。経路の洗い出し（grep）: アプリ内でネタが新規に生まれる所は applyNetaWork の `runner.applyNetaCreate` の1か所のみ（他は debug 用 state の直接代入＝GameSession.debugNetaState / RootView の MZ_ 系フック）。ここで nil を埋めれば、入口画面（StageViews:192・:314 の ensureStageNetaDefault）を通らない経路（GPの回戦・決勝・敗者復活・advanceAuto の自動進行・決勝の FinalsData の selectedNeta?.polish）でも補正0／既定60にならない。ネタ見せ会／フリーライブの「nil なら netas.last」も、最初のネタが勝負ネタになるので「書いたネタ」が披露される。テスト: testFirstWrittenNetaBecomesStageNetaOnlyWhenEmpty（新規キャリアで ネタ作り → selectedNetaID が入る）。手で選んだ勝負ネタが動かない点は既存の testWriteTargetIsSeparateFromStageNeta・testStageNetaDefaultOnlyFillsEmptyChoice が担保。
