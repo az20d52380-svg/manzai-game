@@ -137,10 +137,10 @@ struct StageFrame: View {
         return ZStack {
             CenterMic(height: figH * 0.78).position(x: w * 0.5, y: foot - figH * 0.39)
             ManzaiFigure(height: figH * 0.92, tilt: bow ? 6 : 2.2, accent: ore.accent, breathe: 3.1,
-                         bodyColors: ore.body, headColor: ore.head, hairColor: ore.hair)
+                         bodyColors: ore.body, headColor: ore.head, hairColor: ore.hair, hairStyle: ore.hairStyle)
                 .position(x: w * 0.5 - figH * 0.50, y: foot - figH * 0.46)
             ManzaiFigure(height: figH, tilt: bow ? -6 : -2.6, accent: tani.accent, breathe: 2.4,
-                         bodyColors: tani.body, headColor: tani.head, hairColor: tani.hair)
+                         bodyColors: tani.body, headColor: tani.head, hairColor: tani.hair, hairStyle: tani.hairStyle)
                 .position(x: w * 0.5 + figH * 0.52, y: foot - figH * 0.50)
             if !rival {   // 自組の二人は足元に小さな名札（めくり）
                 StageFootTag(name: "俺", band: YoseColor.kuroUrushi).position(x: w * 0.5 - figH * 0.50, y: foot + 10)

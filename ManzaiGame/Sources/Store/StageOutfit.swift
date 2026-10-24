@@ -9,6 +9,7 @@ struct OutfitColors {
     var body: [Color]
     var head: Color
     var hair: Color
+    var hairStyle: HairStyle = .short   // 女性は .long/.bun（仮・ComboKind で切替）
 }
 
 /// 【仮】衣装の種類・色はオーナー判断待ち。standard 以外は差し替え口の動作確認用。
@@ -28,7 +29,15 @@ enum StageOutfit: String, CaseIterable {
     }
 
     /// 俺（左・青系）
-    func ore(rival: Bool) -> OutfitColors {
+    func ore(rival: Bool, kind: ComboKind = Names.kind) -> OutfitColors {
+        var c = oreBase(rival: rival)
+        if kind.meIsFemale && !rival {
+            c.hairStyle = .long
+            if self == .standard { c.accent = Color(hex: 0x5A4CB0); c.body = [Color(hex: 0x8A7BE8), Color(hex: 0x5A4CB0)] }
+        }
+        return c
+    }
+    private func oreBase(rival: Bool) -> OutfitColors {
         if rival { return OutfitColors(accent: YoseColor.tokiwa, body: [Color(hex: 0x3F7A55), YoseColor.tokiwa],
                                        head: Color(hex: 0xFFDFC2), hair: Color(hex: 0x40394F)) }
         switch self {
@@ -42,7 +51,15 @@ enum StageOutfit: String, CaseIterable {
     }
 
     /// 谷口（右・赤系）
-    func taniguchi(rival: Bool) -> OutfitColors {
+    func taniguchi(rival: Bool, kind: ComboKind = Names.kind) -> OutfitColors {
+        var c = taniguchiBase(rival: rival)
+        if kind.partnerIsFemale && !rival {
+            c.hairStyle = .bun
+            if self == .standard { c.accent = Color(hex: 0xC24B72); c.body = [Color(hex: 0xF07FA0), Color(hex: 0xC24B72)] }
+        }
+        return c
+    }
+    private func taniguchiBase(rival: Bool) -> OutfitColors {
         if rival { return OutfitColors(accent: YoseColor.kuroUrushi, body: [Color(hex: 0x5A504A), YoseColor.kuroUrushi],
                                        head: Color(hex: 0xFFDFC2), hair: Color(hex: 0x2E2838)) }
         switch self {

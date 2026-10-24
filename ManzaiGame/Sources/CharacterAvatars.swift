@@ -121,6 +121,12 @@ enum FaceCatalog {
     /// 谷口（ボケ・朱・マッシュ）
     static let taniguchi = FaceSpec(hair: .bowl, hairColor: Color(hex: 0x2E2838), collar: Color(hex: 0xF0533E))
 
+    /// 女性版（仮の色替え＝髪型 .long/.bun・襟の色。ComboKind で引く）
+    static let oreFemale = FaceSpec(hair: .long, hairColor: Color(hex: 0x40394F), collar: Color(hex: 0x8A7BE8))
+    static let taniguchiFemale = FaceSpec(hair: .bun, hairColor: Color(hex: 0x2E2838), collar: Color(hex: 0xF07FA0))
+    static func ore(for kind: ComboKind) -> FaceSpec { kind.meIsFemale ? oreFemale : ore }
+    static func taniguchi(for kind: ComboKind) -> FaceSpec { kind.partnerIsFemale ? taniguchiFemale : taniguchi }
+
     /// 審査員（judge_design の7人・重視軸の色を襟に）
     static func judge(_ name: String) -> FaceSpec {
         switch name {
@@ -141,8 +147,8 @@ enum FaceCatalog {
     /// 会話の話者名→顔（俺/谷口/司会以外は汎用）
     static func speaker(_ name: String?) -> FaceSpec {
         switch name {
-        case "谷口": return taniguchi
-        case nil, "俺": return ore
+        case "谷口": return taniguchi(for: Names.kind)
+        case nil, "俺": return ore(for: Names.kind)
         case FinalsMC.name: return mc
         default: return judge(name ?? "")   // 審査員の名前なら審査員の顔、それ以外は汎用
         }

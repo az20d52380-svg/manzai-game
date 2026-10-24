@@ -378,13 +378,9 @@ struct DuskScene: View {
                     .frame(height: h - horizon)
                     .position(x: w / 2, y: horizon + (h - horizon) / 2)
                 // 二人（色付き・夕方の光で少し温める）
-                ManzaiFigure(height: figH * 0.9, tilt: 2.2, accent: Color(hex: 0x2E55B0), breathe: 3.1,
-                             bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                ManzaiFigure(height: figH * 0.9, tilt: 2.2, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
                     .position(x: w * 0.40, y: h - h * 0.06 - figH * 0.45)
-                ManzaiFigure(height: figH, tilt: -2.6, accent: Color(hex: 0xB02318), breathe: 2.4,
-                             bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
                     .position(x: w * 0.66, y: h - h * 0.06 - figH * 0.50)
                 // 夕方の色かぶり
                 LinearGradient(colors: [Color(hex: 0xFFB27A).opacity(0.18), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -430,13 +426,9 @@ struct PlaceScene: View {
                     .frame(height: h - horizon)
                     .position(x: w / 2, y: horizon + (h - horizon) / 2)
                 props(w: w, h: h, horizon: horizon)
-                ManzaiFigure(height: figH * 0.9, tilt: 2.2, accent: Color(hex: 0x2E55B0), breathe: 3.1,
-                             bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                ManzaiFigure(height: figH * 0.9, tilt: 2.2, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
                     .position(x: w * 0.40, y: h - h * 0.07 - figH * 0.45)
-                ManzaiFigure(height: figH, tilt: -2.6, accent: Color(hex: 0xB02318), breathe: 2.4,
-                             bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
                     .position(x: w * 0.66, y: h - h * 0.07 - figH * 0.50)
                 foreground(w: w, h: h)
             }

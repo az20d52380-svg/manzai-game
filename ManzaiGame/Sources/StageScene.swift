@@ -71,15 +71,9 @@ struct StageScene: View {
                     Group {
                         CenterMic(height: figH * 0.78)
                             .position(x: micX, y: footY - figH * 0.39)
-                        ManzaiFigure(height: figH * 0.90, tilt: 2.2, accent: Color(hex: 0x2E55B0),
-                                     breathe: 3.1,
-                                     bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                        ManzaiFigure(height: figH * 0.90, tilt: 2.2, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
                             .position(x: micX - figH * 0.52, y: footY - figH * 0.45)
-                        ManzaiFigure(height: figH, tilt: -2.6, accent: Color(hex: 0xB02318),
-                                     breathe: 2.4,
-                                     bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                                     headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                        ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
                             .position(x: micX + figH * 0.54, y: footY - figH * 0.50)
                         if !compact {
                         StageFootTag(name: "俺", band: YoseColor.kuroUrushi)
@@ -177,6 +171,7 @@ struct ManzaiFigure: View {
     var bodyColors: [Color] = [Color(hex: 0x241B36), Color(hex: 0x120D20)]
     var headColor: Color? = nil // nil=シルエット（頭も胴色）
     var hairColor: Color = Color(hex: 0x3A3350)
+    var hairStyle: HairStyle = .short   // .long/.bun＝女性の仮の見た目（色替え＋髪の記号）
     @State private var inhale = false
 
     var body: some View {
@@ -192,6 +187,19 @@ struct ManzaiFigure: View {
                 // 頭（肌＋髪のキャップ）
                 Circle()
                     .fill(headColor ?? bodyColors.last ?? Theme.ink)
+                    .background {
+                        if headColor != nil && hairStyle == .long {   // 肩までの髪（頭の後ろ）
+                            RoundedRectangle(cornerRadius: headR * 0.4).fill(hairColor)
+                                .overlay(RoundedRectangle(cornerRadius: headR * 0.4).stroke(YoseColor.sumi, lineWidth: 1.5))
+                                .frame(width: headR * 1.2, height: headR * 1.25).offset(y: headR * 0.14)
+                        }
+                    }
+                    .overlay(alignment: .top) {
+                        if headColor != nil && hairStyle == .bun {   // おだんご
+                            Circle().fill(hairColor).overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                                .frame(width: headR * 0.42, height: headR * 0.42).offset(y: -headR * 0.22)
+                        }
+                    }
                     .overlay {
                         if headColor != nil {
                             // 髪: 頭の上半分を覆うドーム（無貌でも「人」に見える最小の記号）
@@ -283,5 +291,13 @@ struct DustField: View {
                 }
             }
         }
+    }
+}
+
+extension ManzaiFigure {
+    /// 衣装の色セット（StageOutfit）からそのまま作る
+    init(height: CGFloat, tilt: Double, breathe: Double, colors c: OutfitColors) {
+        self.init(height: height, tilt: tilt, accent: c.accent, breathe: breathe,
+                  bodyColors: c.body, headColor: c.head, hairColor: c.hair, hairStyle: c.hairStyle)
     }
 }
