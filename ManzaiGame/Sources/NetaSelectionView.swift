@@ -65,7 +65,6 @@ struct NetaPickRow: View {
     private func tags(_ neta: Neta) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
                 NetaTiredBadge(neta: neta)
                 Spacer(minLength: 0)
             }

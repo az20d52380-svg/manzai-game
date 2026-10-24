@@ -54,7 +54,7 @@ public enum JudgeTalk {
                                 burst: Bool = false, margin: Double? = nil, order: Int? = nil, viaRevival: Bool = false) -> Scene {
             let name = neta?.name.trimmingCharacters(in: .whitespacesAndNewlines)
             return Scene(netaName: (name?.isEmpty ?? true) ? nil : name,
-                         kata: neta?.kata,
+                         kata: nil,   // 型別の語彙表は使わない（キュー115）
                          isTeppan: neta?.isTeppan(config: config) ?? false,
                          isRevivalNeta: neta?.isRevival(currentYear: year, config: config) ?? false,
                          isFresh: neta.map { $0.stageCount <= 2 } ?? false,
@@ -262,7 +262,7 @@ public enum JudgeTalk {
         switch judge {
         case "天堂寺 銀郎":
             add(s.isRevivalNeta, "{題}、何年か寝かせたな。寝かせた分だけ{一言}が太うなっとる。",
-                "{題}は古い型のまま出しよった。{入り}だけでも今の間に直せ。")
+                "{題}は古い形のまま出しよった。{入り}だけでも今の間に直せ。")
             add(s.isTeppan, "{題}、かけ込んだネタや。{締め}に迷いがない。",
                 "かけ込んだネタは楽をする。{中}で手が抜けとった。")
             add(last, "大トリで{締め}まで崩さんかった。ええ終いや。",
@@ -499,7 +499,7 @@ public enum JudgeTalk {
             "前半と後半の長さの釣り合いが良い。{中}をあと少し詰められる。",
             "{題}、素材は十分。飾りを三割減らした形を見てみたい。",
             "{題}、この場に合った題材。客の知っている話から入れている。",
-            "{題}、型は古くない。{一言}の言い方が今の客に近い。",
+            "{題}、古くない。{一言}の言い方が今の客に近い。",
             "{入り}の形を、どこかで見た客がいる。{中}で新しい方へ曲げられた。",
             "{題}、よくできている。{中}はもう少し勢いに任せてもいい。",
             "磨かれた{入り}。ただ、劇場でかけていた頃の荒さが無い。",

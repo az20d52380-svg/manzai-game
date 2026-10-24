@@ -12,7 +12,6 @@ struct NotebookView: View {
     var onClose: () -> Void
     @State private var tab: Tab = NotebookView.initialTab
     /// 型変更ピッカーを開いているネタID（1つだけ開く・トグル）
-    @State private var kataPickerFor: Int?
     /// 改名フィールドを開いているネタID
     @State private var renamingID: Int?
     @State private var renameDraft: String = ""
@@ -338,7 +337,6 @@ struct NotebookView: View {
                         .accessibilityLabel("題名を直す").accessibilityAddTraits(.isButton)
                 }
             }
-            YoseTag(text: NetaCatalog.displayName(neta.kata), style: .solidEnji)
             netaBar(label: "完成度", value: neta.polish, color: YoseColor.shu)
             NetaStageBadge(netaID: neta.id, polish: neta.polish)
             netaBar(label: "客の反応", value: neta.buzz, color: YoseColor.kinBright)
@@ -348,18 +346,12 @@ struct NotebookView: View {
                 Spacer()
                 netaBadges(neta)
             }
-            if kataPickerFor == neta.id { kataPicker(neta) }
             HStack(spacing: 8) {
                 if isSelected {
                     EmptyView()   // 勝負ネタ状態は右上の「真剣勝負」印だけで伝える
                 } else {
                     actionChip("勝負ネタにする", active: true, primary: true) {
                         session.selectNeta(neta.id)
-                    }
-                }
-                actionChip("型を変える", active: true) {
-                    withAnimation(Theme.Motion.appearQuick) {
-                        kataPickerFor = kataPickerFor == neta.id ? nil : neta.id
                     }
                 }
                 actionChip("しまう", active: true) {
@@ -435,24 +427,6 @@ struct NotebookView: View {
         }
     }
 
-    /// 型ピッカー（7型の色ドット・現在の型は金フチ）
-    private func kataPicker(_ neta: Neta) -> some View {
-        HStack(spacing: 8) {
-            ForEach(NetaKata.allCases, id: \.self) { k in
-                Button {
-                    session.changeNetaKata(neta.id, to: k)
-                    withAnimation(Theme.Motion.appearQuick) { kataPickerFor = nil }
-                } label: {
-                    Rectangle().fill(Theme.kataColor(k)).frame(width: 22, height: 22)
-                        .overlay(Rectangle().stroke(k == neta.kata ? YoseColor.kinBright : YoseColor.sumi, lineWidth: k == neta.kata ? 3 : 1.5))
-                }.buttonStyle(PressableStyle())
-            }
-            Spacer()
-        }
-        .padding(.vertical, 4)
-        .transition(.opacity)
-    }
-
     private func actionChip(_ label: String, active: Bool, primary: Bool = false, _ action: @escaping () -> Void) -> some View {
         Button {
             action()
@@ -473,7 +447,6 @@ struct NotebookView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(neta.name).font(.maru(15, weight: .black)).foregroundStyle(Theme.sumi)
                 HStack(spacing: 6) {
-                    Text(NetaCatalog.displayName(neta.kata)).font(.maru(12)).foregroundStyle(Theme.inkSub)
                     if revival {
                         Text("もう一度").font(.maru(12, weight: .black)).foregroundStyle(Theme.verm)
                     }

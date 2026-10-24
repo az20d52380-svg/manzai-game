@@ -833,7 +833,7 @@ struct FinalsPresentationView: View {
         let allShown = revealedJudges >= 7
         // 見せ札の型ラベル（v2 §4-3補2）: FinalsData（Σ=S補正・rng.int等）の計算には一切関与しない、
         // 既に確定済みの点数・出順の上に、選択中ネタの型を審査員の固定嗜好表で引いて添えるだけの純表示。
-        let kata = session.selectedNeta?.kata
+        let kata: NetaKata? = nil   // 型は表示しない（キュー115）
         return VStack(spacing: 12) {
             // 誰の採点かを明示する黒漆バー
             HStack(spacing: 8) {
