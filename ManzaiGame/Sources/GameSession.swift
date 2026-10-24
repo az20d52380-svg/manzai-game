@@ -987,13 +987,20 @@ final class GameSession {
         var recs = yearHistory.filter { $0.enteredGP != false }
             .map { YearRecord(year: $0.year, roundsPassed: $0.roundsPassed, reachedFinal: $0.reachedFinal,
                               champion: $0.champion, bankrupt: false, prize: 0) }   // 夜逃げ・解散の印は外して到達だけを比べる
+        // 進行中の年はまだ負けていない＝「〜敗退」ではなく通過した段で言う（code_review_2026-10-25 §3）。prize=-1 を目印に使う
         if !finished, runner.gpRoundsPassed > 0 || runner.isFinalist {
             recs.append(YearRecord(year: year, roundsPassed: runner.gpRoundsPassed, reachedFinal: runner.isFinalist,
-                                   champion: false, bankrupt: false, prize: 0))
+                                   champion: false, bankrupt: false, prize: -1))
         }
         func rank(_ r: YearRecord) -> Int { r.champion ? 100 : (r.reachedFinal ? 50 : r.roundsPassed) }
         guard let best = recs.max(by: { rank($0) < rank($1) || (rank($0) == rank($1) && $0.year > $1.year) }) else { return nil }
-        let label = best.champion ? "優勝" : YearResultView.reachLabel(best, names: config.calendar.gpRoundNames)
+        let names = config.calendar.gpRoundNames
+        let label: String
+        if best.champion { label = "優勝" }
+        else if best.prize == -1 {
+            label = best.reachedFinal ? "決勝進出"
+                : names[min(best.roundsPassed, names.count) - 1].replacingOccurrences(of: "GP", with: "") + "通過"
+        } else { label = YearResultView.reachLabel(best, names: names) }
         return "\(best.year)年目　頂GP \(label)"
     }
 
