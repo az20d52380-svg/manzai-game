@@ -429,21 +429,47 @@ final class WeeklyEventOnceTests: IsolatedStoreTestCase {
 
 /// playtest_v4 ③④：本番前の既定ネタ・年末の出来事の優勝
 final class PlaytestV4FixTests: IsolatedStoreTestCase {
-    func testStageNetaDefaultIsBestPolished() {
+    func testStageNetaDefaultOnlyFillsEmptyChoice() {
         var st = GameState(config: GameConfig())
         var best = Neta(id: 0, name: "商店街の福引", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1); best.polish = 100; best.stageCount = 3
         var fresh = Neta(id: 1, name: "終電の二人", kata: .瞬発, lengthFit: [.短尺], bornYear: 1); fresh.polish = 30
-        st.netas = [best, fresh]; st.selectedNetaID = 1   // 新しく書いた直後に自動で選ばれた低い2本目
+        st.netas = [best, fresh]; st.selectedNetaID = 1   // 手で選んだ未披露の低い完成度のネタ
         let s = GameSession(startState: st)
         s.ensureStageNetaDefault()
-        XCTAssertEqual(s.selectedNeta?.id, 0)
+        XCTAssertEqual(s.selectedNeta?.id, 1)   // 入口を開いても手で選んだネタは戻さない（queue108・19g §4）
         s.selectNeta(nil); s.ensureStageNetaDefault()
-        XCTAssertEqual(s.selectedNeta?.id, 0)   // 選び忘れも一番高い物へ
-        var played = fresh; played.stageCount = 2; played.polish = 40
-        var st2 = st; st2.netas = [best, played]; st2.selectedNetaID = 1
-        let t = GameSession(startState: st2)
-        t.ensureStageNetaDefault()
-        XCTAssertEqual(t.selectedNeta?.id, 1)   // 手で選んだ舞台経験ありのネタは保つ
+        XCTAssertEqual(s.selectedNeta?.id, 0)   // 選び忘れは一番高い物
+    }
+    func testWriteTargetIsSeparateFromStageNeta() {
+        var st = GameState(config: GameConfig())
+        var a = Neta(id: 0, name: "A", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1); a.polish = 80
+        var b = Neta(id: 1, name: "B", kata: .瞬発, lengthFit: [.短尺], bornYear: 1); b.polish = 30
+        st.netas = [a, b]; st.selectedNetaID = 0
+        let s = GameSession(startState: st)
+        XCTAssertEqual(s.writeTargetID, 0)       // 指定なし＝勝負ネタを磨く（旧セーブと同じ）
+        s.setWriteNeta(1)
+        XCTAssertEqual(s.writeTargetID, 1)
+        XCTAssertEqual(s.selectedNeta?.id, 0)    // 書く対象を替えても勝負ネタは外れない
+        s.beginNewWrite()
+        XCTAssertNil(s.writeTargetID)
+        XCTAssertEqual(s.selectedNeta?.id, 0)    // 新しく書くでも外れない
+    }
+    func testWriteNetaIDSaveRoundTripAndOldSave() throws {
+        var st = GameState(config: GameConfig())
+        let a = Neta(id: 0, name: "A", kata: .伏線回収, lengthFit: [.長尺], bornYear: 1)
+        let b = Neta(id: 1, name: "B", kata: .瞬発, lengthFit: [.短尺], bornYear: 1)
+        st.netas = [a, b]; st.selectedNetaID = 0
+        let s = GameSession(startState: st)
+        s.setWriteNeta(1)
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
+        XCTAssertEqual(o["writeNetaID"] as? Int, 1)
+        XCTAssertEqual(GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: d)).writeNetaID, 1)
+        o.removeValue(forKey: "writeNetaID")
+        let old = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: o))
+        let r = GameSession(restoring: old)
+        XCTAssertNil(r.writeNetaID)
+        XCTAssertEqual(r.writeTargetID, 0)   // 旧セーブ＝勝負ネタを書く対象にも使う
     }
     func testEventLinesKeepChampionships() {
         let log = ["第12週: 春新人賞A 優勝 +50万", "第15週: 春新人賞B 優勝 +25万", "第27週: 夏中堅賞 敗退",

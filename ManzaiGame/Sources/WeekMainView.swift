@@ -682,8 +682,8 @@ struct WeekMainView: View {
 
     /// 書く対象のネタ（エンジンの規則どおり：勝負ネタ→無ければ枠が空いていれば新ネタ→満杯なら最後のネタ）
     private var writeTarget: Neta? {
-        if newNetaTitle != nil { return nil }
-        if let n = session.selectedNeta { return n }
+        if newNetaTitle != nil || session.writeNewNeta { return nil }
+        if let n = session.writeTargetNeta { return n }
         return session.activeNetas.count < session.config.netaActiveSlots ? nil : session.activeNetas.last
     }
 
@@ -747,7 +747,7 @@ struct WeekMainView: View {
             ForEach(session.activeNetas, id: \.id) { n in
                 let sel = n.id == writeTarget?.id
                 Button {
-                    session.selectNeta(n.id)
+                    session.setWriteNeta(n.id)
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = nil; pickingNeta = false }
                 } label: {
                     HStack(spacing: 8) {
@@ -764,7 +764,7 @@ struct WeekMainView: View {
             }
             if session.activeNetas.count < cfg.netaActiveSlots {
                 Button {
-                    session.selectNeta(nil)
+ session.beginNewWrite()
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = ""; pickingNeta = false }
                 } label: {
                     HStack(spacing: 6) {
@@ -815,7 +815,7 @@ struct WeekMainView: View {
     /// 場所を押した時：新しく書くなら題名を予約して、エンジンが新ネタを作るようにする
     private func prepareNetaTarget() {
         guard writeTarget == nil else { return }
-        session.selectNeta(nil)
+        session.beginNewWrite()
         let t = (newNetaTitle ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         if !t.isEmpty { pendingNetaTitle = (s.nextNetaID, t) }
     }

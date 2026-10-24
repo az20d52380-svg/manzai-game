@@ -207,6 +207,9 @@ struct NotebookView: View {
                         Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
                             .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                        if !r.champion, !r.reachedFinal, !r.bankrupt, r.dissolved != true, r.enteredGP != false {
+                            YoseTag(text: "観戦", style: .outlineHai)   // 決勝に残れず客席から観た年＝灰の札（queue108）
+                        }
                         if r.prize > 0 {
                             Text("+\(Yen.man(r.prize))").font(YoseFont.number(15)).foregroundStyle(YoseColor.shu)
                         }

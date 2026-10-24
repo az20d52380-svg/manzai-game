@@ -49,6 +49,10 @@ final class GameSession {
     private(set) var lossStreak = 0
     /// §97 体調ダウンの知らせ待ち（表示専用）。倒れた週を pump が見つけたら、療養の週数をここに積む＝週メインが1回だけ知らせる
     private(set) var injuryNoticeWeeks = 0
+    /// 「書く対象」のネタ（勝負ネタ selectedNetaID とは別。nil＝指定なし＝勝負ネタを磨く＝旧セーブと同じ動き）。アプリ層のみ・GameCore不変
+    private(set) var writeNetaID: Int? = nil
+    /// 「新しく書く」を選んだ印（次にネタを書く週に新ネタを作る）。セーブしない（再起動で勝負ネタの磨きに戻るだけ）
+    private(set) var writeNewNeta = false
     func clearInjuryNotice() { injuryNoticeWeeks = 0 }
     /// 直近の大会で通過したか（先週の結果を心の声に反映。行動すると失効）
     private(set) var justPassedStage = false
@@ -291,6 +295,7 @@ final class GameSession {
         self.shownOnce = Set(save.shownOnce ?? [])
         self.weeksWithoutPartner = save.weeksWithoutPartner ?? 0
         self.injuryNoticeWeeks = save.injuryNoticeWeeks ?? 0
+        self.writeNetaID = save.writeNetaID   // 旧セーブ＝nil＝勝負ネタを書く対象にも使う
         checkSpectatorFinal()
         self.firedWeeklyEvents = save.firedWeeklyEvents
         self.weeklyEventFiredCount = save.weeklyEventFiredCount
@@ -784,13 +789,13 @@ final class GameSession {
         let placeGain = config.netaPlaceGain[t]   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
         switch t {
         case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
-            if let id = state.selectedNetaID, state.netas.contains(where: { $0.id == id }) {
+            if let id = writeTargetID {
                 runner.applyNetaRevise(id: id, gain: placeGain)
             } else if state.netas.count < config.netaActiveSlots {
                 let kata = NetaCatalog.autoKata(forID: state.nextNetaID)
                 let id = runner.applyNetaCreate(kata: kata, lengthFit: NetaCatalog.defaultLengthFit(for: kata),
                                                  name: NetaCatalog.autoName(forID: state.nextNetaID))
-                runner.applyNetaSelect(id: id)
+                writeNetaID = id; writeNewNeta = false   // 書いたネタは「書く対象」へ。勝負ネタ(selectedNetaID)は触らない
             } else if let last = state.netas.last {
                 runner.applyNetaRevise(id: last.id, gain: placeGain)
             }
@@ -810,15 +815,25 @@ final class GameSession {
         state = runner.state
     }
 
+    /// 書く対象のネタID（新しく書く指定なら nil。指定が無い/消えていれば勝負ネタ）
+    var writeTargetID: Int? {
+        if writeNewNeta { return nil }
+        if let id = writeNetaID, state.netas.contains(where: { $0.id == id }) { return id }
+        if let id = state.selectedNetaID, state.netas.contains(where: { $0.id == id }) { return id }
+        return nil
+    }
+    var writeTargetNeta: Neta? { writeTargetID.flatMap { id in state.netas.first { $0.id == id } } }
+    /// 書く対象を替える（勝負ネタは変えない）
+    func setWriteNeta(_ id: Int) { writeNetaID = id; writeNewNeta = false; saveNow() }
+    /// 「新しく書く」にする（勝負ネタは変えない）
+    func beginNewWrite() { writeNewNeta = true; writeNetaID = nil; saveNow() }
+
     /// 本番の前に出すネタの既定を整える（playtest_v4 ③）。選び忘れ(nil)、または「新しく書いた直後で舞台に一度も立っていない低い完成度のネタ」が
-    /// 書く行為で自動選択されていた時は、完成度が一番高いネタへ戻す。手で選んだ舞台経験ありのネタ・完成度が最高のネタには触れない。UI層のみ・乱数非消費。
+    /// 選び忘れ(nil)の時だけ完成度が一番高いネタを入れる。手で選んだネタには触れない（書く対象は別状態＝書いても勝負ネタは動かない）。UI層のみ・乱数非消費。
     func ensureStageNetaDefault() {
         if let id2 = state.selectedNetaID2, id2 == state.selectedNetaID { runner.applyNetaSelect2(id: nil); state = runner.state }   // 直す前の旧セーブで1本目＝2本目なら2本目を外す（review_today_fixes_1019 §2）
         guard let best = state.netas.max(by: { $0.polish < $1.polish }) else { return }
-        let cur = selectedNeta
-        if cur == nil || (cur!.stageCount == 0 && cur!.polish < best.polish) {
-            selectNeta(best.id)
-        }
+        if selectedNeta == nil { selectNeta(best.id) }   // 選び忘れの時だけ最高完成度を入れる。手で選んだネタは戻さない（queue108・19g §4）
     }
 
     /// 「今かけるネタ」を選ぶ（大会入口・持ちネタ帳から。保管庫のネタでも可＝自動でアクティブへ呼び戻さない・
@@ -1104,6 +1119,7 @@ final class GameSession {
         var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
         var weeksWithoutPartner: Int?     // 相方と過ごさない週の連続数（旧セーブ＝nil＝0）
         var injuryNoticeWeeks: Int?       // 体調ダウンの知らせ待ち（旧セーブ＝nil＝0・code_review_2026-10-19c §2-4）
+        var writeNetaID: Int?             // 書く対象のネタ（旧セーブ＝nil＝勝負ネタを磨く・queue108）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1170,7 +1186,7 @@ final class GameSession {
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
-                            injuryNoticeWeeks: injuryNoticeWeeks)
+                            injuryNoticeWeeks: injuryNoticeWeeks, writeNetaID: writeNetaID)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
