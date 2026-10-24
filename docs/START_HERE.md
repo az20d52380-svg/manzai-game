@@ -375,3 +375,4 @@ cd GameCore && swift test
 - `q93_r2m_current_v0.md` — §93 R2M を今の本体で測り直し（詰まり週の減り方）
 - `remeasure_after_harness_fix_v0.md` — 並列の漏れを直した後の撮り直し（balance_q93_98 の元9本）
 - `the_hana_measure_1025_v0.md` — 女性コンビだけの大会 THE HANA（4段）を足した時の実測（GP で有利にならない・ライン「難」推奨・キュー112）
+- `fifteen_years_1020_v0.md` — 結成15年化の実測（11年目以降だけ決勝ラインを上げると10年目までが今のまま・キュー114）
