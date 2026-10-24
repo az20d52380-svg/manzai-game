@@ -374,3 +374,4 @@ cd GameCore && swift test
 - `q60_q62_remeasure_v1.md` — キュー60×62 の測り直し（全部入り×ネタ込み×EVENTS_APP False/True）
 - `q93_r2m_current_v0.md` — §93 R2M を今の本体で測り直し（詰まり週の減り方）
 - `remeasure_after_harness_fix_v0.md` — 並列の漏れを直した後の撮り直し（balance_q93_98 の元9本）
+- `the_hana_measure_1025_v0.md` — 女性コンビだけの大会 THE HANA（4段）を足した時の実測（GP で有利にならない・ライン「難」推奨・キュー112）
