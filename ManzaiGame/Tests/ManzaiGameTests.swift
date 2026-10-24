@@ -49,7 +49,32 @@ final class EndingJudgeTests: IsolatedStoreTestCase {
 }
 
 final class NamesTests: IsolatedStoreTestCase {
-    override func tearDown() { Names.set(me: nil, partner: nil); super.tearDown() }
+    override func tearDown() { Names.set(me: nil, partner: nil); Names.setKind(.maleMale); super.tearDown() }
+
+    func testFirstPersonTokensByComboKind() {
+        Names.set(me: nil, partner: nil)
+        let line = "{me}が出す。{partner1}たちで行こう。{partner1}らもな"
+        Names.setKind(.maleMale);   XCTAssertEqual(Names.show(line), "俺が出す。俺たちで行こう。俺らもな")
+        Names.setKind(.femaleFemale); XCTAssertEqual(Names.show(line), "私が出す。私たちで行こう。私たちもな")
+        Names.setKind(.maleFemale); XCTAssertEqual(Names.show("{me}／{partner1}"), "俺／私")   // 自分が男・相方が女
+        Names.setKind(.femaleMale); XCTAssertEqual(Names.show("{me}／{partner1}"), "私／俺")   // 自分が女・相方が男
+        Names.setKind(.femaleMale); XCTAssertEqual(Names.show("俺"), "私")   // 話者の札
+        Names.set(me: "ミナト", partner: nil); XCTAssertEqual(Names.show("俺"), "ミナト")
+    }
+    func testOldSaveIsMaleMaleAndKindRoundTrips() throws {
+        let s = GameSession(comboKind: .femaleMale)
+        XCTAssertEqual(Names.show("{me}"), "私")
+        s.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
+        XCTAssertEqual(o["comboKind"] as? String, "femaleMale")
+        XCTAssertEqual(GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: d)).comboKind, .femaleMale)
+        o.removeValue(forKey: "comboKind")
+        let old = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: o))
+        XCTAssertNil(old.comboKind)
+        XCTAssertEqual(GameSession(restoring: old).comboKind, .maleMale)
+        XCTAssertEqual(Names.show("{me}"), "俺")
+    }
 
     func testDefaultsUnchanged() {
         Names.set(me: nil, partner: nil)

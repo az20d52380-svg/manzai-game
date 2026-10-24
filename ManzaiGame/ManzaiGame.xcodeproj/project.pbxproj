@@ -93,6 +93,7 @@
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 		E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */; };
 		E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C2B6670FC11321C4559DCB /* Theme.swift */; };
+		E9D7F86C18BB501C36FC64F0 /* ComboKindPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4BBB14240832141FE63318 /* ComboKindPickerView.swift */; };
 		EADAE9F564AE5007CBDB8773 /* FinalistAnnounceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24E06D95088D26FB3DC94453 /* FinalistAnnounceView.swift */; };
 		EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */; };
 		F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */; };
@@ -100,6 +101,7 @@
 		F444AA5447FAEA7A8EBF0C76 /* YoseChampionCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5077E6524DE17A958E0227F5 /* YoseChampionCelebrationView.swift */; };
 		F5C20BF8C4688D372B1CDAD2 /* se_cheer_mid.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */; };
 		FAE276B38C7A911C9F8445C2 /* bgm_tension.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */; };
+		FDD40E534362160170CB232B /* ComboKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */; };
 		FEC32EB9053F087229AB0EC2 /* StageFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E107DFFE29351633A0776D9 /* StageFrame.swift */; };
 /* End PBXBuildFile section */
 
@@ -161,6 +163,7 @@
 		9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Black.ttf"; sourceTree = "<group>"; };
 		9602D87CE2E13D9365DE6EEE /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		9906C18C1D125D16D6DEA7D0 /* WeekHint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekHint.swift; sourceTree = "<group>"; };
+		9A4BBB14240832141FE63318 /* ComboKindPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboKindPickerView.swift; sourceTree = "<group>"; };
 		9A6B90BFC5A4AED3BFE09913 /* AbilityUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbilityUpView.swift; sourceTree = "<group>"; };
 		9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseFXPreview.swift; sourceTree = "<group>"; };
 		A274A5E67200827BEBFC258E /* YearResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearResultView.swift; sourceTree = "<group>"; };
@@ -198,6 +201,7 @@
 		E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_taiko2.mp3; sourceTree = "<group>"; };
 		E3B3D0E4892F3438C35FA663 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
 		E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventOverlay.swift; sourceTree = "<group>"; };
+		E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboKind.swift; sourceTree = "<group>"; };
 		E51A2C162CC3B1876C83692B /* ManzaiGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ManzaiGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseGameParts.swift; sourceTree = "<group>"; };
 		E7C2B6670FC11321C4559DCB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -266,6 +270,8 @@
 				D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */,
 				ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */,
 				E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */,
+				E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */,
+				9A4BBB14240832141FE63318 /* ComboKindPickerView.swift */,
 				DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */,
 				CC1F100811789DF64591C427 /* DialogueData.swift */,
 				AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */,
@@ -526,6 +532,8 @@
 				4671A140B09142E5B42D60D7 /* CharacterAvatars.swift in Sources */,
 				8A594478EA03EF55A5AEACB6 /* ChoiceEventData.swift in Sources */,
 				F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */,
+				FDD40E534362160170CB232B /* ComboKind.swift in Sources */,
+				E9D7F86C18BB501C36FC64F0 /* ComboKindPickerView.swift in Sources */,
 				A5261165B97770A127810577 /* CommandData.swift in Sources */,
 				503ABBC496CD986CDC932884 /* DialogueData.swift in Sources */,
 				46CF8359E9EE6440505DC20E /* EndingViews.swift in Sources */,

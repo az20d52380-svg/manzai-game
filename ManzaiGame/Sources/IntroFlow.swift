@@ -297,13 +297,9 @@ struct ReminiscenceScene: View {
                     .frame(height: h - floorTop)
                     .position(x: w / 2, y: floorTop + (h - floorTop) / 2)
                 // 二人
-                ManzaiFigure(height: figH * 0.9, tilt: together ? 2.2 : 0, accent: Color(hex: 0x2E55B0), breathe: 3.1,
-                             bodyColors: [Color(hex: 0x4A7BE8), Color(hex: 0x2E55B0)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x40394F))
+                ManzaiFigure(height: figH * 0.9, tilt: together ? 2.2 : 0, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
                     .position(x: together ? w * 0.34 : w * 0.24, y: h * 0.95 - figH * 0.45)
-                ManzaiFigure(height: figH, tilt: together ? -2.6 : 0, accent: Color(hex: 0xB02318), breathe: 2.4,
-                             bodyColors: [Color(hex: 0xF0533E), Color(hex: 0xC22E1D)],
-                             headColor: Color(hex: 0xFFDFC2), hairColor: Color(hex: 0x2E2838))
+                ManzaiFigure(height: figH, tilt: together ? -2.6 : 0, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
                     .position(x: together ? w * 0.67 : w * 0.72, y: h * 0.95 - figH * 0.50)
             }
             .clipped()
@@ -488,6 +484,7 @@ struct S1TitleView: View {
 // MARK: コンビ名入力（ネタ帳見開き）
 
 struct NameEntryView: View {
+    var comboKind: ComboKind = .maleMale   // 結成届の薄い文字（俺／私）を形に合わせる
     var onDecide: (String, String?, String?) -> Void   // コンビ名・自分の名前・相方の名前（空欄＝nil）
     @State private var name = ""
     @State private var myName = ""
@@ -561,7 +558,7 @@ struct NameEntryView: View {
                     Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
                     HStack { Text("自　分").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
                         Spacer()
-                        nameField($myName, prompt: "俺")
+                        nameField($myName, prompt: comboKind.meFirstPerson)
                     }.padding(.horizontal, 14)
                     Rectangle().fill(YoseColor.sumi.opacity(0.4)).frame(height: 1).padding(.horizontal, 14)
                     HStack { Text("相　方").font(YoseFont.bodyBold).foregroundStyle(YoseColor.haiSumi)
@@ -717,10 +714,11 @@ struct NotificationPromptView: View {
 }
 
 struct IntroFlowView: View {
-    var onComplete: (String, String?, String?) -> Void
+    var onComplete: (String, String?, String?, ComboKind) -> Void
     @State private var stage: Stage = IntroFlowView.initialStage
     @State private var name = "あなたのコンビ"
-    private enum Stage { case title, reminiscence, nameEntry, notif }
+    @State private var kind: ComboKind = .maleMale
+    private enum Stage { case title, comboKind, reminiscence, nameEntry, notif }
 
     /// 導入（回想3場面）を最後まで見た記録。周回をまたぐ（GameSession.store＝UserDefaults）。2周目以降だけ「とばす ▶」を出す。
     static let seenKey = "manzai.introSeen.v1"
@@ -730,6 +728,7 @@ struct IntroFlowView: View {
     private static var initialStage: Stage {
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_UI"] == "intro_name" { return .nameEntry }   // 目視用: 名前決めへ直行
+        if ProcessInfo.processInfo.environment["MZ_UI"] == "combokind" { return .comboKind }   // 目視用: コンビの形を選ぶ画面へ直行
         #endif
         return .title
     }
@@ -755,8 +754,15 @@ struct IntroFlowView: View {
         ZStack {
             switch stage {
             case .title:
-                S1TitleView { withAnimation(.easeInOut(duration: 0.4)) { stage = .reminiscence } }
+                S1TitleView { withAnimation(.easeInOut(duration: 0.4)) { stage = .comboKind } }
                     .transition(.opacity)
+            case .comboKind:
+                ComboKindPickerView { k in
+                    kind = k
+                    Names.setKind(k)   // 回想の「俺／私」・顔・衣装が選んだ形で出る
+                    withAnimation(.easeInOut(duration: 0.4)) { stage = .reminiscence }
+                }
+                .transition(.opacity)
             case .reminiscence:
                 ReminiscencePlayer(
                     cards: Self.cards,
@@ -764,15 +770,15 @@ struct IntroFlowView: View {
                     onSkip: Self.hasSeenIntro ? { withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry } } : nil)
                     .transition(.opacity)
             case .nameEntry:
-                NameEntryView { n, me, partner in
+                NameEntryView(comboKind: kind) { n, me, partner in
                     name = n.isEmpty ? "あなたのコンビ" : n
-                    onComplete(name, me, partner)
+                    onComplete(name, me, partner, kind)
                 }
                 .transition(.opacity)
             case .notif:
                 // 通知機能が1本も実装されていない間は許諾を求めない（初週前の摩擦だけが残るため導線から外す）。
                 // NotificationPromptView 本体と MZ_UI=notif は通知実装時に復帰させる（休眠温存）。
-                NotificationPromptView { onComplete(name, nil, nil) }
+                NotificationPromptView { onComplete(name, nil, nil, kind) }
                     .transition(.opacity)
             }
         }
