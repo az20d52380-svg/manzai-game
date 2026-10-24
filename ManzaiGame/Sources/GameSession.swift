@@ -1014,6 +1014,8 @@ final class GameSession {
         var enteredGP: Bool? = nil
         /// 途中解散でキャリアが終わった年。nil＝旧セーブ（解散なし）。年表に「解散」の行を出す（表示専用）
         var dissolved: Bool? = nil
+        /// その年の決勝を客席から観たか。nil＝観ていない／旧セーブ。戦績の年表の灰「観戦」札（表示専用）
+        var watchedFinal: Bool? = nil
     }
 
     /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／解散／結成 careerYears 年目の年末）
@@ -1260,7 +1262,8 @@ final class GameSession {
                                                   prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0),
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
                                                       || log.contains { $0.contains(GPName.display(config.calendar.gpRoundNames.first ?? "GP1回戦")) },
-                                                  dissolved: outcome.dissolved ? true : nil))
+                                                  dissolved: outcome.dissolved ? true : nil,
+                                                  watchedFinal: didWatchFinal ? true : nil))
                 }
                 if outcome.champion {
                     // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）
