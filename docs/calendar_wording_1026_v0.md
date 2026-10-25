@@ -11,11 +11,11 @@
 - ManzaiGame/Sources/WeekMainView.swift:1598:        .accessibilityLabel(yearEndArmed ? "もう一度押すと年末の結果へ進む" : "年末へ")
 - ManzaiGame/Sources/WeekMainView.swift:1599:        .accessibilityHint("二度押しで、残りの週を休んで年末の結果へ進む")
 - ManzaiGame/Sources/WeekMainView.swift:1619:        nextMilestone() ?? (name: "年末", weeksLeft: session.config.weeks - session.week)
-- ManzaiGame/Sources/Endings.swift:130:                c("十二月の終わり。{me}のアパート。", bg: EventBackdrop(.apartment,.evening), [("谷口", "�
+- ManzaiGame/Sources/Endings.swift:130:                c("十二月の終わり。{me}のアパート。", bg: EventBackdrop(.apartment,.evening), [("谷口", "
 - ManzaiGame/Sources/Endings.swift:131:                c("年明け。バイト先の休憩室。", mood: .noon, bg: EventBackdrop(.office,.day), [("布施店長"
 - ManzaiGame/Sources/Endings.swift:138:                c("年末。小さな劇場の楽屋。", bg: EventBackdrop(.gakuya,.evening), [("谷口", "来年のグラ
 - ManzaiGame/Sources/Endings.swift:144:                c("十二月。事務所の会議室。", mood: .noon, bg: EventBackdrop(.office,.day), [("真壁", "来年
-- ManzaiGame/Sources/Endings.swift:152:                c("年末。最初に二人で出た劇場。", bg: EventBackdrop(.theater,.evening), [("谷口", "ここ�
+- ManzaiGame/Sources/Endings.swift:152:                c("年末。最初に二人で出た劇場。", bg: EventBackdrop(.theater,.evening), [("谷口", "ここ
 - ManzaiGame/Sources/ChoiceEventData.swift:952:            Advice(name: nil, text: "アパートの部屋。年末の夕方。"),
 - ManzaiGame/Sources/ChoiceEventData.swift:953:            Advice(name: "母", text: "お正月は帰ってくるの？ お父さん、毎日カレンダーを見
 - ManzaiGame/Sources/ChoiceEventData.swift:959:            "A": "正月は実家に帰る",
@@ -25,11 +25,11 @@
 - ManzaiGame/Sources/YearResultView.swift:26:            YoseHeaderBar(title: "\(session.year)年目 年末総決算", subtitle: session.combiName)
 - ManzaiGame/Sources/YearResultView.swift:380:        "一年目が終わった。年明けは少し休んで、また動こう。",
 - ManzaiGame/Sources/YearResultView.swift:383:        "今年は、負けて帰る日が多かった。正月くらいは、ゆっくり休もう。",
-- ManzaiGame/Sources/YearResultView.swift:401:        "バイト先の人たちが、大会を気にかけてくれた。年明けに、何か持っていこう�
-- ManzaiGame/Sources/YearResultView.swift:403:        "今年は、お客さんの前に立つ日が多かった。年明けも、体だけは大事にしよう�
+- ManzaiGame/Sources/YearResultView.swift:401:        "バイト先の人たちが、大会を気にかけてくれた。年明けに、何か持っていこう
+- ManzaiGame/Sources/YearResultView.swift:403:        "今年は、お客さんの前に立つ日が多かった。年明けも、体だけは大事にしよう
 - ManzaiGame/Sources/YearResultView.swift:404:        "高校の同級生から、久しぶりに連絡が来た。年明けに、会いに行こう。",
 - ManzaiGame/Sources/YearResultView.swift:405:        "次の舞台を、楽しみに待てる一年だった。年明けも、この気持ちでいよう。",
-- ManzaiGame/Sources/YearResultView.swift:408:        "年の瀬に、谷口と並んで帰り道を歩いた。来年も、二人で行けるところまで行�
+- ManzaiGame/Sources/YearResultView.swift:408:        "年の瀬に、谷口と並んで帰り道を歩いた。来年も、二人で行けるところまで行
 - ManzaiGame/Sources/YearResultView.swift:420:        "今年は、負けて帰る日が多かった。正月くらいは、ゆっくり休もう。",
 - ManzaiGame/Sources/YearResultView.swift:430:        "一年目が終わった。年明けは少し休んで、また動こう。",
 
@@ -69,4 +69,4 @@
 ## 決め手になりそうな根拠（10/26 追記）
 - 正典の検証機 `tools/sim_career.py` の頭の注記（30行目付近）に **「開催時期を 1月起点48週（4週=1ヶ月）に変換して配置：8月=第29〜32週／10月=第37〜40週／11月=第41〜44週／12月=第45〜48週」** とある。つまり大会の週は1月始まりで設計されている。
 - アプリの CalendarView だけが「第1週=4月」と表示していて、独白・エンディングの「正月」「十二月の終わり」「年末総決算」は1月始まりの設計と合っている。食い違っているのは、カレンダーの月の表示と、4月始まりで書かれたイベント3つ（夏祭り・年末のライブ・母からの電話）・年の幕間の札（10/26 に「新年度の備え」に替えた）。
-- このため案②（カレンダーの表示を1月始まりに戻す）は、設計の元に戻す直しに当たる。ただし画面の月が変わるので、決めるのはオーナー。決まったら：CalendarView の monthLabel・イベント3つの週の条件・年の幕間の札（「新年度」→「新春」へ戻す）・お店の注記を合わせて直す。
+- このため案②（カレンダーの表示を1月始まりに戻す）は、設計の元に戻す直しに当たる。ただし画面の月が変わるので、決めるのはオーナー。決まったら：CalendarView の monthLabel・年の幕間のめくりの「4月 ・ 第1週」（YoseYearTurnCurtain.swift:219）・イベント3つの週の条件・お店の注記を合わせて直す（年の幕間の札「新春の備え」は元のままでよい）。
