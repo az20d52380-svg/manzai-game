@@ -391,6 +391,7 @@ cd GameCore && swift test
 - `costume_gacha_v0.md` — 衣装ガチャ 設計案 v0（2026-10-20・コードは触っていない）
 - `dialogue_score_1025_gender_v0.md` — 台詞採点 10/25 男女どちらでも通る語尾の書き換え（df28f67 + e2aba5c）v0
 - `dialogue_score_1025_v0.md` — 台詞の採点 10/25（出会い方・解散・語尾の直し）v0
+- `dialogue_score_1025b_v0.md` — 台詞のゲート採点 10/25 夜（別れの場面・若手限定賞の一言・幕間/予選通過/大成功・出会い4択の追加49行・×2＝優勝の相方の「やったな」を男女どちらでも自然に）
 - `duo_outing_scenes_v0.md` — 相方と二人で出かける場面の一覧 v0（2026-10-20）
 - `dynamic_type_audit_1025_v0.md` — 文字サイズ拡大の目視監査（2026-10-25）v0
 - `judge_comment_score_v6.md` — 審査員講評 採点 v6（型をなくした後・77be01a 以降）
