@@ -703,7 +703,7 @@ enum ChoiceEventData {
             Advice(name: "真鍋", text: "今度、二組で小さい会場を借りて、ライブをやらないか"),
             Advice(name: "俺", text: "会場代は、いくらかかるの？"),
             Advice(name: "真鍋", text: "二組で割って、一組一万円だ。お客さんを三十人呼べたら赤字にはならない"),
-            Advice(name: "谷口", text: "真鍋とやるの？ あいつらには、負けたくない"),
+            Advice(name: "谷口", text: "真鍋とやるの？ あの人たちには、負けたくない"),
         ],
         choiceLabels: [
             "A": "真鍋たちと二組でライブをやる",

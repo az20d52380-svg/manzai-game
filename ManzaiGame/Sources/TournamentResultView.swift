@@ -589,10 +589,10 @@ enum ClimaxData {
     static let revivalLoss: [ClimaxPage] = [
         ClimaxPage(speaker: nil, text: "敗者復活で負けた。今年は、ここまでだ。"),
         ClimaxPage(speaker: "谷口", text: "……決勝、見ていく？"),
-        ClimaxPage(speaker: "俺", text: "見よう。来年、あそこに立つために。"),
+        ClimaxPage(speaker: "俺", text: "見よう。見ておきたい。"),
         ClimaxPage(speaker: nil, text: "決勝会場。立ち見の列の後ろ。"),
         ClimaxPage(speaker: "谷口", text: "優勝したところ、本当にすごかったね"),
-        ClimaxPage(speaker: "俺", text: "うん。しばらく声が出なかった"),
+        ClimaxPage(speaker: "俺", text: "うん。見に来てよかった"),
         ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
         ClimaxPage(speaker: "谷口", text: "悔しいね。来年は、絶対あっち側に立とう"),
         ClimaxPage(speaker: "俺", text: "うん。何か食べて帰ろう"),
