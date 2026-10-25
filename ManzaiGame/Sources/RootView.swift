@@ -320,6 +320,7 @@ struct RootView: View {
 
     /// エンディング／夜逃げ・解散のあと：タイトルへ戻る（「はじめる」→導入→名前決めからやり直す）
     private func returnToTitle() {
+        if session.finished && session.careerOver { session.closeCareer() }   // 【候補・キュー117】エンディング無しの出口（夜逃げ等の「もう一度」）でも消す
         Sound.stopBGM()   // 決勝・緊張の曲をタイトルへ持ち越さない（code_review_2026-10-19f §6）
         NetaStage.lastSeen = [:]   // ネタ札の光り方の記憶を前の周から持ち越さない（code_review_2026-10-19i §2）
         showEnding = false
@@ -377,7 +378,7 @@ struct RootView: View {
             } else {
                 YearResultView(session: session,
                                onRestart: { returnToTitle() },
-                               onEnding: session.endingID != nil ? { showEnding = true } : nil,
+                               onEnding: session.endingID != nil ? { session.closeCareer(); showEnding = true } : nil,   // 【候補・キュー117】エンディングに入る時に消す
                                onNextYear: session.careerOver ? nil : { beginYearTurn() })
             }
         } else if let result = session.pendingResult {

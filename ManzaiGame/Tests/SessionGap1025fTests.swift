@@ -70,7 +70,9 @@ final class SessionGap1025fTests: IsolatedStoreTestCase {
         XCTAssertFalse(s.winFinale)
         XCTAssertTrue(s.finished)
         XCTAssertTrue(s.careerOver, "優勝＝勇退でキャリアが区切れる")
-        XCTAssertNil(GameSession.store.data(forKey: key), "優勝後はセーブが消える")
+        XCTAssertNotNil(GameSession.store.data(forKey: key), "【候補・キュー117 案A】優勝の年末もセーブは残る（エンディングに入る時に消す）")
+        s.closeCareer()
+        XCTAssertNil(GameSession.store.data(forKey: key), "エンディングに入ったら消える")
         XCTAssertEqual(s.yearHistory.count, 1, "二重に積まれない")
     }
 

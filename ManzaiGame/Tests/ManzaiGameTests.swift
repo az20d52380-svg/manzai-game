@@ -804,3 +804,25 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 【候補・キュー117 案A】区切りの年末でもセーブが残り、エンディングに入る時（closeCareer）に消える
+final class CareerEndSaveCandidateTests: IsolatedStoreTestCase {
+    private let key = "manzai.save.v1"
+    func testCareerOverYearEndKeepsSaveUntilClosed() {
+        let s = GameSession(startState: GameSession.debugMaxedState())
+        s.debugAdvanceToChampionFinale()
+        s.acknowledgeWin()
+        XCTAssertTrue(s.finished && s.careerOver)
+        s.saveNow()
+        XCTAssertNotNil(GameSession.store.data(forKey: key))          // 年末で落ちても残る
+        let back = GameSession.loadedOrNew()
+        XCTAssertTrue(back.winFinale)                                   // 優勝の年末は勝利演出から出し直す
+        back.acknowledgeWin()
+        XCTAssertTrue(back.finished && back.careerOver)
+        XCTAssertEqual(back.endingID, s.endingID)                       // 同じ結末へ進める
+        s.closeCareer()
+        XCTAssertNil(GameSession.store.data(forKey: key))
+        s.saveNow()                                                     // 閉じた後は書き戻さない（background の保険）
+        XCTAssertNil(GameSession.store.data(forKey: key))
+    }
+}
