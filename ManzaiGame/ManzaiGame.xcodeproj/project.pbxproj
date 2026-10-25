@@ -14,6 +14,7 @@
 		0B34AAF95695F5153E2B33D9 /* YoseEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = F154485CAC8C1E8A41BD89A9 /* YoseEffects.swift */; };
 		0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */; };
 		0BCC02D48F08FBE904F7745A /* se_event.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AFF716652A1CEF538F57F1BF /* se_event.mp3 */; };
+		0F80788EB57A7E11BC913704 /* SessionGap1025fTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 823BBF1D645262269F322646 /* SessionGap1025fTests.swift */; };
 		11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18155352CE011A350B1DEC6 /* WeekMainView.swift */; };
 		13105DD511B67B290F9706DE /* se_tap.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 62ED400B84054F70C3BA1883 /* se_tap.mp3 */; };
 		15D990101F298A4DE2CC6010 /* WeekHint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9906C18C1D125D16D6DEA7D0 /* WeekHint.swift */; };
@@ -164,6 +165,7 @@
 		7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_grain.mp3; sourceTree = "<group>"; };
 		7E9074D521E24C7B5B3FE240 /* MPLUSRounded1c-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Medium.ttf"; sourceTree = "<group>"; };
 		7F4BD130E2E1C169A1A5799E /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
+		823BBF1D645262269F322646 /* SessionGap1025fTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025fTests.swift; sourceTree = "<group>"; };
 		830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_big.mp3; sourceTree = "<group>"; };
 		86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_finals.mp3; sourceTree = "<group>"; };
 		8A020307F3B3C34947A00DD3 /* YoseMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseMotion.swift; sourceTree = "<group>"; };
@@ -392,6 +394,7 @@
 				C6A2E58A31BD7A19D7847716 /* SessionGap1025cTests.swift */,
 				ED386E53ADABC8770DF122E4 /* SessionGap1025dTests.swift */,
 				170249E13DCADAC83FC08CF5 /* SessionGap1025eTests.swift */,
+				823BBF1D645262269F322646 /* SessionGap1025fTests.swift */,
 				EBB752855F8C64D2E210BE9E /* SessionGap1025Tests.swift */,
 			);
 			path = Tests;
@@ -628,6 +631,7 @@
 				73587F79732C11E8E43D20FE /* SessionGap1025cTests.swift in Sources */,
 				BA83A560E5013717971797FB /* SessionGap1025dTests.swift in Sources */,
 				6E71D733049D8E6E9DC696B5 /* SessionGap1025eTests.swift in Sources */,
+				0F80788EB57A7E11BC913704 /* SessionGap1025fTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
