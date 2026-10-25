@@ -27,7 +27,7 @@
 | L37 | high | resolve*二度押しガード | 一部解消 | WeekRunnerにPhase照合なし（preconditionはyearのみ）。ManzaiGameTestsに二度押し系あり |
 | L38 | high | iOSがCIでビルドされない | 一部解消（10/25 夕） | 差分は docs/patches/ci_app_build_L38.patch（app-build ジョブ・macos-15）。push のトークンに workflow 権限が無く拒否＝オーナーが `git am docs/patches/ci_app_build_L38.patch` で入れる |
 | L39 | high | ファンレポ枯渇 | 一部解消（10/25 夕） | 15c9de0 で 54→161本（重複を除く数え）。200 には追いレポ・常連フック等まだ無いプールが要る |
-| L40 | high | 日常雑談の無口化 | 一部解消 | dialogue_batch4で#71〜110増補・DialogueData約340行。帯別必要本数の算出記録なし |
+| L40 | high | 日常雑談の無口化 | 一部解消（10/25 実測） | banter_repeat_measure_1025_v0：10年で週頭の声 約320〜360本・読み返し60〜64%（1〜3年目8%→4〜6年目63%→7〜10年目96〜98%）。最も薄いのは掛け合いの空白帯（在庫11本・80%）、独白の通過後75%・体力低下68%・空白帯65% |
 | L41 | high | 予選紙講評の反復 | 一部解消（10/25 実測） | 10年の読み返し率 約11〜18%（最大22%・強い組で予選を何度も通る型で目立つ）＝judge_comment_repeat_measure_1025_v0。増やすかはオーナー |
 | L42 | high | B案が買い切りに劣後 | 判断待ち | 業態未決（START_HERE L54） |
 | L43 | high | 資金決済法リスク | 一部解消（10/25 夕） | payment_services_act_check_1025_v0：今の作り（非消耗型のみ）は前払式支払手段の対象外の見込み（公的資料での明記は未発見＝推論）。有料石を入れると自家型＝基準日残高1,000万円超で届出＋1/2供託。条文の確認は弁護士へ |
