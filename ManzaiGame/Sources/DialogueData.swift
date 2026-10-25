@@ -63,8 +63,11 @@ enum DialogueData {
         }
         if let m = nextMilestone, m.weeksLeft == 2 {   // 1週前は掛け合い/平常に譲る（最頻出の単一行の間引き・監査D-04）
             // 弱点が無い（全能力ほぼ同値）週は弱点句を省く（監査B-03）
-            return Advice(name: "俺", text: weakAbility.isEmpty ? "そろそろ\(m.name)か。"
-                                                               : "そろそろ\(m.name)か。\(weakAbility)、あと少し上げておきたい。")
+            // 型1本で10年に約16回出ていた＝言い方を4通りに（content_inventory_count_1025_v0 §2・条件と効果は不変）
+            let pool = weakAbility.isEmpty ? stageNearPlain : stageNearWeak
+            let line = pick(pool, salt: week, scene: weakAbility.isEmpty ? "mono.stageNearPlain" : "mono.stageNearWeak", picker)
+            return Advice(name: "俺", text: line.replacingOccurrences(of: "〈大会〉", with: m.name)
+                                                .replacingOccurrences(of: "〈弱点〉", with: weakAbility))
         }
         if let m = nextMilestone, m.weeksLeft >= 6 {   // 本番が遠い週（週16-26の空白帯等）は仕込みの声
             return Advice(name: "俺", text: pick(midseason, salt: week, scene: "mono.midseason", picker))
@@ -75,6 +78,20 @@ enum DialogueData {
     // 主人公「俺」は標準語（方言なし）。ツッコミ体質・心配性・計算屋の色は残す。
     // 本文は voice_corpus_v0（calibration 0be8a11）の◯行を逐語転記（§1 seed＋§8 底上げ・補充）。
     // 相方固有名は焼き込まない（innerVoice はコード上相方非依存）。数値・最終確定は実機目視。
+    /// 本番2週前（〈大会〉＝次の本番の名前・〈弱点〉＝いちばん低い能力の名前）
+    private static let stageNearWeak = [
+        "そろそろ〈大会〉か。〈弱点〉、あと少し上げておきたい。",
+        "〈大会〉まであと二週。〈弱点〉、今のうちに伸ばしておこう。",
+        "再来週は〈大会〉だ。〈弱点〉、このままでは少し心もとない。",
+        "〈大会〉が近づいてきた。〈弱点〉、もう一押ししておきたい。",
+    ]
+    private static let stageNearPlain = [
+        "そろそろ〈大会〉か。",
+        "〈大会〉まであと二週。体調を崩さないようにしよう。",
+        "再来週は〈大会〉だ。持ち物と衣装を確かめておこう。",
+        "〈大会〉が近づいてきた。今週は早めに寝よう。",
+    ]
+
     private static let recovering = [   // 療養中（recoveryWeeks>0）・Fable13§2・Skill採点済。発生週専用の一発告知は別途
         "まだ体が本調子じゃない。今週は家でおとなしくしていよう。",
     ]
