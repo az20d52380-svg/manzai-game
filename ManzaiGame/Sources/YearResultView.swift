@@ -449,7 +449,7 @@ struct YearResultView: View {
         guard let o else { return "" }
         if o.champion { return "頂グランプリ制覇" }
         if o.bankrupt { return "所持金が尽きてキャリア終了" }
-        if o.dissolved { return "すれ違いが続き、コンビを解散した" }
+        if o.dissolved { return "すれ違いが続き、\nコンビを解散した" }   // 「た」だけが2行目に落ちていた
         if o.reachedFinal { return "決勝の舞台に立った" }
         if notEnteredGP { return "エントリー費が払えず、\n頂グランプリに出られなかった" }
         return "頂グランプリ 到達段階"
