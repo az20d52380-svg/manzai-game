@@ -999,14 +999,14 @@ struct WeekMainView: View {
                         .foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
-                if !sub.isEmpty {
+                if !sub.isEmpty, !(urgent && dynamicTypeSize.isAccessibilitySize) {   // 大きい文字では朱札「未振分あり」が説明を覆う＝札だけにする（ax3_hooks_audit_1026 L5）
                     Text(sub).font(YoseFont.gothic(12, weight: .bold))
                         .foregroundStyle(gated ? YoseColor.shu : ready ? YoseColor.kinText : YoseColor.haiSumi)
                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // AX の大きさでは勝負ネタの名前が … で切れた＝2行まで（visual_check_after_12pt_v0 §AX）
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.bottom, (urgent || gated) ? 14 : 0)   // 朱札「未振分あり」・判子「出張中/休演」が名前に食い込まないよう文字を上げる（hooks_audit_1026）
+            .padding(.bottom, (urgent || gated) ? (dynamicTypeSize.isAccessibilitySize ? 24 : 14) : 0)   // 大きい文字では札も大きい（ax3_hooks_audit_1026 L5）。朱札「未振分あり」・判子「出張中/休演」が名前に食い込まないよう文字を上げる（hooks_audit_1026）
             .overlay(alignment: .bottomTrailing) {
                 // 選べない札は、判子で「今週は無理」を言う
                 if gated {
