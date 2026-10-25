@@ -128,6 +128,13 @@ final class SessionGap1025fTests: IsolatedStoreTestCase {
         XCTAssertTrue(s.log.contains { $0.contains("優勝「テストコンビ」（客席から）") })
         XCTAssertNotNil(GameSession.store.data(forKey: "manzai.save.v1"), "観終えたらセーブ")
     }
+    func testFinishWatchingFinalTwiceLogsOnce() {   // code_review_2026-10-26 低1：二度押しで行が2つ積まれない
+        let s = make(.qualifierFail)
+        drive(s) { $0.watchingFinal }
+        s.finishWatchingFinal(winner: "二度押し")
+        s.finishWatchingFinal(winner: "二度押し")
+        XCTAssertEqual(s.log.filter { $0.contains("優勝「二度押し」（客席から）") }.count, 1)
+    }
     func testWatchedFinalIsMarkedInYearRecordAndNotRewatched() {
         let s = make(.qualifierFail)
         drive(s) { $0.watchingFinal }

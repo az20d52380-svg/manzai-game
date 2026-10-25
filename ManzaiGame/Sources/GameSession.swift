@@ -991,6 +991,7 @@ final class GameSession {
 
     /// 観客版決勝を観終えた。優勝組を「出来事」に残して週メインへ戻る。
     func finishWatchingFinal(winner: String) {
+        guard watchingFinal else { return }   // 終わりのボタンの二度押しで「（客席から）」が2行積まれた（code_review_2026-10-26 低1）
         watchingFinal = false
         didWatchFinal = true
         log.append("第\(week)週: 頂GP 決勝 優勝「\(winner)」（客席から）")
