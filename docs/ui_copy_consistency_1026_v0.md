@@ -118,3 +118,7 @@
 2. §1 閉じる系を「とじる」へ（ChoiceEventOverlay:281、QualifierNoticeView:143）か、YoseComponents の既定を漢字にして全体を漢字に。
 3. §3 「次へ 進む ▶」→「次へ ▶」（ChoiceEventOverlay:249、TournamentResultView:174）。
 4. §8 ボタン「新しく書く」を案内文の「ネタを書く」に合わせる（WeekMainView:777）。
+
+## 追記（10/26・親の対応）
+- 済：§1 のうち「閉じる」2か所を多数派の「とじる」へ（ChoiceEventOverlay・QualifierNoticeView）。
+- 据え置き：§2 スキップ系（導入「とばす」・通知「飛ばす」・決勝「スキップ ▶▶」は画面の演出ごとの言い方の可能性）、§3「次へ 進む ▶」（主ボタンの見せ方）、§8 の文言はどれも好みの範囲＝オーナーが気になれば一括で直せる（場所は上の表）。
