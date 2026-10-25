@@ -804,3 +804,15 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 【候補・キュー127 案②】2回目以降の敗者復活の負けは短い版（元の文の抜き出し・最終年の「来年」外しとも両立）
+final class RevivalShortCandidateTests: XCTestCase {
+    func testShortVersionIsSubsetAndFinalYearSafe() {
+        let r = StageResult(name: "敗者復活", passed: false, prize: 0)
+        let full = ClimaxData.pages(for: r).map(\.text)
+        let short = ClimaxData.pages(for: r, repeatSeen: true).map(\.text)
+        XCTAssertEqual(short.count, 4)
+        XCTAssertTrue(short.allSatisfy { full.contains($0) })
+        XCTAssertFalse(ClimaxData.pages(for: r, finalYear: true, repeatSeen: true).contains { $0.text.contains("来年") })
+    }
+}
