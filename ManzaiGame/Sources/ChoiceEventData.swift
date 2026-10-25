@@ -1181,8 +1181,8 @@ enum ChoiceEventData {
         title: "なくしたノート",
         setup: [
             Advice(name: nil, text: "駅の忘れ物の窓口。朝。"),
-            Advice(name: "谷口", text: "二人のノート、ゆうべの電車の網棚に置いてきてしまったんだ"),
-            Advice(name: "俺", text: "組んだ日から書いてるノートだよね"),
+            Advice(name: "谷口", text: "二人のネタ帳、ゆうべの電車の網棚に置いてきてしまったんだ"),
+            Advice(name: "俺", text: "組んだ日から書いてるネタ帳だよね"),
             Advice(name: "駅員", text: "終点の駅に届いているそうです。取りに行くなら、今日中にお願いします"),
             Advice(name: "谷口", text: "終点まで一時間かかるんだ。本当にごめん"),
         ],
