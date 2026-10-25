@@ -293,9 +293,11 @@ struct StagePreludeView: View {
 
     /// 本番へボタンの下に出す一言＝押せるまま・結果を言葉で明示（ネタ無しは上乗せなし）
     private var goNote: String? {
-        if session.selectedNeta == nil { return "ネタ無しで出る（上乗せなし）" }
-        if isFinal && session.selectedNeta2 == nil { return "2本目は選ばずに進む" }
-        return nil
+        var notes: [String] = []
+        if session.selectedNeta == nil { notes.append("ネタ無しで出る（上乗せなし）") }
+        else if isFinal && session.selectedNeta2 == nil { notes.append("2本目は選ばずに進む") }
+        if session.state.stamina <= 0 { notes.append("体力が尽きた状態で出る") }   // 冬の大会などの出場カードと同じ注意（hooks_audit_1026）
+        return notes.isEmpty ? nil : notes.joined(separator: "・")
     }
 
     var body: some View {
