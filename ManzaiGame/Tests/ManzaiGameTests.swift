@@ -785,3 +785,21 @@ final class WeekendInviteVariantTests: XCTestCase {
         XCTAssertEqual(Set((1...48).map { ChoiceEventData.text(for: .styleTalk, year: 2, week: $0).setup.map(\.text).joined() }).count, st.count)
     }
 }
+
+/// お店の「戻す」は引っ越しを巻き戻さない（code_review_2026-10-19 §1-1）。ShopView と同じ手順（起点を取る→引っ越して起点の部屋も更新→買う→戻す）を session で再現する。
+final class ShopUndoRoomTests: IsolatedStoreTestCase {
+    func testUndoPurchaseKeepsMovedRoom() {
+        var st = GameState(config: GameConfig()); st.money = 2_000_000
+        let s = GameSession(startState: st)
+        var visitStart = s.state
+        let target = s.config.roomRents.count - 1
+        XCTAssertTrue(s.moveRoom(to: target))
+        visitStart.room = s.state.room                       // ShopView.swift の引っ越しボタンと同じ
+        let moneyAfterMove = s.state.money
+        XCTAssertTrue(s.buyItem(.栄養ドリンク))
+        XCTAssertLessThan(s.state.money, moneyAfterMove)
+        s.replayShopVisit(from: visitStart, [])              // 「戻す」で買い物を全部返す
+        XCTAssertEqual(s.state.room, target)                 // 部屋はそのまま
+        XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
+    }
+}
