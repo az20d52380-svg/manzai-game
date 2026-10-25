@@ -278,9 +278,9 @@ struct YoseYearTurnCurtainView: View {
                 )
             }
 
-            // 新年度の備え（年初処理の明示：体力全回復・持ちネタ数・シード権）
+            // 新春の備え（年初処理の明示：体力全回復・持ちネタ数・シード権）
             HStack(spacing: 8) {
-                YoseTag(text: "新年度の備え", style: .outlineSumi)   // 年は4月始まり（第1週=4月）＝「新春」は1月と食い違う
+                YoseTag(text: "新春の備え", style: .outlineSumi)
                 Text("体力 \(summary.maxStamina)/\(summary.maxStamina) 全回復 ・ 持ちネタ \(summary.netaCount)本")
                     .font(YoseFont.gothic(12, weight: .bold))
                     .foregroundStyle(YoseColor.sumi)
