@@ -4,7 +4,7 @@
 
 ## 集計
 
-解消 13／一部解消 14／未解消 1／判断待ち 10（計38・10/25 夜に数え直し・10/25 夕に更新。朝の時点は 解消4／一部9／未解消15／判断待ち10）
+解消 13／一部解消 15／未解消 1／判断待ち 9（計38・10/25 夜に数え直し・10/25 夕に更新。朝の時点は 解消4／一部9／未解消15／判断待ち10）
 
 ## 未解消で判断不要のもの 上位5件（次に自走で手を付けられる物）
 
@@ -39,7 +39,7 @@
 | L49 | medium | 研究デバフが旧スケール較正 | 一部解消（10/25 実測・閉じるのはオーナー） | research_debuff_remeasure_1025_v0：客層二層（計測コードの不具合を直すと）±1〜3pt・波乱は優勝±1〜2pt＝誤差内、飽きられは一度も発動せず。3つとも研究用の分岐（sim_career のみ・アプリに無し・既定無効）。推奨＝見送って閉じる |
 | L50 | medium | H3体力-15が無記録 | 解消（10/25 夕） | 実測 a6fb0ea（h3_stamina_penalty_measure_1025_v0）＋canonical_v2 §1 生活ルールに STAM_PEN を記録 |
 | L51 | medium | gen_goldenとsim_career二重実装 | 一部解消 | tools/check_golden_sync.py（ドリフト検出）あり。王者年は分岐 golden の台本B 2年目（seedFinal＋ライン-999＝優勝して即終了）で通っている＝CareerGoldenTests.branchB（10/25 夜に確認）。残り＝gen_golden と sim_career の実装の一本化のみ |
-| L52 | medium | GP優勝でS3結果スキップ | 判断待ち | owner-decision |
+| L52 | medium | GP優勝でS3結果スキップ | 一部解消（10/25 夜） | 優勝の年は「勝ち版の演出（winFinale）」＋出来事ログ・賞金年計への記録で補われている。夜逃げ・解散の週の大会結果がログ・年計から落ちていたのは次のコミットで記録だけ足した（GameSession.pump）。残り＝優勝・夜逃げの週に S3 の結果画面そのものを挟むかはオーナー |
 | L53 | medium | gpSeeded実行パス未テスト | 解消 | WeekRunnerGoldenTests(prevStage>=3→gpSeeded)・RunCareer/Rift/CoverageUTests |
 | L54 | medium | 体調ダウン未テスト | 解消（10/25） | 34cb2f3 InjuryFlowTests：抽選値を固定して「閾値未満の最初の危ない週で発生→療養2週」と「抽選が高い／安全な行動なら起きない」を WeekRunner で固定（370 green） |
 | L55 | medium | state正が3箇所に分散 | 一部解消（10/25 夕） | StateSyncTests：2年通しで入口を呼ぶごとに state と runner.state をバイト比較＝ずれ0（アプリ 167 green）。一本化の作り替えはしていない |
