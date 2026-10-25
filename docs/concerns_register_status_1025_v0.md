@@ -45,7 +45,7 @@
 | L55 | medium | state正が3箇所に分散 | 一部解消（10/25 夕） | StateSyncTests：2年通しで入口を呼ぶごとに state と runner.state をバイト比較＝ずれ0（アプリ 167 green）。一本化の作り替えはしていない |
 | L56 | medium | 決勝審査コメントの反復 | 解消（10/25 実測） | 決勝講評の読み返し率は型C 1.1%・型B 0%（7人全員を出しても4.3%）＝judge_comment_repeat_measure_1025_v0 |
 | L57 | medium | 数量目標がファンレポのみ | 判断待ち | owner-decision |
-| L58 | medium | モブ名50組の年跨ぎ再利用 | 判断待ち | AUTOPILOT L120に①②選択肢のまま |
+| L58 | medium | モブ名50組の年跨ぎ再利用 | 判断待ち（10/25 夜 実測あり） | mob_roster_repeat_1025_v0：10年で42組登場・最多6回・前年との重なり平均約2組。顔ぶれは年だけで決まる＝何周しても N 年目は同じ9組。①今のまま ②周ごとに変える ③名簿を増やす はオーナー |
 | L59 | medium | 需要の絶対量が未計測 | 判断待ち | owner-decision |
 | L60 | medium | ストア手数料の未確認前提 | 一部解消（10/25 夕） | store_fee_check_1025_v0：日本の Apple は小規模で実効15%（10%＋決済5%）で前提と一致、Google は新体系で15〜25%＝「両ストア15%」は不一致。legal_risk・market_research の該当行の直しと Apple 一次ページの目視確認が残り |
 | L61 | medium | 商標・パブリシティ未レビュー | 一部解消（10/25 夕） | trademark_publicity_check_1025_v0：Web 検索の範囲で実在の芸人・大会・商標との一致なし。J-PlatPat の称呼検索（ヒトコエ・頂GP）とストア内検索は未＝出す前に人の手で |
