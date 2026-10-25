@@ -1594,6 +1594,9 @@ struct WeekMainView: View {
             .overlay(Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5))
         }
         .buttonStyle(PressableStyle())
+        // 「もう一度」単独では意味が分からない（a11y_check_1026 低4）
+        .accessibilityLabel(yearEndArmed ? "もう一度押すと年末の結果へ進む" : "年末へ")
+        .accessibilityHint("二度押しで、残りの週を休んで年末の結果へ進む")
     }
 
     /// §4 器満了: 成長予算を使い切ったか（NotebookView の器リングと同一判定＝食い違わない）。

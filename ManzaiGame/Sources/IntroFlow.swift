@@ -652,6 +652,7 @@ struct NameEntryView: View {
             }
         }
         .accessibilityLabel("出会い方、\(meeting.label)")
+        .accessibilityHint("押すと出会い方を選べる")   // a11y_check_1026 低5
     }
 
     private var rivet: some View {
