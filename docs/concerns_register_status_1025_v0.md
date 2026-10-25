@@ -47,8 +47,8 @@
 | L59 | medium | 需要の絶対量が未計測 | 判断待ち | owner-decision |
 | L60 | medium | ストア手数料の未確認前提 | 未解消 | research・記録なし |
 | L61 | medium | 商標・パブリシティ未レビュー | 未解消 | research・記録なし。名称下調べ(app_name_prior_use_1025)のみ |
-| L62 | low | champion_selection §7 JSON矛盾 | 未解消 | 修正記録なし |
-| L63 | low | 王者編18ptゲートと15pt行 | 未解消 | 修正記録なし |
+| L62 | low | champion_selection §7 JSON矛盾 | 解消（10/25 夕に確認） | §7 の例は6年目＝金字塔で§2表と一致・§4-4 は単一抽選（先頭を champion）・mobDraw 表記も正（L113/L141） |
+| L63 | low | 王者編18ptゲートと15pt行 | 解消（10/25 夕に確認） | 王者編そのものが廃止（master_spec L58/L77/L140）・canonical §2-B の15pt行も取消線 |
 | L64 | low | 審査員名の綴り照合 | 一部解消 | AUTOPILOT 116で神楽坂を重み表に反映。neta_system §4照合は記録なし |
 | L65 | low | MVP1年版の体感未検証 | 未解消 | 記録なし |
 | L66 | low | 初回固定シード424242 | 解消 | RootView L338 初回もランダムシード |
