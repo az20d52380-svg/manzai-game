@@ -1317,6 +1317,9 @@ final class GameSession {
     }
 
     #if DEBUG
+    /// テスト用: runner が持つ正の状態（懸念の台帳 L55＝表示用の state が runner から写した唯一の派生かを突き合わせる）
+    var debugRunnerState: GameState { runner.state }
+
     /// QA用: 選択肢イベントのオーバーレイを強制表示（発火抽選を経ず kind を直接立てる・目視専用）。
     func debugForceEvent(_ kind: ChoiceEventKind) { pendingChoiceEvent = kind }
 

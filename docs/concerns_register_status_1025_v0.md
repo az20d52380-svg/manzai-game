@@ -26,7 +26,7 @@
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
 | L37 | high | resolve*二度押しガード | 一部解消 | WeekRunnerにPhase照合なし（preconditionはyearのみ）。ManzaiGameTestsに二度押し系あり |
 | L38 | high | iOSがCIでビルドされない | 一部解消（10/25 夕） | 差分は docs/patches/ci_app_build_L38.patch（app-build ジョブ・macos-15）。push のトークンに workflow 権限が無く拒否＝オーナーが `git am docs/patches/ci_app_build_L38.patch` で入れる |
-| L39 | high | ファンレポ枯渇 | 未解消 | FanReportData.swift 62本/目標200 |
+| L39 | high | ファンレポ枯渇 | 一部解消（10/25 夕） | 15c9de0 で 54→161本（重複を除く数え）。200 には追いレポ・常連フック等まだ無いプールが要る |
 | L40 | high | 日常雑談の無口化 | 一部解消 | dialogue_batch4で#71〜110増補・DialogueData約340行。帯別必要本数の算出記録なし |
 | L41 | high | 予選紙講評の反復 | 一部解消 | done 30/32/34でプール増・年混ぜsalt・採点v7(○43△7×0)。回戦帯別の到達確率換算は記録なし |
 | L42 | high | B案が買い切りに劣後 | 判断待ち | 業態未決（START_HERE L54） |
@@ -40,7 +40,7 @@
 | L52 | medium | GP優勝でS3結果スキップ | 判断待ち | owner-decision |
 | L53 | medium | gpSeeded実行パス未テスト | 解消 | WeekRunnerGoldenTests(prevStage>=3→gpSeeded)・RunCareer/Rift/CoverageUTests |
 | L54 | medium | 体調ダウン未テスト | 一部解消 | CodableTests療養・SessionGap1025cTests等。発生draw固定の網羅は未確認 |
-| L55 | medium | state正が3箇所に分散 | 未解消 | 整理の記録なし（未確認） |
+| L55 | medium | state正が3箇所に分散 | 一部解消（10/25 夕） | StateSyncTests：2年通しで入口を呼ぶごとに state と runner.state をバイト比較＝ずれ0（アプリ 167 green）。一本化の作り替えはしていない |
 | L56 | medium | 決勝審査コメントの反復 | 一部解消 | 書き直し6d60f1f（決勝112＋事情42＋状態18）。連続決勝での反復実測は記録なし |
 | L57 | medium | 数量目標がファンレポのみ | 判断待ち | owner-decision |
 | L58 | medium | モブ名50組の年跨ぎ再利用 | 判断待ち | AUTOPILOT L120に①②選択肢のまま |
