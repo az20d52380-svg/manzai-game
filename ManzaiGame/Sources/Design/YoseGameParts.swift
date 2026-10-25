@@ -63,7 +63,7 @@ struct YoseVitalMoneyBar: View {
                 .accessibilityLabel("知名度 \(fame)\((fameDelta ?? 0) > 0 ? "、\(fameDelta ?? 0)上がった" : "")")
             }
             if money < 0 { YoseTag(text: "借金", style: .outlineShu).fixedSize() }   // 所持金マイナスの間だけ（表示のみ）
-            Text("¥\(money.formatted(.number))").font(YoseFont.number(17, weight: .heavy))
+            Text("\(money < 0 ? "-" : "")¥\(abs(money).formatted(.number))").font(YoseFont.number(17, weight: .heavy))   // 借金は「-¥100,000」（「¥-100,000」は符号の位置が不自然＝hooks_audit_1026）
                 .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinBright)
                 .lineLimit(1).fixedSize()
                 .accessibilityLabel(money < 0 ? "所持金 マイナス\(-money)円、借金" : "所持金 \(money)円")
