@@ -587,6 +587,8 @@ enum ClimaxData {
         ClimaxPage(speaker: nil, text: "準決勝で落ちた。でも、敗者復活に回れる。\n決勝の日の昼が勝負だ。今夜は早く寝よう。"),
     ]
     /// 敗者復活の敗北（週47・決勝と同日の昼）＝1年版デモの実質最終戦。話者ごと1ページ（本文はFable doc02・Skill採点済）。
+    /// 最終年だけ「悔しいね」で切る行（文字列の前方一致に頼らない＝code_review_2026-10-26c §2-3）
+    static let revivalNextYearLine = "悔しいね。来年は、絶対あっち側に立とう"
     static let revivalLoss: [ClimaxPage] = [
         ClimaxPage(speaker: nil, text: "敗者復活で負けた。今年は、ここまでだ。"),
         ClimaxPage(speaker: "谷口", text: "……決勝、見ていく？"),
@@ -595,7 +597,7 @@ enum ClimaxData {
         ClimaxPage(speaker: "谷口", text: "優勝したところ、本当にすごかったね"),
         ClimaxPage(speaker: "俺", text: "うん。見に来てよかった"),
         ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
-        ClimaxPage(speaker: "谷口", text: "悔しいね。来年は、絶対あっち側に立とう"),
+        ClimaxPage(speaker: "谷口", text: revivalNextYearLine),
         ClimaxPage(speaker: "俺", text: "うん。何か食べて帰ろう"),
     ]
     /// 本番結果から山場ページを選ぶ（発火A=準決敗退／発火B=敗者復活敗退）。該当なし=空＝通常の「次へ」。
@@ -606,7 +608,7 @@ enum ClimaxData {
         case "GP準決勝": return semifinalLoss
         case "敗者復活":
             guard finalYear else { return revivalLoss }
-            return revivalLoss.map { $0.text.hasPrefix("悔しいね。来年は") ? ClimaxPage(speaker: $0.speaker, text: "悔しいね") : $0 }
+            return revivalLoss.map { $0.text == revivalNextYearLine ? ClimaxPage(speaker: $0.speaker, text: "悔しいね") : $0 }
         default: return []
         }
     }

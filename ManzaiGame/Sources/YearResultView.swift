@@ -343,7 +343,7 @@ struct YearResultView: View {
             else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap; scene += ".first" }
         }
         // 結成最終年の年末には「来年」が無い（year10_visual_1026_v0 §2-2）。来年を語る行を外す（各プール13行中2行）。
-        if session.year >= session.config.careerYears {
+        if session.careerOver || session.year >= session.config.careerYears {   // 優勝・夜逃げ・解散で早く終わる年も（code_review_2026-10-26c §2-1）
             let kept = pool.filter { !$0.contains("来年") }
             if !kept.isEmpty { pool = kept }
         }

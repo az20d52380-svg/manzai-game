@@ -255,6 +255,7 @@ struct RootView: View {
                     session.debugAdvanceToPrelude(final: false)
                     session.advanceAuto()
                     if session.pendingResult?.results.contains(where: { !$0.passed }) == true { break }
+                    if seed == 30 { print("[gploss] 30種とも通過＝落ちる結果を出せなかった") }
                 }
             }
             if ui == "event", session.week <= 1 {

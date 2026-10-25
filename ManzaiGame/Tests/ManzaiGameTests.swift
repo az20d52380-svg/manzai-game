@@ -763,6 +763,7 @@ final class FinalYearCopyTests: XCTestCase {
         XCTAssertTrue(normal.contains { $0.contains("来年") })
         XCTAssertFalse(last.contains { $0.contains("来年") })
         XCTAssertEqual(normal.count, last.count)   // 行は切るだけ・ページ数は同じ
+        XCTAssertTrue(normal.contains(ClimaxData.revivalNextYearLine))   // 切り替えの対象の行が今も入っている
     }
 }
 
