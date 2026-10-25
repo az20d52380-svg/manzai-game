@@ -21,7 +21,7 @@
 | L29 | high | 裏天井2案並存・未実装 | 判断待ち | START_HERE L56「裏天井を入れるか」未決 |
 | L30 | high | 決勝優勝ライン数値不一致 | 未解消 | AUTOPILOT/START_HEREに決着記録なし |
 | L31 | high | finals優勝例とrival年表矛盾 | 判断待ち | champion_selection §9未決2（owner） |
-| L32 | high | finals §4-C.5モブ旧30組 | 一部解消 | コードは50組・夜行列車差替済（done 33/57）。finals L116の文書修正は記録なし |
+| L32 | high | finals §4-C.5モブ旧30組 | 解消（10/25 夕に確認） | finals_direction L124 は既に「name_generator が毎周生成（固定50組…）」に更新済み |
 | L35 | high | exp_neta非情報的 | 一部解消 | done 50 neta_bonus_remeasure_v0（測定道具のみ）。決勝到達帯ボットでの較正は記録なし |
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
 | L37 | high | resolve*二度押しガード | 一部解消 | WeekRunnerにPhase照合なし（preconditionはyearのみ）。ManzaiGameTestsに二度押し系あり |
@@ -35,7 +35,7 @@
 | L45 | high | 運営レス前提の崩壊 | 判断待ち | 業態未決に依存（owner-decision） |
 | L46 | high | キャラ供給の計画なし | 判断待ち | owner-decision |
 | L49 | medium | 研究デバフが旧スケール較正 | 未解消 | AUDIENCE_K等の再計測記録なし |
-| L50 | medium | H3体力-15が無記録 | 未解消 | canonical_v2_spec.mdにSTAM_PEN記載なし |
+| L50 | medium | H3体力-15が無記録 | 解消（10/25 夕） | 実測 a6fb0ea（h3_stamina_penalty_measure_1025_v0）＋canonical_v2 §1 生活ルールに STAM_PEN を記録 |
 | L51 | medium | gen_goldenとsim_career二重実装 | 一部解消 | tools/check_golden_sync.py（ドリフト検出）あり。実装の一本化・王者年カバーは記録なし |
 | L52 | medium | GP優勝でS3結果スキップ | 判断待ち | owner-decision |
 | L53 | medium | gpSeeded実行パス未テスト | 解消 | WeekRunnerGoldenTests(prevStage>=3→gpSeeded)・RunCareer/Rift/CoverageUTests |
@@ -45,7 +45,7 @@
 | L57 | medium | 数量目標がファンレポのみ | 判断待ち | owner-decision |
 | L58 | medium | モブ名50組の年跨ぎ再利用 | 判断待ち | AUTOPILOT L120に①②選択肢のまま |
 | L59 | medium | 需要の絶対量が未計測 | 判断待ち | owner-decision |
-| L60 | medium | ストア手数料の未確認前提 | 未解消 | research・記録なし |
+| L60 | medium | ストア手数料の未確認前提 | 一部解消（10/25 夕） | store_fee_check_1025_v0：日本の Apple は小規模で実効15%（10%＋決済5%）で前提と一致、Google は新体系で15〜25%＝「両ストア15%」は不一致。legal_risk・market_research の該当行の直しと Apple 一次ページの目視確認が残り |
 | L61 | medium | 商標・パブリシティ未レビュー | 未解消 | research・記録なし。名称下調べ(app_name_prior_use_1025)のみ |
 | L62 | low | champion_selection §7 JSON矛盾 | 解消（10/25 夕に確認） | §7 の例は6年目＝金字塔で§2表と一致・§4-4 は単一抽選（先頭を champion）・mobDraw 表記も正（L113/L141） |
 | L63 | low | 王者編18ptゲートと15pt行 | 解消（10/25 夕に確認） | 王者編そのものが廃止（master_spec L58/L77/L140）・canonical §2-B の15pt行も取消線 |
