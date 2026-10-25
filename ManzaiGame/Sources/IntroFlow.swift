@@ -42,6 +42,8 @@ struct ReminiscencePlayer: View {
     static var debugStart: Int { 0 }
     #endif
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         let card = cards[safe: index] ?? cards[0]
         let lines: [Advice] = !card.talk.isEmpty ? card.talk
@@ -63,7 +65,8 @@ struct ReminiscencePlayer: View {
             .frame(maxHeight: .infinity)
             // 台詞＝過去の行は薄い台本行・今の行はめくり名札＋貼り紙の吹き出し
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(lines.indices.dropLast(), id: \.self) { i in
+                // 大きい文字（アクセシビリティ）では過去の行を直前の1行だけに（台詞ボックスが下端に押し出されないように・表示だけ）
+                ForEach(Array(lines.indices.dropLast().suffix(dynamicTypeSize.isAccessibilitySize ? 1 : lines.count)), id: \.self) { i in
                     RecallScriptRow(advice: lines[i])
                 }
                 if let last = lines.last {
