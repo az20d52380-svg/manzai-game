@@ -34,7 +34,7 @@
 | L44 | high | 景表法・ガチャ確率 | 一部解消（10/25 夕） | gacha_law_check_1025_v0：今の課金は買い切り4商品のみでガチャ無し＝確率表示・コンプガチャは対象外。入れる場合の対応表あり。legal_risk L74「CESAへの統合」は根拠なし・monetization_decision L3「B案F2P確定」は現状と食い違い（業態はオーナー判断） |
 | L45 | high | 運営レス前提の崩壊 | 判断待ち | 業態未決に依存（owner-decision） |
 | L46 | high | キャラ供給の計画なし | 判断待ち | owner-decision |
-| L49 | medium | 研究デバフが旧スケール較正 | 未解消 | AUDIENCE_K等の再計測記録なし |
+| L49 | medium | 研究デバフが旧スケール較正 | 一部解消（10/25 実測・閉じるのはオーナー） | research_debuff_remeasure_1025_v0：客層二層（計測コードの不具合を直すと）±1〜3pt・波乱は優勝±1〜2pt＝誤差内、飽きられは一度も発動せず。3つとも研究用の分岐（sim_career のみ・アプリに無し・既定無効）。推奨＝見送って閉じる |
 | L50 | medium | H3体力-15が無記録 | 解消（10/25 夕） | 実測 a6fb0ea（h3_stamina_penalty_measure_1025_v0）＋canonical_v2 §1 生活ルールに STAM_PEN を記録 |
 | L51 | medium | gen_goldenとsim_career二重実装 | 一部解消 | tools/check_golden_sync.py（ドリフト検出）あり。実装の一本化・王者年カバーは記録なし |
 | L52 | medium | GP優勝でS3結果スキップ | 判断待ち | owner-decision |
