@@ -204,9 +204,10 @@ struct QualifierNoticeView: View {
     private func start() {
         guard task == nil else { return }
         #if DEBUG
-        if let o = ProcessInfo.processInfo.environment["MZ_OPEN"] {   // 目視用：1=通知を開いた後から／2=さらに「開く」を選んだ後から
+        if let o = ProcessInfo.processInfo.environment["MZ_OPEN"] {   // 目視用：1=通知を開いた後から／2=さらに「開く」を選んだ後から／3=一覧を閉じて結果まで
             open()
-            if o == "2" { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); pickOpen() } }
+            if o == "2" || o == "3" { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); pickOpen() } }
+            if o == "3" { Task { try? await Task.sleep(nanoseconds: 4_000_000_000); finish() } }   // 3=一覧の先（結果の紙の講評）まで（judge_comments_visual_1026_v0）
             return
         }
         #endif
