@@ -87,7 +87,7 @@ struct WeekMainView: View {
     @State private var showAllocation = false
 
     #if DEBUG
-    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar）
+    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar/farewell）
     private func debugWeekHook() {
         guard let w = ProcessInfo.processInfo.environment["MZ_WEEK"] else { return }
         switch w {
@@ -100,6 +100,7 @@ struct WeekMainView: View {
         case "shop": showShop = true
         case "allocate": showAllocation = true
         case "settings": showSettings = true
+        case "farewell": showFarewell = true   // 解散の後の別れの場面へ直行（MZ_UI=week MZ_WEEK=farewell・タップできない定期の回の目視用・tap_check_1025_v0 A-2）
         case "notebook": showNotebook = true
         case "calendar": showCalendar = true
         case "rent":   // 月末の支払いの目視: 休むカードを1回実行（MZ_UI=rent と併用）
