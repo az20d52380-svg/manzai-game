@@ -929,6 +929,7 @@ struct WeekMainView: View {
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)   // 札と数字を1つに読む（5種で10回に割れていた＝a11y_check_1026 中1）
             }
         }
         .padding(.horizontal, 8).padding(.vertical, 6)
