@@ -85,7 +85,7 @@ struct QualifierNoticeView: View {
                 Button { open() } label: {
                     HStack(alignment: .top, spacing: 10) {
                         RoundedRectangle(cornerRadius: 9).fill(YoseColor.kin).frame(width: 38, height: 38)
-                            .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))
+                            .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").font(.system(size: 18, weight: .semibold)).foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))   // 大きい文字で記号だけ膨らみ枠からはみ出した（ax3_hooks_audit_1026 L4）
                         VStack(alignment: .leading, spacing: 3) {
                             HStack { Text(isChat ? partnerName : "頂GP公式").font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.5)) }
                             Text(isChat ? "見た？" : "【結果発表】\(roundLabel)の通過者を掲載しました").font(YoseFont.gothic(13)).multilineTextAlignment(.leading)
