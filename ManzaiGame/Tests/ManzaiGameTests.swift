@@ -56,6 +56,7 @@ final class NamesTests: IsolatedStoreTestCase {
         let line = "{me}が出す。{partner1}たちで行こう。{partner1}らもな"
         Names.setKind(.maleMale);   XCTAssertEqual(Names.show(line), "俺が出す。俺たちで行こう。俺らもな")
         Names.setKind(.femaleFemale); XCTAssertEqual(Names.show(line), "私が出す。私たちで行こう。私たちもな")
+        Names.setKind(.femaleFemale); XCTAssertEqual(Names.show("{me}も。私らしいね"), "私も。私らしいね")   // 文中の「私ら」は巻き込まない（code_review_2026-10-25 §6）
         Names.setKind(.maleFemale); XCTAssertEqual(Names.show("{me}／{partner1}"), "俺／私")   // 自分が男・相方が女
         Names.setKind(.femaleMale); XCTAssertEqual(Names.show("{me}／{partner1}"), "私／俺")   // 自分が女・相方が男
         Names.setKind(.femaleMale); XCTAssertEqual(Names.show("俺"), "私")   // 話者の札
