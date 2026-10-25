@@ -114,9 +114,11 @@ struct NetaPickRow: View {
             withAnimation(Theme.Motion.appearQuick) { expanded = false }
         } label: {
             VStack(alignment: .leading, spacing: 5) {
+                let bigText = dynamicTypeSize >= .xxLarge   // 上の行と同じく、大きい文字では名前だけ上の段へ（「婚活…」と切れていた）
+                let nameText = Text(neta.name).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.sumi)
+                if bigText { nameText.lineLimit(2) }
                 HStack(spacing: 10) {
-                    Text(neta.name).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.sumi)
-                        .lineLimit(1).minimumScaleFactor(0.6)
+                    if !bigText { nameText.lineLimit(1).minimumScaleFactor(0.6) }
                     Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
                         .lineLimit(1).fixedSize()
                     NetaStageBadge(netaID: neta.id, polish: neta.polish)
@@ -126,6 +128,7 @@ struct NetaPickRow: View {
                 tags(neta)
             }
             .padding(.horizontal, 8).padding(.vertical, 8).frame(minHeight: 44)
+            .fixedSize(horizontal: false, vertical: true)   // 大きい文字で2段にした時に、親に高さを詰められて行が重なった
             .background(isThis ? YoseColor.ki.opacity(0.55) : YoseColor.ki.opacity(0.18))
             .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1))
             .contentShape(Rectangle())
