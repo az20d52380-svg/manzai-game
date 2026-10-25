@@ -455,3 +455,4 @@ cd GameCore && swift test
 - `judge_comments_visual_1026_v0.md` — 審査員の講評の目視 10/26（決勝の1人目/2人目・最長75字・予選の紙講評＝崩れなし・フック MZ_FIN=comments2／MZ_OPEN=3）
 - `blank_weeks_screen_check_1026_v0.md` — 空白の週（1年目 週16〜26）の画面での実プレイ点検 10/26（キュー78）
 - `code_review_2026-10-26c_v0.md` — 10/26 昼の定期の回の変更のコード点検（確実0・たぶん4＝3件直した）
+- `revival_loss_repeat_1026_v0.md` — 敗者復活で散る場面が1キャリアで何回出るか（平均3.5〜4.4回・キュー127 の材料）
