@@ -415,3 +415,4 @@ cd GameCore && swift test
 - `patches/ci_app_build_L38.patch` — CI に iOS ビルドを足す差分（2026-10-25・push のトークンに workflow 権限が無いためオーナーが `git am` で入れる）
 - `trademark_publicity_check_1025_v0.md` — 架空の固有名（頂GP・ヒトコエ・審査員7名・ライバル4組）の商標・実在との衝突の下調べとパブリシティの線引き（2026-10-25・懸念の台帳 L61）
 - `gacha_law_check_1025_v0.md` — 景品表示法・ガチャ確率表示の確認（2026-10-25・懸念の台帳 L44・今の作りはガチャ無しで対象外・入れる場合の対応表）
+- `payment_services_act_check_1025_v0.md` — 資金決済法（前払式支払手段）の確認（2026-10-25・懸念の台帳 L43・今の作りは対象外の見込み・有料石を入れる場合の対応表）
