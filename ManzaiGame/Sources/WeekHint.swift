@@ -8,6 +8,8 @@ import GameCore
 enum WeekHint {
     struct Input {
         var netaCount: Int
+        /// 撮影などで今週は稽古に出られない（preoccupiedWeeks>0）。この週は「ネタを書こう」と促さない（playtest_v13 §2-3）
+        var preoccupied: Bool = false
         /// 次の大会までの週数と、その舞台の尺。次の大会が無ければ nil
         var stageWeeksLeft: Int? = nil
         var stageLength: NetaLength? = nil
@@ -38,6 +40,7 @@ enum WeekHint {
         #else
         let dedupTop = false
         #endif
+        if i.preoccupied { return "今週は撮影の仕事で、稽古には出られない。" }
         if i.netaCount == 0, !dedupTop { return "まだネタが無い。まずはネタを書こう。" }
         if i.money < 0 { return "所持金はマイナス。今月の家賃のめどが立っていない。" }   // 借金の週は地の文で（谷口の台詞は出さない）
         if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }

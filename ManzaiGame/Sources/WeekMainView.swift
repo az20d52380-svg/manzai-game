@@ -496,6 +496,7 @@ struct WeekMainView: View {
         let bannerShown = (m?.weeksLeft ?? 99) <= 2 && unspentBeforeStage
         return WeekHint.line(.init(
             netaCount: s.netas.count,
+            preoccupied: s.preoccupiedWeeks > 0,
             stageWeeksLeft: m?.weeksLeft, stageLength: stage?.length,
             netaFitsStage: cur.flatMap { n in stage.map { n.fits($0.length) } },
             stamina: s.stamina,

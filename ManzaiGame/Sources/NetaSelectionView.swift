@@ -134,7 +134,7 @@ struct NetaTiredBadge: View {
     var body: some View {
         let y = neta.tiredYears ?? 0
         if y >= 1 {
-            YoseTag(text: y >= 2 ? "見飽きられた" : "少し見飽きられた", style: y >= 2 ? .outlineShu : .outlineSumi)
+            YoseTag(text: y >= 2 ? "見飽きられた（点が下がる）" : "少し見飽きられた", style: y >= 2 ? .outlineShu : .outlineSumi)
                 .lineLimit(1).fixedSize()
         }
     }
