@@ -643,7 +643,8 @@ extension WeekRunner where R: Codable {
         self.config = config
         // A-4: バランス更新が古いセーブに固定化されないよう、決勝ライン・保留中の大会/オファーは config から取り直す
         self.finalLine = config.calendar.gpFinalLine
-        self.gpStage = snap.gpStage
+        // アプリ更新で回戦数を減らしても、古いセーブの段が配列の外を指さないよう丸める（code_review_2026-10-25d §2）
+        self.gpStage = min(snap.gpStage, config.calendar.gpRounds.count)
         self.gpAlive = snap.gpAlive
         self.finalist = snap.finalist
         self.week = snap.week
@@ -663,6 +664,7 @@ extension WeekRunner where R: Codable {
             self.pendingOffer = nil
         }
         self.pendingAuto = snap.pendingAuto
+        if snap.pendingAuto == .round, gpStage >= config.calendar.gpRounds.count { self.pendingAuto = nil }   // 丸めた段に回戦は無い＝演出待ちを外す（resolveAuto は週の続きへ）
         self.revivalTried = snap.revivalTried
         self.finalTried = snap.finalTried
         self.finished = snap.finished

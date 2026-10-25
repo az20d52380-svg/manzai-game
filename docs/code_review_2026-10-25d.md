@@ -28,3 +28,6 @@
 - grep: `!` の後が `.` `)` `,` 空白・行末、`)!`・`]!`、`try!`、`as!`、`fatalError`、`precondition`、`.first!`・`.last!`、`[0]`・`[i]`・`[idx]`・`[index]`・`[...Index]`・`[count - 1]`、`Int(…)`（Double 演算を含むもの）、`/`・`%` + count/total/sum、`..<` `...`。`#if DEBUG` ブロックと debug 関数・MZ_ 行は機械的に除外（`try!` が1件、GameSession.swift:1741 の旧セーブ試験で DEBUG 内）。
 - 前後数行を読んだ所: FinalsPresentationView（審査員・票・出順）・FinalsBroadcastIntro・WeekRunner（restoring・gpStage・chooseOffer）・GameSession（upcomingStages・loadedOrNew・イベント抽選）・JudgeTalk・DialogueData・NetaCatalog・ShopView・RentStatement・Theme・TournamentResultView・NetaStage・Sound/Animation 系の steps。
 - 見ていない: 約215件の Range のうち両端が定数のもの（精読せず）、`Int(Double)` のうち値の出所が状態（`GameState`）の NaN になる経路（`GameEngine` の式を全部は追っていない）、保存データが壊れた（手で編集した）場合のその他の添字（`loadedOrNew` は JSON デコードに失敗すると退避して新規に戻る）。
+
+## §直した所（10/25 夜・定期の回）
+- §2：`WeekRunner(restoring:)` で `gpStage` を回戦数で丸め、丸めた段で「回戦の演出待ち」だった時は演出待ちを外す（resolveAuto は週の続きへ）。正しい保存では値が変わらない＝golden 一致・GameCore 376 green・アプリ 167 green。テスト WeekRunnerDoubleCallTests.testRestoreClampsGPStageToFewerRounds。

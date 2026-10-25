@@ -101,4 +101,19 @@ final class WeekRunnerDoubleCallTests: XCTestCase {
         XCTAssertEqual(restored.snapshot().weekClosed, false, "旧セーブは閉じていない扱い")
         if case .weekDone = restored.begin() { XCTFail("begin() は次の週を始める") }
     }
+
+    /// code_review_2026-10-25d §2：保存した GP の段が、更新後の回戦数より大きくても落ちない
+    func testRestoreClampsGPStageToFewerRounds() throws {
+        let config = GameConfig()
+        let (r, _) = try runnerAtWeekDone(config: config)
+        var snap = r.snapshot()
+        snap.gpStage = config.calendar.gpRounds.count + 3
+        let restored = WeekRunner(restoring: snap, config: config)
+        XCTAssertEqual(restored.snapshot().gpStage, config.calendar.gpRounds.count)
+        snap.pendingAuto = .round   // 回戦の演出待ちで保存されていても
+        snap.weekClosed = false     // 週の途中の保存として扱う（閉じた週の守りで素通りさせない）
+        var r2 = WeekRunner(restoring: snap, config: config)
+        XCTAssertNil(r2.snapshot().pendingAuto)
+        _ = r2.resolveAuto()          // 落ちない
+    }
 }
