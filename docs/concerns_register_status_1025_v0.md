@@ -22,7 +22,7 @@
 | L30 | high | 決勝優勝ライン数値不一致 | 解消（10/25 夕に確認） | finals_direction に 95/91/89 の記述は残っていない・master_spec L49 は「94 →v2: 80（canonical §1 が正）」・Calendar.gpFinalLine=80・canonical_v2 L6 が唯一の正典と明記 |
 | L31 | high | finals優勝例とrival年表矛盾 | 判断待ち | champion_selection §9未決2（owner） |
 | L32 | high | finals §4-C.5モブ旧30組 | 解消（10/25 夕に確認） | finals_direction L124 は既に「name_generator が毎周生成（固定50組…）」に更新済み |
-| L35 | high | exp_neta非情報的 | 一部解消 | done 50 neta_bonus_remeasure_v0（測定道具のみ）。決勝到達帯ボットでの較正は記録なし |
+| L35 | high | exp_neta非情報的 | 一部解消（10/25 実測・値はオーナー判断） | neta_coef_calibration_1025_v0：決勝30〜40%帯のボットで係数 0→今→2倍＝決勝 21.5→34.6→46.6%（EVENTS_APP=True・n=1000・今の列は基準表と一致）。今の値は帯を押し上げる側、0.5倍でネタ無しの帯に戻る。磨かない人への効きは未測定 |
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
 | L37 | high | resolve*二度押しガード | 一部解消 | WeekRunnerにPhase照合なし（preconditionはyearのみ）。ManzaiGameTestsに二度押し系あり |
 | L38 | high | iOSがCIでビルドされない | 一部解消（10/25 夕） | 差分は docs/patches/ci_app_build_L38.patch（app-build ジョブ・macos-15）。push のトークンに workflow 権限が無く拒否＝オーナーが `git am docs/patches/ci_app_build_L38.patch` で入れる |
