@@ -453,3 +453,4 @@ cd GameCore && swift test
 - `style_talk_variants_1026_v0.md` — 0019 続けて落ちた週の文面4通り 10/26
 - `calendar_wording_1026_v0.md` — 暦の言葉の食い違い（4月始まりと「正月」「十二月」）10/26・キュー128
 - `judge_comments_visual_1026_v0.md` — 審査員の講評の目視 10/26（決勝の1人目/2人目・最長75字・予選の紙講評＝崩れなし・フック MZ_FIN=comments2／MZ_OPEN=3）
+- `blank_weeks_screen_check_1026_v0.md` — 空白の週（1年目 週16〜26）の画面での実プレイ点検 10/26（キュー78）
