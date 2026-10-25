@@ -1503,7 +1503,7 @@ struct WeekMainView: View {
     private func maybeShowVesselFullToast(_ full: Bool) {
         guard full, !vesselFullToastShown else { return }
         vesselFullToastShown = true
-        showToast("今年の実力の伸びは、ここまで。来年また伸びる。")
+        showToast(session.year >= session.config.careerYears ? "今年の実力の伸びは、ここまで。" : "今年の実力の伸びは、ここまで。来年また伸びる。")   // 最終年に「来年」を言わない（year10_visual_1026_v0 §2-2）
     }
 
     // MARK: 導出（カードの伸び・弱点能力・次のマイルストン）

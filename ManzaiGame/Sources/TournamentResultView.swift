@@ -61,7 +61,7 @@ struct TournamentResultView: View {
         }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
-    private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
+    private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result, finalYear: session.year >= session.config.careerYears) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
     private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
     /// 負けの距離 0..1（監査E-03）。margin（スコア−実効ライン）を3段に丸めて波形に渡す。数字は出さない。【仮】
@@ -599,11 +599,14 @@ enum ClimaxData {
         ClimaxPage(speaker: "俺", text: "うん。何か食べて帰ろう"),
     ]
     /// 本番結果から山場ページを選ぶ（発火A=準決敗退／発火B=敗者復活敗退）。該当なし=空＝通常の「次へ」。
-    static func pages(for r: StageResult) -> [ClimaxPage] {
+    /// finalYear＝結成最終年（来年が無い）＝「来年は」の行を「悔しいね」で切る（year10_visual_1026_v0 §2-2・新しい文は書かない）。
+    static func pages(for r: StageResult, finalYear: Bool = false) -> [ClimaxPage] {
         guard !r.passed else { return [] }
         switch r.name {
         case "GP準決勝": return semifinalLoss
-        case "敗者復活": return revivalLoss
+        case "敗者復活":
+            guard finalYear else { return revivalLoss }
+            return revivalLoss.map { $0.text.hasPrefix("悔しいね。来年は") ? ClimaxPage(speaker: $0.speaker, text: "悔しいね") : $0 }
         default: return []
         }
     }

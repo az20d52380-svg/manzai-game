@@ -175,7 +175,7 @@ struct YearResultView: View {
     private var reachStamp: some View {
         let (text, passed) = reach()
         return HStack(spacing: 14) {
-            YoseHankoStamp(text: text, isSquare: true, angle: -4).scaleEffect(1.25)
+            YoseHankoStamp(text: text, isSquare: true, angle: -4).scaleEffect(text.count > 4 ? 1.0 : 1.25)   // 長い判（準々決勝敗退 等）は拡大分が見出しにはみ出す（year10_visual_1026_v0 §2-1）
                 .padding(.leading, 14).padding(.trailing, 4)
                 .scaleEffect(stampIn ? 1 : 1.6).opacity(stampIn ? 1 : 0)
             VStack(alignment: .leading, spacing: 3) {
@@ -341,6 +341,11 @@ struct YearResultView: View {
         if session.year <= 1 {
             if pool == Self.yeStall { pool = Self.yeFirstStall; scene += ".first" }
             else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap; scene += ".first" }
+        }
+        // 結成最終年の年末には「来年」が無い（year10_visual_1026_v0 §2-2）。来年を語る行を外す（各プール13行中2行）。
+        if session.year >= session.config.careerYears {
+            let kept = pool.filter { !$0.contains("来年") }
+            if !kept.isEmpty { pool = kept }
         }
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
