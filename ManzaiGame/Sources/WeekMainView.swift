@@ -1558,7 +1558,7 @@ struct WeekMainView: View {
     /// 本番が遠い週の目標バナー2行目＝いまのネタの完成度（監査A-01: 中だるみ帯の副目標）
     private func lullLine() -> String {
         let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
-        guard let n = cur else { return "大会まで間がある ・ まずはネタを書こう" }
+        guard let n = cur else { return s.preoccupiedWeeks > 0 ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
         return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish.rounded()))/100"
     }
 
