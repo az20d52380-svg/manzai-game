@@ -4,7 +4,7 @@
 
 ## 集計
 
-解消 12／一部解消 11／未解消 5／判断待ち 10（計38・10/25 夕に更新。朝の時点は 解消4／一部9／未解消15／判断待ち10）
+解消 13／一部解消 10／未解消 5／判断待ち 10（計38・10/25 夕に更新。朝の時点は 解消4／一部9／未解消15／判断待ち10）
 
 ## 未解消で判断不要のもの 上位5件（次に自走で手を付けられる物）
 
@@ -24,7 +24,7 @@
 | L32 | high | finals §4-C.5モブ旧30組 | 解消（10/25 夕に確認） | finals_direction L124 は既に「name_generator が毎周生成（固定50組…）」に更新済み |
 | L35 | high | exp_neta非情報的 | 一部解消（10/25 実測・値はオーナー判断） | neta_coef_calibration_1025_v0：決勝30〜40%帯のボットで係数 0→今→2倍＝決勝 21.5→34.6→46.6%（EVENTS_APP=True・n=1000・今の列は基準表と一致）。今の値は帯を押し上げる側、0.5倍でネタ無しの帯に戻る。磨かない人への効きは未測定 |
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
-| L37 | high | resolve*二度押しガード | 一部解消 | WeekRunnerにPhase照合なし（preconditionはyearのみ）。ManzaiGameTestsに二度押し系あり |
+| L37 | high | resolve*二度押しガード | 解消（10/25 夜） | アプリ（GameSession の phase 照合）に加え、4f89b0c で WeekRunner も週が閉じた後の resolve* を無効化（週末処理の二重を防ぐ・weekClosed は中断セーブに載る・WeekRunnerDoubleCallTests 3本）。週の途中の段違いの呼び出し（例：大会の決断中に resolveAction）は GameCore では未照合＝アプリ側のみ |
 | L38 | high | iOSがCIでビルドされない | 一部解消（10/25 夕） | 差分は docs/patches/ci_app_build_L38.patch（app-build ジョブ・macos-15）。push のトークンに workflow 権限が無く拒否＝オーナーが `git am docs/patches/ci_app_build_L38.patch` で入れる |
 | L39 | high | ファンレポ枯渇 | 一部解消（10/25 夕） | 15c9de0 で 54→161本（重複を除く数え）。200 には追いレポ・常連フック等まだ無いプールが要る |
 | L40 | high | 日常雑談の無口化 | 一部解消（10/25 実測） | banter_repeat_measure_1025_v0：10年で週頭の声 約320〜360本・読み返し60〜64%（1〜3年目8%→4〜6年目63%→7〜10年目96〜98%）。最も薄いのは掛け合いの空白帯（在庫11本・80%）、独白の通過後75%・体力低下68%・空白帯65%。増補 9b2ac26（opus）：掛け合いの空白帯 11→31・独白の通過後 8→23・体力低下 10→26・空白帯 14→33 |
