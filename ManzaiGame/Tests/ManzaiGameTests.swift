@@ -765,3 +765,19 @@ final class FinalYearCopyTests: XCTestCase {
         XCTAssertEqual(normal.count, last.count)   // 行は切るだけ・ページ数は同じ
     }
 }
+
+/// §102 先輩の誘いの言い換え：選択肢のラベルは全部同じ（効果の文の対応を崩さない）・同じ週は同じ文面・1年で全部出る。
+final class WeekendInviteVariantTests: XCTestCase {
+    func testVariantsKeepLabelsAndRotate() {
+        let v = ChoiceEventData.weekendInviteVariants
+        let base = ChoiceEventData.text(for: .weekendInvite)
+        for t in v { XCTAssertEqual(t.choiceLabels, base.choiceLabels) }
+        let a = ChoiceEventData.text(for: .weekendInvite, year: 3, week: 17).setup.map(\.text)
+        let b = ChoiceEventData.text(for: .weekendInvite, year: 3, week: 17).setup.map(\.text)
+        XCTAssertEqual(a, b)
+        let seen = Set((1...48).map { ChoiceEventData.text(for: .weekendInvite, year: 1, week: $0).setup.map(\.text).joined() })
+        XCTAssertEqual(seen.count, v.count)
+        // 他のイベントは year/week を渡しても元の文面のまま
+        XCTAssertEqual(ChoiceEventData.text(for: .styleTalk, year: 5, week: 9).title, ChoiceEventData.text(for: .styleTalk).title)
+    }
+}

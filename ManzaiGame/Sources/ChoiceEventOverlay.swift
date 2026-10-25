@@ -18,7 +18,7 @@ struct ChoiceEventOverlay: View {
     var onClose: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var text: ChoiceEventText { ChoiceEventData.text(for: kind) }
+    private var text: ChoiceEventText { ChoiceEventData.text(for: kind, year: session.year, week: session.week) }
     private var scene: EventScene { ChoiceEventData.scene(for: kind) }
     private var backdrop: EventBackdrop { EventBackdrop.forEvent(kind) }
 

@@ -43,6 +43,15 @@ enum ChoiceEventData {
         }
     }
 
+    /// year/week を渡すと、何度も来るイベント（§102 先輩の誘い＝1キャリア約19回）は週ごとに文面を替える（同じ週の再描画は同じ文面）。
+    static func text(for kind: ChoiceEventKind, year: Int, week: Int) -> ChoiceEventText {
+        if kind == .weekendInvite {
+            let v = weekendInviteVariants
+            return v[((year &* 48 &+ week) % v.count + v.count) % v.count]
+        }
+        return text(for: kind)
+    }
+
     static func text(for kind: ChoiceEventKind) -> ChoiceEventText {
         switch kind {
         case .justLostRehearsal: return justLostRehearsal
@@ -265,6 +274,117 @@ enum ChoiceEventData {
             "B": [
                 Advice(name: "俺", text: "今夜はやめておきます。また誘ってください"),
                 Advice(name: "先輩", text: "おう、またな"),
+            ],
+        ]
+    )
+
+    /// §102 先輩の誘いの言い換え（場所＝劇場の裏口・夜／選択肢と効果は同じ）。先頭が元の文面。
+    static let weekendInviteVariants: [ChoiceEventText] = [
+        weekendInvite, weekendInviteAfterShow, weekendInviteRain,
+        weekendInviteCleanup, weekendInviteTalk, weekendInviteAfterStage,
+    ]
+
+    private static let weekendInviteLabels: [String: String] = [
+        "A": "先輩と飲みに行く（5,000円）",
+        "B": "今夜は断って帰る",
+    ]
+
+    private static let weekendInviteAfterShow = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。終演後、先輩が出てきた。"),
+            Advice(name: "先輩", text: "今日はお客さんが多くて疲れたな。少し付き合わないか"),
+            Advice(name: "谷口", text: "少しなら行ってもいいかな。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。少しだけお願いします"),
+                Advice(name: "谷口", text: "うん、行こう"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰ります。また声をかけてください"),
+                Advice(name: "先輩", text: "わかった。気をつけて帰れよ"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteRain = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。外は雨が降っている。"),
+            Advice(name: "先輩", text: "この雨じゃ帰るのも大変だろ。近くの店で雨宿りしていかないか"),
+            Advice(name: "谷口", text: "傘、持ってきてないんだよね。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。雨がやむまでお願いします"),
+                Advice(name: "谷口", text: "助かった。行こう"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は走って帰ります。また誘ってください"),
+                Advice(name: "先輩", text: "そうか。風邪ひくなよ"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteCleanup = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。客席の片付けが終わった。"),
+            Advice(name: "先輩", text: "片付けお疲れ。このあと何人かで飲みに行くけど、来ないか"),
+            Advice(name: "谷口", text: "お腹すいたね。行ってもいいと思うけど、どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。ご一緒させてください"),
+                Advice(name: "谷口", text: "よかった。何食べようか"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰って休みます。また今度お願いします"),
+                Advice(name: "先輩", text: "そうか。お疲れさん"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteTalk = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。先輩がひとりで待っていた。"),
+            Advice(name: "先輩", text: "ちょっと聞いてほしい話があってさ。飲みながらでいいか"),
+            Advice(name: "谷口", text: "先輩、元気なさそうだね。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。話、聞かせてください"),
+                Advice(name: "先輩", text: "悪いな。助かるよ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰らないといけなくて。すみません"),
+                Advice(name: "先輩", text: "いいよ。また今度な"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteAfterStage = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。着替えて外に出たところだ。"),
+            Advice(name: "先輩", text: "お疲れ。いつもの店が今夜は空いてるらしい。行かないか"),
+            Advice(name: "谷口", text: "明日のバイトは昼からだし、行けなくはないね。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。お願いします"),
+                Advice(name: "谷口", text: "うん。明日に響かない程度にね"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰って寝ます。また誘ってください"),
+                Advice(name: "先輩", text: "わかった。お疲れ"),
             ],
         ]
     )
