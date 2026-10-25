@@ -39,7 +39,7 @@
 | L51 | medium | gen_goldenとsim_career二重実装 | 一部解消 | tools/check_golden_sync.py（ドリフト検出）あり。実装の一本化・王者年カバーは記録なし |
 | L52 | medium | GP優勝でS3結果スキップ | 判断待ち | owner-decision |
 | L53 | medium | gpSeeded実行パス未テスト | 解消 | WeekRunnerGoldenTests(prevStage>=3→gpSeeded)・RunCareer/Rift/CoverageUTests |
-| L54 | medium | 体調ダウン未テスト | 一部解消 | CodableTests療養・SessionGap1025cTests等。発生draw固定の網羅は未確認 |
+| L54 | medium | 体調ダウン未テスト | 解消（10/25） | 34cb2f3 InjuryFlowTests：抽選値を固定して「閾値未満の最初の危ない週で発生→療養2週」と「抽選が高い／安全な行動なら起きない」を WeekRunner で固定（370 green） |
 | L55 | medium | state正が3箇所に分散 | 一部解消（10/25 夕） | StateSyncTests：2年通しで入口を呼ぶごとに state と runner.state をバイト比較＝ずれ0（アプリ 167 green）。一本化の作り替えはしていない |
 | L56 | medium | 決勝審査コメントの反復 | 解消（10/25 実測） | 決勝講評の読み返し率は型C 1.1%・型B 0%（7人全員を出しても4.3%）＝judge_comment_repeat_measure_1025_v0 |
 | L57 | medium | 数量目標がファンレポのみ | 判断待ち | owner-decision |
