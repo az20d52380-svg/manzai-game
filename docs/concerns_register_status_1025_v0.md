@@ -25,7 +25,7 @@
 | L35 | high | exp_neta非情報的 | 一部解消 | done 50 neta_bonus_remeasure_v0（測定道具のみ）。決勝到達帯ボットでの較正は記録なし |
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
 | L37 | high | resolve*二度押しガード | 一部解消 | WeekRunnerにPhase照合なし（preconditionはyearのみ）。ManzaiGameTestsに二度押し系あり |
-| L38 | high | iOSがCIでビルドされない | 未解消 | ci.yml のxcodebuild 0件（macos-14のSwiftゲートのみ） |
+| L38 | high | iOSがCIでビルドされない | 一部解消（10/25 夕） | 差分は docs/patches/ci_app_build_L38.patch（app-build ジョブ・macos-15）。push のトークンに workflow 権限が無く拒否＝オーナーが `git am docs/patches/ci_app_build_L38.patch` で入れる |
 | L39 | high | ファンレポ枯渇 | 未解消 | FanReportData.swift 62本/目標200 |
 | L40 | high | 日常雑談の無口化 | 一部解消 | dialogue_batch4で#71〜110増補・DialogueData約340行。帯別必要本数の算出記録なし |
 | L41 | high | 予選紙講評の反復 | 一部解消 | done 30/32/34でプール増・年混ぜsalt・採点v7(○43△7×0)。回戦帯別の到達確率換算は記録なし |
@@ -52,7 +52,7 @@
 | L64 | low | 審査員名の綴り照合 | 一部解消 | AUTOPILOT 116で神楽坂を重み表に反映。neta_system §4照合は記録なし |
 | L65 | low | MVP1年版の体感未検証 | 未解消 | 記録なし |
 | L66 | low | 初回固定シード424242 | 解消 | RootView L338 初回もランダムシード |
-| L67 | low | ビット一致表記が近似(1e-9) | 未解消 | WeekRunner.swift L4・ci.yml L21に「ビット一致」表記が残る |
+| L67 | low | ビット一致表記が近似(1e-9) | 一部解消（10/25 夕） | WeekRunner.swift L4 は既に「誤差1e-9以内」。ci.yml L21 の直しは L38 の patch に同梱（workflow 権限待ち） |
 | L68 | low | WeekSummary/StageResult非Codable | 解消 | WeekRunner.swift L9,L33 Codable化済 |
 | L69 | low | 充足カテゴリは前提付き | 未解消 | 10/14時点でトロフィー・ライバル台詞は未実装と記録（content_inventory §7）。再確認要 |
 | L70 | low | 運用細目（未成年課金等） | 判断待ち | owner-decision |

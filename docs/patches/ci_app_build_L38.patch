@@ -1,0 +1,56 @@
+From 9f789ad5142f66fceb498bdb34efdb3b8e64b8dd Mon Sep 17 00:00:00 2001
+From: az20d52380-svg <az20d52380@gmail.com>
+Date: Sun, 25 Oct 2026 15:50:47 +0900
+Subject: [PATCH] =?UTF-8?q?CI:=20iOS=20=E3=82=A2=E3=83=97=E3=83=AA?=
+ =?UTF-8?q?=E3=81=AE=E3=83=93=E3=83=AB=E3=83=89=E3=82=92=E8=B6=B3=E3=81=99?=
+ =?UTF-8?q?=EF=BC=88=E6=87=B8=E5=BF=B5=E3=81=AE=E5=8F=B0=E5=B8=B3=20L38?=
+ =?UTF-8?q?=EF=BC=89=E3=83=BBci.yml=20=E3=81=AE=E3=80=8C=E3=83=93=E3=83=83?=
+ =?UTF-8?q?=E3=83=88=E4=B8=80=E8=87=B4=E3=80=8D=E8=A1=A8=E8=A8=98=E3=82=92?=
+ =?UTF-8?q?=E3=80=8C=E8=AA=A4=E5=B7=AE1e-9=E4=BB=A5=E5=86=85=E3=80=8D?=
+ =?UTF-8?q?=E3=81=AB=EF=BC=88L67=EF=BC=89?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .github/workflows/ci.yml | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index acd8ca8..633288f 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -18,7 +18,7 @@ jobs:
+           swift --version
+           python3 --version
+ 
+-      # Swiftゲート: 数式・乱数消費順・週処理が委譲後もgolden(3年ビット一致)に合致するか
++      # Swiftゲート: 数式・乱数消費順・週処理が委譲後もgolden(3年・誤差1e-9以内の一致。乱数列はビット一致)に合致するか
+       - name: swift test (GameCore)
+         working-directory: GameCore
+         run: swift test
+@@ -26,3 +26,20 @@ jobs:
+       # Pythonゲート: Python正典を変えてgolden再生成を忘れたドリフトを検出
+       - name: golden sync (Python正典 ⇄ Swift golden)
+         run: python3 tools/check_golden_sync.py
++
++  # iOS アプリのビルドゲート（懸念の台帳 L38）：アプリ層のコンパイル崩れを push ごとに検出する。
++  # pbxproj はコミット済み（project.yml が正本・xcodegen generate の結果を入れる運用）なので xcodegen は回さない。
++  app-build:
++    name: ManzaiGame build (iOS Simulator)
++    runs-on: macos-15
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Show toolchain
++        run: xcodebuild -version
++
++      - name: xcodebuild build
++        run: |
++          xcodebuild -project ManzaiGame/ManzaiGame.xcodeproj -scheme ManzaiGame \
++            -destination 'generic/platform=iOS Simulator' \
++            CODE_SIGNING_ALLOWED=NO -quiet build
+-- 
+2.50.1 (Apple Git-155)
+
