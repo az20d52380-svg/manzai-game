@@ -60,4 +60,32 @@ final class WeekRunnerDoubleCallTests: XCTestCase {
         snap.weekClosed = nil   // 旧セーブ（キーなし）
         XCTAssertEqual(WeekRunner(restoring: snap, config: config).snapshot().weekClosed, false)
     }
+
+    func testWrongPhaseCallsAreNoOp() throws {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 20_261_025))
+        var phase = r.begin()
+        var sawTournament = false, sawFree = false
+        for _ in 0..<200 where !(sawTournament && sawFree) {
+            let before = try enc.encode(r.snapshot())
+            switch phase {
+            case .tournamentDecision:
+                XCTAssertTrue(r.resolveAction(.job(.キツい)).isTournamentDecision, "大会の決断中の行動は無視")
+                XCTAssertFalse(r.resolveAuto().isAuto)
+                XCTAssertEqual(try enc.encode(r.snapshot()), before)
+                sawTournament = true
+                phase = r.resolveTournament(travel: nil)
+            case .freeAction:
+                XCTAssertTrue(r.resolveTournament(travel: .夜行バス).isFreeAction, "自由週の大会回答は無視")
+                XCTAssertTrue(r.resolveAuto().isFreeAction)
+                XCTAssertEqual(try enc.encode(r.snapshot()), before)
+                sawFree = true
+                phase = r.resolveAction(.rest(.完全休養))
+            case .weekDone: phase = r.begin()
+            case .yearDone: phase = r.begin()
+            default: phase = r.resolveAuto()
+            }
+        }
+        XCTAssertTrue(sawTournament && sawFree, "大会週と自由週の両方を通る")
+    }
 }

@@ -57,6 +57,12 @@ public struct WeekRunner<R: RandomSource> {
         case gpFinal                              // 決勝: 入力不要。演出後 resolveAuto()
         case weekDone(WeekSummary)                // 週の結果 → 次の begin() へ
         case yearDone(YearOutcome)                // 年の終わり（優勝時は即時・週末処理なし=runYearと同じ）
+
+        var isTournamentDecision: Bool { if case .tournamentDecision = self { return true } else { return false } }
+        var isFreeAction: Bool { if case .freeAction = self { return true } else { return false } }
+        var isAuto: Bool {
+            switch self { case .gpRound, .gpRevival, .gpFinal: return true; default: return false }
+        }
     }
 
     /// UIとテストが読み出す現在状態（年をまたぐときは state / rng を次の WeekRunner に渡す）
@@ -183,7 +189,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// 大会週の回答。travel=nil は不出場（乱数は消費されない）。大阪で交通費が払えない場合も不出場（runYearと同一）
     public mutating func resolveTournament(travel: Travel?) -> Phase {
-        if let closed = closedPhase() { return closed }
+        if let now = currentPhase(), !now.isTournamentDecision { return now }   // 段違いの呼び出しは何もしない（L37）
         defer { pendingSpec = nil }
         if let spec = pendingSpec, let travel = travel {
             var ts = config.calendar.travelSpec(travel)
@@ -214,7 +220,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// GP回戦・敗者復活・決勝の消化（UI演出のあとに呼ぶ）
     public mutating func resolveAuto() -> Phase {
-        if let closed = closedPhase() { return closed }
+        if let now = currentPhase(), !now.isAuto { return now }   // 段違いの呼び出しは何もしない（L37）
         guard let auto = pendingAuto else { return proceed() }
         pendingAuto = nil
         let cal = config.calendar
@@ -288,7 +294,7 @@ public struct WeekRunner<R: RandomSource> {
     /// 自由行動週の回答（.acceptOffer はオファーがある週のみ有効。無ければ完全休養にフォールバック=runYearと同一）。
     /// 体力ゲート（稽古不可）と体調ダウン判定はここで強制する（UI側のグレーアウトはこの規則の表示）
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
-        if let closed = closedPhase() { return closed }
+        if let now = currentPhase(), !now.isFreeAction { return now }   // 段違いの呼び出しは何もしない（L37）
         let offer = pendingOffer
         pendingOffer = nil
         offerChoices = nil
@@ -333,10 +339,22 @@ public struct WeekRunner<R: RandomSource> {
         return proceed()
     }
 
-    /// 年・週が閉じた後なら、その結果をもう一度返す（副作用なし）。閉じていなければ nil
-    private func closedPhase() -> Phase? {
+    /// いま UI に返している段を内部状態から組み直す（副作用・乱数なし）。最初の begin() 前は nil。
+    /// resolve* はこれが自分の段でなければ何もせず、これを返す（二度押し・段違いの呼び出しの守り＝懸念の台帳 L37）。
+    private func currentPhase() -> Phase? {
         if let outcome = finished { return .yearDone(outcome) }
         if weekClosed { return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state)) }
+        if let spec = pendingSpec { return .tournamentDecision(spec) }
+        if let auto = pendingAuto {
+            switch auto {
+            case .round:
+                let cal = config.calendar
+                return .gpRound(index: gpStage, name: gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)")
+            case .revival: return .gpRevival
+            case .final: return .gpFinal
+            }
+        }
+        if week > 0 && section == .end && !acted { return .freeAction(offer: pendingOffer) }
         return nil
     }
 
