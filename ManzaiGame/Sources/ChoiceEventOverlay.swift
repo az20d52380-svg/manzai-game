@@ -278,7 +278,7 @@ struct ChoiceEventOverlay: View {
         Button {
             session.dismissChoiceEvent()
             onClose()
-        } label: { Text("閉じる") }
+        } label: { Text("とじる") }
         .buttonStyle(YoseButtonStyle(.primary))
     }
 

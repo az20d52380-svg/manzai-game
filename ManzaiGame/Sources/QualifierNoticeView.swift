@@ -140,7 +140,7 @@ struct QualifierNoticeView: View {
             }
             if scanned {
                 Button { finish() } label: {
-                    Text(passed ? "つづける" : "閉じる").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(passed ? YoseColor.kuroUrushi : YoseColor.washi)
+                    Text(passed ? "つづける" : "とじる").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(passed ? YoseColor.kuroUrushi : YoseColor.washi)
                         .padding(.horizontal, 44).padding(.vertical, 11)
                         .background(passed ? YoseColor.kinBright : .clear, in: Capsule())
                         .overlay(Capsule().stroke(YoseColor.ginNezu.opacity(passed ? 0 : 0.6)))
