@@ -39,12 +39,8 @@ struct QualifierNoticeView: View {
 
     /// 一覧の組数（本編は9）。DEBUG の MZ_QUAL_LONG=1 は判断待ち110の見せ物＝回戦が上がるほど短い長い一覧（1回戦45・2回戦35・3回戦25・qualifier_list_research_v0 §5）
     private var listLength: Int {
-        #if DEBUG
-        if ProcessInfo.processInfo.environment["MZ_QUAL_LONG"] == "1" {
-            switch roundName { case "GP1回戦": return 45; case "GP2回戦": return 35; default: return 25 }
-        }
-        #endif
-        return 9
+        // 【候補・判断のまとめ #8 案A】回戦が上がるほど短い一覧（DEBUG の MZ_QUAL_LONG の見本をそのまま本編に・qualifier_list_research_v0 §5）
+        switch roundName { case "GP1回戦": return 45; case "GP2回戦": return 35; default: return 25 }
     }
 
     private var resultLines: [String] { passed ? ["あった！", "名前、あった！！", "やった……"] : ["…………", "次いこ"] }
