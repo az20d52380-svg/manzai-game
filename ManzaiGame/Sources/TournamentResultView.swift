@@ -163,6 +163,7 @@ struct TournamentResultView: View {
                         }
                         if revealedRest {
                             settlementCard(r)
+                                .padding(.bottom, 6)   // 札の下辺と影が「次へ 進む」に隠れていた（hooks_audit_1026 中2）
                                 .transition(.opacity)
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
