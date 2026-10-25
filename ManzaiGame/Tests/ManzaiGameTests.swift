@@ -804,3 +804,17 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 【候補・判断のまとめ #4 後半】返済後にまた借金したら、借金の知らせをもう一度出す
+final class DebtNoticeAgainCandidateTests: IsolatedStoreTestCase {
+    func testDebtNoticeRearmsAfterRepay() {
+        let s = GameSession(startState: GameState(config: GameConfig()))
+        XCTAssertEqual(s.debtNoticeTierToShow(money: -1), 1)
+        s.markDebtWarned(1)
+        XCTAssertNil(s.debtNoticeTierToShow(money: -1))
+        s.resetDebtWarnIfRepaid(money: -1)                 // まだ借金中は戻さない
+        XCTAssertNil(s.debtNoticeTierToShow(money: -1))
+        s.resetDebtWarnIfRepaid(money: 10_000)             // 返し終えた
+        XCTAssertEqual(s.debtNoticeTierToShow(money: -1), 1)
+    }
+}

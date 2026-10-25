@@ -1435,6 +1435,7 @@ struct WeekMainView: View {
             riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"
             return
         }
+        session.resetDebtWarnIfRepaid(money: s.money)   // 【候補 #4 後半】返し終えたら次の借金でまた知らせる
         guard let tier = session.debtNoticeTierToShow(money: s.money) else { return }
         session.markDebtWarned(tier)
         switch tier {

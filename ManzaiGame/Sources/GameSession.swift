@@ -1166,6 +1166,12 @@ final class GameSession {
         let tier = GameSession.debtTier(money: money)
         return tier > debtWarnTier ? tier : nil
     }
+    /// 【候補・判断のまとめ #4 後半】借金を返し終えたら（所持金0以上）段を戻す＝また借金になった時にもう一度知らせる。表示のみ
+    func resetDebtWarnIfRepaid(money: Int) {
+        guard money >= 0, debtWarnTier != 0 else { return }
+        debtWarnTier = 0
+        saveNow()
+    }
     /// 借金の知らせを出した段を記録（深い方へだけ進む）
     func markDebtWarned(_ tier: Int) {
         guard tier > debtWarnTier else { return }
