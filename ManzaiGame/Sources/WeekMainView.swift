@@ -565,7 +565,7 @@ struct WeekMainView: View {
                 Spacer(minLength: 0)
                 Text("\(Int(value.rounded()))").font(YoseFont.number(big ? 28 : 18, weight: .black))
                     .foregroundStyle(YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.7)
+                    .lineLimit(1).minimumScaleFactor(0.4)   // 大きい文字で3桁の実力が「1…」と切れた（ax3_hooks_audit_1026 M1）。既定の大きさでは縮まない
                     .contentTransition(.numericText())
                     .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
                     .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる

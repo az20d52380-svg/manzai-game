@@ -440,7 +440,7 @@ struct NotebookView: View {
         Button {
             action()
         } label: {
-            Text(label).font(YoseFont.gothic(primary ? 15 : 13, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.85)
+            Text(label).font(YoseFont.gothic(primary ? 15 : 13, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字で「勝負ネタに…」と欠けた（ax3_hooks_audit_1026 M2）
         }
         .buttonStyle(YoseButtonStyle(primary ? .primary : .secondary))
         .frame(width: primary ? 132 : 92)

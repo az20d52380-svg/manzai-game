@@ -66,6 +66,7 @@ struct CalendarView: View {
             ForEach(0..<12, id: \.self) { row in
                 HStack(spacing: 0) {
                     Text(monthLabel(row)).font(YoseFont.number(14, weight: .black))
+                        .lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字で「1…」と切れ 10〜12月が見分けられなかった（ax3_hooks_audit_1026 H1）
                         .foregroundStyle(YoseColor.sumi).frame(width: 42)
                         .frame(maxHeight: .infinity)
                         .background(YoseColor.ki)
