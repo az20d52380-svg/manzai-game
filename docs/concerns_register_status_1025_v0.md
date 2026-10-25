@@ -26,7 +26,7 @@
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
 | L37 | high | resolve*二度押しガード | 解消（10/25 夜） | アプリ（GameSession の phase 照合）に加え、4f89b0c で WeekRunner も週が閉じた後の resolve* を無効化（週末処理の二重を防ぐ・weekClosed は中断セーブに載る・WeekRunnerDoubleCallTests 3本）。続く 1 コミットで週の途中の段違いの呼び出し（例：大会の決断中に resolveAction）も無効化（currentPhase）＝WeekRunnerDoubleCallTests 4本 |
 | L38 | high | iOSがCIでビルドされない | 一部解消（10/25 夕） | 差分は docs/patches/ci_app_build_L38.patch（app-build ジョブ・macos-15）。push のトークンに workflow 権限が無く拒否＝オーナーが `git am docs/patches/ci_app_build_L38.patch` で入れる |
-| L39 | high | ファンレポ枯渇 | 一部解消（10/25 夕） | 15c9de0 で 54→161本（重複を除く数え）。200 には追いレポ・常連フック等まだ無いプールが要る |
+| L39 | high | ファンレポ枯渇 | 一部解消（10/25 夜 実測） | 15c9de0 で 54→161本。増補後の10年の読み返し率 steady 63%・strong 67%・poor 45%（1〜3年目19%→4〜6年目75〜82%→7〜10年目85〜92%）＝fan_report_repeat_measure_1025_v0（16bab4b）。最も薄いのは A帯（大ウケで通過・24〜26本・読みの約65%が集中・読み返し88〜89%）、負け続きの型では D帯（23本・69%）。増やすか・新しいプール（追いレポ・常連）を作るかはオーナー |
 | L40 | high | 日常雑談の無口化 | 一部解消（10/25 実測） | banter_repeat_measure_1025_v0：10年で週頭の声 約320〜360本・読み返し60〜64%（1〜3年目8%→4〜6年目63%→7〜10年目96〜98%）。最も薄いのは掛け合いの空白帯（在庫11本・80%）、独白の通過後75%・体力低下68%・空白帯65%。増補 9b2ac26（opus）：掛け合いの空白帯 11→31・独白の通過後 8→23・体力低下 10→26・空白帯 14→33 |
 | L41 | high | 予選紙講評の反復 | 一部解消（10/25 実測） | 10年の読み返し率 約11〜18%（最大22%・強い組で予選を何度も通る型で目立つ）＝judge_comment_repeat_measure_1025_v0。増やすかはオーナー。増補 9d36f5f（opus）：passChemistryHigh 11→24・failStaminaLow 11→18＝読み返し A 10.5→7.6%・B 19.9→14.3%・C 21.2→14.4%（370 green）。これ以上は「直近の文を避ける表示側の履歴」か「相性フックの出方」の見直しが要る＝判断 |
 | L42 | high | B案が買い切りに劣後 | 判断待ち | 業態未決（START_HERE L54） |
