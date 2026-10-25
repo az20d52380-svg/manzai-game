@@ -207,5 +207,5 @@
   - テレビ慣れを画面に出す（#5・推奨A）＝ブランチ `claude/tv-fatigue-display-candidate`（b98ee6f）。オファーの札の上に「テレビ慣れ・すこし／強い」と一文（数字なし）。
   - 決勝のモブ組を周ごとに変える（推奨②）＝ブランチ `claude/mob-roster-per-run-candidate`（e3a5fa3）。顔ぶれの種にコンビ名を混ぜる（同じ名前で遊び直すと同じ顔ぶれ）。
   - 予選の知らせの一覧を長く（#8・推奨A）＝ブランチ `claude/qual-long-list-candidate`（5124989）。1回戦45・2回戦35・以降25組（見本の数のまま）。時計の表示のずれは触っていない。
-  - 週の一言でお金と体力の警告を先に（#4・推奨B）＝ブランチ `claude/week-hint-priority-candidate`（639b6af）。借金の知らせを返済後に再び出す所は未（別の作業）。
+  - 週の一言でお金と体力の警告を先に（#4・推奨B）＝ブランチ `claude/week-hint-priority-candidate`（639b6af）。返済後にまた借金したら借金の知らせをもう一度出す所も同じブランチに入れた。
   - 0056 なくしたノート＝ネタ帳（#17・推奨A）＝ブランチ `claude/lost-notebook-neta-candidate`（d47b6b6）。導入の2行の「ノート」を「ネタ帳」に。
