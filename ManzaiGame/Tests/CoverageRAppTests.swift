@@ -66,6 +66,10 @@ final class WeekHintPreoccupiedTests: XCTestCase {
         i.preoccupied = false
         XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
     }
+    func testLivingShortfallBeatsPreoccupied() {
+        var i = base(); i.preoccupied = true; i.livingThisWeek = true; i.money = 100_000
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+    }
 }
 
 final class WatchedFinalCodableTests: XCTestCase {
