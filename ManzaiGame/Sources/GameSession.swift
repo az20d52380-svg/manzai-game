@@ -804,6 +804,7 @@ final class GameSession {
                 if runner.state.selectedNetaID == nil { runner.applyNetaSelect(id: id) }
             } else if let last = state.netas.last {
                 runner.applyNetaRevise(id: last.id, gain: placeGain)
+                writeNewNeta = false   // 枠が満杯で新しく書けなかった週は「新しく書く」を下ろす（後で枠が空いた週に黙って新ネタが出ない・code_review_2026-10-25 §7a）
             }
         case .ネタ見せ会, .フリーライブ:
             let targetID = (state.selectedNetaID.flatMap { id in state.netas.contains { $0.id == id } ? id : nil })
@@ -912,6 +913,7 @@ final class GameSession {
     /// アクティブ枠→保管庫（削除でも封印でもない・いつでも呼び戻せる・v2 §2-2）
     func retireNeta(_ id: Int) {
         if state.selectedNetaID2 == id { runner.applyNetaSelect2(id: nil) }   // しまったネタが2本目に残って、出した時に黙って復活しない（code_review_2026-10-19f §3）
+        if writeNetaID == id { writeNetaID = nil }   // しまったネタを書く対象に残さない（呼び戻した時に黙って書く対象へ戻らない・code_review_2026-10-25 §7c）
         runner.applyNetaRetire(id: id)
         state = runner.state
         saveNow()
