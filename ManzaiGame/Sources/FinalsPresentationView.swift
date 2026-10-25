@@ -253,6 +253,7 @@ struct FinalsPresentationView: View {
             case "pre": beat = .preceding; shown = max(0, d.order - 1)
             case "open": beat = .open; revealedJudges = 5
             case "comments": beat = .comments; revealedJudges = 7
+            case "comments2": beat = .comments; revealedJudges = 7; commentStep = 1   // 2人目（最低点の審査員）の講評（judge_comments_visual_1026_v0）
             case "board": beat = .board; shown = 10; boardAuto = true
             case "duel": beat = .duel; revealVotes = 5; duelFull = true
             case "win": beat = .result
