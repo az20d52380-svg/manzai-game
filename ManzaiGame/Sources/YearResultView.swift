@@ -46,6 +46,7 @@ struct YearResultView: View {
                         .frame(maxWidth: .infinity).padding(.bottom, 3).background(YoseColor.kinari)
                 }
                 .allowsHitTesting(false)
+                .stagger(4, appear)   // 本文より先に「▼」だけ出て、空の画面に見えた（soak_playthrough_1019・1026 で再発）
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
