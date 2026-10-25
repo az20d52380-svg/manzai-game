@@ -753,3 +753,15 @@ final class SessionGuardTests20261019: IsolatedStoreTestCase {
         for w in FinalsData.judgeWeights { XCTAssertEqual(w.reduce(0, +), 1.0, accuracy: 1e-9) }
     }
 }
+
+/// 最終年（結成 careerYears 年目）に「来年」を言わない（year10_visual_1026_v0 §2-2）。
+final class FinalYearCopyTests: XCTestCase {
+    func testRevivalLossDropsNextYearOnlyInFinalYear() {
+        let r = StageResult(name: "敗者復活", passed: false, prize: 0)
+        let normal = ClimaxData.pages(for: r).map(\.text)
+        let last = ClimaxData.pages(for: r, finalYear: true).map(\.text)
+        XCTAssertTrue(normal.contains { $0.contains("来年") })
+        XCTAssertFalse(last.contains { $0.contains("来年") })
+        XCTAssertEqual(normal.count, last.count)   // 行は切るだけ・ページ数は同じ
+    }
+}
