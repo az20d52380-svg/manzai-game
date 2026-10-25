@@ -59,7 +59,7 @@
 - 敗者復活で負けた9ページの場面の繰り返し（`revival_loss_repeat_1026_v0.md`）。
 
 ## §3-2 決めればすぐ入る候補（本線には入れていない）
-- 敗者復活の場面の短い版＝`claude/revival-short-candidate`／年末で落ちても記録が消えない＝`claude/career-end-save-candidate`。どちらもテスト通過。
+- 敗者復活の場面の短い版＝`claude/revival-short-candidate`／年末で落ちても記録が消えない＝`claude/career-end-save-candidate`。お金が足りない選択肢を灰色で残す＝`claude/money-short-choice-candidate`。どちらもテスト通過。
 
 ## §4 タップしてほしい所
 - 解散の通しと入口のネタの「変更 ▼」は、目視用の近道で確認できたので不要になった。お店の「引っ越し→買う→戻す」だけ、押した時の見た目が未確認（理屈はテストで確認済み）。
