@@ -296,7 +296,7 @@ enum ChoiceEventData {
     )
 
     // MARK: 0013 先輩の名刺（週次抽選・奢られる帯。proposals/0013 レッドチーム済み確定テキストを転記）
-    //   第三者「先輩」は関西弁の漫才の先輩＝proposal 確定テキストに準拠（谷口以外の相方は標準語だが本第三者は例外）。
+    //   第三者「先輩」は漫才の先輩（2026-10-20 オーナー決定で関西弁をやめ、全員標準語）。
 
     private static let senpaiMeishi = ChoiceEventText(
         title: "先輩のおごり",
@@ -353,7 +353,7 @@ enum ChoiceEventData {
     )
 
     // MARK: 0028 名前の無い予約票（確定発火・選択肢なしフレーバー。proposals/0028 レッドチーム済み確定テキストを転記）
-    //   俺（標準語・地の文）／谷口（関西弁）の2話者。効果なし＝会話（セットアップ→締め）を送り切って閉じる。
+    //   {me}（地の文）／相方の2話者（2026-10-20 オーナー決定で全員標準語）。効果なし＝会話（セットアップ→締め）を送り切って閉じる。
 
     private static let namelessReservationSlip = ChoiceEventText(
         title: "受付の飴",
@@ -551,7 +551,7 @@ enum ChoiceEventData {
     )
 
     // MARK: - 相方以外の人とのイベント（docs/choice_events_others_v1.md・2026-10-15 オーナー指示）
-    //   第三者は標準語・谷口は関西弁。正典v3（ボケない・日常会話）＋研究 research_event_fun_v0 §4 案A（固有物1つ＋人柄1つ・選択後は反応で返す）。
+    //   全員標準語（2026-10-20 オーナー決定）。正典v3（ボケない・日常会話）＋研究 research_event_fun_v0 §4 案A（固有物1つ＋人柄1つ・選択後は反応で返す）。
 
     // MARK: 0050 会わない週が続いた（途中解散の予告・docs/endings_spec_v1.md §4 逐語。採番は 0041 が使用済みのため 0050）
 

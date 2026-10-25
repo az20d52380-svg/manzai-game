@@ -255,7 +255,7 @@ enum DialogueData {
         if let picker { return pools[picker("banter.\(band)", pools.count, salt)] }
         return pools[((salt % pools.count) + pools.count) % pools.count]
     }
-    // 相方は谷口固定（MVP・関西弁）。2周目ガチャ相方の実装時は相方分岐に差し替える（ChoiceEventData と同じ扱い）。
+    // 相方は谷口固定（MVP・標準語＝2026-10-20 オーナー決定で関西弁をやめた）。2周目ガチャ相方の実装時は相方分岐に差し替える（ChoiceEventData と同じ扱い）。
     // Skill採点済（A表16項目・B表7項目・V表5項目・全○）。谷口に切り札型口癖（腹減ったな等）は置かない（感情最大点に温存）。
     private static let banterPools: [BanterBand: [[Advice]]] = [
         .plain: [
