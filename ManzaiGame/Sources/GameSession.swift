@@ -1278,6 +1278,15 @@ final class GameSession {
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
                 if yearHistory.last?.year != runner.year {
+                    // 夜逃げ・解散で終わった週は weekDone を経ない＝その週の大会の結果が出来事ログ・賞金年計に載らなかった
+                    // （懸念の台帳 L52）。優勝の時と同じく、runner の週内結果から表示用の記録だけ足す（GameCore 不変）。
+                    if outcome.bankrupt || outcome.dissolved {
+                        let rs = runner.snapshot().weekResults
+                        if !rs.isEmpty {
+                            log.append(summarize(WeekSummary(year: runner.year, week: runner.week, results: rs, state: runner.state)))
+                            totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
+                        }
+                    }
                     yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
                                                   reachedFinal: outcome.reachedFinal, champion: outcome.champion,
                                                   bankrupt: outcome.bankrupt,
