@@ -154,7 +154,10 @@ struct CalendarView: View {
     private func tournamentName(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "頂GP" }
         if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return GPName.short(cal.gpRoundNames[i]) }
-        if let h = session.hanaRound(inWeek: w) { return h.name.hasSuffix("決勝") ? "HANA決勝" : "HANA" }   // THE HANA（女コンビだけ）
+        // THE HANA（女コンビだけ）: 頂GP と同じく段が分かる短縮（THE HANA 1回戦（動画審査）→HANA1回戦／準決勝→HANA準決勝／決勝→HANA決勝）
+        if let h = session.hanaRound(inWeek: w) {
+            return GameSession.hanaShort(h.name)
+        }
         guard let n = cal.tournament(inWeek: w)?.name else { return "" }
         return n.replacingOccurrences(of: "漫才杯", with: "杯").replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }

@@ -89,6 +89,7 @@ final class NamesTests: IsolatedStoreTestCase {
         XCTAssertEqual(f.upcomingStages().filter { $0.name.hasPrefix("THE HANA") }.map(\.week), [32, 37, 42, 44])
         XCTAssertEqual(f.tournamentSpec(inWeek: 32)?.name, "THE HANA 1回戦（動画審査）")
         XCTAssertTrue(f.hanaStillOpen(week: 44))
+        XCTAssertEqual(f.config.calendar.hanaRounds.map { GameSession.hanaShort($0.name) }, ["HANA1回戦", "HANA2回戦", "HANA準決勝", "HANA決勝"])   // 香盤の札で段が分かる
         f.saveNow()
         let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
         XCTAssertTrue(GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: d)).hanaEnabled)

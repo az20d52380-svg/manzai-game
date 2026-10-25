@@ -713,6 +713,11 @@ final class GameSession {
         runner.hanaEnabled ? config.calendar.hanaRounds.first { $0.week == w } : nil
     }
 
+    /// THE HANA の段の短縮名（香盤の札用・頂GP の「頂GP3回戦」と同じ作り）。THE HANA 1回戦（動画審査）→HANA1回戦／THE HANA 準決勝→HANA準決勝
+    static func hanaShort(_ name: String) -> String {
+        "HANA" + name.replacingOccurrences(of: "THE HANA ", with: "").replacingOccurrences(of: "（動画審査）", with: "")
+    }
+
     /// その週の大会（道中の大会→無ければ THE HANA）。カレンダー・結果画面の表示用
     func tournamentSpec(inWeek w: Int) -> TournamentSpec? {
         config.calendar.tournament(inWeek: w) ?? hanaRound(inWeek: w)
