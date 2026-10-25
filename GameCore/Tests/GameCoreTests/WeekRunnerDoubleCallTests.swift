@@ -88,4 +88,17 @@ final class WeekRunnerDoubleCallTests: XCTestCase {
         }
         XCTAssertTrue(sawTournament && sawFree, "大会週と自由週の両方を通る")
     }
+
+    func testOldSaveJSONWithoutWeekClosedKeyDecodes() throws {
+        let config = GameConfig()
+        let (r, _) = try runnerAtWeekDone(config: config)
+        var obj = try XCTUnwrap(JSONSerialization.jsonObject(with: enc.encode(r.snapshot())) as? [String: Any])
+        XCTAssertNotNil(obj.removeValue(forKey: "weekClosed"), "今のセーブにはキーがある")
+        let old = try JSONSerialization.data(withJSONObject: obj)
+        let snap = try JSONDecoder().decode(WeekRunnerSnapshot<SplitMix64>.self, from: old)
+        XCTAssertNil(snap.weekClosed)
+        var restored = WeekRunner(restoring: snap, config: config)
+        XCTAssertEqual(restored.snapshot().weekClosed, false, "旧セーブは閉じていない扱い")
+        if case .weekDone = restored.begin() { XCTFail("begin() は次の週を始める") }
+    }
 }
