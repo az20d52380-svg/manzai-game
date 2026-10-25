@@ -22,3 +22,7 @@ iPhone 17。文字拡大＝accessibility-extra-extra-extra-large（AX3）、ダ�
 - 補足：アプリは色が固定でダークモードに追従しない（背景クリーム・文字濃色のまま、変わるのは状態バーのみ）。YoseCatalog.swift:122 のみ `.preferredColorScheme(.light)`。文字が背景に沈む箇所は無し。ダーク対応が方針なら別途設計判断。
 
 高0／中0／低5。押せなくなるボタン・読めない文字は無し。
+
+## 追記（10/25 深夜・親の確認）
+- L2・L4・L5 の「優勝／無双」札は DEBUG の近道ボタン（RootView.swift:416 の debugChip）で、本番の画面には出ない＝対応不要。
+- L1 は dynamic_type_audit_1025_v0 L1 と同件、L3 はキュー121 で「前から」と確認済み＝新規の直しなし。
