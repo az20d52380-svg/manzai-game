@@ -317,6 +317,7 @@ final class GameSession {
 
     /// 大会週の回答（travel=nil は見送り）
     func decideTournament(_ travel: Travel?) {
+        guard case .tournamentDecision = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let fameBefore = state.fame
         phase = runner.resolveTournament(travel: travel)
         pump()
@@ -326,6 +327,7 @@ final class GameSession {
 
     /// 自由行動週の回答
     func choose(_ action: WeekAction) {
+        guard case .freeAction = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let before = state
         let actedWeek = week   // pump 後に week が進むので、生活費の判定は行動した週で行う
         var action = action
@@ -929,6 +931,10 @@ final class GameSession {
 
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
     func advanceAuto() {
+        switch phase {   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
+        case .gpRound, .gpRevival, .gpFinal: break
+        default: return
+        }
         phase = runner.resolveAuto()
         pump()
         saveNow()
