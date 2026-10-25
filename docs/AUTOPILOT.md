@@ -21,7 +21,7 @@
 - 実測の決まり（2026-10-19 追記）：アプリの帯に近いのは EVENTS_APP=True（イベントの抽選をアプリと同じに）。既定にするかはオーナー判断待ち＝それまでは帯を測る時に False/True を併記する。
 - 実測の決まり（2026-10-14〜）：帯を測る時は、ネタ無し（これまで）に加えて**ネタ込み**（`sim_career.NETA_ON=True, NETA_V2=True`＝アプリと同じ式）も併記する。ネタ無しだけだとアプリの帯より低く出る（`neta_bonus_remeasure_v0.md`）
 - UI/UX：各画面を目視して分かりにくさ・崩れ・余白・文字の詰まりを直す（表示だけ・数値不変）
-- 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
+- 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
@@ -131,7 +131,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- 10/25 深夜の定期（5時間枠58%〜）：キューの [ ] は全部オーナー判断待ち→常設の点検。GameCore 378 green・golden 同期3種一致・アプリ側 168 green／未カバー8本を足した be8fdab（sonnet・rollInvite・offerFatigued・netaScoreBonus・extraOffers・rollOffer・pourRecommended＝386 green）／selftest 29行 DONE 失敗なし／ダークモードの点検＝崩れ0（visual_dark_1025_v0）。
+- 10/25 深夜の定期（5時間枠58%〜）：キューの [ ] は全部オーナー判断待ち→常設の点検。GameCore 378 green・golden 同期3種一致・アプリ側 168 green／未カバー8本を足した be8fdab（sonnet・rollInvite・offerFatigued・netaScoreBonus・extraOffers・rollOffer・pourRecommended＝386 green）／selftest 29行 DONE 失敗なし／ダークモードの点検＝崩れ0（visual_dark_1025_v0）／数年目の週の画面6枚＝崩れ0 4095997（sonnet・visual_years_1025_v0）。
 - 10/25 夜の定期（5時間枠0→約45%）：L37 二度押し・段違いの守りを WeekRunner に 4f89b0c・d8154f0／L51 王者年は分岐 golden で通っている／L52 夜逃げ・解散の週の大会結果を記録に 5f975c8／10/25d §2 復元時の GP 段の丸め 673f7a2（GameCore 376・アプリ 167 green・golden 一致・自己点検 DONE）／入口のネタ一覧の二重表示 505dca9・解散の見出しの改行 4c5027f・相方の「倒れるぞ」→「倒れるよ」18d287f（目視）／週頭の掛け合いの俺5行 98fc709・紙講評の増補20本は○20／目視フック MZ_STOPWEEK 単独で1年目 0fea4e6・年の途中の週画面7枚 崩れなし／ファンレポ読み返し率の実測 16bab4b（sonnet）／台帳の集計を数え直し。タップ確認は定期の回では不可（tap_check_1025_v0）。／続き：10/25e §3-3 復元時の段の中身を config から組み直す 1a947be・古いセーブの固定 JSON の復号テスト（GameCore 80f32d0・アプリ dc79d04）／大きい文字でネタ一覧が切れる・重なる 4764fe5／本番2週前の独り言 1型→4通り 73dd445／決勝モブ組の重なり実測（L58）・在庫の棚卸し 4379e06（L57）・週頭の声の測り直し 794761d（L40：全体 60→38%）／週頭の声の薄い3プールとファンレポ A帯の増補は opus で実行中。
 - 10/25 夕の定期（5時間枠59→73%）：懸念の台帳の残りを片付け＝L39 ファンの一言 54→161本 15c9de0（opus）／L55 state と runner のずれ検出テスト 0939c50（アプリ 167 green）／L60 手数料・L61 商標の下調べ（sonnet）／L30・L32・L50・L56・L62・L63・L64 は文書側で解消を確認・L50 は正典に記録／L38 の CI ビルドは workflow 権限が無く push 不可＝docs/patches/ci_app_build_L38.patch（オーナーが git am）。点検：GameCore 370・selftest 29行 DONE 失敗なし。続き：L49 研究デバフ（誤差内・道具の食い違い2つをキュー124へ）／L40 週頭の声の実測→増補 43→113本 9b2ac26（opus）／L43・L44 法令の下調べ／L35 ネタ資産の係数の実測（今の値は帯を押し上げる側・値はオーナー判断）／台詞の話者コメントを標準語の決定に合わせた／新しい文の目視（崩れなし）／L65 1年48週の伸びの実測（canonical §4 を🔶に）／L41 紙講評の増補 22→42本 9d36f5f（opus・読み返し 約20%→14%）。締めの点検：GameCore 370 green・golden 同期一致。5時間枠93%で区切り（途中の作業なし）。台帳は 解消12→ほぼ全行に材料あり。
 - 10/25 昼の定期（5時間枠0%〜）：点検（GameCore 362・golden 同期3種一致・アプリ側 80・selftest 29行 DONE 失敗なし）／108 の観戦札を目視（MZ_UI=yearend）。タップ確認3件は sonnet に任せたが、定期の回は sim のタップ・撮影ツールが「attended session が要る」で拒否される＝タップ確認は対話の時だけ（撮影は `xcrun simctl io … screenshot` なら定期でも可）。採点：男女共通化の222行 ○218・△4→直した（2b2234f・dialogue_score_1025_gender_v0）。大きい文字（accessibility-large）で10/25 の7画面を目視＝崩れ0（visual_largetext_1025_v0・ネタ帳の能力値115がバーに近いのは要観察）。
