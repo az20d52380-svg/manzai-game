@@ -1609,7 +1609,8 @@ final class GameSession {
             else { choose(.train(.ネタ合わせ)) }
             return
         }
-        if state.money < 250_000 { choose(.job(.標準)) }
+        if state.stamina < 25 { choose(.rest(.完全休養)) }   // 体力が尽きるまでバイトを続けて、目視の画面が「体力0」ばかりになっていた（blank_weeks_screen_check_1026_v0）
+        else if state.money < 250_000 { choose(.job(.標準)) }
         else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
         else { choose(.rest(.完全休養)) }
     }
