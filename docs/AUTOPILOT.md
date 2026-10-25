@@ -14,7 +14,7 @@
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 夕時点 123本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 夕時点 138本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
@@ -147,6 +147,7 @@
 - 10/25 定期の回：テスト追加 CoverageAATests（llvm-cov で0回だった分岐6か所・368 green）2db3bc3／点検＝golden 同期3つOK・アプリのテスト80本 green・selftest（MZ_ALLOWSAVE=1）全項目 ok・DONE。GameCore の行カバレッジ 99.2%（残りは到達しない保険の分岐＝GP回戦名の予備・precondition 等）
 - 10/25 定期の回（続き）：アプリのテスト +28本（170dfa3 選択後の一言・書く対象のフォールバック／4f68aa6 カバレッジ0のロジック＝エンディング判定・図鑑・ネタの段・ComboKind・審査員の星 等・108 green）／実プレイ点検 v13 §3 の未確認3点を目視（b4fecca・フック MZ_WEEK=netapick 85ee684）→書く画面の候補で題名・完成度が切れるのを直した 819e741（目視済）。入口の一覧で選択中が2回並ぶのは開閉式の一覧の普通の形なので様子見
 - 10/25 定期の回（続き2）：START_HERE の索引に漏れ23本を追補 957f703／アプリのテスト +15本 5b85ff7（エンディングの場面カード・行動プレビュー・firstShow・123 green・行カバレッジ Endings 47→95%・GameSession 60→69%）
+- 10/25 定期の回（続き3）：アプリのテスト +15本 6bc645a（ネタの型変更・改名・呼び戻し・部屋・特技・お店の買い戻し・壊れたセーブの退避・セーブ往復・138 green・GameSession 行カバレッジ 70→74%（xccov 基準））
 - 済の記録は docs/AUTOPILOT_done.md へ移した（10/18）。新しく済んだ物は、キューの行を消してここに1行（コミット）。
 - 91 済 4fd44d1：画面の「粒」→「経験点」・週メインの能力アップの札に経験点の数を出さない（未振分がある時だけ「振れる経験点あり」）
 - 104 済 a18021b
