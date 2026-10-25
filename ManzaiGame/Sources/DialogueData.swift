@@ -436,8 +436,8 @@ enum DialogueData {
              Advice(name: "俺", text: "気になるね。どこか漏れてないか見ておこう")],
             [Advice(name: "谷口", text: "いとこの結婚式に呼ばれたんだ"),
              Advice(name: "俺", text: "おめでとう。着ていく服はある？")],
-            [Advice(name: "谷口", text: "料理してて、指を少し切っちゃった"),
-             Advice(name: "俺", text: "大丈夫？　ばんそうこう、買ってくる")],
+            [Advice(name: "谷口", text: "傘を電車に置き忘れてきちゃった"),
+             Advice(name: "俺", text: "そっか。駅に問い合わせてみよう")],
         ],
         .eve: [
             [Advice(name: "谷口", text: "もうすぐだね。当日の電車、調べといたよ"),
