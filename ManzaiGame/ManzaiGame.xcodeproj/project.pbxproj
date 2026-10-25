@@ -80,6 +80,7 @@
 		9C8CF2B6BF7F86F06569FE38 /* se_deny.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2DC7AD55C10948F6D9376264 /* se_deny.mp3 */; };
 		9EE8443D230F2569125B3C1B /* YoseTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED71D4E26DB33CA0C24BF06A /* YoseTokens.swift */; };
 		9FB3C8B8D6363401D9B7EEFD /* S6bView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AAFBC0284B7A53A0A48C18D /* S6bView.swift */; };
+		A04542CD185A20BC467338C6 /* AppCoverage1025Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E271E3EB3BF64D4F08ABCC74 /* AppCoverage1025Tests.swift */; };
 		A5261165B97770A127810577 /* CommandData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
 		AC8082ECD71EB2B651C7148D /* se_cheer_big.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */; };
@@ -220,6 +221,7 @@
 		DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookView.swift; sourceTree = "<group>"; };
 		DEAB942AD0DB2AB951504DBE /* MPLUSRounded1c-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Bold.ttf"; sourceTree = "<group>"; };
 		E1B680F784150145461F1B91 /* StoreIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreIDs.swift; sourceTree = "<group>"; };
+		E271E3EB3BF64D4F08ABCC74 /* AppCoverage1025Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoverage1025Tests.swift; sourceTree = "<group>"; };
 		E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_taiko2.mp3; sourceTree = "<group>"; };
 		E3B3D0E4892F3438C35FA663 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
 		E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventOverlay.swift; sourceTree = "<group>"; };
@@ -393,6 +395,7 @@
 		9AAC8082039E07D09BA58E31 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E271E3EB3BF64D4F08ABCC74 /* AppCoverage1025Tests.swift */,
 				340E4B0117C5AF8BBEC2AC57 /* AppSaveFixtureTests.swift */,
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
@@ -632,6 +635,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A04542CD185A20BC467338C6 /* AppCoverage1025Tests.swift in Sources */,
 				E58B538509C7357838D5078F /* AppSaveFixtureTests.swift in Sources */,
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
