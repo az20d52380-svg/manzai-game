@@ -99,6 +99,7 @@
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 		E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */; };
 		E9BC94BAE42BEB54B91A396B /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C2B6670FC11321C4559DCB /* Theme.swift */; };
+		E9C54A58B50BE31CD4DB1493 /* PhaseGuardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58E80F573B38F73205442EF4 /* PhaseGuardTests.swift */; };
 		E9D7F86C18BB501C36FC64F0 /* ComboKindPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4BBB14240832141FE63318 /* ComboKindPickerView.swift */; };
 		EADAE9F564AE5007CBDB8773 /* FinalistAnnounceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24E06D95088D26FB3DC94453 /* FinalistAnnounceView.swift */; };
 		EEDE5C8DC4450E2F8554604F /* NetaSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */; };
@@ -148,6 +149,7 @@
 		534D89327D384D6F43FDC17F /* se_pop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_pop.mp3; sourceTree = "<group>"; };
 		53D87A214DB8E1FE8512D92D /* YoseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseComponents.swift; sourceTree = "<group>"; };
 		584B31B6D7B7B692F33CC50E /* StageViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageViews.swift; sourceTree = "<group>"; };
+		58E80F573B38F73205442EF4 /* PhaseGuardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseGuardTests.swift; sourceTree = "<group>"; };
 		599065030751D5F2DB350459 /* FinalsPresentationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalsPresentationView.swift; sourceTree = "<group>"; };
 		5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalsTalk.swift; sourceTree = "<group>"; };
 		5F49ED139642FC2518E962F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -383,6 +385,7 @@
 			children = (
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
+				58E80F573B38F73205442EF4 /* PhaseGuardTests.swift */,
 				A62FE4805AE73B7FD14E1CA7 /* SessionGap1025bTests.swift */,
 				C6A2E58A31BD7A19D7847716 /* SessionGap1025cTests.swift */,
 				ED386E53ADABC8770DF122E4 /* SessionGap1025dTests.swift */,
@@ -616,6 +619,7 @@
 			files = (
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
+				E9C54A58B50BE31CD4DB1493 /* PhaseGuardTests.swift in Sources */,
 				45584A233637EB196C06B0D4 /* SessionGap1025Tests.swift in Sources */,
 				600E61599EB49B504429661D /* SessionGap1025bTests.swift in Sources */,
 				73587F79732C11E8E43D20FE /* SessionGap1025cTests.swift in Sources */,
