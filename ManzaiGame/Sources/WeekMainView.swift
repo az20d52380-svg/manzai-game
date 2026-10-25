@@ -752,11 +752,14 @@ struct WeekMainView: View {
                     session.setWriteNeta(n.id)
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = nil; pickingNeta = false }
                 } label: {
-                    HStack(spacing: 8) {
+                    // 題名は1行を丸ごと使う（横に札と数字を並べると題名・数字が切れた＝playtest_v13 §4-1）
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("「\(n.name)」").font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi).lineLimit(1)
-                        NetaStageBadge(netaID: n.id, polish: n.polish)
-                        Spacer()
-                        Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        HStack(spacing: 8) {
+                            NetaStageBadge(netaID: n.id, polish: n.polish)
+                            Spacer(minLength: 4)
+                            Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
+                        }
                     }
                     .padding(.horizontal, 12).padding(.vertical, 9)
                     .frame(maxWidth: .infinity, alignment: .leading)
