@@ -50,5 +50,6 @@ struct ComboKindPickerView: View {
         }
         .buttonStyle(YoseButtonStyle(.secondary))
         .accessibilityLabel("\(kind.cardTitle)、\(kind.cardSub)")
+        .accessibilityAddTraits(picked == kind ? .isSelected : [])
     }
 }

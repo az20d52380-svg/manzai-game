@@ -261,7 +261,7 @@ struct YearResultView: View {
                             Text(String(line[r.upperBound...])).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 0)
-                            if line.contains("客席") { YoseTag(text: "観戦", style: .outlineHai) }   // 客席から観た決勝は戦績タブと同じ灰の札（playtest_v13 §2-4）
+                            if line.contains("客席") { YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た") }   // 客席から観た決勝は戦績タブと同じ灰の札（playtest_v13 §2-4）
                         }
                     } else {
                         Text(line).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)

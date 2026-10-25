@@ -67,7 +67,7 @@ struct ReminiscencePlayer: View {
                     RecallScriptRow(advice: lines[i])
                 }
                 if let last = lines.last {
-                    YoseSpeechBox(speaker: last.name ?? "俺", text: last.text)
+                    YoseSpeechBox(speaker: Names.show(last.name ?? "俺"), text: Names.show(last.text))
                 }
             }
             .frame(minHeight: 112, alignment: .bottom)

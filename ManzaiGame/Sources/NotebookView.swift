@@ -208,7 +208,7 @@ struct NotebookView: View {
                             .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if r.watchedFinal == true, !r.reachedFinal {
-                            YoseTag(text: "観戦", style: .outlineHai)   // 決勝を客席から観た年＝灰の札（queue108・観るのは任意なので実際に観た年だけ）
+                            YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た")   // 決勝を客席から観た年＝灰の札（queue108・観るのは任意なので実際に観た年だけ）
                         }
                         if r.prize > 0 {
                             Text("+\(Yen.man(r.prize))").font(YoseFont.number(15)).foregroundStyle(YoseColor.shu)
@@ -269,7 +269,7 @@ struct NotebookView: View {
         case "優勝": YoseHankoStamp(text: "優勝", angle: -4)
         case "通過": YoseTag(text: "通過", style: .solidEnji)
         case "敗退": YoseTag(text: "敗退", style: .outlineSumi)
-        case "観戦": YoseTag(text: "観戦", style: .outlineHai)   // 客席から観た年＝出場していない灰色の札（「休」ではない）
+        case "観戦": YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た")   // 客席から観た年＝出場していない灰色の札（「休」ではない）
         default: YoseTag(text: mark, style: .outlineSumi)
         }
     }
