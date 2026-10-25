@@ -96,6 +96,7 @@ struct WeekMainView: View {
         case "rest": openCat = .休む
         case "netawrite": openCat = .ネタを書く; openNetaWrite = true
         case "newneta": openCat = .ネタを書く; openNetaWrite = true; newNetaTitle = ""
+        case "netapick": openCat = .ネタを書く; openNetaWrite = true; pickingNeta = true   // 書く対象の候補（替える）を開いた状態
         case "shop": showShop = true
         case "allocate": showAllocation = true
         case "settings": showSettings = true
