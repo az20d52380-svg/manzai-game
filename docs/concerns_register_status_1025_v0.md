@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | L29 | high | 裏天井2案並存・未実装 | 判断待ち | START_HERE L56「裏天井を入れるか」未決 |
 | L30 | high | 決勝優勝ライン数値不一致 | 解消（10/25 夕に確認） | finals_direction に 95/91/89 の記述は残っていない・master_spec L49 は「94 →v2: 80（canonical §1 が正）」・Calendar.gpFinalLine=80・canonical_v2 L6 が唯一の正典と明記 |
-| L31 | high | finals優勝例とrival年表矛盾 | 判断待ち | champion_selection §9未決2（owner） |
+| L31 | high | finals優勝例とrival年表矛盾 | 判断待ち（10/25 夜：失効の見込み） | champion_selection §9未決2（owner）。v1（2026-07-05 オーナー確定の正典移行バナー）で v0 の年別マスタ表・固定名方式ごと失効＝この矛盾は v1 では起きない見込み。閉じるかはオーナー確認 |
 | L32 | high | finals §4-C.5モブ旧30組 | 解消（10/25 夕に確認） | finals_direction L124 は既に「name_generator が毎周生成（固定50組…）」に更新済み |
 | L35 | high | exp_neta非情報的 | 一部解消（10/25 実測・値はオーナー判断） | neta_coef_calibration_1025_v0：決勝30〜40%帯のボットで係数 0→今→2倍＝決勝 21.5→34.6→46.6%（EVENTS_APP=True・n=1000・今の列は基準表と一致）。今の値は帯を押し上げる側、0.5倍でネタ無しの帯に戻る。磨かない人への効きは未測定 |
 | L36 | high | セーブ/中断復帰未実装 | 解消 | GameSession.saveNow/SaveData/loadedOrNew・WeekSummary/StageResult Codable・CoverageRAppTests復元 |
