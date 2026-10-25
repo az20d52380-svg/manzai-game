@@ -34,6 +34,8 @@ struct ComboKindPickerView: View {
             guard picked == nil else { return }
             picked = kind
             Haptics.confirm()
+            // 0.3秒で次へ進むので、読み上げでは選んだ形を先に伝える（a11y_check_1026 低6）
+            UIAccessibility.post(notification: .announcement, argument: "\(kind.cardTitle)、\(kind.cardSub)にした")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onSelect(kind) }
         } label: {
             VStack(spacing: 10) {
