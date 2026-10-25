@@ -1387,6 +1387,7 @@ final class GameSession {
     }
 
     /// DEBUG: ネタ帳「大会の記録」（MZ_UI=notebook MZ_TAB=kiroku）の目視用に、判の4種（通過/敗退/休/優勝）を踏む記録を積む。
+    /// 客席から（観戦）と自組の優勝が同じ週に並ぶのは見本だけ（判の種類を1画面で見るため。本編では同じ年に両方は出ない・playtest_v13 §2-1）
     func debugSeedKirokuLog() {
         log = ["第12週: 頂GP 1回戦 通過", "第20週: 頂GP 2回戦 敗退", "第30週: 体調ダウン 休",
                "第44週: 頂GP 決勝 優勝「ひだまり座」（客席から）", "第44週: 頂GP 決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
