@@ -14,7 +14,7 @@
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（61本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 時点 79本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
@@ -119,6 +119,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/25 深夜の自走（5時間枠90%〜）：点検（GameCore 362 green・行カバレッジ 99.2%＝未通過は到達不能の閉じ括弧のみ→テスト追加の余地なし／golden 57行＋12週＋features 一致／アプリ側 79 green）。キュー残りは全て判断待ち。
 - 10/25 自走：キュー 63・108・109・113・115・116・120・121 と 112 前半を入れた／THE HANA・15年の実測／コード点検 10/25（中3・低4 を直す）／実プレイ点検 v13（中2・低2 を直す）／台詞の採点（△5 を直す）／講評の採点 v6→語彙を倍（○38→47・×1→0）／テスト アプリ79・GameCore 362 green／オーナー向けまとめ docs/autopilot_report_1025.md／（夕）THE HANA 候補ブランチ claude/the-hana-candidate（abfc9c7・本体未投入）・文字を大きくした設定の目視（低2）・読み上げ対応 a11y_check_1025（6件直す e14eb4b）
 - 10/19 夕方の自走（5時間枠53→57%）：点検（GameCore 349・golden 57行＋12週＋features 一致・アプリ側 61・selftest 29行 失敗なし）／直近の変更のコード点検で背景の縮め描きの分岐を1つの形に dad6174（イベント札の高さが320→196に動く時の描き替わりを防ぐ・高さ130/220で目視）。同型の分岐は他に無し。／エンディングの回想3枚に背景＋題「これまでの話」（導入の題が出ていた）ef8e734／導入の回想3枚目に楽屋の背景（教室・廊下は絵が無いので夕景のまま＝キュー63 の作り直しで出会い方を変えるなら合わせて）。／GameCore のカバレッジ（llvm-cov）：全ファイル95%以上・0回の2か所にテスト（351 green）。／エンディングの年表・壁の薄い文字と11pt を直す（MZ_S6B_PHASE=nenpyou/wall）。
 - 10/19 夜の自走（5時間枠44%〜）：点検（golden 57行＋12週＋features 一致・アプリ側 61 green）／GameCore テスト13本（Coverage1019Tests・349 green）4436e10／背景の目視フックに高さ・幅（MZ_BGH/MZ_BGW）ca8c971／背景16種を高さ130で目視（v2：○8 △7 ×1 famires）99a46d7→ 高さ220未満は220で描いて縮める形に直す 61393b2（直した後の確認 v3：14枚で重なり0・theater 客席下端と keikoba 幅320 の下端は切り出し帯の疑い 413a629）・直しの後も GameCore 349／アプリ 61 green／Theme のコメントを実値に（19m §2）59a0b76。残し：19l §2-4（YoseModal の cancelTitle 既定）・§2-6（呼び手0の yoseAppear）・ChoiceEventOverlay の旧 EventSceneView/PlaceScene（呼び手0・約250行）はキュー118 とまとめて消すか決める。
