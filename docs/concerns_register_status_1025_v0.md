@@ -46,7 +46,7 @@
 | L58 | medium | モブ名50組の年跨ぎ再利用 | 判断待ち | AUTOPILOT L120に①②選択肢のまま |
 | L59 | medium | 需要の絶対量が未計測 | 判断待ち | owner-decision |
 | L60 | medium | ストア手数料の未確認前提 | 一部解消（10/25 夕） | store_fee_check_1025_v0：日本の Apple は小規模で実効15%（10%＋決済5%）で前提と一致、Google は新体系で15〜25%＝「両ストア15%」は不一致。legal_risk・market_research の該当行の直しと Apple 一次ページの目視確認が残り |
-| L61 | medium | 商標・パブリシティ未レビュー | 未解消 | research・記録なし。名称下調べ(app_name_prior_use_1025)のみ |
+| L61 | medium | 商標・パブリシティ未レビュー | 一部解消（10/25 夕） | trademark_publicity_check_1025_v0：Web 検索の範囲で実在の芸人・大会・商標との一致なし。J-PlatPat の称呼検索（ヒトコエ・頂GP）とストア内検索は未＝出す前に人の手で |
 | L62 | low | champion_selection §7 JSON矛盾 | 解消（10/25 夕に確認） | §7 の例は6年目＝金字塔で§2表と一致・§4-4 は単一抽選（先頭を champion）・mobDraw 表記も正（L113/L141） |
 | L63 | low | 王者編18ptゲートと15pt行 | 解消（10/25 夕に確認） | 王者編そのものが廃止（master_spec L58/L77/L140）・canonical §2-B の15pt行も取消線 |
 | L64 | low | 審査員名の綴り照合 | 解消（10/25 夕に照合） | 7名（音羽ルリ・白波剛・卯月走太・花園千代・目白慧・神楽坂とんぼ・天堂寺銀郎）は neta_system 系・judge_design・finals_direction・JudgeTalk.judgeNames で表記一致（姓名間の空白の有無だけ）・並び順も一致 |
