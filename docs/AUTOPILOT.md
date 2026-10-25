@@ -144,6 +144,7 @@
 - 10/19 自走の回：候補ブランチの未目視2画面（q90 部屋選び・q106 特技）を目視→docs/visual_check_q90_q106_v0.md。表示直し 7f99c81（候補ブランチ）＝家賃を「家賃 +¥◯（4週ごとの支払い）」の墨字に・注意書きを平易に・能力アップに「特技 ↓」の札・特技の費用を持ち分と同じ色チップ（胆・存）に。ビルド OK・iPhone 17 で目視済
 - 10/18 夜 自走の回（5時間枠97%）：点検＝本体 swift test 170 green（変更なし）。枠のリセット後に §常設の作業から続ける
 - 10/18 自走の回：テスト追加 CalendarInvariantTests・ConfigTableInvariantTests（カレンダーと設定表・行動の符号の整合・170 green・候補ブランチに当てても186 green＝merge 時に一緒に入れてよい）＋点検＝本体 163 green・golden 同期チェック（check_golden_sync）本体・候補とも50行一致・アプリのビルド（iPhone 17）エラーなし・候補ブランチ claude/q-candidate 180 green（変更なし）
+- 10/25 定期の回：テスト追加 CoverageAATests（llvm-cov で0回だった分岐6か所・368 green）2db3bc3／点検＝golden 同期3つOK・アプリのテスト80本 green・selftest（MZ_ALLOWSAVE=1）全項目 ok・DONE。GameCore の行カバレッジ 99.2%（残りは到達しない保険の分岐＝GP回戦名の予備・precondition 等）
 - 済の記録は docs/AUTOPILOT_done.md へ移した（10/18）。新しく済んだ物は、キューの行を消してここに1行（コミット）。
 - 91 済 4fd44d1：画面の「粒」→「経験点」・週メインの能力アップの札に経験点の数を出さない（未振分がある時だけ「振れる経験点あり」）
 - 104 済 a18021b
