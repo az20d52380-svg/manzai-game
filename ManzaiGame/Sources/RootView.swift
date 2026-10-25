@@ -118,7 +118,7 @@ struct RootView: View {
                 else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
             }
             // UIスモーク: MZ_UI=grown/notebook で能力マックス状態（充填ピル/gold縁/レーダー満ちの目視用）
-            if (ui == "grown" || ui == "notebook"), session.week <= 1 {
+            if ui == "grown" || (ui == "notebook" && session.year == 1), session.week <= 1 {   // notebook は MZ_YEARS 後（2年目〜）はその年のまま見る（year10_visual_1026_v0）
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
             if ui == "yearend", session.week <= 1 {
@@ -238,7 +238,8 @@ struct RootView: View {
                 session.debugAdvanceToPrelude(final: ui == "prelude_final")
                 if ui == "gpresult" { session.advanceAuto() }   // GP回戦の結果画面へ（目視）
             }
-            if ui == "offer", session.week <= 1 {
+            if ui == "offer", session.week <= 1, session.year > 1 { session.debugUntilOffer() }   // MZ_YEARS 後はその年のままオファーの週まで進める（year10_visual_1026_v0）
+            if ui == "offer", session.week <= 1, session.year == 1 {
                 // オファー札の目視: 知名度を上げ、直近にオファーを受けた履歴（谷口の一言が出る）を持たせて、オファーの来る週まで進める
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 100
                 if ProcessInfo.processInfo.environment["MZ_FRESH"] == nil { st.offerWeeks = [0, 0, 0, 0] }
