@@ -801,6 +801,20 @@ final class ChoiceEventLineLengthTests: XCTestCase {
             }
         }
     }
+
+    /// 週頭の掛け合いも同じ決まり（6帯・salt を回して全行を拾う）。
+    func testBanterWithinFortyCharsTwoSentences() {
+        for band in [BanterBand.plain, .lull, .eve, .streak, .broke, .afterPass] {
+            for salt in 0..<200 {
+                for a in DialogueData.banter(band: band, salt: salt) ?? [] where a.name != nil {
+                    let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                    let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                    XCTAssertLessThanOrEqual(line.count, 40, "\(band)：\(line)")
+                    XCTAssertLessThanOrEqual(sentences.count, 2, "\(band)：\(line)")
+                }
+            }
+        }
+    }
 }
 
 /// お店の「戻す」は引っ越しを巻き戻さない（code_review_2026-10-19 §1-1）。ShopView と同じ手順（起点を取る→引っ越して起点の部屋も更新→買う→戻す）を session で再現する。
