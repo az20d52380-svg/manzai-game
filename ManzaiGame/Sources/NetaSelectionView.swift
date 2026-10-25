@@ -48,7 +48,17 @@ struct NetaPickRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .yoseHarigami(isFeatured: selected != nil)   // 未選択は朱の特別枠にしない（選んだ札と見分ける）
         #if DEBUG
-        .onAppear { if ProcessInfo.processInfo.environment["MZ_NETA_OPEN"] != nil { expanded = true } }   // 目視用：候補を開いた状態で出す（タップできない回の確認）
+        .onAppear {
+            if ProcessInfo.processInfo.environment["MZ_NETA_OPEN"] != nil { expanded = true }   // 目視用：候補を開いた状態で出す（タップできない回の確認）
+            #if DEBUG
+            // 目視用：MZ_NETA_PICK=1 で開いて約1.5秒後に別のネタを選ぶ（「変更 ▼」で上の行が替わるか＝tap_check_1025_v0 B）
+            if ProcessInfo.processInfo.environment["MZ_NETA_PICK"] != nil {
+                expanded = true
+                Task { try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    if let n = candidates.first(where: { $0.id != selected?.id }) { onSelect(n.id); withAnimation(Theme.Motion.appearQuick) { expanded = false } } }
+            }
+            #endif
+        }
         #endif
     }
 
