@@ -54,5 +54,5 @@
 | L66 | low | 初回固定シード424242 | 解消 | RootView L338 初回もランダムシード |
 | L67 | low | ビット一致表記が近似(1e-9) | 一部解消（10/25 夕） | WeekRunner.swift L4 は既に「誤差1e-9以内」。ci.yml L21 の直しは L38 の patch に同梱（workflow 権限待ち） |
 | L68 | low | WeekSummary/StageResult非Codable | 解消 | WeekRunner.swift L9,L33 Codable化済 |
-| L69 | low | 充足カテゴリは前提付き | 未解消 | 10/14時点でトロフィー・ライバル台詞は未実装と記録（content_inventory §7）。再確認要 |
+| L69 | low | 充足カテゴリは前提付き | 未解消（10/25 夕に再確認） | アプリにトロフィー22・ライバル57項はまだ0（grep 該当なし）。ライバルは AUTOPILOT 46（名前の生成器の未決が先）、トロフィー/称号は 110（周回メタの型1/型2 判断待ち）に依存＝判断待ちの後 |
 | L70 | low | 運用細目（未成年課金等） | 判断待ち | owner-decision |
