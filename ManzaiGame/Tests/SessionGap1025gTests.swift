@@ -106,8 +106,10 @@ final class WeekHintPriorityTests: XCTestCase {
 
     func testQuietWeekHasNoHint() { XCTAssertNil(WeekHint.line(base())) }
 
-    func testNegativeMoneyBeatsEverything() {
+    func testNegativeMoneyBeatsEverything() {   // 【候補 #4 案B】体力の警告が借金より先。体力が足りていれば借金がネタ0本・撮影より先
         var i = base(); i.money = -1; i.netaCount = 0; i.preoccupied = true; i.stamina = 5
+        XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
+        i.stamina = 100
         XCTAssertEqual(WeekHint.line(i), "所持金はマイナス。今月の家賃のめどが立っていない。")
     }
 

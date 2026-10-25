@@ -398,7 +398,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testNone() { XCTAssertNil(WeekHint.line(base())) }
     func testDebtWeekIsNarration() {
-        var i = base(); i.money = -1; i.stamina = 40
+        var i = base(); i.money = -1; i.stamina = 80   // 【候補 #4 案B】体力の警告が先に出るので、借金の文は体力が足りている週で確かめる
         XCTAssertEqual(WeekHint.line(i), "所持金はマイナス。今月の家賃のめどが立っていない。")
     }
     func testInjuryWarn() {
@@ -439,10 +439,10 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
-        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")   // 【候補 #4 案B】お金と体力が先
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
-        i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
+        i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
         i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
     }
 }
