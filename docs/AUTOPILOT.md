@@ -14,7 +14,7 @@
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 夕時点 155本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 夕時点 166本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
@@ -160,6 +160,7 @@
 - 10/25 定期の回（続き12）：台帳 L54 体調ダウン→療養2週の流れを WeekRunner で固定 34cb2f3（370 green）。L53（1回戦免除）は既にテストあり
 - 10/25 定期の回（続き13）：アプリのテスト +15本 51a8a34（オファーの札・飲みの誘い・耳寄りな話・お金ゲート・夜逃げの年末・次の年・年末セーブの復元 等・155 green・GameSession 行カバレッジ 85→88%（xccov））。未カバー＝GP 決勝優勝の行・敗者復活まわり（開始状態から重い）
 - 10/25 定期の回（続き14）：女性の主人公・相方で「俺／僕／おれ／オレ」が本文に残っていないかを全 Sources の文字列で grep＝0（話者名の「俺」は CharacterAvatars／Names で切り替え済み。本文に残る2行は堀口・野々村＝男性の第三者で正しい）
+- 10/25 定期の回（続き15）：アプリのテスト +11本 5a97b64（GP 決勝優勝→acknowledgeWin・敗者復活の通過／落選・予選落ち→客席の決勝・166 green・全体4.8秒）。優勝の時にセーブが消える流れも固定＝キュー117（年末で落ちると記録が消える）の判断が出たらこのテストを直す
 - 済の記録は docs/AUTOPILOT_done.md へ移した（10/18）。新しく済んだ物は、キューの行を消してここに1行（コミット）。
 - 91 済 4fd44d1：画面の「粒」→「経験点」・週メインの能力アップの札に経験点の数を出さない（未振分がある時だけ「振れる経験点あり」）
 - 104 済 a18021b
