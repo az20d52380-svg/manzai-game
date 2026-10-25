@@ -32,10 +32,10 @@ struct NetaPickRow: View {
                 VStack(spacing: 6) {
                     if session.activeNetas.isEmpty {
                         Text("——まだ、ネタは無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)
-                    } else if session.activeNetas.allSatisfy({ $0.id == excludeID }) {
+                    } else if candidates.isEmpty {
                         Text("——ほかにかけるネタが無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)   // 2本目：1本目と同じは選べない＝空のまま無言にしない（review_today_fixes_1019 §1）
                     } else {
-                        ForEach(session.activeNetas.filter { $0.id != excludeID }) { neta in
+                        ForEach(candidates) { neta in
                             candidateRow(neta)
                         }
                     }
@@ -52,9 +52,15 @@ struct NetaPickRow: View {
         #endif
     }
 
+    /// 開いた一覧の候補。選択中のネタは上の行に出ているので並べない（同じ札が2回並んでいた＝playtest_v13 §4-1）
+    private var candidates: [Neta] {
+        session.activeNetas.filter { $0.id != excludeID && $0.id != selected?.id }
+    }
+
     private var changeLabel: some View {
         let unset = selected == nil && !session.activeNetas.isEmpty
         return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(unset && !expanded ? 14 : 12, weight: .heavy))
+            .lineLimit(1).fixedSize()   // 「とじる ▲」が名前に押されて2行に折れていた
             .foregroundStyle(unset && !expanded ? YoseColor.kinari : YoseColor.sumi)
             .padding(.horizontal, unset && !expanded ? 12 : 8).padding(.vertical, unset && !expanded ? 8 : 5)
             .background(unset && !expanded ? YoseColor.shu : YoseColor.ki)
