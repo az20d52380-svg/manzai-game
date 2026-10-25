@@ -876,7 +876,7 @@ enum ChoiceEventData {
             Advice(name: "俺", text: "本当だ。同期で最初のテレビだね"),
             Advice(name: "谷口", text: "昼にメールが来てたんだ。見てくれって"),
             Advice(name: "俺", text: "そっか。ちゃんと映ってるね"),
-            Advice(name: "谷口", text: "……あいつら、先に行っちゃったね"),
+            Advice(name: "谷口", text: "……石黒たち、先に行っちゃったね"),
         ],
         choiceLabels: [
             "A": "番組を最後まで二人で見る",
@@ -885,7 +885,7 @@ enum ChoiceEventData {
         afterChoice: [
             "A": [
                 Advice(name: "俺", text: "最後まで見よう。終わったら石黒に連絡する"),
-                Advice(name: "谷口", text: "うん。あいつ、ずっと緊張した顔してるね"),
+                Advice(name: "谷口", text: "うん。石黒、ずっと緊張した顔してるね"),
             ],
             "B": [
                 Advice(name: "俺", text: "消そう。銭湯に行って、今日はもう寝よう"),
