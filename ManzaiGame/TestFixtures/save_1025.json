@@ -1,0 +1,185 @@
+{
+  "categoryLog" : {
+    "1" : "keiko",
+    "2" : "baito",
+    "3" : "kaifuku",
+    "4" : "offer",
+    "5" : "taikai"
+  },
+  "combiName" : "あなたのコンビ",
+  "comboKind" : "femaleMale",
+  "debtWarnTier" : 0,
+  "didFireEarlyFormality" : false,
+  "didFireEve" : false,
+  "didFireLostRehearsal" : false,
+  "didFireNamelessSlip" : false,
+  "didFirePassFork" : false,
+  "didFireRiftWarn" : false,
+  "didFireTaniguchiJob" : false,
+  "didFireTsuukaChoice" : false,
+  "didShowRiftHint" : false,
+  "didWatchFinal" : false,
+  "firedWeeklyEvents" : [
+    "homecomingCall",
+    "officeTicketQuota",
+    "justLostRehearsal",
+    "styleTalk",
+    "namelessReservationSlip",
+    "weekendInvite",
+    "theaterRenovation",
+    "tsuukaBreak",
+    "lineupTop",
+    "classmateInAudience",
+    "wroteOneTonight",
+    "doukiJointLive",
+    "lostNotebook",
+    "senpaiMeishi",
+    "earlyFormality",
+    "taniguchiShortJob",
+    "lastTrainReview",
+    "luckyThirdLine",
+    "stageCrewChairs",
+    "preTournamentEve",
+    "riftWarning",
+    "yearEndLive",
+    "greenroomSilentTen",
+    "doukiOnTV",
+    "writerPostcards",
+    "baitoInventory",
+    "brokeDrinkingInvite",
+    "partnerFever",
+    "justPassedFork",
+    "regularEmployment",
+    "photoShootOffer",
+    "peerFoldedChair",
+    "senpaiAllNight",
+    "regularFanOranges",
+    "kouhaiInvite",
+    "summerFestivalGig"
+  ],
+  "injuryNoticeWeeks" : 0,
+  "jobCount" : 0,
+  "justLostStage" : false,
+  "justPassedStage" : false,
+  "lastBanterRollWeek" : 1,
+  "lastEventRollWeek" : 1,
+  "log" : [
+
+  ],
+  "lossStreak" : 0,
+  "meetingKind" : "highSchool",
+  "pendingChoiceEvent" : "justLostRehearsal",
+  "phase" : {
+    "freeAction" : {
+
+    }
+  },
+  "runner" : {
+    "acted" : false,
+    "finalLine" : 80,
+    "finalTried" : false,
+    "finalist" : false,
+    "gpAlive" : true,
+    "gpEntryPaid" : false,
+    "gpStage" : 0,
+    "inviteSeed" : 1,
+    "revival" : false,
+    "revivalTried" : false,
+    "rng" : {
+      "state" : 11400714819323198486
+    },
+    "section" : {
+      "end" : {
+
+      }
+    },
+    "state" : {
+      "archivedNetas" : [
+
+      ],
+      "bankrupt" : false,
+      "compat" : 5,
+      "compatFreezeWeeks" : 0,
+      "exp存在感" : 0,
+      "exp胆力" : 0,
+      "exp語彙" : 0,
+      "exp閃き" : 0,
+      "exp間合い" : 0,
+      "fame" : 3,
+      "growthBudget" : 6,
+      "growthUsed" : 0,
+      "money" : 300000,
+      "netaBoostWeeks" : 0,
+      "netas" : [
+
+      ],
+      "nextNetaID" : 0,
+      "preoccupiedWeeks" : 0,
+      "recoveryWeeks" : 0,
+      "riftJointWeek" : false,
+      "riftWeekStartCompat" : 5,
+      "stamina" : 100,
+      "センス" : 10,
+      "メンタル" : 10,
+      "発想" : 10,
+      "華" : 10,
+      "表現" : 10
+    },
+    "week" : 1,
+    "weekClosed" : false,
+    "weekResults" : [
+
+    ],
+    "year" : 1
+  },
+  "shownOnce" : [
+
+  ],
+  "styleTalkDone" : false,
+  "totalPrize" : 0,
+  "uiEventRng" : {
+    "state" : 15755400384260043840
+  },
+  "usedFanLines" : [
+
+  ],
+  "usedPicks" : {
+
+  },
+  "version" : 3,
+  "weeklyEventFiredCount" : 0,
+  "weeksWithoutPartner" : 0,
+  "yearHistory" : [
+
+  ],
+  "yearStartState" : {
+    "archivedNetas" : [
+
+    ],
+    "bankrupt" : false,
+    "compat" : 5,
+    "compatFreezeWeeks" : 0,
+    "exp存在感" : 0,
+    "exp胆力" : 0,
+    "exp語彙" : 0,
+    "exp閃き" : 0,
+    "exp間合い" : 0,
+    "fame" : 3,
+    "growthBudget" : 6,
+    "growthUsed" : 0,
+    "money" : 300000,
+    "netaBoostWeeks" : 0,
+    "netas" : [
+
+    ],
+    "nextNetaID" : 0,
+    "preoccupiedWeeks" : 0,
+    "recoveryWeeks" : 0,
+    "stamina" : 100,
+    "センス" : 10,
+    "メンタル" : 10,
+    "発想" : 10,
+    "華" : 10,
+    "表現" : 10
+  }
+}
