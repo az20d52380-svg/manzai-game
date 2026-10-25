@@ -85,6 +85,7 @@
 		B3A97E92C2F97F78964500F4 /* se_transition.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = DA68AC6CD1C1D0C3A79BB435 /* se_transition.mp3 */; };
 		B43B51A5DB28A5BFA7C00807 /* se_shakin.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A56CE862F769B1982A6304E6 /* se_shakin.mp3 */; };
 		B5FF297729B861895AB02480 /* FinalsPresentationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599065030751D5F2DB350459 /* FinalsPresentationView.swift */; };
+		BA83A560E5013717971797FB /* SessionGap1025dTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED386E53ADABC8770DF122E4 /* SessionGap1025dTests.swift */; };
 		BB02DEED0D8FB7F6D961745C /* se_cursor.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2479B3303C35A9B094342137 /* se_cursor.mp3 */; };
 		BBBE44D86DED0FD7E6AB7A55 /* se_laugh_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 51C23F3FD0E280B988905E04 /* se_laugh_small.mp3 */; };
 		C135C70C43982811F7AD0254 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4BD130E2E1C169A1A5799E /* ShopView.swift */; };
@@ -216,6 +217,7 @@
 		E7C2B6670FC11321C4559DCB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		EBB752855F8C64D2E210BE9E /* SessionGap1025Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025Tests.swift; sourceTree = "<group>"; };
 		EC27C4A85A610F060F476DE5 /* ManzaiGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManzaiGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED386E53ADABC8770DF122E4 /* SessionGap1025dTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025dTests.swift; sourceTree = "<group>"; };
 		ED71D4E26DB33CA0C24BF06A /* YoseTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseTokens.swift; sourceTree = "<group>"; };
 		EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_tada.mp3; sourceTree = "<group>"; };
 		F154485CAC8C1E8A41BD89A9 /* YoseEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseEffects.swift; sourceTree = "<group>"; };
@@ -383,6 +385,7 @@
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
 				A62FE4805AE73B7FD14E1CA7 /* SessionGap1025bTests.swift */,
 				C6A2E58A31BD7A19D7847716 /* SessionGap1025cTests.swift */,
+				ED386E53ADABC8770DF122E4 /* SessionGap1025dTests.swift */,
 				EBB752855F8C64D2E210BE9E /* SessionGap1025Tests.swift */,
 			);
 			path = Tests;
@@ -616,6 +619,7 @@
 				45584A233637EB196C06B0D4 /* SessionGap1025Tests.swift in Sources */,
 				600E61599EB49B504429661D /* SessionGap1025bTests.swift in Sources */,
 				73587F79732C11E8E43D20FE /* SessionGap1025cTests.swift in Sources */,
+				BA83A560E5013717971797FB /* SessionGap1025dTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
