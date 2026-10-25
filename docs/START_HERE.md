@@ -414,3 +414,4 @@ cd GameCore && swift test
 - `store_fee_check_1025_v0.md` — ストア手数料の前提の確認（2026-10-25・懸念の台帳 L60・日本の Apple 実効15%／Google 15〜25%・直す行の一覧）
 - `patches/ci_app_build_L38.patch` — CI に iOS ビルドを足す差分（2026-10-25・push のトークンに workflow 権限が無いためオーナーが `git am` で入れる）
 - `trademark_publicity_check_1025_v0.md` — 架空の固有名（頂GP・ヒトコエ・審査員7名・ライバル4組）の商標・実在との衝突の下調べとパブリシティの線引き（2026-10-25・懸念の台帳 L61）
+- `gacha_law_check_1025_v0.md` — 景品表示法・ガチャ確率表示の確認（2026-10-25・懸念の台帳 L44・今の作りはガチャ無しで対象外・入れる場合の対応表）

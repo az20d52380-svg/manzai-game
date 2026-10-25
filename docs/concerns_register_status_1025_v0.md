@@ -31,7 +31,7 @@
 | L41 | high | 予選紙講評の反復 | 一部解消（10/25 実測） | 10年の読み返し率 約11〜18%（最大22%・強い組で予選を何度も通る型で目立つ）＝judge_comment_repeat_measure_1025_v0。増やすかはオーナー |
 | L42 | high | B案が買い切りに劣後 | 判断待ち | 業態未決（START_HERE L54） |
 | L43 | high | 資金決済法リスク | 未解消 | research・対応記録なし（業態未決に依存） |
-| L44 | high | 景表法・ガチャ確率 | 未解消 | research・対応記録なし |
+| L44 | high | 景表法・ガチャ確率 | 一部解消（10/25 夕） | gacha_law_check_1025_v0：今の課金は買い切り4商品のみでガチャ無し＝確率表示・コンプガチャは対象外。入れる場合の対応表あり。legal_risk L74「CESAへの統合」は根拠なし・monetization_decision L3「B案F2P確定」は現状と食い違い（業態はオーナー判断） |
 | L45 | high | 運営レス前提の崩壊 | 判断待ち | 業態未決に依存（owner-decision） |
 | L46 | high | キャラ供給の計画なし | 判断待ち | owner-decision |
 | L49 | medium | 研究デバフが旧スケール較正 | 未解消 | AUDIENCE_K等の再計測記録なし |
