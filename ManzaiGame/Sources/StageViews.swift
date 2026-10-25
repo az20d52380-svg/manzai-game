@@ -303,7 +303,7 @@ struct StagePreludeView: View {
             EntryHeader(tag: "頂グランプリ", name: GPName.display(title))
 
             LineBoard(week: session.week,
-                      stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : "頂GP 回戦"))
+                      stageTag: isFinal ? "頂GP 決勝" : (title == "敗者復活" ? "敗者復活" : GPName.display(title)))   // 「頂GP 回戦」と回戦の数が欠けていた（hooks_audit_1026）
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補/§4-2・golden非干渉）
