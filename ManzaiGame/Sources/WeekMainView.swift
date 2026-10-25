@@ -1006,7 +1006,7 @@ struct WeekMainView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.bottom, urgent ? 14 : 0)   // 朱札「未振分あり」が名前に食い込まないよう文字を上げる
+            .padding(.bottom, (urgent || gated) ? 14 : 0)   // 朱札「未振分あり」・判子「出張中/休演」が名前に食い込まないよう文字を上げる（hooks_audit_1026）
             .overlay(alignment: .bottomTrailing) {
                 // 選べない札は、判子で「今週は無理」を言う
                 if gated {
