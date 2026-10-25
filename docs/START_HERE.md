@@ -406,3 +406,4 @@ cd GameCore && swift test
 - `visual_check_1025b_v0.md` — 目視 10/25 追補（未見の14フック・stamina/living/forecast が通常画面と同一＝要確認）
 - `judge_comment_score_v7.md` — 予選の紙講評 採点 v7（型をなくした後・50本 ○43 △7 ×0）
 - `code_review_2026-10-25d.md` — コード点検 10/25d（本番で落ちうる所：高0・中1・低は前提で守られている）
+- `app_name_prior_use_1025_v0.md` — アプリ名の候補の既存の使用の下調べ（2026-10-25・法的判断ではなく材料・「ふたり寄席」の同名は検索で見つからず）
