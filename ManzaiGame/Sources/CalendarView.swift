@@ -154,6 +154,7 @@ struct CalendarView: View {
     private func tournamentName(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "頂GP" }
         if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return GPName.short(cal.gpRoundNames[i]) }
+        if let h = session.hanaRound(inWeek: w) { return h.name.hasSuffix("決勝") ? "HANA決勝" : "HANA" }   // THE HANA（女コンビだけ）
         guard let n = cal.tournament(inWeek: w)?.name else { return "" }
         return n.replacingOccurrences(of: "漫才杯", with: "杯").replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }
@@ -172,6 +173,10 @@ struct CalendarView: View {
             return true
         }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
+        if session.hanaRound(inWeek: w) != nil {
+            // THE HANA: これからの週は今年まだ立てる段だけ塗る（落ちた後の段は塗らない）
+            return w >= session.week ? session.hanaStillOpen(week: w) : true
+        }
         return w == cal.gpFinalWeek
     }
 

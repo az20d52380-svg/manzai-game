@@ -63,7 +63,7 @@ struct TournamentResultView: View {
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
     private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
-    private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
+    private var isMidTournament: Bool { session.tournamentSpec(inWeek: summary.week) != nil }   // THE HANA も道中の大会と同じ扱い
     /// 負けの距離 0..1（監査E-03）。margin（スコア−実効ライン）を3段に丸めて波形に渡す。数字は出さない。【仮】
     private func nearMiss(_ r: StageResult) -> Double {
         guard !r.passed, let m = r.margin else { return 0 }
