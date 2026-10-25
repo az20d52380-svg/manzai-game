@@ -43,7 +43,7 @@ struct ComboKindPickerView: View {
                 }
                 .padding(.top, 6)
                 Text(kind.cardTitle).font(YoseFont.gothic(17, weight: .heavy))
-                Text(kind.cardSub).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Text(kind.cardSub).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(kind.meIsFemale != kind.partnerIsFemale ? YoseColor.sumi : YoseColor.haiSumi)
             }
             .frame(maxWidth: .infinity, minHeight: 150)
             .overlay(RoundedRectangle(cornerRadius: 2).stroke(YoseColor.shu, lineWidth: picked == kind ? 3 : 0))

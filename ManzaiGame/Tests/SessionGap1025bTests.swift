@@ -107,8 +107,8 @@ final class ComboKindGapTests: XCTestCase {
     func testCardTexts() {
         XCTAssertEqual(ComboKind.maleFemale.cardTitle, "男女コンビ")
         XCTAssertEqual(ComboKind.femaleMale.cardTitle, "男女コンビ")
-        XCTAssertEqual(ComboKind.maleFemale.cardSub, "自分は男")
-        XCTAssertEqual(ComboKind.femaleMale.cardSub, "自分は女")
+        XCTAssertEqual(ComboKind.maleFemale.cardSub, "自分が男・相方が女")
+        XCTAssertEqual(ComboKind.femaleMale.cardSub, "自分が女・相方が男")
         XCTAssertEqual(ComboKind.femaleFemale.cardTitle, "女コンビ")
     }
 }

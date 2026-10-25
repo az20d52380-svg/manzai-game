@@ -32,8 +32,8 @@ enum ComboKind: String, Codable, CaseIterable {
         switch self {
         case .maleMale: return "二人とも男"
         case .femaleFemale: return "二人とも女"
-        case .maleFemale: return "自分は男"
-        case .femaleMale: return "自分は女"
+        case .maleFemale: return "自分が男・相方が女"
+        case .femaleMale: return "自分が女・相方が男"
         }
     }
 }
