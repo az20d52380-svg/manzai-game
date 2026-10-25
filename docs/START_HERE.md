@@ -404,3 +404,4 @@ cd GameCore && swift test
 - `visual_check_female_1025_v0.md` — 目視 10/25 女性コンビ・男女コンビ（コードは未修正）
 - `visual_largetext_1025_v0.md` — 大文字（accessibility-large）目視 2025-10-25 v0
 - `visual_check_1025b_v0.md` — 目視 10/25 追補（未見の14フック・stamina/living/forecast が通常画面と同一＝要確認）
+- `judge_comment_score_v7.md` — 予選の紙講評 採点 v7（型をなくした後・50本 ○43 △7 ×0）
