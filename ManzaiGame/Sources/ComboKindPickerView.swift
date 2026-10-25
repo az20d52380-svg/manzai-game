@@ -19,6 +19,10 @@ struct ComboKindPickerView: View {
                     ForEach(order, id: \.self) { kind in card(kind) }
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin)
+                // 下半分が空いていた（playtest_v13 §2-6）＝選ぶと何が変わるかを1行で
+                Text("選んだ形で、台詞の「俺」「私」と見た目が変わる。\nこの周のあいだは変えられない。")
+                    .font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                    .multilineTextAlignment(.center).padding(.horizontal, YoseMetrics.screenMargin)
                 Spacer(minLength: 0)
             }
         }
