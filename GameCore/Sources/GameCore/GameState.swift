@@ -100,6 +100,8 @@ public struct GameState: Codable {
     public var studioActive: Bool? = nil
     // --- 部屋の段（キュー90）：nil/0＝安アパート（今と同一）。古いセーブは nil ---
     public var room: Int? = nil
+    /// 【候補 q9】前回の月末の支払いから今までに住んだ部屋の最高段（nil＝その間に移っていない）。家賃はこの段で払う。Python: s.room_peak
+    public var roomPeak: Int? = nil
 
     public init(config: GameConfig = GameConfig()) {
         money = config.initMoney

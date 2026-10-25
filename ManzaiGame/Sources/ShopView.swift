@@ -115,7 +115,7 @@ struct ShopView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .yoseHarigami()
             }
-            Text("上の部屋へは、増える家賃の1回ぶんを持っている時だけ引っ越せます。下の部屋へはお金がなくても戻れます。新しい家賃は次の支払い（4週ごと）からです。")
+            Text("上の部屋へは、増える家賃の1回ぶんを持っている時だけ引っ越せます。下の部屋へはお金がなくても戻れます。次の支払い（4週ごと）では、その間に住んだ一番上の部屋の家賃を払います。")
                 .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .fixedSize(horizontal: false, vertical: true)
         }

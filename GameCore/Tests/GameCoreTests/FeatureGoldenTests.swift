@@ -75,6 +75,8 @@ final class FeatureGoldenTests: XCTestCase {
                     val = GameEngine.learnSkill(Skill(rawValue: op["skill"] as! String)!, to: &s) ? 1 : 0
                 case "week_end":
                     _ = GameEngine.applyWeekEnd(week: op["week"] as! Int, to: &s, config: config)
+                case "move_room":
+                    val = GameEngine.moveRoom(to: op["to"] as! Int, state: &s, config: config) ? 1 : 0
                 case "living_due":
                     val = Double(GameEngine.livingCostDue(s, config: config))
                 case "new_year":

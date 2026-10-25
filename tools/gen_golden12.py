@@ -38,7 +38,7 @@ def rows():
             B.do_rest(s, name)
         B.pour_all(s)
         if week % B.LIVING_INTERVAL == 0:
-            s.money -= B.living_cost(s) + B.room_rent(s)
+            B.pay_living(s)
             if C.DEBT_LIFE_PEN is not None and s.money < 0:   # 生活苦（Swift applyWeekEnd・gen_golden.py と同じ）
                 dst, dmt = C.DEBT_LIFE_PEN
                 B.add(s, "stamina", dst)

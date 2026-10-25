@@ -169,15 +169,22 @@ public enum GameEngine {
         return s.money >= config.roomRents[target]
     }
 
-    /// 月末の支払いの額（生活費・特技「やりくり上手」の割引込み＋部屋の上乗せ）。引き落としと画面の表示の両方がこれを使う。乱数なし
+    /// 【候補 q9】月末に払う家賃＝その月に住んだ一番上の部屋の額（月末だけ安い部屋に戻す抜け道を塞ぐ・room_rent_exploit_v0 直しA）。Python: rent_due
+    public static func rentDue(_ s: GameState, config: GameConfig) -> Int {
+        let r = max(s.room ?? 0, s.roomPeak ?? 0)
+        return r > 0 && r < config.roomRents.count ? config.roomRents[r] : 0
+    }
+
+    /// 月末の支払いの額（生活費・特技「やりくり上手」の割引込み＋その月に住んだ一番上の部屋の家賃）。引き落としと画面の表示の両方がこれを使う。乱数なし
     public static func livingCostDue(_ s: GameState, config: GameConfig) -> Int {
-        (s.has(.やりくり上手) ? Int((Double(config.livingCost) * Skill.livingMult).rounded()) : config.livingCost) + roomRent(s, config: config)
+        (s.has(.やりくり上手) ? Int((Double(config.livingCost) * Skill.livingMult).rounded()) : config.livingCost) + rentDue(s, config: config)
     }
 
     /// 部屋を選び直す（乱数なし・お金は引かない＝上乗せは次の生活費から）。選べたら true。
     @discardableResult
     public static func moveRoom(to target: Int, state s: inout GameState, config: GameConfig) -> Bool {
         guard canMoveRoom(to: target, state: s, config: config) else { return false }
+        s.roomPeak = max(s.roomPeak ?? (s.room ?? 0), target)   // 【候補 q9】その月に住んだ一番上の段を覚える（Python: move_room）
         s.room = target == 0 ? nil : target
         return true
     }
@@ -325,6 +332,7 @@ public enum GameEngine {
     public static func applyWeekEnd(week: Int, to s: inout GameState, config: GameConfig) -> Bool {
         if week % config.livingInterval == 0 {
             s.money -= livingCostDue(s, config: config)
+            s.roomPeak = nil   // 【候補 q9】払ったら次の月は今の部屋から（Python: pay_living）
             if s.money < 0 {
                 add(.体力, config.debtLifeStamina, to: &s, config: config)
                 add(.ability(.メンタル), config.debtLifeMental, to: &s, config: config)

@@ -1137,6 +1137,435 @@
    ]
   },
   {
+   "name": "rent_peak_move_down",
+   "init": {
+    "room": 2,
+    "money": 1000000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "move_room",
+      "to": 0
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 290000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 140000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 8
+     },
+     "state": {
+      "money": 570000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "rent_peak_up_then_down",
+   "init": {
+    "room": 0,
+    "money": 1000000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "move_room",
+      "to": 2
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "move_room",
+      "to": 1
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 1000000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 290000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "move_room",
+      "to": 0
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 1.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 710000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 190000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 8
+     },
+     "state": {
+      "money": 520000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 520000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 140000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 12
+     },
+     "state": {
+      "money": 380000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
+   "name": "rent_peak_cannot_afford",
+   "init": {
+    "room": 0,
+    "money": 149000
+   },
+   "steps": [
+    {
+     "op": {
+      "op": "move_room",
+      "to": 2
+     },
+     "state": {
+      "money": 149000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 0.0
+    },
+    {
+     "op": {
+      "op": "living_due"
+     },
+     "state": {
+      "money": 149000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": 140000.0
+    },
+    {
+     "op": {
+      "op": "week_end",
+      "week": 4
+     },
+     "state": {
+      "money": 9000.0,
+      "stamina": 100.0,
+      "fame": 3.0,
+      "mental": 10.0,
+      "compat": 5.0,
+      "rift": 0.0,
+      "sento": 0.0,
+      "shinkansen": 0.0,
+      "skills": [],
+      "counts": {},
+      "exp_hirameki": 0.0,
+      "exp_goi": 0.0,
+      "exp_maai": 0.0,
+      "exp_sonzaikan": 0.0,
+      "exp_tanryoku": 0.0
+     },
+     "value": null
+    }
+   ]
+  },
+  {
    "name": "injury_mult_skill_throat",
    "init": {},
    "steps": [

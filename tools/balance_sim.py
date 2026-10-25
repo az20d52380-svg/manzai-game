@@ -41,6 +41,28 @@ ROOM_RENT = (0, 50_000, 150_000)   # 4週ごとの生活費への上乗せ
 ROOM_HEAL = (0, 10, 20)            # 家で休む（完全休養・気分転換）の体力の戻りへの加算
 ROOM_HOME_RESTS = ("完全休養", "気分転換")
 def room_rent(s): return ROOM_RENT[getattr(s, "room", 0) or 0]
+# 【候補 q9・家賃の抜け道の直しA（room_rent_exploit_v0）】その月に住んだ一番上の部屋の家賃を月末に払う。
+# s.room_peak＝前回の支払いから今までに住んだ部屋の最高段（None＝その間に移っていない＝今の部屋）。乱数なし。
+# Swift: GameEngine.moveRoom / rentDue / applyWeekEnd（支払いの後に roomPeak=nil）
+def can_move_room(s, target):
+    if target < 0 or target >= len(ROOM_RENT): return False
+    if target <= (getattr(s, "room", 0) or 0): return True
+    return s.money >= ROOM_RENT[target]
+def move_room(s, target):
+    if not can_move_room(s, target): return False
+    cur = getattr(s, "room", 0) or 0
+    peak = getattr(s, "room_peak", None)
+    s.room_peak = max(cur if peak is None else peak, target)
+    s.room = target
+    return True
+def rent_due(s):
+    cur = getattr(s, "room", 0) or 0
+    peak = getattr(s, "room_peak", None)
+    return ROOM_RENT[max(cur, peak if peak is not None else 0)]
+def pay_living(s):
+    """月末の支払い（生活費＋その月に住んだ一番上の部屋の家賃）。払ったら room_peak を戻す"""
+    s.money -= living_cost(s) + rent_due(s)
+    s.room_peak = None
 
 # --- 稽古: 主効果 / 副効果 / 費用 / 体力 / 知名度 ---
 # 正典v3（パワプロ式5通貨・docs/exp_currency_redesign_v0.md）: main/subは能力でなく経験点通貨を発行する。
@@ -672,7 +694,7 @@ def run_one(pol, seed):
         pour_all(s)   # 会計移設: 行動直後に粒を全量注ぐ（稽古以外の週は空注ぎ）
 
         if week % LIVING_INTERVAL == 0:
-            s.money -= living_cost(s) + room_rent(s)
+            pay_living(s)
         s.min_money = min(s.min_money, s.money)
     return s
 

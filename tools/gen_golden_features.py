@@ -49,8 +49,9 @@ def run(name, init, ops):
         elif o == "learn": val = 1.0 if B.learn_skill(s, op["skill"]) else 0.0
         elif o == "week_end":
             if op["week"] % B.LIVING_INTERVAL == 0:
-                s.money -= B.living_cost(s) + B.room_rent(s)
-        elif o == "living_due": val = float(B.living_cost(s) + B.room_rent(s))
+                B.pay_living(s)
+        elif o == "living_due": val = float(B.living_cost(s) + B.rent_due(s))
+        elif o == "move_room": val = 1.0 if B.move_room(s, op["to"]) else 0.0
         elif o == "new_year": B.reset_yearly_items(s)
         elif o == "fame": B.add(s, "fame", op["amt"])
         elif o == "rift":
@@ -268,6 +269,16 @@ def main():
                {"op": "set", "v": {"exp_goi": 2.0, "exp_maai": 4.0}}, {"op": "learn", "skill": "やりくり上手"},
                {"op": "living_due"}, {"op": "week_end", "week": 8}]
         S.append(run(f"living_room{room}_yarikuri", dict(room=room, money=1_000_000), ops))
+    # 6b 【候補 q9】家賃はその月に住んだ一番上の部屋の額（月末だけ安い部屋に戻す抜け道を塞ぐ）
+    S.append(run("rent_peak_move_down", dict(room=2, money=1_000_000), [
+        {"op": "move_room", "to": 0}, {"op": "living_due"}, {"op": "week_end", "week": 4},   # 月の途中で下げても上の部屋の額
+        {"op": "living_due"}, {"op": "week_end", "week": 8}]))                               # 次の月は今の部屋の額
+    S.append(run("rent_peak_up_then_down", dict(room=0, money=1_000_000), [
+        {"op": "move_room", "to": 2}, {"op": "move_room", "to": 1}, {"op": "living_due"}, {"op": "week_end", "week": 4},
+        {"op": "move_room", "to": 0}, {"op": "living_due"}, {"op": "week_end", "week": 8},
+        {"op": "living_due"}, {"op": "week_end", "week": 12}]))
+    S.append(run("rent_peak_cannot_afford", dict(room=0, money=149_000), [   # 上の部屋(15万)に届かず・生活費は払える
+        {"op": "move_room", "to": 2}, {"op": "living_due"}, {"op": "week_end", "week": 4}]))  # 上げられない時は記録しない
     # 7 体が資本×喉のケア用品の体調ダウン確率の係数
     ops = []
     for st in (0.0, 20.0, 40.0, 49.0):

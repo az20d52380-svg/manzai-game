@@ -1251,8 +1251,12 @@ struct WeekMainView: View {
         let key = session.year * 1000 + session.week
         guard paid > 0, session.lastDeltaWeek == session.week, rentShownKey != key, !Task.isCancelled else { return }
         rentShownKey = key
-        withAnimation(.easeOut(duration: 0.2)) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: GameEngine.roomRent(s, config: session.config),
-                                                                  roomName: ShopView.roomNames[min(max(s.room ?? 0, 0), ShopView.roomNames.count - 1)]) }
+        // 【候補 q9】払ったのは「その月に住んだ一番上の部屋」の額（支払いの後は roomPeak が戻る）＝内訳は払った額から逆算する
+        let base = GameEngine.livingCostDue(s, config: session.config) - GameEngine.roomRent(s, config: session.config)
+        let extra = max(0, paid - base)
+        let paidRoom = session.config.roomRents.lastIndex(of: extra) ?? (s.room ?? 0)
+        withAnimation(.easeOut(duration: 0.2)) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: extra,
+                                                                  roomName: ShopView.roomNames[min(max(paidRoom, 0), ShopView.roomNames.count - 1)]) }
         while rent != nil && !Task.isCancelled { try? await Task.sleep(nanoseconds: 100_000_000) }
     }
 
