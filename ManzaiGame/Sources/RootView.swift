@@ -89,7 +89,9 @@ struct RootView: View {
             if smoke == "soak" { await soakLoop(); return }   // 漏れ点検: 実UIを通して年を回し続ける（MZ_SOAK_MS=1手の待ち）
             if endingHook, session.week <= 1 { forceChampion() }   // S6b（#5/#7/#8）用の優勝データ。1〜4・6 の場面は session 不要   // スモーク/UI確認時はS1を飛ばす
             // 複数年の目視: MZ_YEARS=n で n 年ぶん自動で年末→翌年へ進めてから、他のフックを掛ける
-            if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
+            // MZ_STOPWEEK だけ（MZ_YEARS なし）は 0 年＝1年目の途中週で止める（visual_check_midyear_1025_v0 §3）
+            let yearsEnv = ProcessInfo.processInfo.environment["MZ_YEARS"] ?? (ProcessInfo.processInfo.environment["MZ_STOPWEEK"] != nil ? "0" : "")
+            if let n = Int(yearsEnv), n >= 0, session.year == 1 {
                 session.debugAdvanceYears(n)
             }
             // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
