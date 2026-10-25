@@ -1405,7 +1405,10 @@ struct FinalsData {
     /// 設計上の固有名（ライバル役の「静物画」「夜行列車」・後輩NPCの「雨宿り」）とは重ねない（2026-10-14 差し替え）
     /// 今年の決勝の他組（年と自組名だけで決まる＝能力に依らない。準決勝後の決勝進出者の発表と同じ顔ぶれ）
     static func yearRoster(year: Int, selfName: String, count: Int) -> [String] {
-        var rng = SeededRng(seed: UInt64(bitPattern: Int64(year &* 7919 &+ 0x2A6D)))
+        // 【候補・判断のまとめ「モブが何周しても同じ」案②】コンビ名も種に混ぜる＝周（名前）ごとに顔ぶれが変わる。同じ周の中では発表・予選の一覧・決勝で一致したまま
+        var h: UInt64 = 0xcbf29ce484222325                       // FNV-1a（起動ごとに変わる hashValue は使わない）
+        for u in selfName.unicodeScalars { h = (h ^ UInt64(u.value)) &* 0x100000001b3 }
+        var rng = SeededRng(seed: UInt64(bitPattern: Int64(year &* 7919 &+ 0x2A6D)) ^ h)
         var pool = npcNames.filter { $0 != selfName }
         for i in stride(from: pool.count - 1, through: 1, by: -1) { pool.swapAt(i, rng.int(0...i)) }
         return Array(pool.prefix(count))

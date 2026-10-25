@@ -804,3 +804,15 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 【候補】決勝のモブ組：同じ周（同じコンビ名）・同じ年なら同じ顔ぶれ、名前が違えば変わる
+final class MobRosterCandidateTests: XCTestCase {
+    func testRosterStableWithinRunAndVariesAcrossNames() {
+        let a1 = FinalsData.yearRoster(year: 3, selfName: "あおぞら", count: 9)
+        let a2 = FinalsData.yearRoster(year: 3, selfName: "あおぞら", count: 9)
+        let b = FinalsData.yearRoster(year: 3, selfName: "ゆうなぎ", count: 9)
+        XCTAssertEqual(a1, a2)
+        XCTAssertNotEqual(a1, b)
+        XCTAssertFalse(a1.contains("あおぞら"))
+    }
+}
