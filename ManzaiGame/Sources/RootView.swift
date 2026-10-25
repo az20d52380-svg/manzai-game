@@ -249,9 +249,13 @@ struct RootView: View {
             if ui == "gploss", session.week <= 1 {
                 // 予選落ちの谷口の一言（§94）の目視: 能力の低い素の状態でGP1回戦の結果画面まで進める
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
-                session = GameSession(startState: st)
-                session.debugAdvanceToPrelude(final: false)
-                session.advanceAuto()
+                // 素の状態でも1回戦を通る種がある（10/26 目視で通過が出た）＝落ちる種を引くまで替える（最大30）
+                for seed in 1...30 {
+                    session = GameSession(seed: UInt64(seed) &* 7919, startState: st)
+                    session.debugAdvanceToPrelude(final: false)
+                    session.advanceAuto()
+                    if session.pendingResult?.results.contains(where: { !$0.passed }) == true { break }
+                }
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）
