@@ -363,6 +363,9 @@ final class PlaytestFixV2Tests: IsolatedStoreTestCase {
         XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 2, losses: 5), pool)
         XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 2, losses: 2), pool)
         XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 0, losses: 0), pool)
+        // 停滞年に後から足した負け語りの行も外れる（code_review_2026-10-26 §2-1）
+        let pool2 = ["今年は、負けて帰る日が多かった。正月くらいは、ゆっくり休もう。", pool[1]]
+        XCTAssertEqual(YearResultView.filterByRecord(pool2, wins: 3, losses: 1), [pool[1]])
         // 外すと空になる時は元のまま
         XCTAssertEqual(YearResultView.filterByRecord([pool[0]], wins: 5, losses: 2), [pool[0]])
     }
