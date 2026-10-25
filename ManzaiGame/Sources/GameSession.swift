@@ -779,6 +779,13 @@ final class GameSession {
         return ChoiceEventTable.choices(for: kind, config: config).filter { $0.gate(state) }
     }
 
+    /// 【候補・判断のまとめ #7 案A】お金だけが理由で選べない選択肢（所持金を十分にすると条件を満たす物）。灰色で残して「お金が足りない」と添える用。表示専用
+    func moneyBlockedEventChoices() -> [ChoiceEventChoice] {
+        guard let kind = pendingChoiceEvent else { return [] }
+        var rich = state; rich.money = max(state.money, 100_000_000)
+        return ChoiceEventTable.choices(for: kind, config: config).filter { !$0.gate(state) && $0.gate(rich) }
+    }
+
     // MARK: 持ちネタ（正典: docs/neta_system_redesign_v2.md Phase 0）
     //
     // ⚠️ このセクションは runner.applyNeta*（RandomSource 非依存の純適用・WeekRunner.swift）だけを呼ぶ＝

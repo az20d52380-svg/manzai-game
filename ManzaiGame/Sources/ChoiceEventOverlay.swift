@@ -254,6 +254,7 @@ struct ChoiceEventOverlay: View {
                 if chosenID == nil, setupDone {
                     // 選択肢なしフレーバー（0028等）は会話を送り切ったら「閉じる」、選択肢ありは選択肢カード
                     if session.availableEventChoices().isEmpty {
+                        moneyBlockedRows
                         closeButton
                     } else {
                         ForEach(session.availableEventChoices(), id: \.id) { choice in
@@ -263,6 +264,7 @@ struct ChoiceEventOverlay: View {
                             }
                             .buttonStyle(YoseButtonStyle(.secondary))
                         }
+                        moneyBlockedRows
                     }
                 } else if afterDone {
                     closeButton
@@ -272,6 +274,23 @@ struct ChoiceEventOverlay: View {
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14).padding(.bottom, 14)   // 上 6→14：会話5行の札で最後の吹き出しと選択肢がくっつかない（event_card_audit_1019 §1）
         .frame(minHeight: 40)
         .animation(Theme.Motion.appear, value: footerReady)
+    }
+
+    /// 【候補・判断のまとめ #7 案A】お金が足りずに選べない選択肢を灰色で残す（押せない・読み上げも「選べません」）
+    @ViewBuilder private var moneyBlockedRows: some View {
+        ForEach(session.moneyBlockedEventChoices(), id: \.id) { choice in
+            VStack(spacing: 2) {
+                Text(text.choiceLabels[choice.id] ?? choice.id)
+                    .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                Text("お金が足りない").font(YoseFont.captionBold)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .foregroundStyle(YoseColor.haiSumi)
+            .overlay(Rectangle().stroke(YoseColor.haiSumi.opacity(0.5), lineWidth: 1))
+            .accessibilityElement(children: .combine)
+            .accessibilityHint("お金が足りないので選べません")
+        }
     }
 
     private var closeButton: some View {

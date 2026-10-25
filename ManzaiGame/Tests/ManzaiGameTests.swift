@@ -804,3 +804,18 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 【候補・判断のまとめ #7 案A】お金だけが理由の選択肢は「選べない」として残す（お金以外の条件で消える物は対象外）
+final class MoneyBlockedChoiceCandidateTests: IsolatedStoreTestCase {
+    func testMoneyBlockedChoiceListedOnlyWhenShort() {
+        var st = GameState(config: GameConfig()); st.money = 1000
+        let poor = GameSession(startState: st)
+        poor.debugForceEvent(.justLostRehearsal)
+        XCTAssertEqual(poor.moneyBlockedEventChoices().map(\.id), ["C"])          // ラーメン（1,500円）
+        XCTAssertFalse(poor.availableEventChoices().contains { $0.id == "C" })
+        st.money = 50_000
+        let rich = GameSession(startState: st)
+        rich.debugForceEvent(.justLostRehearsal)
+        XCTAssertTrue(rich.moneyBlockedEventChoices().isEmpty)
+    }
+}
