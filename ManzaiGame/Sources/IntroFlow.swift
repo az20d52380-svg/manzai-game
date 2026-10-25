@@ -742,7 +742,7 @@ struct IntroFlowView: View {
     @State private var name = "あなたのコンビ"
     @State private var myName: String? = nil
     @State private var partnerName: String? = nil
-    @State private var kind: ComboKind = .maleMale
+    @State private var kind: ComboKind = IntroFlowView.initialKind
     @State private var meeting: MeetingKind = IntroFlowView.initialMeeting
     private enum Stage { case title, comboKind, nameEntry, reminiscence, notif }
 
@@ -760,9 +760,20 @@ struct IntroFlowView: View {
     static var hasSeenIntro: Bool { GameSession.store.bool(forKey: seenKey) }
     static func markIntroSeen() { GameSession.store.set(true, forKey: seenKey) }
 
+    /// 目視用: MZ_UI=intro_name で名前決めへ直行する時、MZ_KIND の形で結成届を出す（本編は形を選ぶ画面で必ず上書き）
+    private static var initialKind: ComboKind {
+        #if DEBUG
+        if let k = ProcessInfo.processInfo.environment["MZ_KIND"].flatMap({ ComboKind(rawValue: $0) }) { return k }
+        #endif
+        return .maleMale
+    }
+
     private static var initialStage: Stage {
         #if DEBUG
-        if ProcessInfo.processInfo.environment["MZ_UI"] == "intro_name" { return .nameEntry }   // 目視用: 名前決めへ直行
+        if ProcessInfo.processInfo.environment["MZ_UI"] == "intro_name" {   // 目視用: 名前決めへ直行（MZ_KIND があれば結成届の「俺／私」もその形で）
+            if let k = ProcessInfo.processInfo.environment["MZ_KIND"].flatMap({ ComboKind(rawValue: $0) }) { Names.setKind(k) }
+            return .nameEntry
+        }
         if ProcessInfo.processInfo.environment["MZ_UI"] == "combokind" { return .comboKind }   // 目視用: コンビの形を選ぶ画面へ直行
         if MeetingKind.debugForced != nil { return .reminiscence }   // 目視用: MZ_MEET=1〜4 で回想をその型で直接流す
         #endif
