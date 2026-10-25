@@ -14,7 +14,7 @@
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 深夜時点 182本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 夜時点 192本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
@@ -176,6 +176,7 @@
 - 10/25 定期の回（続き18）：決めてほしい事の各問が今も起きているかの確認 672ecbf（19問中17問が今も・問18 背景は a289fb7 で済み）・問21 は B1 で入っていて確認だけと注記
 - 10/25 定期の回（続き19）：判断待ち「家賃の抜け道」の推奨の直しA を候補ブランチ claude/q9-rent-peak に実装 f5d78dc（本体には入れていない・オーナーの OK 待ち）
 - 10/25 定期の回（続き20）：GameCore の未カバー（SplitMix64・TravelSpec・ItemSpec・EventEffect の上限/凍結・JudgeTalk）にテスト+11本 99c3eee（397 green・式/golden 不変）
+- 10/25 定期の回（続き21）：アプリのテスト +10本 fe3ddb0（NetaCatalog・RentStatement・FanReportData・計192 green・本体不変）
 - 済の記録は docs/AUTOPILOT_done.md へ移した（10/18）。新しく済んだ物は、キューの行を消してここに1行（コミット）。
 - 91 済 4fd44d1：画面の「粒」→「経験点」・週メインの能力アップの札に経験点の数を出さない（未振分がある時だけ「振れる経験点あり」）
 - 104 済 a18021b
