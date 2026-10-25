@@ -19,7 +19,7 @@
 | 台帳行 | 重要度 | 懸念（20字） | 判定 | 根拠 |
 |---|---|---|---|---|
 | L29 | high | 裏天井2案並存・未実装 | 判断待ち | START_HERE L56「裏天井を入れるか」未決 |
-| L30 | high | 決勝優勝ライン数値不一致 | 未解消 | AUTOPILOT/START_HEREに決着記録なし |
+| L30 | high | 決勝優勝ライン数値不一致 | 解消（10/25 夕に確認） | finals_direction に 95/91/89 の記述は残っていない・master_spec L49 は「94 →v2: 80（canonical §1 が正）」・Calendar.gpFinalLine=80・canonical_v2 L6 が唯一の正典と明記 |
 | L31 | high | finals優勝例とrival年表矛盾 | 判断待ち | champion_selection §9未決2（owner） |
 | L32 | high | finals §4-C.5モブ旧30組 | 解消（10/25 夕に確認） | finals_direction L124 は既に「name_generator が毎周生成（固定50組…）」に更新済み |
 | L35 | high | exp_neta非情報的 | 一部解消 | done 50 neta_bonus_remeasure_v0（測定道具のみ）。決勝到達帯ボットでの較正は記録なし |
