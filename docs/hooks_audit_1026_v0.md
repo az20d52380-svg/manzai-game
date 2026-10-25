@@ -25,3 +25,8 @@ iPhone 17・MZ_UI フック直行。20画面（直近3監査で未見）を1枚�
 
 ## 未確認（今回の枠外）
 prestage / finals / qual_notice（撮影済み・未精査）／stage / juice / ending / event / qual_line / finalist_announce / notif / frame / catalog。
+
+## 追記（10/26 未明・親の対応）
+- 済：中2 結果の精算札の下に余白 53ab959 の前のコミット／低 prelude 小札「頂GP 1回戦」b0b153e の次／低 借金の表記「-¥100,000」（いずれも iPhone 17 で目視）。
+- 据え置き：中1「ネタが無い」の重複＝キュー111 の判断待ち（DEBUG 見本 MZ_DEDUP=top あり）。低 settings の「•」＝木札の釘の飾り（yoseKifuda showNail）で意図どおり。低 pass のコンビ名＝見本の既定名だけの問題。低 gploss＝フックの確認のみ。
+- 残り（表示だけ・次の回）：cards の「出張中」テープが題字に重なる／cards の帯「ネタは来週から」／wintercup・prelude の体力0注意帯の不揃い／allocate の5色丸に短い名。
