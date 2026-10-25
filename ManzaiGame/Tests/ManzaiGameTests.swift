@@ -778,6 +778,10 @@ final class WeekendInviteVariantTests: XCTestCase {
         let seen = Set((1...48).map { ChoiceEventData.text(for: .weekendInvite, year: 1, week: $0).setup.map(\.text).joined() })
         XCTAssertEqual(seen.count, v.count)
         // 他のイベントは year/week を渡しても元の文面のまま
-        XCTAssertEqual(ChoiceEventData.text(for: .styleTalk, year: 5, week: 9).title, ChoiceEventData.text(for: .styleTalk).title)
+        XCTAssertEqual(ChoiceEventData.text(for: .senpaiMeishi, year: 5, week: 9).setup.map(\.text), ChoiceEventData.text(for: .senpaiMeishi).setup.map(\.text))
+        // 0019 連敗の相談も同じ規律（ラベル同じ・1年で全部出る）
+        let st = ChoiceEventData.styleTalkVariants
+        for t in st { XCTAssertEqual(t.choiceLabels, ChoiceEventData.text(for: .styleTalk).choiceLabels) }
+        XCTAssertEqual(Set((1...48).map { ChoiceEventData.text(for: .styleTalk, year: 2, week: $0).setup.map(\.text).joined() }).count, st.count)
     }
 }
