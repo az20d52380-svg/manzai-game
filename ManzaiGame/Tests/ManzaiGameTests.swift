@@ -804,3 +804,17 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 【候補・判断のまとめ #5 案A】テレビ慣れの段階：なし→すこし（K-1回）→強い（K回＝今受けると鈍る）
+final class TvFatigueLevelCandidateTests: IsolatedStoreTestCase {
+    private func level(_ weeks: [Int]) -> Int {
+        var st = GameState(config: GameConfig()); st.offerWeeks = weeks
+        return GameSession(startState: st).offerFatigueLevel
+    }
+    func testLevels() {
+        let k = GameConfig().offerFatigueK
+        XCTAssertEqual(level([]), 0)
+        XCTAssertEqual(level(Array(repeating: 0, count: k - 1)), 1)
+        XCTAssertEqual(level(Array(repeating: 0, count: k)), 2)
+    }
+}

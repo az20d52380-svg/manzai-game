@@ -415,6 +415,14 @@ final class GameSession {
         GameEngine.offerFatigued(state: state, atWeek: (runner.year - 1) * config.weeks + runner.week, config: config)
     }
 
+    /// 【候補・判断のまとめ #5 案A】テレビ慣れの段階（0＝なし／1＝すこし＝次の次から鈍る手前／2＝強い＝今受けると鈍る）。数字は画面に出さない。表示専用
+    var offerFatigueLevel: Int {
+        if offerFatigued { return 2 }
+        let wk = (runner.year - 1) * config.weeks + runner.week
+        let n = (state.offerWeeks ?? []).filter { wk - $0 < config.offerFatigueWindow }.count
+        return n >= config.offerFatigueK - 1 ? 1 : 0
+    }
+
     /// キュー96：今週の札の一覧（2枚以上ある時だけ・先頭＝本編の乱数の札）。知名度で増える
     var offerChoices: [OfferSpec]? { runner.offerChoices }
     /// キュー96：札を選ぶ（受ける直前に呼ぶ）。乱数非消費
