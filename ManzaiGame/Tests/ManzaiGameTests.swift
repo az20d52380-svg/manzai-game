@@ -787,6 +787,22 @@ final class WeekendInviteVariantTests: XCTestCase {
     }
 }
 
+/// 会話の決まり（manzai-drama-voice v3 ③）：選択イベントの吹き出しは40字・2文以内（地の文 name=nil は対象外）。10/26 定期の点検で3文の行が2本見つかった。
+final class ChoiceEventLineLengthTests: XCTestCase {
+    func testSpeechBubblesWithinFortyCharsTwoSentences() {
+        var texts = ChoiceEventKind.allCases.map { ChoiceEventData.text(for: $0) }
+        texts += ChoiceEventData.weekendInviteVariants + ChoiceEventData.styleTalkVariants
+        for t in texts {
+            for a in t.setup + t.afterChoice.values.flatMap({ $0 }) where a.name != nil {
+                let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                XCTAssertLessThanOrEqual(line.count, 40, "\(t.title)：\(line)")
+                XCTAssertLessThanOrEqual(sentences.count, 2, "\(t.title)：\(line)")
+            }
+        }
+    }
+}
+
 /// お店の「戻す」は引っ越しを巻き戻さない（code_review_2026-10-19 §1-1）。ShopView と同じ手順（起点を取る→引っ越して起点の部屋も更新→買う→戻す）を session で再現する。
 final class ShopUndoRoomTests: IsolatedStoreTestCase {
     func testUndoPurchaseKeepsMovedRoom() {
