@@ -96,6 +96,36 @@ TOURNAMENTS = {
 
 EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
 
+# ------------------------------------------------------------
+# THE HANA（女性コンビだけの大会・オーナー回答 10/20・docs/combo_gender_v0.md §4・docs/the_hana_measure_1025_v0.md）【仮】
+# 1回戦（動画審査）→2回戦→準決勝→決勝。前の段を通った年だけ次の段に出られる（年ごとにやり直し）。
+# 東京（遠征なし）・エントリー費は他の大会と同じ2,000円を毎段・敗者復活なし・芸歴の制限なし。
+# 通過で知名度 +GP_ROUND_FAME、決勝で優勝すると手元250万＋知名度+8（頂GP＝手元500万・+10 より少し下）。
+# 既定無効（HANA_ON=False では今までと1ビットも変わらない）。女性コンビの時だけ set_hana(True)。
+# GameCore: CalendarConfig.hanaRounds / WeekRunner(hanaEnabled:)。乱数は大会の perform（2draw）だけ＝他の大会と同じ位置。
+# ------------------------------------------------------------
+HANA_ON = False
+HANA_ROUNDS = [   # (週, 名前, ライン, 手元賞金, 通過/優勝の知名度) 全て【仮】ライン「難」22/38/56/70（the_hana_measure §2〜3）
+    (32, "THE HANA 1回戦（動画審査）", 22, 0,         GP_ROUND_FAME),
+    (37, "THE HANA 2回戦",             38, 0,         GP_ROUND_FAME),
+    (42, "THE HANA 準決勝",            56, 0,         GP_ROUND_FAME),
+    (44, "THE HANA 決勝",              70, 2_500_000, 8),   # 12月上旬・GP準々決勝43と準決勝45の間
+]
+HANA_WEEKS = {w for w, *_ in HANA_ROUNDS}
+
+def set_hana(on):
+    """THE HANA の有効/無効を切り替える（ボットの「大会前は休む」の EVENT_WEEKS も合わせる）。"""
+    global HANA_ON, EVENT_WEEKS
+    HANA_ON = bool(on)
+    EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK} | (HANA_WEEKS if HANA_ON else set())
+
+def _hana_spec(week, stage):
+    """今週が THE HANA の今年の次の段なら大会の dict（TOURNAMENTS と同じ形）を返す。乱数は使わない。"""
+    if not HANA_ON or stage >= len(HANA_ROUNDS) or HANA_ROUNDS[stage][0] != week:
+        return None
+    _, nm, ln, pz, fm = HANA_ROUNDS[stage]
+    return dict(name=nm, line=ln, prize=pz, fame=fm, osaka=False, hana=stage, ok=lambda year, s: True)
+
 # 敗者復活の実測用カウンタ（improvement_proposals_v0.md 課題#1）
 REVIVAL_STATS = {"attempts": 0, "passes": 0}
 
@@ -259,7 +289,7 @@ def _others_apply(s, k):
         elif s.money >= 1500: _ev_add(s, "compat", 1); _ev_add(s, "mental", 1); s.money -= 1500
 
 def _honban_ahead(week):
-    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
+    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]) | (HANA_WEEKS if HANA_ON else set()))
     return min([w - week for w in ws if w > week] or [99])
 
 # --- 実測用: アプリ(GameSession.swift 週次抽選)と同じ選択肢イベント。既定OFF（False では従来と1ビットも変わらない）---
@@ -290,9 +320,11 @@ def _app_result(s, passed):
     else:
         a["loss"] += 1; a["jp"] = False; a["jl"] = True
 
-def _app_stages(s, year, week, gp_alive, gp_stage, finalist, revival):
+def _app_stages(s, year, week, gp_alive, gp_stage, finalist, revival, hana_stage=0):
     """GameSession.upcomingStages 相当（自由週＝今週は含めない）。[(週, 高格か)]"""
     ms = []
+    if HANA_ON and hana_stage < len(HANA_ROUNDS):
+        ms.append((HANA_ROUNDS[hana_stage][0], True))   # THE HANA は今年の次の段だけ
     if gp_alive:
         for i in range(gp_stage, len(GP_ROUNDS)):
             ms.append((GP_ROUNDS[i][0], i == len(GP_ROUNDS) - 1))
@@ -824,15 +856,25 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         upset = UPSET_DELTA if rng.random() < 0.5 else -UPSET_DELTA
         CHALLENGER_STATS["upset_years"] += 1
 
+    hana_stage = 0             # THE HANA: 今年次に出る段（HANA_ON の時だけ使う）
     for week in range(1, B.WEEKS + 1):
         acted = False
         compat0 = s.compat   # 途中解散：この週に相性が上がったか（乱数なし）
 
         # --- その他の大会（出場資格があり交通費が払えるなら出る） ---
         t = TOURNAMENTS.get(week)
+        if t is None and HANA_ON:
+            t = _hana_spec(week, hana_stage)   # THE HANA（週は他の大会・GPと重ならない）
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
             if acted: s._joint = True
+            if acted and "hana" in t:
+                if won_t:
+                    hana_stage += 1
+                    if hana_stage == len(HANA_ROUNDS) - 1: s._hana_fin = True    # 実測用の印（決勝進出）
+                    if hana_stage == len(HANA_ROUNDS): s._hana_win = True        # 実測用の印（優勝）
+                else:
+                    hana_stage = len(HANA_ROUNDS)   # 落ちたら今年はおしまい（敗者復活なし）
             if acted and EVENTS_APP: _app_result(s, bool(won_t))
             if RUN_TRACK is not None and acted:
                 RUN_TRACK.setdefault("year_entered", []).append(t["name"])
@@ -915,7 +957,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         # --- アプリ版 選択肢イベント（週頭＝行動前。EVENTS_APP=True の時だけ） ---
         app_free = EVENTS_APP and not acted
         if app_free:
-            _app_week_event(s, year, week, _app_stages(s, year, week, gp_alive and gp_stage < len(GP_ROUNDS), gp_stage, finalist, revival), gp_alive)
+            _app_week_event(s, year, week, _app_stages(s, year, week, gp_alive and gp_stage < len(GP_ROUNDS), gp_stage, finalist, revival, hana_stage), gp_alive)
         # --- 通常行動（大会がなかった週） ---
         if not acted:
             offer = B.roll_offer(s, rng)

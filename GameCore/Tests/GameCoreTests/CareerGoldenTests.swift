@@ -177,4 +177,81 @@ final class CareerGoldenTests: XCTestCase {
     func testBranchSeedFinalAndLineOverride() {
         runBranch(seed: 424243, plan: [(false, nil), (true, -999), (true, 999)], expected: Self.branchB)
     }
+
+    // THE HANA golden（tools/gen_golden.py run_hana_script・2026-10-25・女性コンビだけの大会・既定無効）
+    // seed=1191・6年・hanaEnabled=true: 1回戦/2回戦/準決勝で落ちる年と優勝の年（6年目）を全部通る。
+    // (seed, year, money, stamina, fame, sense, idea, expr, chara, mental, compat, roundsPassed, champion0/1, hanaPassed0〜4)
+    static let hanaYears: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int, Int)] = [
+        (1191, 1, 909000, 55, 15.584849637280906, 15.378197404378696, 13.390189305732381, 13.397717715498237, 11.877206018518518, 25.147672286515505, 10.5, 0, 0, 0),
+        (1191, 2, 982000, 70, 23.855072838496103, 19.189771557151182, 17.229905820887684, 18.096896433695655, 14.23220485660815, 41.77803532311149, 12.0, 1, 0, 1),
+        (1191, 3, 1279000, 10, 33.94358540437082, 19.833950098525364, 20.25772339490935, 23.91504076489435, 19.338508001253185, 52.856627489249654, 14.75, 3, 0, 2),
+        (1191, 4, 2799000, 0, 42.74098662423498, 20.948586395905902, 22.916882003446492, 36.41174258731042, 21.492256237289965, 60.89942110001317, 16.25, 2, 0, 1),
+        (1191, 5, 5370000, 95, 50.578263171695774, 20.948586395905902, 24.679713097444292, 41.84652080011685, 22.792979089063277, 65.43870437249461, 19.75, 3, 0, 1),
+        (1191, 6, 9313000, 30, 56.173279716521584, 20.948586395905902, 26.305313190658595, 50.73763093301043, 26.269961112305044, 74.16837994710845, 19.875, 4, 0, 4),
+    ]
+
+    func testTheHanaSixYearsMatchPython() {
+        let config = GameConfig()
+        var rng = SplitMix64(seed: 1191)
+        var policy = GoldenPolicy()
+        var s = GameState(config: config)
+        var prev = 0
+        var hanaSeen = Set<Int>()
+        for (i, e) in Self.hanaYears.enumerated() {
+            let y = i + 1
+            XCTAssertEqual(e.1, y)
+            let o = GameCareer.runYear(state: &s, year: y, config: config, policy: &policy, rng: &rng,
+                                       gpSeeded: prev >= 3, inviteSeed: 424243, hanaEnabled: true)
+            prev = o.roundsPassed
+            XCTAssertEqual(o.roundsPassed, e.11, "hana y\(y) roundsPassed")
+            XCTAssertEqual(o.champion ? 1 : 0, e.12, "hana y\(y) champion")
+            XCTAssertEqual(o.hanaPassed, e.13, "hana y\(y) hanaPassed")
+            hanaSeen.insert(o.hanaPassed)
+            assertState(s, money: e.2, stamina: e.3, fame: e.4, sense: e.5, idea: e.6, expr: e.7,
+                        chara: e.8, mental: e.9, compat: e.10, "hana y\(y)")
+        }
+        XCTAssertTrue(hanaSeen.isSuperset(of: [0, 1, 2, 4]), "1回戦/2回戦/準決勝で落ちる年と優勝の年を通る台本であること")
+    }
+
+    // 既定（hanaEnabled=false）では THE HANA の週は何も起きない＝男コンビ・男女コンビは今までと同じ
+    func testTheHanaDisabledByDefault() {
+        let config = GameConfig()
+        var a = GameState(config: config), b = GameState(config: config)
+        var ra = SplitMix64(seed: 1191), rb = SplitMix64(seed: 1191)
+        var pa = GoldenPolicy(), pb = GoldenPolicy()
+        let oa = GameCareer.runYear(state: &a, year: 1, config: config, policy: &pa, rng: &ra, inviteSeed: 424243)
+        let ob = GameCareer.runYear(state: &b, year: 1, config: config, policy: &pb, rng: &rb, inviteSeed: 424243, hanaEnabled: false)
+        XCTAssertEqual(oa.hanaPassed, 0)
+        XCTAssertEqual(a.money, b.money)
+        XCTAssertEqual(ra.nextUInt64(), rb.nextUInt64())
+        XCTAssertEqual(ob.hanaPassed, 0)
+        XCTAssertEqual(config.calendar.hanaRounds.map(\.week), [32, 37, 42, 44])
+        for r in config.calendar.hanaRounds {
+            XCTAssertNil(config.calendar.tournament(inWeek: r.week), "THE HANA の週に他の大会が無い")
+            XCTAssertFalse(config.calendar.gpRounds.contains { $0.week == r.week }, "THE HANA の週に GP の回戦が無い")
+        }
+    }
+
+    // 中断セーブ：THE HANA の途中（2回戦の前）で保存→復元しても段が続く
+    func testTheHanaSnapshotRoundTrip() throws {
+        let config = GameConfig()
+        var runner = WeekRunner(state: GameState(config: config), year: 3, config: config, rng: SplitMix64(seed: 1191), hanaEnabled: true)
+        var policy = GoldenPolicy()
+        var phase = runner.begin()
+        while runner.week < 33 {
+            switch phase {
+            case .tournamentDecision(let spec): phase = runner.resolveTournament(travel: policy.enterTournament(spec, year: 3, state: runner.state))
+            case .freeAction(let offer): phase = runner.resolveAction(policy.action(week: runner.week, year: 3, state: runner.state, offer: offer))
+            case .gpRound, .gpRevival, .gpFinal: phase = runner.resolveAuto()
+            case .weekDone: phase = runner.begin()
+            case .yearDone: XCTFail("年が終わった"); return
+            }
+        }
+        let data = try JSONEncoder().encode(runner.snapshot())
+        let back = WeekRunner(restoring: try JSONDecoder().decode(WeekRunnerSnapshot<SplitMix64>.self, from: data), config: config)
+        XCTAssertTrue(back.hanaEnabled)
+        XCTAssertEqual(back.hanaPassed, runner.hanaPassed)
+        XCTAssertEqual(back.hanaOut, runner.hanaOut)
+        XCTAssertEqual(back.hanaNextRound?.name, runner.hanaNextRound?.name)
+    }
 }
