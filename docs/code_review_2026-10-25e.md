@@ -55,3 +55,4 @@
 - §3-3：復元時、保存した段が「大会の決断・自由週・回戦」なら、中身は runner が新しい config から取り直した物で組み直す（WeekRunner.restoredPhase＝内部の currentPhase・GameSession.sameStep）。weekDone／yearDone は保存した中身のまま。GameCore 377・アプリ 167 green・golden 一致。
 - §3-2（丸めた後に決勝へ進めない）：方針はオーナー（決勝進出扱いにするか・GP を閉じるか）＝直しなし。
 - §3-1・§3-4：未知の case／足したキーで旧セーブ全体が読めなくなる件は、固定 JSON を復号するテストで守る案＝次の作業（AUTOPILOT のキュー末尾）。
+- §3-1・§3-4（続き）：GameCore/Tests/Fixtures/runner_snapshot_1025.json（特技・ネタの型・尺の全 case 入り・第10週の自由週）を今のコードで復号するテスト SaveFixtureTests を足した。case を消す／非 Optional のキーを足すと赤。作り直しは `MZ_WRITE_FIXTURE=1 swift test --filter SaveFixtureTests`。アプリ側 SaveData（categoryLog の BandCategory・ChoiceEventKind）は対象外＝残り。

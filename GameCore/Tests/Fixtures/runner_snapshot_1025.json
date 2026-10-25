@@ -1,0 +1,197 @@
+{
+  "acted" : false,
+  "finalLine" : 80,
+  "finalTried" : false,
+  "finalist" : false,
+  "gpAlive" : true,
+  "gpEntryPaid" : false,
+  "gpStage" : 0,
+  "inviteSeed" : 424243,
+  "revival" : false,
+  "revivalTried" : false,
+  "rng" : {
+    "state" : 3326683750994936179
+  },
+  "section" : {
+    "end" : {
+
+    }
+  },
+  "state" : {
+    "archivedNetas" : [
+
+    ],
+    "bankrupt" : false,
+    "compat" : 5,
+    "compatFreezeWeeks" : 0,
+    "exp存在感" : 0,
+    "exp胆力" : 0,
+    "exp語彙" : 0,
+    "exp閃き" : 0,
+    "exp間合い" : 0,
+    "fame" : 3,
+    "growthBudget" : 6,
+    "growthUsed" : 0,
+    "money" : 34000,
+    "netaBoostWeeks" : 0,
+    "netas" : [
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 0,
+        "isDown" : false,
+        "kata" : "王道しゃべくり",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "王道しゃべくり",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      },
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 1,
+        "isDown" : false,
+        "kata" : "関係性",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "関係性",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      },
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 2,
+        "isDown" : false,
+        "kata" : "伏線回収",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "伏線回収",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      },
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 3,
+        "isDown" : false,
+        "kata" : "リターン",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "リターン",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      },
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 4,
+        "isDown" : false,
+        "kata" : "非定型",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "非定型",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      },
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 5,
+        "isDown" : false,
+        "kata" : "瞬発",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "瞬発",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      },
+      {
+        "bornYear" : 1,
+        "buzz" : 0,
+        "exposure" : 0,
+        "id" : 6,
+        "isDown" : false,
+        "kata" : "華先行",
+        "lengthFit" : [
+          "短尺",
+          "中尺",
+          "長尺"
+        ],
+        "name" : "華先行",
+        "polish" : 30,
+        "record" : [
+
+        ],
+        "stageCount" : 0
+      }
+    ],
+    "nextNetaID" : 7,
+    "preoccupiedWeeks" : 0,
+    "recoveryWeeks" : 0,
+    "rift" : 2.7,
+    "riftJointWeek" : false,
+    "riftWeekStartCompat" : 5,
+    "skills" : [
+      "体が資本",
+      "愛され芸人",
+      "やりくり上手",
+      "相方思い"
+    ],
+    "stamina" : 100,
+    "センス" : 10,
+    "メンタル" : 25.44172596077087,
+    "発想" : 10,
+    "華" : 10,
+    "表現" : 10
+  },
+  "week" : 10,
+  "weekClosed" : false,
+  "weekResults" : [
+
+  ],
+  "year" : 1
+}
