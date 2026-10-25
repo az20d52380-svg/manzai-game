@@ -407,15 +407,21 @@ struct NotebookView: View {
 
     /// バッジ: おろし前（点線）／鉄板（金）
     @ViewBuilder private func netaBadges(_ neta: Neta) -> some View {
-        HStack(spacing: 4) {
-            NetaTiredBadge(neta: neta)
-            if !neta.isDown {
-                YoseTag(text: "まだ人前でやっていない", style: .outlineSumi)
-                    .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
-            }
-            if neta.isTeppan(config: session.config) {
-                YoseTag(text: "自信作", style: .outlineKin)
-            }
+        // 札が横に入り切らない時は縦に積む（「見飽きられた（点が下がる）」＋「自信作」で右の札が潰れて切れていた・code_review_2026-10-25b §2-2）
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 4) { netaBadgeItems(neta) }
+            VStack(alignment: .trailing, spacing: 4) { netaBadgeItems(neta) }
+        }
+    }
+
+    @ViewBuilder private func netaBadgeItems(_ neta: Neta) -> some View {
+        NetaTiredBadge(neta: neta)
+        if !neta.isDown {
+            YoseTag(text: "まだ人前でやっていない", style: .outlineSumi)
+                .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
+        }
+        if neta.isTeppan(config: session.config) {
+            YoseTag(text: "自信作", style: .outlineKin).lineLimit(1).fixedSize()
         }
     }
 
