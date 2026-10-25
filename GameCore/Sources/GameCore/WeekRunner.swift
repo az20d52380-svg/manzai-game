@@ -101,6 +101,9 @@ public struct WeekRunner<R: RandomSource> {
     private var revivalTried = false
     private var finalTried = false
     private var finished: YearOutcome?
+    /// 週末処理まで済んだ（weekDone を返した）週。begin() までの resolve* の再呼び出しは何もせず同じ結果を返す
+    /// （二度押しで生活費・解散判定が二重に走るのを防ぐ＝懸念の台帳 L37。正しい呼び順では立たない＝RNG・golden不変）
+    private var weekClosed = false
     /// §102 誘い用のキャリアのシード（nil=誘いなし）。本編の rng とは独立の決定論。中断セーブに載る
     public private(set) var inviteSeed: UInt64?
     /// 週末に来た誘い（nil=なし）。値＝「行ったとき発想が付くか」。resolveInvite で解決するまで保留（解決せず begin() すると「断る」扱い）
@@ -156,6 +159,7 @@ public struct WeekRunner<R: RandomSource> {
         if let outcome = finished {
             return .yearDone(outcome)
         }
+        weekClosed = false
         week += 1
         if week > config.weeks {
             let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist)
@@ -179,6 +183,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// 大会週の回答。travel=nil は不出場（乱数は消費されない）。大阪で交通費が払えない場合も不出場（runYearと同一）
     public mutating func resolveTournament(travel: Travel?) -> Phase {
+        if let closed = closedPhase() { return closed }
         defer { pendingSpec = nil }
         if let spec = pendingSpec, let travel = travel {
             var ts = config.calendar.travelSpec(travel)
@@ -209,6 +214,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// GP回戦・敗者復活・決勝の消化（UI演出のあとに呼ぶ）
     public mutating func resolveAuto() -> Phase {
+        if let closed = closedPhase() { return closed }
         guard let auto = pendingAuto else { return proceed() }
         pendingAuto = nil
         let cal = config.calendar
@@ -282,6 +288,7 @@ public struct WeekRunner<R: RandomSource> {
     /// 自由行動週の回答（.acceptOffer はオファーがある週のみ有効。無ければ完全休養にフォールバック=runYearと同一）。
     /// 体力ゲート（稽古不可）と体調ダウン判定はここで強制する（UI側のグレーアウトはこの規則の表示）
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
+        if let closed = closedPhase() { return closed }
         let offer = pendingOffer
         pendingOffer = nil
         offerChoices = nil
@@ -324,6 +331,13 @@ public struct WeekRunner<R: RandomSource> {
         }
         acted = true
         return proceed()
+    }
+
+    /// 年・週が閉じた後なら、その結果をもう一度返す（副作用なし）。閉じていなければ nil
+    private func closedPhase() -> Phase? {
+        if let outcome = finished { return .yearDone(outcome) }
+        if weekClosed { return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state)) }
+        return nil
     }
 
     /// runYear のブロック1〜5を、入力が要る箇所で止めながら順に評価する
@@ -409,6 +423,7 @@ public struct WeekRunner<R: RandomSource> {
         if let seed = inviteSeed {
             pendingInvite = GameEngine.rollInvite(seed: seed, year: year, week: week, config: config)
         }
+        weekClosed = true
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
     }
 
@@ -586,6 +601,7 @@ public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
     public var inviteSeed: UInt64?     // §102（旧セーブには無い＝nil＝誘いなし）
     public var pendingInvite: Bool?
     public var offerChoices: [OfferSpec]?   // キュー96（旧セーブには無い＝nil）
+    public var weekClosed: Bool?            // 懸念の台帳 L37（旧セーブには無い＝nil＝閉じていない扱い）
 }
 
 extension WeekRunner where R: Codable {
@@ -596,7 +612,8 @@ extension WeekRunner where R: Codable {
                            finalist: finalist, revival: revival, section: section, acted: acted,
                            weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
                            pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
-                           finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite, offerChoices: offerChoices)
+                           finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite, offerChoices: offerChoices,
+                           weekClosed: weekClosed)
     }
 
     /// スナップショットからの復元（ロード用）。年初処理（体力全回復・成長予算の再計算）は走らせず、
@@ -633,6 +650,7 @@ extension WeekRunner where R: Codable {
         self.finished = snap.finished
         self.inviteSeed = snap.inviteSeed
         self.pendingInvite = snap.pendingInvite
+        self.weekClosed = snap.weekClosed ?? false
         self.offerChoices = snap.offerChoices?.map { o in (config.offersNamed + [config.offerMoney, config.offerExp]).first { $0.name == o.name } ?? o }
     }
 }
