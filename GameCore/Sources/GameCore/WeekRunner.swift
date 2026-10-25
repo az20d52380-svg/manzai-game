@@ -1,7 +1,7 @@
 // WeekRunner.swift
 // runYear（Career.swift）と同一セマンティクスの「ステップ実行機」。UIが週の途中で人の入力を待てる形にする。
 // 正典性: runYear と完全に同じ順序で GameEngine を呼び、乱数消費順を一致させる（正典は tools/gen_golden.py の docstring）。
-// 同値性は WeekRunnerGoldenTests（CareerGoldenTests と同じ3年期待値でのビット一致）で担保する。
+// 同値性は WeekRunnerGoldenTests（CareerGoldenTests と同じ3年期待値での一致・誤差1e-9以内。乱数列そのものはビット一致）で担保する。
 // 【docs/ui_design_v0.md §5・2026-07-05 委譲済み】GameCareer.runYear はこの WeekRunner を policy で
 // 駆動するだけの薄いラッパになった。週処理と乱数消費順の正典実体はこのファイルが唯一持つ。
 

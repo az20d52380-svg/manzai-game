@@ -1,7 +1,7 @@
 // Career.swift
 // 1年48週の進行エンジン（大会・多段階グランプリ・オファー・生活費）と、王者編用のシード/ライン上書き。
 // 週処理と乱数消費の順序は tools/gen_golden.py が正典。変更時は必ず両方を更新し、
-// CareerGoldenTests（同一乱数列での3年ビット一致）を再生成すること（CLAUDE.mdルール5）。
+// CareerGoldenTests（同一乱数列での3年 golden 一致・誤差1e-9以内）を再生成すること（CLAUDE.mdルール5）。
 
 /// Codable は中断セーブ用（proposals-0039）＝挙動・golden不変
 public enum WeekAction: Codable {
@@ -70,7 +70,7 @@ public enum GameCareer {
     ) -> YearOutcome {
         // 週処理の実体は WeekRunner（ステップ実行機）に一本化し、runYear はそれを policy で駆動する薄い委譲にする。
         // これで「週処理＋乱数消費順」の重複が解消され、正典ロジックは WeekRunner だけが持つ（docs/ui_design_v0.md §5）。
-        // 等価性は WeekRunnerGoldenTests / CareerGoldenTests の3年ビット一致で二重に担保される。
+        // 等価性は WeekRunnerGoldenTests / CareerGoldenTests の3年 golden 一致（誤差1e-9以内）で二重に担保される。
         var runner = WeekRunner(state: s, year: year, config: config, rng: rng,
                                 seedFinal: seedFinal, finalLineOverride: finalLineOverride,
                                 gpSeeded: gpSeeded, inviteSeed: inviteSeed)
