@@ -339,6 +339,9 @@ public struct WeekRunner<R: RandomSource> {
         return proceed()
     }
 
+    /// 中断セーブの復元用：いまの段を、新しい config から取り直した保留中の大会・オファー・回戦名で組み直す（code_review_2026-10-25e §3-3）
+    public var restoredPhase: Phase? { currentPhase() }
+
     /// いま UI に返している段を内部状態から組み直す（副作用・乱数なし）。最初の begin() 前は nil。
     /// resolve* はこれが自分の段でなければ何もせず、これを返す（二度押し・段違いの呼び出しの守り＝懸念の台帳 L37）。
     private func currentPhase() -> Phase? {

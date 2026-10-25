@@ -254,9 +254,12 @@ final class GameSession {
         Names.setKind(self.comboKind)
         self.isRestored = true
         self.uiEventRng = save.uiEventRng
-        self.runner = WeekRunner(restoring: save.runner, config: cfg)
+        let restoredRunner = WeekRunner(restoring: save.runner, config: cfg)
+        self.runner = restoredRunner
         self.state = save.runner.state
-        self.phase = save.phase
+        // 段の種類が同じなら、中身（大会・オファー・回戦名）は runner が新しい config から取り直した物を使う
+        // （保存時の古い値が画面に出て、実際に効く値と食い違っていた＝code_review_2026-10-25e §3-3）
+        if let now = restoredRunner.restoredPhase, Self.sameStep(save.phase, now) { self.phase = now } else { self.phase = save.phase }
         self.week = save.runner.week
         // 複数年（v3）: 旧セーブ（1年完結時代）には無い＝1年目の新規と同じ基準に落とす
         self.yearStartState = save.yearStartState ?? GameState(config: cfg)
@@ -311,6 +314,15 @@ final class GameSession {
         self.categoryLog = save.categoryLog
         self.totalPrize = save.totalPrize
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
+    }
+
+    /// 2つの段が同じ種類で、中身を config から取り直せる段か（大会の決断・自由週・回戦）。
+    /// weekDone／yearDone は保存した中身のまま（週末の誘いの解決などで runner の状態と違いうる）
+    static func sameStep(_ a: WeekRunner<SplitMix64>.Phase, _ b: WeekRunner<SplitMix64>.Phase) -> Bool {
+        switch (a, b) {
+        case (.tournamentDecision, .tournamentDecision), (.freeAction, .freeAction), (.gpRound, .gpRound): return true
+        default: return false
+        }
     }
 
     // MARK: UI からの入力（Phase 別）

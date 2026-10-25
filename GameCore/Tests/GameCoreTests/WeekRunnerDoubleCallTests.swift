@@ -116,4 +116,30 @@ final class WeekRunnerDoubleCallTests: XCTestCase {
         XCTAssertNil(r2.snapshot().pendingAuto)
         _ = r2.resolveAuto()          // 落ちない
     }
+
+    /// code_review_2026-10-25e §3-3：復元した段（自由週）のオファーは新しい config の額になる
+    func testRestoredPhaseUsesRefreshedOffer() throws {
+        let config = GameConfig()
+        var r = WeekRunner(state: GameState(config: config), year: 1, config: config, rng: SplitMix64(seed: 20_260_724))
+        var phase = r.begin()
+        var held: OfferSpec?
+        for _ in 0..<400 {
+            if case .freeAction(let o?) = phase { held = o; break }
+            switch phase {
+            case .tournamentDecision: phase = r.resolveTournament(travel: nil)
+            case .freeAction: phase = r.resolveAction(.rest(.完全休養))
+            case .weekDone, .yearDone: phase = r.begin()
+            default: phase = r.resolveAuto()
+            }
+        }
+        let o = try XCTUnwrap(held, "1年のうちにオファーが1回は来る")
+        var bumped = GameConfig()
+        bumped.offersNamed = bumped.offersNamed.map { OfferSpec(name: $0.name, income: $0.income + 1, fame: $0.fame, ability: $0.ability, stamina: $0.stamina) }
+        bumped.offerMoney = OfferSpec(name: bumped.offerMoney.name, income: bumped.offerMoney.income + 1, fame: bumped.offerMoney.fame, ability: bumped.offerMoney.ability, stamina: bumped.offerMoney.stamina)
+        bumped.offerExp = OfferSpec(name: bumped.offerExp.name, income: bumped.offerExp.income + 1, fame: bumped.offerExp.fame, ability: bumped.offerExp.ability, stamina: bumped.offerExp.stamina)
+        let restored = WeekRunner(restoring: r.snapshot(), config: bumped)
+        guard case .freeAction(let ro?)? = restored.restoredPhase else { return XCTFail("自由週のまま組み直す") }
+        XCTAssertEqual(ro.name, o.name)
+        XCTAssertEqual(ro.income, o.income + 1, "新しい config の額")
+    }
 }

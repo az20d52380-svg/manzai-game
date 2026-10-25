@@ -50,3 +50,8 @@
 - 保存値の使われ方: `gpStage`／`week`／`year`／`room`／`itemCounts`（キーは `ShopItem.rawValue` の文字列・Item.swift）／`skills`／`netas`／`categoryLog`／`usedPicks`／`pendingChoiceEvent`／`Phase`／`pendingAuto`。
 - Codable な型の一覧（GameCore の `Codable` 全件・ManzaiGame の `BandCategory`／`Advice`／`YearRecord`）。
 - 見ていない: ShopView／WeekMainView の整数化（ゲージの段）全件、Endings の年表走査の細部、`YearRecord` を使うエンディング文の分岐。
+
+## §直した所（10/25 夜・定期の回・親）
+- §3-3：復元時、保存した段が「大会の決断・自由週・回戦」なら、中身は runner が新しい config から取り直した物で組み直す（WeekRunner.restoredPhase＝内部の currentPhase・GameSession.sameStep）。weekDone／yearDone は保存した中身のまま。GameCore 377・アプリ 167 green・golden 一致。
+- §3-2（丸めた後に決勝へ進めない）：方針はオーナー（決勝進出扱いにするか・GP を閉じるか）＝直しなし。
+- §3-1・§3-4：未知の case／足したキーで旧セーブ全体が読めなくなる件は、固定 JSON を復号するテストで守る案＝次の作業（AUTOPILOT のキュー末尾）。
