@@ -21,7 +21,7 @@
 - 実測の決まり（2026-10-19 追記）：アプリの帯に近いのは EVENTS_APP=True（イベントの抽選をアプリと同じに）。既定にするかはオーナー判断待ち＝それまでは帯を測る時に False/True を併記する。
 - 実測の決まり（2026-10-14〜）：帯を測る時は、ネタ無し（これまで）に加えて**ネタ込み**（`sim_career.NETA_ON=True, NETA_V2=True`＝アプリと同じ式）も併記する。ネタ無しだけだとアプリの帯より低く出る（`neta_bonus_remeasure_v0.md`）
 - UI/UX：各画面を目視して分かりにくさ・崩れ・余白・文字の詰まりを直す（表示だけ・数値不変）
-- 後半の年の目視（10/26〜）：`MZ_YEARS` が 5 以上だと素の台本は途中で解散する＝`MZ_CARE=1` を足す。撮影は `MZ_NOCHIP=1`（DEBUG の🏆/💪チップが実力カードに被る）。MZ_STOPWEEK を付けると週が2以上になり、作り直し型のフック（calendar・shop・allocate 等）もその年のまま開く（later_years_visual_1026_v0）。
+- 後半の年の目視（10/26〜）：`MZ_YEARS` が 5 以上だと素の台本は途中で解散する＝`MZ_CARE=1` を足す（331535b から MZ_CARE もネタが無い週はネタを書く。能力は器で止まり G のままになりがち＝台本の癖）。撮影は `MZ_NOCHIP=1`（DEBUG の🏆/💪チップが実力カードに被る）。MZ_STOPWEEK を付けると週が2以上になり、作り直し型のフック（calendar・shop・allocate 等）もその年のまま開く（later_years_visual_1026_v0）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
@@ -138,6 +138,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/26 昼 定期 済 4c42af4・331535b・6870551・4a764f1：表記「まだネタがない」にそろえる／目視用台本 MZ_CARE がネタを書くように（DEBUG）／後半の年の目視（ネタあり・sonnet・later_years_neta_visual_1026_v0）→**不具合を直した：頂GPの1回戦で負けた年の年末が「エントリー費が払えず不出場」と出ていた**（5cb72f9 から・記録は表示名なのに生のキーで探していた・GPEntryLogTests・アプリ 215 green・GameCore 412 green）
 - 10/26 昼前 定期 済 385e3af：今日の増補（週頭の声・ファンレポA帯 185件）を opus で採点 dialogue_score_1026c_v0（○148△24×13・×は全部同じ帯の言い回しの重なり＝13行直し・△は案だけ）／点検（GameCore 412 green・golden 同期3種一致）／6年目第20週の目視（MZ_YEARS=5 MZ_CARE=1・体力20で lowStamina の独白・崩れなし）
 - 10/26 朝 定期 済 d25c17b・ce090d2・9df0f7c：週頭の声の測り直し（lull 増補の後＝steady/strong 全体19%）→負け続きの型が薄い（streak/losing 各12で読み返し8割）＝各30に増補（opus・親が季節語3行と重なり1組を差し替え・214 green）→負け続きの型 55→38%・1〜3年目 35→6%。続けて独白 plain/passed（21f7142）・ファンレポ A帯 50→90（e1b9cff＋大げさな2行を直し）・lowStamina/midseason/losing/streak（4e42aab＋1組差し替え）を増補＝週頭の声の読み返し steady 19.5→7.1%・poor 55→16%（banter_repeat_measure 追補3）。
 - 10/26 深夜 定期 済：点検（GameCore swift test 412 green・アプリ xcodebuild test 214 green・check_golden_sync 3つ一致）。selftest 29行 DONE 失敗なし（iPhone 17）。EventEffect 12種はテスト済み＝足す所なし。キューは判断待ちのみ。
