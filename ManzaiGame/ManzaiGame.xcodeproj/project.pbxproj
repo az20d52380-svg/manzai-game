@@ -17,6 +17,7 @@
 		0F80788EB57A7E11BC913704 /* SessionGap1025fTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 823BBF1D645262269F322646 /* SessionGap1025fTests.swift */; };
 		10A9A8CCD569A717FA3ED50A /* StateSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095D2F1E44B7AE4090BC3A7E /* StateSyncTests.swift */; };
 		11BF89A2DD47B8EA62F09C5B /* WeekMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18155352CE011A350B1DEC6 /* WeekMainView.swift */; };
+		12971BC9899A2622FD79B09E /* SessionGap1026Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D4D421A24B3889D5B6DF8B /* SessionGap1026Tests.swift */; };
 		13105DD511B67B290F9706DE /* se_tap.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 62ED400B84054F70C3BA1883 /* se_tap.mp3 */; };
 		15D990101F298A4DE2CC6010 /* WeekHint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9906C18C1D125D16D6DEA7D0 /* WeekHint.swift */; };
 		1AF6138DFD7BF866327A2154 /* se_kira.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6083AAF4C14A5E6DFED2E5DF /* se_kira.mp3 */; };
@@ -209,6 +210,7 @@
 		B383B72A92017AEB3494614B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B3922B827A8BB6C8A1576AAC /* YoseMilestoneFX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseMilestoneFX.swift; sourceTree = "<group>"; };
 		B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_success.mp3; sourceTree = "<group>"; };
+		B4D4D421A24B3889D5B6DF8B /* SessionGap1026Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1026Tests.swift; sourceTree = "<group>"; };
 		B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_small.mp3; sourceTree = "<group>"; };
 		B7DF85596F9C0B35A83AC7E1 /* MeetingKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingKind.swift; sourceTree = "<group>"; };
 		BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBackdropTable.swift; sourceTree = "<group>"; };
@@ -419,6 +421,7 @@
 				823BBF1D645262269F322646 /* SessionGap1025fTests.swift */,
 				B099CC1219C7B54309553782 /* SessionGap1025gTests.swift */,
 				EBB752855F8C64D2E210BE9E /* SessionGap1025Tests.swift */,
+				B4D4D421A24B3889D5B6DF8B /* SessionGap1026Tests.swift */,
 				095D2F1E44B7AE4090BC3A7E /* StateSyncTests.swift */,
 			);
 			path = Tests;
@@ -663,6 +666,7 @@
 				6E71D733049D8E6E9DC696B5 /* SessionGap1025eTests.swift in Sources */,
 				0F80788EB57A7E11BC913704 /* SessionGap1025fTests.swift in Sources */,
 				8511D40074A3884D99B8C957 /* SessionGap1025gTests.swift in Sources */,
+				12971BC9899A2622FD79B09E /* SessionGap1026Tests.swift in Sources */,
 				10A9A8CCD569A717FA3ED50A /* StateSyncTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
