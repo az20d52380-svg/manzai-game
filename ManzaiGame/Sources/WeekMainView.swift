@@ -607,7 +607,7 @@ struct WeekMainView: View {
     /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
     private func banterBox(_ lines: [Advice]) -> some View {
         let i = min(banterIndex, lines.count - 1)
-        return adviceBox(lines[i])
+        return adviceBox(lines[i], cue: i < lines.count - 1)   // ▼は続きがある時だけ（最後の行でも出ていて押しても進まなかった＝firstlook_check_1027 #5）
             .contentShape(Rectangle())
             .onTapGesture {
                 if i < lines.count - 1 { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { banterIndex += 1 } }
@@ -617,10 +617,10 @@ struct WeekMainView: View {
             .accessibilityHint(i < lines.count - 1 ? "押すと次の台詞" : "")
     }
 
-    private func adviceBox(_ a: Advice) -> some View {
+    private func adviceBox(_ a: Advice, cue: Bool = false) -> some View {   // 1行だけの声（行動の反応・独白）はタップで進まない＝▼を出さない
         // 寄席のめくり名札＋明朝の貼り紙セリフ枠（YoseSpeechBox）。
         let name = a.name ?? "俺"
-        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : (name == "俺" ? "主人公" : nil))
+        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : (name == "俺" ? "主人公" : nil), showCue: cue)
             .id(a.text)
             // 前の文は即座に消し、新しい文だけ淡く出す（退場と登場が同じ席で重なって二重に読めた＝playtest_v5 W20・W25）
             .transition(.asymmetric(insertion: .opacity, removal: .identity))
