@@ -585,7 +585,7 @@ enum ChoiceEventData {
         title: "撮影の話",
         setup: [
             Advice(name: nil, text: "吉竹興行の事務所。昼。"),
-            Advice(name: "マネージャー", text: "情報誌の撮影の話が来てる。その週は撮影で埋まるけど、どうする"),
+            Advice(name: "マネージャー", text: "情報誌の撮影の話が来てる。その週は撮影で埋まるけど、どうする？"),
             Advice(name: "俺", text: "その週は、稽古できないですね"),
             Advice(name: "谷口", text: "撮られるのは慣れてないけど、お金は出るらしいよ"),
         ],
@@ -782,11 +782,11 @@ enum ChoiceEventData {
             Advice(name: nil, text: "劇場の楽屋。ライブ終わりの夕方。"),
             Advice(name: "浅見", text: "お疲れさまです。今日、初めてこの劇場に出られました"),
             Advice(name: "俺", text: "おめでとう。ずっと出たがってたもんね"),
-            Advice(name: "浅見", text: "それで、駅前の『とり政』で一杯どうですか。うちの相方も来ます"),
+            Advice(name: "浅見", text: "それで、駅前の『鳥つむぎ』で一杯どうですか。うちの相方も来ます"),
             Advice(name: "谷口", text: "行ったら{partner1}たちのおごりだね。{partner1}も一年目、先輩に唐揚げおごってもらったよ"),
         ],
         choiceLabels: [
-            "A": "浅見たちに、とり政でおごる",
+            "A": "浅見たちに、鳥つむぎでおごる",
             "B": "今日は断って、まっすぐ帰る",
         ],
         afterChoice: [
@@ -1111,7 +1111,7 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "定期券、買ったほうが安いかもしれないね"),
             ],
             "B": [
-                Advice(name: "俺", text: "二か月は、二人の練習にあてます"),
+                Advice(name: "俺", text: "二か月は、公園で二人で練習します"),
                 Advice(name: "宮内", text: "分かった。新しい椅子、楽しみにしててね"),
                 Advice(name: "谷口", text: "公園なら、お金もかからないしね"),
             ],

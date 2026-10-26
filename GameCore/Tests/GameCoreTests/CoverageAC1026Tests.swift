@@ -104,4 +104,20 @@ final class CoverageAC1026Tests: XCTestCase {
         XCTAssertEqual(restored.offerChoices?[0].income, 1234)
         XCTAssertEqual(restored.offerChoices?[1].income, known.income, "設定に有る名前は今の値で取り直す")
     }
+
+    // MARK: ④ 設定の表に無い行動（アプリ更新で表から外した時の守り）
+
+    func testActionsMissingFromConfigTablesAreNoOps() throws {
+        var cfg = GameConfig()
+        let t = try XCTUnwrap(Training.allCases.first), j = try XCTUnwrap(Job.allCases.first)
+        let r = try XCTUnwrap(Rest.allCases.first { (cfg.restCosts[$0] ?? 0) == 0 })
+        cfg.trainings[t] = nil; cfg.jobs[j] = nil; cfg.rests[r] = nil
+        let base = GameState(config: cfg)
+        let before = try enc.encode(base)
+        var s = base
+        XCTAssertFalse(GameEngine.applyTraining(t, to: &s, config: cfg), "表に無い稽古は失敗を返す")
+        GameEngine.applyJob(j, to: &s, config: cfg)
+        GameEngine.applyRest(r, to: &s, config: cfg)
+        XCTAssertEqual(try enc.encode(s), before, "状態は一切動かない")
+    }
 }

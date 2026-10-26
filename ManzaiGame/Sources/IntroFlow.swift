@@ -83,7 +83,7 @@ struct ReminiscencePlayer: View {
         .onTapGesture {
             Sound.play(.cursor)
             if index + 1 < cards.count {
-                withAnimation(.easeInOut(duration: 0.18)) { index += 1 }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.18))) { index += 1 }
             } else {
                 onComplete()
             }
@@ -367,7 +367,7 @@ struct S1TitleView: View {
                 .padding(.bottom, 20)
                 crowdBand
             }
-            .opacity(lit ? 1 : 0).animation(.easeOut(duration: 0.5), value: lit)
+            .opacity(lit ? 1 : 0).animation(Theme.Motion.r(.easeOut(duration: 0.5)), value: lit)
         }
         .overlay(alignment: .topTrailing) {
             Button { showSettings = true } label: {
@@ -382,7 +382,7 @@ struct S1TitleView: View {
         }
         .overlay(alignment: .topLeading) {
             Button { showBook = true } label: {
-                Text("図鑑").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Text("エンディング図鑑").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                     .frame(minWidth: 52, minHeight: 40).padding(.horizontal, 6)
                     .background(YoseColor.ki)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
@@ -537,11 +537,11 @@ struct NameEntryView: View {
                 Button {
                     var pick = Self.candidates.randomElement() ?? "なんば亭"
                     if pick == name { pick = Self.candidates.randomElement() ?? pick }
-                    withAnimation(.easeOut(duration: 0.15)) { name = pick }
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { name = pick }
                     Haptics.confirm()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "dice.fill").font(.system(size: Font.mzScaled(13), weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: "dice.fill").font(.system(size: Font.mzScaled(13), weight: .black)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                             .frame(width: 24, height: 24).background(YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                         Text("おまかせで考える").font(YoseFont.gothic(15, weight: .heavy))
@@ -665,7 +665,7 @@ struct NameEntryView: View {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         decided = true
-        withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.4))) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meeting) }
     }

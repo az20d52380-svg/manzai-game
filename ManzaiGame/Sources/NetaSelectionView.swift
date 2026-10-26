@@ -23,7 +23,7 @@ struct NetaPickRow: View {
                 Spacer()
             }
             Button {
-                withAnimation(Theme.Motion.appearQuick) { expanded.toggle() }
+                withAnimation(Theme.Motion.r(Theme.Motion.appearQuick)) { expanded.toggle() }
             } label: {
                 currentSummary
             }.buttonStyle(PressableStyle())
