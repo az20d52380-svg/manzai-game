@@ -22,3 +22,8 @@
 - **9044306**：用語集の「コンビ」「持ちネタ」「勝負ネタにする」は、WeekMainView:1387（フッター「コンビ」）と NotebookView:350 に実在。画面名と一致。ただしコメント・RadarChart のヘッダに旧称「ネタ帳」が残る（表示ではない）。
 - **ff36663**：追加の一文は `gothic(12)`＝`mzScaled` なので大きい文字に追従し、`fixedSize(horizontal:false, vertical:true)` で縦に伸びる＝切れない。3つの合計が並ぶ HStack は変更なし。VStack を `.leading` にしたので文は左寄せ（見た目の確認は未実施）。
 - 候補ブランチの各ガード照合：StageFrame（`allowsHitTesting(!done)` はタップだけを止めるが、action 先の `finish()` が `guard !done`）／FinalsBroadcastIntro（`advanceStage` が `guard !done`）／YoseRankUpOverlay（`isDismissed`）／ChoiceEventOverlay（`hasMore`・footerReady）／S6bView（`advance(.wall)` は冪等）。いずれも素通りしても二重に進まない。
+
+## 親の確認（10/27 定期）＝中3件とも実害なし
+- climaxNext：`GameSession.acknowledgeResult()` は先頭で `guard pendingResult != nil` ＝2回目は何もしない（GameSession.swift:957）。
+- YoseChampionCelebrationView の onFinish：呼び手（FinalsPresentationView.swift:219）は `showChamp = false`・`endingFull = …`・`showEnding = true` の代入だけ＝2回呼んでも同じ状態。
+- YoseMilestoneFX：本編の呼び手なし（DEBUG の演出5つ＝キュー88・本編接続はオーナー確認待ち）。本編へつなぐ時に onFinish の二重呼びを見る。
