@@ -178,3 +178,16 @@ steady／strong は 19.4%／18.8%（ほぼ不変）。読み方（材料）：�
 | poor 全体 | 38.1% | 38.1%（不変・残りは streak 57%・losing 52%） |
 
 読み方（材料）：steady／strong の残りは掛け合い lull（18%）・独白 lowStamina／midseason（各18%）。いちばん高いのは引き続き負け続きの型の streak・losing（6年で各60〜70回）。実測ファイル：scratchpad `banter/out_1000_mono.txt`。
+
+### 追補3の続き3：lowStamina・midseason・losing・streak の増補の後（4e42aab＋点検の差し替え）
+在庫 lowStamina 約26→40・midseason 約33→47・losing 30→50・streak 30→50組。n=1000。
+
+| 指標 | 前 | 後 |
+|---|---|---|
+| 全体 steady／strong | 11.1%／10.0% | **7.1%／6.4%**（キャリア最大 15%） |
+| 7〜10年目 steady／strong | 26.4%／24.3% | 16.5%／15.2% |
+| poor 全体 | 38.1%（最大53%） | **16.3%**（最大32%・同文最多 平均2.0/最大3） |
+| poor 4〜6年目 | 70.3% | 31.9% |
+| poor streak／losing | 57%／52% | 29%／20% |
+
+10/26 朝の4回の増補の通し（今日の朝の始め→今）：steady 19.5→7.1%・strong 18.9→6.4%・poor 55.1→16.3%。実測ファイル：scratchpad `banter/out_1000_v4.txt`。
