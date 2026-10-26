@@ -212,3 +212,4 @@
   - 0056 なくしたノート＝ネタ帳（#17・推奨A）＝ブランチ `claude/lost-notebook-neta-candidate`（d47b6b6）。導入の2行の「ノート」を「ネタ帳」に。
   - 暦を1月始まりに戻す（暦の言葉・案②）＝ブランチ `claude/calendar-jan-candidate`（c0e66c1）。カレンダーの月と年の幕間の「1月・第1週」・夏祭り／年末のライブ／母からの電話の週を同じ月へ。golden 不変。注意3点は calendar_wording_1026_v0 の末尾。
   - 【10/26 昼の定期】候補7本（revival-short・career-end-save・mob-roster-per-run・money-short-choice・tv-fatigue-display・week-hint-priority・the-hana）が本線と衝突していたので、本線（a2089d5）を取り込む merge コミットを各ブランチに足した（どれも今の本線へそのまま merge できる・アプリ 232 green・the-hana は GameCore 415 green＋golden 差分なし）。候補どうしは今もテストファイルの末尾で重なる＝2本目からは「両方残す」で解く。the-hana は古い作業ツリーが手元のブランチ名を持っているので、merge は `origin/claude/the-hana-candidate`（eee66a0）から。
+- **同じ説明が2か所に出る**（小・キュー111 の2つ目・写し間違いで「済」に見えていた）：①オファーの札と、その下の詳細カードに同じ説明文 ②週の画面の上の一言「まだネタがない。まずはネタを書こう。」と、ボタンの小さい字「まだネタがない。まず一本」が二重（上の帯を入れると3か所）。どちらを残すか。見本：dedup_q111_samples_v0（`MZ_UI=offer MZ_DEDUP=top|sub`）。
