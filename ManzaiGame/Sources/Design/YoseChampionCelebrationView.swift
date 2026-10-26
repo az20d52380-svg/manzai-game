@@ -627,7 +627,7 @@ private struct SignboardInnerPatternView: View {
                 p2.addLine(to: CGPoint(x: x, y: size.height))
                 context.stroke(p2, with: .color(YoseColor.kin.opacity(0.10)), lineWidth: 1)
             }
-        }
+        }.accessibilityHidden(true)
     }
 }
 
@@ -653,7 +653,7 @@ private struct SignboardCornerBrackets: View {
                     path.addLine(to: CGPoint(x: pt.x + dx * len, y: pt.y))
                     context.stroke(path, with: .color(YoseColor.kinBright), lineWidth: 3)
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .allowsHitTesting(false)
     }
@@ -785,7 +785,7 @@ private struct ChampionStageBackdropCanvas: View {
                     Path(CGRect(x: 0, y: floorY, width: size.width, height: 2)),
                     with: .color(YoseColor.kin.opacity(0.55))
                 )
-            }
+            }.accessibilityHidden(true)
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
@@ -890,7 +890,7 @@ private struct ChampionGoldenHaloCanvas: View {
 
                     context.fill(spike, with: .color(YoseColor.kinBright.opacity(0.22)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
@@ -998,7 +998,7 @@ private struct ChampionCannonAndConfettiCanvas: View {
                     c.fill(Path(pieceRect), with: .color(fill))
                     c.stroke(Path(pieceRect), with: .color(YoseColor.sumi.opacity(0.55)), lineWidth: 0.7)
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .task {
             let rest = championHoldSeconds + championSettleSeconds - Date().timeIntervalSince(startTime)

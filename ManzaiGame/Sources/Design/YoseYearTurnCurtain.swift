@@ -464,6 +464,6 @@ private struct YearTurnStageBackdrop: View {
             ctx.fill(Path(ellipseIn: CGRect(x: cx - 200, y: fy + 60, width: 400, height: 60)),
                      with: .radialGradient(Gradient(colors: [YoseColor.kinBright.opacity(0.35), .clear]),
                                            center: CGPoint(x: cx, y: fy + 90), startRadius: 0, endRadius: 200))
-        }
+        }.accessibilityHidden(true)
     }
 }

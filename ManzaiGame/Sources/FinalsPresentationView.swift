@@ -1454,7 +1454,7 @@ private struct RaysView: View {
                     p.closeSubpath()
                     ctx.fill(p, with: .color(YoseColor.kinBright.opacity(i.isMultiple(of: 2) ? 0.10 : 0.05)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .task {
             try? await Task.sleep(nanoseconds: 6_600_000_000)
@@ -1489,7 +1489,7 @@ private struct ConfettiView: View {
                     rect = rect.applying(CGAffineTransform(rotationAngle: rot)).applying(CGAffineTransform(translationX: x, y: y))
                     ctx.fill(rect, with: .color(c.opacity(0.9)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .task {
             try? await Task.sleep(nanoseconds: 16_600_000_000)

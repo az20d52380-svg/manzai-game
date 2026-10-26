@@ -376,7 +376,7 @@ private struct RankUpHalo: View {
                     ctx.fill(p, with: .radialGradient(Gradient(colors: [.clear, YoseColor.kinBright.opacity(0.28), .clear]),
                                                       center: c, startRadius: maxR * 0.2, endRadius: len))
                 }
-            }
+            }.accessibilityHidden(true)
         }
     }
 }

@@ -93,7 +93,7 @@ struct ParticleBurst: View {
                                         with: .color(color))
                             }
                         }
-                    }
+                    }.accessibilityHidden(true)
                 }
             }
         }
@@ -149,7 +149,7 @@ struct SpeedLinesBurst: View {
                             ctx.stroke(path, with: .color(color.opacity(alpha)),
                                        style: StrokeStyle(lineWidth: (2.6 * (1 - p)) + 0.6, lineCap: .round))
                         }
-                    }
+                    }.accessibilityHidden(true)
                 }
             }
         }

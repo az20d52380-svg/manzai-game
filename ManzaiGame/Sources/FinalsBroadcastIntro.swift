@@ -309,7 +309,7 @@ struct FinalsBroadcastIntro: View {
                     let y = size.height - (t * speed + Double(i) * 53).truncatingRemainder(dividingBy: size.height + 20)
                     g.fill(Path(ellipseIn: CGRect(x: x, y: y, width: 2, height: 2)), with: .color(YoseColor.kinBright.opacity(0.55)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .ignoresSafeArea().allowsHitTesting(false)
     }

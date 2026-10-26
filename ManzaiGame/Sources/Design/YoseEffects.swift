@@ -154,7 +154,7 @@ struct YoseBurstParticles: View {
                     pContext.fill(Path(rect), with: .color(color))
                     pContext.stroke(Path(rect), with: .color(YoseColor.sumi), lineWidth: 1)
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .allowsHitTesting(false)
         .onChange(of: trigger) { _, _ in
@@ -404,7 +404,7 @@ struct YoseConfettiView: View {
                             c.fill(Path(rect), with: .color(piece.color))
                             c.stroke(Path(rect), with: .color(YoseColor.sumi.opacity(0.65)), lineWidth: 0.8)
                         }
-                    }
+                    }.accessibilityHidden(true)
                 }
                 .task {
                     try? await Task.sleep(nanoseconds: UInt64((settleAfter + 10) * 1_000_000_000))
@@ -655,7 +655,7 @@ struct YoseSpeedLinesView: View {
 
                 context.fill(wedge, with: .color(color))
             }
-        }
+        }.accessibilityHidden(true)
         .allowsHitTesting(false)
     }
 }

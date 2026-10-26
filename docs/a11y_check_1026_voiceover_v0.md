@@ -31,3 +31,4 @@
 - 深く読んだ（該当行まわり）：#1〜#11 の各所。
 - grep だけ（データ・ロジック系で画面ではない）：ChoiceEventData・DialogueData・FanReportData・GameSession・MeetingKind・Names・Endings・ComboKind・WeekHint・YoseTokens・StageOutfit。
 - 見落とし：SettingsView・ShopView・CalendarView・StageScene の個別の画面はコントロール単位では読んでいない（grep の当たりが無かっただけ）。
+- 10/27 深夜の定期：#11 済＝飾りの Canvas 26か所（レーダー図を除く・12ファイル）に .accessibilityHidden(true)。表示は不変・ビルド OK。

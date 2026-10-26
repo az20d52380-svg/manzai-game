@@ -648,7 +648,7 @@ private struct RisingGlow: View {
                     let c = i % 3 == 0 ? Color.white : Color(hex: 0xFFE07A)
                     ctx.fill(Path(ellipseIn: CGRect(x: x + sin(t + seed) * 8, y: y, width: r * 2, height: r * 2)), with: .color(c.opacity(a)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .ignoresSafeArea()
     }

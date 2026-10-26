@@ -157,7 +157,7 @@ struct YosePassCelebrationView: View {
                 var x: CGFloat = -size.height
                 while x < size.width { p.move(to: CGPoint(x: x, y: 0)); p.addLine(to: CGPoint(x: x + size.height, y: size.height)); x += 18 }
                 ctx.stroke(p, with: .color(YoseColor.enji.opacity(0.35)), lineWidth: 1)
-            }
+            }.accessibilityHidden(true)
             VStack(spacing: 2) {
                 Text("◆ 漫 才 の 頂 、 こ こ に 決 ま る ◆").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
                     .foregroundStyle(YoseColor.kin.opacity(revealed ? 1 : 0.25))
@@ -471,7 +471,7 @@ private struct BigSuccessRays: View {
                 ctx.fill(p, with: .radialGradient(Gradient(colors: [col.opacity(0.0), col.opacity(0.85)]),
                                                   center: c, startRadius: r0, endRadius: outer * 0.8))
             }
-        }
+        }.accessibilityHidden(true)
         .allowsHitTesting(false)
     }
 }
