@@ -132,6 +132,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 定期（約40分後の回）：点検 GameCore swift test 433 green・check_golden_sync OK・アプリ xcodebuild test 271 green。GameCore の EventEffect 全12種はテスト済み（未カバー無し）。キューは全件判断待ち。
 - 10/27 定期（続き22）：キュー138 案②の候補ブランチ claude/allocate-confirm-cand（0572ef7）。
 - 10/27 定期（続き21）：未目視6画面の点検（sonnet・visual_check_1027d＝高0中2低4）7174353 → #2 用語集の「間（ま）」の割れを直した（目視 OK・433 green）・#5 をキュー138に。
 - 10/27 定期（続き20）：アプリ側の未カバー7本 AppCoverage1027Tests（ネタ帳の名前・型/尺・ログの読み・ネタおろしの台詞）5d795af＝アプリ 271／GameCore 433 green。
