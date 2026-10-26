@@ -144,6 +144,7 @@ struct YosePassCelebrationView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { if finished { onFinish() } else { snapToFinal() } }
+        .accessibilityAction { if finished { onFinish() } else { snapToFinal() } }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #2）
         .task { await run() }
     }
 

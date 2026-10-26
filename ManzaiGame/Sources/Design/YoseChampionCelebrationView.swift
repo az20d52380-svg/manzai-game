@@ -170,6 +170,7 @@ public struct YoseChampionCelebrationView: View {
         .onTapGesture {
             handleScreenTap()
         }
+        .accessibilityAction { handleScreenTap() }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #2）
         .onAppear {
             runCelebrationTimeline()
         }
