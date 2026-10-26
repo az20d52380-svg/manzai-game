@@ -210,3 +210,5 @@
   - 予選の知らせの一覧を長く（#8・推奨A）＝ブランチ `claude/qual-long-list-candidate`（5124989）。1回戦45・2回戦35・以降25組（見本の数のまま）。時計の表示のずれは触っていない。
   - 週の一言でお金と体力の警告を先に（#4・推奨B）＝ブランチ `claude/week-hint-priority-candidate`（639b6af）。返済後にまた借金したら借金の知らせをもう一度出す所も同じブランチに入れた。
   - 0056 なくしたノート＝ネタ帳（#17・推奨A）＝ブランチ `claude/lost-notebook-neta-candidate`（d47b6b6）。導入の2行の「ノート」を「ネタ帳」に。
+  - 暦を1月始まりに戻す（暦の言葉・案②）＝ブランチ `claude/calendar-jan-candidate`（c0e66c1）。カレンダーの月と年の幕間の「1月・第1週」・夏祭り／年末のライブ／母からの電話の週を同じ月へ。golden 不変。注意3点は calendar_wording_1026_v0 の末尾。
+  - 【10/26 昼の定期】候補7本（revival-short・career-end-save・mob-roster-per-run・money-short-choice・tv-fatigue-display・week-hint-priority・the-hana）が本線と衝突していたので、本線（a2089d5）を取り込む merge コミットを各ブランチに足した（どれも今の本線へそのまま merge できる・アプリ 232 green・the-hana は GameCore 415 green＋golden 差分なし）。候補どうしは今もテストファイルの末尾で重なる＝2本目からは「両方残す」で解く。the-hana は古い作業ツリーが手元のブランチ名を持っているので、merge は `origin/claude/the-hana-candidate`（eee66a0）から。
