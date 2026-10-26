@@ -454,7 +454,7 @@ enum DialogueData {
              Advice(name: "俺", text: "いいね。今度それで焼きそばにしよう")],
         ],
         .lull: [
-            [Advice(name: "谷口", text: "来月まで本番なしだって。長いね"),
+            [Advice(name: "谷口", text: "しばらく本番なしだって。長いね"),
              Advice(name: "俺", text: "そうだね。バイトを多めに入れておこうかな")],
             [Advice(name: "谷口", text: "今度の休み、銭湯でも行かない？"),
              Advice(name: "俺", text: "いいね。たまには、ゆっくり浸かろう")],
