@@ -580,6 +580,12 @@ final class GameSession {
             // 0012: 金欠×相性8+×今後3週に大会なし（3週凍結が直近大会の追い込みを食い潰さない・proposalレッドA-1）。
             pendingChoiceEvent = .taniguchiShortJob
             didFireTaniguchiJob = true
+        } else if let kind = sureSeasonalEvent() {
+            // 候補（claude/season-sure-candidate・owner_questions_digest_2026-10-16 の7の推奨）：夏祭り・年末ライブは
+            // その時期の最初の空いた週に必ず出す。1キャリア1回は抽選と同じ（firedWeeklyEvents）・総量予算には数えない。
+            // 誘いは次の空いた週へ送れるが、季節の2本は時期を逃すと出ないので先に出す。
+            pendingChoiceEvent = kind
+            firedWeeklyEvents.insert(kind)
         } else if inviteWaiting {
             // §102 週末に来た先輩の誘い（別乱数・runner.pendingInvite が出所）。確定発火が無い自由週の頭で札を出す。
             // 確定発火（前夜・負けた後・通過の分かれ道等）はその週を逃すと二度と出ないので先に出し、誘いは次の空いた週へ送る（code_review_2026-10-19b §1）
@@ -588,6 +594,16 @@ final class GameSession {
         } else {
             // 確定発火なし → 週次ランダム抽選（UI乱数・golden非干渉）。1週1回だけ引く。
             rollWeeklyRandomEvent()
+        }
+    }
+
+    /// 時期を逃すと出ない季節の2本（UI乱数を消費しない）。条件は抽選と同じ（weeklyFireable＋weeklyExtraGate）。
+    static let sureSeasonalKinds: [ChoiceEventKind] = [.summerFestivalGig, .yearEndLive]
+    private func sureSeasonalEvent() -> ChoiceEventKind? {
+        Self.sureSeasonalKinds.first {
+            !firedWeeklyEvents.contains($0)
+                && ChoiceEventTable.weeklyFireable($0, state: state, week: week, config: config)
+                && weeklyExtraGate($0)
         }
     }
 

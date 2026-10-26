@@ -269,6 +269,7 @@ def _honban_ahead(week):
 # docs/events_app_parity_v0.md
 EVENTS_APP     = False
 APP_EVENT_CAP  = 15      # GameConfig.weeklyEventCap（確定発火は数えない）
+SURE_SEASONAL  = False   # 候補：夏祭り・年末ライブを時期の最初の空いた週に必ず出す（GameSession.sureSeasonalEvent・既定無効＝既存ボットの基準不変）
 APP_UNIQUE = ["brokedrink", "meishi", "peerchair", "lineuptop", "greenroom", "lasttrain", "luckythird", "wrote", "photo"]
 APP_POOL   = APP_UNIQUE + OTHERS_EVENTS      # 25種
 
@@ -392,6 +393,10 @@ def _app_week_event(s, year, week, stages, gp_alive):
         a["nameless_fired"] = True; done("nameless"); return
     if not a["tani_fired"] and s.money < 100_000 and s.compat >= 8 and ahead > 3:
         a["tani_fired"] = True; _app_apply(s, "tani"); done("tani"); return
+    if SURE_SEASONAL:   # 候補 claude/season-sure-candidate：季節の2本は時期の最初の空いた週に必ず（上限に数えない・UI乱数を引かない）
+        for k in ("festival", "yearend"):
+            if k not in a["fired"] and _app_band(k, s, week, year, ahead, nxt, a):
+                a["fired"].add(k); done(k); _others_apply(s, k); return
     # 週次ランダム抽選
     if a["count"] >= APP_EVENT_CAP:
         return
