@@ -472,6 +472,6 @@ struct StampShake: ViewModifier {
     func body(content: Content) -> some View {
         content
             .modifier(ShakeEffect(travel: 3, animatableData: t))
-            .onAppear { withAnimation(.linear(duration: 0.3)) { t = 1 } }
+            .onAppear { withAnimation(Theme.Motion.r(.linear(duration: 0.3))) { t = 1 } }
     }
 }

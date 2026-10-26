@@ -205,7 +205,7 @@ struct YoseNumberPopModifier<V: Equatable>: ViewModifier {
                     .padding(.horizontal, -4)
                     .padding(.vertical, -2)
             )
-            .animation(.spring(response: 0.24, dampingFraction: 0.62), value: isPopping)
+            .animation(Theme.Motion.r(.spring(response: 0.24, dampingFraction: 0.62)), value: isPopping)
             .onChange(of: value) { _, _ in
                 isPopping = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
@@ -264,7 +264,7 @@ struct YoseScreenShakeModifier: ViewModifier {
                 Task { @MainActor in
                     let steps: [CGFloat] = [amp, -amp * 0.75, amp * 0.45, -amp * 0.2, 0]
                     for step in steps {
-                        withAnimation(.linear(duration: 0.038)) {
+                        withAnimation(Theme.Motion.r(.linear(duration: 0.038))) {
                             offset = step
                         }
                         try? await Task.sleep(nanoseconds: 38_000_000)
@@ -323,7 +323,7 @@ struct YoseLightStreakModifier: ViewModifier {
             .onChange(of: trigger) { _, _ in
                 guard !reduceMotion else { return }
                 phase = -0.8
-                withAnimation(.easeOut(duration: duration)) {
+                withAnimation(Theme.Motion.r(.easeOut(duration: duration))) {
                     phase = 1.35
                 }
             }
@@ -599,7 +599,7 @@ struct YoseCutInBanner: View {
                 }
             }
         }
-        .animation(.spring(response: 0.24, dampingFraction: 0.76), value: isPresented)
+        .animation(Theme.Motion.r(.spring(response: 0.24, dampingFraction: 0.76)), value: isPresented)
         .allowsHitTesting(false)
     }
 }

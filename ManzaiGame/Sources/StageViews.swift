@@ -89,7 +89,7 @@ struct WaveformView: View {
         .onAppear {
             guard compact else { return }
             runIn = 0
-            withAnimation(.easeOut(duration: 0.6)) { runIn = 1 }
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.6))) { runIn = 1 }
         }
     }
 }

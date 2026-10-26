@@ -229,7 +229,7 @@ struct ManzaiFigure: View {
         }
         .onAppear {
             guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: breathe).repeatForever(autoreverses: true)) {
+            withAnimation(Theme.Motion.r(.easeInOut(duration: breathe).repeatForever(autoreverses: true))) {
                 inhale = true
             }
         }

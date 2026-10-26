@@ -300,7 +300,7 @@ struct StageCeremony: View {
         Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
         try? await Task.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)
         guard !done else { return }
-        withAnimation(.easeOut(duration: short ? 0.25 : 0.6)) { spot = 1.4 }   // スポットイン
+        withAnimation(Theme.Motion.r(.easeOut(duration: short ? 0.25 : 0.6))) { spot = 1.4 }   // スポットイン
         try? await Task.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
         guard !done else { return }
         finish()
@@ -310,7 +310,7 @@ struct StageCeremony: View {
         guard !done else { return }
         done = true
         Sound.duck(1, over: 0.4)
-        withAnimation(.easeIn(duration: 0.3)) { veil = 0 }            // 明転
+        withAnimation(Theme.Motion.r(.easeIn(duration: 0.3))) { veil = 0 }            // 明転
         onDone()
     }
 }
@@ -376,7 +376,7 @@ struct YoseAdvanceCue: View {
             .offset(y: bob ? 3 : 0)
             .onAppear {
                 guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { bob = true }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.55).repeatForever(autoreverses: true))) { bob = true }
             }
             .accessibilityHidden(true)
     }

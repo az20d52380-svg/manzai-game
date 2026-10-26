@@ -128,7 +128,7 @@ public struct YoseChampionCelebrationView: View {
                     .padding(.horizontal, 20)
                     .opacity(phase >= 5 ? 1 : 0)
                     .offset(y: phase >= 5 ? 0 : 18)
-                    .animation(.easeOut(duration: 0.3), value: phase >= 5)
+                    .animation(Theme.Motion.r(.easeOut(duration: 0.3)), value: phase >= 5)
 
                 Spacer(minLength: 10)
 
@@ -143,7 +143,7 @@ public struct YoseChampionCelebrationView: View {
                 .opacity(phase >= 5 ? 1 : 0)
                 .offset(y: phase >= 5 ? 0 : 18)
                 .allowsHitTesting(phase >= 5)
-                .animation(.easeOut(duration: 0.3), value: phase >= 5)
+                .animation(Theme.Motion.r(.easeOut(duration: 0.3)), value: phase >= 5)
             }
             .yoseShake(trigger: shakeTrigger, intensity: .heavy, axis: .vertical)
 
@@ -475,10 +475,10 @@ public struct YoseChampionCelebrationView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
             guard !isCompleted else { return }
             flashOpacity = 0.92
-            withAnimation(.easeOut(duration: 0.35)) {
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.35))) {
                 flashOpacity = 0.0
             }
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) {
+            withAnimation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.72))) {
                 phase = 1
             }
             YoseFX.notify(.success)
@@ -488,7 +488,7 @@ public struct YoseChampionCelebrationView: View {
         // 0.42s: Phase 2（『優』叩きつけ）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
             guard !isCompleted else { return }
-            withAnimation(.spring(response: 0.22, dampingFraction: 0.56)) {
+            withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.56))) {
                 phase = 2
             }
             YoseFX.impact(.heavy, intensity: 1.0)
@@ -497,7 +497,7 @@ public struct YoseChampionCelebrationView: View {
         // 0.50s: Phase 3（『勝』叩きつけ＋画面縦大揺れ＋金火花バースト）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) {
             guard !isCompleted else { return }
-            withAnimation(.spring(response: 0.22, dampingFraction: 0.54)) {
+            withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.54))) {
                 phase = 3
             }
             shakeTrigger += 1
@@ -508,7 +508,7 @@ public struct YoseChampionCelebrationView: View {
         // 0.78s: Phase 4（コンビ名めくり＋朱印『日本一』＋斜光シマー）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.78) {
             guard !isCompleted else { return }
-            withAnimation(.spring(response: 0.26, dampingFraction: 0.68)) {
+            withAnimation(Theme.Motion.r(.spring(response: 0.26, dampingFraction: 0.68))) {
                 phase = 4
             }
             shimmerTrigger += 1
@@ -519,7 +519,7 @@ public struct YoseChampionCelebrationView: View {
         // 1.15s: Phase 5（賞金木札カウントアップ＋相方セリフ＋完了状態）
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {
             guard !isCompleted else { return }
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+            withAnimation(Theme.Motion.r(.spring(response: 0.32, dampingFraction: 0.78))) {
                 phase = 5
                 displayedPrize = prizeAmountYen
             }
@@ -541,7 +541,7 @@ public struct YoseChampionCelebrationView: View {
     }
 
     private func completeImmediately() {
-        withAnimation(.easeOut(duration: 0.08)) {
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.08))) {
             flashOpacity = 0.0
             phase = 5
             displayedPrize = prizeAmountYen

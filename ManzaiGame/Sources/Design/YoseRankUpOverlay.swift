@@ -290,31 +290,31 @@ struct YoseRankUpOverlay: View {
         }
 
         // 0.00s: 暗転＋カード出現（新ランクはまだ「？」＝溜め）
-        withAnimation(.easeOut(duration: 0.14)) { cardAppeared = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.14))) { cardAppeared = true }
 
         // 0.34s: 白金フラッシュ＋新ランク木札の叩きつけ＋火花
         try? await Task.sleep(nanoseconds: 340_000_000)
         guard !isDismissed else { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         flash = 0.08
-        withAnimation(.easeOut(duration: 0.3)) { flash = 0 }
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { badgeLanded = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { flash = 0 }
+        withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { badgeLanded = true }
         burstTrigger += 1
-        withAnimation(.linear(duration: 0.04)) { shakeOffset = 6 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeOffset = 6 }
         try? await Task.sleep(nanoseconds: 45_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeOffset = -4 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeOffset = -4 }
         try? await Task.sleep(nanoseconds: 50_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeOffset = 0 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeOffset = 0 }
 
         // 0.55s: 朱印『昇格』＋数値更新
         try? await Task.sleep(nanoseconds: 120_000_000)
         guard !isDismissed else { return }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { stamped = true }
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) { shownValue = item.afterValue }
-        withAnimation(.linear(duration: 0.04)) { shakeOffset = 3 }
+        withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { stamped = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.72))) { shownValue = item.afterValue }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeOffset = 3 }
         try? await Task.sleep(nanoseconds: 45_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeOffset = 0 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeOffset = 0 }
 
         // 余韻のあと自動クローズ（タップで即閉じ）
         try? await Task.sleep(nanoseconds: 1_300_000_000)
@@ -326,7 +326,7 @@ struct YoseRankUpOverlay: View {
         guard !isDismissed else { return }
         isDismissed = true
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        withAnimation(.easeOut(duration: 0.12)) {
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.12))) {
             cardAppeared = false
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
