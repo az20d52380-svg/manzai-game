@@ -644,7 +644,7 @@ struct WeekMainView: View {
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
-                        YoseTag(text: "満タン・回復は余る", style: .outlineShu)
+                        YoseTag(text: "体力は満タン", style: .outlineShu)
                     }
                 }
                 if openNetaWrite {
