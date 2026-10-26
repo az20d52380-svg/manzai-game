@@ -20,3 +20,7 @@
 - GameCore の文字列補間：WeekRunner.swift:234/355/383（"GP回戦N"）と JudgeTalk の {題}/スロット置換のみ。enum の case 名は入っていない。
 - デバッグ専用で除外：GameSession.swift:1690・1714・1717・1752・1771・1826（[AT] 行・fputs）。
 - CommandCategory.rawValue（WeekMainView:644/1005）は画面名そのもの。
+
+## 親の確認（10/27 定期）
+- 練習の画面名の2つの表（CommandData.swift と AbilityUpView.swift:368）は、今は全行一致（相方と合わせる・大喜利ライブに出る・カラオケボックスで声出し 等）。1つにまとめるのは片付けとして後回し（名前を変える時は両方を直す）。
+- ShopView の `item.rawValue`（例「ネタ作家の勉強会」）はお店の品の名前そのもので、練習の「作家の勉強会」（画面名＝大喜利ライブに出る）とは別物＝今は漏れではない。
