@@ -1389,9 +1389,10 @@ struct WeekMainView: View {
     }
 
     /// 体力の3段ゾーン（2=緑/1=黄/0=赤）。閾値は黄50未満・赤20未満（第1便§0裁定①）。
-    private var staminaZone: Int {
-        if s.stamina < 20 { return 0 }
-        if s.stamina < 50 { return 1 }
+    private var staminaZone: Int { Self.staminaZone(s.stamina) }
+    static func staminaZone(_ stamina: Double) -> Int {
+        if stamina < 20 { return 0 }
+        if stamina < 50 { return 1 }
         return 2
     }
 
@@ -1547,15 +1548,17 @@ struct WeekMainView: View {
 
     /// ネタへの効き（旧 trainExtras と同じ名目値・監査E-06）。ネタを書く＝選択中ネタの改稿 or 新ネタ／舞台に立つ＝客前で磨く。
     private func netaEffect(_ action: WeekAction) -> String? {
+        Self.netaEffectText(action, config: session.config, revising: writeTarget != nil, hasNetas: !s.netas.isEmpty)
+    }
+    static func netaEffectText(_ action: WeekAction, config cfg: GameConfig, revising: Bool, hasNetas: Bool) -> String? {
         guard case .train(let t) = action else { return nil }
-        let cfg = session.config
         switch t {
         case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
             let gain = cfg.netaPlaceGain[t] ?? cfg.netaReviseGain
-            return writeTarget != nil ? "完成度 +\(Int(gain))" : "新ネタ"
-        case .ネタ見せ会 where !s.netas.isEmpty:
+            return revising ? "完成度 +\(Int(gain))" : "新ネタ"
+        case .ネタ見せ会 where hasNetas:
             return "完成度 +\(Int(cfg.netaLivePolishShow))"
-        case .フリーライブ where !s.netas.isEmpty:
+        case .フリーライブ where hasNetas:
             return "完成度 +\(Int(cfg.netaLivePolishFree))"
         default:
             return nil
@@ -1565,8 +1568,11 @@ struct WeekMainView: View {
     /// 本番が遠い週の目標バナー2行目＝いまのネタの完成度（監査A-01: 中だるみ帯の副目標）
     private func lullLine() -> String {
         let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
-        guard let n = cur else { return s.preoccupiedWeeks > 0 ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
-        return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish.rounded()))/100"
+        return Self.lullText(netaName: cur?.name, polish: cur?.polish ?? 0, preoccupied: s.preoccupiedWeeks > 0)
+    }
+    static func lullText(netaName: String?, polish: Double, preoccupied: Bool) -> String {
+        guard let name = netaName else { return preoccupied ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
+        return "大会まで間がある ・ ネタ「\(name)」完成度 \(Int(polish.rounded()))/100"
     }
 
     /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）
@@ -1604,13 +1610,18 @@ struct WeekMainView: View {
     /// §4 器満了: 成長予算を使い切ったか（NotebookView の器リングと同一判定＝食い違わない）。
     /// 自動注ぎ＝満了は行動の週送りで成立する。growthUsed≥growthBudget で判定（budget未設定=無制限は満了なし）。
     private var vesselIsFull: Bool {
-        guard let budget = s.growthBudget, budget > 0 else { return false }
-        return s.growthUsed >= budget - GameEngine.pourEpsilon
+        Self.vesselFull(budget: s.growthBudget, used: s.growthUsed)
+    }
+    static func vesselFull(budget: Double?, used: Double) -> Bool {
+        guard let budget, budget > 0 else { return false }
+        return used >= budget - GameEngine.pourEpsilon
     }
 
     /// 一番低い能力名。差が1未満（第1週の全員10など）は「弱点なし」＝空文字（監査B-03: 根拠の無い助言を出さない）
     private func weakAbility() -> String {
-        let pairs: [(String, Double)] = [("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)]
+        Self.weakAbilityName([("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)])
+    }
+    static func weakAbilityName(_ pairs: [(String, Double)]) -> String {
         guard let lo = pairs.min(by: { $0.1 < $1.1 }), let hi = pairs.max(by: { $0.1 < $1.1 }), hi.1 - lo.1 >= 1 else { return "" }
         return lo.0
     }
