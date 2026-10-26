@@ -608,7 +608,7 @@ struct WeekMainView: View {
     /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
     private func banterBox(_ lines: [Advice]) -> some View {
         let i = min(banterIndex, lines.count - 1)
-        return adviceBox(lines[i])
+        return adviceBox(lines[i], cue: i < lines.count - 1)   // ▼は続きがある時だけ（最後の行でも出ていて押しても進まなかった＝firstlook_check_1027 #5）
             .contentShape(Rectangle())
             .onTapGesture {
                 if i < lines.count - 1 { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { banterIndex += 1 } }
@@ -618,10 +618,10 @@ struct WeekMainView: View {
             .accessibilityHint(i < lines.count - 1 ? "押すと次の台詞" : "")
     }
 
-    private func adviceBox(_ a: Advice) -> some View {
+    private func adviceBox(_ a: Advice, cue: Bool = false) -> some View {   // 1行だけの声（行動の反応・独白）はタップで進まない＝▼を出さない
         // 寄席のめくり名札＋明朝の貼り紙セリフ枠（YoseSpeechBox）。
         let name = a.name ?? "俺"
-        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : (name == "俺" ? "主人公" : nil))
+        return YoseSpeechBox(speaker: name, text: a.text, roleLabel: name == "谷口" ? "相方" : (name == "俺" ? "主人公" : nil), showCue: cue)
             .id(a.text)
             // 前の文は即座に消し、新しい文だけ淡く出す（退場と登場が同じ席で重なって二重に読めた＝playtest_v5 W20・W25）
             .transition(.asymmetric(insertion: .opacity, removal: .identity))
@@ -811,8 +811,13 @@ struct WeekMainView: View {
                 newNetaTitle = NetaCatalog.autoName(forID: s.nextNetaID + titleDiceStep)   // 見た目の候補だけ（乱数は引かない）
                 Haptics.tick()
             } label: {
-                Label("候補", systemImage: "die.face.5").font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1)
+                if dynamicTypeSize.isAccessibilitySize {   // 大きい文字では幅72に収まらず「…」になった＝絵だけ（regress_visual_1027）
+                    Image(systemName: "die.face.5").font(.system(size: Font.mzScaled(16), weight: .heavy))
+                } else {
+                    Label("候補", systemImage: "die.face.5").font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1)
+                }
             }
+            .accessibilityLabel("題名の候補")
             .buttonStyle(YoseButtonStyle(.secondary))
             .frame(width: 72)
         }
@@ -1057,8 +1062,8 @@ struct WeekMainView: View {
         let body = VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 7) {
                 iconBox
-                Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
+                Text(v.name).font(YoseFont.gothic(compact && !row ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.8)   // 大きい文字でも1行（2行にすると札が伸びて下の日程・コンビ・設定の列が画面の外へ押し出された＝regress_visual_1027）
             }
             if case .acceptOffer = v.action {
                 Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
@@ -1531,7 +1536,7 @@ struct WeekMainView: View {
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
         for (c, d) in gains where ExpDisplay.value(d) > 0 && !(v.isTrain && openCat == .練習) {
-            out.append(CardEffect(text: "\(c) +\(ExpDisplay.value(d))", color: Self.expColor(c)))
+            out.append(CardEffect(text: "\(Theme.currencyChar(c)) +\(ExpDisplay.value(d))", color: Self.expColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: YoseColor.shu)) }
