@@ -11,7 +11,7 @@ CLI（Mac上）で作業を引き継ぐときは、まずこの1枚を読む。�
 ## いまの状態
 
 - **作業キューは `docs/AUTOPILOT.md` 一か所**（2026-10-13〜。対話でも自走でも上から進める・判断待ちもそこに並ぶ）。
-- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **423件 green**・アプリのテスト（`cd ManzaiGame && xcodebuild test …`）は **262件 green**（2026-10-27 時点・
+- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **423件 green**・アプリのテスト（`cd ManzaiGame && xcodebuild test …`）は **261件 green**（2026-10-27 時点・
   増えていく。赤いまま push しない）＋ `python3 tools/check_golden_sync.py`（Python⇔Swift golden 同期）。
   ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行。
 - バランスの正本は `docs/canonical_v2_spec.md`（正典v2）**＋下の「後続決定の差分」**。正典v2の本文を読む時は差分表で数値を読み替える。
