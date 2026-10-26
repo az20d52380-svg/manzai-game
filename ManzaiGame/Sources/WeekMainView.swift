@@ -810,8 +810,13 @@ struct WeekMainView: View {
                 newNetaTitle = NetaCatalog.autoName(forID: s.nextNetaID + titleDiceStep)   // 見た目の候補だけ（乱数は引かない）
                 Haptics.tick()
             } label: {
-                Label("候補", systemImage: "die.face.5").font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1)
+                if dynamicTypeSize.isAccessibilitySize {   // 大きい文字では幅72に収まらず「…」になった＝絵だけ（regress_visual_1027）
+                    Image(systemName: "die.face.5").font(.system(size: Font.mzScaled(16), weight: .heavy))
+                } else {
+                    Label("候補", systemImage: "die.face.5").font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1)
+                }
             }
+            .accessibilityLabel("題名の候補")
             .buttonStyle(YoseButtonStyle(.secondary))
             .frame(width: 72)
         }
@@ -1057,7 +1062,7 @@ struct WeekMainView: View {
             HStack(spacing: 7) {
                 iconBox
                 Text(v.name).font(YoseFont.gothic(compact && !row ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
+                    .lineLimit(1).minimumScaleFactor(0.8)   // 大きい文字でも1行（2行にすると札が伸びて下の日程・コンビ・設定の列が画面の外へ押し出された＝regress_visual_1027）
             }
             if case .acceptOffer = v.action {
                 Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
