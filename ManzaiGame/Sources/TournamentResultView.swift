@@ -61,7 +61,7 @@ struct TournamentResultView: View {
         }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
-    private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result) }
+    private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result, finalYear: session.year >= session.config.careerYears) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
     private var isMidTournament: Bool { session.tournamentSpec(inWeek: summary.week) != nil }   // THE HANA も道中の大会と同じ扱い
     /// 負けの距離 0..1（監査E-03）。margin（スコア−実効ライン）を3段に丸めて波形に渡す。数字は出さない。【仮】
@@ -131,7 +131,7 @@ struct TournamentResultView: View {
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
                         Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)
                         Spacer(minLength: 4)
-                        Text("結成\(summary.year)年目　第\(summary.week)週").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1).minimumScaleFactor(0.85)
+                        Text("結成\(summary.year)年目　第\(summary.week)週").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1).minimumScaleFactor(0.6)   // 大きい文字で「第1…」と切れた（ax3_hooks_audit_1026 L2）
                     }
                     .padding(.horizontal, 10).frame(height: 28)
                     .background(YoseColor.kuroUrushi.opacity(0.9))
@@ -163,6 +163,7 @@ struct TournamentResultView: View {
                         }
                         if revealedRest {
                             settlementCard(r)
+                                .padding(.bottom, 6)   // 札の下辺と影が「次へ 進む」に隠れていた（hooks_audit_1026 中2）
                                 .transition(.opacity)
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
@@ -586,6 +587,8 @@ enum ClimaxData {
         ClimaxPage(speaker: nil, text: "準決勝で落ちた。でも、敗者復活に回れる。\n決勝の日の昼が勝負だ。今夜は早く寝よう。"),
     ]
     /// 敗者復活の敗北（週47・決勝と同日の昼）＝1年版デモの実質最終戦。話者ごと1ページ（本文はFable doc02・Skill採点済）。
+    /// 最終年だけ「悔しいね」で切る行（文字列の前方一致に頼らない＝code_review_2026-10-26c §2-3）
+    static let revivalNextYearLine = "悔しいね。来年は、絶対あっち側に立とう"
     static let revivalLoss: [ClimaxPage] = [
         ClimaxPage(speaker: nil, text: "敗者復活で負けた。今年は、ここまでだ。"),
         ClimaxPage(speaker: "谷口", text: "……決勝、見ていく？"),
@@ -594,15 +597,18 @@ enum ClimaxData {
         ClimaxPage(speaker: "谷口", text: "優勝したところ、本当にすごかったね"),
         ClimaxPage(speaker: "俺", text: "うん。見に来てよかった"),
         ClimaxPage(speaker: nil, text: "帰り道。駅の手前。"),
-        ClimaxPage(speaker: "谷口", text: "悔しいね。来年は、絶対あっち側に立とう"),
+        ClimaxPage(speaker: "谷口", text: revivalNextYearLine),
         ClimaxPage(speaker: "俺", text: "うん。何か食べて帰ろう"),
     ]
     /// 本番結果から山場ページを選ぶ（発火A=準決敗退／発火B=敗者復活敗退）。該当なし=空＝通常の「次へ」。
-    static func pages(for r: StageResult) -> [ClimaxPage] {
+    /// finalYear＝結成最終年（来年が無い）＝「来年は」の行を「悔しいね」で切る（year10_visual_1026_v0 §2-2・新しい文は書かない）。
+    static func pages(for r: StageResult, finalYear: Bool = false) -> [ClimaxPage] {
         guard !r.passed else { return [] }
         switch r.name {
         case "GP準決勝": return semifinalLoss
-        case "敗者復活": return revivalLoss
+        case "敗者復活":
+            guard finalYear else { return revivalLoss }
+            return revivalLoss.map { $0.text == revivalNextYearLine ? ClimaxPage(speaker: $0.speaker, text: "悔しいね") : $0 }
         default: return []
         }
     }

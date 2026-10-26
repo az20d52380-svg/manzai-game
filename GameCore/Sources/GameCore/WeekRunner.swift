@@ -1,7 +1,7 @@
 // WeekRunner.swift
 // runYear（Career.swift）と同一セマンティクスの「ステップ実行機」。UIが週の途中で人の入力を待てる形にする。
 // 正典性: runYear と完全に同じ順序で GameEngine を呼び、乱数消費順を一致させる（正典は tools/gen_golden.py の docstring）。
-// 同値性は WeekRunnerGoldenTests（CareerGoldenTests と同じ3年期待値でのビット一致）で担保する。
+// 同値性は WeekRunnerGoldenTests（CareerGoldenTests と同じ3年期待値での一致・誤差1e-9以内。乱数列そのものはビット一致）で担保する。
 // 【docs/ui_design_v0.md §5・2026-07-05 委譲済み】GameCareer.runYear はこの WeekRunner を policy で
 // 駆動するだけの薄いラッパになった。週処理と乱数消費順の正典実体はこのファイルが唯一持つ。
 
@@ -57,6 +57,12 @@ public struct WeekRunner<R: RandomSource> {
         case gpFinal                              // 決勝: 入力不要。演出後 resolveAuto()
         case weekDone(WeekSummary)                // 週の結果 → 次の begin() へ
         case yearDone(YearOutcome)                // 年の終わり（優勝時は即時・週末処理なし=runYearと同じ）
+
+        var isTournamentDecision: Bool { if case .tournamentDecision = self { return true } else { return false } }
+        var isFreeAction: Bool { if case .freeAction = self { return true } else { return false } }
+        var isAuto: Bool {
+            switch self { case .gpRound, .gpRevival, .gpFinal: return true; default: return false }
+        }
     }
 
     /// UIとテストが読み出す現在状態（年をまたぐときは state / rng を次の WeekRunner に渡す）
@@ -112,6 +118,9 @@ public struct WeekRunner<R: RandomSource> {
     private var revivalTried = false
     private var finalTried = false
     private var finished: YearOutcome?
+    /// 週末処理まで済んだ（weekDone を返した）週。begin() までの resolve* の再呼び出しは何もせず同じ結果を返す
+    /// （二度押しで生活費・解散判定が二重に走るのを防ぐ＝懸念の台帳 L37。正しい呼び順では立たない＝RNG・golden不変）
+    private var weekClosed = false
     /// §102 誘い用のキャリアのシード（nil=誘いなし）。本編の rng とは独立の決定論。中断セーブに載る
     public private(set) var inviteSeed: UInt64?
     /// 週末に来た誘い（nil=なし）。値＝「行ったとき発想が付くか」。resolveInvite で解決するまで保留（解決せず begin() すると「断る」扱い）
@@ -175,6 +184,7 @@ public struct WeekRunner<R: RandomSource> {
         if let outcome = finished {
             return .yearDone(outcome)
         }
+        weekClosed = false
         week += 1
         if week > config.weeks {
             let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, hanaPassed: hanaPassed)
@@ -198,6 +208,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// 大会週の回答。travel=nil は不出場（乱数は消費されない）。大阪で交通費が払えない場合も不出場（runYearと同一）
     public mutating func resolveTournament(travel: Travel?) -> Phase {
+        if let now = currentPhase(), !now.isTournamentDecision { return now }   // 段違いの呼び出しは何もしない（L37）
         defer { pendingSpec = nil }
         if let spec = pendingSpec, let travel = travel {
             var ts = config.calendar.travelSpec(travel)
@@ -231,6 +242,7 @@ public struct WeekRunner<R: RandomSource> {
 
     /// GP回戦・敗者復活・決勝の消化（UI演出のあとに呼ぶ）
     public mutating func resolveAuto() -> Phase {
+        if let now = currentPhase(), !now.isAuto { return now }   // 段違いの呼び出しは何もしない（L37）
         guard let auto = pendingAuto else { return proceed() }
         pendingAuto = nil
         let cal = config.calendar
@@ -304,6 +316,7 @@ public struct WeekRunner<R: RandomSource> {
     /// 自由行動週の回答（.acceptOffer はオファーがある週のみ有効。無ければ完全休養にフォールバック=runYearと同一）。
     /// 体力ゲート（稽古不可）と体調ダウン判定はここで強制する（UI側のグレーアウトはこの規則の表示）
     public mutating func resolveAction(_ action: WeekAction) -> Phase {
+        if let now = currentPhase(), !now.isFreeAction { return now }   // 段違いの呼び出しは何もしない（L37）
         let offer = pendingOffer
         pendingOffer = nil
         offerChoices = nil
@@ -346,6 +359,28 @@ public struct WeekRunner<R: RandomSource> {
         }
         acted = true
         return proceed()
+    }
+
+    /// 中断セーブの復元用：いまの段を、新しい config から取り直した保留中の大会・オファー・回戦名で組み直す（code_review_2026-10-25e §3-3）
+    public var restoredPhase: Phase? { currentPhase() }
+
+    /// いま UI に返している段を内部状態から組み直す（副作用・乱数なし）。最初の begin() 前は nil。
+    /// resolve* はこれが自分の段でなければ何もせず、これを返す（二度押し・段違いの呼び出しの守り＝懸念の台帳 L37）。
+    private func currentPhase() -> Phase? {
+        if let outcome = finished { return .yearDone(outcome) }
+        if weekClosed { return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state)) }
+        if let spec = pendingSpec { return .tournamentDecision(spec) }
+        if let auto = pendingAuto {
+            switch auto {
+            case .round:
+                let cal = config.calendar
+                return .gpRound(index: gpStage, name: gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)")
+            case .revival: return .gpRevival
+            case .final: return .gpFinal
+            }
+        }
+        if week > 0 && section == .end && !acted { return .freeAction(offer: pendingOffer) }
+        return nil
     }
 
     /// runYear のブロック1〜5を、入力が要る箇所で止めながら順に評価する
@@ -433,6 +468,7 @@ public struct WeekRunner<R: RandomSource> {
         if let seed = inviteSeed {
             pendingInvite = GameEngine.rollInvite(seed: seed, year: year, week: week, config: config)
         }
+        weekClosed = true
         return .weekDone(WeekSummary(year: year, week: week, results: weekResults, state: state))
     }
 
@@ -613,6 +649,7 @@ public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
     public var hanaEnabled: Bool?   // THE HANA（旧セーブには無い＝nil＝無効）
     public var hanaPassed: Int?
     public var hanaOut: Bool?
+    public var weekClosed: Bool?            // 懸念の台帳 L37（旧セーブには無い＝nil＝閉じていない扱い）
 }
 
 extension WeekRunner where R: Codable {
@@ -624,7 +661,8 @@ extension WeekRunner where R: Codable {
                            weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
                            pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
                            finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite, offerChoices: offerChoices,
-                           hanaEnabled: hanaEnabled, hanaPassed: hanaPassed, hanaOut: hanaOut)
+                           hanaEnabled: hanaEnabled, hanaPassed: hanaPassed, hanaOut: hanaOut,
+                           weekClosed: weekClosed)
     }
 
     /// スナップショットからの復元（ロード用）。年初処理（体力全回復・成長予算の再計算）は走らせず、
@@ -639,7 +677,8 @@ extension WeekRunner where R: Codable {
         self.hanaEnabled = snap.hanaEnabled ?? false
         self.hanaPassed = snap.hanaPassed ?? 0
         self.hanaOut = snap.hanaOut ?? false
-        self.gpStage = snap.gpStage
+        // アプリ更新で回戦数を減らしても、古いセーブの段が配列の外を指さないよう丸める（code_review_2026-10-25d §2）
+        self.gpStage = min(snap.gpStage, config.calendar.gpRounds.count)
         self.gpAlive = snap.gpAlive
         self.finalist = snap.finalist
         self.week = snap.week
@@ -661,11 +700,13 @@ extension WeekRunner where R: Codable {
             self.pendingOffer = nil
         }
         self.pendingAuto = snap.pendingAuto
+        if snap.pendingAuto == .round, gpStage >= config.calendar.gpRounds.count { self.pendingAuto = nil }   // 丸めた段に回戦は無い＝演出待ちを外す（resolveAuto は週の続きへ）
         self.revivalTried = snap.revivalTried
         self.finalTried = snap.finalTried
         self.finished = snap.finished
         self.inviteSeed = snap.inviteSeed
         self.pendingInvite = snap.pendingInvite
+        self.weekClosed = snap.weekClosed ?? false
         self.offerChoices = snap.offerChoices?.map { o in (config.offersNamed + [config.offerMoney, config.offerExp]).first { $0.name == o.name } ?? o }
     }
 }

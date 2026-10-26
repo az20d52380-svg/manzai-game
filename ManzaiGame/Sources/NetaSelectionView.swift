@@ -32,10 +32,10 @@ struct NetaPickRow: View {
                 VStack(spacing: 6) {
                     if session.activeNetas.isEmpty {
                         Text("——まだ、ネタは無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)
-                    } else if session.activeNetas.allSatisfy({ $0.id == excludeID }) {
+                    } else if candidates.isEmpty {
                         Text("——ほかにかけるネタが無い。").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.haiSumi)   // 2本目：1本目と同じは選べない＝空のまま無言にしない（review_today_fixes_1019 §1）
                     } else {
-                        ForEach(session.activeNetas.filter { $0.id != excludeID }) { neta in
+                        ForEach(candidates) { neta in
                             candidateRow(neta)
                         }
                     }
@@ -48,13 +48,29 @@ struct NetaPickRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .yoseHarigami(isFeatured: selected != nil)   // 未選択は朱の特別枠にしない（選んだ札と見分ける）
         #if DEBUG
-        .onAppear { if ProcessInfo.processInfo.environment["MZ_NETA_OPEN"] != nil { expanded = true } }   // 目視用：候補を開いた状態で出す（タップできない回の確認）
+        .onAppear {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["MZ_NETA_OPEN"] != nil { expanded = true }   // 目視用：候補を開いた状態で出す（タップできない回の確認）
+            // 目視用：MZ_NETA_PICK=1 で開いて約1.5秒後に別のネタを選ぶ（「変更 ▼」で上の行が替わるか＝tap_check_1025_v0 B）
+            if ProcessInfo.processInfo.environment["MZ_NETA_PICK"] != nil {
+                expanded = true
+                Task { try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    if let n = candidates.first(where: { $0.id != selected?.id }) { onSelect(n.id); withAnimation(Theme.Motion.appearQuick) { expanded = false } } }
+            }
+            #endif
+        }
         #endif
+    }
+
+    /// 開いた一覧の候補。選択中のネタは上の行に出ているので並べない（同じ札が2回並んでいた＝playtest_v13 §4-1）
+    private var candidates: [Neta] {
+        session.activeNetas.filter { $0.id != excludeID && $0.id != selected?.id }
     }
 
     private var changeLabel: some View {
         let unset = selected == nil && !session.activeNetas.isEmpty
         return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(unset && !expanded ? 14 : 12, weight: .heavy))
+            .lineLimit(1).fixedSize()   // 「とじる ▲」が名前に押されて2行に折れていた
             .foregroundStyle(unset && !expanded ? YoseColor.kinari : YoseColor.sumi)
             .padding(.horizontal, unset && !expanded ? 12 : 8).padding(.vertical, unset && !expanded ? 8 : 5)
             .background(unset && !expanded ? YoseColor.shu : YoseColor.ki)
@@ -76,11 +92,9 @@ struct NetaPickRow: View {
     @ViewBuilder private var currentSummary: some View {
         if let neta = selected {
             VStack(alignment: .leading, spacing: 6) {
-                let bigText = dynamicTypeSize >= .xxLarge   // 大きい文字では名前が「商店…」と切れる＝名前だけ上の段に出す（既定の大きさは従来どおり）
-                let nameText = Text(neta.name).font(YoseFont.netaTitle).foregroundStyle(YoseColor.sumi)
-                if bigText { nameText.lineLimit(2) }
+                // 名前は常に上の段に出す（既定の大きさでも完成度・段の札に押されて「商店街の…」と切れていた＝newscreens_dt_dark_audit_1025 L3）
+                Text(neta.name).font(YoseFont.netaTitle).foregroundStyle(YoseColor.sumi).lineLimit(2)
                 HStack(spacing: 10) {
-                    if !bigText { nameText.lineLimit(1).minimumScaleFactor(0.6) }
                     Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
                         .lineLimit(1).fixedSize()
                     NetaStageBadge(netaID: neta.id, polish: neta.polish)
@@ -108,9 +122,11 @@ struct NetaPickRow: View {
             withAnimation(Theme.Motion.appearQuick) { expanded = false }
         } label: {
             VStack(alignment: .leading, spacing: 5) {
+                let bigText = dynamicTypeSize >= .xxLarge   // 上の行と同じく、大きい文字では名前だけ上の段へ（「婚活…」と切れていた）
+                let nameText = Text(neta.name).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.sumi)
+                if bigText { nameText.lineLimit(2) }
                 HStack(spacing: 10) {
-                    Text(neta.name).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.sumi)
-                        .lineLimit(1).minimumScaleFactor(0.6)
+                    if !bigText { nameText.lineLimit(1).minimumScaleFactor(0.6) }
                     Text("完成度 \(Int(neta.polish.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.shu)
                         .lineLimit(1).fixedSize()
                     NetaStageBadge(netaID: neta.id, polish: neta.polish)
@@ -120,6 +136,7 @@ struct NetaPickRow: View {
                 tags(neta)
             }
             .padding(.horizontal, 8).padding(.vertical, 8).frame(minHeight: 44)
+            .fixedSize(horizontal: false, vertical: true)   // 大きい文字で2段にした時に、親に高さを詰められて行が重なった
             .background(isThis ? YoseColor.ki.opacity(0.55) : YoseColor.ki.opacity(0.18))
             .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1))
             .contentShape(Rectangle())

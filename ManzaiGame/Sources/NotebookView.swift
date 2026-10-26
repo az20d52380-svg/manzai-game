@@ -161,21 +161,9 @@ struct NotebookView: View {
         var prev = ""
         for line in session.log where line != prev {
             prev = line
-            let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
-                : (line.contains("客席") ? "観戦"
-                    : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")))
-            var week = "", body = line
-            if let r = line.range(of: ": ") { week = String(line[..<r.lowerBound]); body = String(line[r.upperBound...]) }
-            var prize = 0
-            var rest = body
-            if let re = try? NSRegularExpression(pattern: "\\+(\\d+)万") {
-                for m in re.matches(in: body, range: NSRange(body.startIndex..., in: body)) {
-                    if let r = Range(m.range(at: 1), in: body) { prize += Int(body[r]) ?? 0 }
-                }
-                rest = re.stringByReplacingMatches(in: body, range: NSRange(body.startIndex..., in: body), withTemplate: "")
-                    .trimmingCharacters(in: .whitespaces)
+            for part in GameSession.parseLogLine(line) {   // 1週に複数大会が並ぶ行は大会ごとに1行（書く所 summarize と同じ区切り）
+                out.append(LogEntry(week: part.week, title: part.title, mark: part.mark, prize: part.prize))
             }
-            out.append(LogEntry(week: week, title: rest, mark: mark, prize: prize))
         }
         return out
     }
@@ -208,7 +196,7 @@ struct NotebookView: View {
                             .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if r.watchedFinal == true, !r.reachedFinal {
-                            YoseTag(text: "観戦", style: .outlineHai)   // 決勝を客席から観た年＝灰の札（queue108・観るのは任意なので実際に観た年だけ）
+                            YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た")   // 決勝を客席から観た年＝灰の札（queue108・観るのは任意なので実際に観た年だけ）
                         }
                         if r.prize > 0 {
                             Text("+\(Yen.man(r.prize))").font(YoseFont.number(15)).foregroundStyle(YoseColor.shu)
@@ -216,6 +204,11 @@ struct NotebookView: View {
                     }
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .yoseHarigami(isFeatured: win || r.reachedFinal)
+                }
+                if session.yearHistory.contains(where: { $0.prize > 0 }) {   // 見出しが頂GPなので、金額が頂GPの賞金に読めた（yearend_records_visual_1026_v0 軽微1）
+                    Text("金額は、その年の大会の賞金の合計")
+                        .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
             kirokuHeading(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会")
@@ -232,7 +225,7 @@ struct NotebookView: View {
                         Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
-                            Text("+¥\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
+                            Text("+\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
                         }
                         kirokuMark(e.mark).frame(minWidth: 46)
                     }
@@ -269,7 +262,7 @@ struct NotebookView: View {
         case "優勝": YoseHankoStamp(text: "優勝", angle: -4)
         case "通過": YoseTag(text: "通過", style: .solidEnji)
         case "敗退": YoseTag(text: "敗退", style: .outlineSumi)
-        case "観戦": YoseTag(text: "観戦", style: .outlineHai)   // 客席から観た年＝出場していない灰色の札（「休」ではない）
+        case "観戦": YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た")   // 客席から観た年＝出場していない灰色の札（「休」ではない）
         default: YoseTag(text: mark, style: .outlineSumi)
         }
     }
@@ -407,15 +400,21 @@ struct NotebookView: View {
 
     /// バッジ: おろし前（点線）／鉄板（金）
     @ViewBuilder private func netaBadges(_ neta: Neta) -> some View {
-        HStack(spacing: 4) {
-            NetaTiredBadge(neta: neta)
-            if !neta.isDown {
-                YoseTag(text: "まだ人前でやっていない", style: .outlineSumi)
-                    .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
-            }
-            if neta.isTeppan(config: session.config) {
-                YoseTag(text: "自信作", style: .outlineKin)
-            }
+        // 札が横に入り切らない時は縦に積む（「見飽きられた（点が下がる）」＋「自信作」で右の札が潰れて切れていた・code_review_2026-10-25b §2-2）
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 4) { netaBadgeItems(neta) }
+            VStack(alignment: .trailing, spacing: 4) { netaBadgeItems(neta) }
+        }
+    }
+
+    @ViewBuilder private func netaBadgeItems(_ neta: Neta) -> some View {
+        NetaTiredBadge(neta: neta)
+        if !neta.isDown {
+            YoseTag(text: "まだ人前でやっていない", style: .outlineSumi)
+                .lineLimit(1).fixedSize()   // 2行に折れて窮屈だった
+        }
+        if neta.isTeppan(config: session.config) {
+            YoseTag(text: "自信作", style: .outlineKin).lineLimit(1).fixedSize()
         }
     }
 
@@ -434,7 +433,7 @@ struct NotebookView: View {
         Button {
             action()
         } label: {
-            Text(label).font(YoseFont.gothic(primary ? 15 : 13, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.85)
+            Text(label).font(YoseFont.gothic(primary ? 15 : 13, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字で「勝負ネタに…」と欠けた（ax3_hooks_audit_1026 M2）
         }
         .buttonStyle(YoseButtonStyle(primary ? .primary : .secondary))
         .frame(width: primary ? 132 : 92)

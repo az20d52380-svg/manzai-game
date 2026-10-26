@@ -34,6 +34,8 @@ struct ComboKindPickerView: View {
             guard picked == nil else { return }
             picked = kind
             Haptics.confirm()
+            // 0.3秒で次へ進むので、読み上げでは選んだ形を先に伝える（a11y_check_1026 低6）
+            UIAccessibility.post(notification: .announcement, argument: "\(kind.cardTitle)、\(kind.cardSub)にした")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onSelect(kind) }
         } label: {
             VStack(spacing: 10) {
@@ -43,12 +45,13 @@ struct ComboKindPickerView: View {
                 }
                 .padding(.top, 6)
                 Text(kind.cardTitle).font(YoseFont.gothic(17, weight: .heavy))
-                Text(kind.cardSub).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                Text(kind.cardSub).font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(kind.meIsFemale != kind.partnerIsFemale ? YoseColor.sumi : YoseColor.haiSumi)
             }
             .frame(maxWidth: .infinity, minHeight: 150)
             .overlay(RoundedRectangle(cornerRadius: 2).stroke(YoseColor.shu, lineWidth: picked == kind ? 3 : 0))
         }
         .buttonStyle(YoseButtonStyle(.secondary))
         .accessibilityLabel("\(kind.cardTitle)、\(kind.cardSub)")
+        .accessibilityAddTraits(picked == kind ? .isSelected : [])
     }
 }

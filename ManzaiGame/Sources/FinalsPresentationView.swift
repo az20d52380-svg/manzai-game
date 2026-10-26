@@ -215,7 +215,7 @@ struct FinalsPresentationView: View {
             if showChamp {   // 優勝の瞬間（金テープ・大判優勝めくり・賞金ボード・相方の言葉）。タップで即完成→もう一度タップで先へ
                 YoseChampionCelebrationView(tournamentName: "頂グランプリ 決勝戦", generationText: "結成\(session.year)年目",
                                             duoName: session.combiName, prizeAmountYen: session.config.calendar.gpPrize,
-                                            partnerName: Names.partner, partnerLine: "「やったな。本当に、日本一だ」") {
+                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、日本一だよ」") {
                     withAnimation(.easeOut(duration: 0.3)) { showChamp = false }
                     // 優勝年は全画面の後に「優勝は……！」の結果発表を重ねない（結果が2度伝わるため）＝そのまま番組エンディングへ
                     endingFull = FinalsSeen.first("ending") && !reduceMotion
@@ -253,6 +253,7 @@ struct FinalsPresentationView: View {
             case "pre": beat = .preceding; shown = max(0, d.order - 1)
             case "open": beat = .open; revealedJudges = 5
             case "comments": beat = .comments; revealedJudges = 7
+            case "comments2": beat = .comments; revealedJudges = 7; commentStep = 1   // 2人目（最低点の審査員）の講評（judge_comments_visual_1026_v0）
             case "board": beat = .board; shown = 10; boardAuto = true
             case "duel": beat = .duel; revealVotes = 5; duelFull = true
             case "win": beat = .result

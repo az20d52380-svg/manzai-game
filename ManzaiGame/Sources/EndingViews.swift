@@ -407,11 +407,15 @@ struct DisbandFarewellView: View {
             LinearGradient(colors: [YoseColor.kuroUrushi, YoseColor.enji.opacity(0.8)], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
             VStack(spacing: 14) {
                 Spacer()
-                Text("この周の最高成績").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.kin)
-                Text(bestLine ?? "大会の記録はまだない").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.kinari)
-                    .multilineTextAlignment(.center).padding(.horizontal, 28)
+                VStack(spacing: 14) {
+                    Text("この周の最高成績").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.kin)
+                    Text(bestLine ?? "大会の記録はまだない").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.kinari)
+                        .multilineTextAlignment(.center).padding(.horizontal, 28)
+                }
+                .accessibilityElement(children: .combine)
                 Spacer()
                 Button(action: onFinish) { Text("タイトルへ ▶") }
+                    .accessibilityLabel("タイトルへ")
                     .buttonStyle(YoseButtonStyle(.primary))
                     .padding(.horizontal, 14).padding(.bottom, 30)
             }

@@ -89,7 +89,9 @@ struct RootView: View {
             if smoke == "soak" { await soakLoop(); return }   // 漏れ点検: 実UIを通して年を回し続ける（MZ_SOAK_MS=1手の待ち）
             if endingHook, session.week <= 1 { forceChampion() }   // S6b（#5/#7/#8）用の優勝データ。1〜4・6 の場面は session 不要   // スモーク/UI確認時はS1を飛ばす
             // 複数年の目視: MZ_YEARS=n で n 年ぶん自動で年末→翌年へ進めてから、他のフックを掛ける
-            if let n = Int(ProcessInfo.processInfo.environment["MZ_YEARS"] ?? ""), n > 0, session.year == 1 {
+            // MZ_STOPWEEK だけ（MZ_YEARS なし）は 0 年＝1年目の途中週で止める（visual_check_midyear_1025_v0 §3）
+            let yearsEnv = ProcessInfo.processInfo.environment["MZ_YEARS"] ?? (ProcessInfo.processInfo.environment["MZ_STOPWEEK"] != nil ? "0" : "")
+            if let n = Int(yearsEnv), n >= 0, session.year == 1 {
                 session.debugAdvanceYears(n)
             }
             // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
@@ -116,7 +118,7 @@ struct RootView: View {
                 else if smoke == "5" { forceChampion(); session.acknowledgeWin() }   // S4優勝ボード確認用
             }
             // UIスモーク: MZ_UI=grown/notebook で能力マックス状態（充填ピル/gold縁/レーダー満ちの目視用）
-            if (ui == "grown" || ui == "notebook"), session.week <= 1 {
+            if ui == "grown" || (ui == "notebook" && session.year == 1), session.week <= 1 {   // notebook は MZ_YEARS 後（2年目〜）はその年のまま見る（year10_visual_1026_v0）
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
             if ui == "yearend", session.week <= 1 {
@@ -236,7 +238,8 @@ struct RootView: View {
                 session.debugAdvanceToPrelude(final: ui == "prelude_final")
                 if ui == "gpresult" { session.advanceAuto() }   // GP回戦の結果画面へ（目視）
             }
-            if ui == "offer", session.week <= 1 {
+            if ui == "offer", session.week <= 1, session.year > 1 { session.debugUntilOffer() }   // MZ_YEARS 後はその年のままオファーの週まで進める（year10_visual_1026_v0）
+            if ui == "offer", session.week <= 1, session.year == 1 {
                 // オファー札の目視: 知名度を上げ、直近にオファーを受けた履歴（谷口の一言が出る）を持たせて、オファーの来る週まで進める
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 100
                 if ProcessInfo.processInfo.environment["MZ_FRESH"] == nil { st.offerWeeks = [0, 0, 0, 0] }
@@ -246,9 +249,14 @@ struct RootView: View {
             if ui == "gploss", session.week <= 1 {
                 // 予選落ちの谷口の一言（§94）の目視: 能力の低い素の状態でGP1回戦の結果画面まで進める
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000
-                session = GameSession(startState: st)
-                session.debugAdvanceToPrelude(final: false)
-                session.advanceAuto()
+                // 素の状態でも1回戦を通る種がある（10/26 目視で通過が出た）＝落ちる種を引くまで替える（最大30）
+                for seed in 1...30 {
+                    session = GameSession(seed: UInt64(seed) &* 7919, startState: st)
+                    session.debugAdvanceToPrelude(final: false)
+                    session.advanceAuto()
+                    if session.pendingResult?.results.contains(where: { !$0.passed }) == true { break }
+                    if seed == 30 { print("[gploss] 30種とも通過＝落ちる結果を出せなかった") }
+                }
             }
             if ui == "event", session.week <= 1 {
                 // 選択肢イベント目視: 金欠帯の開始状態で選択肢イベントを強制発火（MZ_EV で kind 選択・既定=0011）
@@ -293,6 +301,8 @@ struct RootView: View {
                 case "earlyFormality": kind = .earlyFormality
                 default:     kind = .brokeDrinkingInvite
                 }
+                // MZ_EVWEEK=n：n 週休んでから出す（styleTalk・weekend は週で文面の型が変わる＝ChoiceEventData.text(for:year:week:)）
+                if let n = ProcessInfo.processInfo.environment["MZ_EVWEEK"].flatMap(Int.init), n > 0 { session.debugFreeWeeks(n, .rest(.完全休養)) }
                 session.debugForceEvent(kind)
             }
             #endif

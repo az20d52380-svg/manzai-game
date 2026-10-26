@@ -193,7 +193,7 @@ final class JudgeTalkTests: XCTestCase {
             var heads: [String] = []
             for slot in JudgeTalk.Slot.allCases {
                 let list = table[slot]!
-                XCTAssertEqual(list.count, k == nil ? 8 : 4)  // 型なしは各口8語（judge_comment_score_v6 §4）
+                if k == nil { XCTAssertGreaterThanOrEqual(list.count, 8) } else { XCTAssertEqual(list.count, 4) }  // 型なしは各口8語以上（judge_comment_score_v6 §4・v7 直しで{中}を11語）
                 for w in list {
                     XCTAssertTrue(w.hasSuffix(suffix[slot]!), "\(String(describing: k)) \(slot) \(w)")
                     for b in banned { XCTAssertFalse(w.contains(b), "\(w) に \(b)") }

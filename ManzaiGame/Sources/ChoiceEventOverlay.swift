@@ -18,7 +18,7 @@ struct ChoiceEventOverlay: View {
     var onClose: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var text: ChoiceEventText { ChoiceEventData.text(for: kind) }
+    private var text: ChoiceEventText { ChoiceEventData.text(for: kind, year: session.year, week: session.week) }
     private var scene: EventScene { ChoiceEventData.scene(for: kind) }
     private var backdrop: EventBackdrop { EventBackdrop.forEvent(kind) }
 
@@ -278,7 +278,7 @@ struct ChoiceEventOverlay: View {
         Button {
             session.dismissChoiceEvent()
             onClose()
-        } label: { Text("閉じる") }
+        } label: { Text("とじる") }
         .buttonStyle(YoseButtonStyle(.primary))
     }
 
@@ -326,6 +326,10 @@ struct ChoiceEventOverlay: View {
         withAnimation(Theme.Motion.emphSpring) {
             effectChips = all.enumerated().map { EffectChip(id: $0.offset, text: $0.element.0, up: $0.element.1, color: $0.element.2) }
         }
+        // 頭上のチップは押せない overlay＝VoiceOver では気づけない。札と同じ言い方で読み上げる（a11y_check_1026 中3）
+        UIAccessibility.post(notification: .announcement, argument: all.map {
+            $0.0.replacingOccurrences(of: " ↑", with: "が上がった").replacingOccurrences(of: " ↓", with: "が下がった")
+        }.joined(separator: "、"))
     }
 
     /// 送り切ったら0.4秒置いて帯（選択肢／閉じる）を出す

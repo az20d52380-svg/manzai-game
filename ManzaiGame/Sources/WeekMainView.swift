@@ -87,7 +87,7 @@ struct WeekMainView: View {
     @State private var showAllocation = false
 
     #if DEBUG
-    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar）
+    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar/farewell）
     private func debugWeekHook() {
         guard let w = ProcessInfo.processInfo.environment["MZ_WEEK"] else { return }
         switch w {
@@ -96,9 +96,11 @@ struct WeekMainView: View {
         case "rest": openCat = .休む
         case "netawrite": openCat = .ネタを書く; openNetaWrite = true
         case "newneta": openCat = .ネタを書く; openNetaWrite = true; newNetaTitle = ""
+        case "netapick": openCat = .ネタを書く; openNetaWrite = true; pickingNeta = true   // 書く対象の候補（替える）を開いた状態
         case "shop": showShop = true
         case "allocate": showAllocation = true
         case "settings": showSettings = true
+        case "farewell": showFarewell = true   // 解散の後の別れの場面へ直行（MZ_UI=week MZ_WEEK=farewell・タップできない定期の回の目視用・tap_check_1025_v0 A-2）
         case "notebook": showNotebook = true
         case "calendar": showCalendar = true
         case "rent":   // 月末の支払いの目視: 休むカードを1回実行（MZ_UI=rent と併用）
@@ -564,7 +566,7 @@ struct WeekMainView: View {
                 Spacer(minLength: 0)
                 Text("\(Int(value.rounded()))").font(YoseFont.number(big ? 28 : 18, weight: .black))
                     .foregroundStyle(YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.7)
+                    .lineLimit(1).minimumScaleFactor(0.4)   // 大きい文字で3桁の実力が「1…」と切れた（ax3_hooks_audit_1026 M1）。既定の大きさでは縮まない
                     .contentTransition(.numericText())
                     .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
                     .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
@@ -751,11 +753,14 @@ struct WeekMainView: View {
                     session.setWriteNeta(n.id)
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = nil; pickingNeta = false }
                 } label: {
-                    HStack(spacing: 8) {
+                    // 題名は1行を丸ごと使う（横に札と数字を並べると題名・数字が切れた＝playtest_v13 §4-1）
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("「\(n.name)」").font(YoseFont.mincho(16)).foregroundStyle(YoseColor.sumi).lineLimit(1)
-                        NetaStageBadge(netaID: n.id, polish: n.polish)
-                        Spacer()
-                        Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        HStack(spacing: 8) {
+                            NetaStageBadge(netaID: n.id, polish: n.polish)
+                            Spacer(minLength: 4)
+                            Text("完成度 \(Int(n.polish.rounded())) ・ 舞台 \(n.stageCount)回").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1)
+                        }
                     }
                     .padding(.horizontal, 12).padding(.vertical, 9)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -925,6 +930,7 @@ struct WeekMainView: View {
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)   // 札と数字を1つに読む（5種で10回に割れていた＝a11y_check_1026 中1）
             }
         }
         .padding(.horizontal, 8).padding(.vertical, 6)
@@ -995,14 +1001,14 @@ struct WeekMainView: View {
                         .foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
-                if !sub.isEmpty {
+                if !sub.isEmpty, !(urgent && dynamicTypeSize.isAccessibilitySize) {   // 大きい文字では朱札「未振分あり」が説明を覆う＝札だけにする（ax3_hooks_audit_1026 L5）
                     Text(sub).font(YoseFont.gothic(12, weight: .bold))
                         .foregroundStyle(gated ? YoseColor.shu : ready ? YoseColor.kinText : YoseColor.haiSumi)
                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // AX の大きさでは勝負ネタの名前が … で切れた＝2行まで（visual_check_after_12pt_v0 §AX）
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.bottom, urgent ? 14 : 0)   // 朱札「未振分あり」が名前に食い込まないよう文字を上げる
+            .padding(.bottom, (urgent || gated) ? (dynamicTypeSize.isAccessibilitySize ? 24 : 14) : 0)   // 大きい文字では札も大きい（ax3_hooks_audit_1026 L5）。朱札「未振分あり」・判子「出張中/休演」が名前に食い込まないよう文字を上げる（hooks_audit_1026）
             .overlay(alignment: .bottomTrailing) {
                 // 選べない札は、判子で「今週は無理」を言う
                 if gated {
@@ -1382,9 +1388,10 @@ struct WeekMainView: View {
     }
 
     /// 体力の3段ゾーン（2=緑/1=黄/0=赤）。閾値は黄50未満・赤20未満（第1便§0裁定①）。
-    private var staminaZone: Int {
-        if s.stamina < 20 { return 0 }
-        if s.stamina < 50 { return 1 }
+    private var staminaZone: Int { Self.staminaZone(s.stamina) }
+    static func staminaZone(_ stamina: Double) -> Int {
+        if stamina < 20 { return 0 }
+        if stamina < 50 { return 1 }
         return 2
     }
 
@@ -1498,7 +1505,7 @@ struct WeekMainView: View {
     private func maybeShowVesselFullToast(_ full: Bool) {
         guard full, !vesselFullToastShown else { return }
         vesselFullToastShown = true
-        showToast("今年の実力の伸びは、ここまで。来年また伸びる。")
+        showToast(session.year >= session.config.careerYears ? "今年の実力の伸びは、ここまで。" : "今年の実力の伸びは、ここまで。来年また伸びる。")   // 最終年に「来年」を言わない（year10_visual_1026_v0 §2-2）
     }
 
     // MARK: 導出（カードの伸び・弱点能力・次のマイルストン）
@@ -1540,15 +1547,17 @@ struct WeekMainView: View {
 
     /// ネタへの効き（旧 trainExtras と同じ名目値・監査E-06）。ネタを書く＝選択中ネタの改稿 or 新ネタ／舞台に立つ＝客前で磨く。
     private func netaEffect(_ action: WeekAction) -> String? {
+        Self.netaEffectText(action, config: session.config, revising: writeTarget != nil, hasNetas: !s.netas.isEmpty)
+    }
+    static func netaEffectText(_ action: WeekAction, config cfg: GameConfig, revising: Bool, hasNetas: Bool) -> String? {
         guard case .train(let t) = action else { return nil }
-        let cfg = session.config
         switch t {
         case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
             let gain = cfg.netaPlaceGain[t] ?? cfg.netaReviseGain
-            return writeTarget != nil ? "完成度 +\(Int(gain))" : "新ネタ"
-        case .ネタ見せ会 where !s.netas.isEmpty:
+            return revising ? "完成度 +\(Int(gain))" : "新ネタ"
+        case .ネタ見せ会 where hasNetas:
             return "完成度 +\(Int(cfg.netaLivePolishShow))"
-        case .フリーライブ where !s.netas.isEmpty:
+        case .フリーライブ where hasNetas:
             return "完成度 +\(Int(cfg.netaLivePolishFree))"
         default:
             return nil
@@ -1558,8 +1567,11 @@ struct WeekMainView: View {
     /// 本番が遠い週の目標バナー2行目＝いまのネタの完成度（監査A-01: 中だるみ帯の副目標）
     private func lullLine() -> String {
         let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
-        guard let n = cur else { return s.preoccupiedWeeks > 0 ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
-        return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish.rounded()))/100"
+        return Self.lullText(netaName: cur?.name, polish: cur?.polish ?? 0, preoccupied: s.preoccupiedWeeks > 0)
+    }
+    static func lullText(netaName: String?, polish: Double, preoccupied: Bool) -> String {
+        guard let name = netaName else { return preoccupied ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
+        return "大会まで間がある ・ ネタ「\(name)」完成度 \(Int(polish.rounded()))/100"
     }
 
     /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）
@@ -1589,18 +1601,26 @@ struct WeekMainView: View {
             .overlay(Rectangle().stroke(YoseColor.kin, style: StrokeStyle(lineWidth: 1.5, dash: [5, 3])).padding(5))
         }
         .buttonStyle(PressableStyle())
+        // 「もう一度」単独では意味が分からない（a11y_check_1026 低4）
+        .accessibilityLabel(yearEndArmed ? "もう一度押すと年末の結果へ進む" : "年末へ")
+        .accessibilityHint("二度押しで、残りの週を休んで年末の結果へ進む")
     }
 
     /// §4 器満了: 成長予算を使い切ったか（NotebookView の器リングと同一判定＝食い違わない）。
     /// 自動注ぎ＝満了は行動の週送りで成立する。growthUsed≥growthBudget で判定（budget未設定=無制限は満了なし）。
     private var vesselIsFull: Bool {
-        guard let budget = s.growthBudget, budget > 0 else { return false }
-        return s.growthUsed >= budget - GameEngine.pourEpsilon
+        Self.vesselFull(budget: s.growthBudget, used: s.growthUsed)
+    }
+    static func vesselFull(budget: Double?, used: Double) -> Bool {
+        guard let budget, budget > 0 else { return false }
+        return used >= budget - GameEngine.pourEpsilon
     }
 
     /// 一番低い能力名。差が1未満（第1週の全員10など）は「弱点なし」＝空文字（監査B-03: 根拠の無い助言を出さない）
     private func weakAbility() -> String {
-        let pairs: [(String, Double)] = [("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)]
+        Self.weakAbilityName([("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)])
+    }
+    static func weakAbilityName(_ pairs: [(String, Double)]) -> String {
         guard let lo = pairs.min(by: { $0.1 < $1.1 }), let hi = pairs.max(by: { $0.1 < $1.1 }), hi.1 - lo.1 >= 1 else { return "" }
         return lo.0
     }

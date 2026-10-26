@@ -107,7 +107,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .nightEscape:
             return [
-                c("深夜二時。{me}のアパート。", mood: .night, bg: EventBackdrop(.apartment,.night), [("谷口", "電話に出ないから来たよ。電気、止まってるじゃない"), ("俺", "払えるあてがない。朝までにここを出る"),
+                c("深夜二時。{me}のアパート。", mood: .night, bg: EventBackdrop(.apartment,.night), [("谷口", "電話に出ないから来たよ。電気、止まってるね"), ("俺", "払えるあてがない。朝までにここを出る"),
                                         ("谷口", "本当に行くの？ どこに行くの？"), ("俺", "田舎に戻る。親戚の畑で働かせてもらう")]),
                 c("午前四時。アパートの前。", mood: .night, bg: EventBackdrop(.street,.night), [("谷口", "荷物、それだけ？"), ("俺", "段ボール二つ。残りは置いていく"),
                                         ("谷口", "借金、少しなら{partner1}も払えるよ"), ("俺", "いい。それは谷口の分じゃない")]),
