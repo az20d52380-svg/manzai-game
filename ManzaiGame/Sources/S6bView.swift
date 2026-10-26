@@ -193,7 +193,7 @@ struct S6bView: View {
             Text("—— \(session.combiName) ——").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.8)).padding(.top, Theme.Sp.s24)
             Text("結成からの記録").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.75))
             Spacer()
-            Text("タップで進む").font(.maru(12)).foregroundStyle(.white.opacity(0.7))   // 12pt 未満は使わない（TypeStep の決まり）.padding(.bottom, Theme.Sp.s24)
+            Text("タップで進む").font(.maru(12)).foregroundStyle(.white.opacity(0.7)).padding(.bottom, Theme.Sp.s24)   // 12pt 未満は使わない（TypeStep の決まり）。余白の指定がコメントに入って効いていなかった（code_review_2026-10-27b #5）
         }
         .contentShape(Rectangle()).onTapGesture { advance(.wall) }
     }
