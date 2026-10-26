@@ -54,11 +54,11 @@ struct SettingsView: View {
                             }
                         }
                         section("遊び方") {
-                            Button { cover = .glossary } label: { linkRow("用語集") }
+                            Button { cover = .glossary } label: { linkRow("用語集", external: false, inApp: true) }
                                 .buttonStyle(.plain)
                         }
                         section("記録") {
-                            Button { cover = .endingBook } label: { linkRow("エンディング図鑑") }
+                            Button { cover = .endingBook } label: { linkRow("エンディング図鑑", external: false, inApp: true) }
                                 .buttonStyle(.plain)
                         }
                         // 監査G-02: 押しても何も起きない項目（購入を復元・通知・データ管理・利用規約）は撤去。
@@ -189,9 +189,10 @@ struct SettingsView: View {
         v.wrappedValue = min(max(((v.wrappedValue + d) * 10).rounded() / 10, 0), 1)
     }
 
-    private func linkRow(_ label: String, external: Bool = true) -> some View {
+    private func linkRow(_ label: String, external: Bool = true, inApp: Bool = false) -> some View {
         HStack { Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi); Spacer()
-            if external { Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) } }
+            if external { Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }
+            if inApp { Image(systemName: "chevron.right").font(.system(size: Font.mzScaled(13), weight: .bold)).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) } }   // アプリの中の画面へ＝›（↗は外のサイトに見えた・firstlook_check_1027b #3）
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())   // 行の端も押せる
     }
