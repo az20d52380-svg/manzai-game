@@ -301,6 +301,8 @@ struct RootView: View {
                 case "earlyFormality": kind = .earlyFormality
                 default:     kind = .brokeDrinkingInvite
                 }
+                // MZ_EVWEEK=n：n 週休んでから出す（styleTalk・weekend は週で文面の型が変わる＝ChoiceEventData.text(for:year:week:)）
+                if let n = ProcessInfo.processInfo.environment["MZ_EVWEEK"].flatMap(Int.init), n > 0 { session.debugFreeWeeks(n, .rest(.完全休養)) }
                 session.debugForceEvent(kind)
             }
             #endif

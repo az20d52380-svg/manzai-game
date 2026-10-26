@@ -458,3 +458,4 @@ cd GameCore && swift test
 - `revival_loss_repeat_1026_v0.md` — 敗者復活で散る場面が1キャリアで何回出るか（平均3.5〜4.4回・キュー127 の材料）
 - `female_later_years_1026_v0.md` — 女性の形で後半の年（3・6・10年目）の目視 10/26（直す候補0）
 - `variants_independent_score_1026_v0.md` — 言い換えの独立採点 10/26（○22△5→直した）
+- `neta_coef_nopolish_1026_v0.md` — ネタを磨かない人への係数の効き目（L35・磨くとご褒美側・罰は最大約−4pt）

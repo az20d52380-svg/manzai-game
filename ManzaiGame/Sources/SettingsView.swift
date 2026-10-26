@@ -265,6 +265,7 @@ struct GlossaryView: View {
             YoseColor.kinari.ignoresSafeArea()
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "用語集", closeAction: onClose)
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
                         ForEach(Self.groups) { g in
@@ -285,10 +286,19 @@ struct GlossaryView: View {
                                 .padding(YoseMetrics.padH + 2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .yoseHarigami()
-                            }
+                            }.id(g.id)
                         }
                     }
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
+                }
+                #if DEBUG
+                // 目視用：MZ_GLOSS=<節の番号 0〜> でその節を上に送って開く（スワイプできない定期の回の確認）
+                .onAppear {
+                    if let n = ProcessInfo.processInfo.environment["MZ_GLOSS"].flatMap(Int.init), Self.groups.indices.contains(n) {
+                        DispatchQueue.main.async { proxy.scrollTo(Self.groups[n].id, anchor: .top) }
+                    }
+                }
+                #endif
                 }
             }
         }
