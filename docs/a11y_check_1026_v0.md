@@ -13,3 +13,12 @@
 崩れ: 実害のあるもの 0 件／軽微 1 件（week の帯下ヒント行が詰まる）／DEBUG チップの重なり 3 画面（本番影響なし）。
 最重の1件: week のヒント行と吹き出しの詰まり（AX1 では判読可・AX3 以上で重なる恐れ）。
 次の一手: accessibility-extra-extra-extra-large でも同じ画面を撮って確かめる。
+
+## AX5（accessibility-extra-extra-extra-large・同じ6画面・DEBUGチップは無視）
+スクショ: /private/tmp/claude-501/-Users-hujiko/353672c6-e5bd-4021-bb16-3171e606e062/scratchpad/a11y1026ax5_<name>.png（combokind / intro_name / disband / farewell / yearend / week）
+- 実害（切れて読めない・ボタンが画面外・重なって押せない）: 0 件。
+- 6枚とも AX1 の撮影と見た目が同一。文字が大きくなっていない＝この画面群は Dynamic Type に追従せず固定サイズ（YoseFont の固定pt指定と見られる）。崩れない代わりに、文字サイズ拡大の設定を使う人には効かない（点検の観点が「崩れ」から「追従しない」へ変わる点は別途判断）。
+- 前節の week のヒント行の詰まりも AX5 で悪化せず（同一）。
+content_size は large に戻した。
+- 【親の補足】「追従しない」は誤り。YoseFont は `Font.mzScaled`（Theme.swift:239）で文字サイズ設定に追従するが、上限 1.35 倍で止める作り。AX1 で既に上限に届くため AX1〜AX5 が同じ見た目になる＝設計どおり（10/19 の a11y 点検の方針）。
+- 候補ブランチ9本（calendar-jan・career-end-save・lost-notebook-neta・mob-roster-per-run・money-short-choice・qual-long-list・revival-short・tv-fatigue-display・week-hint-priority）は 10/26 夕の本線にぶつからずに入る（git merge-tree）。
