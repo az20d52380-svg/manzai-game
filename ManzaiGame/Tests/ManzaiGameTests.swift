@@ -964,3 +964,27 @@ final class PracticeLabelSyncTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(seen, 8)
     }
 }
+
+/// 広告の差し込み口（iap_design_v0 §3-6）：広告カットを持っていれば provider を呼ばない・何も出さない実装はすぐ先へ
+@MainActor
+final class AdGateTests: XCTestCase {
+    private final class SpyProvider: AdProvider {
+        var calls = 0
+        func showInterstitial(at placement: AdPlacement, completion: @escaping () -> Void) { calls += 1; completion() }
+    }
+    func testAdFreeSkipsProvider() {
+        let gate = AdGate(); let spy = SpyProvider(); gate.provider = spy
+        var done = 0
+        gate.isAdFree = { true }
+        gate.showInterstitial(at: .yearEnd) { done += 1 }
+        XCTAssertEqual(spy.calls, 0); XCTAssertEqual(done, 1); XCTAssertEqual(gate.shownCount, 0)
+        gate.isAdFree = { false }
+        gate.showInterstitial(at: .tournament) { done += 1 }
+        XCTAssertEqual(spy.calls, 1); XCTAssertEqual(done, 2); XCTAssertEqual(gate.shownCount, 1)
+    }
+    func testNoAdProviderCompletesImmediately() {
+        var done = false
+        NoAdProvider().showInterstitial(at: .yearEnd) { done = true }
+        XCTAssertTrue(done)
+    }
+}
