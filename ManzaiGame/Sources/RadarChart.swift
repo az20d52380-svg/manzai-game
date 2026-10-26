@@ -121,6 +121,13 @@ struct RadarChart: View {
             if animate && !reduceMotion { withAnimation(.easeInOut(duration: 0.8)) { progress = 1 } }
             else { progress = 1 }
         }
+        // 図は Canvas 1枚で読み上げが無かった＝能力ごとの「現在（年初）」を文で読む（a11y_check_1026_voiceover_v0 #4・表示は不変）
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("能力の図")
+        .accessibilityValue(axes.map { ax in
+            let now = Int(ax.value.rounded()), was = Int(ax.base.rounded())
+            return now == was ? "\(ax.name) \(now)" : "\(ax.name) \(now)、年初は\(was)"
+        }.joined(separator: "。"))
     }
 }
 
