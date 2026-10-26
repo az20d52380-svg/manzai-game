@@ -482,8 +482,8 @@ struct YearResultView: View {
     /// GPに一度も出ていない年か（エントリー費が払えない＝WeekRunner の gpAlive=false）。出ていないのに「1回戦敗退」と出ていた。
     /// その年の出来事ログ（年ごとにリセット）に1回戦の行が無く、1回戦も通っていない時だけ true。表示専用
     private var notEnteredGP: Bool {
-        guard let o, o.roundsPassed == 0, let first = session.config.calendar.gpRoundNames.first else { return false }
-        return !session.log.contains { $0.contains(first) }
+        guard let o, o.roundsPassed == 0 else { return false }
+        return !session.loggedGPEntry
     }
 }
 

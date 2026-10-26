@@ -1004,6 +1004,14 @@ final class GameSession {
         abandoned = true
     }
 
+    /// この年の頂GPの回戦に出たか（週の記録に1回戦の行があるか）。記録は表示名（GPName.display）で書くので、生のキー「GP1回戦」では探さない
+    /// （年末の画面が生のキーで探して、1回戦で負けた年を「エントリー費が払えず不出場」と出していた＝10/26 定期の目視）。表示専用
+    var loggedGPEntry: Bool { Self.loggedGPEntry(in: log, config: config) }
+    static func loggedGPEntry(in log: [String], config: GameConfig) -> Bool {
+        let first = config.calendar.gpRoundNames.first ?? "GP1回戦"
+        return log.contains { $0.contains(GPName.display(first)) }
+    }
+
     /// 設定の「解散」の別れの場面に出す、この周の最高成績1行（表示専用・乱数なし）。
     /// 終わった年（yearHistory）＋進行中の年の頂GPの到達から一番上を選ぶ。大会に一度も出ていなければ nil
     var bestRunLine: String? {
@@ -1305,7 +1313,7 @@ final class GameSession {
                                                   bankrupt: outcome.bankrupt,
                                                   prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0),
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
-                                                      || log.contains { $0.contains(GPName.display(config.calendar.gpRoundNames.first ?? "GP1回戦")) },
+                                                      || loggedGPEntry,
                                                   dissolved: outcome.dissolved ? true : nil,
                                                   watchedFinal: didWatchFinal ? true : nil))
                 }

@@ -834,3 +834,13 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
     }
 }
+
+/// 年末の「不出場（エントリー費が払えず）」の判定：週の記録は表示名で書く（summarize＝GPName.display）。1回戦で負けた年を不出場と出していた（10/26 定期の目視）
+final class GPEntryLogTests: XCTestCase {
+    func testFirstRoundLossCountsAsEntered() {
+        let c = GameConfig(), first = c.calendar.gpRoundNames[0]
+        XCTAssertTrue(GameSession.loggedGPEntry(in: ["第30週: \(GPName.display(first)) 敗退"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: ["第30週: 春新人賞A 通過"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: [], config: c))
+    }
+}
