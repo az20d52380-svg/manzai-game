@@ -301,6 +301,8 @@ struct RootView: View {
                 case "earlyFormality": kind = .earlyFormality
                 default:     kind = .brokeDrinkingInvite
                 }
+                // MZ_EVWEEK=n：n 週休んでから出す（styleTalk・weekend は週で文面の型が変わる＝ChoiceEventData.text(for:year:week:)）
+                if let n = ProcessInfo.processInfo.environment["MZ_EVWEEK"].flatMap(Int.init), n > 0 { session.debugFreeWeeks(n, .rest(.完全休養)) }
                 session.debugForceEvent(kind)
             }
             #endif
@@ -309,7 +311,7 @@ struct RootView: View {
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
             if quit {
                 session = GameSession()
-                withAnimation(.easeInOut(duration: 0.3)) { started = false }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
             }
         }
         .onChange(of: scenePhase) { _, phase in
@@ -324,7 +326,7 @@ struct RootView: View {
         NetaStage.lastSeen = [:]   // ネタ札の光り方の記憶を前の周から持ち越さない（code_review_2026-10-19i §2）
         showEnding = false
         session = GameSession()
-        withAnimation(.easeInOut(duration: 0.3)) { started = false }
+        withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
     }
 
     @ViewBuilder private var mainFlow: some View {
@@ -346,7 +348,7 @@ struct RootView: View {
                 // 初回もランダムシード（「もう一度」と同じ）。固定424242だと全プレイヤーの初年が同一乱数になる。
                 // DEBUGの MZ_SMOKE/MZ_UI 経路は上の .task が固定シードの session をそのまま使う＝決定的なまま。
                 session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name, myName: me, partnerName: partner, comboKind: kind, meetingKind: meeting)
-                withAnimation(.easeInOut(duration: 0.4)) { started = true }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { started = true }
             }
         }
     }
@@ -391,7 +393,7 @@ struct RootView: View {
             case .freeAction(let offer):
                 #if DEBUG
                 // 目視用: MZ_OFFER=1 で毎週オファーが出ている状態にする
-                WeekMainView(session: session, offer: ProcessInfo.processInfo.environment["MZ_OFFER"] != nil ? (offer ?? OfferSpec(name: "経験重視", income: 12, fame: 1, ability: nil, stamina: 0)) : offer)
+                WeekMainView(session: session, offer: ProcessInfo.processInfo.environment["MZ_OFFER"] != nil ? (offer ?? OfferSpec(name: "経験重視", income: 120_000, fame: 1, ability: nil, stamina: 0)) : offer)
                 #else
                 WeekMainView(session: session, offer: offer)          // S1 育成メイン
                 #endif

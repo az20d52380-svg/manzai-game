@@ -49,16 +49,17 @@ struct SettingsView: View {
                                 linkRow(restoring ? "復元しています…" : "購入を復元", external: false)
                             }
                             .buttonStyle(.plain).disabled(restoring)
+                            Text("前に買った有料の品を、この端末に戻す。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)   // 何の購入かが分からなかった（firstlook_check_1027b #3）
                             if let m = store.lastMessage {
                                 Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
                             }
                         }
                         section("遊び方") {
-                            Button { cover = .glossary } label: { linkRow("用語集") }
+                            Button { cover = .glossary } label: { linkRow("用語集", external: false, inApp: true) }
                                 .buttonStyle(.plain)
                         }
                         section("記録") {
-                            Button { cover = .endingBook } label: { linkRow("エンディング図鑑") }
+                            Button { cover = .endingBook } label: { linkRow("エンディング図鑑", external: false, inApp: true) }
                                 .buttonStyle(.plain)
                         }
                         // 監査G-02: 押しても何も起きない項目（購入を復元・通知・データ管理・利用規約）は撤去。
@@ -189,9 +190,10 @@ struct SettingsView: View {
         v.wrappedValue = min(max(((v.wrappedValue + d) * 10).rounded() / 10, 0), 1)
     }
 
-    private func linkRow(_ label: String, external: Bool = true) -> some View {
+    private func linkRow(_ label: String, external: Bool = true, inApp: Bool = false) -> some View {
         HStack { Text(label).font(YoseFont.bodyBold).foregroundStyle(YoseColor.sumi); Spacer()
-            if external { Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) } }
+            if external { Image(systemName: "arrow.up.right.square").font(.system(size: Font.mzScaled(13))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }
+            if inApp { Image(systemName: "chevron.right").font(.system(size: Font.mzScaled(13), weight: .bold)).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) } }   // アプリの中の画面へ＝›（↗は外のサイトに見えた・firstlook_check_1027b #3）
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())   // 行の端も押せる
     }
@@ -218,24 +220,25 @@ struct GlossaryView: View {
         Group(title: "強さ", rows: [
             ("実力", "コンビの強さ。センス・発想・表現・華の4つから決まる。大会での勝ち上がりやすさに関わる。"),
             ("相性", "二人の息の合い方。実力に足されて数えられる。"),
-            ("体力", "行動すると減り、休むと戻る。低いと稽古ができず、体調を崩して休むことがある。"),
-            ("経験点", "練習やネタ書きでたまる5種の経験点。ネタ種・ことば帳・間（ま）・見せ場・場数。画面では「種・帳・間・見・場」の一字の丸で出る。能力アップで使う。"),
+            ("体力", "行動すると減り、休むと戻る。低いと稽古ができず、体調を崩して休むことがある（体調ダウン）。"),
+            ("経験点", "練習やネタ書きでたまる5種の経験点。ネタ種・ことば帳・間（ま）・見せ場・場数。画面では「種・帳・間・見・場」の一字の丸で出る。能力アップで使う。能力アップ画面の「持ち分」は、今持っている数。"),
             ("能力", "センス・発想・表現・華・メンタル。経験点で上がる。メンタルは、本番の出来のばらつきを小さくする。"),
-            ("ランク", "能力の高さを G から S までの文字で表したもの。能力が上がると文字も上がる。"),
+            ("ランク", "能力の高さを G から S までの文字で表したもの。能力が上がると文字も上がる。上がる時の知らせでは「番付」とも呼ぶ。"),
             ("特技", "余った経験点で覚える力。一度覚えたらずっと効く。"),
             ("未振分あり", "使っていない経験点が残っている印。能力アップで使うと消える。"),
         ]),
         Group(title: "ネタ", rows: [
             ("完成度", "ネタの仕上がり（0〜100）。ネタ書きで上がる。低いネタは本番の点が下がる。"),
             ("持ちネタ", "手元で使えるネタ。持てる本数に上限があり、コンビの「持ちネタ」に今の本数と上限が出る。使わないネタは「しまう」で外せる。"),
-            ("勝負ネタ", "大会でかける1本。ネタ帳の「勝負ネタにする」か、大会の入口で選ぶ。選んだネタには「真剣勝負」の印が付く。"),
+            ("勝負ネタ", "大会でかける1本。「コンビ」の「持ちネタ」にある「勝負ネタにする」か、大会の入口で選ぶ。選んだネタには「真剣勝負」の印が付く。"),
             ("仕上がりの段", "完成度を「書きかけ・形になってきた・仕上がってきた・仕上がった」の4つの段で見せる札。"),
+            ("客の反応", "「コンビ」の「持ちネタ」に出る棒。「舞台に立つ」や「ネタ見せ会」でそのネタをかけるたびに、その日の客の反応で動く。そのネタを勝負ネタにした時、高いほど大会の本番の点が上がる。"),
             ("自信作", "完成度・舞台に立った回数・客の反応が、そろって育ったネタに付く札。"),
             ("見飽きられた", "同じネタを大会で使い続けると、客に見飽きられて本番の点が下がる。新しいネタを書くと元どおり。"),
         ]),
         Group(title: "暮らし", rows: [
             ("知名度", "どれだけ知られているか（0〜100）。舞台に立つと上がる。決勝では高いほど有利になる。"),
-            ("所持金と生活費", "バイトや賞金で増える。\(GameConfig().livingInterval)週に1度、週の終わりに生活費が引かれる（基本は\(GameConfig().livingCost / 10_000)万円。住む部屋で増える）。"),
+            ("所持金と生活費", "バイトや賞金で増える。\(GameConfig().livingInterval)週に1度、週の終わりに生活費が引かれる（基本は\(GameConfig().livingCost / 10_000)万円。住む部屋で増える）。引かれる時は「月末の支払い」で内わけが出る。"),
             ("借金と夜逃げ", "お金が足りないと借金になる。借金が\(-GameConfig().bankruptLine / 10_000)万円を超えると夜逃げになり、芸人は続けられない。"),
             ("回数券", "お店で買える。新幹線の回数券はその年のあいだ大阪の交通費が0になり、体力も減らない。銭湯の回数券は休んだ時の体力の戻りが増える（使える回数に限りがある）。"),
             ("稽古場の年契約", "お店で買える。その年のあいだ、稽古の伸びが少し増える。年が替わると切れる。"),
@@ -243,19 +246,24 @@ struct GlossaryView: View {
         ]),
         Group(title: "週の行動", rows: [
             ("出張中・休演", "その週は稽古ができない印。出張中は撮影などの仕事が入っている週、休演は体力が足りない週。"),
+            ("オファー", "知名度が上がると届く仕事の誘い（ひな壇・ラジオ・ロケ・営業）。受けるとお金と知名度が入り、体力が減る。知名度が高いほど、選べる札が増える。"),
         ]),
         Group(title: "コンビ", rows: [
             ("すれ違い", "相性が上がらない週が続くとたまる。途中で予告が出る。相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、たまらない。たまりきるとコンビは解散する。"),
         ]),
         Group(title: "大会", rows: [
+            ("戦績", "「コンビ」の画面のタブ。今年の大会の結果と、これまでの頂グランプリの到達が並ぶ。"),
             ("年間香盤", "1年の大会と予定を週ごとに並べた表。下の「日程」から見られる。"),
             ("エントリー費・交通費", "大会に出るたびにエントリー費がかかる。大阪の大会（大阪遠征）は交通費も要り、夜行バスは安いが体力を使い、新幹線は高いが体力が減らない。"),
             ("客席のウケ", "大会の結果に出る、ネタの間の客の反応の波。ツカミ（出だし）・中盤・オチ（締め）の3つに分けて見せる。"),
+            ("ハマった夜", "本番でまれに起きる、ネタが客にぴたりとハマった回。その舞台の点が大きく上がる。狙っては起こせない。"),
             ("出順抽選", "決勝でネタをかける順番を決めるくじ。順番は運で決まる。"),
             ("暫定席", "決勝の1本目で、その時点の上位3組が座る席。後の組に抜かれると席を離れる。最後まで残った3組が最終決戦へ進む。"),
             ("王手", "決勝の最後の勝負で、あと1票で優勝が決まる組に付く印。"),
-            ("頂グランプリの回戦", "予選は1回戦・2回戦・3回戦・準々決勝・準決勝。勝ち上がると決勝に出られる。"),
-            ("決勝", "頂グランプリの最後の舞台（第\(GameConfig().calendar.gpFinalWeek)週）。ネタは1本目と2本目を選べる。"),
+            ("頂グランプリの回戦", "予選は1回戦・2回戦・3回戦・準々決勝・準決勝。「通過」は次の回戦へ進むこと、「敗退」はその年の頂グランプリがそこで終わること（準決勝で落ちた時だけ敗者復活がある）。勝ち上がると決勝に出られる。画面では「頂GP」とも書く。"),
+            ("敗者復活", "頂グランプリの準決勝で落ちたコンビが出られる、決勝と同じ週の舞台。勝ち上がると、そのまま決勝に出られる。"),
+            ("決勝", "頂グランプリの最後の舞台（第\(GameConfig().calendar.gpFinalWeek)週）。ネタは1本目と2本目を選べる。2本目は「温存の一手」とも書く。"),
+            ("最終決戦", "決勝の1本目のあと、暫定席に最後まで残った3組だけが進む最後の勝負。"),
             ("エンディング図鑑", "キャリアの終わり方の記録。見た結末が並び、あとから読み返せる。"),
         ]),
     ]
@@ -265,6 +273,7 @@ struct GlossaryView: View {
             YoseColor.kinari.ignoresSafeArea()
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "用語集", closeAction: onClose)
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
                         ForEach(Self.groups) { g in
@@ -285,10 +294,19 @@ struct GlossaryView: View {
                                 .padding(YoseMetrics.padH + 2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .yoseHarigami()
-                            }
+                            }.id(g.id)
                         }
                     }
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
+                }
+                #if DEBUG
+                // 目視用：MZ_GLOSS=<節の番号 0〜> でその節を上に送って開く（スワイプできない定期の回の確認）
+                .onAppear {
+                    if let n = ProcessInfo.processInfo.environment["MZ_GLOSS"].flatMap(Int.init), Self.groups.indices.contains(n) {
+                        DispatchQueue.main.async { proxy.scrollTo(Self.groups[n].id, anchor: .top) }
+                    }
+                }
+                #endif
                 }
             }
         }

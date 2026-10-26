@@ -24,21 +24,30 @@ struct YearResultView: View {
     var body: some View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "\(session.year)年目 年末総決算", subtitle: session.combiName)
+            ScrollViewReader { proxy in
             ScrollView {
                 // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
                 VStack(spacing: 12) {
                     reachStamp.stagger(1, appear)
                     if session.hasYearStart { gradeLadder.stagger(2, appear) }
                     totalsBlock.stagger(3, appear)
-                    historyBlock.stagger(3, appear)
-                    eventsBlock.stagger(4, appear)
+                    historyBlock.stagger(3, appear).id("history")
+                    eventsBlock.stagger(4, appear).id("events")
                     yearEndMonolog.stagger(5, appear)
-                    breakdownBlock.stagger(7, appear)
-                    radarBlock.stagger(8, appear)
+                    breakdownBlock.stagger(7, appear).id("breakdown")
+                    radarBlock.stagger(8, appear).id("radar")
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 14)
                 .frame(maxWidth: .infinity)
             }
+            #if DEBUG
+            .task {   // 目視フック MZ_SCROLL=history|events|breakdown|radar：その段を上にして開く（下の段が撮れなかった＝yearend_records_visual_1026_v0 軽微2）
+                if let id = ProcessInfo.processInfo.environment["MZ_SCROLL"] {
+                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    proxy.scrollTo(id, anchor: .top)
+                }
+            }
+            #endif
             .overlay(alignment: .bottom) {   // まだ下に続く合図（見出しがフッターで切れて見えない）
                 VStack(spacing: 0) {
                     LinearGradient(colors: [YoseColor.kinari.opacity(0), YoseColor.kinari], startPoint: .top, endPoint: .bottom).frame(height: 40)
@@ -48,6 +57,7 @@ struct YearResultView: View {
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)   // 見た目の合図だけ（読み上げはスクロールで続きに行ける＝a11y_check_1026 中2）
                 .stagger(4, appear)   // 本文より先に「▼」だけ出て、空の画面に見えた（soak_playthrough_1019・1026 で再発）
+            }
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
@@ -98,6 +108,7 @@ struct YearResultView: View {
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
         return VStack(alignment: .leading, spacing: 8) {
             sectionLabel("この1年で育ったもの")
+            Text("棒は、次の段までの進み").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)   // 段が同じでも棒が伸びる意味（firstlook_check_1027 #19）
             ForEach(order, id: \.self) { a in
                 let from = Theme.rank(base[a]), to = Theme.rank(s[a])
                 let up = from != to
@@ -242,8 +253,19 @@ struct YearResultView: View {
         var chosen = Set<Int>()
         if let f = log.indices.last(where: { (log[$0].contains("GP 決勝") || log[$0].contains("GP決勝")) && !log[$0].contains("客席") }) { chosen.insert(f) }
         for i in log.indices.filter({ log[$0].contains("優勝") && !log[$0].contains("客席") }).reversed() where chosen.count < limit { chosen.insert(i) }
-        for i in log.indices.reversed() where chosen.count < limit { chosen.insert(i) }
+        for i in log.indices.reversed() where chosen.count < limit && !isRestOnly(log[i]) { chosen.insert(i) }   // 出来事は大会結果のみ（体調ダウン・療養の行は埋め草にしない）
         return chosen.sorted().map { log[$0] }
+    }
+
+    /// 休（体調ダウン・療養）だけの行か。大会の札（優勝/通過/敗退）も観戦も無いもの
+    static func isRestOnly(_ line: String) -> Bool {
+        let ps = GameSession.parseLogLine(line)
+        return !ps.isEmpty && ps.allSatisfy { $0.mark == "休" } && line.hasPrefix("第")
+    }
+    /// 「ほかN大会」＝3行に出ていない大会の数（休と観戦は大会に数えない・1行に並ぶ複数大会は別々に数える）
+    static func hiddenStageCount(_ log: [String], shown: [String]) -> Int {
+        func n(_ ls: [String]) -> Int { ls.flatMap { GameSession.parseLogLine($0) }.filter { ["優勝", "通過", "敗退"].contains($0.mark) }.count }
+        return max(0, n(log) - n(shown))
     }
 
     private var eventsBlock: some View {
@@ -271,8 +293,8 @@ struct YearResultView: View {
                     }
                 }
             }
-            if session.log.count > lines.count {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
-                Text("ほか\(session.log.count - lines.count)大会").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+            if Self.hiddenStageCount(session.log, shown: lines) > 0 {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
+                Text("ほか\(Self.hiddenStageCount(session.log, shown: lines))大会").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -284,10 +306,14 @@ struct YearResultView: View {
     // MARK: 賞金/知名度 年計
 
     private var totalsBlock: some View {
-        HStack(spacing: 8) {
-            total("今年の賞金", session.totalPrize, yen: true)
-            total("知名度", Int(s.fame.rounded()), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
-            total("最終所持金", s.money, yen: true)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                total("今年の賞金", session.totalPrize, yen: true)
+                total("知名度", Int(s.fame.rounded()), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
+                total("年末の所持金", s.money, yen: true)
+            }
+            Text("知名度は舞台に立つと上がり、決勝では高いほど有利になる。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)   // 数字の意味を年末にも（用語集と同じ言い方・playtest_v15 #6）
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.bottom, 2)
     }
@@ -320,10 +346,8 @@ struct YearResultView: View {
         }
     }
 
-    /// 年の締めの独白を1行返す。到達結果で 躍進/停滞/貧乏 に決定的分岐（RNG非消費＝golden不変）。
-    /// オーナー決定 2026-07-06：else（決勝未到達・非破産）を fame/roundsPassed で二分。閾値は【仮】——sim到達分布で後日確定。
-    private func yearEndLine() -> String? {
-        guard let o else { return nil }
+    /// 年末独白のプールと場面名（到達結果で決定的分岐・1年目は「去年」を外す）
+    static func yearEndPool(_ o: YearOutcome, fame: Int, year: Int) -> (pool: [String], scene: String) {
         var pool: [String]
         var scene = "yearEnd"
         if o.bankrupt {
@@ -332,16 +356,24 @@ struct YearResultView: View {
             // 解散年（途中解散のすれ違いゲージ＝outcome.dissolved・endings_spec §2）。#2 解散の前置き（明日、事務所に行く）。
             // 以前は「最終年・決勝なし・相性10未満」で出ていたが #3 あきらめと話が食い違うため条件を付け替えた
             scene += ".dissolution"; pool = Self.yeDissolution
-        } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || Int(s.fame) >= 30 {
+        } else if o.champion || o.reachedFinal || o.roundsPassed >= 3 || fame >= 30 {
             scene += ".leap"; pool = Self.yeLeap                                                    // 躍進年
         } else {
             scene += ".stall"; pool = Self.yeStall                                                  // 停滞年
         }
         // 1年目には「去年」「今年も」が無い（不具合 2026-10-12）。前年を前提にする行を外し、1年目用の行を足す。
-        if session.year <= 1 {
+        if year <= 1 {
             if pool == Self.yeStall { pool = Self.yeFirstStall; scene += ".first" }
             else if pool == Self.yeLeap { pool = pool.filter { !$0.contains("去年") } + Self.yeFirstLeap; scene += ".first" }
         }
+        return (pool, scene)
+    }
+
+    /// 年の締めの独白を1行返す。到達結果で 躍進/停滞/貧乏 に決定的分岐（RNG非消費＝golden不変）。
+    /// オーナー決定 2026-07-06：else（決勝未到達・非破産）を fame/roundsPassed で二分。閾値は【仮】——sim到達分布で後日確定。
+    private func yearEndLine() -> String? {
+        guard let o else { return nil }
+        var (pool, scene) = Self.yearEndPool(o, fame: Int(s.fame), year: session.year)
         // 結成最終年の年末には「来年」が無い（year10_visual_1026_v0 §2-2）。来年を語る行を外す（各プール13行中2行）。
         if session.careerOver || session.year >= session.config.careerYears {   // 優勝・夜逃げ・解散で早く終わる年も（code_review_2026-10-26c §2-1）
             let kept = pool.filter { !$0.contains("来年") }
@@ -456,20 +488,26 @@ struct YearResultView: View {
 
     /// 到達段階（判の文字, 通過系か）
     private func reach() -> (String, Bool) {
+        Self.reachStamp(o, gpRoundNames: session.config.calendar.gpRoundNames, notEnteredGP: notEnteredGP)
+    }
+
+    /// 到達段階の判（テスト用に純関数へ切り出し）
+    static func reachStamp(_ o: YearOutcome?, gpRoundNames names: [String], notEnteredGP: Bool) -> (String, Bool) {
         guard let o else { return ("——", false) }
         if o.champion { return ("優勝", true) }
         if o.bankrupt { return ("夜逃げ", false) }
         if o.dissolved { return ("解散", false) }
         if o.reachedFinal { return ("決勝", true) }
         // 監査C-07: 「最後に通過した回戦」ではなく「敗れた回戦」を言う（3回戦で負けた人に「2回戦」と出さない）
-        let names = session.config.calendar.gpRoundNames
         let n = o.roundsPassed
         if notEnteredGP { return ("不出場", false) }
         if n < names.count { return (names[n].replacingOccurrences(of: "GP", with: "") + "敗退", n > 0) }
         return ("準決勝敗退", true)
     }
 
-    private func reachSub() -> String {
+    private func reachSub() -> String { Self.reachSubText(o, notEnteredGP: notEnteredGP) }
+
+    static func reachSubText(_ o: YearOutcome?, notEnteredGP: Bool) -> String {
         guard let o else { return "" }
         if o.champion { return "頂グランプリ制覇" }
         if o.bankrupt { return "所持金が尽きてキャリア終了" }
@@ -482,8 +520,11 @@ struct YearResultView: View {
     /// GPに一度も出ていない年か（エントリー費が払えない＝WeekRunner の gpAlive=false）。出ていないのに「1回戦敗退」と出ていた。
     /// その年の出来事ログ（年ごとにリセット）に1回戦の行が無く、1回戦も通っていない時だけ true。表示専用
     private var notEnteredGP: Bool {
-        guard let o, o.roundsPassed == 0, let first = session.config.calendar.gpRoundNames.first else { return false }
-        return !session.log.contains { $0.contains(first) }
+        Self.notEntered(o, loggedGPEntry: session.loggedGPEntry)
+    }
+    static func notEntered(_ o: YearOutcome?, loggedGPEntry: Bool) -> Bool {
+        guard let o, o.roundsPassed == 0 else { return false }
+        return !loggedGPEntry
     }
 }
 
