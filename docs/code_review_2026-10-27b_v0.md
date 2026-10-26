@@ -27,3 +27,5 @@
 - climaxNext：`GameSession.acknowledgeResult()` は先頭で `guard pendingResult != nil` ＝2回目は何もしない（GameSession.swift:957）。
 - YoseChampionCelebrationView の onFinish：呼び手（FinalsPresentationView.swift:219）は `showChamp = false`・`endingFull = …`・`showEnding = true` の代入だけ＝2回呼んでも同じ状態。
 - YoseMilestoneFX：本編の呼び手なし（DEBUG の演出5つ＝キュー88・本編接続はオーナー確認待ち）。本編へつなぐ時に onFinish の二重呼びを見る。
+- 低#4（IntroFlow の最後のカードの連打）：呼び先は RootView.swift:347 の `session = GameSession(…)`＋`started = true`＝2回目は始まる前の session を作り直すだけ（1週目を見る前なので乱数の種が変わっても見えない）＝実害なし。
+- 低#5 済（エンディングの「タップで進む」の余白）。
