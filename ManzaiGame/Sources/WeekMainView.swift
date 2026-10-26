@@ -1530,7 +1530,7 @@ struct WeekMainView: View {
         let gains = ExpCurrency.allCases.map { ($0, after[currency: $0] - s[currency: $0]) }.filter { $0.1 > 0.001 }
             .sorted { $0.1 > $1.1 }.prefix(2)
         for (c, d) in gains where ExpDisplay.value(d) > 0 && !(v.isTrain && openCat == .練習) {
-            out.append(CardEffect(text: "\(c) +\(ExpDisplay.value(d))", color: Self.expColor(c)))
+            out.append(CardEffect(text: "\(Theme.currencyChar(c)) +\(ExpDisplay.value(d))", color: Self.expColor(c)))
         }
         let cd = Int(after.compat.rounded()) - Int(s.compat.rounded())
         if cd > 0 { out.append(CardEffect(text: "相性 +\(cd)", color: YoseColor.shu)) }
