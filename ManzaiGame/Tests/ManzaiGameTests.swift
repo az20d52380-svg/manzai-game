@@ -381,6 +381,9 @@ final class PlaytestFixV2Tests: IsolatedStoreTestCase {
         XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 2, losses: 5), pool)
         XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 2, losses: 2), pool)
         XCTAssertEqual(YearResultView.filterByRecord(pool, wins: 0, losses: 0), pool)
+        // 停滞年に後から足した負け語りの行も外れる（code_review_2026-10-26 §2-1）
+        let pool2 = ["今年は、負けて帰る日が多かった。正月くらいは、ゆっくり休もう。", pool[1]]
+        XCTAssertEqual(YearResultView.filterByRecord(pool2, wins: 3, losses: 1), [pool[1]])
         // 外すと空になる時は元のまま
         XCTAssertEqual(YearResultView.filterByRecord([pool[0]], wins: 5, losses: 2), [pool[0]])
     }
@@ -418,16 +421,16 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testInjuryWarn() {
         var i = base(); i.stamina = 45
-        XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるぞ。")
+        XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるよ。")
     }
     func testNoNeta() {
         var i = base(); i.netaCount = 0
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
     }
     func testStamina() {
         var i = base(); i.stamina = 30
         XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
-        i.stamina = 31; XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるぞ。")   // 体調ダウンの注意（体力50未満・§97）
+        i.stamina = 31; XCTAssertEqual(WeekHint.line(i), "谷口：無理すると倒れるよ。")   // 体調ダウンの注意（体力50未満・§97）
         i.stamina = 50; XCTAssertNil(WeekHint.line(i))
     }
     func testLiving() {
@@ -454,7 +457,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
         i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
@@ -766,5 +769,96 @@ final class SessionGuardTests20261019: IsolatedStoreTestCase {
         }
         // 重み表は行合計1
         for w in FinalsData.judgeWeights { XCTAssertEqual(w.reduce(0, +), 1.0, accuracy: 1e-9) }
+    }
+}
+
+/// 最終年（結成 careerYears 年目）に「来年」を言わない（year10_visual_1026_v0 §2-2）。
+final class FinalYearCopyTests: XCTestCase {
+    func testRevivalLossDropsNextYearOnlyInFinalYear() {
+        let r = StageResult(name: "敗者復活", passed: false, prize: 0)
+        let normal = ClimaxData.pages(for: r).map(\.text)
+        let last = ClimaxData.pages(for: r, finalYear: true).map(\.text)
+        XCTAssertTrue(normal.contains { $0.contains("来年") })
+        XCTAssertFalse(last.contains { $0.contains("来年") })
+        XCTAssertEqual(normal.count, last.count)   // 行は切るだけ・ページ数は同じ
+        XCTAssertTrue(normal.contains(ClimaxData.revivalNextYearLine))   // 切り替えの対象の行が今も入っている
+    }
+}
+
+/// §102 先輩の誘いの言い換え：選択肢のラベルは全部同じ（効果の文の対応を崩さない）・同じ週は同じ文面・1年で全部出る。
+final class WeekendInviteVariantTests: XCTestCase {
+    func testVariantsKeepLabelsAndRotate() {
+        let v = ChoiceEventData.weekendInviteVariants
+        let base = ChoiceEventData.text(for: .weekendInvite)
+        for t in v { XCTAssertEqual(t.choiceLabels, base.choiceLabels) }
+        let a = ChoiceEventData.text(for: .weekendInvite, year: 3, week: 17).setup.map(\.text)
+        let b = ChoiceEventData.text(for: .weekendInvite, year: 3, week: 17).setup.map(\.text)
+        XCTAssertEqual(a, b)
+        let seen = Set((1...48).map { ChoiceEventData.text(for: .weekendInvite, year: 1, week: $0).setup.map(\.text).joined() })
+        XCTAssertEqual(seen.count, v.count)
+        // 他のイベントは year/week を渡しても元の文面のまま
+        XCTAssertEqual(ChoiceEventData.text(for: .senpaiMeishi, year: 5, week: 9).setup.map(\.text), ChoiceEventData.text(for: .senpaiMeishi).setup.map(\.text))
+        // 0019 連敗の相談も同じ規律（ラベル同じ・1年で全部出る）
+        let st = ChoiceEventData.styleTalkVariants
+        for t in st { XCTAssertEqual(t.choiceLabels, ChoiceEventData.text(for: .styleTalk).choiceLabels) }
+        XCTAssertEqual(Set((1...48).map { ChoiceEventData.text(for: .styleTalk, year: 2, week: $0).setup.map(\.text).joined() }).count, st.count)
+    }
+}
+
+/// 会話の決まり（manzai-drama-voice v3 ③）：選択イベントの吹き出しは40字・2文以内（地の文 name=nil は対象外）。10/26 定期の点検で3文の行が2本見つかった。
+final class ChoiceEventLineLengthTests: XCTestCase {
+    func testSpeechBubblesWithinFortyCharsTwoSentences() {
+        var texts = ChoiceEventKind.allCases.map { ChoiceEventData.text(for: $0) }
+        texts += ChoiceEventData.weekendInviteVariants + ChoiceEventData.styleTalkVariants
+        for t in texts {
+            for a in t.setup + t.afterChoice.values.flatMap({ $0 }) where a.name != nil {
+                let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                XCTAssertLessThanOrEqual(line.count, 40, "\(t.title)：\(line)")
+                XCTAssertLessThanOrEqual(sentences.count, 2, "\(t.title)：\(line)")
+            }
+        }
+    }
+
+    /// 週頭の掛け合いも同じ決まり（6帯・salt を回して全行を拾う）。
+    func testBanterWithinFortyCharsTwoSentences() {
+        for band in [BanterBand.plain, .lull, .eve, .streak, .broke, .afterPass] {
+            for salt in 0..<200 {
+                for a in DialogueData.banter(band: band, salt: salt) ?? [] where a.name != nil {
+                    let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                    let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                    XCTAssertLessThanOrEqual(line.count, 40, "\(band)：\(line)")
+                    XCTAssertLessThanOrEqual(sentences.count, 2, "\(band)：\(line)")
+                }
+            }
+        }
+    }
+}
+
+/// お店の「戻す」は引っ越しを巻き戻さない（code_review_2026-10-19 §1-1）。ShopView と同じ手順（起点を取る→引っ越して起点の部屋も更新→買う→戻す）を session で再現する。
+final class ShopUndoRoomTests: IsolatedStoreTestCase {
+    func testUndoPurchaseKeepsMovedRoom() {
+        var st = GameState(config: GameConfig()); st.money = 2_000_000
+        let s = GameSession(startState: st)
+        var visitStart = s.state
+        let target = s.config.roomRents.count - 1
+        XCTAssertTrue(s.moveRoom(to: target))
+        visitStart.room = s.state.room                       // ShopView.swift の引っ越しボタンと同じ
+        let moneyAfterMove = s.state.money
+        XCTAssertTrue(s.buyItem(.栄養ドリンク))
+        XCTAssertLessThan(s.state.money, moneyAfterMove)
+        s.replayShopVisit(from: visitStart, [])              // 「戻す」で買い物を全部返す
+        XCTAssertEqual(s.state.room, target)                 // 部屋はそのまま
+        XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
+    }
+}
+
+/// 年末の「不出場（エントリー費が払えず）」の判定：週の記録は表示名で書く（summarize＝GPName.display）。1回戦で負けた年を不出場と出していた（10/26 定期の目視）
+final class GPEntryLogTests: XCTestCase {
+    func testFirstRoundLossCountsAsEntered() {
+        let c = GameConfig(), first = c.calendar.gpRoundNames[0]
+        XCTAssertTrue(GameSession.loggedGPEntry(in: ["第30週: \(GPName.display(first)) 敗退"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: ["第30週: 春新人賞A 通過"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: [], config: c))
     }
 }

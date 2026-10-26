@@ -85,7 +85,7 @@ struct QualifierNoticeView: View {
                 Button { open() } label: {
                     HStack(alignment: .top, spacing: 10) {
                         RoundedRectangle(cornerRadius: 9).fill(YoseColor.kin).frame(width: 38, height: 38)
-                            .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))
+                            .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").font(.system(size: 18, weight: .semibold)).foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))   // 大きい文字で記号だけ膨らみ枠からはみ出した（ax3_hooks_audit_1026 L4）
                         VStack(alignment: .leading, spacing: 3) {
                             HStack { Text(isChat ? partnerName : "頂GP公式").font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.5)) }
                             Text(isChat ? "見た？" : "【結果発表】\(roundLabel)の通過者を掲載しました").font(YoseFont.gothic(13)).multilineTextAlignment(.leading)
@@ -140,7 +140,7 @@ struct QualifierNoticeView: View {
             }
             if scanned {
                 Button { finish() } label: {
-                    Text(passed ? "つづける" : "閉じる").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(passed ? YoseColor.kuroUrushi : YoseColor.washi)
+                    Text(passed ? "つづける" : "とじる").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(passed ? YoseColor.kuroUrushi : YoseColor.washi)
                         .padding(.horizontal, 44).padding(.vertical, 11)
                         .background(passed ? YoseColor.kinBright : .clear, in: Capsule())
                         .overlay(Capsule().stroke(YoseColor.ginNezu.opacity(passed ? 0 : 0.6)))
@@ -204,9 +204,10 @@ struct QualifierNoticeView: View {
     private func start() {
         guard task == nil else { return }
         #if DEBUG
-        if let o = ProcessInfo.processInfo.environment["MZ_OPEN"] {   // 目視用：1=通知を開いた後から／2=さらに「開く」を選んだ後から
+        if let o = ProcessInfo.processInfo.environment["MZ_OPEN"] {   // 目視用：1=通知を開いた後から／2=さらに「開く」を選んだ後から／3=一覧を閉じて結果まで
             open()
-            if o == "2" { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); pickOpen() } }
+            if o == "2" || o == "3" { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); pickOpen() } }
+            if o == "3" { Task { try? await Task.sleep(nanoseconds: 4_000_000_000); finish() } }   // 3=一覧の先（結果の紙の講評）まで（judge_comments_visual_1026_v0）
             return
         }
         #endif

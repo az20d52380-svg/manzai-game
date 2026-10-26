@@ -255,9 +255,12 @@ final class GameSession {
         Names.setKind(self.comboKind)
         self.isRestored = true
         self.uiEventRng = save.uiEventRng
-        self.runner = WeekRunner(restoring: save.runner, config: cfg)
+        let restoredRunner = WeekRunner(restoring: save.runner, config: cfg)
+        self.runner = restoredRunner
         self.state = save.runner.state
-        self.phase = save.phase
+        // 段の種類が同じなら、中身（大会・オファー・回戦名）は runner が新しい config から取り直した物を使う
+        // （保存時の古い値が画面に出て、実際に効く値と食い違っていた＝code_review_2026-10-25e §3-3）
+        if let now = restoredRunner.restoredPhase, Self.sameStep(save.phase, now) { self.phase = now } else { self.phase = save.phase }
         self.week = save.runner.week
         // 複数年（v3）: 旧セーブ（1年完結時代）には無い＝1年目の新規と同じ基準に落とす
         self.yearStartState = save.yearStartState ?? GameState(config: cfg)
@@ -314,10 +317,20 @@ final class GameSession {
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
     }
 
+    /// 2つの段が同じ種類で、中身を config から取り直せる段か（大会の決断・自由週・回戦）。
+    /// weekDone／yearDone は保存した中身のまま（週末の誘いの解決などで runner の状態と違いうる）
+    static func sameStep(_ a: WeekRunner<SplitMix64>.Phase, _ b: WeekRunner<SplitMix64>.Phase) -> Bool {
+        switch (a, b) {
+        case (.tournamentDecision, .tournamentDecision), (.freeAction, .freeAction), (.gpRound, .gpRound): return true
+        default: return false
+        }
+    }
+
     // MARK: UI からの入力（Phase 別）
 
     /// 大会週の回答（travel=nil は見送り）
     func decideTournament(_ travel: Travel?) {
+        guard case .tournamentDecision = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let fameBefore = state.fame
         phase = runner.resolveTournament(travel: travel)
         pump()
@@ -327,6 +340,7 @@ final class GameSession {
 
     /// 自由行動週の回答
     func choose(_ action: WeekAction) {
+        guard case .freeAction = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let before = state
         let actedWeek = week   // pump 後に week が進むので、生活費の判定は行動した週で行う
         var action = action
@@ -960,6 +974,10 @@ final class GameSession {
 
     /// GP回戦・敗者復活・決勝の演出後（入力不要）
     func advanceAuto() {
+        switch phase {   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
+        case .gpRound, .gpRevival, .gpFinal: break
+        default: return
+        }
         phase = runner.resolveAuto()
         pump()
         saveNow()
@@ -1004,6 +1022,7 @@ final class GameSession {
 
     /// 観客版決勝を観終えた。優勝組を「出来事」に残して週メインへ戻る。
     func finishWatchingFinal(winner: String) {
+        guard watchingFinal else { return }   // 終わりのボタンの二度押しで「（客席から）」が2行積まれた（code_review_2026-10-26 低1）
         watchingFinal = false
         didWatchFinal = true
         log.append("第\(week)週: 頂GP 決勝 優勝「\(winner)」（客席から）")
@@ -1014,6 +1033,37 @@ final class GameSession {
     func abandonRun() {
         Self.store.removeObject(forKey: Self.saveKey)
         abandoned = true
+    }
+
+    /// この年の頂GPの回戦に出たか（週の記録に1回戦の行があるか）。記録は表示名（GPName.display）で書くので、生のキー「GP1回戦」では探さない
+    /// （年末の画面が生のキーで探して、1回戦で負けた年を「エントリー費が払えず不出場」と出していた＝10/26 定期の目視）。表示専用
+    /// 週の記録の1行を、読む側（戦績・年末）が使う形に分ける。書く側は summarize（「第N週: 大会 札 [+N万] / 大会 札」）・観戦（…（客席から））・決勝優勝の3形。
+    /// 札は「優勝/通過/敗退/休/観戦」。1週に複数大会が「 / 」で並ぶ行は大会ごとに分ける。表示専用
+    struct LogPart: Equatable { let week: String; let title: String; let mark: String; let prize: Int }
+    static func parseLogLine(_ line: String) -> [LogPart] {
+        var week = "", body = line
+        if let r = line.range(of: ": ") { week = String(line[..<r.lowerBound]); body = String(line[r.upperBound...]) }
+        if line.contains("客席") { return [LogPart(week: week, title: body, mark: "観戦", prize: 0)] }
+        return body.components(separatedBy: " / ").map { raw in
+            var prize = 0
+            var rest = raw
+            if let re = try? NSRegularExpression(pattern: "\\+(\\d+)万") {
+                for m in re.matches(in: raw, range: NSRange(raw.startIndex..., in: raw)) {
+                    if let r = Range(m.range(at: 1), in: raw) { prize += Int(raw[r]) ?? 0 }
+                }
+                rest = re.stringByReplacingMatches(in: raw, range: NSRange(raw.startIndex..., in: raw), withTemplate: "")
+                    .trimmingCharacters(in: .whitespaces)
+            }
+            let last = rest.split(separator: " ").last.map(String.init) ?? ""
+            let mark = ["優勝", "通過", "敗退"].contains(last) ? last : "休"
+            return LogPart(week: week, title: rest, mark: mark, prize: prize)
+        }
+    }
+
+    var loggedGPEntry: Bool { Self.loggedGPEntry(in: log, config: config) }
+    static func loggedGPEntry(in log: [String], config: GameConfig) -> Bool {
+        let first = config.calendar.gpRoundNames.first ?? "GP1回戦"
+        return log.contains { $0.contains(GPName.display(first)) }
     }
 
     /// 設定の「解散」の別れの場面に出す、この周の最高成績1行（表示専用・乱数なし）。
@@ -1304,12 +1354,21 @@ final class GameSession {
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
                 if yearHistory.last?.year != runner.year {
+                    // 夜逃げ・解散で終わった週は weekDone を経ない＝その週の大会の結果が出来事ログ・賞金年計に載らなかった
+                    // （懸念の台帳 L52）。優勝の時と同じく、runner の週内結果から表示用の記録だけ足す（GameCore 不変）。
+                    if outcome.bankrupt || outcome.dissolved {
+                        let rs = runner.snapshot().weekResults
+                        if !rs.isEmpty {
+                            log.append(summarize(WeekSummary(year: runner.year, week: runner.week, results: rs, state: runner.state)))
+                            totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
+                        }
+                    }
                     yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
                                                   reachedFinal: outcome.reachedFinal, champion: outcome.champion,
                                                   bankrupt: outcome.bankrupt,
                                                   prize: totalPrize + (outcome.champion ? config.calendar.gpPrize : 0),
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
-                                                      || log.contains { $0.contains(GPName.display(config.calendar.gpRoundNames.first ?? "GP1回戦")) },
+                                                      || loggedGPEntry,
                                                   dissolved: outcome.dissolved ? true : nil,
                                                   watchedFinal: didWatchFinal ? true : nil))
                 }
@@ -1343,6 +1402,9 @@ final class GameSession {
     }
 
     #if DEBUG
+    /// テスト用: runner が持つ正の状態（懸念の台帳 L55＝表示用の state が runner から写した唯一の派生かを突き合わせる）
+    var debugRunnerState: GameState { runner.state }
+
     /// QA用: 選択肢イベントのオーバーレイを強制表示（発火抽選を経ず kind を直接立てる・目視専用）。
     func debugForceEvent(_ kind: ChoiceEventKind) { pendingChoiceEvent = kind }
 
@@ -1607,10 +1669,12 @@ final class GameSession {
             if state.money < 250_000 { choose(.job(.標準)) }
             else if state.stamina < 45 { choose(.rest(.相方と過ごす)) }
             else if week % 2 == 0 { choose(.rest(.相方と過ごす)) }
+            else if activeNetas.isEmpty { choose(.train(.ネタ作り)) }   // 書かないままだと6年目でも「まだネタがない」の画面になっていた（10/26 定期の目視）
             else { choose(.train(.ネタ合わせ)) }
             return
         }
-        if state.money < 250_000 { choose(.job(.標準)) }
+        if state.stamina < 25 { choose(.rest(.完全休養)) }   // 体力が尽きるまでバイトを続けて、目視の画面が「体力0」ばかりになっていた（blank_weeks_screen_check_1026_v0）
+        else if state.money < 250_000 { choose(.job(.標準)) }
         else if state.stamina >= 45 { choose(.train(.ネタ作り)) }
         else { choose(.rest(.完全休養)) }
     }
@@ -1631,7 +1695,8 @@ final class GameSession {
     }
     #endif
 
-    private func summarize(_ s: WeekSummary) -> String {
+    private func summarize(_ s: WeekSummary) -> String { Self.summarize(s) }
+    static func summarize(_ s: WeekSummary) -> String {
         let parts = s.results.map { r -> String in
             let mark = r.isStage ? (r.passed ? (r.prize > 0 ? "優勝" : "通過") : "敗退") : "休"   // 賞金の出る勝ち＝その大会の優勝（結果の札と同じ言葉）   // 体調ダウン/療養は合否でなく「休」（監査§1-4-5・Fable13§2）
             let prize = r.prize > 0 ? " +\(r.prize / 10000)万" : ""

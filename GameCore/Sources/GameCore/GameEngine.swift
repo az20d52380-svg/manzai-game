@@ -258,7 +258,7 @@ public enum GameEngine {
     /// ネタのスコア寄与（Phase 1-a・Python: sim_career._neta_bonus ＋ 決勝2本制）。
     /// 戻り値は「本番スコアに足す量」＝呼び出し側で `line` から引く（ラインを下げる＝有利。sim と同じライン調整）。
     /// ★選択中ネタ（`selectedNetaID`）が無ければ **恒等的に 0** を返す＝ネタ未使用は従来の合否のまま。
-    ///  golden 生成器（gen_golden.py）はネタ個体を持たない＝`selectedNetaID==nil`＝この項は常に 0＝3年ビット一致は不変。
+    ///  golden 生成器（gen_golden.py）はネタ個体を持たない＝`selectedNetaID==nil`＝この項は常に 0＝3年 golden 一致（誤差1e-9以内）は不変。
     ///  perform の乱数消費（2draw）には一切触れない（この関数は RandomSource を受け取らない）。
     public static func netaScoreBonus(_ s: GameState, isFinal: Bool, config: GameConfig) -> Double {
         guard let id = s.selectedNetaID,

@@ -43,6 +43,17 @@ enum ChoiceEventData {
         }
     }
 
+    /// year/week を渡すと、何度も来るイベント（§102 先輩の誘い＝1キャリア約19回）は週ごとに文面を替える（同じ週の再描画は同じ文面）。
+    static func text(for kind: ChoiceEventKind, year: Int, week: Int) -> ChoiceEventText {
+        let v: [ChoiceEventText]
+        switch kind {
+        case .weekendInvite: v = weekendInviteVariants
+        case .styleTalk:     v = styleTalkVariants   // 0019 連敗の相談（1キャリア約6回）
+        default:             return text(for: kind)
+        }
+        return v[((year &* 48 &+ week) % v.count + v.count) % v.count]
+    }
+
     static func text(for kind: ChoiceEventKind) -> ChoiceEventText {
         switch kind {
         case .justLostRehearsal: return justLostRehearsal
@@ -137,6 +148,79 @@ enum ChoiceEventData {
             "B": [
                 Advice(name: "俺", text: "離れないでいこう。毎日ここに来る"),
                 Advice(name: "谷口", text: "いいよ。しんどいけど、付き合う"),
+            ],
+        ]
+    )
+
+    /// 0019 の言い換え（連敗3回の週・稽古場の昼／選択肢と効果は同じ）。先頭が元の文面。
+    static let styleTalkVariants: [ChoiceEventText] = [
+        styleTalk, styleTalkTired, styleTalkMoney, styleTalkQuiet,
+    ]
+
+    private static let styleTalkLabels: [String: String] = [
+        "A": "しばらく一人で知らない町を歩く",
+        "B": "休まず毎日いっしょに稽古する",
+    ]
+
+    private static let styleTalkTired = ChoiceEventText(
+        title: "続けて落ちた週",
+        setup: [
+            Advice(name: nil, text: "稽古場。三回続けて落ちた週の昼過ぎ。"),
+            Advice(name: "谷口", text: "最近、朝起きても体が重いんだよね"),
+            Advice(name: "俺", text: "顔、疲れてるよ。ちゃんと休めてる？"),
+            Advice(name: "谷口", text: "休みの日も、結局ここに来ちゃうからね"),
+        ],
+        choiceLabels: styleTalkLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "少し距離を置こう。{me}は一人で、遠くの町まで歩いてみる"),
+                Advice(name: "谷口", text: "うん。そのあいだ、こっちもゆっくり休むよ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "しんどいのは分かる。でも、明日もここで会おう"),
+                Advice(name: "谷口", text: "わかった。眠くても来るよ"),
+            ],
+        ]
+    )
+
+    private static let styleTalkMoney = ChoiceEventText(
+        title: "続けて落ちた週",
+        setup: [
+            Advice(name: nil, text: "稽古場。大会に三回続けて落ちた週の昼。"),
+            Advice(name: "谷口", text: "出場料、三回分払ったね。財布がだいぶ軽いよ"),
+            Advice(name: "俺", text: "お金、きつくない？"),
+            Advice(name: "谷口", text: "うん、バイトを夜も入れた。ここにいる時間が減ってきたね"),
+        ],
+        choiceLabels: styleTalkLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "しばらく別々に過ごそう。{me}も一人で、知らない町を歩いてくる"),
+                Advice(name: "谷口", text: "そうだね。そのあいだはバイトに集中しとく"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "バイトのあとでいいから、毎日ここに来よう"),
+                Advice(name: "谷口", text: "わかった。短くても顔は出すよ"),
+            ],
+        ]
+    )
+
+    private static let styleTalkQuiet = ChoiceEventText(
+        title: "続けて落ちた週",
+        setup: [
+            Advice(name: nil, text: "稽古場の昼。三回続けて落ちた週。"),
+            Advice(name: "谷口", text: "今日、まだほとんどしゃべってないね"),
+            Advice(name: "俺", text: "そうだね。どこか具合悪い？"),
+            Advice(name: "谷口", text: "ううん。顔を見ると、負けた日のことを思い出しちゃって"),
+        ],
+        choiceLabels: styleTalkLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "少し会わない時間を作ろう。{me}は一人で、知らない駅で降りてみる"),
+                Advice(name: "谷口", text: "うん。戻ってきたら、また話そう"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "黙っててもいいよ。それでも、明日もここに来よう"),
+                Advice(name: "谷口", text: "わかった。明日も来る"),
             ],
         ]
     )
@@ -269,6 +353,117 @@ enum ChoiceEventData {
         ]
     )
 
+    /// §102 先輩の誘いの言い換え（場所＝劇場の裏口・夜／選択肢と効果は同じ）。先頭が元の文面。
+    static let weekendInviteVariants: [ChoiceEventText] = [
+        weekendInvite, weekendInviteAfterShow, weekendInviteRain,
+        weekendInviteCleanup, weekendInviteTalk, weekendInviteAfterStage,
+    ]
+
+    private static let weekendInviteLabels: [String: String] = [
+        "A": "先輩と飲みに行く（5,000円）",
+        "B": "今夜は断って帰る",
+    ]
+
+    private static let weekendInviteAfterShow = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。終演後、先輩が出てきた。"),
+            Advice(name: "先輩", text: "今日はお客さんが多くて疲れたな。少し付き合わないか"),
+            Advice(name: "谷口", text: "少しなら行ってもいいかな。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。少しだけお願いします"),
+                Advice(name: "谷口", text: "うん、行こう"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰ります。また声をかけてください"),
+                Advice(name: "先輩", text: "わかった。気をつけて帰れよ"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteRain = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。外は雨が降っている。"),
+            Advice(name: "先輩", text: "この雨じゃ帰るのも大変だろ。近くの店で雨宿りしていかないか"),
+            Advice(name: "谷口", text: "傘、持ってきてないんだよね。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。雨がやむまでお願いします"),
+                Advice(name: "谷口", text: "助かった。行こう"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "雨が弱いうちに、今夜は帰ります。また誘ってください"),
+                Advice(name: "先輩", text: "そうか。風邪ひくなよ"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteCleanup = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。客席の片付けが終わった。"),
+            Advice(name: "先輩", text: "片付けお疲れ。このあと何人かで飲みに行くけど、来ないか"),
+            Advice(name: "谷口", text: "お腹すいたね。行ってもいいと思うけど、どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。ご一緒させてください"),
+                Advice(name: "谷口", text: "よかった。何食べようか"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰って休みます。また今度お願いします"),
+                Advice(name: "先輩", text: "そうか。お疲れさん"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteTalk = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。先輩がひとりで待っていた。"),
+            Advice(name: "先輩", text: "ちょっと聞いてほしい話があってさ。飲みながらでいいか"),
+            Advice(name: "谷口", text: "先輩、元気なさそうだね。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。話、聞かせてください"),
+                Advice(name: "先輩", text: "悪いな。助かるよ"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰らないといけなくて。すみません"),
+                Advice(name: "先輩", text: "いいよ。また今度な"),
+            ],
+        ]
+    )
+
+    private static let weekendInviteAfterStage = ChoiceEventText(
+        title: "先輩から誘い",
+        setup: [
+            Advice(name: nil, text: "劇場の裏口。着替えて外に出たところだ。"),
+            Advice(name: "先輩", text: "お疲れ。いつもの店が今夜は空いてるらしいけど、行かないか"),
+            Advice(name: "谷口", text: "明日のバイトは昼からだし、行けなくはないね。どうする？"),
+        ],
+        choiceLabels: weekendInviteLabels,
+        afterChoice: [
+            "A": [
+                Advice(name: "俺", text: "行きます。お願いします"),
+                Advice(name: "谷口", text: "うん。明日に響かない程度にね"),
+            ],
+            "B": [
+                Advice(name: "俺", text: "今夜は帰って寝ます。また誘ってください"),
+                Advice(name: "先輩", text: "わかった。お疲れ"),
+            ],
+        ]
+    )
+
     // MARK: 0011 行けない飲み会（週次抽選・低所持金帯。proposals/0011 レッドチーム済み確定テキストを転記）
 
     private static let brokeDrinkingInvite = ChoiceEventText(
@@ -296,7 +491,7 @@ enum ChoiceEventData {
     )
 
     // MARK: 0013 先輩の名刺（週次抽選・奢られる帯。proposals/0013 レッドチーム済み確定テキストを転記）
-    //   第三者「先輩」は関西弁の漫才の先輩＝proposal 確定テキストに準拠（谷口以外の相方は標準語だが本第三者は例外）。
+    //   第三者「先輩」は漫才の先輩（2026-10-20 オーナー決定で関西弁をやめ、全員標準語）。
 
     private static let senpaiMeishi = ChoiceEventText(
         title: "先輩のおごり",
@@ -353,7 +548,7 @@ enum ChoiceEventData {
     )
 
     // MARK: 0028 名前の無い予約票（確定発火・選択肢なしフレーバー。proposals/0028 レッドチーム済み確定テキストを転記）
-    //   俺（標準語・地の文）／谷口（関西弁）の2話者。効果なし＝会話（セットアップ→締め）を送り切って閉じる。
+    //   {me}（地の文）／相方の2話者（2026-10-20 オーナー決定で全員標準語）。効果なし＝会話（セットアップ→締め）を送り切って閉じる。
 
     private static let namelessReservationSlip = ChoiceEventText(
         title: "受付の飴",
@@ -551,7 +746,7 @@ enum ChoiceEventData {
     )
 
     // MARK: - 相方以外の人とのイベント（docs/choice_events_others_v1.md・2026-10-15 オーナー指示）
-    //   第三者は標準語・谷口は関西弁。正典v3（ボケない・日常会話）＋研究 research_event_fun_v0 §4 案A（固有物1つ＋人柄1つ・選択後は反応で返す）。
+    //   全員標準語（2026-10-20 オーナー決定）。正典v3（ボケない・日常会話）＋研究 research_event_fun_v0 §4 案A（固有物1つ＋人柄1つ・選択後は反応で返す）。
 
     // MARK: 0050 会わない週が続いた（途中解散の予告・docs/endings_spec_v1.md §4 逐語。採番は 0041 が使用済みのため 0050）
 
@@ -824,7 +1019,7 @@ enum ChoiceEventData {
         afterChoice: [
             "A": [
                 Advice(name: "俺", text: "週末、駅前に立とう。二人で声をかけよう"),
-                Advice(name: "谷口", text: "寒いけど、がんばろう。知らない人に声をかけるの、初めてだよ"),
+                Advice(name: "谷口", text: "がんばろう。知らない人に声をかけるの、初めてだよ"),
             ],
             "B": [
                 Advice(name: "俺", text: "今回は買い取ろう。立つ時間を稽古に回したい"),
@@ -876,7 +1071,7 @@ enum ChoiceEventData {
             Advice(name: "俺", text: "本当だ。同期で最初のテレビだね"),
             Advice(name: "谷口", text: "昼にメールが来てたんだ。見てくれって"),
             Advice(name: "俺", text: "そっか。ちゃんと映ってるね"),
-            Advice(name: "谷口", text: "……あいつら、先に行っちゃったね"),
+            Advice(name: "谷口", text: "……石黒たち、先に行っちゃったね"),
         ],
         choiceLabels: [
             "A": "番組を最後まで二人で見る",
@@ -885,7 +1080,7 @@ enum ChoiceEventData {
         afterChoice: [
             "A": [
                 Advice(name: "俺", text: "最後まで見よう。終わったら石黒に連絡する"),
-                Advice(name: "谷口", text: "うん。あいつ、ずっと緊張した顔してるね"),
+                Advice(name: "谷口", text: "うん。石黒、ずっと緊張した顔してるね"),
             ],
             "B": [
                 Advice(name: "俺", text: "消そう。銭湯に行って、今日はもう寝よう"),

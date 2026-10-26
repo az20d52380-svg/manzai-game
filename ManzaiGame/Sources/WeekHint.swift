@@ -40,12 +40,14 @@ enum WeekHint {
         #else
         let dedupTop = false
         #endif
-        if i.preoccupied { return "今週は撮影の仕事で、稽古には出られない。" }
-        if i.netaCount == 0, !dedupTop { return "まだネタが無い。まずはネタを書こう。" }
-        if i.money < 0 { return "所持金はマイナス。今月の家賃のめどが立っていない。" }   // 借金の週は地の文で（谷口の台詞は出さない）
+        if i.preoccupied {   // 撮影の週でも家賃の不足は隠さない（code_review_2026-10-25b §2-1）
+            if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }
+            return "今週は撮影の仕事で、稽古には出られない。"
+        }
+        if i.netaCount == 0, !dedupTop { return "まだネタがない。まずはネタを書こう。" }
         if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }
         if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
-        if i.stamina < injuryWarn { return "谷口：無理すると倒れるぞ。" }
+        if i.stamina < injuryWarn { return "谷口：無理すると倒れるよ。" }   // 男女どちらでも自然な語尾（combo_gender_v0）・名前は Names.show が差し替える
         if i.livingInTwoWeeks { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
