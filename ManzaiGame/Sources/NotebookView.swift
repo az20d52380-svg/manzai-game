@@ -217,6 +217,11 @@ struct NotebookView: View {
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .yoseHarigami(isFeatured: win || r.reachedFinal)
                 }
+                if session.yearHistory.contains(where: { $0.prize > 0 }) {   // 見出しが頂GPなので、金額が頂GPの賞金に読めた（yearend_records_visual_1026_v0 軽微1）
+                    Text("金額は、その年の大会の賞金の合計")
+                        .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             }
             kirokuHeading(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会")
             if entries.isEmpty {
