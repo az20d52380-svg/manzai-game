@@ -138,6 +138,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/26 昼前 定期 済 385e3af：今日の増補（週頭の声・ファンレポA帯 185件）を opus で採点 dialogue_score_1026c_v0（○148△24×13・×は全部同じ帯の言い回しの重なり＝13行直し・△は案だけ）／点検（GameCore 412 green・golden 同期3種一致）／6年目第20週の目視（MZ_YEARS=5 MZ_CARE=1・体力20で lowStamina の独白・崩れなし）
 - 10/26 朝 定期 済 d25c17b・ce090d2・9df0f7c：週頭の声の測り直し（lull 増補の後＝steady/strong 全体19%）→負け続きの型が薄い（streak/losing 各12で読み返し8割）＝各30に増補（opus・親が季節語3行と重なり1組を差し替え・214 green）→負け続きの型 55→38%・1〜3年目 35→6%。続けて独白 plain/passed（21f7142）・ファンレポ A帯 50→90（e1b9cff＋大げさな2行を直し）・lowStamina/midseason/losing/streak（4e42aab＋1組差し替え）を増補＝週頭の声の読み返し steady 19.5→7.1%・poor 55→16%（banter_repeat_measure 追補3）。
 - 10/26 深夜 定期 済：点検（GameCore swift test 412 green・アプリ xcodebuild test 214 green・check_golden_sync 3つ一致）。selftest 29行 DONE 失敗なし（iPhone 17）。EventEffect 12種はテスト済み＝足す所なし。キューは判断待ちのみ。
 - 10/26 夜 定期 済：漏れ点検 soak 3分（MZ_SOAK_MS=30・落ちず・常駐メモリ 327→334MB で横ばい）／女性の形の週の画面（札「私」・見た目）／心の声の文字列も40字・2文の範囲内／会話の吹き出しの長さ点検（3文の行を3本＝先輩の誘い2・出会いの谷口1 を2文に・意味は不変）＋選択イベントの40字・2文を守るテスト（アプリ 213 green）／用語集の目視（フック MZ_GLOSS を足して6節＝崩れなし）／自己点検 selftest 31行 DONE・NG なし／コード点検 26d（4bdcc1a 以後・不具合なし・MZ_NETA_OPEN を DEBUG の内側へ）／点検（GameCore 412・golden 同期3種一致・アプリ側 212 green）／`MZ_UI=event` に `MZ_EVWEEK=n`（n 週休んでから出す）を足し、続けて落ちた週（4通り）・先輩の誘い（6通り）の文面を目視＝崩れなし。
