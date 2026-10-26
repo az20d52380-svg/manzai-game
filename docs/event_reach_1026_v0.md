@@ -3,6 +3,7 @@
 測り方：sim_career（EVENTS_APP=True＝アプリと同じ抽選）・全部入り・ネタ込み・n=1000・ボット4種。週の抽選イベントは1キャリアで各1回まで・合計15回まで（GameConfig.weeklyEventCap＝全25種のうち最大15種）。スクリプト：scratchpad の evall.py（tools/exp_calendar_jan_events_v0.py の数える種類を「少ない順8つ」に替えただけ）。
 
 ## 少ない順（1キャリアで出る割合）
+（呼び名は仮：3行目の当たり=luckythird・年末ライブ=yearend・帰省=homecoming・夏祭り=festival・ハガキ職人=postcard・金欠の一杯=brokedrink・撮影=photo）
 | ボット | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|
 | PCasual2 | 3行目の当たり 12% | 年末ライブ 16% | 帰省 22% | 夏祭り 26% | ハガキ職人 40% |
