@@ -948,6 +948,23 @@ final class Pure1027Tests: XCTestCase {
     }
 }
 
+/// 練習の画面名は CommandCatalog（行動の札）と AbilityUpView.practiceLabel（能力アップの「貯まる練習」）の2か所にある。食い違わないよう見張る（internal_name_leak_check_1027）
+final class PracticeLabelSyncTests: XCTestCase {
+    func testPracticeLabelMatchesCommandCards() {
+        let cfg = GameConfig()
+        var seen = 0
+        let all = CommandCatalog.mainCards(config: cfg, money: 10_000_000)
+            + CommandCategory.allCases.flatMap { CommandCatalog.cards($0, config: cfg, money: 10_000_000) }
+        for v in all {
+            if case .train(let t) = v.action {
+                XCTAssertEqual(AbilityUpView.practiceLabel(t), v.name, "\(t)")
+                seen += 1
+            }
+        }
+        XCTAssertGreaterThanOrEqual(seen, 8)
+    }
+}
+
 /// 【候補・キュー117 案A】区切りの年末でもセーブが残り、エンディングに入る時（closeCareer）に消える
 final class CareerEndSaveCandidateTests: IsolatedStoreTestCase {
     private let key = "manzai.save.v1"
