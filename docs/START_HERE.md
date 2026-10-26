@@ -11,7 +11,7 @@ CLI（Mac上）で作業を引き継ぐときは、まずこの1枚を読む。�
 ## いまの状態
 
 - **作業キューは `docs/AUTOPILOT.md` 一か所**（2026-10-13〜。対話でも自走でも上から進める・判断待ちもそこに並ぶ）。
-- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **128件 green**（2026-10-15 時点・
+- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **423件 green**・アプリのテスト（`cd ManzaiGame && xcodebuild test …`）は **262件 green**（2026-10-27 時点・
   増えていく。赤いまま push しない）＋ `python3 tools/check_golden_sync.py`（Python⇔Swift golden 同期）。
   ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行。
 - バランスの正本は `docs/canonical_v2_spec.md`（正典v2）**＋下の「後続決定の差分」**。正典v2の本文を読む時は差分表で数値を読み替える。
@@ -475,14 +475,22 @@ cd GameCore && swift test
 - `dialogue_score_1026c_v0.md` — 今日の増補の採点 10/26（週頭の声・ファンレポA帯）
 - `dialogue_score_1027_v0.md` — 台詞の棚卸しと採点 10/27（未採点5ファイル＋一部6・60行 ×0・△6行を直した）
 - `dialogue_score_1027b_v0.md`／`1027c`／`1027d` — DialogueData の残り全部の採点（456行・×0・△24＝17行を直し7行は理由・対応は 1027d 末尾）
+- `dialogue_score_1027c_v0.md`・`dialogue_score_1027d_v0.md` — 上の 1027c（84〜421行）・1027d（427〜986行）の本体
+- `dialogue_score_1027f_v0.md` — 講評・エンディング・大会の未採点145行（×1＝関西弁の漏れ・△6＝講評3行を直した）
+- `dialogue_score_1027g_v0.md` — 講評の残り177行の再確認（未採点18行・△1は褒めの定型で直さず）
 - `dialogue_score_1027e_v0.md` — 選択イベント・出会い・客の声の未採点116行（×0・△4＝客の声3行を直した）
 - `ui_wording_check_1027_v0.md` — 画面の文字の表記ゆれ点検（誤字0・用語集の「ネタ帳」を直した・¥/円は使い分け・残りの統一案は判断待ち）
+- `firstlook_check_1027b_v0.md` — 初見点検の続き（設定・予選の知らせ・決勝発表・タイトル・図鑑など10画面・13件・表示だけの所は直した）
+- `firstlook_check_1027c_v0.md` — 初見点検の続き（オファー・稽古の下位画面・名前入力・11件・経験点の内部名の漏れ等を直した）
+- `internal_name_leak_check_1027_v0.md` — 内部の名前（enum の case 名）が画面に出る所の点検（確実0・予備3）
+- `yearly_goal_display_research_1027_v0.md` — 年ごとの目標の見せ方のリサーチ（キュー132 の材料・候補 claude/yearly-goal-cand）
 - `app_coverage_1026_v0.md` — アプリの表示判定の未カバーにテスト11本 10/26（判定を純関数に切り出し）
 - `code_review_2026-10-26d_v0.md` — コード点検 10/26d（本番の不具合0）
 - `code_review_2026-10-26e_v0.md` — 週の記録の書く所と読む所の突き合わせ 10/26（中1・低2）
 - `code_review_2026-10-26f_v0.md` — 今日のアプリ変更の点検 10/26 夜（高0・中1・低2＝#1・#2 は直した）
 - `code_review_2026-10-27_v0.md` — 10/26 夜〜10/27 のアプリ変更の点検（高0・中0・低3＝③用語集「客の反応」の言い方は直した・①②は要確認）
 - `code_review_2026-10-27b_v0.md` — 10/27 のアプリ変更＋読み上げ候補ブランチの点検（高0・中3＝二重呼びでも実害なしと確認・低#5 余白の書き損じは直した）
+- `code_review_2026-10-27c_v0.md` — 10/27 昼の点検の後の変更の点検（高0・中0・低3＝実害なしと確認）
 - `later_years_neta_visual_1026_v0.md` — 後半の年の目視（ネタあり）10/26（10年目の不出場と所持金の見え方＝中1）
 - `yearend_records_visual_1026_v0.md` — 年末・戦績の画面の目視 10/26（重要0・軽微2）
 - `neta_coef_nopolish_1026_v0.md` — ネタを磨かない人への係数の効き目（L35・磨くとご褒美側・罰は最大約−4pt）
