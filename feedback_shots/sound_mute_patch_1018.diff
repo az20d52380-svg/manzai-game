@@ -1,0 +1,43 @@
+diff --git a/ManzaiGame/Sources/SoundManager.swift b/ManzaiGame/Sources/SoundManager.swift
+index 3df536c..c304c66 100644
+--- a/ManzaiGame/Sources/SoundManager.swift
++++ b/ManzaiGame/Sources/SoundManager.swift
+@@ -65,8 +65,21 @@ final class SoundEngine {
+     var seHushed = false
+     /// プレイヤーごとの進行中フェード（新しいフェードを始める時に取り消す＝フェード同士が音量を奪い合わない）
+     private var fadeTimers: [ObjectIdentifier: Timer] = [:]
++    /// QA自動走行（MZ_* フック）では音を鳴らさない（DEBUGのみ）。無人のシミュレータでは
++    /// BGM の prepareToPlay がメインスレッドで音声サーバ待ちになり、画面が真っ白のまま止まった（playtest_v8）。
++    /// MZ_SOUND=1 で鳴らす（音の目視・耳確認用）。
++    private let muted: Bool = {
++        #if DEBUG
++        let env = ProcessInfo.processInfo.environment
++        if env["MZ_SOUND"] == "1" { return false }
++        return env["MZ_MUTE"] == "1" || env.keys.contains { $0.hasPrefix("MZ_") }
++        #else
++        return false
++        #endif
++    }()
+ 
+     init() {
++        guard !muted else { return }
+         // ambient = マナー(消音)スイッチを尊重＋他アプリ音と混ざれる（ゲームの標準）
+         try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
+         try? AVAudioSession.sharedInstance().setActive(true)
+@@ -81,7 +94,7 @@ final class SoundEngine {
+ 
+     func play(_ se: SE) {
+         let vol = seVolume
+-        guard vol > 0.01, !seHushed else { return }
++        guard vol > 0.01, !seHushed, !muted else { return }
+         guard let url = Bundle.main.url(forResource: se.rawValue, withExtension: "mp3") else { return }
+         var pool = sePlayers[se.rawValue] ?? []
+         // 空いている面を探す（鳴っていないプレイヤーを再利用）
+@@ -100,6 +113,7 @@ final class SoundEngine {
+     }
+ 
+     func playBGM(_ track: BGM) {
++        guard !muted else { return }
+         guard currentBGM != track else {
+             if let p = bgmPlayer { cancelFade(p); p.volume = bgmVolume * duckFactor }   // 同曲なら音量だけ追従
+             return
