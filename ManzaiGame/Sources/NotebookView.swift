@@ -251,6 +251,7 @@ struct NotebookView: View {
             Text(label).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(value).font(YoseFont.number(24, weight: .black)).foregroundStyle(unit == "万" ? YoseColor.shu : YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.6)   // 通算の賞金（万）は10年で5桁になりうる＝2行に折らない
                 Text(unit).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
         }
