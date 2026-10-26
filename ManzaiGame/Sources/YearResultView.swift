@@ -108,6 +108,7 @@ struct YearResultView: View {
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
         return VStack(alignment: .leading, spacing: 8) {
             sectionLabel("この1年で育ったもの")
+            Text("棒は、次の段までの進み").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)   // 段が同じでも棒が伸びる意味（firstlook_check_1027 #19）
             ForEach(order, id: \.self) { a in
                 let from = Theme.rank(base[a]), to = Theme.rank(s[a])
                 let up = from != to
@@ -305,10 +306,14 @@ struct YearResultView: View {
     // MARK: 賞金/知名度 年計
 
     private var totalsBlock: some View {
-        HStack(spacing: 8) {
-            total("今年の賞金", session.totalPrize, yen: true)
-            total("知名度", Int(s.fame.rounded()), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
-            total("最終所持金", s.money, yen: true)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                total("今年の賞金", session.totalPrize, yen: true)
+                total("知名度", Int(s.fame.rounded()), yen: false, delta: Int(s.fame.rounded()) - Int(session.yearStartState.fame.rounded()))
+                total("年末の所持金", s.money, yen: true)
+            }
+            Text("知名度は舞台に立つと上がり、決勝では高いほど有利になる。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)   // 数字の意味を年末にも（用語集と同じ言い方・playtest_v15 #6）
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.bottom, 2)
     }

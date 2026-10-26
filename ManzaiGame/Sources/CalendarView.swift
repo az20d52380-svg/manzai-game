@@ -162,7 +162,7 @@ struct CalendarView: View {
     private func showToast(_ t: String) {
         let token = UUID()
         toastToken = token
-        withAnimation(.easeOut(duration: 0.2)) { toast = t }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = t }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation { toast = nil } } }
     }
 
