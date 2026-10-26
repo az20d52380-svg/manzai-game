@@ -46,6 +46,7 @@ struct RadarChart: View {
     var animate: Bool = true
 
     @State private var progress: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion   // a11y_check_1026_voiceover_v0 #9
 
     static func abilityAxes(current: GameState, base: GameState, config: GameConfig) -> [(name: String, value: Double, base: Double, cap: Double, color: Color)] {
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
@@ -117,7 +118,7 @@ struct RadarChart: View {
             }
         }
         .onAppear {
-            if animate { withAnimation(.easeInOut(duration: 0.8)) { progress = 1 } }
+            if animate && !reduceMotion { withAnimation(.easeInOut(duration: 0.8)) { progress = 1 } }
             else { progress = 1 }
         }
     }
@@ -129,6 +130,7 @@ struct ActionBreakdownBand: View {
     let weeks: Int
     let categoryByWeek: [Int: BandCategory]
     @State private var grow: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GeometryReader { geo in
@@ -146,6 +148,6 @@ struct ActionBreakdownBand: View {
         }
         .frame(height: 14)
         .clipShape(Capsule())
-        .onAppear { withAnimation(.easeOut(duration: 0.6)) { grow = 1 } }
+        .onAppear { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.6)) { grow = 1 } }
     }
 }
