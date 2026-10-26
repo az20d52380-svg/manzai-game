@@ -122,7 +122,7 @@ struct NotebookView: View {
             YoseGauge(value: min(v, 120), total: 120, fill: YoseColor.shu, height: 12)   // 全能力で同じ物差し（同じ値なら同じ長さ）
             Text("\(Int(v.rounded()))").font(YoseFont.number(22, weight: .black)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
-                .frame(width: 48, alignment: .trailing)
+                .frame(minWidth: 48, alignment: .trailing)   // 文字が大きい時は列が広がって棒が縮む（固定48だと数字が棒に重なった＝dynamic_type_check_1027 M2）
         }
         .padding(.horizontal, 10).frame(height: 58)
         .yoseHarigami()
