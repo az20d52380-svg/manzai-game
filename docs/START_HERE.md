@@ -458,4 +458,10 @@ cd GameCore && swift test
 - `revival_loss_repeat_1026_v0.md` — 敗者復活で散る場面が1キャリアで何回出るか（平均3.5〜4.4回・キュー127 の材料）
 - `female_later_years_1026_v0.md` — 女性の形で後半の年（3・6・10年目）の目視 10/26（直す候補0）
 - `variants_independent_score_1026_v0.md` — 言い換えの独立採点 10/26（○22△5→直した）
+- `dialogue_score_1026c_v0.md` — 今日の増補の採点 10/26（週頭の声・ファンレポA帯）
+- `app_coverage_1026_v0.md` — アプリの表示判定の未カバーにテスト11本 10/26（判定を純関数に切り出し）
+- `code_review_2026-10-26d_v0.md` — コード点検 10/26d（本番の不具合0）
+- `code_review_2026-10-26e_v0.md` — 週の記録の書く所と読む所の突き合わせ 10/26（中1・低2）
+- `later_years_neta_visual_1026_v0.md` — 後半の年の目視（ネタあり）10/26（10年目の不出場と所持金の見え方＝中1）
+- `yearend_records_visual_1026_v0.md` — 年末・戦績の画面の目視 10/26（重要0・軽微2）
 - `neta_coef_nopolish_1026_v0.md` — ネタを磨かない人への係数の効き目（L35・磨くとご褒美側・罰は最大約−4pt）
