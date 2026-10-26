@@ -27,7 +27,7 @@
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
-- 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。手順のスクリプトは 10/27 定期で使った remerge.sh／fixtests.py と同じ考え方（本体の版の末尾に、候補の版から分岐点の版を引いた残りを付け足す）。
+- 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。道具＝`python3 tools/merge_candidate_tests.py <本体のブランチ>`（merge が止まった状態で実行→ git add → commit）。
 - アプリの画面の文字（「俺」を含む説明文など）を変えた時も `cd GameCore && swift test` を回す（FirstPersonLiteralTests がアプリのソースを読み、例外の文を完全一致で持つ＝10/27 に形の選択の説明を言い換えて赤にした・d0661a6 で直した）。
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
