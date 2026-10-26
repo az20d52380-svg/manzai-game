@@ -49,6 +49,7 @@ struct SettingsView: View {
                                 linkRow(restoring ? "復元しています…" : "購入を復元", external: false)
                             }
                             .buttonStyle(.plain).disabled(restoring)
+                            Text("前に買った有料の品を、この端末に戻す。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)   // 何の購入かが分からなかった（firstlook_check_1027b #3）
                             if let m = store.lastMessage {
                                 Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
                             }
