@@ -473,7 +473,7 @@ enum DialogueData {
              Advice(name: "俺", text: "いいよ。週末なら空いてる")],
             [Advice(name: "俺", text: "次の本番まで、体を作っておこう"),
              Advice(name: "谷口", text: "そうだね。毎朝、近所を走ることにするよ")],
-            [Advice(name: "谷口", text: "父の誕生日なんだ。何を送ったらいいと思う"),
+            [Advice(name: "谷口", text: "父の誕生日なんだ。何を送ったらいいと思う？"),
              Advice(name: "俺", text: "電話してあげなよ。それがいちばん喜ぶよ")],
             [Advice(name: "谷口", text: "先輩の引っ越し、手伝いを頼まれたんだ"),
              Advice(name: "俺", text: "行ってきなよ。こっちは部屋の掃除でもしておく")],
@@ -872,7 +872,7 @@ enum DialogueData {
             Advice(name: "俺", text: "終わったら、店の人にちゃんと挨拶しよう。"),
         ],
         "job_キツい": [
-            Advice(name: "俺", text: "体で稼ぐ日だ。腰を痛めないようにしよう。"),
+            Advice(name: "俺", text: "今日は体を使うバイトの日だ。腰を痛めないようにしよう。"),
             Advice(name: "俺", text: "終わりの時間だけ確かめて、引き受けよう。"),
             Advice(name: "俺", text: "軍手を二組、持っていこう。"),
             Advice(name: "俺", text: "お昼は、多めに持っていこう。"),
