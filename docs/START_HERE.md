@@ -293,6 +293,7 @@ cd GameCore && swift test
 - `comedy_games_research_v0.md` — お笑い・漫才・芸人題材ゲーム 先行作リサーチ v0（2026-10-15）
 - `dialogue_data_grade_v1.md` — DialogueData.swift 採点表 v1（2026-10-18・コード変更なし）
 - `dialogue_grade_1018b.md` — 台詞採点 2026-10-18（その2）— 今日入った日本語の台詞文字列
+- `dialogue_grade_1026_night_v0.md` — 台詞採点 2026-10-26 夜 — 10/20 以降に足した会話・独白80行（○71△9×0・△は業界語/語尾＝直しは任意）
 - `dialogue_score_1019_v0.md` — 文体ゲート採点 10/19（10/17以降に本体へ入った台詞・地の文）
 - `dialogue_score_events_0012_0029_v0.md` — 選択肢イベント 0012〜0029 等（0041 より前）会話採点 v0
 - `dialogue_score_events_0041_0057_v0.md` — 選択肢イベント 0041〜0057 会話採点 v0
@@ -322,6 +323,7 @@ cd GameCore && swift test
 - `owner_questions_2026-10-15.md` — オーナーへの質問（2026-10-15 まとめ・「止めて」の後に上から1問ずつ聞く）
 - `pawapro_ability_up_research_v0.md` — パワプロ サクセス 能力アップ（経験点の振り分け）調査 v0
 - `perf_check_v1.md` — 重さ点検 v1（2026-10-16）
+- `perf_check_v2_1026.md` — 重さ点検 v2（2026-10-26・v1 と同じ測り方・悪化0）
 - `playtest_2nd_run_v1.md` — 2周目の流れ 点検 v1（2026-10-16・preview-all d4d8d42・iPhone 17）
 - `playtest_finals_v1.md` — 実プレイ点検 決勝の流れ v1（準決勝→決勝→番組エンディング→年末→エンディング）
 - `playtest_v1.md` — 実プレイ点検 v1（1年目・画面で遊んだ記録）
@@ -355,6 +357,7 @@ cd GameCore && swift test
 - `small_font_inventory_v0.md` — 12pt 未満の文字の棚卸し（TypeStep の決まり違反・約95か所・画面ごとに直す）
 - `visual_check_after_12pt_v0.md` — 12pt 直し後の回帰目視（未見の画面すべて・崩れ0件）
 - `visual_check_q90_q106_v0.md` — 目視 q-candidate（q90 部屋選び / q106 特技）v0
+- `visual_check_1027_v0.md` — 目視 10/27：prelude / prelude_final / debt / injury / gpresult / juice（重い問題なし）v0
 - `yearend_monolog_finals_v1.md` — 年末の独白：頂グランプリの決勝に立った年（v1・2026-10-16）
 - `milestone_events_drafts_v0.md` — 空白の週に置く小さな節目イベントの下書き12本（キュー78・fun_audit §3-3 案1・未採用＝オーナー確認待ち）v0・2026-10-19
 - `research_restart_and_locked_choices_v0.md` — 途中でやり直す導線・お金が足りない選択肢の見せ方の他社事例（判断待ちの材料）v0・2026-10-19
@@ -394,16 +397,24 @@ cd GameCore && swift test
 - `dialogue_score_1025b_v0.md` — 台詞のゲート採点 10/25 夜（別れの場面・若手限定賞の一言・幕間/予選通過/大成功・出会い4択の追加49行・×2＝優勝の相方の「やったな」を男女どちらでも自然に）
 - `duo_outing_scenes_v0.md` — 相方と二人で出かける場面の一覧 v0（2026-10-20）
 - `dynamic_type_audit_1025_v0.md` — 文字サイズ拡大の目視監査（2026-10-25）v0
+- `dynamic_type_check_1027_v0.md` — 文字サイズ AX1 の目視点検（2026-10-27）v0：10画面・高0/中2/低2
 - `judge_comment_score_v6.md` — 審査員講評 採点 v6（型をなくした後・77be01a 以降）
 - `judge_scoring_1020_v0.md` — 審査員の点・投票・講評 v0（2026-10-20 オーナー決定への対応案）
 - `meta_start_bonus_1020_v0.md` — 周回ボーナス（初期の経験点・所持金）の実測 v0（2026-10-20・【仮】・決定ではなく材料）
 - `pawapro_match_exp_research_v0.md` — パワプロの「試合後経験点」vs「練習1回」調査 v0（2026-10-20）
 - `playtest_v13.md` — 実プレイ点検 v13（10/25 の変更・iPhone 17・2026-10-25）
+- `playtest_v14.md` — 実プレイ点検 v14（10/26・1年通し落ちず・中2は直した）
+- `playtest_v15.md` — 実プレイ点検 v15（10/27・2〜3年目・崩れ0・#5 月末の予告/#6 知名度の一言は直した・#1/#2 年ごとの目標の文は判断待ち＝キュー132）
 - `tourney_exp_options_1020_v0.md` — 大会の経験点 × 最初の帯の倍率 実測 v0（2026-10-20・材料のみ）
 - `visual_check_1025_v0.md` — 目視 10/25（決勝の審査員の点と票・型をなくした後）
 - `visual_check_bg_h130_v0.md` — 背景16種の目視（高さ130）
 - `visual_check_female_1025_v0.md` — 目視 10/25 女性コンビ・男女コンビ（コードは未修正）
 - `visual_largetext_1025_v0.md` — 大文字（accessibility-large）目視 2025-10-25 v0
+- `visual_largetext_1026_v0.md` — 大文字の目視 10/26（年末総決算の上下・戦績タブ・大会の記録＝崩れ0）
+- `visual_dark_1026_v0.md` — ダークモードの目視 10/26（最終興行・年末・戦績＝問題0）
+- `visual_dark_1027_v0.md` — ダークモードの目視 10/27（設定・入力欄・形の選択・名前・お店・暦・イベント・週・札・配分の10画面＝問題0）
+- `firstlook_check_1027_v0.md` — 初見目線の分かりにくさ 8画面 10/27（21件・高2＝実力と能力の数字の関係／能力アップの升目の数字の意味・材料）
+- `a11y_check_1026_voiceover_v0.md` — 読み上げ点検 10/26（10/19 以後の画面・高0/中6/低5）
 - `visual_dark_1025_v0.md` — ダークモードの点検 2026-10-25 v0（崩れ0・色は全部固定色）
 - `visual_years_1025_v0.md` — 数年目（1・3・6・10年目）の週の画面の点検 2026-10-25 v0（崩れ0）
 - `visual_check_1025b_v0.md` — 目視 10/25 追補（未見の14フック・stamina/living/forecast が通常画面と同一＝要確認）
@@ -445,6 +456,7 @@ cd GameCore && swift test
 - `dialogue_score_1026_v0.md` — 台詞の採点 10/26（決勝の会話・会話の部品 14行）
 - `dialogue_score_1026b_v0.md` — 客席アンケートの増補分の採点 10/26
 - `glossary_coverage_1026_v0.md` — 用語集の抜けの点検 10/26（足した分はコミット済み）
+- `glossary_coverage_1027_v0.md` — 画面の言葉と用語集の突き合わせ 10/27（20件・高2＝持ち分・敗者復活は足した／呼び名のゆれ6件は材料）
 - `tools_smoke_1026_v0.md` — tools/*.py の動作確認 10/26（ok 99・失敗5＝古い実験）
 - `ui_copy_consistency_1026_v0.md` — 画面の部品の表記ゆれの点検 10/26
 - `later_years_visual_1026_v0.md` — 3・6・10年目の年の途中の目視 10/26（10年目は MZ_CARE=1 で届く）
@@ -457,5 +469,28 @@ cd GameCore && swift test
 - `code_review_2026-10-26c_v0.md` — 10/26 昼の定期の回の変更のコード点検（確実0・たぶん4＝3件直した）
 - `revival_loss_repeat_1026_v0.md` — 敗者復活で散る場面が1キャリアで何回出るか（平均3.5〜4.4回・キュー127 の材料）
 - `female_later_years_1026_v0.md` — 女性の形で後半の年（3・6・10年目）の目視 10/26（直す候補0）
+- `visual_check_female_1027_v0.md` — 女性・男女の形で会話の出る10画面の目視 10/27（生記号0・男の語0・小1件）
+- `female_voice_check_1027_v0.md` — 女性の形で出る台詞の語尾・一人称の点検 10/27（高0・中0・低2＝「あいつ」2行・対応不要）
 - `variants_independent_score_1026_v0.md` — 言い換えの独立採点 10/26（○22△5→直した）
+- `dialogue_score_1026c_v0.md` — 今日の増補の採点 10/26（週頭の声・ファンレポA帯）
+- `dialogue_score_1027_v0.md` — 台詞の棚卸しと採点 10/27（未採点5ファイル＋一部6・60行 ×0・△6行を直した）
+- `dialogue_score_1027b_v0.md`／`1027c`／`1027d` — DialogueData の残り全部の採点（456行・×0・△24＝17行を直し7行は理由・対応は 1027d 末尾）
+- `dialogue_score_1027e_v0.md` — 選択イベント・出会い・客の声の未採点116行（×0・△4＝客の声3行を直した）
+- `ui_wording_check_1027_v0.md` — 画面の文字の表記ゆれ点検（誤字0・用語集の「ネタ帳」を直した・¥/円は使い分け・残りの統一案は判断待ち）
+- `app_coverage_1026_v0.md` — アプリの表示判定の未カバーにテスト11本 10/26（判定を純関数に切り出し）
+- `code_review_2026-10-26d_v0.md` — コード点検 10/26d（本番の不具合0）
+- `code_review_2026-10-26e_v0.md` — 週の記録の書く所と読む所の突き合わせ 10/26（中1・低2）
+- `code_review_2026-10-26f_v0.md` — 今日のアプリ変更の点検 10/26 夜（高0・中1・低2＝#1・#2 は直した）
+- `code_review_2026-10-27_v0.md` — 10/26 夜〜10/27 のアプリ変更の点検（高0・中0・低3＝③用語集「客の反応」の言い方は直した・①②は要確認）
+- `code_review_2026-10-27b_v0.md` — 10/27 のアプリ変更＋読み上げ候補ブランチの点検（高0・中3＝二重呼びでも実害なしと確認・低#5 余白の書き損じは直した）
+- `later_years_neta_visual_1026_v0.md` — 後半の年の目視（ネタあり）10/26（10年目の不出場と所持金の見え方＝中1）
+- `yearend_records_visual_1026_v0.md` — 年末・戦績の画面の目視 10/26（重要0・軽微2）
 - `neta_coef_nopolish_1026_v0.md` — ネタを磨かない人への係数の効き目（L35・磨くとご褒美側・罰は最大約−4pt）
+- `event_reach_1026_v0.md` — イベントの出会いやすさ 10/26（下の4種は1キャリアで 8〜29%）
+- `candidate_review_1026_v0.md` — 候補ブランチ9本の点検 10/26 夕（本線に merge だけで入るか）
+- `name_reality_check_1026_v0.md` — 固有名の実在チェック 10/26（Web 25回・有名な実在と同名0・近い5）
+- `event_reach_relax_1026_v0.md` — 出会いにくい4種の条件をゆるめたら 10/26（効いているのは上限15＝3〜4年目で使い切る）
+- `event_repeat_research_1026_v0.md` — 長期育成ゲームのイベント再発の扱い 10/26（#129 の材料・クールダウン／2回目の文面／後半専用／続き物）
+- `det_event_path_1026_v0.md` — 確定で出るイベントの効き目の分解 10/26（決勝に効くのは能力と相性・判断 §3 の材料）
+- `rare_screens_visual_1026_v0.md` — 最近目視していない画面の目視 10/26（重要0・軽微1＝DEBUG の部品見本のみ）
+- `q93_c_catchup_1026_v0.md` — 判断 #1 推奨C の手当て候補3案 10/26（休む・バイト週に一番少ない経験点を少し＝○）

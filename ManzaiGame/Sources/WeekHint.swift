@@ -48,7 +48,7 @@ enum WeekHint {
         if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }
         if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
         if i.stamina < injuryWarn { return "谷口：無理すると倒れるよ。" }   // 男女どちらでも自然な語尾（combo_gender_v0）・名前は Names.show が差し替える
-        if i.livingInTwoWeeks { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }
+        if i.livingInTwoWeeks, i.money < i.livingCost * 2 { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }   // 払っても1か月分以上残るなら予告しない（毎年同じ警告で緊急度が合わない＝playtest_v15 #5）
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
         return nil

@@ -121,7 +121,7 @@ final class WeekHintPriorityTests: XCTestCase {
     }
 
     func testLaterHintsOrderAndExpBannerSuppressesPlus() {
-        var i = base(); i.livingInTwoWeeks = true; i.weeksWithoutPartner = 9; i.plusAvailable = true
+        var i = base(); i.livingInTwoWeeks = true; i.weeksWithoutPartner = 9; i.plusAvailable = true; i.money = 200_000
         XCTAssertEqual(WeekHint.line(i), "再来週は月末の支払い（家賃など）14万円。")
         i.livingInTwoWeeks = false
         XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
