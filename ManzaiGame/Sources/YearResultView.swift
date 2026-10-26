@@ -24,21 +24,30 @@ struct YearResultView: View {
     var body: some View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "\(session.year)年目 年末総決算", subtitle: session.combiName)
+            ScrollViewReader { proxy in
             ScrollView {
                 // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
                 VStack(spacing: 12) {
                     reachStamp.stagger(1, appear)
                     if session.hasYearStart { gradeLadder.stagger(2, appear) }
                     totalsBlock.stagger(3, appear)
-                    historyBlock.stagger(3, appear)
-                    eventsBlock.stagger(4, appear)
+                    historyBlock.stagger(3, appear).id("history")
+                    eventsBlock.stagger(4, appear).id("events")
                     yearEndMonolog.stagger(5, appear)
-                    breakdownBlock.stagger(7, appear)
-                    radarBlock.stagger(8, appear)
+                    breakdownBlock.stagger(7, appear).id("breakdown")
+                    radarBlock.stagger(8, appear).id("radar")
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 14)
                 .frame(maxWidth: .infinity)
             }
+            #if DEBUG
+            .task {   // 目視フック MZ_SCROLL=history|events|breakdown|radar：その段を上にして開く（下の段が撮れなかった＝yearend_records_visual_1026_v0 軽微2）
+                if let id = ProcessInfo.processInfo.environment["MZ_SCROLL"] {
+                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    proxy.scrollTo(id, anchor: .top)
+                }
+            }
+            #endif
             .overlay(alignment: .bottom) {   // まだ下に続く合図（見出しがフッターで切れて見えない）
                 VStack(spacing: 0) {
                     LinearGradient(colors: [YoseColor.kinari.opacity(0), YoseColor.kinari], startPoint: .top, endPoint: .bottom).frame(height: 40)
@@ -48,6 +57,7 @@ struct YearResultView: View {
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)   // 見た目の合図だけ（読み上げはスクロールで続きに行ける＝a11y_check_1026 中2）
                 .stagger(4, appear)   // 本文より先に「▼」だけ出て、空の画面に見えた（soak_playthrough_1019・1026 で再発）
+            }
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
