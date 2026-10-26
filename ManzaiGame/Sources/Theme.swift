@@ -201,6 +201,8 @@ extension Theme {
         static var appearQuick: Animation { .easeOut(duration: quick) }
         static var exit: Animation { .easeIn(duration: quick) }
         static var emphSpring: Animation { .spring(response: 0.4, dampingFraction: 0.75) }
+        /// 「視差効果を減らす」がオンなら nil（＝アニメ無しで切り替える）。短い切替の共通口（a11y_check_1026_voiceover #10）。
+        static func r(_ a: Animation) -> Animation? { UIAccessibility.isReduceMotionEnabled ? nil : a }
     }
 }
 
