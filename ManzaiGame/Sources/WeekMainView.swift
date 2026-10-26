@@ -968,8 +968,8 @@ struct WeekMainView: View {
             case .休む: return "体力を回復"
             case .能力アップ:
                 if unspentBeforeStage { return "" }   // 朱札「未振分あり」と上の看板が言う
-                return expGrains > 0 ? "振れる経験点あり" : "能力を伸ばす"
-            case .お店: return "アイテムを買う"
+                return expGrains > 0 ? "振れる経験点あり" : "経験点を使う・週は進まない"
+            case .お店: return "買い物・週は進まない"
             }
         }()
         let run: () -> Void = {
