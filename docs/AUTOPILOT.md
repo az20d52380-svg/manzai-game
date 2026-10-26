@@ -14,7 +14,7 @@
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/25 夜時点 208本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 271本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
@@ -131,6 +131,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 定期（続き20）：アプリ側の未カバー7本 AppCoverage1027Tests（ネタ帳の名前・型/尺・ログの読み・ネタおろしの台詞）5d795af＝アプリ 271／GameCore 433 green。
 - 10/27 定期（続き19）：キュー136・137 の推奨案を候補ブランチ2本に（40b1227・90ed280・ビルド OK・目視 OK・本体は不変）。
 - 10/27 定期（続き18）：v16 #5 の知名度36→33 を調査＝不具合ではない（年末フックは別の台本で走る・知名度に減衰なし）a0bd07c。常設に注意書き。
 - 10/27 定期（続き17）：実プレイ点検 v16（sonnet・5/7/10年目・docs/playtest_v16.md＝高0中3低3・崩れ0）9cd332f → 新しい論点はキュー136 だけ（他は v15 と同じ）。
