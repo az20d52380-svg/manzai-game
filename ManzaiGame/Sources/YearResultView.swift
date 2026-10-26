@@ -30,8 +30,10 @@ struct YearResultView: View {
                 VStack(spacing: 12) {
                     reachStamp.stagger(1, appear)
                     if session.hasYearStart { gradeLadder.stagger(2, appear) }
+                    let lastYear = onNextYear == nil && onEnding != nil   // 最終年（エンディングへ のボタンが出る年末）
+                    if lastYear { historyBlock.stagger(3, appear).id("history") }   // 最終年は10年の歩みを上へ（スクロールしなくても全年が見える・キュー136②）
                     totalsBlock.stagger(3, appear)
-                    historyBlock.stagger(3, appear).id("history")
+                    if !lastYear { historyBlock.stagger(3, appear).id("history") }
                     eventsBlock.stagger(4, appear).id("events")
                     yearEndMonolog.stagger(5, appear)
                     breakdownBlock.stagger(7, appear).id("breakdown")
