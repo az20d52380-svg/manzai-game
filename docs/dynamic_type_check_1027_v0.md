@@ -30,3 +30,4 @@ iPhone 17 / accessibility-extra-large（AX1・1025版の「一般の最大」よ
 - M4（settings 下端）：権利表記の札は SettingsView.swift:38 の ScrollView の中（下余白16）＝送れば全部見える。端で切れて見えるのは続きがある合図＝対応不要。
 - 中の「MZ_UI=neta が能力タブを開く」はフック名の問題で本編の不具合ではない。持ちネタ帳の文字最大は次の目視の回に（フック名を grep で確かめてから）。
 - M2 済（10/26 深夜・NotebookView の数字の列を minWidth 48 に＝大きい字では棒が縮む・文字最大で重なり解消を目視 notebook_after）。
+- 持ちネタ帳（`MZ_UI=notebook MZ_TAB=neta MZ_YEARS=1`・文字 AX-XL）：札・棒・数字・ボタンとも重なり・切れなし（10/26 深夜 親）。
