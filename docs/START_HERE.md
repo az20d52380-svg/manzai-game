@@ -465,3 +465,5 @@ cd GameCore && swift test
 - `later_years_neta_visual_1026_v0.md` — 後半の年の目視（ネタあり）10/26（10年目の不出場と所持金の見え方＝中1）
 - `yearend_records_visual_1026_v0.md` — 年末・戦績の画面の目視 10/26（重要0・軽微2）
 - `neta_coef_nopolish_1026_v0.md` — ネタを磨かない人への係数の効き目（L35・磨くとご褒美側・罰は最大約−4pt）
+- `event_reach_1026_v0.md` — イベントの出会いやすさ 10/26（下の4種は1キャリアで 8〜29%）
+- `event_reach_relax_1026_v0.md` — 出会いにくい4種の条件をゆるめたら 10/26（効いているのは上限15＝3〜4年目で使い切る）
