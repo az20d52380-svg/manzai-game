@@ -15,3 +15,7 @@
 到達できなかった画面：MZ_UI=living / MZ_UI=stamina は専用の分岐が無く、素の1年目1週の週画面が出る（生活費・体力の一行案内は MZ_UI=weekhint MZ_WH=living|stamina が正）。素の週画面は崩れなし。
 
 結論：6画面、重い問題なし。軽い所見は低が3件（副文の長さ・「飛ばす」の押す範囲・体力0の見え方）。
+
+## 親の確認（10/26 深夜の定期）
+- 「飛ばす」：QualifierNoticeView.swift:62・FinalistAnnounceView.swift:101 とも `.frame(minHeight: 44).contentShape(Rectangle())` 済み＝押す範囲は高さ44pt・幅約50pt で足りている。薄い色は「目立たせない」意図＝対応不要。
+- 決勝前の副文の長さ・体力0の並びは、切れ・崩れが無いので今のまま（文面を変えるならオーナーに見せてから）。
