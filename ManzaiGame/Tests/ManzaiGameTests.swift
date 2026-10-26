@@ -948,6 +948,23 @@ final class Pure1027Tests: XCTestCase {
     }
 }
 
+/// 練習の画面名は CommandCatalog（行動の札）と AbilityUpView.practiceLabel（能力アップの「貯まる練習」）の2か所にある。食い違わないよう見張る（internal_name_leak_check_1027）
+final class PracticeLabelSyncTests: XCTestCase {
+    func testPracticeLabelMatchesCommandCards() {
+        let cfg = GameConfig()
+        var seen = 0
+        let all = CommandCatalog.mainCards(config: cfg, money: 10_000_000)
+            + CommandCategory.allCases.flatMap { CommandCatalog.cards($0, config: cfg, money: 10_000_000) }
+        for v in all {
+            if case .train(let t) = v.action {
+                XCTAssertEqual(AbilityUpView.practiceLabel(t), v.name, "\(t)")
+                seen += 1
+            }
+        }
+        XCTAssertGreaterThanOrEqual(seen, 8)
+    }
+}
+
 /// 年末の「来年の狙い」（候補・キュー132 案B）：今年の到達の次の段を1つ。夜逃げ・解散は出さない
 final class NextGoalTests: XCTestCase {
     private let names = GameConfig().calendar.gpRoundNames
