@@ -924,6 +924,8 @@ struct WeekMainView: View {
     /// 練習を選ぶ画面の上段：経験点5種の今の持ち分（増える分は各練習の札に出す・表示専用）
     private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
         HStack(spacing: 6) {
+            Text("経験点の\n持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinBright)   // 丸い印の数字が何か分からなかった（firstlook_check_1027c #3）・用語集「経験点」と同じ言い方
+                .multilineTextAlignment(.leading).fixedSize()
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
