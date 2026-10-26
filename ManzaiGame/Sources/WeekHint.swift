@@ -44,7 +44,7 @@ enum WeekHint {
             if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }
             return "今週は撮影の仕事で、稽古には出られない。"
         }
-        if i.netaCount == 0, !dedupTop { return "まだネタが無い。まずはネタを書こう。" }
+        if i.netaCount == 0, !dedupTop { return "まだネタがない。まずはネタを書こう。" }
         if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費。所持金が足りない。" }
         if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
         if i.stamina < injuryWarn { return "谷口：無理すると倒れるよ。" }   // 男女どちらでも自然な語尾（combo_gender_v0）・名前は Names.show が差し替える

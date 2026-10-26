@@ -407,7 +407,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testNoNeta() {
         var i = base(); i.netaCount = 0
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
     }
     func testStamina() {
         var i = base(); i.stamina = 30
@@ -439,7 +439,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
         i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
