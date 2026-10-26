@@ -398,7 +398,7 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "助かった。行こう"),
             ],
             "B": [
-                Advice(name: "俺", text: "今夜は帰ります。雨が弱いうちに。また誘ってください"),
+                Advice(name: "俺", text: "雨が弱いうちに、今夜は帰ります。また誘ってください"),
                 Advice(name: "先輩", text: "そうか。風邪ひくなよ"),
             ],
         ]
@@ -448,7 +448,7 @@ enum ChoiceEventData {
         title: "先輩から誘い",
         setup: [
             Advice(name: nil, text: "劇場の裏口。着替えて外に出たところだ。"),
-            Advice(name: "先輩", text: "お疲れ。いつもの店が今夜は空いてるらしい。行かないか"),
+            Advice(name: "先輩", text: "お疲れ。いつもの店が今夜は空いてるらしいけど、行かないか"),
             Advice(name: "谷口", text: "明日のバイトは昼からだし、行けなくはないね。どうする？"),
         ],
         choiceLabels: weekendInviteLabels,

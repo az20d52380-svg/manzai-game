@@ -47,7 +47,7 @@ enum WeekHint {
         if i.preoccupied {   // 撮影の週でも家賃の不足は隠さない（code_review_2026-10-25b §2-1）
             return "今週は撮影の仕事で、稽古には出られない。"
         }
-        if i.netaCount == 0, !dedupTop { return "まだネタが無い。まずはネタを書こう。" }
+        if i.netaCount == 0, !dedupTop { return "まだネタがない。まずはネタを書こう。" }
         if i.livingInTwoWeeks { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
