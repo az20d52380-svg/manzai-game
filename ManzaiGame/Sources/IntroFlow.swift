@@ -541,7 +541,7 @@ struct NameEntryView: View {
                     Haptics.confirm()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "dice.fill").font(.system(size: Font.mzScaled(13), weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: "dice.fill").font(.system(size: Font.mzScaled(13), weight: .black)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                             .frame(width: 24, height: 24).background(YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                         Text("おまかせで考える").font(YoseFont.gothic(15, weight: .heavy))

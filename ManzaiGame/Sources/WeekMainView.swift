@@ -774,7 +774,7 @@ struct WeekMainView: View {
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = ""; pickingNeta = false }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy))
+                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy)).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                         Text("新しく書く").font(YoseFont.gothic(14, weight: .heavy))
                         Spacer()
                         Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
