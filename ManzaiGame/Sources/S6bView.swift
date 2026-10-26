@@ -44,14 +44,15 @@ struct S6bView: View {
             case .wall: wall.transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.5), value: phase)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.5), value: phase)
     }
 
-    private func advance(_ p: Phase) { withAnimation(.easeInOut(duration: 0.5)) { phase = p } }
+    private func advance(_ p: Phase) { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.5)) { phase = p } }
 
     // MARK: ① 引退興行（残金→0・会場4段階・客電粒）
 
     @State private var counted = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion   // 演出ひかえめ＝切替・数字・焼き付きを即時に（a11y_check_1026_voiceover_v0 #8）
     private var kougyou: some View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "最終興行・千秋楽")
@@ -105,6 +106,7 @@ struct S6bView: View {
                             Text(Yen.text(counted ? 0 : max(0, s.money)))
                                 .font(YoseFont.number(26, weight: .black)).monospacedDigit().foregroundStyle(YoseColor.shu)
                                 .contentTransition(.numericText())
+                                .lineLimit(1).minimumScaleFactor(0.5)   // 7桁の残金が「¥7,796,0／00」と2行に折れていた（10/26 目視）
                         }
                     }
                     .padding(.vertical, 8).padding(.horizontal, 14)
@@ -128,7 +130,11 @@ struct S6bView: View {
                 .padding(.horizontal, 14).padding(.bottom, 30)
         }
         // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
-        .onAppear { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
+        .onAppear {
+            // 演出ひかえめでも元の残金を一拍見せてから0円に切り替える（数え下げの動きだけ省く＝code_review_2026-10-26f #1）
+            if reduceMotion { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); counted = true } }
+            else { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
+        }
     }
 
     private static let venueNames = ["町の劇場", "ホール", "アリーナ", "ドーム"]
@@ -187,7 +193,7 @@ struct S6bView: View {
             Text("—— \(session.combiName) ——").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.8)).padding(.top, Theme.Sp.s24)
             Text("結成からの記録").font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.75))
             Spacer()
-            Text("タップで進む").font(.maru(12)).foregroundStyle(.white.opacity(0.7))   // 12pt 未満は使わない（TypeStep の決まり）.padding(.bottom, Theme.Sp.s24)
+            Text("タップで進む").font(.maru(12)).foregroundStyle(.white.opacity(0.7)).padding(.bottom, Theme.Sp.s24)   // 12pt 未満は使わない（TypeStep の決まり）。余白の指定がコメントに入って効いていなかった（code_review_2026-10-27b #5）
         }
         .contentShape(Rectangle()).onTapGesture { advance(.wall) }
     }
@@ -224,7 +230,7 @@ struct S6bView: View {
                 .opacity(burned ? 1 : 0)
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) { burned = true }   // 焼き付き0.8s
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.8)) { burned = true }   // 焼き付き0.8s
             Haptics.tick()   // ピンの音1つ相当（hRareは使わない）
         }
     }

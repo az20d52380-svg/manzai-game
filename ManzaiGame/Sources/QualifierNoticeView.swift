@@ -96,7 +96,7 @@ struct QualifierNoticeView: View {
                 }
                 .accessibilityLabel(isChat ? "\(partnerName)からの通知を開く。見た？" : "頂GP公式からの通知を開く。\(roundLabel)の通過者を掲載しました")
                 .buttonStyle(.plain).transition(.move(edge: .top).combined(with: .opacity))
-                Text("通知をタップ").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.45)).padding(.top, 8)
+                Text("通知をタップ").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(.white.opacity(0.8)).padding(.top, 8)   // 暗い地で読みにくかった（firstlook_check_1027b #5）
             }
             Spacer().frame(height: 90)
         }

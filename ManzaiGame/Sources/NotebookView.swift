@@ -122,7 +122,7 @@ struct NotebookView: View {
             YoseGauge(value: min(v, 120), total: 120, fill: YoseColor.shu, height: 12)   // 全能力で同じ物差し（同じ値なら同じ長さ）
             Text("\(Int(v.rounded()))").font(YoseFont.number(22, weight: .black)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.8).fixedSize()
-                .frame(width: 48, alignment: .trailing)
+                .frame(minWidth: 48, alignment: .trailing)   // 文字が大きい時は列が広がって棒が縮む（固定48だと数字が棒に重なった＝dynamic_type_check_1027 M2）
         }
         .padding(.horizontal, 10).frame(height: 58)
         .yoseHarigami()
@@ -161,21 +161,9 @@ struct NotebookView: View {
         var prev = ""
         for line in session.log where line != prev {
             prev = line
-            let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
-                : (line.contains("客席") ? "観戦"
-                    : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")))
-            var week = "", body = line
-            if let r = line.range(of: ": ") { week = String(line[..<r.lowerBound]); body = String(line[r.upperBound...]) }
-            var prize = 0
-            var rest = body
-            if let re = try? NSRegularExpression(pattern: "\\+(\\d+)万") {
-                for m in re.matches(in: body, range: NSRange(body.startIndex..., in: body)) {
-                    if let r = Range(m.range(at: 1), in: body) { prize += Int(body[r]) ?? 0 }
-                }
-                rest = re.stringByReplacingMatches(in: body, range: NSRange(body.startIndex..., in: body), withTemplate: "")
-                    .trimmingCharacters(in: .whitespaces)
+            for part in GameSession.parseLogLine(line) {   // 1週に複数大会が並ぶ行は大会ごとに1行（書く所 summarize と同じ区切り）
+                out.append(LogEntry(week: part.week, title: part.title, mark: part.mark, prize: part.prize))
             }
-            out.append(LogEntry(week: week, title: rest, mark: mark, prize: prize))
         }
         return out
     }
@@ -217,6 +205,11 @@ struct NotebookView: View {
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .yoseHarigami(isFeatured: win || r.reachedFinal)
                 }
+                if session.yearHistory.contains(where: { $0.prize > 0 }) {   // 見出しが頂GPなので、金額が頂GPの賞金に読めた（yearend_records_visual_1026_v0 軽微1）
+                    Text("金額は、その年の大会の賞金の合計")
+                        .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             }
             kirokuHeading(session.yearHistory.isEmpty ? "大会の記録" : "今年の大会")
             if entries.isEmpty {
@@ -232,7 +225,7 @@ struct NotebookView: View {
                         Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
-                            Text("+¥\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
+                            Text("+\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
                         }
                         kirokuMark(e.mark).frame(minWidth: 46)
                     }
@@ -258,6 +251,7 @@ struct NotebookView: View {
             Text(label).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(value).font(YoseFont.number(24, weight: .black)).foregroundStyle(unit == "万" ? YoseColor.shu : YoseColor.sumi)
+                    .lineLimit(1).minimumScaleFactor(0.6)   // 通算の賞金（万）は10年で5桁になりうる＝2行に折らない
                 Text(unit).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
         }

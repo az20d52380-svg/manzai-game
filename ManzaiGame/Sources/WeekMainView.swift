@@ -610,8 +610,11 @@ struct WeekMainView: View {
         return adviceBox(lines[i])
             .contentShape(Rectangle())
             .onTapGesture {
-                if i < lines.count - 1 { withAnimation(.easeOut(duration: 0.18)) { banterIndex += 1 } }
+                if i < lines.count - 1 { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { banterIndex += 1 } }
             }
+            // 続きがある間は読み上げでも「押すと次の台詞」と分かるように（a11y_check_1026_voiceover_v0 #3・見た目は不変）
+            .accessibilityAddTraits(i < lines.count - 1 ? .isButton : [])
+            .accessibilityHint(i < lines.count - 1 ? "押すと次の台詞" : "")
     }
 
     private func adviceBox(_ a: Advice) -> some View {
@@ -641,7 +644,7 @@ struct WeekMainView: View {
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
-                        YoseTag(text: "満タン・回復は余る", style: .outlineShu)
+                        YoseTag(text: "体力は満タン", style: .outlineShu)
                     }
                 }
                 if openNetaWrite {
@@ -774,7 +777,7 @@ struct WeekMainView: View {
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = ""; pickingNeta = false }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy))
+                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy)).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                         Text("新しく書く").font(YoseFont.gothic(14, weight: .heavy))
                         Spacer()
                         Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
@@ -921,6 +924,8 @@ struct WeekMainView: View {
     /// 練習を選ぶ画面の上段：経験点5種の今の持ち分（増える分は各練習の札に出す・表示専用）
     private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
         HStack(spacing: 6) {
+            Text("経験点の\n持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinBright)   // 丸い印の数字が何か分からなかった（firstlook_check_1027c #3）・用語集「経験点」と同じ言い方
+                .multilineTextAlignment(.leading).fixedSize()
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
@@ -965,8 +970,8 @@ struct WeekMainView: View {
             case .休む: return "体力を回復"
             case .能力アップ:
                 if unspentBeforeStage { return "" }   // 朱札「未振分あり」と上の看板が言う
-                return expGrains > 0 ? "振れる経験点あり" : "能力を伸ばす"
-            case .お店: return "アイテムを買う"
+                return expGrains > 0 ? "振れる経験点あり" : "経験点を使う・週は進まない"
+            case .お店: return "買い物・週は進まない"
             }
         }()
         let run: () -> Void = {
@@ -992,7 +997,7 @@ struct WeekMainView: View {
             VStack(spacing: 3) {
                 HStack(spacing: 7) {
                     if let stamp {
-                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                             .frame(width: 28, height: 28)
                             .background(gated ? YoseColor.disabledText : YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -1047,11 +1052,12 @@ struct WeekMainView: View {
             .frame(width: 26, height: 26)
             .background(gated ? YoseColor.disabledText : tint)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+            .accessibilityHidden(true)   // 札の記号名を先に読ませない（a11y_check_1026_voiceover #7）
         let body = VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 7) {
                 iconBox
                 Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
             }
             if case .acceptOffer = v.action {
                 Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
@@ -1388,9 +1394,10 @@ struct WeekMainView: View {
     }
 
     /// 体力の3段ゾーン（2=緑/1=黄/0=赤）。閾値は黄50未満・赤20未満（第1便§0裁定①）。
-    private var staminaZone: Int {
-        if s.stamina < 20 { return 0 }
-        if s.stamina < 50 { return 1 }
+    private var staminaZone: Int { Self.staminaZone(s.stamina) }
+    static func staminaZone(_ stamina: Double) -> Int {
+        if stamina < 20 { return 0 }
+        if stamina < 50 { return 1 }
         return 2
     }
 
@@ -1451,6 +1458,7 @@ struct WeekMainView: View {
             .init(term: "実力", text: "コンビの強さ。大会では高いほど勝ち上がりやすい。"),
             .init(term: "相性", text: "二人の息の合い方。相方と合わせたり、休んだりで上がる。"),
             .init(term: "体力", text: "行動すると減る。休むと戻る。"),
+            .init(term: "知名度", text: "どれだけ知られているか（0〜100）。舞台に立つと上がり、仕事の誘いが増える。"),
             .init(term: "経験点", text: "練習やネタ書きでたまる。「能力アップ」で使うと実力が伸びる。"),
         ], note: "上の黒い帯は、次の大会までの週数。左上の「？」でいつでも読み返せる。")
     }
@@ -1546,15 +1554,17 @@ struct WeekMainView: View {
 
     /// ネタへの効き（旧 trainExtras と同じ名目値・監査E-06）。ネタを書く＝選択中ネタの改稿 or 新ネタ／舞台に立つ＝客前で磨く。
     private func netaEffect(_ action: WeekAction) -> String? {
+        Self.netaEffectText(action, config: session.config, revising: writeTarget != nil, hasNetas: !s.netas.isEmpty)
+    }
+    static func netaEffectText(_ action: WeekAction, config cfg: GameConfig, revising: Bool, hasNetas: Bool) -> String? {
         guard case .train(let t) = action else { return nil }
-        let cfg = session.config
         switch t {
         case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
             let gain = cfg.netaPlaceGain[t] ?? cfg.netaReviseGain
-            return writeTarget != nil ? "完成度 +\(Int(gain))" : "新ネタ"
-        case .ネタ見せ会 where !s.netas.isEmpty:
+            return revising ? "完成度 +\(Int(gain))" : "新ネタ"
+        case .ネタ見せ会 where hasNetas:
             return "完成度 +\(Int(cfg.netaLivePolishShow))"
-        case .フリーライブ where !s.netas.isEmpty:
+        case .フリーライブ where hasNetas:
             return "完成度 +\(Int(cfg.netaLivePolishFree))"
         default:
             return nil
@@ -1564,8 +1574,11 @@ struct WeekMainView: View {
     /// 本番が遠い週の目標バナー2行目＝いまのネタの完成度（監査A-01: 中だるみ帯の副目標）
     private func lullLine() -> String {
         let cur = s.selectedNetaID.flatMap { id in s.netas.first { $0.id == id } } ?? s.netas.last
-        guard let n = cur else { return s.preoccupiedWeeks > 0 ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
-        return "大会まで間がある ・ ネタ「\(n.name)」完成度 \(Int(n.polish.rounded()))/100"
+        return Self.lullText(netaName: cur?.name, polish: cur?.polish ?? 0, preoccupied: s.preoccupiedWeeks > 0)
+    }
+    static func lullText(netaName: String?, polish: Double, preoccupied: Bool) -> String {
+        guard let name = netaName else { return preoccupied ? "大会まで間がある ・ ネタは来週から" : "大会まで間がある ・ まずはネタを書こう" }   // 撮影の週は書けない（playtest_v13 §2-3）
+        return "大会まで間がある ・ ネタ「\(name)」完成度 \(Int(polish.rounded()))/100"
     }
 
     /// 年末へ（GPの道が閉じ、出られる本番が残っていない時だけ・二度押しで実行＝監査A-03）
@@ -1603,13 +1616,18 @@ struct WeekMainView: View {
     /// §4 器満了: 成長予算を使い切ったか（NotebookView の器リングと同一判定＝食い違わない）。
     /// 自動注ぎ＝満了は行動の週送りで成立する。growthUsed≥growthBudget で判定（budget未設定=無制限は満了なし）。
     private var vesselIsFull: Bool {
-        guard let budget = s.growthBudget, budget > 0 else { return false }
-        return s.growthUsed >= budget - GameEngine.pourEpsilon
+        Self.vesselFull(budget: s.growthBudget, used: s.growthUsed)
+    }
+    static func vesselFull(budget: Double?, used: Double) -> Bool {
+        guard let budget, budget > 0 else { return false }
+        return used >= budget - GameEngine.pourEpsilon
     }
 
     /// 一番低い能力名。差が1未満（第1週の全員10など）は「弱点なし」＝空文字（監査B-03: 根拠の無い助言を出さない）
     private func weakAbility() -> String {
-        let pairs: [(String, Double)] = [("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)]
+        Self.weakAbilityName([("センス", s.センス), ("発想", s.発想), ("表現", s.表現), ("華", s.華), ("メンタル", s.メンタル)])
+    }
+    static func weakAbilityName(_ pairs: [(String, Double)]) -> String {
         guard let lo = pairs.min(by: { $0.1 < $1.1 }), let hi = pairs.max(by: { $0.1 < $1.1 }), hi.1 - lo.1 >= 1 else { return "" }
         return lo.0
     }

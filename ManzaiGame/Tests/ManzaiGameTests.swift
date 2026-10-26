@@ -407,7 +407,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testNoNeta() {
         var i = base(); i.netaCount = 0
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
     }
     func testStamina() {
         var i = base(); i.stamina = 30
@@ -422,8 +422,9 @@ final class WeekHintTests: IsolatedStoreTestCase {
         i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
     }
     func testLivingForecast() {
-        var i = base(); i.livingInTwoWeeks = true
+        var i = base(); i.livingInTwoWeeks = true; i.money = 200_000   // 2か月分（28万）未満の時だけ予告（playtest_v15 #5）
         XCTAssertEqual(WeekHint.line(i), "再来週は月末の支払い（家賃など）14万円。")
+        i.money = 280_000; XCTAssertNil(WeekHint.line(i))   // ちょうど2か月分なら出さない
     }
     func testPartner() {
         var i = base(); i.weeksWithoutPartner = 6
@@ -439,7 +440,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
         i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
@@ -787,6 +788,36 @@ final class WeekendInviteVariantTests: XCTestCase {
     }
 }
 
+/// 会話の決まり（manzai-drama-voice v3 ③）：選択イベントの吹き出しは40字・2文以内（地の文 name=nil は対象外）。10/26 定期の点検で3文の行が2本見つかった。
+final class ChoiceEventLineLengthTests: XCTestCase {
+    func testSpeechBubblesWithinFortyCharsTwoSentences() {
+        var texts = ChoiceEventKind.allCases.map { ChoiceEventData.text(for: $0) }
+        texts += ChoiceEventData.weekendInviteVariants + ChoiceEventData.styleTalkVariants
+        for t in texts {
+            for a in t.setup + t.afterChoice.values.flatMap({ $0 }) where a.name != nil {
+                let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                XCTAssertLessThanOrEqual(line.count, 40, "\(t.title)：\(line)")
+                XCTAssertLessThanOrEqual(sentences.count, 2, "\(t.title)：\(line)")
+            }
+        }
+    }
+
+    /// 週頭の掛け合いも同じ決まり（6帯・salt を回して全行を拾う）。
+    func testBanterWithinFortyCharsTwoSentences() {
+        for band in [BanterBand.plain, .lull, .eve, .streak, .broke, .afterPass] {
+            for salt in 0..<200 {
+                for a in DialogueData.banter(band: band, salt: salt) ?? [] where a.name != nil {
+                    let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                    let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                    XCTAssertLessThanOrEqual(line.count, 40, "\(band)：\(line)")
+                    XCTAssertLessThanOrEqual(sentences.count, 2, "\(band)：\(line)")
+                }
+            }
+        }
+    }
+}
+
 /// お店の「戻す」は引っ越しを巻き戻さない（code_review_2026-10-19 §1-1）。ShopView と同じ手順（起点を取る→引っ越して起点の部屋も更新→買う→戻す）を session で再現する。
 final class ShopUndoRoomTests: IsolatedStoreTestCase {
     func testUndoPurchaseKeepsMovedRoom() {
@@ -802,5 +833,117 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         s.replayShopVisit(from: visitStart, [])              // 「戻す」で買い物を全部返す
         XCTAssertEqual(s.state.room, target)                 // 部屋はそのまま
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
+    }
+}
+
+/// 年末の「不出場（エントリー費が払えず）」の判定：週の記録は表示名で書く（summarize＝GPName.display）。1回戦で負けた年を不出場と出していた（10/26 定期の目視）
+final class GPEntryLogTests: XCTestCase {
+    func testFirstRoundLossCountsAsEntered() {
+        let c = GameConfig(), first = c.calendar.gpRoundNames[0]
+        XCTAssertTrue(GameSession.loggedGPEntry(in: ["第30週: \(GPName.display(first)) 敗退"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: ["第30週: 春新人賞A 通過"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: [], config: c))
+    }
+}
+
+/// 表示用の純関数の境界（今の挙動を固定する）
+final class Pure1027Tests: XCTestCase {
+    private func rec(passed: Int = 0, final: Bool = false, champ: Bool = false, bank: Bool = false,
+                     entered: Bool? = nil, dissolved: Bool? = nil) -> GameSession.YearRecord {
+        GameSession.YearRecord(year: 1, roundsPassed: passed, reachedFinal: final, champion: champ, bankrupt: bank,
+                               prize: 0, enteredGP: entered, dissolved: dissolved)
+    }
+    private let names = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝"]
+
+    func testReachLabelPriority() {
+        XCTAssertEqual(YearResultView.reachLabel(rec(final: true, champ: true, bank: true), names: names), "優勝")
+        XCTAssertEqual(YearResultView.reachLabel(rec(final: true, bank: true), names: names), "夜逃げ")
+        XCTAssertEqual(YearResultView.reachLabel(rec(final: true, dissolved: true), names: names), "解散")
+        XCTAssertEqual(YearResultView.reachLabel(rec(final: true), names: names), "決勝")
+    }
+    func testReachLabelNotEnteredAndRounds() {
+        XCTAssertEqual(YearResultView.reachLabel(rec(entered: false), names: names), "不出場")
+        XCTAssertEqual(YearResultView.reachLabel(rec(entered: true), names: names), "1回戦敗退")
+        XCTAssertEqual(YearResultView.reachLabel(rec(passed: 3), names: names), "準々決勝敗退")
+        XCTAssertEqual(YearResultView.reachLabel(rec(passed: 4), names: names), "準決勝敗退")
+        XCTAssertEqual(YearResultView.reachLabel(rec(passed: 9), names: names), "準決勝敗退")
+        XCTAssertEqual(YearResultView.reachLabel(rec(dissolved: false), names: names), "1回戦敗退")
+    }
+    func testYenManBoundaries() {
+        XCTAssertEqual(Yen.man(0), "0万")
+        XCTAssertEqual(Yen.man(25000), "2.5万")
+        XCTAssertEqual(Yen.man(150000), "15万")
+        XCTAssertEqual(Yen.man(-5000), "-0.5万")
+        XCTAssertEqual(Yen.man(9999), "1.0万")
+    }
+    func testYenTextNegative() {
+        XCTAssertEqual(Yen.text(-912000), "−¥912,000")
+        XCTAssertEqual(Yen.text(0), "¥0")
+    }
+    func testRankProgressBounds() {
+        XCTAssertEqual(Theme.rankProgress(0, cap: 100), 0, accuracy: 1e-9)
+        XCTAssertEqual(Theme.rankProgress(15, cap: 100), 0, accuracy: 1e-9)
+        XCTAssertEqual(Theme.rankProgress(20, cap: 100), 0.5, accuracy: 1e-9)
+        XCTAssertEqual(Theme.rankProgress(-5, cap: 100), 0, accuracy: 1e-9)
+        XCTAssertEqual(Theme.rankProgress(90, cap: 100), 0, accuracy: 1e-9)
+        XCTAssertEqual(Theme.rankProgress(95, cap: 100), 0.5, accuracy: 1e-9)
+        XCTAssertEqual(Theme.rankProgress(500, cap: 100), 1, accuracy: 1e-9)
+    }
+    func testNextGrade() {
+        let g = AbilityUpView.nextGrade(14.2, cap: 100)
+        XCTAssertEqual(g?.name, Theme.rank(15))
+        XCTAssertEqual(g?.remain, 1)
+        XCTAssertEqual(AbilityUpView.nextGrade(15, cap: 100)?.name, Theme.rank(25))
+        XCTAssertEqual(AbilityUpView.nextGrade(15, cap: 100)?.remain, 10)
+        XCTAssertEqual(AbilityUpView.nextGrade(89.9, cap: 100)?.name, Theme.rank(90))
+        XCTAssertNil(AbilityUpView.nextGrade(90, cap: 100))
+        XCTAssertNil(AbilityUpView.nextGrade(300, cap: 100))
+        XCTAssertEqual(AbilityUpView.nextGrade(-3, cap: 100)?.name, nil)
+    }
+    func testKanjiNumber() {
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(0), "〇")
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(-4), "〇")
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(9), "九")
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(10), "十")
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(15), "十五")
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(20), "二〇")
+        XCTAssertEqual(YoseYearTurnCurtainView.kanjiNumber(123), "一二三")
+    }
+    func testStampSpoken() {
+        XCTAssertEqual(YoseHankoStamp.spoken("封"), "封の判")
+        XCTAssertEqual(YoseHankoStamp.spoken("秀"), "秀の判、通過")
+        XCTAssertEqual(YoseHankoStamp.spoken("惜"), "惜の判、惜しくも敗退")
+        XCTAssertEqual(YoseHankoStamp.spoken("87"), "87点の判")
+        XCTAssertEqual(YoseHankoStamp.spoken("暫定1位"), "暫定1位の判")
+        XCTAssertEqual(YoseHankoStamp.spoken("優勝"), "優勝の判子")
+    }
+    func testIsRestOnly() {
+        XCTAssertTrue(YearResultView.isRestOnly("第10週: 体調ダウン"))
+        XCTAssertFalse(YearResultView.isRestOnly("体調ダウン"))
+        XCTAssertFalse(YearResultView.isRestOnly("第10週: 春新人賞A 通過"))
+        XCTAssertFalse(YearResultView.isRestOnly("第10週: 春新人賞A 敗退 / 体調ダウン"))
+        XCTAssertFalse(YearResultView.isRestOnly("第10週: 客席で観戦"))
+    }
+    func testQualifierApplies() {
+        XCTAssertTrue(QualifierNoticeView.applies("GP1回戦"))
+        XCTAssertTrue(QualifierNoticeView.applies("GP準々決勝"))
+        XCTAssertFalse(QualifierNoticeView.applies("GP準決勝"))
+        XCTAssertFalse(QualifierNoticeView.applies("gp1回戦"))
+        XCTAssertFalse(QualifierNoticeView.applies(""))
+    }
+    func testExpDisplayValueAndCost() {
+        XCTAssertEqual(ExpDisplay.value(0.99), 9)
+        XCTAssertEqual(ExpDisplay.value(1.0), 10)
+        XCTAssertEqual(ExpDisplay.value(0), 0)
+        XCTAssertEqual(ExpDisplay.cost(0, have: 0), 1)
+        XCTAssertEqual(ExpDisplay.cost(0.35, have: 0), 4)
+        XCTAssertEqual(ExpDisplay.cost(0.3, have: 0), 3)
+        XCTAssertEqual(ExpDisplay.cost(2, have: 1), 20)
+    }
+    func testPracticeLabelCoversAll() {
+        XCTAssertEqual(AbilityUpView.practiceLabel(.ネタ作り), "ネタを書く")
+        XCTAssertEqual(AbilityUpView.practiceLabel(.ランニング・サウナ), "エントリーライブに出る")
+        XCTAssertEqual(AbilityUpView.practiceLabel(.作家の勉強会), "大喜利ライブに出る")
+        XCTAssertEqual(AbilityUpView.practiceLabel(.ファミレスで書く), "ファミレスで朝まで")
     }
 }
