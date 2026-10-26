@@ -610,7 +610,7 @@ struct WeekMainView: View {
         return adviceBox(lines[i])
             .contentShape(Rectangle())
             .onTapGesture {
-                if i < lines.count - 1 { withAnimation(.easeOut(duration: 0.18)) { banterIndex += 1 } }
+                if i < lines.count - 1 { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { banterIndex += 1 } }
             }
             // 続きがある間は読み上げでも「押すと次の台詞」と分かるように（a11y_check_1026_voiceover_v0 #3・見た目は不変）
             .accessibilityAddTraits(i < lines.count - 1 ? .isButton : [])

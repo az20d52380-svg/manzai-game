@@ -106,6 +106,7 @@ struct S6bView: View {
                             Text(Yen.text(counted ? 0 : max(0, s.money)))
                                 .font(YoseFont.number(26, weight: .black)).monospacedDigit().foregroundStyle(YoseColor.shu)
                                 .contentTransition(.numericText())
+                                .lineLimit(1).minimumScaleFactor(0.5)   // 7桁の残金が「¥7,796,0／00」と2行に折れていた（10/26 目視）
                         }
                     }
                     .padding(.vertical, 8).padding(.horizontal, 14)
@@ -129,7 +130,11 @@ struct S6bView: View {
                 .padding(.horizontal, 14).padding(.bottom, 30)
         }
         // 元の残金を一拍見せてから減らす（0.8秒で0になると元の額が読めず「0円なのにドーム」に見えた）
-        .onAppear { withAnimation(reduceMotion ? nil : .easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
+        .onAppear {
+            // 演出ひかえめでも元の残金を一拍見せてから0円に切り替える（数え下げの動きだけ省く＝code_review_2026-10-26f #1）
+            if reduceMotion { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); counted = true } }
+            else { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
+        }
     }
 
     private static let venueNames = ["町の劇場", "ホール", "アリーナ", "ドーム"]
