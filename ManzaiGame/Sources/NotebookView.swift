@@ -225,7 +225,7 @@ struct NotebookView: View {
                         Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
-                            Text("+¥\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
+                            Text("+\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
                         }
                         kirokuMark(e.mark).frame(minWidth: 46)
                     }
