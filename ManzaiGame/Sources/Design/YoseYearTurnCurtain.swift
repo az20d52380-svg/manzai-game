@@ -216,9 +216,9 @@ struct YoseYearTurnCurtainView: View {
 
                 ZStack(alignment: .top) {
                     // 下層：新年のめくり札（完全不透明・固定）
-                    mekuriCard(year: summary.newYear, caption: "4月 ・ 第1週")
+                    mekuriCard(year: summary.newYear, caption: "1月 ・ 第1週")
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("結成\(summary.newYear)年目　4月 第1週")
+                        .accessibilityLabel("結成\(summary.newYear)年目　1月 第1週")
                     // 上層：前年の札。上辺を軸に奥へ跳ね上がって消える（半透明では重ねない）
                     mekuriCard(year: summary.previousYear, caption: "全日程 終了")
                         .accessibilityHidden(true)   // めくれて消える前年の札は読ませない（19l §1-4）

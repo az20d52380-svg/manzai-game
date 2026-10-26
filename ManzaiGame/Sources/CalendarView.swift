@@ -176,8 +176,8 @@ struct CalendarView: View {
         return w == cal.gpFinalWeek
     }
 
-    // 第1週=4月。4週で1ヶ月。
+    // 第1週=1月。4週で1ヶ月（正典 sim_career.py の「1月起点48週」に合わせる＝calendar_wording_1026_v0 案②）。
     private func monthLabel(_ row: Int) -> String {
-        "\((3 + row) % 12 + 1)月"
+        "\(row % 12 + 1)月"
     }
 }

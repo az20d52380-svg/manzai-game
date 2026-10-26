@@ -180,17 +180,17 @@ def _others_fireable(k, s, week, year, honban_ahead):
     if k == "postcard":  return s.fame >= 10 and s.money < 200_000
     if k == "douki":     return week >= 16 and s.fame < 40 and s.money >= 20_000
     if k == "inventory": return s.money < 150_000 and jobs >= 3
-    if k == "homecoming":return week >= 38 and honban_ahead >= 3
+    if k == "homecoming":return week >= 41 and honban_ahead >= 3
     if k == "fan":       return s.fame >= 15
     if k == "ticket":    return s.fame < 30
-    # 第2束 0051〜0057（第1週=4月・4週で1か月）
-    if k == "festival":  return 14 <= week <= 20 and s.stamina >= 40 and honban_ahead >= 2
+    # 第2束 0051〜0057（第1週=1月・4週で1か月＝calendar_wording_1026_v0 案②）
+    if k == "festival":  return 26 <= week <= 32 and s.stamina >= 40 and honban_ahead >= 2
     if k == "tv":        return week >= 20 and s.fame < 30
     if k == "renovation":return week >= 12 and s.fame < 40
     if k == "classmate": return week >= 10 and s.fame >= 5
     if k == "fever":     return week >= 6 and s.stamina < 50
     if k == "notebook":  return week >= 10 and bool(getattr(s, "netas", None))
-    if k == "yearend":   return 33 <= week <= 36 and s.money >= 1500   # 選択肢が全部お金ゲート＝1500未満は出さない（全イベント共通の決まり）
+    if k == "yearend":   return 45 <= week <= 48 and s.money >= 1500   # 選択肢が全部お金ゲート＝1500未満は出さない（全イベント共通の決まり）
     return False
 def _ev_add(s, key, amt):
     """選択肢イベントの効果1件。EVENTS_APP=True ではアプリ（ChoiceEventEffect.swift applyEventEffect）と同じ
@@ -316,7 +316,7 @@ def _app_band(k, s, week, year, ahead, nxt, a):
         return s.stamina >= 80 and a["loss"] == 0 and nxt is not None and 2 <= nxt[0] - week <= 4
     if k == "wrote":      return bool(getattr(s, "netas", None))
     if k == "photo":      return 20 <= s.fame <= 50
-    if k == "homecoming": return week >= 38 and ahead > 3          # アプリ: noTournamentWithin3Weeks（sim 旧は >=3）
+    if k == "homecoming": return week >= 41 and ahead > 3          # アプリ: noTournamentWithin3Weeks（sim 旧は >=3）
     return _others_fireable(k, s, week, year, ahead)
 
 def _app_weak4(s):
