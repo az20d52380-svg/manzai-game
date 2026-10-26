@@ -1057,7 +1057,7 @@ struct WeekMainView: View {
             HStack(spacing: 7) {
                 iconBox
                 Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
             }
             if case .acceptOffer = v.action {
                 Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
