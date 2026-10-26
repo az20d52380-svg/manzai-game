@@ -1056,7 +1056,7 @@ struct WeekMainView: View {
         let body = VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 7) {
                 iconBox
-                Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
+                Text(v.name).font(YoseFont.gothic(compact && !row ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
             }
             if case .acceptOffer = v.action {
