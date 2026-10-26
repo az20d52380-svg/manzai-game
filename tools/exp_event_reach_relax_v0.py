@@ -6,7 +6,7 @@ import sys, collections
 from multiprocessing import Pool
 
 RARE = ("luckythird", "yearend", "homecoming", "festival")
-CASES = ["base", "L60", "Lnoloss", "Lboth", "W", "Lboth+W", "H2", "cap25"]
+CASES = ["base", "L60", "Lnoloss", "Lboth", "W", "Lboth+W", "H2", "cap25", "y3", "y4"]
 
 def one(args):
     case, bot, n = args
@@ -16,6 +16,10 @@ def one(args):
     ob = C._app_band
     def band(k, s, week, year, ahead, nxt, a):
         last[id(a)] = year
+        if case in ("y3", "y4"):   # 1年あたりの上限（1キャリア1回制のまま・通算の上限は25＝全種）
+            key = (id(a), year)
+            if key not in ystart: ystart[key] = len(a["fired"])
+            if len(a["fired"]) - ystart[key] >= int(case[1]): return False
         L = case.startswith("L"); W = case.endswith("W")
         if k == "luckythird" and L:
             hp = 60 if case in ("L60", "Lboth", "Lboth+W") else 80
@@ -28,11 +32,16 @@ def one(args):
         if case == "H2" and k == "homecoming": return week >= 38 and ahead >= 2
         return ob(k, s, week, year, ahead, nxt, a)
     C._app_band = band
-    if case == "cap25": C.APP_EVENT_CAP = 25
+    if case in ("cap25", "y3", "y4"): C.APP_EVENT_CAP = 25
+    ystart = {}
     last = {}   # キャリアごとに、抽選がまだ行われた最後の年（上限に達するとそれ以後は呼ばれない）
     oa, oapp = C._others_apply, C._app_apply
-    def wa(s, k): cnt[k] += 1; return oa(s, k)
-    def wb(s, k): cnt[k] += 1; return oapp(s, k)
+    def yb(s, k):   # 抽選イベントが出た年（2年ごと）
+        if k in C.APP_POOL:
+            y = last.get(id(s.__dict__.get("_app")), 0)
+            cnt[f"_y{(y - 1) // 2}"] += 1
+    def wa(s, k): cnt[k] += 1; yb(s, k); return oa(s, k)
+    def wb(s, k): cnt[k] += 1; yb(s, k); return oapp(s, k)
     C._others_apply, C._app_apply = wa, wb
     M.one(("all", True, bot, n))
     ys = list(last.values())
@@ -45,8 +54,8 @@ if __name__ == "__main__":
     jobs = [(c, b, n) for c in CASES for b in M.BOTS]
     with Pool(maxtasksperchild=1) as p:
         res = p.map(one, jobs, chunksize=1)
-    print("| 案 | ボット | 3行目の当たり | 年末ライブ | 帰省 | 夏祭り | イベント計/キャリア | 抽選が続いた最後の年(平均) |")
-    print("|---|---|---|---|---|---|---|---|")
+    print("| 案 | ボット | 3行目の当たり | 年末ライブ | 帰省 | 夏祭り | イベント計/キャリア | 抽選が続いた最後の年(平均) | 抽選イベント 1-2/3-4/5-6/7-8/9-10年目 |")
+    print("|---|---|---|---|---|---|---|---|---|")
     for case, bot, c in res:
         print(f"| {case} | {bot[:8]} | " + " | ".join(f"{c.get(k,0)/n:.0%}" for k in RARE)
-              + f" | {sum(v for k, v in c.items() if k[0] != '_')/n:.1f} | {c['_lastyear']:.1f} |")
+              + f" | {sum(v for k, v in c.items() if k[0] != '_')/n:.1f} | {c['_lastyear']:.1f} | " + "/".join(f"{c.get(f'_y{i}',0)/n:.1f}" for i in range(5)) + " |")
