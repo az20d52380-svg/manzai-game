@@ -998,7 +998,6 @@ final class GameSession {
         saveNow()
     }
 
-    /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
     /// 【候補・キュー117 案A】この周を閉じる（エンディングに入る時・年末から「もう一度」でタイトルへ戻る時）。以後 saveNow は書かずに消す（background の書き直し防止）。非保存
     private(set) var careerClosed = false
     func closeCareer() {
@@ -1006,6 +1005,7 @@ final class GameSession {
         Self.store.removeObject(forKey: Self.saveKey)
     }
 
+    /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
     func abandonRun() {
         Self.store.removeObject(forKey: Self.saveKey)
         abandoned = true
