@@ -142,6 +142,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/26 夜 定期（続き3）済：アプリのカバー率（xccov・アプリ本体 16.8%＝大半は画面）から本番の経路で未通過の所を拾ってテスト10本（InnerVoice1026Tests＝週の独白の優先順と境界7本・SessionGap1026Tests＝優勝演出中のセーブ復元/おすすめ注ぎの延長F-02/予定表の敗者復活3本）＝アプリ 241 green。GameSession の残りの未通過は DEBUG 用の目視フックが大半。START_HERE の索引漏れ3枚も足した。
 - 10/26 夜 定期（続き2）済：自己点検 MZ_SMOKE=selftest（iPhone 17・ALLOWSAVE=1）＝[ST] 29行・DONE・失敗0（決勝の審査の合計ずれ 0/80）。※ macOS に `timeout` が無いので、`simctl launch --console-pty` を背景で起動→DONE を待って terminate する形で回す。
 - 10/26 夜 定期（続き）済：候補7本を今の本線に試しに merge→全部 green（GameCore 417・同期3・アプリ 231〜232）。season-sure は研究用台本の衝突を両案残しで解いた merge（b611626）を候補に push。アプリ本線のテストも 231 green。decision_brief_2026-10-25 に追記。
 - 10/26 夜 定期 済：GameCore の llvm-cov で 0 回の領域を洗い出し、意味のある3つ（回戦名が足りない時の「GP回戦N」・年終了後の restoredPhase と二度押し・設定に無い大会/オファー名の中断セーブ復元）にテスト5本（CoverageAC1026Tests・417 green）。WeekRunner 96.5→99.65%・全体 99.30→99.55%（行）。残りは precondition の文言と `?? []` の予備＝埋め草なので足さない。
