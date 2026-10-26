@@ -303,7 +303,7 @@ struct AbilityUpView: View {
                 Haptics.tick()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
             } label: {
-                Image(systemName: "minus").font(.system(size: Font.mzScaled(13), weight: .black))
+                Image(systemName: "minus").font(.system(size: Font.mzScaled(13), weight: .black)).accessibilityHidden(true)   // 読み上げはボタンの label だけ（a11y_check_1026_voiceover_v0 #5）
                     .foregroundStyle(canUndo ? YoseColor.sumi : YoseColor.disabledText)
                     .frame(width: 28, height: 40)
                     .background(Rectangle().fill(canUndo ? YoseColor.ki : YoseColor.ginNezu))
@@ -312,7 +312,7 @@ struct AbilityUpView: View {
             .buttonStyle(PressableStyle(enabled: canUndo)).disabled(!canUndo)
             .accessibilityLabel(String("\(a)を元に戻す"))
             Button { if let n = next?.steps { plusTap(a, steps: n) } } label: {
-                Image(systemName: "plus").font(.system(size: Font.mzScaled(18), weight: .black))
+                Image(systemName: "plus").font(.system(size: Font.mzScaled(18), weight: .black)).accessibilityHidden(true)   // 読み上げはボタンの label だけ（a11y_check_1026_voiceover_v0 #5）
                     .foregroundStyle(canTap ? YoseColor.kinari : YoseColor.disabledText)
                     .frame(width: 36, height: 40)
                     .background(Rectangle().fill(canTap ? YoseColor.shu : YoseColor.ginNezu))

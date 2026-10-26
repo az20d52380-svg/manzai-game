@@ -995,7 +995,7 @@ struct WeekMainView: View {
             VStack(spacing: 3) {
                 HStack(spacing: 7) {
                     if let stamp {
-                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                             .frame(width: 28, height: 28)
                             .background(gated ? YoseColor.disabledText : YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
