@@ -400,6 +400,7 @@ cd GameCore && swift test
 - `meta_start_bonus_1020_v0.md` — 周回ボーナス（初期の経験点・所持金）の実測 v0（2026-10-20・【仮】・決定ではなく材料）
 - `pawapro_match_exp_research_v0.md` — パワプロの「試合後経験点」vs「練習1回」調査 v0（2026-10-20）
 - `playtest_v13.md` — 実プレイ点検 v13（10/25 の変更・iPhone 17・2026-10-25）
+- `playtest_v14.md` — 実プレイ点検 v14（10/26・1年通し落ちず・中2は直した）
 - `tourney_exp_options_1020_v0.md` — 大会の経験点 × 最初の帯の倍率 実測 v0（2026-10-20・材料のみ）
 - `visual_check_1025_v0.md` — 目視 10/25（決勝の審査員の点と票・型をなくした後）
 - `visual_check_bg_h130_v0.md` — 背景16種の目視（高さ130）
