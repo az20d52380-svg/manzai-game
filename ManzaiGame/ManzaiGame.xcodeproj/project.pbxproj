@@ -76,6 +76,7 @@
 		8F8EA73EBE8FB72EF969B0BE /* Endings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */; };
 		90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */; };
 		91217B57A08A20012B50956D /* MPLUSRounded1c-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */; };
+		91723692D04B2F63B7FBD319 /* ChoiceEventPairing1027Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */; };
 		9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */; };
 		9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = F840A919C087A92A94339899 /* RadarChart.swift */; };
 		9C0D027CDCFED1A3CCE43054 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B56CF2CC9552602E05AC67B /* CalendarView.swift */; };
@@ -181,6 +182,7 @@
 		7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogRoundTrip1026Tests.swift; sourceTree = "<group>"; };
 		823BBF1D645262269F322646 /* SessionGap1025fTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025fTests.swift; sourceTree = "<group>"; };
 		830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_big.mp3; sourceTree = "<group>"; };
+		858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventPairing1027Tests.swift; sourceTree = "<group>"; };
 		86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_finals.mp3; sourceTree = "<group>"; };
 		8A020307F3B3C34947A00DD3 /* YoseMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseMotion.swift; sourceTree = "<group>"; };
 		8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_hall.mp3; sourceTree = "<group>"; };
@@ -409,6 +411,7 @@
 			children = (
 				E271E3EB3BF64D4F08ABCC74 /* AppCoverage1025Tests.swift */,
 				340E4B0117C5AF8BBEC2AC57 /* AppSaveFixtureTests.swift */,
+				858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */,
 				C0FD8C5D4F11D970B78D68B9 /* CommandCatalogTests.swift */,
 				CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */,
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
@@ -655,6 +658,7 @@
 			files = (
 				A04542CD185A20BC467338C6 /* AppCoverage1025Tests.swift in Sources */,
 				E58B538509C7357838D5078F /* AppSaveFixtureTests.swift in Sources */,
+				91723692D04B2F63B7FBD319 /* ChoiceEventPairing1027Tests.swift in Sources */,
 				CDB07DD7D5C98BA8BB44BD2E /* CommandCatalogTests.swift in Sources */,
 				AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */,
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
