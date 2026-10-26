@@ -1050,6 +1050,7 @@ struct WeekMainView: View {
             .frame(width: 26, height: 26)
             .background(gated ? YoseColor.disabledText : tint)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+            .accessibilityHidden(true)   // 札の記号名を先に読ませない（a11y_check_1026_voiceover #7）
         let body = VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 7) {
                 iconBox
