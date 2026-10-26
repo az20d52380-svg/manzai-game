@@ -252,7 +252,7 @@ struct TournamentEntryView: View {
     private func entryButton(_ title: String, glyph: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: { if enabled { action() } }) {
             HStack(spacing: 12) {
-                Image(systemName: glyph).font(.system(size: Font.mzScaled(17), weight: .bold))
+                Image(systemName: glyph).font(.system(size: Font.mzScaled(17), weight: .bold)).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(YoseFont.buttonMain)
                     Text(enabled ? sub : "残高不足で出られない").font(YoseFont.captionBold)

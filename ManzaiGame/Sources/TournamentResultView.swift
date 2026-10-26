@@ -461,7 +461,7 @@ struct TournamentResultView: View {
         HStack(spacing: 8) {
             Text("谷口").font(YoseFont.captionBold).foregroundStyle(YoseColor.kin)
                 .padding(.horizontal, 8).frame(height: 22).background(YoseColor.kuroUrushi)
-            Text("……次や、次").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.sumi)
+            Text("……次、いこう").font(YoseFont.dialogueBody).foregroundStyle(YoseColor.sumi)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14).padding(.vertical, 6)

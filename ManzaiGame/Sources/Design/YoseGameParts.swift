@@ -118,7 +118,7 @@ struct YoseFooterTabBar: View {
             ForEach(items.indices, id: \.self) { idx in
                 Button(action: items[idx].action) {
                     HStack(spacing: 6) {
-                        Image(systemName: items[idx].symbol).font(.system(size: Font.mzScaled(13), weight: .black))
+                        Image(systemName: items[idx].symbol).font(.system(size: Font.mzScaled(13), weight: .black)).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                             .foregroundStyle(YoseColor.enji)
                         Text(items[idx].title).font(YoseFont.gothic(16, weight: .heavy))
                             .foregroundStyle(YoseColor.sumi)
