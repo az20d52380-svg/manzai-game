@@ -139,6 +139,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/26 夕 定期 済：点検（GameCore 412 green・golden 同期3種一致・アプリ xcodebuild test 231 green・selftest 29行 DONE 失敗なし＝iPhone 17）／26e 以後のアプリ差分（c9112cc〜655edd4・89行＝休の行を出来事の埋め草から外す・ほかN大会の数え方・表示判定の static 切り出し）を親が読んだ＝振る舞いは切り出し前と同じ・不具合0。GameCore の関数でテストから名前が出ない物は private の2つ（weeklyBandFireable・markNetaUsed＝呼び手経由で通っている）だけ。
 - 10/26 昼（続き2）定期 済 655edd4：selftest 29行 DONE 失敗なし／アプリのテスト +11本（sonnet・表示の判定を static に切り出し・231 green・不具合0・app_coverage_1026_v0）→10年目の年末を目視＝切り出し前と同じ
 - 10/26 昼（続き）定期 済 712113e・8d8592f・8ca867a・c9112cc・4229be5：年末・戦績の目視（いろいろな年・sonnet・yearend_records_visual_1026_v0＝重い食い違いなし）→年表に「金額は、その年の大会の賞金の合計」／目視フック MZ_SCROLL／週の記録の書く所と読む所の突き合わせ（sonnet・code_review_2026-10-26e＝中1低2を表示だけで直す・往復テスト5本・アプリ 220 green）／戦績の賞金表記「+N万」にそろえる
 - 10/26 昼 定期 済 4c42af4・331535b・6870551・4a764f1：表記「まだネタがない」にそろえる／目視用台本 MZ_CARE がネタを書くように（DEBUG）／後半の年の目視（ネタあり・sonnet・later_years_neta_visual_1026_v0）→**不具合を直した：頂GPの1回戦で負けた年の年末が「エントリー費が払えず不出場」と出ていた**（5cb72f9 から・記録は表示名なのに生のキーで探していた・GPEntryLogTests・アプリ 215 green・GameCore 412 green）
