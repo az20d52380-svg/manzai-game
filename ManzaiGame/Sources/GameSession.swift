@@ -1452,7 +1452,7 @@ final class GameSession {
     /// 客席から（観戦）と自組の優勝が同じ週に並ぶのは見本だけ（判の種類を1画面で見るため。本編では同じ年に両方は出ない・playtest_v13 §2-1）
     func debugSeedKirokuLog() {
         log = ["第12週: 頂GP 1回戦 通過", "第20週: 頂GP 2回戦 敗退", "第30週: 体調ダウン 休",
-               "第44週: 頂GP 決勝 優勝「ひだまり座」（客席から）", "第44週: 頂GP 決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
+               "第\(config.calendar.gpFinalWeek)週: 頂GP 決勝 優勝「ひだまり座」（客席から）", "第\(config.calendar.gpFinalWeek)週: 頂GP 決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
     }
 
     /// DEBUG: ネタ帳（MZ_UI=neta）の目視用に持ちネタを積んだ開始状態。全状態（鉄板/おろし前/擦り切れ/保管庫）を

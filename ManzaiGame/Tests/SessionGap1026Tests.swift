@@ -76,4 +76,22 @@ final class SessionGap1026Tests: IsolatedStoreTestCase {
         XCTAssertEqual(gp.first?.length, NetaCatalog.lengthForGPRevival)
         XCTAssertEqual(gp.first?.highStakes, true)
     }
+
+    // MARK: ④ 出来事の決勝の行は決勝の週（playtest_v14 §2 の週の食い違いの切り分け）
+
+    func testSpectatorAndChampionFinalLinesUseFinalWeek() {
+        var cfg = GameConfig()
+        cfg.calendar.gpRounds = cfg.calendar.gpRounds.map { ($0.week, 9999) }
+        let s = GameSession(config: cfg, startState: GameSession.debugMaxedState(config: cfg))
+        drive(s) { $0.watchingFinal }
+        XCTAssertTrue(s.watchingFinal, "予選落ちの年は客席から決勝を観る")
+        s.finishWatchingFinal(winner: "見本")
+        XCTAssertEqual(s.log.last, "第\(cfg.calendar.gpFinalWeek)週: 頂GP 決勝 優勝「見本」（客席から）")
+
+        var c2 = GameConfig()
+        c2.calendar.gpRounds = c2.calendar.gpRounds.map { ($0.week, 0) }; c2.calendar.gpFinalLine = 0
+        let w = GameSession(config: c2, startState: GameSession.debugMaxedState(config: c2))
+        drive(w) { $0.winFinale }
+        XCTAssertTrue(w.log.contains { $0.hasPrefix("第\(c2.calendar.gpFinalWeek)週: 頂GP 決勝 優勝 +") })
+    }
 }
