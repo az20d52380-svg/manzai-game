@@ -161,21 +161,9 @@ struct NotebookView: View {
         var prev = ""
         for line in session.log where line != prev {
             prev = line
-            let mark = (line.contains("優勝") && !line.contains("客席")) ? "優勝"
-                : (line.contains("客席") ? "観戦"
-                    : (line.contains("通過") ? "通過" : (line.contains("敗退") ? "敗退" : "休")))
-            var week = "", body = line
-            if let r = line.range(of: ": ") { week = String(line[..<r.lowerBound]); body = String(line[r.upperBound...]) }
-            var prize = 0
-            var rest = body
-            if let re = try? NSRegularExpression(pattern: "\\+(\\d+)万") {
-                for m in re.matches(in: body, range: NSRange(body.startIndex..., in: body)) {
-                    if let r = Range(m.range(at: 1), in: body) { prize += Int(body[r]) ?? 0 }
-                }
-                rest = re.stringByReplacingMatches(in: body, range: NSRange(body.startIndex..., in: body), withTemplate: "")
-                    .trimmingCharacters(in: .whitespaces)
+            for part in GameSession.parseLogLine(line) {   // 1週に複数大会が並ぶ行は大会ごとに1行（書く所 summarize と同じ区切り）
+                out.append(LogEntry(week: part.week, title: part.title, mark: part.mark, prize: part.prize))
             }
-            out.append(LogEntry(week: week, title: rest, mark: mark, prize: prize))
         }
         return out
     }

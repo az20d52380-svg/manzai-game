@@ -252,8 +252,19 @@ struct YearResultView: View {
         var chosen = Set<Int>()
         if let f = log.indices.last(where: { (log[$0].contains("GP 決勝") || log[$0].contains("GP決勝")) && !log[$0].contains("客席") }) { chosen.insert(f) }
         for i in log.indices.filter({ log[$0].contains("優勝") && !log[$0].contains("客席") }).reversed() where chosen.count < limit { chosen.insert(i) }
-        for i in log.indices.reversed() where chosen.count < limit { chosen.insert(i) }
+        for i in log.indices.reversed() where chosen.count < limit && !isRestOnly(log[i]) { chosen.insert(i) }   // 出来事は大会結果のみ（体調ダウン・療養の行は埋め草にしない）
         return chosen.sorted().map { log[$0] }
+    }
+
+    /// 休（体調ダウン・療養）だけの行か。大会の札（優勝/通過/敗退）も観戦も無いもの
+    static func isRestOnly(_ line: String) -> Bool {
+        let ps = GameSession.parseLogLine(line)
+        return !ps.isEmpty && ps.allSatisfy { $0.mark == "休" } && line.hasPrefix("第")
+    }
+    /// 「ほかN大会」＝3行に出ていない大会の数（休と観戦は大会に数えない・1行に並ぶ複数大会は別々に数える）
+    static func hiddenStageCount(_ log: [String], shown: [String]) -> Int {
+        func n(_ ls: [String]) -> Int { ls.flatMap { GameSession.parseLogLine($0) }.filter { ["優勝", "通過", "敗退"].contains($0.mark) }.count }
+        return max(0, n(log) - n(shown))
     }
 
     private var eventsBlock: some View {
@@ -281,8 +292,8 @@ struct YearResultView: View {
                     }
                 }
             }
-            if session.log.count > lines.count {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
-                Text("ほか\(session.log.count - lines.count)大会").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+            if Self.hiddenStageCount(session.log, shown: lines) > 0 {   // 3行に出ない大会があることを添える（賞金の合計と3行が合わなくても不安にならない）
+                Text("ほか\(Self.hiddenStageCount(session.log, shown: lines))大会").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
