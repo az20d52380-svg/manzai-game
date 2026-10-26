@@ -132,7 +132,7 @@ struct ChoiceEventOverlay: View {
 
     private func scrollToLast(_ proxy: ScrollViewProxy) {
         guard !lines.isEmpty else { return }
-        withAnimation(Theme.Motion.appear) { proxy.scrollTo(Self.endAnchor, anchor: .bottom) }
+        withAnimation(Theme.Motion.r(Theme.Motion.appear)) { proxy.scrollTo(Self.endAnchor, anchor: .bottom) }
     }
 
     // MARK: 上＝題の札＋場面
@@ -322,7 +322,7 @@ struct ChoiceEventOverlay: View {
         showEffects(before: before, after: session.state, choice: id)
         footerReady = false
         // 選んだ瞬間に返事の1行目を出す（0 だと区切りの下が空のまま＝壊れて見えた・audit_intro_event B-01）
-        withAnimation(Theme.Motion.appear) { chosenID = id; afterShown = chunkEnd(text.afterChoice[id] ?? [], from: 0) }
+        withAnimation(Theme.Motion.r(Theme.Motion.appear)) { chosenID = id; afterShown = chunkEnd(text.afterChoice[id] ?? [], from: 0) }
         armFooterIfNeeded()
     }
 

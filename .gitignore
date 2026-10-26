@@ -9,3 +9,7 @@ xcuserdata/
 ManzaiGame/build/
 .dd/
 ManzaiGame/.dd/
+
+# 撮影の置き場と作業用の worktree はコミットしない（10/27 に git add -A で 2944 件入った事故の再発防止・残す見本は git add -f で）
+feedback_shots/
+.claude/worktrees/
