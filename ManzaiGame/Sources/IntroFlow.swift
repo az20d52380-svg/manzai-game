@@ -382,7 +382,7 @@ struct S1TitleView: View {
         }
         .overlay(alignment: .topLeading) {
             Button { showBook = true } label: {
-                Text("図鑑").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                Text("エンディング図鑑").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                     .frame(minWidth: 52, minHeight: 40).padding(.horizontal, 6)
                     .background(YoseColor.ki)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))

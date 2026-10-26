@@ -644,7 +644,7 @@ struct WeekMainView: View {
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
-                        YoseTag(text: "満タン・回復は余る", style: .outlineShu)
+                        YoseTag(text: "体力は満タン", style: .outlineShu)
                     }
                 }
                 if openNetaWrite {
@@ -924,6 +924,8 @@ struct WeekMainView: View {
     /// 練習を選ぶ画面の上段：経験点5種の今の持ち分（増える分は各練習の札に出す・表示専用）
     private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
         HStack(spacing: 6) {
+            Text("経験点の\n持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinBright)   // 丸い印の数字が何か分からなかった（firstlook_check_1027c #3）・用語集「経験点」と同じ言い方
+                .multilineTextAlignment(.leading).fixedSize()
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
@@ -1055,7 +1057,7 @@ struct WeekMainView: View {
             HStack(spacing: 7) {
                 iconBox
                 Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
             }
             if case .acceptOffer = v.action {
                 Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
