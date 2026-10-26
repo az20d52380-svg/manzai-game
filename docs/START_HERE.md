@@ -293,6 +293,7 @@ cd GameCore && swift test
 - `comedy_games_research_v0.md` — お笑い・漫才・芸人題材ゲーム 先行作リサーチ v0（2026-10-15）
 - `dialogue_data_grade_v1.md` — DialogueData.swift 採点表 v1（2026-10-18・コード変更なし）
 - `dialogue_grade_1018b.md` — 台詞採点 2026-10-18（その2）— 今日入った日本語の台詞文字列
+- `dialogue_grade_1026_night_v0.md` — 台詞採点 2026-10-26 夜 — 10/20 以降に足した会話・独白80行（○71△9×0・△は業界語/語尾＝直しは任意）
 - `dialogue_score_1019_v0.md` — 文体ゲート採点 10/19（10/17以降に本体へ入った台詞・地の文）
 - `dialogue_score_events_0012_0029_v0.md` — 選択肢イベント 0012〜0029 等（0041 より前）会話採点 v0
 - `dialogue_score_events_0041_0057_v0.md` — 選択肢イベント 0041〜0057 会話採点 v0
