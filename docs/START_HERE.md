@@ -322,6 +322,7 @@ cd GameCore && swift test
 - `owner_questions_2026-10-15.md` — オーナーへの質問（2026-10-15 まとめ・「止めて」の後に上から1問ずつ聞く）
 - `pawapro_ability_up_research_v0.md` — パワプロ サクセス 能力アップ（経験点の振り分け）調査 v0
 - `perf_check_v1.md` — 重さ点検 v1（2026-10-16）
+- `perf_check_v2_1026.md` — 重さ点検 v2（2026-10-26・v1 と同じ測り方・悪化0）
 - `playtest_2nd_run_v1.md` — 2周目の流れ 点検 v1（2026-10-16・preview-all d4d8d42・iPhone 17）
 - `playtest_finals_v1.md` — 実プレイ点検 決勝の流れ v1（準決勝→決勝→番組エンディング→年末→エンディング）
 - `playtest_v1.md` — 実プレイ点検 v1（1年目・画面で遊んだ記録）
@@ -466,6 +467,8 @@ cd GameCore && swift test
 - `yearend_records_visual_1026_v0.md` — 年末・戦績の画面の目視 10/26（重要0・軽微2）
 - `neta_coef_nopolish_1026_v0.md` — ネタを磨かない人への係数の効き目（L35・磨くとご褒美側・罰は最大約−4pt）
 - `event_reach_1026_v0.md` — イベントの出会いやすさ 10/26（下の4種は1キャリアで 8〜29%）
+- `candidate_review_1026_v0.md` — 候補ブランチ9本の点検 10/26 夕（本線に merge だけで入るか）
+- `name_reality_check_1026_v0.md` — 固有名の実在チェック 10/26（Web 25回・有名な実在と同名0・近い5）
 - `event_reach_relax_1026_v0.md` — 出会いにくい4種の条件をゆるめたら 10/26（効いているのは上限15＝3〜4年目で使い切る）
 - `event_repeat_research_1026_v0.md` — 長期育成ゲームのイベント再発の扱い 10/26（#129 の材料・クールダウン／2回目の文面／後半専用／続き物）
 - `det_event_path_1026_v0.md` — 確定で出るイベントの効き目の分解 10/26（決勝に効くのは能力と相性・判断 §3 の材料）
