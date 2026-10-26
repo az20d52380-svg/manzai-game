@@ -632,6 +632,7 @@ struct NameEntryView: View {
                 .font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                 .multilineTextAlignment(.trailing).lineLimit(1).minimumScaleFactor(0.6)
                 .submitLabel(.done).tint(YoseColor.shu)
+                .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.haiSumi.opacity(0.6)).frame(height: 1).offset(y: 2) }   // 書ける欄だと分かる下線（コンビ名の行と同じ・firstlook_check_1027c #9）
             Text("（6字まで）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
         .frame(maxWidth: 190)
