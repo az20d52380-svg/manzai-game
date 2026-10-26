@@ -407,7 +407,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testNoNeta() {
         var i = base(); i.netaCount = 0
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
     }
     func testStamina() {
         var i = base(); i.stamina = 30
@@ -439,7 +439,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "まだネタが無い。まずはネタを書こう。")
+        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
         i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
@@ -787,6 +787,36 @@ final class WeekendInviteVariantTests: XCTestCase {
     }
 }
 
+/// 会話の決まり（manzai-drama-voice v3 ③）：選択イベントの吹き出しは40字・2文以内（地の文 name=nil は対象外）。10/26 定期の点検で3文の行が2本見つかった。
+final class ChoiceEventLineLengthTests: XCTestCase {
+    func testSpeechBubblesWithinFortyCharsTwoSentences() {
+        var texts = ChoiceEventKind.allCases.map { ChoiceEventData.text(for: $0) }
+        texts += ChoiceEventData.weekendInviteVariants + ChoiceEventData.styleTalkVariants
+        for t in texts {
+            for a in t.setup + t.afterChoice.values.flatMap({ $0 }) where a.name != nil {
+                let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                XCTAssertLessThanOrEqual(line.count, 40, "\(t.title)：\(line)")
+                XCTAssertLessThanOrEqual(sentences.count, 2, "\(t.title)：\(line)")
+            }
+        }
+    }
+
+    /// 週頭の掛け合いも同じ決まり（6帯・salt を回して全行を拾う）。
+    func testBanterWithinFortyCharsTwoSentences() {
+        for band in [BanterBand.plain, .lull, .eve, .streak, .broke, .afterPass] {
+            for salt in 0..<200 {
+                for a in DialogueData.banter(band: band, salt: salt) ?? [] where a.name != nil {
+                    let line = a.text.replacingOccurrences(of: "{me}", with: "俺").replacingOccurrences(of: "{partner1}", with: "俺")
+                    let sentences = line.split(whereSeparator: { "。！？!?".contains($0) }).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                    XCTAssertLessThanOrEqual(line.count, 40, "\(band)：\(line)")
+                    XCTAssertLessThanOrEqual(sentences.count, 2, "\(band)：\(line)")
+                }
+            }
+        }
+    }
+}
+
 /// お店の「戻す」は引っ越しを巻き戻さない（code_review_2026-10-19 §1-1）。ShopView と同じ手順（起点を取る→引っ越して起点の部屋も更新→買う→戻す）を session で再現する。
 final class ShopUndoRoomTests: IsolatedStoreTestCase {
     func testUndoPurchaseKeepsMovedRoom() {
@@ -802,6 +832,16 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
         s.replayShopVisit(from: visitStart, [])              // 「戻す」で買い物を全部返す
         XCTAssertEqual(s.state.room, target)                 // 部屋はそのまま
         XCTAssertEqual(s.state.money, moneyAfterMove)        // お金は買う前に戻る（引っ越しは無料）
+    }
+}
+
+/// 年末の「不出場（エントリー費が払えず）」の判定：週の記録は表示名で書く（summarize＝GPName.display）。1回戦で負けた年を不出場と出していた（10/26 定期の目視）
+final class GPEntryLogTests: XCTestCase {
+    func testFirstRoundLossCountsAsEntered() {
+        let c = GameConfig(), first = c.calendar.gpRoundNames[0]
+        XCTAssertTrue(GameSession.loggedGPEntry(in: ["第30週: \(GPName.display(first)) 敗退"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: ["第30週: 春新人賞A 通過"], config: c))
+        XCTAssertFalse(GameSession.loggedGPEntry(in: [], config: c))
     }
 }
 
