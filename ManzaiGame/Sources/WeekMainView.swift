@@ -146,7 +146,7 @@ struct WeekMainView: View {
         extraCards.first { if case .acceptOffer = $0.action { return true } else { return false } }
     }
     private var extraCards: [CommandVariant] {
-        CommandCatalog.extraCards(config: session.config, offer: activeOffer, money: s.money, fatigued: session.offerFatigued)
+        CommandCatalog.extraCards(config: session.config, offer: activeOffer, money: s.money, fatigued: session.offerFatigued, showDesc: offers.count <= 1)   // 選ぶ札が並ぶ週は説明を上の札に任せる（キュー137②）
     }
 
     var body: some View {
@@ -1065,7 +1065,8 @@ struct WeekMainView: View {
                     .lineLimit(1).minimumScaleFactor(0.8)   // 大きい文字でも1行（2行にすると札が伸びて下の日程・コンビ・設定の列が画面の外へ押し出された＝regress_visual_1027）
             }
             if case .acceptOffer = v.action {
-                Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
+                if offerArmed || !v.desc.isEmpty { Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
+                }
             } else if !dashed, !gated {
                 Text(v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(row ? 1 : 2).fixedSize(horizontal: false, vertical: true)
             }
