@@ -29,6 +29,7 @@ struct YearResultView: View {
                 // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
                 VStack(spacing: 12) {
                     reachStamp.stagger(1, appear)
+                    if onNextYear != nil, let g = Self.nextGoal(session.yearHistory.last(where: { $0.year == session.year }), names: session.config.calendar.gpRoundNames) { nextGoalLine(g).stagger(1, appear) }   // 来年の狙い（候補・キュー132 案B・yearly_goal_display_research_1027_v0）
                     if session.hasYearStart { gradeLadder.stagger(2, appear) }
                     totalsBlock.stagger(3, appear)
                     historyBlock.stagger(3, appear).id("history")
@@ -171,6 +172,30 @@ struct YearResultView: View {
     }
 
     /// 1年の到達の短い呼び名（年表・これまで共用）。敗れた回戦を言う（監査C-07 と同じ規則）
+    /// 来年の狙い（候補・キュー132 案B）：今年の到達の「次の段」を1つだけ。％・見込みは出さない。キャリアが終わる年（夜逃げ・解散）は出さない
+    static func nextGoal(_ r: GameSession.YearRecord?, names: [String]) -> String? {
+        guard let r, !r.bankrupt, r.dissolved != true else { return nil }
+        if r.champion { return "もう一度、頂グランプリで優勝" }
+        if r.reachedFinal { return "頂グランプリ 決勝で優勝" }
+        if r.enteredGP == false { return "頂グランプリに出る" }
+        if r.roundsPassed < names.count { return names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "を突破" }
+        return "頂グランプリ 決勝に進む"
+    }
+
+    private func nextGoalLine(_ g: String) -> some View {
+        HStack(spacing: 10) {
+            Text("来年の狙い").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                .padding(.horizontal, 8).padding(.vertical, 3).background(YoseColor.enji)
+            Text(g).font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(2).minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseKifuda()
+        .accessibilityElement(children: .combine)
+    }
+
     static func reachLabel(_ r: GameSession.YearRecord, names: [String]) -> String {
         if r.champion { return "優勝" }
         if r.bankrupt { return "夜逃げ" }

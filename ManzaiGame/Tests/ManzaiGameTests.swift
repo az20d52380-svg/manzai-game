@@ -845,3 +845,21 @@ final class GPEntryLogTests: XCTestCase {
         XCTAssertFalse(GameSession.loggedGPEntry(in: [], config: c))
     }
 }
+
+/// 年末の「来年の狙い」（候補・キュー132 案B）：今年の到達の次の段を1つ。夜逃げ・解散は出さない
+final class NextGoalTests: XCTestCase {
+    private let names = GameConfig().calendar.gpRoundNames
+    private func rec(_ passed: Int, final: Bool = false, champ: Bool = false, bank: Bool = false, entered: Bool? = true, diss: Bool? = nil) -> GameSession.YearRecord {
+        GameSession.YearRecord(year: 1, roundsPassed: passed, reachedFinal: final, champion: champ, bankrupt: bank, prize: 0, enteredGP: entered, dissolved: diss)
+    }
+    func testNextGoal() {
+        XCTAssertNil(YearResultView.nextGoal(nil, names: names))
+        XCTAssertEqual(YearResultView.nextGoal(rec(0), names: names), names[0].replacingOccurrences(of: "GP", with: "") + "を突破")
+        XCTAssertEqual(YearResultView.nextGoal(rec(names.count), names: names), "頂グランプリ 決勝に進む")
+        XCTAssertEqual(YearResultView.nextGoal(rec(names.count, final: true), names: names), "頂グランプリ 決勝で優勝")
+        XCTAssertEqual(YearResultView.nextGoal(rec(names.count, final: true, champ: true), names: names), "もう一度、頂グランプリで優勝")
+        XCTAssertEqual(YearResultView.nextGoal(rec(0, entered: false), names: names), "頂グランプリに出る")
+        XCTAssertNil(YearResultView.nextGoal(rec(1, bank: true), names: names))
+        XCTAssertNil(YearResultView.nextGoal(rec(1, diss: true), names: names))
+    }
+}
