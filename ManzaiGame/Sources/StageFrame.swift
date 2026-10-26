@@ -289,6 +289,7 @@ struct StageCeremony: View {
         .ignoresSafeArea()
         .contentShape(Rectangle())
         .onTapGesture { finish() }
+        .accessibilityAction { finish() }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
         .allowsHitTesting(!done)
         .task { await run() }
     }

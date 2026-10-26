@@ -80,13 +80,16 @@ struct ReminiscencePlayer: View {
         }
         .background(YoseColor.kinari.ignoresSafeArea())
         .contentShape(Rectangle())
-        .onTapGesture {
-            Sound.play(.cursor)
-            if index + 1 < cards.count {
-                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.18))) { index += 1 }
-            } else {
-                onComplete()
-            }
+        .onTapGesture { nextCard() }
+        .accessibilityAction { nextCard() }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
+    }
+
+    private func nextCard() {
+        Sound.play(.cursor)
+        if index + 1 < cards.count {
+            withAnimation(Theme.Motion.r(.easeInOut(duration: 0.18))) { index += 1 }
+        } else {
+            onComplete()
         }
     }
 }

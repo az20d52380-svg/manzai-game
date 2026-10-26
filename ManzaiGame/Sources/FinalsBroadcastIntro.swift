@@ -55,6 +55,7 @@ struct FinalsBroadcastIntro: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { advanceStage() }
+        .accessibilityAction { advanceStage() }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
         .task(id: stage) { await run(stage) }
         .onAppear {
             let first = !UserDefaults.standard.bool(forKey: Self.seenKey)

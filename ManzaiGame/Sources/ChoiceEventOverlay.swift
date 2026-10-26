@@ -105,6 +105,7 @@ struct ChoiceEventOverlay: View {
         .background(YoseColor.kinari.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture { advance() }
+        .accessibilityAction { advance() }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
         .onAppear {
             Sound.play(.event)   // イベント発生の一音
             setupShown = chunkEnd(text.setup, from: 0)   // 最初の場面もまとめて出す

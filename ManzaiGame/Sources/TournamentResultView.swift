@@ -546,6 +546,12 @@ struct TournamentResultView: View {
     }
 
     // MARK: ⑪ 山場（敗者復活で散る）のタップ送りオーバーレイ（Fable doc02）
+    private func climaxNext(isLast: Bool, i: Int) {
+        Sound.play(.cursor)
+        if isLast { session.acknowledgeResult() }
+        else { withAnimation(.easeInOut(duration: 0.45)) { climaxIndex = i + 1 } }
+    }
+
     private func climaxOverlay(_ i: Int) -> some View {
         let page = climaxPages[min(i, climaxPages.count - 1)]
         let isLast = i >= climaxPages.count - 1
@@ -565,11 +571,8 @@ struct TournamentResultView: View {
         }
         .background(LinearGradient(colors: Theme.duskEve, startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .contentShape(Rectangle())
-        .onTapGesture {
-            Sound.play(.cursor)
-            if isLast { session.acknowledgeResult() }
-            else { withAnimation(.easeInOut(duration: 0.45)) { climaxIndex = i + 1 } }
-        }
+        .onTapGesture { climaxNext(isLast: isLast, i: i) }
+        .accessibilityAction { climaxNext(isLast: isLast, i: i) }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
         .transition(.opacity)
     }
 }

@@ -196,6 +196,7 @@ struct S6bView: View {
             Text("タップで進む").font(.maru(12)).foregroundStyle(.white.opacity(0.7))   // 12pt 未満は使わない（TypeStep の決まり）.padding(.bottom, Theme.Sp.s24)
         }
         .contentShape(Rectangle()).onTapGesture { advance(.wall) }
+        .accessibilityAction { advance(.wall) }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
     }
 
     // MARK: ⑤ 壁写真焼き付き→緞帳→もう一度
