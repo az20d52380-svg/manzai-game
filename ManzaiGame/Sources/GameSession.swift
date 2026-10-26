@@ -994,7 +994,8 @@ final class GameSession {
         guard watchingFinal else { return }   // 終わりのボタンの二度押しで「（客席から）」が2行積まれた（code_review_2026-10-26 低1）
         watchingFinal = false
         didWatchFinal = true
-        log.append("第\(week)週: 頂GP 決勝 優勝「\(winner)」（客席から）")
+        // 観戦の決勝はいつも決勝の週（目視用の自動進行が観戦中に週を進めると第48週と記録された＝playtest_v14 §2）
+        log.append("第\(config.calendar.gpFinalWeek)週: 頂GP 決勝 優勝「\(winner)」（客席から）")
         saveNow()
     }
 
