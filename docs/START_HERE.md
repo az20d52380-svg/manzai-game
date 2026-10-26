@@ -454,6 +454,7 @@ cd GameCore && swift test
 - `dialogue_score_1026_v0.md` — 台詞の採点 10/26（決勝の会話・会話の部品 14行）
 - `dialogue_score_1026b_v0.md` — 客席アンケートの増補分の採点 10/26
 - `glossary_coverage_1026_v0.md` — 用語集の抜けの点検 10/26（足した分はコミット済み）
+- `glossary_coverage_1027_v0.md` — 画面の言葉と用語集の突き合わせ 10/27（20件・高2＝持ち分・敗者復活は足した／呼び名のゆれ6件は材料）
 - `tools_smoke_1026_v0.md` — tools/*.py の動作確認 10/26（ok 99・失敗5＝古い実験）
 - `ui_copy_consistency_1026_v0.md` — 画面の部品の表記ゆれの点検 10/26
 - `later_years_visual_1026_v0.md` — 3・6・10年目の年の途中の目視 10/26（10年目は MZ_CARE=1 で届く）
