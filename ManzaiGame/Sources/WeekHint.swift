@@ -48,7 +48,7 @@ enum WeekHint {
             return "今週は撮影の仕事で、稽古には出られない。"
         }
         if i.netaCount == 0, !dedupTop { return "まだネタがない。まずはネタを書こう。" }
-        if i.livingInTwoWeeks { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }
+        if i.livingInTwoWeeks, i.money < i.livingCost * 2 { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }   // 払っても1か月分以上残るなら予告しない（毎年同じ警告で緊急度が合わない＝playtest_v15 #5）
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
         return nil

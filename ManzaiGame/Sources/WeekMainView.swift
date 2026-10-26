@@ -610,8 +610,11 @@ struct WeekMainView: View {
         return adviceBox(lines[i])
             .contentShape(Rectangle())
             .onTapGesture {
-                if i < lines.count - 1 { withAnimation(.easeOut(duration: 0.18)) { banterIndex += 1 } }
+                if i < lines.count - 1 { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { banterIndex += 1 } }
             }
+            // 続きがある間は読み上げでも「押すと次の台詞」と分かるように（a11y_check_1026_voiceover_v0 #3・見た目は不変）
+            .accessibilityAddTraits(i < lines.count - 1 ? .isButton : [])
+            .accessibilityHint(i < lines.count - 1 ? "押すと次の台詞" : "")
     }
 
     private func adviceBox(_ a: Advice) -> some View {
@@ -641,7 +644,7 @@ struct WeekMainView: View {
                     Text(openNetaWrite ? "ネタを書く" : cat.rawValue).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
                     Rectangle().fill(YoseColor.sumi).frame(height: 2)
                     if cat == .休む && s.stamina >= 99.5 {
-                        YoseTag(text: "満タン・回復は余る", style: .outlineShu)
+                        YoseTag(text: "体力は満タン", style: .outlineShu)
                     }
                 }
                 if openNetaWrite {
@@ -774,7 +777,7 @@ struct WeekMainView: View {
                     withAnimation(Theme.Motion.appearQuick) { newNetaTitle = ""; pickingNeta = false }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy))
+                        Image(systemName: "plus").font(.system(size: Font.mzScaled(12), weight: .heavy)).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                         Text("新しく書く").font(YoseFont.gothic(14, weight: .heavy))
                         Spacer()
                         Text("あと\(cfg.netaActiveSlots - session.activeNetas.count)本").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
@@ -921,6 +924,8 @@ struct WeekMainView: View {
     /// 練習を選ぶ画面の上段：経験点5種の今の持ち分（増える分は各練習の札に出す・表示専用）
     private func practiceExpPanel(_ cards: [CommandVariant]) -> some View {
         HStack(spacing: 6) {
+            Text("経験点の\n持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinBright)   // 丸い印の数字が何か分からなかった（firstlook_check_1027c #3）・用語集「経験点」と同じ言い方
+                .multilineTextAlignment(.leading).fixedSize()
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
@@ -965,8 +970,8 @@ struct WeekMainView: View {
             case .休む: return "体力を回復"
             case .能力アップ:
                 if unspentBeforeStage { return "" }   // 朱札「未振分あり」と上の看板が言う
-                return expGrains > 0 ? "振れる経験点あり" : "能力を伸ばす"
-            case .お店: return "アイテムを買う"
+                return expGrains > 0 ? "振れる経験点あり" : "経験点を使う・週は進まない"
+            case .お店: return "買い物・週は進まない"
             }
         }()
         let run: () -> Void = {
@@ -992,7 +997,7 @@ struct WeekMainView: View {
             VStack(spacing: 3) {
                 HStack(spacing: 7) {
                     if let stamp {
-                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Image(systemName: stamp).font(.system(size: Font.mzScaled(15), weight: .black)).foregroundStyle(YoseColor.kinari).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                             .frame(width: 28, height: 28)
                             .background(gated ? YoseColor.disabledText : YoseColor.enji)
                             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
@@ -1047,11 +1052,12 @@ struct WeekMainView: View {
             .frame(width: 26, height: 26)
             .background(gated ? YoseColor.disabledText : tint)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+            .accessibilityHidden(true)   // 札の記号名を先に読ませない（a11y_check_1026_voiceover #7）
         let body = VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 7) {
                 iconBox
                 Text(v.name).font(YoseFont.gothic(compact ? 14 : 15, weight: .heavy)).foregroundStyle(gated ? YoseColor.disabledText : YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)   // 大きい文字では「エントリーライブに出る」等が … で切れた＝2行まで（firstlook_check_1027c 目視の副産物）
             }
             if case .acceptOffer = v.action {
                 Text(offerArmed ? "もう一度押すと受ける" : v.desc).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinText).lineLimit(2).fixedSize(horizontal: false, vertical: true)   // 仕事の説明（＋続けて受けている時は谷口の一言）
@@ -1453,6 +1459,7 @@ struct WeekMainView: View {
             .init(term: "実力", text: "コンビの強さ。大会では高いほど勝ち上がりやすい。"),
             .init(term: "相性", text: "二人の息の合い方。相方と合わせたり、休んだりで上がる。"),
             .init(term: "体力", text: "行動すると減る。休むと戻る。"),
+            .init(term: "知名度", text: "どれだけ知られているか（0〜100）。舞台に立つと上がり、仕事の誘いが増える。"),
             .init(term: "経験点", text: "練習やネタ書きでたまる。「能力アップ」で使うと実力が伸びる。"),
         ], note: "上の黒い帯は、次の大会までの週数。左上の「？」でいつでも読み返せる。")
     }
