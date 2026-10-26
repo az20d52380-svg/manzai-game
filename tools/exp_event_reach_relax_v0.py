@@ -6,7 +6,7 @@ import sys, collections
 from multiprocessing import Pool
 
 RARE = ("luckythird", "yearend", "homecoming", "festival")
-CASES = ["base", "L60", "Lnoloss", "Lboth", "W", "Lboth+W", "H2", "cap25"]
+CASES = ["base", "L60", "Lnoloss", "Lboth", "W", "Lboth+W", "H2", "cap25", "sure"]
 
 def one(args):
     case, bot, n = args
@@ -29,6 +29,7 @@ def one(args):
         return ob(k, s, week, year, ahead, nxt, a)
     C._app_band = band
     if case == "cap25": C.APP_EVENT_CAP = 25
+    if case == "sure": C.SURE_SEASONAL = True   # 候補 claude/season-sure-candidate の時だけ効く
     last = {}   # キャリアごとに、抽選がまだ行われた最後の年（上限に達するとそれ以後は呼ばれない）
     oa, oapp = C._others_apply, C._app_apply
     def wa(s, k): cnt[k] += 1; return oa(s, k)
