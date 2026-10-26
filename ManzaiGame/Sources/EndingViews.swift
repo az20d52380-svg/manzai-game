@@ -52,7 +52,7 @@ struct EndingFlowView: View {
         }
     }
 
-    private func go(_ s: Stage) { withAnimation(.easeInOut(duration: 0.4)) { stage = s } }
+    private func go(_ s: Stage) { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = s } }
 
     private func s6bDone() {
         switch ending {
@@ -392,7 +392,7 @@ struct DisbandFarewellView: View {
         ZStack {
             if showSummary { summary } else {
                 ReminiscencePlayer(cards: [Self.card], title: "解散", onComplete: {
-                    withAnimation(.easeInOut(duration: 0.4)) { showSummary = true }
+                    withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { showSummary = true }
                 })
             }
         }

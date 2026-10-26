@@ -83,7 +83,7 @@ struct ReminiscencePlayer: View {
         .onTapGesture {
             Sound.play(.cursor)
             if index + 1 < cards.count {
-                withAnimation(.easeInOut(duration: 0.18)) { index += 1 }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.18))) { index += 1 }
             } else {
                 onComplete()
             }
@@ -367,7 +367,7 @@ struct S1TitleView: View {
                 .padding(.bottom, 20)
                 crowdBand
             }
-            .opacity(lit ? 1 : 0).animation(.easeOut(duration: 0.5), value: lit)
+            .opacity(lit ? 1 : 0).animation(Theme.Motion.r(.easeOut(duration: 0.5)), value: lit)
         }
         .overlay(alignment: .topTrailing) {
             Button { showSettings = true } label: {
@@ -537,7 +537,7 @@ struct NameEntryView: View {
                 Button {
                     var pick = Self.candidates.randomElement() ?? "なんば亭"
                     if pick == name { pick = Self.candidates.randomElement() ?? pick }
-                    withAnimation(.easeOut(duration: 0.15)) { name = pick }
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { name = pick }
                     Haptics.confirm()
                 } label: {
                     HStack(spacing: 8) {
@@ -665,7 +665,7 @@ struct NameEntryView: View {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         decided = true
-        withAnimation(.easeOut(duration: 0.4)) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.4))) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meeting) }
     }

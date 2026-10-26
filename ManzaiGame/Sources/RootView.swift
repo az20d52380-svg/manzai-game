@@ -311,7 +311,7 @@ struct RootView: View {
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
             if quit {
                 session = GameSession()
-                withAnimation(.easeInOut(duration: 0.3)) { started = false }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
             }
         }
         .onChange(of: scenePhase) { _, phase in
@@ -326,7 +326,7 @@ struct RootView: View {
         NetaStage.lastSeen = [:]   // ネタ札の光り方の記憶を前の周から持ち越さない（code_review_2026-10-19i §2）
         showEnding = false
         session = GameSession()
-        withAnimation(.easeInOut(duration: 0.3)) { started = false }
+        withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
     }
 
     @ViewBuilder private var mainFlow: some View {
@@ -348,7 +348,7 @@ struct RootView: View {
                 // 初回もランダムシード（「もう一度」と同じ）。固定424242だと全プレイヤーの初年が同一乱数になる。
                 // DEBUGの MZ_SMOKE/MZ_UI 経路は上の .task が固定シードの session をそのまま使う＝決定的なまま。
                 session = GameSession(seed: UInt64.random(in: .min ... .max), combiName: name, myName: me, partnerName: partner, comboKind: kind, meetingKind: meeting)
-                withAnimation(.easeInOut(duration: 0.4)) { started = true }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { started = true }
             }
         }
     }
