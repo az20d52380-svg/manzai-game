@@ -422,8 +422,9 @@ final class WeekHintTests: IsolatedStoreTestCase {
         i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
     }
     func testLivingForecast() {
-        var i = base(); i.livingInTwoWeeks = true
+        var i = base(); i.livingInTwoWeeks = true; i.money = 200_000   // 2か月分（28万）未満の時だけ予告（playtest_v15 #5）
         XCTAssertEqual(WeekHint.line(i), "再来週は月末の支払い（家賃など）14万円。")
+        i.money = 280_000; XCTAssertNil(WeekHint.line(i))   // ちょうど2か月分なら出さない
     }
     func testPartner() {
         var i = base(); i.weeksWithoutPartner = 6
