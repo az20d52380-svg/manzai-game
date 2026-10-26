@@ -31,3 +31,8 @@ prestage / finals / qual_notice（撮影済み・未精査）／stage / juice / 
 - 据え置き：中1「ネタが無い」の重複＝キュー111 の判断待ち（DEBUG 見本 MZ_DEDUP=top あり）。低 settings の「•」＝木札の釘の飾り（yoseKifuda showNail）で意図どおり。低 pass のコンビ名＝見本の既定名だけの問題。低 gploss＝フックの確認のみ。
 - 残り（表示だけ・次の回）：cards の「出張中」テープが題字に重なる／cards の帯「ネタは来週から」／wintercup・prelude の体力0注意帯の不揃い／allocate の5色丸に短い名。
 - 追記（続き47）：「残り」のうち cards の出張中テープ＝1bc246a・体力0注意帯＝2f14553 で済。cards の帯「ネタは来週から」は a97e602（playtest_v13 §2-4）で意図して入れた文言＝据え置き。allocate の5色丸は用語集の「経験点」に一字の読み方を足した（418a96a）＝画面の丸の下の名前は据え置き。
+
+## 追記（10/26 夜・定期の回）
+- 「未確認」の残りから prestage・qual_notice・qual_line・notif・stage・juice を iPhone 17（MZ_NOCHIP=1）で各1枚＝はみ出し・重なりなし。予選の知らせの作り時計21:04と実機の時計の食い違いはキュー110（判断待ち）のまま。
+- 用語集は最大の文字サイズ（AX5）でも MZ_GLOSS=5 の節で崩れなし（文字は控えめに大きくなる）。
+- まだ見ていない：finals・ending・frame・catalog（finals・ending は別の監査で見たことがある）。
