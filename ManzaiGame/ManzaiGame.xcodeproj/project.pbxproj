@@ -120,6 +120,7 @@
 		F33DD67A56FAEDBCFD666534 /* se_applause_hall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */; };
 		F444AA5447FAEA7A8EBF0C76 /* YoseChampionCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5077E6524DE17A958E0227F5 /* YoseChampionCelebrationView.swift */; };
 		F5C20BF8C4688D372B1CDAD2 /* se_cheer_mid.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */; };
+		FA2BF3AD44DE33658099B2B2 /* RankBar1027Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */; };
 		FAE276B38C7A911C9F8445C2 /* bgm_tension.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */; };
 		FDD40E534362160170CB232B /* ComboKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */; };
 		FEC32EB9053F087229AB0EC2 /* StageFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E107DFFE29351633A0776D9 /* StageFrame.swift */; };
@@ -242,6 +243,7 @@
 		E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboKind.swift; sourceTree = "<group>"; };
 		E51A2C162CC3B1876C83692B /* ManzaiGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ManzaiGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseGameParts.swift; sourceTree = "<group>"; };
+		E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankBar1027Tests.swift; sourceTree = "<group>"; };
 		E7C2B6670FC11321C4559DCB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		EBB752855F8C64D2E210BE9E /* SessionGap1025Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025Tests.swift; sourceTree = "<group>"; };
 		EC27C4A85A610F060F476DE5 /* ManzaiGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManzaiGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -419,6 +421,7 @@
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
 				58E80F573B38F73205442EF4 /* PhaseGuardTests.swift */,
+				E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */,
 				A62FE4805AE73B7FD14E1CA7 /* SessionGap1025bTests.swift */,
 				C6A2E58A31BD7A19D7847716 /* SessionGap1025cTests.swift */,
 				ED386E53ADABC8770DF122E4 /* SessionGap1025dTests.swift */,
@@ -666,6 +669,7 @@
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
 				E9C54A58B50BE31CD4DB1493 /* PhaseGuardTests.swift in Sources */,
+				FA2BF3AD44DE33658099B2B2 /* RankBar1027Tests.swift in Sources */,
 				45584A233637EB196C06B0D4 /* SessionGap1025Tests.swift in Sources */,
 				600E61599EB49B504429661D /* SessionGap1025bTests.swift in Sources */,
 				73587F79732C11E8E43D20FE /* SessionGap1025cTests.swift in Sources */,
