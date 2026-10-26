@@ -1606,6 +1606,7 @@ final class GameSession {
             if state.money < 250_000 { choose(.job(.標準)) }
             else if state.stamina < 45 { choose(.rest(.相方と過ごす)) }
             else if week % 2 == 0 { choose(.rest(.相方と過ごす)) }
+            else if activeNetas.isEmpty { choose(.train(.ネタ作り)) }   // 書かないままだと6年目でも「まだネタがない」の画面になっていた（10/26 定期の目視）
             else { choose(.train(.ネタ合わせ)) }
             return
         }
