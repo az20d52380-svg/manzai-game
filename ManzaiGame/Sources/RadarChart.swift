@@ -91,7 +91,7 @@ struct RadarChart: View {
                 p.closeSubpath(); return p
             }
 
-            // 開始（4月）＝inkFaint線
+            // 開始（年初＝1月）＝inkFaint線
             let basePoly = polygon { i in min(1, axes[i].base / axes[i].cap) }
             ctx.stroke(basePoly, with: .color(Theme.inkFaint), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
 

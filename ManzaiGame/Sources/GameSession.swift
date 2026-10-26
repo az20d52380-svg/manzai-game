@@ -171,7 +171,7 @@ final class GameSession {
     let config: GameConfig
     /// 結成何年目か（WeekRunner が持つ値をそのまま読む＝セーブ・復元も runner のスナップショットに乗る）
     var year: Int { runner.year }
-    /// この年の4月（年初）の状態。年末の「この1年で育ったもの」とレーダーの4月線の基準（表示専用・golden非対象）
+    /// この年の1月（年初）の状態。年末の「この1年で育ったもの」とレーダーの年初線の基準（表示専用・golden非対象）
     private(set) var yearStartState: GameState
     /// 年初の状態が実際に分かっているか。旧セーブ(yearStartState なし・2年目以降)の復元後は false＝「育ったもの」の差分を出さない（A-5）
     private(set) var hasYearStart = true
@@ -232,7 +232,7 @@ final class GameSession {
         let start = startState ?? GameState(config: cfg)
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
-        self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
+        self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の1月（年初）の状態
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
         self.phase = firstPhase
