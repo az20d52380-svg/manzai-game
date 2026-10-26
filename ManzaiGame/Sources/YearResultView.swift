@@ -108,6 +108,7 @@ struct YearResultView: View {
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
         return VStack(alignment: .leading, spacing: 8) {
             sectionLabel("この1年で育ったもの")
+            Text("棒は、次の段までの進み").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)   // 段が同じでも棒が伸びる意味（firstlook_check_1027 #19）
             ForEach(order, id: \.self) { a in
                 let from = Theme.rank(base[a]), to = Theme.rank(s[a])
                 let up = from != to
