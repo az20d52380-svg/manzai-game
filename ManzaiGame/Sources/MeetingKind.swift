@@ -70,7 +70,7 @@ enum MeetingKind: String, Codable, CaseIterable {
             return [
                 ReminiscenceCard(caption: "ファミレスの休憩室。昼すぎ。",
                                  mood: .noon,
-                                 talk: [Advice(name: "谷口", text: "新しい人？ 谷口っていうんだ。よろしくね"),
+                                 talk: [Advice(name: "谷口", text: "新しい人？ 谷口っていうんだ、よろしくね"),
                                         Advice(name: "俺", text: "よろしく。今日から昼のシフトに入るよ"),
                                         Advice(name: "谷口", text: "まかないのカレー、おいしいよ。一緒に食べよう")],
                                  together: false),
