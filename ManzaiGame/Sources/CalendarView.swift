@@ -169,7 +169,7 @@ struct CalendarView: View {
         let token = UUID()
         toastToken = token
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = t }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation { toast = nil } } }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = nil } } }
     }
 
     private func isTournamentWeek(_ w: Int) -> Bool {

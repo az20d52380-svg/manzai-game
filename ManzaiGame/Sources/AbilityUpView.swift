@@ -55,7 +55,7 @@ struct AbilityUpView: View {
                             .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                             .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
                         // 特技は画面の下に隠れやすい（目視 visual_check_q90_q106_v0）＝ここから飛べる
-                        Button { withAnimation { proxy.scrollTo("skills", anchor: .top) } } label: {
+                        Button { withAnimation(Theme.Motion.r(.default)) { proxy.scrollTo("skills", anchor: .top) } } label: {
                             Text("特技 ↓").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
                                 .padding(.horizontal, 8).padding(.vertical, 4)
                                 .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1))
