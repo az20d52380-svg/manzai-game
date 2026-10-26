@@ -39,3 +39,8 @@
 | 形の選択 | MZ_UI=combokind | ff／mf | 顔アイコンは形ごとに切替済み（コード確認のみ・撮影は上の一覧）。 | なし | なし |
 
 結論：男の絵のままの所は0件。任意の小改善1件（後ろ姿の着物の輪郭が男女同じ）。優勝・年末の専用画面の人形は MZ_UI の名前が合わず未撮影（champ／yearend_old は effective でない＝要フック名の確認）。
+
+## 親の追加撮影（10/26 深夜の定期）
+- 優勝の演出：`MZ_FX=champion MZ_KIND=femaleFemale`（MZ_UI=champion は無い＝演出の単独再生は MZ_FX）。人形なし・「CHAMPION DUO」・谷口の台詞とも中立＝問題なし。
+- 年末総決算：`MZ_UI=yearend MZ_KIND=femaleMale`。人形なし・男女の語なし＝問題なし。
+- 形の値は maleMale / femaleFemale / maleFemale / femaleMale（ComboKind.swift:8）。

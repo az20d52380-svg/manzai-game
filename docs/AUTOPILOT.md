@@ -117,6 +117,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/26 深夜 定期（続き）済：目視3本（sonnet）＝古い画面6（visual_check_1027・低3＝対応不要）／文字サイズ最大10画面（dynamic_type_check_1027・コンビ帳の数字が棒に重なる M2 を直した af00892・settings 下端はスクロール内）／女性の形の会話10・人形16＋親2（visual_check_female_1027・男の語・男の絵の残り0）。AUTOPILOT の済を done へ移して 100KB→70KB。
 - 10/26 深夜 定期 済：読み上げ #7・#10 を直した（4664061・8d15428・アプリ 245 green・selftest 失敗0・GameCore 418 green）／判断待ちの候補ブランチ11本（calendar-jan・career-end-save・lost-notebook-neta・mob-roster-per-run・money-short-choice・qual-long-list・revival-short・season-sure・the-hana・tv-fatigue-display・week-hint-priority）を今の本体（8d15428）に1本ずつ重ねて点検＝全部 衝突なし・ビルド OK・GameCore を触る3本は swift test green＋golden 突き合わせ一致（2本以上を同時に重ねた確認は未）。claude/q93-exp-rebalance だけ衝突＝§93 は「入れない」（10/19）で使わない枝。2本を同時に入れる総当たり（文字の上だけ）：衝突11組＝10組は ManzaiGame/Tests/ManzaiGameTests.swift の末尾にテストを足し合うだけ（両方残せば済む・career-end-save／mob-roster-per-run／money-short-choice／revival-short／tv-fatigue-display の間）、1組は calendar-jan＋the-hana の GameSession.swift の1か所（the-hana の hanaEnabled 引数を採り、コメントの月名は calendar-jan の「1月（年初）」）。入れる順が決まった時の手当てはこれだけ。
 - 10/26 夜 定期（続き7）済：戦績タブの数字も折れ防止（予防）／ダークモードの目視（visual_dark_1026_v0＝最終興行・年末・戦績で問題0）。
 - 10/26 夜 定期（続き6）済：今日のアプリ変更の点検（sonnet・code_review_2026-10-26f＝高0/中1/低2）→ #1 演出ひかえめでも最終興行の元の残金を一拍見せる・#2 掛け合いの切替も演出ひかえめに従う、を直した。目視で見つけた「残金 ¥7,796,000 が2行に折れる」も1行に（演出ひかえめ ON/OFF とも iPhone 17 で確認）。#3（掛け合いの hint が読まれるか）は実機 VoiceOver 待ち＝キュー131 に合流。Gemini のキュー72 の古い「次」を整理。アプリのテスト +3（245 green）。
