@@ -73,12 +73,12 @@ struct YearResultView: View {
                           style: .confetti, count: 54, origin: UnitPoint(x: 0.5, y: 0.18))
         }
         .onAppear {
-            withAnimation(.easeOut(duration: Theme.Motion.emph)) { appear = true }
+            withAnimation(Theme.Motion.r(.easeOut(duration: Theme.Motion.emph))) { appear = true }
         }
         .task {   // 判は0.4秒後。すぐ送った時は取り消す（遅れてファンファーレが鳴らない・code_review_2026-10-19d）
             try? await Task.sleep(nanoseconds: 400_000_000)
             if Task.isCancelled { return }
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) { stampIn = true }
+            withAnimation(Theme.Motion.r(.spring(response: 0.35, dampingFraction: 0.55))) { stampIn = true }
             Haptics.confirm()   // 年1回の重み
             if o?.champion == true { confettiFire += 1; Sound.play(.fanfare) }
         }
@@ -560,7 +560,7 @@ private extension View {
         self
             .opacity(appear ? 1 : 0)
             .offset(y: appear ? 0 : 10)
-            .animation(.easeOut(duration: Theme.Motion.std).delay(0.1 + Double(index) * 0.15), value: appear)
+            .animation(Theme.Motion.r(.easeOut(duration: Theme.Motion.std).delay(0.1 + Double(index) * 0.15)), value: appear)
     }
 }
 
@@ -582,7 +582,7 @@ struct CountUpText: View {
                 let steps = 20
                 for i in 1...steps {
                     try? await Task.sleep(nanoseconds: 40_000_000)
-                    withAnimation(.linear(duration: 0.04)) { shown = Int(Double(value) * Double(i) / Double(steps)) }
+                    withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shown = Int(Double(value) * Double(i) / Double(steps)) }
                 }
                 shown = value
             }

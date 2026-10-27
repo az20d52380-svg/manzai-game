@@ -157,7 +157,7 @@ struct YosePassCelebrationView: View {
                 var x: CGFloat = -size.height
                 while x < size.width { p.move(to: CGPoint(x: x, y: 0)); p.addLine(to: CGPoint(x: x + size.height, y: size.height)); x += 18 }
                 ctx.stroke(p, with: .color(YoseColor.enji.opacity(0.35)), lineWidth: 1)
-            }
+            }.accessibilityHidden(true)
             VStack(spacing: 2) {
                 Text("◆ 漫 才 の 頂 、 こ こ に 決 ま る ◆").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
                     .foregroundStyle(YoseColor.kin.opacity(revealed ? 1 : 0.25))
@@ -258,7 +258,7 @@ struct YosePassCelebrationView: View {
 
     private func run() async {
         if reduceMotion { snapToFinal(); return }
-        withAnimation(.easeOut(duration: 0.14)) { cardIn = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.14))) { cardIn = true }
         // 0.00〜0.45s 太鼓のドラムロール：数字が高速に駆け上がる（看板はまだ空枠）
         let steps = 14
         for i in 1...steps {
@@ -266,31 +266,31 @@ struct YosePassCelebrationView: View {
             if done { return }
             if i % 4 == 0 { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
             let v = Int(Double(power) * pow(Double(i) / Double(steps), 1.6)) + (i == steps ? 0 : Int.random(in: 0...6))
-            withAnimation(.linear(duration: 0.03)) { shownPower = min(v, power) }
+            withAnimation(Theme.Motion.r(.linear(duration: 0.03))) { shownPower = min(v, power) }
         }
-        withAnimation(.linear(duration: 0.03)) { shownPower = power }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.03))) { shownPower = power }
         // 0.45〜0.57s 無音の停止
         try? await Task.sleep(nanoseconds: 120_000_000)
         if done { return }
         // 0.57s 突破：看板点灯・朱印・フラッシュ・揺れ・斜光
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        flash = 0.24; withAnimation(.easeOut(duration: 0.3)) { flash = 0 }
-        withAnimation(.spring(response: 0.26, dampingFraction: 0.6)) { revealed = true }
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55).delay(0.06)) { hankoIn = true }
+        flash = 0.24; withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { flash = 0 }
+        withAnimation(Theme.Motion.r(.spring(response: 0.26, dampingFraction: 0.6))) { revealed = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55).delay(0.06))) { hankoIn = true }
         burst += 1
-        shimmerX = -1.2; withAnimation(.easeInOut(duration: 0.55).delay(0.12)) { shimmerX = 1.4 }
-        withAnimation(.linear(duration: 0.04)) { shakeY = 5 }
+        shimmerX = -1.2; withAnimation(Theme.Motion.r(.easeInOut(duration: 0.55).delay(0.12))) { shimmerX = 1.4 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeY = 5 }
         try? await Task.sleep(nanoseconds: 50_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeY = -3 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = -3 }
         try? await Task.sleep(nanoseconds: 55_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = 0 }
         // 0.78s 角印『秀』
         try? await Task.sleep(nanoseconds: 220_000_000)
         if done { return }
         UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { hidemarkIn = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { hidemarkIn = true }
         try? await Task.sleep(nanoseconds: 300_000_000)
-        withAnimation(.easeOut(duration: 0.2)) { finished = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { finished = true }
     }
 }
 
@@ -401,7 +401,7 @@ struct YoseBigSuccessCutIn: View {
                     .background(Rectangle().fill(Color.black).offset(y: 4))
                     .scaleEffect(popped ? 1.0 : 1.35)
                     .opacity(popped ? 1 : 0)
-                    .animation(.spring(response: 0.2, dampingFraction: 0.5).delay(Double(i) * 0.03), value: popped)
+                    .animation(Theme.Motion.r(.spring(response: 0.2, dampingFraction: 0.5).delay(Double(i) * 0.03)), value: popped)
                 }
             }
         }
@@ -416,29 +416,29 @@ struct YoseBigSuccessCutIn: View {
             return
         }
         // 0.00s 白金フラッシュ＋外周集中線
-        flash = 0.22; withAnimation(.easeOut(duration: 0.2)) { flash = 0 }
-        withAnimation(.easeOut(duration: 0.08)) { lines = true }
+        flash = 0.22; withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { flash = 0 }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.08))) { lines = true }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         // 0.10s 黒漆の斜め帯がスパーンと突入
         try? await Task.sleep(nanoseconds: 100_000_000)
-        withAnimation(.spring(response: 0.18, dampingFraction: 0.82)) { bandIn = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.18, dampingFraction: 0.82))) { bandIn = true }
         // 0.22s 朱印『大成功』＋揺れ＋火花
         try? await Task.sleep(nanoseconds: 120_000_000)
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-        flash = 0.32; withAnimation(.easeOut(duration: 0.28)) { flash = 0 }
-        withAnimation(.spring(response: 0.2, dampingFraction: 0.55)) { stamped = true }
+        flash = 0.32; withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { flash = 0 }
+        withAnimation(Theme.Motion.r(.spring(response: 0.2, dampingFraction: 0.55))) { stamped = true }
         burst += 1
-        withAnimation(.linear(duration: 0.04)) { shakeY = 4 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeY = 4 }
         try? await Task.sleep(nanoseconds: 50_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeY = -3 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = -3 }
         try? await Task.sleep(nanoseconds: 55_000_000)
-        withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = 0 }
         // 0.30s 経験点木札が跳ねる（通常の1.35倍で弾けて収まる）
         try? await Task.sleep(nanoseconds: 60_000_000)
-        withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) { popped = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.2, dampingFraction: 0.5))) { popped = true }
         // 0.95s 右へ抜けて退場（タップ不要）
         try? await Task.sleep(nanoseconds: 700_000_000)
-        withAnimation(.easeIn(duration: 0.16)) { bandOut = true }
+        withAnimation(Theme.Motion.r(.easeIn(duration: 0.16))) { bandOut = true }
         try? await Task.sleep(nanoseconds: 180_000_000)
         if Task.isCancelled { return }   // 取り消された後に onFinish を余計に呼ばない（§2）
         onFinish()
@@ -471,7 +471,7 @@ private struct BigSuccessRays: View {
                 ctx.fill(p, with: .radialGradient(Gradient(colors: [col.opacity(0.0), col.opacity(0.85)]),
                                                   center: c, startRadius: r0, endRadius: outer * 0.8))
             }
-        }
+        }.accessibilityHidden(true)
         .allowsHitTesting(false)
     }
 }
