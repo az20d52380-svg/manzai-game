@@ -26,6 +26,7 @@
 
 ## 候補ブランチ
 案1 を `claude/unused-parts-cand`（4226224）に用意＝上の12型と、消した後に参照0になった NameTag・AbilityBadge・SensuShape・SensuRibs・EventScene も消し、空になった WaIcons.swift を外した（10ファイル・約590行減）。GameCore 433／アプリ 275 green。参照0の部品を消すだけなので画面は変わらない（目視は省いた）。OK なら merge するだけ。
+追加（同じブランチ）：参照0の static の色・寸法・定数24個（Theme の色17・AbilityUpView の emblemFill/Rim/Text・YoseTokens の borderSub/borderHair/listGap・WeekHint.stageNearWeeks）も消した。IntroFlow の通知の `shouldShow` も参照0だが、通知の許諾画面ごと「通知実装時に復帰させる休眠温存」（IntroFlow.swift の .notif の注記）なので残した。
 
 ## 拾い方
 `python3` で Sources の `struct/enum/class/func` の名前を集め、全ソースでの出現が1回（宣言だけ）の物。#Preview の中だけで使う物はこの一覧に入らない（出現2回以上になる）。
