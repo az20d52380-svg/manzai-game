@@ -15,7 +15,7 @@
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜・10/27 から `tools/run_selftest.sh [dd]` の1本でビルド→起動→DONE 待ち→行数と失敗行だけ出す）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
 - 点検の1本（10/27 深夜〜）：`tools/run_checks.sh [dd]`＝GameCore swift test・golden/定数の同期・アプリのテストを回して要約3行（赤なら終了コード1）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 271本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 272本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に36個（イベントの発生率と上限・知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。check_golden_sync.py の最後でも自動で回る。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
@@ -137,6 +137,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 深夜の定期（続き8）：アプリのカバー率を測った（GameSession 77.9%・未通過は旧セーブの既定値の ?? とデバッグ・演出の View）→ いちばん古い形のセーブ（任意の項目24個が全部無い）から開けて既定値に落ち、保存し直せるテスト OldestSaveRestore1027Tests＝アプリ 272 green。
 - 10/27 深夜の定期（続き7）：作業場所の棚卸し docs/worktree_inventory_1027_v0.md → キュー139（判断待ち）。
 - 10/27 深夜の定期（続き6）：候補の確認を1本で回す tools/check_candidates.sh＝17本とも本体に ok・候補どうしの衝突は合わせ表どおり（テスト末尾15組＋the-hana×calendar）。
 - 10/27 深夜の定期（続き5）：点検を1本で回す tools/run_checks.sh＝GameCore 433・同期 OK（36/36）・アプリ 271 green。

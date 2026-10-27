@@ -1041,3 +1041,40 @@ final class AppCoverage1027Tests: XCTestCase {
         }
     }
 }
+
+/// いちばん古い形のセーブ（後から足した任意の項目が全部無い）から開けるか（10/27 深夜・カバー率の点検で init(restoring:) の既定値が全部未通過だった）
+final class OldestSaveRestore1027Tests: XCTestCase {
+    func testRestoreWithAllOptionalKeysMissingFallsBackToDefaults() throws {
+        let s = GameSession(comboKind: .femaleMale)
+        s.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
+        let optionalKeys = ["pendingResult", "pendingChoiceEvent", "weekBanter", "version", "didFireLostRehearsal", "didFirePassFork",
+                            "didFireEve", "didWatchFinal", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName",
+                            "comboKind", "meetingKind", "didFireRiftWarn", "riftWarnChoice", "didShowRiftHint", "usedPicks",
+                            "usedFanLines", "shownOnce", "weeksWithoutPartner", "injuryNoticeWeeks", "writeNetaID"]
+        for k in optionalKeys { o.removeValue(forKey: k) }
+        let old = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: o))
+        let r = GameSession(restoring: old)
+        XCTAssertEqual(r.comboKind, .maleMale)
+        XCTAssertTrue(r.hasYearStart)          // 1年目＝年初の状態が無くても新規と同じ基準
+        XCTAssertEqual(r.yearHistory.count, 0)
+        XCTAssertEqual(r.debtWarnTier, 0)
+        XCTAssertFalse(r.didWatchFinal)
+        XCTAssertFalse(r.didFireRiftWarn)
+        XCTAssertFalse(r.didShowRiftHint)
+        XCTAssertFalse(r.didFireEve)
+        XCTAssertFalse(r.didFirePassFork)
+        XCTAssertFalse(r.didFireLostRehearsal)
+        XCTAssertEqual(r.weeksWithoutPartner, 0)
+        XCTAssertEqual(r.injuryNoticeWeeks, 0)
+        XCTAssertNil(r.writeNetaID)
+        XCTAssertEqual(r.week, s.week)
+        // 開いたセーブを保存し直すと、今の形（任意の項目あり）で書かれて読み直せる
+        r.saveNow()
+        let d2 = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        let again = try JSONDecoder().decode(GameSession.SaveData.self, from: d2)
+        XCTAssertEqual(again.comboKind, "maleMale")
+        XCTAssertEqual(again.debtWarnTier, 0)
+    }
+}
