@@ -128,6 +128,7 @@ struct CalendarView: View {
     }
 
     private var legend: some View {
+        VStack(spacing: 6) {
         HStack(spacing: 12) {
             ForEach([BandCategory.keiko, .baito, .kaifuku], id: \.label) { cat in
                 HStack(spacing: 4) {
@@ -138,6 +139,11 @@ struct CalendarView: View {
             }
             HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
             HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
+        }
+            // 「頂GP」が何か初見で分からなかった（visual_check_1027d #1・表示だけ）
+            Text("頂GP＝頂グランプリ（1回戦から勝ち上がり、第\(cal.gpFinalWeek)週が決勝）")
+                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .lineLimit(2).multilineTextAlignment(.center)
         }
         .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
         .padding(.horizontal, 10).padding(.vertical, 8)
@@ -163,7 +169,7 @@ struct CalendarView: View {
         let token = UUID()
         toastToken = token
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = t }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation { toast = nil } } }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = nil } } }
     }
 
     private func isTournamentWeek(_ w: Int) -> Bool {

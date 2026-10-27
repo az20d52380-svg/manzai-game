@@ -69,7 +69,7 @@ struct WaveformView: View {
                 }
                 ctx.opacity = 0.4
                 ctx.stroke(bottom, with: grad, style: StrokeStyle(lineWidth: 3, lineJoin: .round))
-            }
+            }.accessibilityHidden(true)
         }
         .frame(height: compact ? 44 : 104)
         .overlay(alignment: .bottom) {
@@ -89,7 +89,7 @@ struct WaveformView: View {
         .onAppear {
             guard compact else { return }
             runIn = 0
-            withAnimation(.easeOut(duration: 0.6)) { runIn = 1 }
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.6))) { runIn = 1 }
         }
     }
 }
