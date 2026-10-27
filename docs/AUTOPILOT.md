@@ -30,6 +30,7 @@
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
+- 候補ブランチの確認（10/27 深夜〜）：`bash tools/check_candidates.sh` で本体に入るか・候補どうしの衝突を一覧（書き換えなし）。
 - 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。道具＝`python3 tools/merge_candidate_tests.py <本体のブランチ>`（merge が止まった状態で実行→ git add → commit）。
 - アプリの画面の文字（「俺」を含む説明文など）を変えた時も `cd GameCore && swift test` を回す（FirstPersonLiteralTests がアプリのソースを読み、例外の文を完全一致で持つ＝10/27 に形の選択の説明を言い換えて赤にした・d0661a6 で直した）。
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
@@ -134,6 +135,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 深夜の定期（続き6）：候補の確認を1本で回す tools/check_candidates.sh＝17本とも本体に ok・候補どうしの衝突は合わせ表どおり（テスト末尾15組＋the-hana×calendar）。
 - 10/27 深夜の定期（続き5）：点検を1本で回す tools/run_checks.sh＝GameCore 433・同期 OK（36/36）・アプリ 271 green。
 - 10/27 深夜の定期（続き4）：自己点検を1本で回す tools/run_selftest.sh（macOS に timeout が無い対策・失敗行だけ出す）＝29行 DONE・失敗0。
 - 10/27 深夜の定期（続き3）：候補16本どうしの合わせ表 docs/candidate_merge_matrix_1027_v0.md（衝突はテスト末尾の6本＝道具で解ける・the-hana×calendar-jan の1行＝コメントだけ。両方入れる時は THE HANA の時期の言葉を見直す）。
