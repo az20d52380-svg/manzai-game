@@ -1102,3 +1102,15 @@ final class RentStatementRoom1027Tests: XCTestCase {
         XCTAssertEqual(RentStatement.yen(0), "0")
     }
 }
+
+/// 購入：商品の一覧に無い ID は知らせを立てて false（StoreManager.purchase の入口・10/27 深夜）。
+/// 購入・返金の本体を SKTestSession で試したが、この sim のテストでは Product.products が空で返り通らなかった（AUTOPILOT 済 10/27 深夜 続き14）
+@MainActor
+final class StorePurchaseGuard1027Tests: XCTestCase {
+    func testUnknownProductSetsMessage() async {
+        let ok = await StoreManager.shared.purchase("com.manzaigame.mvp.nope")
+        XCTAssertFalse(ok)
+        XCTAssertEqual(StoreManager.shared.lastMessage, "商品が見つかりません")
+        XCTAssertFalse(StoreManager.shared.owns("com.manzaigame.mvp.nope"))
+    }
+}
