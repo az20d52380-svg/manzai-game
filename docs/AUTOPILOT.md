@@ -255,3 +255,4 @@
 - 10/27 未明 定期 済：点検＝GameCore 433・アプリ 271 green・golden 同期OK・selftest（ALLOWSAVE）[ST] 29行・DONE・失敗0（週96%）
 - 10/27 朝 定期 済：点検（run_checks）＝GameCore 433・アプリ 276 green・golden/定数同期OK（週99- 10/27 朝 定期 済：点検（run_checks）＝GameCore 433・アプリ 276 green・golden/定数同期OK（週99%）
 - 10/27 朝 定期 済：check_candidates＝候補20本すべて本体に ok（the-hana-candidate は遅れ244）・本体ファイルの衝突は既知の calendar-jan×the-hana（GameSession.swift）2組だけ・他はテスト末尾（週99%）
+- 10/27 朝 定期 済：selftest（run_selftest.sh）[ST] 29行・DONE・失敗0（週99%）
