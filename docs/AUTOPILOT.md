@@ -13,8 +13,9 @@
 - テスト：GameCore の未カバーの所に swift test を足す（式・golden は触らない）
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
-- 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
-- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 271本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
+- 自己点検（10/19 夜・10/27 から `tools/run_selftest.sh [dd]` の1本でビルド→起動→DONE 待ち→行数と失敗行だけ出す）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
+- 点検の1本（10/27 深夜〜）：`tools/run_checks.sh [dd]`＝GameCore swift test・golden/定数の同期・アプリのテストを回して要約3行（赤なら終了コード1）。
+- アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 276本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に36個（イベントの発生率と上限・知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。check_golden_sync.py の最後でも自動で回る。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
@@ -29,6 +30,7 @@
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
+- 候補ブランチの確認（10/27 深夜〜）：`bash tools/check_candidates.sh` で本体に入るか・候補どうしの衝突を一覧（書き換えなし）。
 - 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。道具＝`python3 tools/merge_candidate_tests.py <本体のブランチ>`（merge が止まった状態で実行→ git add → commit）。
 - アプリの画面の文字（「俺」を含む説明文など）を変えた時も `cd GameCore && swift test` を回す（FirstPersonLiteralTests がアプリのソースを読み、例外の文を完全一致で持つ＝10/27 に形の選択の説明を言い換えて赤にした・d0661a6 で直した）。
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
@@ -73,7 +75,7 @@
 
 117. [ ] （10/19 自走のコード点検・直し方の判断）キャリアの最後の年末で「エンディングへ」を押す前にアプリが落ちると、その周と図鑑の記録が消える（docs/code_review_2026-10-19i.md §1）。セーブを消すのを遅らせるか、年末で図鑑に記録するか。材料：docs/career_end_save_options_v0.md（推奨＝消すのをエンディングに入る時まで遅らせる・注意2点＝バックグラウンドの保存を止める印・エンディング無しの出口でも消す）。【10/26】推奨A を候補ブランチ claude/career-end-save-candidate（9ebb441）に用意＝区切りの年末もセーブを残し、エンディングに入る時と年末の「もう一度」で消す（closeCareer）・213 green・GameCore 412 green。決まれば merge するだけ（目視 10/26 済：MZ_UI=yearend MZ_YEARS=9 MZ_CARE=1 MZ_ALLOWSAVE=1 で10年目の年末総決算→強制終了→素で起動＝同じ年末総決算と「エンディングへ」に戻る）
 
-118. [ ] 【10/27 追記：WeekMainView.swift の BounceArrow（吹き出しの弾む ▼）も参照0＝同じ扱いで】（10/19 深夜の自走のコード点検・判断が要る軽微）電車（.train）・銭湯（.sento）の背景がどのイベントにも割り当てられていない／Theme.swift の参照0の色約15個と AbilityBadge・CurrencyBadge（今の画面は能力名の文字＋ランク字で色だけに頼っていない＝色弱対応は効いている）。割り当てるか消すかを背景の作り直し（キュー72）とまとめて（docs/code_review_2026-10-19m.md §1-3・§3）。【10/19 夕・自走】電車はエンディングの回想「大会の帰り。夜の電車。」に割り当てた（字幕どおり・表示だけ・戻せる）。残り＝銭湯（どのイベントのト書きにも無い。下書き ms07「雨の週の銭湯」が入るならそこ）と未使用の色・部品。【10/25 昼の定期・候補】銭湯の当て先＝「同期のテレビ」B「銭湯に行く」の選択後（ただし選択イベントは EventScene を種類ごとに1つで、選択後に背景を替える口が無い＝背景の作り直し 72 と一緒に）。
+118. [ ] 【10/27 深夜：参照0の部品を機械で全部拾った一覧 docs/unused_parts_1027_v0.md（12型＋ぶら下がり＝約520行・推奨＝全部消す）。案1 を候補ブランチ claude/unused-parts-cand（4226224・約590行減・433/275 green）に用意】【10/27 深夜追記：ChoiceEventOverlay.swift の EventSceneView・DuskScene・PlaceScene（347〜579行・約230行）と ChoiceEventData.scene(for:)・ChoiceEventOverlay の private var scene も参照0＝選択イベントの背景は EventBackdropTable に移った後の残り（アプリのカバー率の点検で発見）。同じ扱いで】【10/27 追記：WeekMainView.swift の BounceArrow（吹き出しの弾む ▼）も参照0＝同じ扱いで】（10/19 深夜の自走のコード点検・判断が要る軽微）電車（.train）・銭湯（.sento）の背景がどのイベントにも割り当てられていない／Theme.swift の参照0の色約15個と AbilityBadge・CurrencyBadge（今の画面は能力名の文字＋ランク字で色だけに頼っていない＝色弱対応は効いている）。割り当てるか消すかを背景の作り直し（キュー72）とまとめて（docs/code_review_2026-10-19m.md §1-3・§3）。【10/19 夕・自走】電車はエンディングの回想「大会の帰り。夜の電車。」に割り当てた（字幕どおり・表示だけ・戻せる）。残り＝銭湯（どのイベントのト書きにも無い。下書き ms07「雨の週の銭湯」が入るならそこ）と未使用の色・部品。【10/25 昼の定期・候補】銭湯の当て先＝「同期のテレビ」B「銭湯に行く」の選択後（ただし選択イベントは EventScene を種類ごとに1つで、選択後に背景を替える口が無い＝背景の作り直し 72 と一緒に）。
 
 123. [ ] （判断待ち・材料 docs/code_review_2026-10-25c.md）週の一言は1行だけ：借金の週は「体力が少ない／倒れるぞ」が出ない・ネタ0本の週は生活費不足が出ない。①今のまま ②お金と体力の警告を最優先に並べ替える ③2行まで出す。あわせて、返済後にまた借金になった時に借金の知らせをもう一度出すか（A-10 は「一度ずつ」）。【10/26】候補＝ブランチ claude/week-hint-priority-candidate（639b6af＝お金と体力を先頭に・5ed7aad＝返済後にまた借金したら知らせを再表示）＝decision_brief_2026-10-25 #4。決まれば merge するだけ。【10/26 夕】候補 week-hint-priority の軽い注意＝candidate_review_1026_v0 §2
 
@@ -101,6 +103,8 @@
 136. [ ] （10/27 定期・実プレイ点検 v16・判断が要る軽微）10年目（最終年）の年末総決算で「これまでの頂グランプリ」が下にスクロールしないと1〜3年目しか見えず、最終年の区切り感が薄い（docs/playtest_v16.md #1）。①今のまま（エンディングで振り返る）②最終年だけ一覧を全部開く ③最終年は「10年の総括」の見出しに替える。推奨②（表示だけ・数値不変）。【10/27】案②を候補ブランチ claude/final-year-history-cand（40b1227・一覧は元から全年表示だったので、最終年だけ一覧を総決算の上へ移した・目視 OK）。#2・#3・#5・#6 は v15 と同じ論点（キュー132 など）。
 137. [ ] （10/27 定期・v16 #4・判断が要る軽微）オファーが2つある週（例 ロケ／ひな壇）、上の選ぶ札2枚と下の「オファー：ロケ」札に同じ説明文（「ロケに出る。お金になるけど…」）が二重に出て、舞台の二人が隠れる（スクショ y7_w40）。①今のまま ②下の札は名前と値札だけにして説明は上の札に任せる ③上の札は名前と値札だけにする。推奨②（下の札は押すボタンなので短い方が押しやすい・表示だけ）。CommandData.swift:140 の desc。【10/27】案②を候補ブランチ claude/offer-desc-short-cand（90ed280・選ぶ札が1枚の週は説明を残す・目視 OK・433 green）。
 138. [ ] （10/27 定期・visual_check_1027d #5・判断が要る軽微）能力アップ画面で振り分けが0のままでも「確定」が押せる色のまま（押しても何も変わらない）。①今のまま ②0の時は薄くして押せなくする ③押せるが「変化なし」と一言出す。推奨②。【10/27】案②を候補ブランチ claude/allocate-confirm-cand（0572ef7・AbilityUpView の確定に disabled＋薄く・目視 OK）。他の5件（香盤の「頂GP」の略称・お店の見出し・千秋楽の余白・決勝の審査員名の3重）は docs/visual_check_1027d_v0.md（低〜中）。
+
+139. [ ] （10/27 深夜の定期・判断が要る軽微）古い作業場所（git worktree）が43個・`.claude/worktrees` だけで約8.7GB。本体に入り済み・変更なしが17個。①その17個の作業場所だけ外す（ブランチは残す）【推奨】②未 merge の25個も作業場所だけ外す ③今のまま。材料 docs/worktree_inventory_1027_v0.md（何も消していない）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -133,6 +137,22 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 深夜の定期（続き15）：tools の118本を点検＝全部 py_compile 可・存在しない名前の import 0・モジュールの属性の参照切れの疑い11件は全部問題なし（タプル代入・実行時に足す・exp_fame62 は「動かない」と注記済み）。GameCore の参照0の宣言も0。
+- 10/27 深夜の定期（続き14）：購入の入口のテスト StorePurchaseGuard1027Tests（無い商品＝知らせ＋false）＝アプリ 276 green。購入・返金の本体を SKTestSession（テストのバンドルに Configuration.storekit を入れる）で試したが、この sim では Product.products が空で返り通らず、project.yml は戻した＝購入の本体は実機か Xcode の StoreKit の画面で確かめる。注意：xcodegen の直後の xcodebuild test が古いテストのバンドルで走ることがある（もう一度回すと直る）。
+- 10/27 深夜の定期（続き13）：同じ候補ブランチで参照0の色・寸法・定数24個も消した（433/275 green・通知の shouldShow は休眠温存で残す）。
+- 10/27 深夜の定期（続き12）：キュー118 案1（参照0の部品を全部消す）の候補ブランチ claude/unused-parts-cand（4226224）。
+- 10/27 深夜の定期（続き11）：参照0の型を機械で全部拾った docs/unused_parts_1027_v0.md（12型・約520行・何も消していない）→キュー118 へ。
+- 10/27 深夜の定期（続き10）：カバー率の点検で、選択イベントの古い背景（EventSceneView・DuskScene・PlaceScene・scene(for:)＝約250行）が参照0と分かった→消すかはキュー118 に追記（消していない）。
+- 10/27 深夜の定期（続き9）：月末の支払いの内訳に部屋の上乗せ・部屋名・yen のテスト3本 RentStatementRoom1027Tests（未通過の引数だった）＝green（アプリ 275）。
+- 10/27 深夜の定期（続き8）：アプリのカバー率を測った（GameSession 77.9%・未通過は旧セーブの既定値の ?? とデバッグ・演出の View）→ いちばん古い形のセーブ（任意の項目24個が全部無い）から開けて既定値に落ち、保存し直せるテスト OldestSaveRestore1027Tests＝アプリ 272 green。
+- 10/27 深夜の定期（続き7）：作業場所の棚卸し docs/worktree_inventory_1027_v0.md → キュー139（判断待ち）。
+- 10/27 深夜の定期（続き6）：候補の確認を1本で回す tools/check_candidates.sh＝17本とも本体に ok・候補どうしの衝突は合わせ表どおり（テスト末尾15組＋the-hana×calendar）。
+- 10/27 深夜の定期（続き5）：点検を1本で回す tools/run_checks.sh＝GameCore 433・同期 OK（36/36）・アプリ 271 green。
+- 10/27 深夜の定期（続き4）：自己点検を1本で回す tools/run_selftest.sh（macOS に timeout が無い対策・失敗行だけ出す）＝29行 DONE・失敗0。
+- 10/27 深夜の定期（続き3）：候補16本どうしの合わせ表 docs/candidate_merge_matrix_1027_v0.md（衝突はテスト末尾の6本＝道具で解ける・the-hana×calendar-jan の1行＝コメントだけ。両方入れる時は THE HANA の時期の言葉を見直す）。
+- 10/27 深夜の定期（続き2）：the-hana 候補（手元だけのブランチ・216コミット遅れ・その作業場所は19時間動きなし）に本体を合わせた版を新しいブランチ claude/the-hana-candidate-r1027（d20a262）で push＝自動で解け GameCore 436／アプリ 272 green・gen_golden の差分0・同期 OK。元のブランチは触っていない。＝候補16本すべてが今の本体で green。
+- 10/27 深夜の定期（続き）：selftest 29行 失敗0（macOS に timeout コマンドが無い＝simctl launch --console を & で回して DONE を待ってから kill）。そのまま入る候補8本も本体と合わせた状態で GameCore 433／アプリ 271〜272 green＝the-hana 以外の候補15本はすべて今の本体に merge して green。
+- 10/27 深夜の定期（週96%）：点検 GameCore 433 green・golden/定数 同期 OK。候補ブランチ16本の取り込み確認＝9本はそのまま入る・7本（a11y-tap-next・yearly-goal・career-end-save・mob-roster・money-short-choice・revival-short・tv-fatigue）は本体を取り込み直した（6本はテストの末尾＝merge_candidate_tests.py・a11y は climaxNext に本体の Theme.Motion.r を入れて解いた）→7本とも GameCore 433／アプリ 271〜272 green で push。the-hana は別の作業場所で使用中のため未。
 - 10/27 夜の定期：tools/check_config_sync.py を追加（36/36 一致・わざと1つずらすと NG を確認）。キューはすべて判断待ち。週の使用量 96%。
 - 10/27 夜の定期（週95%）：索引5本 243a682・用語集の目視 d7e9f1c・香盤に「頂GP」の説明 3b31cad・お店の品書きを部屋の下へ 2cf8b50・視差効果のもれ2か所 320d47a・千秋楽の薄さ＝意図どおり・広告の口の点検＝問題なし・AX5 目視・アプリ 271 green。
 - 10/27 定期（約40分後の回）：点検 GameCore swift test 433 green・check_golden_sync OK・アプリ xcodebuild test 271 green。GameCore の EventEffect 全12種はテスト済み（未カバー無し）。キューは全件判断待ち。
