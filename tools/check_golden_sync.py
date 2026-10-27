@@ -109,6 +109,10 @@ def check_features():
             print("❌ golden_features drift: cd tools && python3 gen_golden_features.py で再生成し swift test（規律A）")
             return 1
     print("✅ golden_features 一致（部屋・特技・店の台本）")
+    import check_config_sync  # 10/27〜：定数の既定値の突き合わせも同じ点検で回す
+    if check_config_sync.main() != 0:
+        print("❌ config drift: GameConfig/Calendar の既定値と Python 正典がずれている（規律A）")
+        return 1
     return 0
 
 

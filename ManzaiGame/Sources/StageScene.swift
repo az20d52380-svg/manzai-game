@@ -122,7 +122,7 @@ struct StageScene: View {
                     p.addLine(to: CGPoint(x: size.width, y: y))
                     ctx.stroke(p, with: .color(Color(hex: 0x9A7546).opacity(0.22)), lineWidth: 1)
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .clipped()
     }
@@ -229,7 +229,7 @@ struct ManzaiFigure: View {
         }
         .onAppear {
             guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: breathe).repeatForever(autoreverses: true)) {
+            withAnimation(Theme.Motion.r(.easeInOut(duration: breathe).repeatForever(autoreverses: true))) {
                 inhale = true
             }
         }
@@ -289,7 +289,7 @@ struct DustField: View {
                     ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)),
                              with: .color(Color(hex: 0xFFEDB8).opacity(alpha)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
     }
 }

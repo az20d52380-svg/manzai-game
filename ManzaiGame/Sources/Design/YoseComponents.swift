@@ -132,7 +132,7 @@ struct YoseButtonStyle: ButtonStyle {
                     .offset(y: depth).opacity(isEnabled ? 1 : 0)
             )
             .padding(.bottom, depth)   // 影ぶんの高さを確保（押下時の沈みで隣が動かない）
-            .animation(.easeOut(duration: 0.06), value: configuration.isPressed)
+            .animation(Theme.Motion.r(.easeOut(duration: 0.06)), value: configuration.isPressed)
             .onChange(of: configuration.isPressed) { _, p in if p && isEnabled { YoseHaptic.press() } }
     }
 }
@@ -276,7 +276,7 @@ struct YoseGauge: View {
                 Rectangle().fill(fill)
                     .frame(width: geo.size.width * ratio)
                     .overlay(alignment: .top) { Rectangle().fill(Color.white.opacity(0.28)).frame(height: 2) }
-                    .animation(.spring(response: 0.35, dampingFraction: 0.78), value: ratio)
+                    .animation(Theme.Motion.r(.spring(response: 0.35, dampingFraction: 0.78)), value: ratio)
                 if showTicks {
                     ForEach(1..<4, id: \.self) { i in
                         Rectangle().fill(YoseColor.sumi.opacity(0.35)).frame(width: 1)
@@ -325,6 +325,6 @@ struct YoseSpeechBox: View {
             .padding(.horizontal, 12).padding(.vertical, 10)
             .yoseHarigami()
         }
-        .onAppear { guard !reduceMotion else { return }; withAnimation(.easeOut(duration: 0.5).repeatForever(autoreverses: true)) { blink = true } }
+        .onAppear { guard !reduceMotion else { return }; withAnimation(Theme.Motion.r(.easeOut(duration: 0.5).repeatForever(autoreverses: true))) { blink = true } }
     }
 }
