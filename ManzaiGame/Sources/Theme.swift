@@ -445,4 +445,8 @@ enum Yen {
         let m = Double(v) / 10000
         return (m == m.rounded() ? String(Int(m)) : String(format: "%.1f", m)) + "万"
     }
+    /// 札・ピル用（符号と¥は呼ぶ側）：1万未満は整数円の区切り（"5,000"）、以上は万（"3.2万"）＝¥0.5万を出さない（money_format_inventory_1027 案C）
+    static func short(_ v: Int) -> String { abs(v) < 10000 ? abs(v).formatted() : man(abs(v)) }
+    /// 文の中用：「◯万円」／「◯,◯◯◯円」（文に ¥ を混ぜない・同 案C）
+    static func inText(_ v: Int) -> String { (abs(v) < 10000 ? abs(v).formatted() : man(abs(v))) + "円" }
 }

@@ -208,14 +208,14 @@ struct TournamentEntryView: View {
                 let fee = session.config.calendar.entryFee   // 13§3: 交通費＋エントリー費を払えない遠征は無効化＝無言落ちを止める
                 if spec.osaka, session.state.shinkansenActive == true {
                     // 新幹線回数券がある年は交通費0・体力そのまま（WeekRunner.resolveTournament と同じ・code_review_2026-10-19g §1）
-                    entryButton("新幹線で出場（回数券）", glyph: "tram.fill", sub: "¥\(fee.formatted())（エントリー費のみ）・体力温存",
+                    entryButton("新幹線で出場（回数券）", glyph: "tram.fill", sub: "\(Yen.inText(fee))（エントリー費のみ）・体力温存",
                                 enabled: session.state.money >= fee) { session.decideTournament(.新幹線) }
                 } else if spec.osaka {
                     let busTotal = session.config.calendar.busTravel.cost + fee
                     let trainTotal = session.config.calendar.trainTravel.cost + fee
-                    entryButton("夜行バスで出場", glyph: "bus.fill", sub: "¥\(busTotal.formatted())（交通費＋エントリー費）・体力を使う",
+                    entryButton("夜行バスで出場", glyph: "bus.fill", sub: "\(Yen.inText(busTotal))（交通費＋エントリー費）・体力を使う",
                                 enabled: session.state.money >= busTotal) { session.decideTournament(.夜行バス) }
-                    entryButton("新幹線で出場", glyph: "tram.fill", sub: "¥\(trainTotal.formatted())（交通費＋エントリー費）・体力温存",
+                    entryButton("新幹線で出場", glyph: "tram.fill", sub: "\(Yen.inText(trainTotal))（交通費＋エントリー費）・体力温存",
                                 enabled: session.state.money >= trainTotal) { session.decideTournament(.新幹線) }
                 } else {
                     let cost = fee   // 東京開催はエントリー費のみ（WeekRunner.resolveTournament と同じ条件・監査G-05）

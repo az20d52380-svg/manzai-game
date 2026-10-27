@@ -54,7 +54,7 @@ struct ShopView: View {
     /// 家賃の行（金額は墨・太字で目立たせる）
     private func roomRentText(_ i: Int) -> String {
         let rent = session.config.roomRents[i]
-        return rent == 0 ? "家賃はいまのまま" : "家賃 +¥\(rent.formatted())（4週ごとの支払い）"
+        return rent == 0 ? "家賃はいまのまま" : "家賃 +\(Yen.inText(rent))（4週ごとの支払い）"
     }
 
     /// その部屋に住んだ時の4週ごとの支払いの合計（生活費・やりくり上手込み）
@@ -90,7 +90,7 @@ struct ShopView: View {
                         Text(roomRentText(i)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                             .fixedSize(horizontal: false, vertical: true)
                         if i > 0 {   // 生活費と合わせた支払いの合計（引っ越した後の苦しさが見えるように・code_review_2026-10-19 §3-3）
-                            Text("生活費と合わせると 4週で ¥\(totalDue(room: i).formatted())")
+                            Text("生活費と合わせると 4週で \(Yen.inText(totalDue(room: i)))")
                                 .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -99,7 +99,7 @@ struct ShopView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         if !ok, !here {   // 引っ越せない理由（あといくら）
-                            Text("あと ¥\((session.config.roomRents[i] - session.state.money).formatted()) あれば引っ越せる")
+                            Text("あと \(Yen.inText(session.config.roomRents[i] - session.state.money)) あれば引っ越せる")
                                 .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
                         }
                     }
@@ -147,7 +147,7 @@ struct ShopView: View {
                         Text("購入").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(ok ? YoseColor.kinari : YoseColor.kinari.opacity(0.8))
                             .frame(maxWidth: .infinity).frame(height: 16)
                             .background(ok ? YoseColor.shu : YoseColor.disabledText)
-                        Text("¥\(price(item).formatted())").font(YoseFont.number(big ? 20 : 18, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
+                        Text("¥" + Yen.short(price(item))).font(YoseFont.number(big ? 20 : 18, weight: .heavy)).lineLimit(1).minimumScaleFactor(0.7)
                             .padding(.vertical, 4)
                     }
                 }

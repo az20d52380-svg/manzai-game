@@ -883,7 +883,7 @@ struct WeekMainView: View {
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text(o.name).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1)
-                Text("+" + Yen.man(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
+                Text("+¥" + Yen.short(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
                 Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .lineLimit(3).fixedSize(horizontal: false, vertical: true)
             }
@@ -1137,7 +1137,7 @@ struct WeekMainView: View {
                                         .background(YoseColor.kin.opacity(0.25))
                                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                                 }
-                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
+                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.short(moneyDelta))")
                                     .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
                                     .foregroundStyle(moneyDelta > 0 ? YoseColor.sumi : YoseColor.shu)
                             }
@@ -1349,7 +1349,7 @@ struct WeekMainView: View {
 
     private func costPill(money: Int, insufficient: Bool = false) -> some View {
         let up = money > 0
-        let amt = abs(money) < 10000 ? "\(abs(money).formatted())" : Yen.man(abs(money))   // 1万円未満は整数円（¥0.5万を出さない）
+        let amt = Yen.short(money)   // 1万円未満は整数円（¥0.5万を出さない）
         return Text("\(up ? "+" : "-")¥\(amt)")
             .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.shu))
