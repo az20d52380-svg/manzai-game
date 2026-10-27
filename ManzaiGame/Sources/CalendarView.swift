@@ -44,7 +44,7 @@ struct CalendarView: View {
     private var summary: some View {
         VStack(spacing: 3) {
             Text("\(session.combiName)").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-            Text("\(session.year)年目　第\(session.week)週 ・ 賞金 ¥\(session.totalPrize.formatted())")
+            Text("\(session.year)年目　第\(session.week)週 ・ 賞金 ¥\(Yen.short(session.totalPrize))")
                 .font(YoseFont.number(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 7)
