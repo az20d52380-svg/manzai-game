@@ -253,3 +253,4 @@
 
 - （10/25 以前の済は docs/AUTOPILOT_done.md の「済（新しい順）」へ移した＝10/26 深夜）- 10/27 深夜 定期 済：点検＝GameCore 433・アプリ 271 green・golden 同期OK・カバレッジ GameCore ほぼ100%（未カバー計6行）・selftest（ALLOWSAVE）[ST] 29行・DONE・失敗0／「視差効果を減らす」の残り149か所を Theme.Motion.r に（5980ac3）／飾りの Canvas 26か所を読み上げ対象外に（a11y_check_1026_voiceover #11）。キューの残りは判断待ちのみ。
 - 10/27 未明 定期 済：点検＝GameCore 433・アプリ 271 green・golden 同期OK・selftest（ALLOWSAVE）[ST] 29行・DONE・失敗0（週96%）
+- 10/27 朝 定期 済：点検（run_checks）＝GameCore 433・アプリ 276 green・golden/定数同期OK（週99- 10/27 朝 定期 済：点検（run_checks）＝GameCore 433・アプリ 276 green・golden/定数同期OK（週99%）
