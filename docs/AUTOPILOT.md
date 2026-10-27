@@ -138,7 +138,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- 10/27 朝の定期：週99%のため軽い点検のみ。GameCore swift test 433件 green（失敗0）。
+- 10/27 朝の定期：週99%のため軽い点検のみ。GameCore swift test 433件 green（失敗0）・gen_golden 再生成で差分なし（Python と golden が一致）。
 - 10/27 深夜の定期（続き19）：漏れ点検 soak 3分（MZ_SOAK_MS=30・落ちず・ps の RSS で 1454→1463MB＝横ばい。前回までの 329MB 台とは測り方が違う〔ps の RSS は共有部分込み〕ので、比べるのは同じ回の始めと終わりだけ）。
 - 10/27 深夜の定期（続き18）：キュー135 の C' 版の候補 claude/money-format-cprime-cand（money-format-cand の上・目視 week 崩れなし）。
 - 10/27 深夜の定期（続き17）：キュー135 案C の候補ブランチ claude/money-format-cand（テストは別ファイル MoneyFormat1027Tests）。
