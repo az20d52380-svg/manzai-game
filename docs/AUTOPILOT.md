@@ -137,6 +137,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 深夜の定期（続き16）：候補ブランチの確認（check_candidates）＝17本とも本体と衝突はテスト末尾だけ（unused-parts も中身の衝突なし）。本体にテストを足したぶん末尾で衝突した6本に本体を取り込み直し、6本とも GameCore 433／アプリ 277 green で push。
 - 10/27 深夜の定期（続き15）：tools の118本を点検＝全部 py_compile 可・存在しない名前の import 0・モジュールの属性の参照切れの疑い11件は全部問題なし（タプル代入・実行時に足す・exp_fame62 は「動かない」と注記済み）。GameCore の参照0の宣言も0。
 - 10/27 深夜の定期（続き14）：購入の入口のテスト StorePurchaseGuard1027Tests（無い商品＝知らせ＋false）＝アプリ 276 green。購入・返金の本体を SKTestSession（テストのバンドルに Configuration.storekit を入れる）で試したが、この sim では Product.products が空で返り通らず、project.yml は戻した＝購入の本体は実機か Xcode の StoreKit の画面で確かめる。注意：xcodegen の直後の xcodebuild test が古いテストのバンドルで走ることがある（もう一度回すと直る）。
 - 10/27 深夜の定期（続き13）：同じ候補ブランチで参照0の色・寸法・定数24個も消した（433/275 green・通知の shouldShow は休眠温存で残す）。
