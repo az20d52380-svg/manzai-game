@@ -30,6 +30,8 @@ PAIRS = {
     "inviteMental":         C.INVITE_MENTAL,
     "inviteIdea":           C.INVITE_IDEA,
     "injuryMentalHit":      C.INJURY_MENTAL,
+    "weeklyEventRate":      C.EVENT_RATE,
+    "weeklyEventCap":       C.APP_EVENT_CAP,
     "capCurveBase":         C.CAP_CURVE[0],
     "capCurveSlope":        C.CAP_CURVE[1],
     "capCurveFloor":        C.CAP_CURVE[2],

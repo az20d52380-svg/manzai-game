@@ -16,7 +16,7 @@
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
 - アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 271本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
-- 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に34個（知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。
+- 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に36個（イベントの発生率と上限・知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
 - 実測の決まり（2026-10-19 追記）：アプリの帯に近いのは EVENTS_APP=True（イベントの抽選をアプリと同じに）。既定にするかはオーナー判断待ち＝それまでは帯を測る時に False/True を併記する。
@@ -133,7 +133,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- 10/27 夜の定期：tools/check_config_sync.py を追加（34/34 一致・わざと1つずらすと NG を確認）。キューはすべて判断待ち。週の使用量 96%。
+- 10/27 夜の定期：tools/check_config_sync.py を追加（36/36 一致・わざと1つずらすと NG を確認）。キューはすべて判断待ち。週の使用量 96%。
 - 10/27 夜の定期（週95%）：索引5本 243a682・用語集の目視 d7e9f1c・香盤に「頂GP」の説明 3b31cad・お店の品書きを部屋の下へ 2cf8b50・視差効果のもれ2か所 320d47a・千秋楽の薄さ＝意図どおり・広告の口の点検＝問題なし・AX5 目視・アプリ 271 green。
 - 10/27 定期（約40分後の回）：点検 GameCore swift test 433 green・check_golden_sync OK・アプリ xcodebuild test 271 green。GameCore の EventEffect 全12種はテスト済み（未カバー無し）。キューは全件判断待ち。
 - 10/27 定期（続き22）：キュー138 案②の候補ブランチ claude/allocate-confirm-cand（0572ef7）。
