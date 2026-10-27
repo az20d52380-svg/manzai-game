@@ -67,11 +67,14 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
     gp_entry_paid = False
     gp_alive, finalist, revival = (not seed_final), seed_final, False   # 王者シード: 予選免除・決勝直行
     line_final = C.GP_FINAL_LINE if final_line is None else final_line   # 王者ライン上書き（飽きられ）
+    hana_stage = 0   # THE HANA（C.HANA_ON の時だけ）: 今年次に出る段
     for week in range(1, B.WEEKS + 1):
         compat0 = s.compat   # 途中解散（rift）の判定用
         acted = False
 
         t = C.TOURNAMENTS.get(week)
+        if t is None and C.HANA_ON:
+            t = C._hana_spec(week, hana_stage)   # THE HANA（既定無効＝既存 golden は不変）
         if t and t["ok"](year, s):
             need = C.GP_ENTRY_FEE + (B.BUS["cost"] if t["osaka"] else 0)
             if s.money >= need:
@@ -85,6 +88,10 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
                     B.add(s, "fame", t["fame"])
                 acted = True
                 s._joint = True
+                if "hana" in t:
+                    hana_stage = hana_stage + 1 if ok else len(C.HANA_ROUNDS)   # 落ちたら今年はおしまい
+                    if trace is not None:
+                        trace.setdefault("hana", []).append((year, t["hana"], int(bool(ok))))
 
         if not acted and gp_alive and gp_stage < len(C.GP_ROUNDS) and week == C.GP_ROUNDS[gp_stage][0]:
             if not gp_entry_paid and s.money < C.GP_ENTRY_FEE:
@@ -208,6 +215,30 @@ def run_branch_scripts():
             vals = ", ".join(f"{v!r}" for v in snap)
             print(f"        ({seed}, {y}, {vals}, {stage}, {int(champ)}),")
 
+# THE HANA golden（2026-10-25・女性コンビだけの大会・既定無効＝上の出力は不変）: C.set_hana(True) で6年回す。
+# seed=1191 ＝ 1回戦で落ちる年・2回戦で落ちる年・準決勝で落ちる年・優勝の年（6年目）を全部通る（探索は scratchpad・GP は6年とも優勝なし）。
+# 行 = (種, 年, 年末スナップショット9値..., GP通過回戦数, GP優勝0/1, THE HANA 通過段数0〜4)。Swift: CareerGoldenTests.hanaYears
+HANA_SEED, HANA_YEARS = 1191, 6
+
+def run_hana_script():
+    saved = C.HANA_ON
+    C.set_hana(True)
+    try:
+        print(f"// hana seed={HANA_SEED}: THE HANA 有効・{HANA_YEARS}年 / 段 {[(w, ln) for w, _, ln, _, _ in C.HANA_ROUNDS]}")
+        rng = SplitMix64(HANA_SEED)
+        s = B.S()
+        prev = 0
+        for y in range(1, HANA_YEARS + 1):
+            tr = {}
+            champ, stage = run_year(s, y, rng, gp_seed=(prev >= 3), trace=tr)
+            assert not champ, "hana golden の種で GP 優勝してしまった。種を変えること"
+            prev = stage
+            hana = sum(r for (_, _, r) in tr.get("hana", []))
+            vals = ", ".join(f"{v!r}" for v in snapshot(s))
+            print(f"        ({HANA_SEED}, {y}, {vals}, {stage}, {int(champ)}, {hana}),")
+    finally:
+        C.set_hana(saved)
+
 def main():
     seed = GOLDEN_SEED
     rng = SplitMix64(seed)
@@ -229,6 +260,7 @@ def main():
             print(f"// year {year} end（yearEnds形式・そのまま貼る）:")
             print(f"        ({year}, {snap[0]}, {vals}),")
     run_branch_scripts()
+    run_hana_script()
 
 if __name__ == "__main__":
     main()

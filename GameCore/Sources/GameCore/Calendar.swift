@@ -69,6 +69,18 @@ public struct CalendarConfig {
         TournamentSpec(name: "寒梅漫才杯",       week: 46, line: 34, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(10)),
     ]
 
+    /// THE HANA（女性コンビだけの大会・オーナー回答 10/20・docs/combo_gender_v0.md §4・docs/the_hana_measure_1025_v0.md）【仮】
+    /// Python: sim_career.HANA_ROUNDS。1回戦（動画審査）→2回戦→準決勝→決勝。前の段を通った年だけ次の段に出られる（年ごとにやり直し）。
+    /// 東京（遠征なし）・エントリー費は他の大会と同じ・敗者復活なし・芸歴の制限なし。通過で知名度 +gpRoundFame、優勝で手元250万＋知名度+8。
+    /// WeekRunner(hanaEnabled: true) の時だけ使う（既定 false＝既存の golden は不変）。週は他の大会・GP と重ならない。
+    public var hanaRounds: [TournamentSpec] = [
+        // ライン「難」22/38/56/70（the_hana_measure §2〜3）。fame は通過で +3（GP の回戦と同じ）・決勝は優勝の +8【仮】
+        TournamentSpec(name: "THE HANA 1回戦（動画審査）", week: 32, line: 22, prize: 0,         fame: 3, osaka: false, eligibility: .always),
+        TournamentSpec(name: "THE HANA 2回戦",             week: 37, line: 38, prize: 0,         fame: 3, osaka: false, eligibility: .always),
+        TournamentSpec(name: "THE HANA 準決勝",            week: 42, line: 56, prize: 0,         fame: 3, osaka: false, eligibility: .always),
+        TournamentSpec(name: "THE HANA 決勝",              week: 44, line: 70, prize: 2_500_000, fame: 8, osaka: false, eligibility: .always),
+    ]
+
     /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。ライン【正典v2 2026-07-05】docs/canonical_v2_spec.md）
     public var gpRounds: [(week: Int, line: Double)] = [(30, 16), (39, 24), (41, 32), (43, 43), (45, 72)]
     /// 回戦の表示名（Python: GP_ROUNDS のラベルと同一・UI用）

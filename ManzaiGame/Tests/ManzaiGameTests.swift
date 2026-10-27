@@ -76,6 +76,24 @@ final class NamesTests: IsolatedStoreTestCase {
         XCTAssertEqual(GameSession(restoring: old).comboKind, .maleMale)
         XCTAssertEqual(Names.show("{me}"), "俺")
     }
+    /// THE HANA（女コンビだけの大会・候補ブランチ）：女コンビだけ予定に4段が出る・男女コンビ／男コンビは出ない・保存往復で残る
+    func testTheHanaOnlyForFemaleFemale() throws {
+        for k in [ComboKind.maleMale, .maleFemale, .femaleMale] {
+            let s = GameSession(seed: 1, comboKind: k)
+            XCTAssertFalse(s.hanaEnabled, "\(k)")
+            XCTAssertFalse(s.upcomingStages().contains { $0.name.hasPrefix("THE HANA") }, "\(k)")
+            XCTAssertNil(s.tournamentSpec(inWeek: 32), "\(k)")
+        }
+        let f = GameSession(seed: 1, comboKind: .femaleFemale)
+        XCTAssertTrue(f.hanaEnabled)
+        XCTAssertEqual(f.upcomingStages().filter { $0.name.hasPrefix("THE HANA") }.map(\.week), [32, 37, 42, 44])
+        XCTAssertEqual(f.tournamentSpec(inWeek: 32)?.name, "THE HANA 1回戦（動画審査）")
+        XCTAssertTrue(f.hanaStillOpen(week: 44))
+        XCTAssertEqual(f.config.calendar.hanaRounds.map { GameSession.hanaShort($0.name) }, ["HANA1回戦", "HANA2回戦", "HANA準決勝", "HANA決勝"])   // 香盤の札で段が分かる
+        f.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        XCTAssertTrue(GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: d)).hanaEnabled)
+    }
     /// 出会い方（キュー63）：保存往復・旧セーブ＝nil＝①高校の同級生
     func testOldSaveIsHighSchoolAndMeetingRoundTrips() throws {
         let s = GameSession(meetingKind: .afterBreakup)

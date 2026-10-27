@@ -32,15 +32,18 @@ public struct YearOutcome: Codable {
     public let bankrupt: Bool       // 夜逃げ（-100万未満）でキャリア終了したか【正典v2】
     public let dissolved: Bool      // 途中解散（すれ違いゲージ）でキャリア終了したか
 
-    public init(champion: Bool, roundsPassed: Int, reachedFinal: Bool, bankrupt: Bool = false, dissolved: Bool = false) {
+    public let hanaPassed: Int      // THE HANA の通過段数 0〜4（4＝優勝・無効なら0）【仮】
+
+    public init(champion: Bool, roundsPassed: Int, reachedFinal: Bool, bankrupt: Bool = false, dissolved: Bool = false, hanaPassed: Int = 0) {
         self.champion = champion
         self.roundsPassed = roundsPassed
         self.reachedFinal = reachedFinal
         self.bankrupt = bankrupt
         self.dissolved = dissolved
+        self.hanaPassed = hanaPassed
     }
 
-    private enum CodingKeys: String, CodingKey { case champion, roundsPassed, reachedFinal, bankrupt, dissolved }
+    private enum CodingKeys: String, CodingKey { case champion, roundsPassed, reachedFinal, bankrupt, dissolved, hanaPassed }
     public init(from decoder: Decoder) throws {   // 古いセーブ（dissolved なし）も読める
         let c = try decoder.container(keyedBy: CodingKeys.self)
         champion = try c.decode(Bool.self, forKey: .champion)
@@ -48,6 +51,7 @@ public struct YearOutcome: Codable {
         reachedFinal = try c.decode(Bool.self, forKey: .reachedFinal)
         bankrupt = try c.decodeIfPresent(Bool.self, forKey: .bankrupt) ?? false
         dissolved = try c.decodeIfPresent(Bool.self, forKey: .dissolved) ?? false
+        hanaPassed = try c.decodeIfPresent(Int.self, forKey: .hanaPassed) ?? 0
     }
 }
 
@@ -66,6 +70,7 @@ public enum GameCareer {
         finalLineOverride: Double? = nil,
         gpSeeded: Bool = false,
         inviteSeed: UInt64? = nil,
+        hanaEnabled: Bool = false,   // THE HANA（女性コンビだけ）。既定 false
         onWeekEnd: ((Int, GameState) -> Void)? = nil
     ) -> YearOutcome {
         // 週処理の実体は WeekRunner（ステップ実行機）に一本化し、runYear はそれを policy で駆動する薄い委譲にする。
@@ -73,7 +78,7 @@ public enum GameCareer {
         // 等価性は WeekRunnerGoldenTests / CareerGoldenTests の3年 golden 一致（誤差1e-9以内）で二重に担保される。
         var runner = WeekRunner(state: s, year: year, config: config, rng: rng,
                                 seedFinal: seedFinal, finalLineOverride: finalLineOverride,
-                                gpSeeded: gpSeeded, inviteSeed: inviteSeed)
+                                gpSeeded: gpSeeded, inviteSeed: inviteSeed, hanaEnabled: hanaEnabled)
         var phase = runner.begin()
         while true {
             switch phase {
@@ -104,12 +109,13 @@ public enum GameCareer {
         config: GameConfig,
         policy: inout P,
         rng: inout R,
-        inviteSeed: UInt64? = nil
+        inviteSeed: UInt64? = nil,
+        hanaEnabled: Bool = false
     ) -> Int? {
         var prevStage = 0
         for year in 1...years {
             let outcome = runYear(state: &s, year: year, config: config, policy: &policy, rng: &rng,
-                                  gpSeeded: prevStage >= 3, inviteSeed: inviteSeed)
+                                  gpSeeded: prevStage >= 3, inviteSeed: inviteSeed, hanaEnabled: hanaEnabled)
             prevStage = outcome.roundsPassed
             if outcome.champion {
                 return year

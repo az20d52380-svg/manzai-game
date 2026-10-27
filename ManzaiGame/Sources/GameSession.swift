@@ -231,7 +231,8 @@ final class GameSession {
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
         let start = startState ?? GameState(config: cfg)
         self.state = start
-        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
+        var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed,
+                           hanaEnabled: comboKind == .femaleFemale)   // THE HANA は女コンビだけ（男女コンビは出られない・combo_gender_v0 §4）
         self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
@@ -702,6 +703,12 @@ final class GameSession {
         for t in cal.tournaments where t.isEligible(year: year, state: state) {
             ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
         }
+        // THE HANA（女コンビだけ）: 今年まだ立てる段を全部（前の段を通った年だけ次に出られる＝落ちたら消える）
+        if let next = runner.hanaNextRound, next.week >= week, let i0 = cal.hanaRounds.firstIndex(where: { $0.week == next.week }) {
+            for t in cal.hanaRounds[i0...] {
+                ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
+            }
+        }
         let includeThisWeek: Bool = { if case .freeAction = phase { return false }; return true }()
         return ms.filter { $0.week > week || (includeThisWeek && $0.week == week) }
             .sorted { $0.week < $1.week }
@@ -710,6 +717,30 @@ final class GameSession {
     /// 今年の決勝に敗者復活から上がったか（準決勝を通っていない決勝進出者＝講評の「昼からもう一本」用・表示専用）
     var reachedFinalViaRevival: Bool {
         runner.gpRoundsPassed < config.calendar.gpRounds.count
+    }
+
+    /// THE HANA（女コンビだけの大会）がこの年に有効か（表示用）
+    var hanaEnabled: Bool { runner.hanaEnabled }
+
+    /// その週の THE HANA の段（無効なら nil・表示用）
+    func hanaRound(inWeek w: Int) -> TournamentSpec? {
+        runner.hanaEnabled ? config.calendar.hanaRounds.first { $0.week == w } : nil
+    }
+
+    /// THE HANA の段の短縮名（香盤の札用・頂GP の「頂GP3回戦」と同じ作り）。THE HANA 1回戦（動画審査）→HANA1回戦／THE HANA 準決勝→HANA準決勝
+    static func hanaShort(_ name: String) -> String {
+        "HANA" + name.replacingOccurrences(of: "THE HANA ", with: "").replacingOccurrences(of: "（動画審査）", with: "")
+    }
+
+    /// その週の大会（道中の大会→無ければ THE HANA）。カレンダー・結果画面の表示用
+    func tournamentSpec(inWeek w: Int) -> TournamentSpec? {
+        config.calendar.tournament(inWeek: w) ?? hanaRound(inWeek: w)
+    }
+
+    /// THE HANA のその週の段に、今年まだ立てる見込みがあるか（落ちた・前の段を見送った後は false）
+    func hanaStillOpen(week w: Int) -> Bool {
+        guard let next = runner.hanaNextRound, next.week >= week else { return false }   // 前の段を見送った年は先が無い
+        return w >= next.week && hanaRound(inWeek: w) != nil
     }
 
     /// 次の本番（無ければ nil）
@@ -1096,7 +1127,8 @@ final class GameSession {
     func startNextYear() {
         guard finished, !careerOver, let o = outcome else { return }
         var r = WeekRunner(state: runner.state, year: year + 1, config: config, rng: runner.rng,
-                           gpSeeded: o.roundsPassed >= 3, inviteSeed: runner.inviteSeed)
+                           gpSeeded: o.roundsPassed >= 3, inviteSeed: runner.inviteSeed,
+                           hanaEnabled: comboKind == .femaleFemale)   // THE HANA（女コンビだけ・旧セーブから続けても次の年から有効）
         yearStartState = r.state
         hasYearStart = true   // 旧セーブ（年初の状態なし）から続けた時も、次の年からは年末の差分を出す（code_review_2026-10-19c §2-3）
         // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）

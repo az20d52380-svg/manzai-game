@@ -91,6 +91,17 @@ public struct WeekRunner<R: RandomSource> {
     public var hasRevival: Bool { revival && !revivalTried }
     /// 通過済みGP回戦数（読み取り専用・表示用）
     public var gpRoundsPassed: Int { gpStage }
+    /// THE HANA（女性コンビだけの大会）がこの年に有効か（アプリが女性コンビの時だけ true を渡す）。Python: sim_career.HANA_ON
+    public let hanaEnabled: Bool
+    /// THE HANA の今年の通過段数 0〜4（4＝優勝）
+    public private(set) var hanaPassed = 0
+    /// THE HANA で今年落ちたか（敗者復活なし＝その年はおしまい）
+    public private(set) var hanaOut = false
+    /// THE HANA の今年の次の段（無効・落ちた・優勝済みなら nil）。UI の予定表示用
+    public var hanaNextRound: TournamentSpec? {
+        guard hanaEnabled, !hanaOut, hanaPassed < config.calendar.hanaRounds.count else { return nil }
+        return config.calendar.hanaRounds[hanaPassed]
+    }
 
     // 週内の進行位置（runYear のブロック1〜5に対応）。
     // Section/AutoStage の public 化と Codable は中断セーブ（WeekRunnerSnapshot）用＝可視性のみの変更・挙動不変。
@@ -123,7 +134,8 @@ public struct WeekRunner<R: RandomSource> {
         seedFinal: Bool = false,
         finalLineOverride: Double? = nil,
         gpSeeded: Bool = false,   // 前年準々決勝以上（roundsPassed>=3）で1回戦免除
-        inviteSeed: UInt64? = nil   // §102 飲みの誘いのシード（nil=誘いなし）
+        inviteSeed: UInt64? = nil,   // §102 飲みの誘いのシード（nil=誘いなし）
+        hanaEnabled: Bool = false   // THE HANA（女性コンビだけ）。既定 false＝既存 golden は不変
     ) {
         precondition(year >= 1, "year は1以上（成長予算の累計計算が前提）")
         var s = state
@@ -151,6 +163,13 @@ public struct WeekRunner<R: RandomSource> {
         self.gpAlive = !seedFinal
         self.finalist = seedFinal
         self.finalLine = finalLineOverride ?? config.calendar.gpFinalLine
+        self.hanaEnabled = hanaEnabled
+    }
+
+    /// その大会が THE HANA の今年の次の段か（乱数なし）
+    private func isHanaRound(_ spec: TournamentSpec) -> Bool {
+        guard let r = hanaNextRound else { return false }
+        return r.week == spec.week && r.name == spec.name
     }
 
     /// 大会で選択中のネタを掛けた印（年初の飽きの判定用・乱数なし）。Python: _neta_use の used_y
@@ -168,7 +187,7 @@ public struct WeekRunner<R: RandomSource> {
         weekClosed = false
         week += 1
         if week > config.weeks {
-            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist)
+            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, hanaPassed: hanaPassed)
             finished = outcome
             return .yearDone(outcome)
         }
@@ -208,6 +227,9 @@ public struct WeekRunner<R: RandomSource> {
                 if result.passed {
                     state.money += spec.prize
                     GameEngine.add(.知名度, spec.fame, to: &state, config: config)
+                }
+                if isHanaRound(spec) {
+                    if result.passed { hanaPassed += 1 } else { hanaOut = true }   // Python: run_year の hana_stage
                 }
                 acted = true
                 weekResults.append(StageResult(name: spec.name, passed: result.passed,
@@ -283,7 +305,7 @@ public struct WeekRunner<R: RandomSource> {
                 state.money += cal.gpPrize
                 GameEngine.addFameRaw(cal.champFame, to: &state)   // 優勝は逓減なし（キュー62）
                 // runYear と同一: 優勝は即時リターン＝この週の週末処理（生活費）は走らない
-                let outcome = YearOutcome(champion: true, roundsPassed: gpStage, reachedFinal: true)
+                let outcome = YearOutcome(champion: true, roundsPassed: gpStage, reachedFinal: true, hanaPassed: hanaPassed)
                 finished = outcome
                 return .yearDone(outcome)
             }
@@ -367,7 +389,9 @@ public struct WeekRunner<R: RandomSource> {
 
         if section == .tournament {
             section = .gp
-            if !acted, let spec = cal.tournament(inWeek: week), spec.isEligible(year: year, state: state) {
+            // THE HANA は他の大会が無い週だけ（Python: t = TOURNAMENTS.get(week) → 無ければ _hana_spec）
+            if !acted, let spec = cal.tournament(inWeek: week) ?? hanaNextRound.flatMap({ $0.week == week ? $0 : nil }),
+               spec.isEligible(year: year, state: state) {
                 pendingSpec = spec
                 return .tournamentDecision(spec)
             }
@@ -431,12 +455,12 @@ public struct WeekRunner<R: RandomSource> {
 
         // 週末処理（生活費→生活苦→夜逃げ判定）→ 週の結果
         if GameEngine.applyWeekEnd(week: week, to: &state, config: config) {
-            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true)
+            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, bankrupt: true, hanaPassed: hanaPassed)
             finished = outcome
             return .yearDone(outcome)
         }
         if GameEngine.applyRiftWeekEnd(year: year, to: &state, config: config) {
-            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, dissolved: true)
+            let outcome = YearOutcome(champion: false, roundsPassed: gpStage, reachedFinal: finalist, dissolved: true, hanaPassed: hanaPassed)
             finished = outcome
             return .yearDone(outcome)
         }
@@ -622,6 +646,9 @@ public struct WeekRunnerSnapshot<R: RandomSource & Codable>: Codable {
     public var inviteSeed: UInt64?     // §102（旧セーブには無い＝nil＝誘いなし）
     public var pendingInvite: Bool?
     public var offerChoices: [OfferSpec]?   // キュー96（旧セーブには無い＝nil）
+    public var hanaEnabled: Bool?   // THE HANA（旧セーブには無い＝nil＝無効）
+    public var hanaPassed: Int?
+    public var hanaOut: Bool?
     public var weekClosed: Bool?            // 懸念の台帳 L37（旧セーブには無い＝nil＝閉じていない扱い）
 }
 
@@ -634,6 +661,7 @@ extension WeekRunner where R: Codable {
                            weekResults: weekResults, pendingSpec: pendingSpec, pendingOffer: pendingOffer,
                            pendingAuto: pendingAuto, revivalTried: revivalTried, finalTried: finalTried,
                            finished: finished, inviteSeed: inviteSeed, pendingInvite: pendingInvite, offerChoices: offerChoices,
+                           hanaEnabled: hanaEnabled, hanaPassed: hanaPassed, hanaOut: hanaOut,
                            weekClosed: weekClosed)
     }
 
@@ -646,6 +674,9 @@ extension WeekRunner where R: Codable {
         self.config = config
         // A-4: バランス更新が古いセーブに固定化されないよう、決勝ライン・保留中の大会/オファーは config から取り直す
         self.finalLine = config.calendar.gpFinalLine
+        self.hanaEnabled = snap.hanaEnabled ?? false
+        self.hanaPassed = snap.hanaPassed ?? 0
+        self.hanaOut = snap.hanaOut ?? false
         // アプリ更新で回戦数を減らしても、古いセーブの段が配列の外を指さないよう丸める（code_review_2026-10-25d §2）
         self.gpStage = min(snap.gpStage, config.calendar.gpRounds.count)
         self.gpAlive = snap.gpAlive
@@ -657,7 +688,9 @@ extension WeekRunner where R: Codable {
         self.acted = snap.acted
         self.weekResults = snap.weekResults
         if snap.pendingSpec != nil {
-            self.pendingSpec = config.calendar.tournament(inWeek: snap.week) ?? snap.pendingSpec
+            self.pendingSpec = config.calendar.tournament(inWeek: snap.week)
+                ?? config.calendar.hanaRounds.first(where: { $0.week == snap.week && $0.name == snap.pendingSpec?.name })
+                ?? snap.pendingSpec
         } else {
             self.pendingSpec = nil
         }
