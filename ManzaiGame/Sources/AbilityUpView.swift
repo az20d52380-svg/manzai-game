@@ -164,31 +164,6 @@ struct AbilityUpView: View {
         ])
     }
 
-    /// ランクの色（墓石に見えないよう、G/F=真鍮・E/D=青銅・A=朱＋金枠・S=黄金）
-    static func emblemFill(_ g: String) -> AnyShapeStyle {
-        switch g {
-        // 全ランク同じ文法（メタリックのグラデ＋縁）。F/E=鉄・D/C=青銅・B/A=赤金・S=紫紺のプラチナ
-        case "S": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x5B4B9A), Color(hex: 0x2A2060)], startPoint: .top, endPoint: .bottom))
-        case "A": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xD4452F), Color(hex: 0x962012)], startPoint: .top, endPoint: .bottom))
-        case "B": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0xE0932E), Color(hex: 0xB06418)], startPoint: .top, endPoint: .bottom))
-        case "C", "D": return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x8D6350), Color(hex: 0x4E342E)], startPoint: .top, endPoint: .bottom))
-        default: return AnyShapeStyle(LinearGradient(colors: [Color(hex: 0x5A5A5A), Color(hex: 0x2C2C2C)], startPoint: .top, endPoint: .bottom))
-        }
-    }
-    /// ランクの縁色（鉄=銀・青銅=銅・金=金・S=薄紫の白金）
-    static func emblemRim(_ g: String) -> Color {
-        switch g {
-        case "S": return Color(hex: 0xC9BDF2)
-        case "A", "B": return Color(hex: 0xF1C40F)
-        case "C", "D": return Color(hex: 0xC8875A)
-        default: return Color(hex: 0xB8BEC4)
-        }
-    }
-    static func emblemText(_ g: String) -> Color {
-        switch g {
-        default: return .white
-        }
-    }
 
     /// 上段：「現在」と「能力アップ後」の2段（能力5つのランクと値）。上がる所は色と↑矢印（全画面のランクアップ演出は出さない）
     private var compareBox: some View {

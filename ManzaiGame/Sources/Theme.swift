@@ -18,7 +18,6 @@ extension Color {
 
 enum Theme {
     // 背景・地色
-    static let bg1 = Color(hex: 0xF5F0E1)
     static let bg2 = Color(hex: 0xF5F0E1)
     static let bgTop = Color(hex: 0xF5F0E1)
     static let bgBottom = Color(hex: 0xEBE3CC)
@@ -44,7 +43,6 @@ enum Theme {
     static let cExpr = Color(hex: 0xFF7A2F)    // 表現
     static let cChara = Color(hex: 0xFF5C93)   // 華
     static let cMental = Color(hex: 0x2E583C)  // メンタル
-    static let cCompat = Color(hex: 0xBD3C28)  // 相性
     static let cMoney = Color(hex: 0x77CC99)   // お金（バイト等）
 
     // 経験点通貨5種の色（正典v3・能力色と意図的に別系統＝「同じ色じゃない」ことが一目で分かる配色。全て【仮】）
@@ -57,10 +55,6 @@ enum Theme {
     // v8育成メイン用パレット（全て【仮】）
     static let gainOrange = Color(hex: 0xFF8A1E)              // 実行時の「+N」オレンジ
     static let night = Color(hex: 0x3D5A80)                   // 回復カードのドット地色
-    static let pillDark = Color(hex: 0x2B2B2B, alpha: 0.88)   // 立ち絵上のダークピル/戻る/トースト地色
-    static let botbarDark = Color(hex: 0x2B2B2B)              // 最下部の帯（年週/大会まで/体力/所持金）
-    static let staminaWarn = Color(hex: 0xF2A93B)             // 体力ゲージ 警告（<50・黄）
-    static let staminaCrit = Color(hex: 0xBD3C28)             // 体力ゲージ 危険（<20・赤＝staminaGate可視化）
 
     /// 画面の地の決まり: 生成り（kinari）＋上部の臙脂の帯（curtain）。パネルは kinariPanel＋墨の罫＋朱の左帯。
     static let kinari = Color(hex: 0xF5F0E1)
@@ -154,18 +148,6 @@ enum Theme {
         }
     }
 
-    /// ネタの型→色（v2 §2-1・7型を視覚的に書き分けるだけの表示専用トークン。判定には無関係）
-    static func kataColor(_ k: NetaKata) -> Color {
-        switch k {
-        case .王道しゃべくり: return cSense
-        case .関係性: return cChara
-        case .伏線回収: return cIdea
-        case .リターン: return cMental
-        case .非定型: return verm
-        case .瞬発: return gainOrange
-        case .華先行: return goldD
-        }
-    }
 }
 
 // MARK: §3-0 追加デザイントークン（正典: docs/uiux_vision_reply_part1_v0.md §3-0。全て【仮】）
@@ -173,7 +155,6 @@ enum Theme {
 extension Theme {
     /// Space: 4pt格子
     enum Sp {
-        static let s4: CGFloat = 4
         static let s8: CGFloat = 8
         static let s12: CGFloat = 12
         static let s16: CGFloat = 16
@@ -305,17 +286,11 @@ extension Theme {
     static let paperBottom = Color(hex: 0xF1EAD3)
     static let paperEdge = Color(hex: 0xE6D9BE)
     static let paperInk = Color(hex: 0x33301F)
-    /// 紙の上の署名・見出し（7.2:1・旧 A98B52 2.8:1 の置き換え）
-    static let sealName = Color(hex: 0x6E5020)
     /// めくり札の白紙と墨
     static let mekuri = Color(hex: 0xFFFDF6)
     static let sumi = Color(hex: 0x2B2B2B)
     /// 話者の色（俺＝青・谷口＝朱）。名前札の地は濃い版（白字 4.5:1 以上）
-    static let cOre = Color(hex: 0x4A7BE8)
     static let cOreDeep = Color(hex: 0x3566D6)
-    static let cTaniguchi = Color(hex: 0xF0533E)
-    /// 金の面の上の字
-    static let onGold = Color(hex: 0x5A3A06)
 
     // --- 色相ごとの濃い版（Deep）: 色付きの小さい文字・白字を載せる塗りの両方に使える（白地 5.5:1 以上） ---
     static let senseDeep = Color(hex: 0x1F63D1)
@@ -340,8 +315,6 @@ extension Theme {
     static let duskNoon = [Color(hex: 0xFFF7EC), Color(hex: 0xFFE9B8)]                       // 昼（平均L 約0.85）
     static let duskAfter = [Color(hex: 0xFFD9A8), Color(hex: 0xF7A878), Color(hex: 0xE98A6A)] // 放課後（約0.5）
     static let duskEve = [Color(hex: 0xF2A27A), Color(hex: 0xC98A9A), Color(hex: 0x8F86C0)]   // 宵（約0.35・藍へ寄せるが黒にしない）
-    /// 逆光の人物の縁
-    static let rimGold = gold
 
     // --- 舞台（本番）: 暖色の客席に光る舞台。暗いのは客席だけ ---
     /// 客席の闇（暖黒・純黒禁止）。旧 B2 案の 140D18 は紫寄りなので採らない
@@ -356,13 +329,7 @@ extension Theme {
     static let spotEdge = verm.opacity(0.20)
     /// 舞台板（スポットの下だけ明るい）
     static let boardsLit = Color(hex: 0xC8935A)
-    static let boardsDark = Color(hex: 0x4A3020)
-    /// 光を返す金の面（金屏風）。採点中は暗い2段、最明部は自組の優勝の瞬間だけ
-    static let goldLeafLo = Color(hex: 0x6E5426)
     static let goldLeafMid = Color(hex: 0xC1A550)
-    static let goldLeafHi = Color(hex: 0xD6BC6A)
-    /// 客電の粒・笑った客席の縁
-    static let houseLight = Color(hex: 0xFFE3A0)
     /// 下三分テロップの地（暖黒）
     static let lowerThird = Color(hex: 0x241712)
     /// 大会の格の金属色（道中＝銅／GP予選〜準決・客席から＝銀／GP決勝＝金）
