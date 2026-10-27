@@ -503,6 +503,7 @@ cd GameCore && swift test
 - `candidate_review_1026_v0.md` — 候補ブランチ9本の点検 10/26 夕（本線に merge だけで入るか）
 - `candidate_merge_matrix_1027_v0.md` — 候補16本の合わせ表 10/27 深夜（単独は全部 green・候補どうしの衝突はテスト末尾の6本と the-hana×calendar-jan の1行だけ）
 - `worktree_inventory_1027_v0.md` — 作業場所（git worktree）43個の棚卸し 10/27 深夜（入り済み17・約8.7GB・何も消していない＝キュー139）
+- `unused_parts_1027_v0.md` — 参照0の画面部品の一覧 10/27 深夜（12型＋ぶら下がり・約520行・消すかはキュー118）
 - `name_reality_check_1026_v0.md` — 固有名の実在チェック 10/26（Web 25回・有名な実在と同名0・近い5）
 - `event_reach_relax_1026_v0.md` — 出会いにくい4種の条件をゆるめたら 10/26（効いているのは上限15＝3〜4年目で使い切る）
 - `event_repeat_research_1026_v0.md` — 長期育成ゲームのイベント再発の扱い 10/26（#129 の材料・クールダウン／2回目の文面／後半専用／続き物）
