@@ -24,5 +24,8 @@
 2. 背景の作り直し（72）で使えそうな物（PlaceScene の場所の絵・WaveformView）だけ残して他を消す
 3. 今のまま
 
+## 候補ブランチ
+案1 を `claude/unused-parts-cand`（4226224）に用意＝上の12型と、消した後に参照0になった NameTag・AbilityBadge・SensuShape・SensuRibs・EventScene も消し、空になった WaIcons.swift を外した（10ファイル・約590行減）。GameCore 433／アプリ 275 green。参照0の部品を消すだけなので画面は変わらない（目視は省いた）。OK なら merge するだけ。
+
 ## 拾い方
 `python3` で Sources の `struct/enum/class/func` の名前を集め、全ソースでの出現が1回（宣言だけ）の物。#Preview の中だけで使う物はこの一覧に入らない（出現2回以上になる）。
