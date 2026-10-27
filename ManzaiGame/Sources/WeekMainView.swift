@@ -1665,42 +1665,6 @@ private struct BurstChip: Identifiable {
 }
 
 
-/// 貼り紙の折れ角（右上の三角）
-struct DogEar: Shape {
-    var size: CGFloat
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.maxX - size, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + size))
-        p.closeSubpath()
-        return p
-    }
-}
-
-/// 吹き出しの左向きのしっぽ（三角）。
-struct BubbleTail: Shape {
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.midY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        return p
-    }
-}
-
-
-/// 吹き出しの「次へ」▼：ゆるく上下に弾む（タップで進める合図）。
-struct BounceArrow: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var up = false
-    var body: some View {
-        Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
-            .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)   // 12pt 未満の例外：アイコン記号（文字ではない）
-            .offset(y: up ? 2.5 : -1.5)
-            .onAppear { guard !reduceMotion else { return }; withAnimation(Theme.Motion.r(.easeInOut(duration: 0.6).repeatForever(autoreverses: true))) { up = true } }
-    }
-}
 
 
 /// 全画面の覆いを出す時の柔らかさ（システムの提示アニメは入力を止めるので使わず、中身を 0.18 秒でふわっと出す）。

@@ -290,34 +290,6 @@ struct ShakeEffect: GeometryEffect {
     }
 }
 
-/// 能力の色付きバッジ（色弱アクセシビリティ対応・オーナー指示2026-08-02）。
-/// 色の丸ドットだけで能力を区別させない＝必ず1文字ラベル（Theme.abilityChar）を併記する。
-/// パワプロのステータス表が色でなく「弾道／ミート／パワー」等の文字見出しで区別しているのに倣う。
-struct AbilityBadge: View {
-    let ability: Ability
-    var size: CGFloat = 16
-    var body: some View {
-        Text(Theme.abilityChar(ability))
-            .font(.maru(size * 0.56, weight: .bold))
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(Theme.abilityColor(ability), in: Circle())
-    }
-}
-
-/// 経験点通貨の色付きバッジ（AbilityBadge と同型・正典v3。色弱アクセシビリティ対応で文字を併記）。
-struct CurrencyBadge: View {
-    let currency: ExpCurrency
-    var size: CGFloat = 16
-    var body: some View {
-        Text(Theme.currencyChar(currency))
-            .font(.maru(size * 0.56, weight: .bold))
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(Theme.currencyColor(currency), in: RoundedRectangle(cornerRadius: size * 0.28))
-    }
-}
-
 // MARK: 見た目の作り直し v1 のトークン（正本 docs/visual_genre_overhaul_v1.md §4-1・§4-2・§4-4。全て【仮】）
 // 画面は3つの照明状態のどれかに属する：楽屋（昼・紙）／夕景（回想・夜の日常）／舞台（本番）。
 // 暗い側は暖色（R＞G＞B）に固定＝紫を使わない（R2-03）。文字は20pt未満を4.5:1以上（K3）。

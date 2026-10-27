@@ -451,22 +451,6 @@ extension View {
     }
 }
 
-/// ランクの六角エンブレム（縦長・上下に頂点）
-struct HexEmblem: Shape {
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        let w = r.width, h = r.height
-        p.move(to: CGPoint(x: r.minX + w / 2, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + h * 0.25))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY + h * 0.75))
-        p.addLine(to: CGPoint(x: r.minX + w / 2, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.minY + h * 0.75))
-        p.addLine(to: CGPoint(x: r.minX, y: r.minY + h * 0.25))
-        p.closeSubpath()
-        return p
-    }
-}
-
 
 /// 経験点の表示用変換（内部値×10の整数）。画面に経験点の数を出す所はすべてここを通す。表示専用＝GameCore・判定は不変。
 /// 持ち分・増分は切り捨て、必要数は切り上げ（ただし内部で足りるなら持ち分の表示値を超えない）＝「14持ち・15必要なのに押せる」を出さない。

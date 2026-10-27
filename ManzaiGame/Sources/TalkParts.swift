@@ -19,18 +19,6 @@ enum SpeakerStyle {
     }
 }
 
-/// 色カプセルの名前札（白字・sub 13）
-struct NameTag: View {
-    let name: String
-    var body: some View {
-        Text(name).font(.maru(.sub)).foregroundStyle(.white)
-            .padding(.horizontal, 9).padding(.vertical, 2)
-            .background(SpeakerStyle.tagColor(name), in: Capsule())
-            .overlay(Capsule().stroke(.white, lineWidth: 2))
-            .fixedSize()
-    }
-}
-
 /// 送りの合図 ▼（話者色・小さく上下に弾む。演出ひかえめでは止まる）
 struct AdvanceCue: View {
     var color: Color = Theme.inkSub
@@ -49,43 +37,6 @@ struct AdvanceCue: View {
 }
 
 // MARK: 吹き出し（物語用＝イベント・イントロ・大会）
-
-/// 顔グラを吹き出しの左上にかぶせ、本文幅を守る（1行18〜20字・X3-04）。本文は body 17 Bold。
-struct TalkBubble: View {
-    let advice: Advice
-    var showCue: Bool = false
-    var faceSize: CGFloat = 54
-    /// 決め台詞（回想の「コンビ、組まないか」など1回きりの台詞）は title 段より大きい22pt
-    var large: Bool = false
-
-    private var name: String { advice.name ?? "俺" }
-
-    var body: some View {
-        Text(advice.text)
-            .font(large ? .maru(22, weight: .heavy) : .maru(.body)).lineSpacing(TypeStep.body.lineSpacing)
-            .foregroundStyle(Theme.ink)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 18).padding(.trailing, 26)
-            .padding(.top, faceSize * 0.5 + 6).padding(.bottom, 16)
-            .background(RoundedRectangle(cornerRadius: 14).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 2.5))
-            .overlay(alignment: .bottomTrailing) {
-                if showCue { AdvanceCue(color: SpeakerStyle.tagColor(advice.name)).padding(10) }
-            }
-            .overlay(alignment: .topLeading) {
-                HStack(alignment: .bottom, spacing: 6) {
-                    CharacterFace(spec: FaceCatalog.speaker(name), size: faceSize)
-                        .overlay(Circle().stroke(.white, lineWidth: 3))
-                        .shadow(color: Theme.ink.opacity(0.2), radius: 0, y: 2)
-                    NameTag(name: name).padding(.bottom, 4)
-                }
-                .offset(x: 10, y: -faceSize * 0.5)
-            }
-            .padding(.top, faceSize * 0.5)   // かぶせた顔の分だけ上に余白
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(Names.show(name))、\(Names.show(advice.text))")
-    }
-}
 
 // MARK: 地の文の紙
 
@@ -115,40 +66,4 @@ struct NarrationCard: View {
 
 // MARK: 選択肢カード
 
-/// 行動カードと同じ面（白＋3pt縁＋ハード影）・高さ56pt以上・押すと沈んで鳴る（PressableStyle）。
-struct ChoiceCard: View {
-    let label: String
-    var action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            Text(label).font(.maru(.body)).foregroundStyle(Theme.ink)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, minHeight: 56)
-                .padding(.horizontal, 14)
-                .background(RoundedRectangle(cornerRadius: 16).fill(.white).shadow(color: Theme.cmdShadow, radius: 0, y: 3))   // 影は形だけ（全体に掛けると中の文字にも影が付いた）
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.verm.opacity(0.85), lineWidth: 3))
-        }
-        .buttonStyle(PressableStyle())
-    }
-}
-
 // MARK: 獲得チップ
-
-/// 伸びた（gain）＝濃い版の塗りに白字／減った（loss）＝白地＋lineStrong 縁＋inkSub 字（祝わない）。
-struct GainChip: View {
-    enum Kind { case gain(Color), loss }
-    let text: String
-    let kind: Kind
-    var body: some View {
-        Text(text).font(.maru(17, weight: .heavy))
-            .foregroundStyle(fg)
-            .padding(.horizontal, 13).padding(.vertical, 6)
-            .background(bg, in: Capsule())
-            .overlay(Capsule().stroke(stroke, lineWidth: 2))
-            .shadow(color: Theme.ink.opacity(0.22), radius: 0, y: 3)
-            .fixedSize()
-    }
-    private var fg: Color { if case .gain = kind { return .white } else { return Theme.inkSub } }
-    private var bg: Color { if case .gain(let c) = kind { return c } else { return .white } }
-    private var stroke: Color { if case .gain = kind { return .white } else { return Theme.lineStrong } }
-}
