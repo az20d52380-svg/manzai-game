@@ -133,6 +133,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 深夜の定期（週96%）：点検 GameCore 433 green・golden/定数 同期 OK。候補ブランチ16本の取り込み確認＝9本はそのまま入る・7本（a11y-tap-next・yearly-goal・career-end-save・mob-roster・money-short-choice・revival-short・tv-fatigue）は本体を取り込み直した（6本はテストの末尾＝merge_candidate_tests.py・a11y は climaxNext に本体の Theme.Motion.r を入れて解いた）→7本とも GameCore 433／アプリ 271〜272 green で push。the-hana は別の作業場所で使用中のため未。
 - 10/27 夜の定期：tools/check_config_sync.py を追加（36/36 一致・わざと1つずらすと NG を確認）。キューはすべて判断待ち。週の使用量 96%。
 - 10/27 夜の定期（週95%）：索引5本 243a682・用語集の目視 d7e9f1c・香盤に「頂GP」の説明 3b31cad・お店の品書きを部屋の下へ 2cf8b50・視差効果のもれ2か所 320d47a・千秋楽の薄さ＝意図どおり・広告の口の点検＝問題なし・AX5 目視・アプリ 271 green。
 - 10/27 定期（約40分後の回）：点検 GameCore swift test 433 green・check_golden_sync OK・アプリ xcodebuild test 271 green。GameCore の EventEffect 全12種はテスト済み（未カバー無し）。キューは全件判断待ち。
