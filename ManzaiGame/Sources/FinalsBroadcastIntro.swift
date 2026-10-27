@@ -63,7 +63,7 @@ struct FinalsBroadcastIntro: View {
             if !(ProcessInfo.processInfo.environment["MZ_FIN"] ?? "").isEmpty { short = false }   // 目視用: MZ_FIN 指定中は常にフル
             #endif
             stage = startStage
-            if reduceMotion { blink = true } else { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } }
+            if reduceMotion { blink = true } else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8).repeatForever(autoreverses: true))) { blink = true } }
         }
     }
 
@@ -309,7 +309,7 @@ struct FinalsBroadcastIntro: View {
                     let y = size.height - (t * speed + Double(i) * 53).truncatingRemainder(dividingBy: size.height + 20)
                     g.fill(Path(ellipseIn: CGRect(x: x, y: y, width: 2, height: 2)), with: .color(YoseColor.kinBright.opacity(0.55)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .ignoresSafeArea().allowsHitTesting(false)
     }
@@ -446,7 +446,7 @@ struct FinalsLiveBar: View {
         .padding(.horizontal, 8).frame(height: 26)
         .background(YoseColor.kuroUrushi.opacity(0.88))
         .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1) }
-        .onAppear { if reduceMotion { blink = true } else { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } } }
+        .onAppear { if reduceMotion { blink = true } else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8).repeatForever(autoreverses: true))) { blink = true } } }
     }
 }
 

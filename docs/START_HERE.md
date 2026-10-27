@@ -11,7 +11,7 @@ CLI（Mac上）で作業を引き継ぐときは、まずこの1枚を読む。�
 ## いまの状態
 
 - **作業キューは `docs/AUTOPILOT.md` 一か所**（2026-10-13〜。対話でも自走でも上から進める・判断待ちもそこに並ぶ）。
-- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **423件 green**・アプリのテスト（`cd ManzaiGame && xcodebuild test …`）は **262件 green**（2026-10-27 時点・
+- **いまの状態は `docs/AUTOPILOT.md`（キューと「済」）が正本**。`swift test --package-path GameCore` は **423件 green**・アプリのテスト（`cd ManzaiGame && xcodebuild test …`）は **264件 green**（2026-10-27 時点・
   増えていく。赤いまま push しない）＋ `python3 tools/check_golden_sync.py`（Python⇔Swift golden 同期）。
   ※CLT単体にXCTestが無い場合は `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` を一度実行。
 - バランスの正本は `docs/canonical_v2_spec.md`（正典v2）**＋下の「後続決定の差分」**。正典v2の本文を読む時は差分表で数値を読み替える。
@@ -484,6 +484,11 @@ cd GameCore && swift test
 - `firstlook_check_1027c_v0.md` — 初見点検の続き（オファー・稽古の下位画面・名前入力・11件・経験点の内部名の漏れ等を直した）
 - `internal_name_leak_check_1027_v0.md` — 内部の名前（enum の case 名）が画面に出る所の点検（確実0・予備3）
 - `yearly_goal_display_research_1027_v0.md` — 年ごとの目標の見せ方のリサーチ（キュー132 の材料・候補 claude/yearly-goal-cand）
+- `playtest_v16.md` — 実プレイ点検 v16（5・7・10年目・崩れ0・6件＝年末の通算が隠れる等＝キュー136・137）
+- `fame_gap_y7_1027_v0.md` — 7年目の知名度36/33のずれ（v16 #5）＝別の台本の別走行で不具合ではない
+- `money_format_inventory_1027_v0.md` — お金の書式の棚卸し（7種類）と統一案（キュー135 の材料）
+- `regress_visual_1027_v0.md` — 10/27 にさわった画面の目視一巡（通常サイズ崩れ0・文字最大で軽い崩れ2）
+- `visual_check_1027d_v0.md` — 未撮影6画面の目視（確定が0でも押せる色＝キュー138）
 - `app_coverage_1026_v0.md` — アプリの表示判定の未カバーにテスト11本 10/26（判定を純関数に切り出し）
 - `code_review_2026-10-26d_v0.md` — コード点検 10/26d（本番の不具合0）
 - `code_review_2026-10-26e_v0.md` — 週の記録の書く所と読む所の突き合わせ 10/26（中1・低2）

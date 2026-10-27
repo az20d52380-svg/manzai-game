@@ -965,6 +965,83 @@ final class PracticeLabelSyncTests: XCTestCase {
     }
 }
 
+/// 広告の差し込み口（iap_design_v0 §3-6）：広告カットを持っていれば provider を呼ばない・何も出さない実装はすぐ先へ
+@MainActor
+final class AdGateTests: XCTestCase {
+    private final class SpyProvider: AdProvider {
+        var calls = 0
+        func showInterstitial(at placement: AdPlacement, completion: @escaping () -> Void) { calls += 1; completion() }
+    }
+    func testAdFreeSkipsProvider() {
+        let gate = AdGate(); let spy = SpyProvider(); gate.provider = spy
+        var done = 0
+        gate.isAdFree = { true }
+        gate.showInterstitial(at: .yearEnd) { done += 1 }
+        XCTAssertEqual(spy.calls, 0); XCTAssertEqual(done, 1); XCTAssertEqual(gate.shownCount, 0)
+        gate.isAdFree = { false }
+        gate.showInterstitial(at: .tournament) { done += 1 }
+        XCTAssertEqual(spy.calls, 1); XCTAssertEqual(done, 2); XCTAssertEqual(gate.shownCount, 1)
+    }
+    func testNoAdProviderCompletesImmediately() {
+        var done = false
+        NoAdProvider().showInterstitial(at: .yearEnd) { done = true }
+        XCTAssertTrue(done)
+    }
+}
+
+// 2026-10-27 追加：アプリ側の純粋関数（ネタ札の表示名・自動割当・GP尺・ログ行の分解・ネタおろし台詞）の現状固定。
+final class AppCoverage1027Tests: XCTestCase {
+    func testKataAndLengthDisplayNames() {
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.リターン), "リターン型")
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.非定型), "飛び道具")
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.瞬発), "畳みかけ")
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.華先行), "つかみ型")
+        XCTAssertEqual(NetaCatalog.displayName(NetaLength.短尺), "短め")
+        XCTAssertEqual(NetaCatalog.displayName(NetaLength.中尺), "ふつう")
+        XCTAssertEqual(NetaCatalog.displayName(NetaLength.長尺), "長め")
+    }
+    func testAutoKataCyclesAndHandlesNegative() {
+        let all = NetaKata.allCases
+        for id in 0..<(all.count * 2) { XCTAssertEqual(NetaCatalog.autoKata(forID: id), all[id % all.count]) }
+        XCTAssertEqual(NetaCatalog.autoKata(forID: -1), all[all.count - 1])
+    }
+    func testDefaultLengthFit() {
+        XCTAssertEqual(NetaCatalog.defaultLengthFit(for: .伏線回収), [.長尺])
+        XCTAssertEqual(NetaCatalog.defaultLengthFit(for: .華先行), [.短尺])
+        XCTAssertEqual(NetaCatalog.defaultLengthFit(for: .瞬発), [.短尺, .中尺])
+        for k in NetaKata.allCases { XCTAssertFalse(NetaCatalog.defaultLengthFit(for: k).isEmpty) }
+    }
+    func testAutoNameDeterministicAndCyclic() {
+        XCTAssertEqual(NetaCatalog.autoName(forID: 0), "商店街の福引")
+        XCTAssertEqual(NetaCatalog.autoName(forID: 5), "健康診断の結果")
+        XCTAssertEqual(NetaCatalog.autoName(forID: 50), NetaCatalog.autoName(forID: 0))
+        XCTAssertEqual(NetaCatalog.autoName(forID: -1), "自転車のパンク")
+    }
+    func testLengthForGPRound() {
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 0), .短尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 1), .短尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 2), .中尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 3), .中尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 4), .長尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 9), .長尺)
+    }
+    func testParseLogLine() {
+        let a = GameSession.parseLogLine("第3週: 地区予選 通過 +5万 / 商店街祭り 敗退")
+        XCTAssertEqual(a, [GameSession.LogPart(week: "第3週", title: "地区予選 通過", mark: "通過", prize: 5),
+                           GameSession.LogPart(week: "第3週", title: "商店街祭り 敗退", mark: "敗退", prize: 0)])
+        let b = GameSession.parseLogLine("第4週: 準決勝（客席から）")
+        XCTAssertEqual(b, [GameSession.LogPart(week: "第4週", title: "準決勝（客席から）", mark: "観戦", prize: 0)])
+        let c = GameSession.parseLogLine("第5週: バイト")
+        XCTAssertEqual(c.first?.mark, "休")
+    }
+    func testNetaOroshiDeterministicNonEmpty() {
+        for s in 0..<8 {
+            XCTAssertFalse(DialogueData.netaOroshi(salt: s).isEmpty)
+            XCTAssertEqual(DialogueData.netaOroshi(salt: s), DialogueData.netaOroshi(salt: s))
+        }
+    }
+}
+
 /// 【候補・キュー117 案A】区切りの年末でもセーブが残り、エンディングに入る時（closeCareer）に消える
 final class CareerEndSaveCandidateTests: IsolatedStoreTestCase {
     private let key = "manzai.save.v1"

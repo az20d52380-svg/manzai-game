@@ -99,7 +99,7 @@ struct TournamentResultView: View {
             ZStack {
                 // 舞台（判の前は明転・敗退はスポットを絞って色温度を下げる＝暗くはしない）
                 StageFrame(mode: revealed && !r.passed ? .loser : .lit, floorTop: 0.52)
-                    .animation(.easeInOut(duration: 0.4), value: revealed)
+                    .animation(Theme.Motion.r(.easeInOut(duration: 0.4)), value: revealed)
 
                 // 下端の座布団（観客の頭の上に載る文字・ボタンの地を黒漆で沈める）
                 VStack(spacing: 0) {
@@ -114,7 +114,7 @@ struct TournamentResultView: View {
                     waveBoard(passed: r.passed, nearMiss: nearMiss(r), burst: r.burst == true)
                         .position(x: geo.size.width / 2, y: geo.size.height * 0.645)
                         .opacity(revealedWave && !(fanActive && fanShown > 1) ? 1 : 0)   // 声の札が2枚以上並ぶ間は波形を譲る（札の下に透けて重なる崩れを避ける・順番は不変）
-                        .animation(.easeOut(duration: 0.25), value: fanShown)
+                        .animation(Theme.Motion.r(.easeOut(duration: 0.25)), value: fanShown)
                         .transition(.opacity)
                 }
 
@@ -123,7 +123,7 @@ struct TournamentResultView: View {
                     StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
                         .padding(.top, 8)
                         .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
-                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: signIn)
+                        .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6)), value: signIn)
                     // 番組の下三分（小型）：LIVE札＋コンビ名＋結成年・週。点数は出さない
                     HStack(spacing: 8) {
                         Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
@@ -167,9 +167,9 @@ struct TournamentResultView: View {
                                 .transition(.opacity)
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
-                                if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(.easeIn(duration: 0.2)) { showPass = true } }
+                                if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
                                 else if climaxPages.isEmpty { session.acknowledgeResult() }
-                                else { withAnimation(.easeInOut(duration: 0.5)) { climaxIndex = 0 } }   // ⑪ 山場へ
+                                else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.5))) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
                                 Text("次へ 進む ▶")
                             }
@@ -262,7 +262,7 @@ struct TournamentResultView: View {
         .overlay {
             if needsQual && !qualDone {   // 判の前に、予選の結果の知らせ（通知→一覧／相方のメッセージ）
                 QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: summary.year, roundName: result.name, passed: result.passed) {
-                    withAnimation(.easeOut(duration: 0.3)) { qualDone = true }
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { qualDone = true }
                 }
                 .transition(.opacity)
             }
@@ -270,7 +270,7 @@ struct TournamentResultView: View {
         .overlay {
             if needsAnnounce && !announceDone {   // 判の前に、決勝進出者の発表（五十音順の読み上げ）
                 FinalistAnnounceView(combiName: session.combiName, year: summary.year, passed: result.passed) {
-                    withAnimation(.easeOut(duration: 0.3)) { announceDone = true }
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { announceDone = true }
                 }
                 .transition(.opacity)
             }
@@ -302,7 +302,7 @@ struct TournamentResultView: View {
     /// 波形の余韻＋開示前の静止（溜め→開示の最小単位・§4-2a）→判→講評→残り。溜めは skipRequested で畳める。
     private func runReveal() async {
         let r = result
-        withAnimation(.easeOut(duration: 0.35)) { revealedWave = true }  // ①波形が先
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.35))) { revealedWave = true }  // ①波形が先
         if r.passed && !needsAnnounce { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
         await pause(0.9)
         if Task.isCancelled { return }
@@ -311,7 +311,7 @@ struct TournamentResultView: View {
         if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
         await pause(0.7)
         if Task.isCancelled { return }
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.62)) { revealed = true }   // 判の叩きつけ
+        withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.62))) { revealed = true }   // 判の叩きつけ
         slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
         if r.burst == true && !skipRequested { showBurstCutIn = true }   // ハマった夜＝斜めカットイン（約1秒で自動退場）
         if needsAnnounce {
@@ -328,17 +328,17 @@ struct TournamentResultView: View {
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { return }   // 目視用：判の直後で止める（段階の途中を撮る）
         #endif
-        withAnimation(.easeOut(duration: 0.25)) { revealedReview = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { revealedReview = true }
         try? await Task.sleep(nanoseconds: 600_000_000)
         if Task.isCancelled { return }
-        withAnimation(.easeOut(duration: 0.25)) { revealedRest = true }
-        withAnimation(.easeOut(duration: r.passed ? 1.1 : 0.8)) { countProgress = 1 }   // ④数字がカウントアップ
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { revealedRest = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: r.passed ? 1.1 : 0.8))) { countProgress = 1 }   // ④数字がカウントアップ
     }
 
     /// タップで残りを一気に出す（数字は出し切った値で止める）
     private func finishReveal() {
         revealTask?.cancel()
-        withAnimation(.easeOut(duration: 0.2)) {
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) {
             revealedWave = true; revealed = true; revealedReview = true; revealedRest = true; countProgress = 1
         }
     }
@@ -347,9 +347,9 @@ struct TournamentResultView: View {
     private func runFanVoices() async {
         let n = fanVoices.count
         guard n > 0, !skipRequested else { return }
-        withAnimation(.easeOut(duration: 0.2)) { fanActive = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { fanActive = true }
         for i in 1...n {
-            withAnimation(.easeOut(duration: 0.3)) { fanShown = i }
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { fanShown = i }
             Sound.play(.cursor)
             let t0 = fanTap
             for _ in 0..<48 {   // 2.4秒
@@ -358,7 +358,7 @@ struct TournamentResultView: View {
             }
             if skipRequested || Task.isCancelled { break }
         }
-        withAnimation(.easeOut(duration: 0.2)) { fanActive = false }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { fanActive = false }
     }
 
     /// 指定秒だけ待つ。畳む要求か取り消しで即戻る。
@@ -568,7 +568,7 @@ struct TournamentResultView: View {
         .onTapGesture {
             Sound.play(.cursor)
             if isLast { session.acknowledgeResult() }
-            else { withAnimation(.easeInOut(duration: 0.45)) { climaxIndex = i + 1 } }
+            else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.45))) { climaxIndex = i + 1 } }
         }
         .transition(.opacity)
     }
@@ -648,7 +648,7 @@ private struct RisingGlow: View {
                     let c = i % 3 == 0 ? Color.white : Color(hex: 0xFFE07A)
                     ctx.fill(Path(ellipseIn: CGRect(x: x + sin(t + seed) * 8, y: y, width: r * 2, height: r * 2)), with: .color(c.opacity(a)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .ignoresSafeArea()
     }

@@ -84,7 +84,7 @@ struct YoseTopTabBar: View {
             ForEach(tabs.indices, id: \.self) { idx in
                 let sel = idx == selectedIndex
                 Button {
-                    withAnimation(.easeOut(duration: 0.15)) { selectedIndex = idx }
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { selectedIndex = idx }
                 } label: {
                     Text(tabs[idx]).font(YoseFont.gothic(15, weight: .heavy))
                         .foregroundStyle(sel ? YoseColor.sumi : YoseColor.haiSumi)
@@ -213,11 +213,11 @@ private struct YoseToastModifier: ViewModifier {
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .task(id: m) {
                         try? await Task.sleep(nanoseconds: 1_800_000_000)
-                        withAnimation(.easeOut(duration: 0.18)) { message = nil }
+                        withAnimation(Theme.Motion.r(.easeOut(duration: 0.18))) { message = nil }
                     }
             }
         }
-        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: message)
+        .animation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.8)), value: message)
     }
 }
 extension View {
