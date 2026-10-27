@@ -232,7 +232,7 @@ struct WeekMainView: View {
         }
         .overlay(alignment: .bottom) {
             // トーストは最下帯の上+16pt（§3-5）
-            toastBar.animation(.easeOut(duration: 0.2), value: toast)
+            toastBar.animation(Theme.Motion.r(.easeOut(duration: 0.2)), value: toast)
         }
         .overlay {
             // Beat1 中は全面でタップを受けて即スキップ（＝早送り）。ビート中の誤タップで
@@ -569,7 +569,7 @@ struct WeekMainView: View {
                     .foregroundStyle(YoseColor.sumi)
                     .lineLimit(1).minimumScaleFactor(0.4)   // 大きい文字で3桁の実力が「1…」と切れた（ax3_hooks_audit_1026 M1）。既定の大きさでは縮まない
                     .contentTransition(.numericText())
-                    .animation(.easeOut(duration: 0.3), value: Int(value.rounded()))
+                    .animation(Theme.Motion.r(.easeOut(duration: 0.3)), value: Int(value.rounded()))
                     .punch(on: Int(value.rounded()), peak: 1.35)   // 整数が動いた瞬間だけ跳ねる
             }
             // 空の時は出さない（年初で器がまだ空＝何も表さない枠はバグに見える）。伸びたら現れる。
@@ -844,11 +844,11 @@ struct WeekMainView: View {
         let showBeat = session.week - (lastBeatWeek[v.id] ?? -100) > 4
         if showBeat {
             lastBeatWeek[v.id] = session.week
-            withAnimation(.easeOut(duration: 0.18)) {
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.18))) {
                 beatAdvice = DialogueData.reaction(variantID: v.id, salt: session.week, picker: session.picker())
             }
         }
-        withAnimation(.easeIn(duration: 0.12)) { pulledID = v.id }
+        withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { pulledID = v.id }
         beatTask = Task {
             try? await Task.sleep(nanoseconds: 120_000_000)
             if showBeat { try? await Task.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
@@ -904,7 +904,7 @@ struct WeekMainView: View {
             if blocked {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
                 Sound.play(.deny)
-                if !reduceMotion { withAnimation(.linear(duration: 0.15)) { shakeSeed[v.id, default: 0] += 1 } }
+                if !reduceMotion { withAnimation(Theme.Motion.r(.linear(duration: 0.15))) { shakeSeed[v.id, default: 0] += 1 } }
                 showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
                 return
             }
@@ -1233,7 +1233,7 @@ struct WeekMainView: View {
                 .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5))
                 .opacity(burstVisible ? 1 : 0)
                 .offset(y: burstVisible ? 0 : 10)
-                .animation(.spring(response: 0.28, dampingFraction: 0.7), value: burstVisible)
+                .animation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.7)), value: burstVisible)
                 .padding(.leading, 172).padding(.bottom, 80)   // 体力ゲージの右隣＝ボタンに被らない黒帯の空き
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 .allowsHitTesting(false)
@@ -1265,7 +1265,7 @@ struct WeekMainView: View {
         let key = session.year * 1000 + session.week
         guard paid > 0, session.lastDeltaWeek == session.week, rentShownKey != key, !Task.isCancelled else { return }
         rentShownKey = key
-        withAnimation(.easeOut(duration: 0.2)) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: GameEngine.roomRent(s, config: session.config),
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: GameEngine.roomRent(s, config: session.config),
                                                                   roomName: ShopView.roomNames[min(max(s.room ?? 0, 0), ShopView.roomNames.count - 1)]) }
         while rent != nil && !Task.isCancelled { try? await Task.sleep(nanoseconds: 100_000_000) }
     }
@@ -1383,9 +1383,9 @@ struct WeekMainView: View {
                     guard new < old else { return }     // 悪化方向に跨いだ時だけ明滅（黄=1回/赤=2回・§3-4）
                     Task {
                         for _ in 0..<(new == 0 ? 2 : 1) {
-                            withAnimation(.easeIn(duration: 0.15)) { gaugeFlash = true }
+                            withAnimation(Theme.Motion.r(.easeIn(duration: 0.15))) { gaugeFlash = true }
                             try? await Task.sleep(nanoseconds: 150_000_000)
-                            withAnimation(.easeOut(duration: 0.15)) { gaugeFlash = false }
+                            withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { gaugeFlash = false }
                             try? await Task.sleep(nanoseconds: 150_000_000)
                         }
                     }
@@ -1699,7 +1699,7 @@ struct BounceArrow: View {
         Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
             .font(.system(size: Font.mzScaled(9))).foregroundStyle(Theme.inkFaint)   // 12pt 未満の例外：アイコン記号（文字ではない）
             .offset(y: up ? 2.5 : -1.5)
-            .onAppear { guard !reduceMotion else { return }; withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { up = true } }
+            .onAppear { guard !reduceMotion else { return }; withAnimation(Theme.Motion.r(.easeInOut(duration: 0.6).repeatForever(autoreverses: true))) { up = true } }
     }
 }
 
@@ -1709,6 +1709,6 @@ struct FadeInOnAppear: ViewModifier {
     @State private var on = false
     func body(content: Content) -> some View {
         content.opacity(on ? 1 : 0)
-            .onAppear { withAnimation(.easeOut(duration: 0.18)) { on = true } }
+            .onAppear { withAnimation(Theme.Motion.r(.easeOut(duration: 0.18))) { on = true } }
     }
 }

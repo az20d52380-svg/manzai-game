@@ -55,7 +55,7 @@ struct AbilityUpView: View {
                             .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                             .lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
                         // 特技は画面の下に隠れやすい（目視 visual_check_q90_q106_v0）＝ここから飛べる
-                        Button { withAnimation { proxy.scrollTo("skills", anchor: .top) } } label: {
+                        Button { withAnimation(Theme.Motion.r(.default)) { proxy.scrollTo("skills", anchor: .top) } } label: {
                             Text("特技 ↓").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
                                 .padding(.horizontal, 8).padding(.vertical, 4)
                                 .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1))
@@ -207,7 +207,7 @@ struct AbilityUpView: View {
         }
         .background(YoseColor.washi)
         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
-        .animation(.easeOut(duration: 0.25), value: taps.count)
+        .animation(Theme.Motion.r(.easeOut(duration: 0.25)), value: taps.count)
     }
 
     private func compareRow(title: String, state s: GameState, after: Bool) -> some View {
@@ -277,12 +277,12 @@ struct AbilityUpView: View {
     private func plusTap(_ a: Ability, steps: Int) {
         Haptics.confirm()
         flash = a
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+        withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.5))) {
             taps += Array(repeating: a, count: steps)
             bumped = a
         }
-        Task { try? await Task.sleep(nanoseconds: 100_000_000); withAnimation(.spring(response: 0.25, dampingFraction: 0.5)) { bumped = nil } }
-        Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(.easeOut(duration: 0.25)) { flash = nil } }
+        Task { try? await Task.sleep(nanoseconds: 100_000_000); withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.5))) { bumped = nil } }
+        Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { flash = nil } }
     }
 
     private func row(_ a: Ability) -> some View {
@@ -301,7 +301,7 @@ struct AbilityUpView: View {
             .frame(width: 58, alignment: .leading)
             Button {
                 Haptics.tick()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { taps.removeAll { $0 == a } }
+                withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.7))) { taps.removeAll { $0 == a } }
             } label: {
                 Image(systemName: "minus").font(.system(size: Font.mzScaled(13), weight: .black)).accessibilityHidden(true)   // 読み上げはボタンの label だけ（a11y_check_1026_voiceover_v0 #5）
                     .foregroundStyle(canUndo ? YoseColor.sumi : YoseColor.disabledText)

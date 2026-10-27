@@ -133,7 +133,7 @@ struct S6bView: View {
         .onAppear {
             // 演出ひかえめでも元の残金を一拍見せてから0円に切り替える（数え下げの動きだけ省く＝code_review_2026-10-26f #1）
             if reduceMotion { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); counted = true } }
-            else { withAnimation(.easeInOut(duration: 1.8).delay(1.0)) { counted = true } }
+            else { withAnimation(Theme.Motion.r(.easeInOut(duration: 1.8).delay(1.0))) { counted = true } }
         }
     }
 
