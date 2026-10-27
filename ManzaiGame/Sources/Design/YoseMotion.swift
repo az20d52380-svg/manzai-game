@@ -11,7 +11,7 @@ struct YoseStampImpactModifier: ViewModifier {
         content
             .scaleEffect(isStamped || reduceMotion ? 1.0 : 2.2)
             .opacity(isStamped ? 1.0 : 0.0)
-            .animation(.spring(response: 0.22, dampingFraction: 0.55), value: isStamped)
+            .animation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55)), value: isStamped)
             .onChange(of: isStamped) { _, v in
                 if v { UINotificationFeedbackGenerator().notificationOccurred(.success) }
             }
@@ -27,8 +27,8 @@ struct YoseNumberBounceModifier: ViewModifier {
         content
             .contentTransition(.numericText(value: value))
             .scaleEffect(bump && !reduceMotion ? 1.2 : 1.0)
-            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: value)
-            .animation(.spring(response: 0.28, dampingFraction: 0.72), value: bump)
+            .animation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.72)), value: value)
+            .animation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.72)), value: bump)
             .onChange(of: value) { _, _ in
                 bump = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { bump = false }
@@ -45,7 +45,7 @@ struct YoseRowGlowModifier: ViewModifier {
             .background(YoseColor.kinBright.opacity(glow ? 0.35 : 0))
             .onChange(of: trigger) { _, _ in
                 glow = true
-                withAnimation(.easeOut(duration: 0.28)) { glow = false }
+                withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { glow = false }
             }
     }
 }
@@ -59,7 +59,7 @@ struct YoseAppearModifier: ViewModifier {
             .offset(y: shown ? 0 : 10)
             .opacity(shown ? 1 : 0)
             .onAppear {
-                withAnimation(.spring(response: 0.25, dampingFraction: 0.8).delay(delay)) { shown = true }
+                withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.8).delay(delay))) { shown = true }
             }
     }
 }

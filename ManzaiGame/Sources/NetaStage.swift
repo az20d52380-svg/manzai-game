@@ -44,7 +44,7 @@ struct NetaStageBadge: View {
         let prev = NetaStage.lastSeen[netaID]
         NetaStage.lastSeen[netaID] = idx
         guard let prev, idx > prev else { return }
-        withAnimation(.easeOut(duration: 0.2)) { glow = true }
-        Task { try? await Task.sleep(nanoseconds: 900_000_000); withAnimation(.easeIn(duration: 0.5)) { glow = false } }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { glow = true }
+        Task { try? await Task.sleep(nanoseconds: 900_000_000); withAnimation(Theme.Motion.r(.easeIn(duration: 0.5))) { glow = false } }
     }
 }
