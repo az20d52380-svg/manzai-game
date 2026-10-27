@@ -133,6 +133,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 10/27 深夜の定期（続き2）：the-hana 候補（手元だけのブランチ・216コミット遅れ・その作業場所は19時間動きなし）に本体を合わせた版を新しいブランチ claude/the-hana-candidate-r1027（d20a262）で push＝自動で解け GameCore 436／アプリ 272 green・gen_golden の差分0・同期 OK。元のブランチは触っていない。＝候補16本すべてが今の本体で green。
 - 10/27 深夜の定期（続き）：selftest 29行 失敗0（macOS に timeout コマンドが無い＝simctl launch --console を & で回して DONE を待ってから kill）。そのまま入る候補8本も本体と合わせた状態で GameCore 433／アプリ 271〜272 green＝the-hana 以外の候補15本はすべて今の本体に merge して green。
 - 10/27 深夜の定期（週96%）：点検 GameCore 433 green・golden/定数 同期 OK。候補ブランチ16本の取り込み確認＝9本はそのまま入る・7本（a11y-tap-next・yearly-goal・career-end-save・mob-roster・money-short-choice・revival-short・tv-fatigue）は本体を取り込み直した（6本はテストの末尾＝merge_candidate_tests.py・a11y は climaxNext に本体の Theme.Motion.r を入れて解いた）→7本とも GameCore 433／アプリ 271〜272 green で push。the-hana は別の作業場所で使用中のため未。
 - 10/27 夜の定期：tools/check_config_sync.py を追加（36/36 一致・わざと1つずらすと NG を確認）。キューはすべて判断待ち。週の使用量 96%。
