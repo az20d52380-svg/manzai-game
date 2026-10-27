@@ -1042,6 +1042,79 @@ final class AppCoverage1027Tests: XCTestCase {
     }
 }
 
+/// いちばん古い形のセーブ（後から足した任意の項目が全部無い）から開けるか（10/27 深夜・カバー率の点検で init(restoring:) の既定値が全部未通過だった）
+final class OldestSaveRestore1027Tests: XCTestCase {
+    func testRestoreWithAllOptionalKeysMissingFallsBackToDefaults() throws {
+        let s = GameSession(comboKind: .femaleMale)
+        s.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
+        let optionalKeys = ["pendingResult", "pendingChoiceEvent", "weekBanter", "version", "didFireLostRehearsal", "didFirePassFork",
+                            "didFireEve", "didWatchFinal", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName",
+                            "comboKind", "meetingKind", "didFireRiftWarn", "riftWarnChoice", "didShowRiftHint", "usedPicks",
+                            "usedFanLines", "shownOnce", "weeksWithoutPartner", "injuryNoticeWeeks", "writeNetaID"]
+        for k in optionalKeys { o.removeValue(forKey: k) }
+        let old = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: o))
+        let r = GameSession(restoring: old)
+        XCTAssertEqual(r.comboKind, .maleMale)
+        XCTAssertTrue(r.hasYearStart)          // 1年目＝年初の状態が無くても新規と同じ基準
+        XCTAssertEqual(r.yearHistory.count, 0)
+        XCTAssertEqual(r.debtWarnTier, 0)
+        XCTAssertFalse(r.didWatchFinal)
+        XCTAssertFalse(r.didFireRiftWarn)
+        XCTAssertFalse(r.didShowRiftHint)
+        XCTAssertFalse(r.didFireEve)
+        XCTAssertFalse(r.didFirePassFork)
+        XCTAssertFalse(r.didFireLostRehearsal)
+        XCTAssertEqual(r.weeksWithoutPartner, 0)
+        XCTAssertEqual(r.injuryNoticeWeeks, 0)
+        XCTAssertNil(r.writeNetaID)
+        XCTAssertEqual(r.week, s.week)
+        // 開いたセーブを保存し直すと、今の形（任意の項目あり）で書かれて読み直せる
+        r.saveNow()
+        let d2 = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        let again = try JSONDecoder().decode(GameSession.SaveData.self, from: d2)
+        XCTAssertEqual(again.comboKind, "maleMale")
+        XCTAssertEqual(again.debtWarnTier, 0)
+    }
+}
+
+/// 月末の支払いの内訳：部屋の上乗せは「家賃」の行にだけ乗り、合計は崩れない（10/27 深夜・未通過だった引数）
+final class RentStatementRoom1027Tests: XCTestCase {
+    func testRoomExtraGoesOnRentLineOnly() {
+        let plain = RentStatement.make(livingCost: 140_000, moneyAfter: 100_000)
+        let r = RentStatement.make(livingCost: 170_000, moneyAfter: 100_000, roomExtra: 30_000, roomName: "風呂つき")
+        XCTAssertEqual(r.lines[0].label, "家賃（風呂つき）")
+        XCTAssertEqual(r.lines[0].amount, plain.lines[0].amount + 30_000)
+        XCTAssertEqual(Array(r.lines.dropFirst()), Array(plain.lines.dropFirst()))   // 家賃以外は部屋で変わらない
+        XCTAssertEqual(r.lines.reduce(0) { $0 + $1.amount }, r.total)
+        XCTAssertEqual(r.moneyBefore, 270_000)
+        XCTAssertTrue(r.paid)
+    }
+    func testRoomNameWithoutExtraOnlyRenames() {
+        let r = RentStatement.make(livingCost: 140_000, moneyAfter: 0, roomName: "四畳半")
+        XCTAssertEqual(r.lines[0].label, "家賃（四畳半）")
+        XCTAssertEqual(r.lines.reduce(0) { $0 + $1.amount }, 140_000)
+    }
+    func testYenIsAbsoluteWithSeparators() {
+        XCTAssertEqual(RentStatement.yen(140_000), "140,000")
+        XCTAssertEqual(RentStatement.yen(-30_000), "30,000")   // 符号は画面側で付ける
+        XCTAssertEqual(RentStatement.yen(0), "0")
+    }
+}
+
+/// 購入：商品の一覧に無い ID は知らせを立てて false（StoreManager.purchase の入口・10/27 深夜）。
+/// 購入・返金の本体を SKTestSession で試したが、この sim のテストでは Product.products が空で返り通らなかった（AUTOPILOT 済 10/27 深夜 続き14）
+@MainActor
+final class StorePurchaseGuard1027Tests: XCTestCase {
+    func testUnknownProductSetsMessage() async {
+        let ok = await StoreManager.shared.purchase("com.manzaigame.mvp.nope")
+        XCTAssertFalse(ok)
+        XCTAssertEqual(StoreManager.shared.lastMessage, "商品が見つかりません")
+        XCTAssertFalse(StoreManager.shared.owns("com.manzaigame.mvp.nope"))
+    }
+}
+
 /// 年末の「来年の狙い」（候補・キュー132 案B）：今年の到達の次の段を1つ。夜逃げ・解散は出さない
 final class NextGoalTests: XCTestCase {
     private let names = GameConfig().calendar.gpRoundNames
