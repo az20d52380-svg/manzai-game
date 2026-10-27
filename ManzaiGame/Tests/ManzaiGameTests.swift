@@ -1078,3 +1078,27 @@ final class OldestSaveRestore1027Tests: XCTestCase {
         XCTAssertEqual(again.debtWarnTier, 0)
     }
 }
+
+/// 月末の支払いの内訳：部屋の上乗せは「家賃」の行にだけ乗り、合計は崩れない（10/27 深夜・未通過だった引数）
+final class RentStatementRoom1027Tests: XCTestCase {
+    func testRoomExtraGoesOnRentLineOnly() {
+        let plain = RentStatement.make(livingCost: 140_000, moneyAfter: 100_000)
+        let r = RentStatement.make(livingCost: 170_000, moneyAfter: 100_000, roomExtra: 30_000, roomName: "風呂つき")
+        XCTAssertEqual(r.lines[0].label, "家賃（風呂つき）")
+        XCTAssertEqual(r.lines[0].amount, plain.lines[0].amount + 30_000)
+        XCTAssertEqual(Array(r.lines.dropFirst()), Array(plain.lines.dropFirst()))   // 家賃以外は部屋で変わらない
+        XCTAssertEqual(r.lines.reduce(0) { $0 + $1.amount }, r.total)
+        XCTAssertEqual(r.moneyBefore, 270_000)
+        XCTAssertTrue(r.paid)
+    }
+    func testRoomNameWithoutExtraOnlyRenames() {
+        let r = RentStatement.make(livingCost: 140_000, moneyAfter: 0, roomName: "四畳半")
+        XCTAssertEqual(r.lines[0].label, "家賃（四畳半）")
+        XCTAssertEqual(r.lines.reduce(0) { $0 + $1.amount }, 140_000)
+    }
+    func testYenIsAbsoluteWithSeparators() {
+        XCTAssertEqual(RentStatement.yen(140_000), "140,000")
+        XCTAssertEqual(RentStatement.yen(-30_000), "30,000")   // 符号は画面側で付ける
+        XCTAssertEqual(RentStatement.yen(0), "0")
+    }
+}
