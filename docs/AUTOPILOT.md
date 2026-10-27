@@ -16,7 +16,7 @@
 - 自己点検（10/19 夜）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
 - アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 271本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
-- 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に36個（イベントの発生率と上限・知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。
+- 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に36個（イベントの発生率と上限・知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。check_golden_sync.py の最後でも自動で回る。
 - 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
 - 実測の決まり（2026-10-19 追記）：アプリの帯に近いのは EVENTS_APP=True（イベントの抽選をアプリと同じに）。既定にするかはオーナー判断待ち＝それまでは帯を測る時に False/True を併記する。
