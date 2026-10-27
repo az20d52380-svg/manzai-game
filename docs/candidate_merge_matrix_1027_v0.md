@@ -31,3 +31,7 @@
 | tv-fatigue-display-candidate | テレビ慣れを状態名で見せる | キュー112 |
 | week-hint-priority-candidate | 週の一言でお金と体力の警告を先に | decision_brief_1025 #4 |
 | yearly-goal-cand | 年末に「来年の狙い」を1行 | キュー132 |
+| unused-parts-cand | 参照0の画面部品・色・定数を消す（約650行減・表示は不変） | キュー118（unused_parts_1027_v0） |
+| money-format-cand | お金の書き方を案C（札＝¥◯万／¥5,000・文の中＝◯万円） | キュー135 |
+
+（10/27 深夜 追記）この2本も本体と衝突なし。unused-parts は本体のテスト末尾を含むので、テスト末尾に足した6本とは末尾でぶつかる（道具で解ける）。最新の一覧は `bash tools/check_candidates.sh`。
