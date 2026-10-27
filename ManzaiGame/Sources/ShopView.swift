@@ -17,10 +17,10 @@ struct ShopView: View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "お店", closeAction: onClose)
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money)
-            noren
             ScrollView {
                 VStack(spacing: 10) {
                     roomSection
+                    noren   // 品書きは買う品の見出し＝部屋の下に（上にあると部屋も品書きの中に見えた・visual_check_1027d #3）
                     ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.leading)
@@ -44,8 +44,8 @@ struct ShopView: View {
             Spacer()
             Text("値札を押すと買えます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
-        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 10).padding(.bottom, 6)
-        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2).padding(.horizontal, YoseMetrics.screenMargin) }
+        .padding(.top, 14).padding(.bottom, 6)
+        .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
     }
 
     // MARK: 部屋を選ぶ（キュー90・§90）

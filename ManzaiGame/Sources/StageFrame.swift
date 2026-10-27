@@ -82,7 +82,7 @@ struct StageFrame: View {
                     x += pleat * (i % 3 == 2 ? 0.35 : 0.65)
                     i += 1
                 }
-            }
+            }.accessibilityHidden(true)
             .frame(height: h * (floorTop + 0.04)).frame(maxHeight: .infinity, alignment: .top)
         }
     }
@@ -115,7 +115,7 @@ struct StageFrame: View {
                     var p = Path(); p.move(to: CGPoint(x: bx, y: size.height)); p.addLine(to: vanish)
                     ctx.stroke(p, with: .color(Color.black.opacity(0.12)), lineWidth: 1)
                 }
-            }
+            }.accessibilityHidden(true)
             // 光の映り込み（光を返す面）
             Ellipse().fill(Theme.spotCore.opacity(mode == .loser ? 0.18 : 0.35))
                 .frame(width: w * 0.55, height: (h - top) * 0.30).blur(radius: 10)
@@ -179,7 +179,7 @@ struct StageFrame: View {
                     ctx.fill(Path(roundedRect: shoulders, cornerRadius: r * 0.9), with: .color(shade))
                 }
             }
-        }
+        }.accessibilityHidden(true)
         .allowsHitTesting(false)
     }
 
@@ -199,7 +199,7 @@ struct StageFrame: View {
                         ctx.fill(Path(ellipseIn: CGRect(x: x - 5, y: -5, width: 10, height: 10)), with: .color(Theme.gold))
                         x += 14
                     }
-                }
+                }.accessibilityHidden(true)
                 .frame(height: 6)
             }
             .shadow(color: .black.opacity(0.35), radius: 8, y: 4)
@@ -301,7 +301,7 @@ struct StageCeremony: View {
         Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
         try? await Task.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)
         guard !done else { return }
-        withAnimation(.easeOut(duration: short ? 0.25 : 0.6)) { spot = 1.4 }   // スポットイン
+        withAnimation(Theme.Motion.r(.easeOut(duration: short ? 0.25 : 0.6))) { spot = 1.4 }   // スポットイン
         try? await Task.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
         guard !done else { return }
         finish()
@@ -311,7 +311,7 @@ struct StageCeremony: View {
         guard !done else { return }
         done = true
         Sound.duck(1, over: 0.4)
-        withAnimation(.easeIn(duration: 0.3)) { veil = 0 }            // 明転
+        withAnimation(Theme.Motion.r(.easeIn(duration: 0.3))) { veil = 0 }            // 明転
         onDone()
     }
 }
@@ -377,7 +377,7 @@ struct YoseAdvanceCue: View {
             .offset(y: bob ? 3 : 0)
             .onAppear {
                 guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { bob = true }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.55).repeatForever(autoreverses: true))) { bob = true }
             }
             .accessibilityHidden(true)
     }
@@ -488,7 +488,7 @@ struct StageConfettiCards: View {
                 c.rotate(by: .degrees(Double(r(3)) * 180))
                 c.fill(Path(CGRect(x: -3, y: -5, width: 6, height: 10)), with: .color(cols[i % 3]))
             }
-        }
+        }.accessibilityHidden(true)
         .allowsHitTesting(false)
     }
 }

@@ -93,7 +93,7 @@ struct ParticleBurst: View {
                                         with: .color(color))
                             }
                         }
-                    }
+                    }.accessibilityHidden(true)
                 }
             }
         }
@@ -149,7 +149,7 @@ struct SpeedLinesBurst: View {
                             ctx.stroke(path, with: .color(color.opacity(alpha)),
                                        style: StrokeStyle(lineWidth: (2.6 * (1 - p)) + 0.6, lineCap: .round))
                         }
-                    }
+                    }.accessibilityHidden(true)
                 }
             }
         }
@@ -180,10 +180,10 @@ private struct PunchModifier<T: Equatable>: ViewModifier {
             .scaleEffect(punched ? peak : 1)
             .onChange(of: value) { _, _ in
                 guard !reduceMotion else { return }
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.45)) { punched = true }
+                withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.45))) { punched = true }
                 Task {
                     try? await Task.sleep(nanoseconds: 140_000_000)
-                    withAnimation(.spring(response: 0.30, dampingFraction: 0.65)) { punched = false }
+                    withAnimation(Theme.Motion.r(.spring(response: 0.30, dampingFraction: 0.65))) { punched = false }
                 }
             }
     }
@@ -211,7 +211,7 @@ private struct ScreenFlashModifier: ViewModifier {
         .onChange(of: trigger) { _, _ in
             // 光過敏の逃げ道: 演出ひかえめでは弱く（最大0.12）ゆっくり戻す
             opacity = reduceMotion ? min(strength, 0.12) : strength
-            withAnimation(.easeOut(duration: reduceMotion ? 0.5 : 0.32)) { opacity = 0 }
+            withAnimation(Theme.Motion.r(.easeOut(duration: reduceMotion ? 0.5 : 0.32))) { opacity = 0 }
         }
     }
 }
@@ -248,7 +248,7 @@ private struct ScreenShakeModifier: ViewModifier {
             .modifier(ScreenShakeEffect(intensity: intensity, animatableData: phase))
             .onChange(of: trigger) { _, _ in
                 guard !reduceMotion else { return }
-                withAnimation(.linear(duration: 0.38)) { phase += 1 }
+                withAnimation(Theme.Motion.r(.linear(duration: 0.38))) { phase += 1 }
             }
     }
 }

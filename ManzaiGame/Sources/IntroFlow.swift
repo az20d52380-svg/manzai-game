@@ -795,13 +795,13 @@ struct IntroFlowView: View {
         ZStack {
             switch stage {
             case .title:
-                S1TitleView { withAnimation(.easeInOut(duration: 0.4)) { stage = .comboKind } }
+                S1TitleView { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = .comboKind } }
                     .transition(.opacity)
             case .comboKind:
                 ComboKindPickerView { k in
                     kind = k
                     Names.setKind(k)   // 結成届・回想の「俺／私」・顔・衣装が選んだ形で出る
-                    withAnimation(.easeInOut(duration: 0.4)) { stage = .nameEntry }
+                    withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = .nameEntry }
                 }
                 .transition(.opacity)
             case .nameEntry:
@@ -810,7 +810,7 @@ struct IntroFlowView: View {
                     name = n.isEmpty ? "あなたのコンビ" : n
                     myName = me; partnerName = partner; meeting = m
                     Names.set(me: me, partner: partner)
-                    withAnimation(.easeInOut(duration: 0.4)) { stage = .reminiscence }
+                    withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = .reminiscence }
                 }
                 .transition(.opacity)
             case .reminiscence:
