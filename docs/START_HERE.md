@@ -222,6 +222,7 @@ cd GameCore && swift test
 - `dissolution_rift_measure_v0.md` — 途中解散（すれ違いゲージ）の実測 v0・2026-10-15
 - `dissolution_rift_spec_v1.md` — 途中解散（すれ違いゲージ）の正典案 v1・2026-10-15
 - `effects_design_argon_v1.md` — 演出・エフェクト設計 v1（寄席と計器）・2026-10-15
+- `effects_impl_inventory_1101_v0.md` — 演出設計 v1 の19項目の実装棚卸し（接続済み14・無い4・外した1・未接続の上位5つ）・2026-11-01
 - `effects_redo_argon_v1.md` — 優勝演出の解剖と再設計仕様 v1・2026-10-15
 - `endings_distribution_v0.md` — エンディング判定案の分布 v0（実測）・2026-10-16
 - `event_backgrounds_argon_v1.md` — イベント会話背景のデザイン仕様 v1・2026-10-15

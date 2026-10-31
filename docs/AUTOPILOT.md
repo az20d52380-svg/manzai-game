@@ -262,3 +262,4 @@
 - 10/27 朝 定期 済：selftest（run_selftest.sh）[ST] 29行・DONE・失敗0（週99%）
 - 10/27 昼前 定期 済：点検＝GameCore 433 green・golden/定数同期OK（週99%のため軽い点検のみ）
 - 10/27 昼 定期 済：run_checks＝GameCore 433・アプリ 276 green・同期3項目/定数36個 一致（週99%のため点検のみ）
+- 11/01 定期 済：点検（run_checks）＝GameCore・アプリ 276 green・同期3項目/定数36個 一致。#84 用に演出の実装棚卸し docs/effects_impl_inventory_1101_v0.md（Gemini は Argon が応答なし→3.1 Pro で確認中）
