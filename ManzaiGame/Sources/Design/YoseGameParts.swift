@@ -47,6 +47,7 @@ struct YoseVitalMoneyBar: View {
                 (Text("\(stamina)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                 + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu))
                     .lineLimit(1).fixedSize()
+                    .yoseNumberBounce(Double(stamina))   // 増減の瞬間に小さく跳ねる（effects_design §2 #8・表示のみ）
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("体力 \(maxStamina)のうち\(stamina)")
@@ -55,6 +56,7 @@ struct YoseVitalMoneyBar: View {
                 HStack(spacing: 3) {
                     Text("知名度").font(YoseFont.gothic(12, weight: .bold)).lineLimit(1).fixedSize().foregroundStyle(YoseColor.kinari.opacity(0.8))
                     Text("\(fame)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .yoseNumberBounce(Double(fame))   // §2 #9
                     if let fameDelta, fameDelta > 0 {
                         Text("↑+\(fameDelta)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
                     }
@@ -66,6 +68,7 @@ struct YoseVitalMoneyBar: View {
             Text("\(money < 0 ? "-" : "")¥\(abs(money).formatted(.number))").font(YoseFont.number(17, weight: .heavy))   // 借金は「-¥100,000」（「¥-100,000」は符号の位置が不自然＝hooks_audit_1026）
                 .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinBright)
                 .lineLimit(1).fixedSize()
+                .yoseNumberBounce(Double(money))   // §2 #7（お金の出入り）
                 .accessibilityLabel(money < 0 ? "所持金 マイナス\(-money)円、借金" : "所持金 \(money)円")
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
