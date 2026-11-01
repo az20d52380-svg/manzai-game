@@ -69,11 +69,14 @@ struct YoseButtonStyle: ButtonStyle {
     var badgeText: String? = nil
     /// 注意を促す強調（朱の太枠＋山吹の薄塗り）。押せる状態の時だけ
     var highlight = false
+    /// true=押下音を鳴らさない（action 側で別の音を鳴らす時の二重鳴り防止。PressableStyle.silent と同じ考え方）
+    var silent = false
 
-    init(_ role: YoseButtonRole = .secondary, badgeText: String? = nil, highlight: Bool = false) {
+    init(_ role: YoseButtonRole = .secondary, badgeText: String? = nil, highlight: Bool = false, silent: Bool = false) {
         self.role = role
         self.badgeText = badgeText
         self.highlight = highlight
+        self.silent = silent
     }
 
     private var depth: CGFloat {
@@ -133,7 +136,7 @@ struct YoseButtonStyle: ButtonStyle {
             )
             .padding(.bottom, depth)   // 影ぶんの高さを確保（押下時の沈みで隣が動かない）
             .animation(Theme.Motion.r(.easeOut(duration: 0.06)), value: configuration.isPressed)
-            .onChange(of: configuration.isPressed) { _, p in if p && isEnabled { YoseHaptic.press() } }
+            .onChange(of: configuration.isPressed) { _, p in if p && isEnabled { YoseHaptic.press(); if !silent { Sound.play(.cursor) } } }
     }
 }
 
