@@ -36,6 +36,11 @@ struct YoseVitalMoneyBar: View {
     var fameDelta: Int? = nil
     var staminaColor: Color = Color(hex: 0x3E8E57)   // 黒帯の上でも満タンが読める若竹色
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize   // 起動中に文字の大きさを変えた時も描き直す（19l §2-9）
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// お金の出入りの浮き札（§2 #7）：変わった瞬間に「+¥3,000／-¥3,000」を所持金の上に0.9秒だけ出す。表示のみ
+    @State private var moneyFloat: Int? = nil
+    @State private var moneyFloatUp = false
+    @State private var moneyFloatSeq = 0
 
     var body: some View {
         let big = dynamicTypeSize >= .large && Font.mzScaled(10) > 11   // 大きい文字サイズでは体力ゲージを縮めて、知名度・借金・所持金を潰さない
@@ -69,6 +74,30 @@ struct YoseVitalMoneyBar: View {
                 .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinBright)
                 .lineLimit(1).fixedSize()
                 .yoseNumberBounce(Double(money))   // §2 #7（お金の出入り）
+                .overlay(alignment: .topTrailing) {
+                    if let d = moneyFloat {
+                        Text("\(d > 0 ? "+" : "-")¥\(abs(d).formatted(.number))")
+                            .font(YoseFont.number(12, weight: .heavy))
+                            .foregroundStyle(d > 0 ? YoseColor.kinBright : YoseColor.shu)
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(YoseColor.kuroUrushi)
+                            .overlay(Rectangle().stroke(d > 0 ? YoseColor.kin : YoseColor.shu, lineWidth: 1))
+                            .fixedSize()
+                            .offset(y: moneyFloatUp ? -30 : -18)
+                            .opacity(moneyFloatUp ? 0 : 1)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .onChange(of: money) { old, new in
+                    guard new != old, !reduceMotion else { return }
+                    moneyFloatSeq += 1
+                    let seq = moneyFloatSeq
+                    moneyFloat = new - old
+                    moneyFloatUp = false
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.9).delay(0.25))) { moneyFloatUp = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { if moneyFloatSeq == seq { moneyFloat = nil } }
+                }
                 .accessibilityLabel(money < 0 ? "所持金 マイナス\(-money)円、借金" : "所持金 \(money)円")
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
