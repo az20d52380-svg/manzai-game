@@ -38,7 +38,7 @@ HANA_PRIZE = (2_500_000, 8)
 
 # 既定＝全部入り（M8D0.6・p 中間 k=0.75・配り方c・帯0.7・ライン補正なし・周回 経験中/所持金中・温泉は体力だけ）
 BASE = dict(yrs=15, M=8.0, D=0.6, k=0.75, w="c", band=0.7, r3=0.0, qf=0.0, sf=0.0, fn=0.0,
-            ex=4.0, excap=160.0, mo=3.0, onsen=1, rr=0, wr=0.5, wg=1.0, wf=2.0, rv=0.0, bs=0, cp=0.0, bud=0.0)
+            ex=4.0, excap=160.0, mo=3.0, onsen=1, rr=0, wr=0.5, wg=1.0, wf=2.0, rv=0.0, bs=0, cp=0.0, bud=0.0, hl=0.0)
 VAR = {
     "T10":  dict(yrs=10, M=0, D=1.0, k=0, band=1.0, ex=0, mo=0, onsen=0),   # 今（10年制・何も入れない）
     "F15":  dict(k=0, band=1.0, ex=0, mo=0, onsen=0),                        # 15年(M8D0.6)だけ
@@ -126,7 +126,7 @@ def setup(c, P, neta, female):
     fl0, rl0 = C.GP_FINAL_LINE + c["fn"], C.GP_REVIVAL_LINE + c["fn"] + c["rv"]
     if female:
         import exp_the_hana_1025_v0 as H
-        H.install(HANA_LINES, *HANA_PRIZE)
+        H.install(tuple(x + c["hl"] for x in HANA_LINES), *HANA_PRIZE)   # hl=THE HANA の4段のラインを一律 +hl
     s_ref = [None]
     install_exp(c, s_ref)
     install_meta(c, P)
