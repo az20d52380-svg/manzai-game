@@ -1032,7 +1032,7 @@ struct WeekMainView: View {
             }
         }
         .buttonStyle(YoseButtonStyle(.command, badgeText: c == .能力アップ && unspentBeforeStage ? "未振分あり" : nil,
-                                       highlight: c == .能力アップ && unspentBeforeStage))
+                                       highlight: c == .能力アップ && unspentBeforeStage, silent: true))
     }
 
     /// カードの顔（貼り紙）: アイコン箱＋名前／説明／伸び（経験点は正本の5色）／コスト（所持金・体力）。
