@@ -263,4 +263,4 @@
 - 10/27 昼前 定期 済：点検＝GameCore 433 green・golden/定数同期OK（週99%のため軽い点検のみ）
 - 10/27 昼 定期 済：run_checks＝GameCore 433・アプリ 276 green・同期3項目/定数36個 一致（週99%のため点検のみ）
 - 11/01 定期 済：点検（run_checks）＝GameCore・アプリ 276 green・同期3項目/定数36個 一致。#84 用に演出の実装棚卸し docs/effects_impl_inventory_1101_v0.md（Gemini は Argon が応答なし→3.1 Pro で確認中）
-- 11/01 定期 済：#84 の上位2つを候補ブランチに（本体未接続・オーナー確認待ち）。①claude/button-press-se-cand（2cc7468）＝寄席ボタンの押下にも軽いクリック音（振動だけ→振動＋音）・action で音を鳴らす3か所は silent・迷った3か所は鳴らす側のまま＝docs/button_press_se_cand_1101_v0.md（ブランチ内）。ビルド OK・アプリのテストは xcodebuild の残りプロセスと重なって未完＝次の回で再実行。②claude/vitalbar-numberpop-cand（75a1bbc）＝黒帯の体力・知名度・所持金が変わった瞬間に数字が跳ねる（既存 yoseNumberBounce）・ビルド OK。どちらも二重鳴り・体感は実機タップでの確認が要る。
+- 11/01 定期 済：#84 の上位2つを候補ブランチに（本体未接続・オーナー確認待ち）。①claude/button-press-se-cand（2cc7468）＝寄席ボタンの押下にも軽いクリック音（振動だけ→振動＋音）・action で音を鳴らす3か所は silent・迷った3か所は鳴らす側のまま＝docs/button_press_se_cand_1101_v0.md（ブランチ内）。決勝の送り2つも silent に（advance が音を管理・7人目前の全SE断）＝追いコミットあり・アプリ 276 green。②claude/vitalbar-numberpop-cand（75a1bbc）＝黒帯の体力・知名度・所持金が変わった瞬間に数字が跳ねる（既存 yoseNumberBounce）・ビルド OK。どちらも二重鳴り・体感は実機タップでの確認が要る。
