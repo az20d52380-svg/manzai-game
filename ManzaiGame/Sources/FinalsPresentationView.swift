@@ -171,7 +171,7 @@ struct FinalsPresentationView: View {
                 if beat < .result, beat != .perform, !(beat == .duel && revealVotes < 7) {
                     // 送りは下部固定の朱の主ボタン1つ（画面のどこをタップしても進む仕様は不変・押し場所を見せるだけ）
                     Button { if ceremonyDone { advance() } } label: { Text(advanceLabel) }
-                        .buttonStyle(YoseButtonStyle(.primary))
+                        .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
                         .padding(.bottom, 6)
                 }
             }
@@ -1009,7 +1009,7 @@ struct FinalsPresentationView: View {
             }
             if revealVotes < 7 {
                 Button { advance() } label: { Text("次の審査員札をめくる（\(revealVotes)/7）▶") }
-                    .buttonStyle(YoseButtonStyle(.primary))
+                    .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
             } else {
                 YTelop(text: "——開票、出揃った。", size: 16, color: YoseColor.kinBright)
             }
