@@ -4,6 +4,8 @@
 土台＝推奨 A（k=0.5・準決勝+6・決勝/復活+1・M2・D0.6）＋周回ボーナス 型1（経験 4/点・上限160／所持金 3万/点・上限100万）。
 足す天井のつまみ（周回の点 P）：
   ja,jp : 成長予算（キャリア累計）の上乗せ J0 = ja·P^jp（dynasty_v2_research §5 の J0 曲線の形・前倒しで一度に足す）
+  jt,jq : 頂点寄せの予算 J0 に +jt·(P/38)^jq（集めきった時の1年目用。1年目の実力は予算で止まるため）
+  cbp   : cb の曲線の形（+cb·P^cbp）
   cb    : 年の成長上限 CAP_CURVE の基準と下限に +cb·P（canon_v2.apply の才能解放 +0.02/pt と同じ形・累計予算が毎年少しずつ厚くなる）
   dd    : 演技系の上限 ABILITY_CAP と逓減 GROWTH_DECAY_D を 120+dd·P（trophy_design_v1 の「D=120+pt」の形）
   cp    : 初期の相性 +cp·P（上限6・exp_calib_all_1101 と同じ）
@@ -26,7 +28,7 @@ import sim_career as C
 import exp_calib_all_1101_v0 as E
 
 A = dict(k=0.5, sf=6.0, fn=1.0, M=2.0, D=0.6)
-EXTRA = dict(ja=0.0, jp=1.0, cb=0.0, dd=0.0, cg=0.0, ca=0.0, cam=10.0, cpw=1.0, ex2=0.0, exq=1.0, sm=0.27)
+EXTRA = dict(ja=0.0, jp=1.0, jt=0.0, jq=4.0, cb=0.0, cbp=1.0, dd=0.0, cg=0.0, ca=0.0, cam=10.0, cpw=1.0, ex2=0.0, exq=1.0, sm=0.27)
 VAR = {
     "A":   dict(),                                   # 型1だけ（1101 の推奨 A そのまま）
 }
@@ -56,7 +58,7 @@ def setup(c, P):
         rest = {k: v for k, v in E.SPLIT.items() if k != "maai"}; t = sum(rest.values())
         E.SPLIT.clear(); E.SPLIT.update({k: v * (1 - c["sm"]) / t for k, v in rest.items()}); E.SPLIT["maai"] = c["sm"]
     # 予算の上乗せ J0 は E.setup の patch_growth に bud·P で渡す（その他のつまみは setup_after）
-    J0 = c["ja"] * (P ** c["jp"]) if P > 0 else 0.0
+    J0 = (c["ja"] * (P ** c["jp"]) + c["jt"] * (P / 38.0) ** c["jq"]) if P > 0 else 0.0
     c["bud"] = J0 / P if P > 0 else 0.0          # E.setup は gb = bud·P を累計予算に足す
     patch_career()
     return J0
@@ -64,7 +66,8 @@ def setup(c, P):
 def setup_after(c, P):
     """E.setup（canon_v2.apply が CAP_CURVE を戻す）の後に入れるつまみ"""
     base = C.CAP_CURVE
-    C.CAP_CURVE = (base[0] + c["cb"] * P, base[1], base[2] + c["cb"] * P)   # canon_v2.apply の才能解放と同じ形（基準と下限）
+    lift = c["cb"] * P ** c["cbp"] if P > 0 else 0.0
+    C.CAP_CURVE = (base[0] + lift, base[1], base[2] + lift)   # canon_v2.apply の才能解放と同じ形（基準と下限）
     if c["dd"]:
         B.ABILITY_CAP = 120 + c["dd"] * P
         B.GROWTH_DECAY_D = 120 + c["dd"] * P
