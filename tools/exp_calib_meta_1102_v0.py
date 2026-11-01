@@ -8,6 +8,8 @@
   dd    : 演技系の上限 ABILITY_CAP と逓減 GROWTH_DECAY_D を 120+dd·P（trophy_design_v1 の「D=120+pt」の形）
   cp    : 初期の相性 +cp·P（上限6・exp_calib_all_1101 と同じ）
   ca,cam: 初期の相性 +ca·P（上限 cam・既定10）。解散の原因側（相性が低いとすれ違いがたまる）を直す案。cp と同じ物で上限だけ違う
+  cpw   : 相性の曲線の形（+ca·P^cpw・上限 cam）。0.5 なら前寄せ（2周目から効く）
+  ex2,exq: 型1 の上に足す初期経験点 ex2·(P/38)^exq（上限なし・配分は型1と同じ）。頂点寄せ（集めきった時の1年目用）
   sm    : 型1の初期経験点のうち「間」（ネタ合わせの通貨）に入れる割合（既定 0.27）。0 にすると残りを比で配り直す
           ＝原因側の案（初期経験点で間が足りてしまい、ボットが相性の上がるネタ合わせを選ばなくなるのを防ぐ）
   cg    : 相性の上限 COMPAT_CAP を +cg·P（参考）
@@ -24,7 +26,7 @@ import sim_career as C
 import exp_calib_all_1101_v0 as E
 
 A = dict(k=0.5, sf=6.0, fn=1.0, M=2.0, D=0.6)
-EXTRA = dict(ja=0.0, jp=1.0, cb=0.0, dd=0.0, cg=0.0, ca=0.0, cam=10.0, sm=0.27)
+EXTRA = dict(ja=0.0, jp=1.0, cb=0.0, dd=0.0, cg=0.0, ca=0.0, cam=10.0, cpw=1.0, ex2=0.0, exq=1.0, sm=0.27)
 VAR = {
     "A":   dict(),                                   # 型1だけ（1101 の推奨 A そのまま）
 }
@@ -75,10 +77,12 @@ def job(a):
     J0 = setup(c, P)
     rec, st = E.setup(c, P, neta, False)
     setup_after(c, P)
-    if c["ca"] > 0 and P > 0:
-        add = min(c["cam"], c["ca"] * P); on = C.new_state
+    if (c["ca"] > 0 or c["ex2"] > 0) and P > 0:
+        add = min(c["cam"], c["ca"] * P ** c["cpw"]); ex2 = c["ex2"] * (P / 38.0) ** c["exq"]; on = C.new_state
         def new_state(*a_, **kw):
-            s = on(*a_, **kw); s.compat = min(float(B.COMPAT_CAP), s.compat + add); return s
+            s = on(*a_, **kw); s.compat = min(float(B.COMPAT_CAP), s.compat + add)
+            for cur, r in E.SPLIT.items(): setattr(s, "exp_" + cur, getattr(s, "exp_" + cur) + ex2 * r)
+            return s
         C.new_state = new_state
     pol = E.S2.make2(E.BOTS[bi])     # ボットは差し替えの後に作る
     w = dict(wins=[], ds=None, c3=None)
