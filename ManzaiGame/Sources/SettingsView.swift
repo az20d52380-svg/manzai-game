@@ -201,8 +201,8 @@ struct SettingsView: View {
 
 /// 出荷情報の置き場（監査G-02/G-11/H-06）。名前とURLはオーナー確定待ち＝ここだけ書き換える。
 enum AppInfo {
-    /// アプリ名（ストア名・ホーム画面名と揃える）。確定前は作業名。
-    static let displayName = "四分の夜"
+    /// アプリ名（ストア名・ホーム画面名と揃える）。2026-11-02 オーナー確定。
+    static let displayName = "漫才王になろう"
     /// プライバシーポリシーのURL（審査5.1.1で必須）。nil の間は設定画面に行を出さない＝申請前に必ず埋める。
     static let privacyPolicyURL: URL? = nil
     static var version: String {

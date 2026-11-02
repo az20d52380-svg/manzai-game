@@ -399,7 +399,7 @@ struct S1TitleView: View {
     /// 寄席大看板（黒漆＋金枠＋朱の内枠）
     private var signboard: some View {
         VStack(spacing: 8) {
-            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(48, weight: .black),
+            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(40, weight: .black),
                              fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 2.5, dropShadowY: 3)
             Text("――漫才師、育成。").font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinBright)
         }
