@@ -69,6 +69,20 @@ PAIRS = {
     "tourneyExpRoundStep":  C.TOURNEY_EXP_ROUND_STEP,
     "tourneyExpRevival":    C.TOURNEY_EXP_REVIVAL,
     "tourneyExpFinal":      C.TOURNEY_EXP_FINAL,
+    # 周回 案2＋型1（11/02・calibration_meta_1102_v0 §5）
+    "metaTopPoints":        C.META_TOP_POINTS,
+    "metaCapLiftCoef":      C.META_CAP_LIFT_COEF,
+    "metaCapLiftExp":       C.META_CAP_LIFT_EXP,
+    "metaBudgetTop":        C.META_BUDGET_TOP,
+    "metaTopExp":           C.META_TOP_EXP,
+    "metaStartCompatCoef":  C.META_START_COMPAT_COEF,
+    "metaStartCompatExp":   C.META_START_COMPAT_EXP,
+    "metaStartCompatCap":   C.META_START_COMPAT_CAP,
+    "metaStartExpPerPoint": C.META_START_EXP_PER_POINT,
+    "metaStartExpCap":      C.META_START_EXP_CAP,
+    "metaStartExpTop":      C.META_START_EXP_TOP,
+    "metaStartMoneyPerPoint": C.META_START_MONEY_PER_POINT,
+    "metaStartMoneyCap":    C.META_START_MONEY_CAP,
 }
 
 def swift_defaults(paths):

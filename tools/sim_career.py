@@ -87,6 +87,45 @@ def tourney_exp(s, pw, kind):
     for cur in B.CURRENCIES:
         B.credit_currency(s, cur, tot * TOURNEY_EXP_UNIT * TOURNEY_EXP_SPLIT)
 
+# 周回ボーナス（オーナー決定 11/02・docs/calibration_meta_1102_v0.md §5 推奨 案2＋型1）【仮】
+# 周回の点 P＝トロフィーpt＋図鑑の数（meta_start_bonus_1020_v0 の数え方・最大38）。P=0 では全部0＝1周目と golden は変わらない。乱数なし
+META_POINTS = 0                 # new_state の既定の点（外から渡す口。アプリは GameState(config:metaPoints:)）
+META_TOP_POINTS = 38.0          # 集めきり（頂点の束の基準）
+META_CAP_LIFT_COEF = 0.2        # 年の成長上限 CAP_CURVE の基準と下限に +0.2·P^0.3（canon_v2 の才能解放と同じ位置）
+META_CAP_LIFT_EXP = 0.3
+META_BUDGET_TOP = 36.0          # 累計予算に +36·(P/38)^8（頂点の束）
+META_TOP_EXP = 8.0
+META_START_COMPAT_COEF = 2.27   # 初期の相性 +min(14, 2.27·√P)（COMPAT_CAP で止める）
+META_START_COMPAT_EXP = 0.5
+META_START_COMPAT_CAP = 14.0
+META_START_EXP_PER_POINT = 4.0  # 型1：初期経験点 4/点・上限160
+META_START_EXP_CAP = 160.0
+META_START_EXP_TOP = 300.0      # 頂点の束：初期経験点 +300·(P/38)^8（上限なし）
+META_START_EXP_SPLIT = {"hirameki": .35, "maai": .27, "goi": .18, "sonzaikan": .10, "tanryoku": .10}
+META_START_MONEY_PER_POINT = 30_000   # 型1：初期の所持金 3万/点・上限100万
+META_START_MONEY_CAP = 1_000_000
+
+def meta_cap_lift(P):
+    return META_CAP_LIFT_COEF * P ** META_CAP_LIFT_EXP if P > 0 else 0.0
+
+def meta_budget(P):
+    return META_BUDGET_TOP * (P / META_TOP_POINTS) ** META_TOP_EXP if P > 0 else 0.0
+
+def apply_meta_start(s, P):
+    """結成時の周回ボーナス（GameState.init(config:metaPoints:) の鏡像）。型1 → 相性 → 頂点の経験点 の順（実測と同じ）"""
+    s.meta_points = P
+    if P <= 0:
+        return
+    tot_e = min(META_START_EXP_CAP, META_START_EXP_PER_POINT * P)
+    for cur, r in META_START_EXP_SPLIT.items():
+        setattr(s, "exp_" + cur, getattr(s, "exp_" + cur) + tot_e * r)
+    s.money += min(META_START_MONEY_CAP, META_START_MONEY_PER_POINT * P)
+    add = min(META_START_COMPAT_CAP, META_START_COMPAT_COEF * P ** META_START_COMPAT_EXP)
+    s.compat = min(float(B.COMPAT_CAP), s.compat + add)
+    ex2 = META_START_EXP_TOP * (P / META_TOP_POINTS) ** META_TOP_EXP
+    for cur, r in META_START_EXP_SPLIT.items():
+        setattr(s, "exp_" + cur, getattr(s, "exp_" + cur) + ex2 * r)
+
 def late_growth_factor(k):
     """成長予算の累計に足す k 年目の分の倍率（10年目までは1.0）"""
     return LATE_GROWTH_DECAY ** (k - (GP_LATE_START_YEAR - 1)) if k >= GP_LATE_START_YEAR else 1.0
@@ -694,7 +733,7 @@ BOTS = (CareerBalanced, CareerSmart)
 # 1キャリア（最大10年）を回す
 # ============================================================
 
-def new_state(init_ability=None, compat=None):
+def new_state(init_ability=None, compat=None, meta_points=None):
     s = B.S()
     if init_ability is not None:
         s.sense = s.idea = s.expr = s.chara = s.mental = float(init_ability)
@@ -704,6 +743,7 @@ def new_state(init_ability=None, compat=None):
         s.compat = float(compat)
     if NETA_ON:
         s.netas = [_neta_new()]   # 結成時の初ネタ1本
+    apply_meta_start(s, META_POINTS if meta_points is None else meta_points)   # 周回ボーナス（P=0 なら何もしない）
     return s
 
 def enter_tournament(s, pol, t, rng):
@@ -828,10 +868,14 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
     B.reset_yearly_items(s)    # その年だけのアイテム効果（GameCore WeekRunner.init と同位置・未購入は恒等）
     if CAP_CURVE is not None:
         base, slope, floor = CAP_CURVE
+        P = getattr(s, "meta_points", 0)
+        if P > 0:                          # 周回：年の成長上限の基準と下限を持ち上げる（案2・P=0 は従来と同値）
+            lift = meta_cap_lift(P)
+            base, floor = base + lift, floor + lift
         if CAREER_BUDGET:
             # キャリア累計予算: 結成からの成長総量に天井（初期ボーナスは前借り済み・_ygはリセットしない）
-            B.YEAR_GROWTH_CAP = sum(late_growth_factor(k) * max(floor, base - slope * (k - 1))
-                                    for k in range(1, min(year, GROWTH_END_YEAR) + 1))
+            B.YEAR_GROWTH_CAP = meta_budget(P) + sum(late_growth_factor(k) * max(floor, base - slope * (k - 1))
+                                                     for k in range(1, min(year, GROWTH_END_YEAR) + 1))
             if not hasattr(s, "_yg"):
                 s._yg = 0.0
         else:

@@ -54,16 +54,19 @@ PATTERN = [("train", "ネタ作り"), ("train", "ネタ合わせ"), ("job", "標
            ("rest", "気分転換"), ("train", "ネタ見せ会"), ("job", "楽"),
            ("rest", "相方と過ごす")]
 
-def year_budget(year):
+def year_budget(year, P=0):
     base, slope, floor = C.CAP_CURVE
-    return sum(C.late_growth_factor(k) * max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
+    if P > 0:   # 周回の点（golden は点0＝この分岐は通らない・sim_career.run_year と同式）
+        lift = C.meta_cap_lift(P)
+        base, floor = base + lift, floor + lift
+    return C.meta_budget(P) + sum(C.late_growth_factor(k) * max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
 
 class _GoPolicy:
     choose_invite = None   # golden 台本は誘いに「行く」
 
 def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line=None, trace=None, pattern=None):
     s.stamina = 100.0
-    B.YEAR_GROWTH_CAP = year_budget(year)   # キャリア累計予算（s._ygはリセットしない）
+    B.YEAR_GROWTH_CAP = year_budget(year, getattr(s, "meta_points", 0))   # キャリア累計予算（s._ygはリセットしない）
     gp_stage = 1 if gp_seed else 0   # シード組（前年準々以上）は2回戦から
     gp_entry_paid = False
     gp_alive, finalist, revival = (not seed_final), seed_final, False   # 王者シード: 予選免除・決勝直行

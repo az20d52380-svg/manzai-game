@@ -143,6 +143,24 @@ public struct GameConfig {
     public var lateGrowthDecay = 0.6
     public var lateGrowthStartYear = 11
 
+    // --- 周回ボーナス（オーナー決定 11/02・docs/calibration_meta_1102_v0.md §5 推奨 案2＋型1）【仮】 ---
+    // 周回の点 P＝トロフィーpt＋図鑑の数（最大38）。GameState(config:metaPoints:) で渡す。P=0 では全部0＝1周目と golden は不変。乱数なし。
+    // Python: sim_career.META_* / apply_meta_start / meta_cap_lift / meta_budget
+    public var metaTopPoints = 38.0            // 集めきり（頂点の束の基準）
+    public var metaCapLiftCoef = 0.2           // 年の成長上限の基準と下限に +coef·P^exp
+    public var metaCapLiftExp = 0.3
+    public var metaBudgetTop = 36.0            // 累計予算に +top·(P/38)^metaTopExp（頂点の束）
+    public var metaTopExp = 8.0
+    public var metaStartCompatCoef = 2.27      // 初期の相性 +min(cap, coef·P^exp)（compatCap で止める）
+    public var metaStartCompatExp = 0.5
+    public var metaStartCompatCap = 14.0
+    public var metaStartExpPerPoint = 4.0      // 型1：初期経験点 4/点・上限160
+    public var metaStartExpCap = 160.0
+    public var metaStartExpTop = 300.0         // 頂点の束：初期経験点 +300·(P/38)^metaTopExp（上限なし）
+    public var metaStartExpSplit: [(ExpCurrency, Double)] = [(.閃き, 0.35), (.間合い, 0.27), (.語彙, 0.18), (.存在感, 0.10), (.胆力, 0.10)]
+    public var metaStartMoneyPerPoint = 30_000 // 型1：初期の所持金 3万/点・上限100万
+    public var metaStartMoneyCap = 1_000_000
+
     // --- 大会の経験点（パワプロ式 p2・較正A calibration_all_1101_v0 §5）【仮】。Python: sim_career.TOURNEY_EXP_* / tourney_exp ---
     // 量＝基本点 × K × 種類の重み。単位 Unit 点を5通貨に均等（Split ずつ）に creditCurrency で積む（供給スケールも掛かる）。乱数なし
     public var tourneyExpK = 0.5

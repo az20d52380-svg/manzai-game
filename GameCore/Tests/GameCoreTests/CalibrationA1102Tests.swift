@@ -44,6 +44,32 @@ final class CalibrationA1102Tests: XCTestCase {
         XCTAssertEqual(t.exp間合い, 0.2304, accuracy: 1e-15)
     }
 
+    /// 周回（案2＋型1・calibration_meta_1102_v0 §5）：結成時のボーナスと年の予算が Python 正典と同値。点0 は今と同一
+    func testMetaStartAndBudget() {
+        let s0 = GameState(config: cfg, metaPoints: 0)
+        XCTAssertNil(s0.metaPoints)
+        XCTAssertEqual(s0.money, cfg.initMoney)
+        XCTAssertEqual(s0.exp閃き, 0)
+        // Python: sim_career.new_state(meta_points=P) / gen_golden.year_budget(年, P)
+        let cases: [(Int, Int, Double, [Double], [Double])] = [
+            (8, 540000, 11.420529573173852, [11.200405172930049, 5.760208374649739, 8.64031256197461, 3.2001157636943, 3.2001157636943],
+             [6.373352113047883, 47.15619880054921, 49.015279090249315]),
+            (38, 1300000, 18.993219786739576, [158.2, 81.36, 122.04, 45.2, 45.2],
+             [42.59561424314387, 85.51351097732507, 87.54681135083425]),
+        ]
+        for (P, money, compat, exps, budgets) in cases {
+            let s = GameState(config: cfg, metaPoints: P)
+            XCTAssertEqual(s.metaPoints, P)
+            XCTAssertEqual(s.money, money)
+            XCTAssertEqual(s.compat, compat, accuracy: 1e-12)
+            for (v, e) in zip([s.exp閃き, s.exp語彙, s.exp間合い, s.exp存在感, s.exp胆力], exps) { XCTAssertEqual(v, e, accuracy: 1e-12, "P\(P)") }
+            for (y, b) in zip([1, 11, 15], budgets) {
+                let r = WeekRunner(state: s, year: y, config: cfg, rng: SplitMix64(seed: 1))
+                XCTAssertEqual(r.state.growthBudget ?? -1, b, accuracy: 1e-12, "P\(P) 年\(y)")
+            }
+        }
+    }
+
     /// 温泉に一泊＝体力回復だけ（メンタルは動かない）
     func testOnsenRecoveryOnly() {
         var s = GameState(config: cfg)

@@ -131,12 +131,21 @@ public struct WeekRunner<R: RandomSource> {
         var s = state
         s.stamina = config.initStamina   // 体力のみ年初に全回復（runYear冒頭と同一）
         var budget = 0.0                 // 成長予算の更新（キャリア累計・正典v2）
+        var capBase = config.capCurveBase, capFloor = config.capCurveFloor
+        let metaP = s.metaPoints ?? 0
+        if metaP > 0 {                   // 周回：年の成長上限の基準と下限を持ち上げる（案2）。Python: meta_cap_lift
+            let lift = config.metaCapLiftCoef * pow(Double(metaP), config.metaCapLiftExp)
+            capBase += lift
+            capFloor += lift
+        }
         for k in 1...min(year, config.growthEndYear) {
             // 11年目以降の加算は ×decay^(k−10)（較正A）。Python: late_growth_factor（10年目までは ×1.0＝従来と同値）
             let f = k >= config.lateGrowthStartYear ? pow(config.lateGrowthDecay, Double(k - (config.lateGrowthStartYear - 1))) : 1.0
-            budget += f * max(config.capCurveFloor, config.capCurveBase - config.capCurveSlope * Double(k - 1))
+            budget += f * max(capFloor, capBase - config.capCurveSlope * Double(k - 1))
         }
-        s.growthBudget = budget
+        // 周回：累計予算に頂点の束 +top·(P/38)^8（Python: meta_budget + sum(...) と同じ足し順）
+        let metaBudget = metaP > 0 ? config.metaBudgetTop * pow(Double(metaP) / config.metaTopPoints, config.metaTopExp) : 0.0
+        s.growthBudget = metaBudget + budget
         GameEngine.resetYearlyItems(&s)  // その年だけのアイテム効果と回数を消す（未購入は恒等）
         // 同じネタは飽きられる（キュー60）：前の年に大会で掛けたネタは飽きが1段進む（乱数なし）。Python: run_career 年初
         for i in s.netas.indices where s.netas[i].lastUsedTaikaiYear == year - 1 {
