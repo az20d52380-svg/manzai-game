@@ -20,7 +20,7 @@ import balance_sim as B
 # CONFIG —— 全て【仮】
 # ============================================================
 
-YEARS      = 10        # キャリア年数
+YEARS      = 15        # キャリア年数（結成15年・GP 出場は結成15年以内。オーナー決定 10/20・較正A docs/calibration_all_1101_v0.md §5）
 N_CAREERS  = 2000      # 1設定あたりの試行キャリア数
 BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 
@@ -58,10 +58,39 @@ GP_ROUNDS = [
     (39, 24, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
     (41, 32, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
     (43, 43, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
-    (45, 72, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
+    (45, 78, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)  72→78 較正A（calibration_all_1101_v0 §5）
 ]
-GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 74   # 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
-GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 80   # 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 75   # 74→75 較正A（calibration_all_1101_v0 §5）。 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
+GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 81   # 80→81 較正A（calibration_all_1101_v0 §5）。 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+# 11年目以降（結成15年化）だけ決勝・敗者復活のラインを上乗せ【仮】較正A（calibration_all_1101_v0 §5）。王者ライン上書き（final_line）には足さない
+GP_LATE_START_YEAR = 11
+GP_LATE_LINE_BONUS = 2.0
+# 11年目以降の成長予算の加算を ×LATE_GROWTH_DECAY^(k−10)（k＝累計に足す年）【仮】較正A（calibration_all_1101_v0 §5）
+LATE_GROWTH_DECAY = 0.6
+
+# 大会の経験点（パワプロ式 p2・オーナー決定 10/20〜11/01）【仮】較正A（calibration_all_1101_v0 §5・exp_calib_all_1101_v0.install_exp と同じ量）
+# 量＝基本点 pw × K × 種類の重み W。単位 UNIT 点を5通貨に均等（1/5ずつ）に credit_currency で積む（供給スケールも掛かる）。乱数は使わない
+# 基本点: 道中の大会 通過1.0／敗退は×LOSS、GP 回戦 i（1始まり）通過 1+STEP×(i−1)・敗退は×LOSS、敗者復活 2.4、決勝 3.0（敗退は×LOSS）
+TOURNEY_EXP_K = 0.5
+TOURNEY_EXP_W = {"road": 0.5, "round": 1.0, "final": 2.0}   # 道中の大会（THE HANA も）／GP 回戦／敗者復活・決勝
+TOURNEY_EXP_UNIT = 4.0
+TOURNEY_EXP_SPLIT = 0.2      # 5通貨に均等
+TOURNEY_EXP_LOSS = 0.5
+TOURNEY_EXP_ROAD = 1.0
+TOURNEY_EXP_ROUND_STEP = 0.35
+TOURNEY_EXP_REVIVAL = 2.4
+TOURNEY_EXP_FINAL = 3.0
+
+def tourney_exp(s, pw, kind):
+    """大会の結果の直後に経験点を5通貨均等に積む（GameEngine.creditTourneyExp の鏡像・乱数なし）"""
+    tot = pw * TOURNEY_EXP_K * TOURNEY_EXP_W[kind]
+    for cur in B.CURRENCIES:
+        B.credit_currency(s, cur, tot * TOURNEY_EXP_UNIT * TOURNEY_EXP_SPLIT)
+
+def late_growth_factor(k):
+    """成長予算の累計に足す k 年目の分の倍率（10年目までは1.0）"""
+    return LATE_GROWTH_DECAY ** (k - (GP_LATE_START_YEAR - 1)) if k >= GP_LATE_START_YEAR else 1.0
+
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 GP_ENTRY_FEE = 2_000    # 【正典v2】GPエントリー費（実在の賞レース準拠・1回戦週に徴収。払えなければその年は出場不可）
 
@@ -801,7 +830,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         base, slope, floor = CAP_CURVE
         if CAREER_BUDGET:
             # キャリア累計予算: 結成からの成長総量に天井（初期ボーナスは前借り済み・_ygはリセットしない）
-            B.YEAR_GROWTH_CAP = sum(max(floor, base - slope * (k - 1))
+            B.YEAR_GROWTH_CAP = sum(late_growth_factor(k) * max(floor, base - slope * (k - 1))
                                     for k in range(1, min(year, GROWTH_END_YEAR) + 1))
             if not hasattr(s, "_yg"):
                 s._yg = 0.0
@@ -818,7 +847,8 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
     gp_alive = not seed_final  # 今年のグランプリ挑戦が続いているか（王者は予選免除）
     finalist = seed_final
     revival = False            # 準決勝敗退→敗者復活に回るか
-    line_final = GP_FINAL_LINE if final_line is None else final_line
+    late = GP_LATE_LINE_BONUS if year >= GP_LATE_START_YEAR else 0.0   # 11年目以降の決勝・敗者復活の上乗せ（較正A）
+    line_final = GP_FINAL_LINE + late if final_line is None else final_line
     upset = 0.0                # 波乱の年（dynasty §3）: その年のGP全ラインを揺らす
     if UPSET_ON and rng.random() < UPSET_P:
         upset = UPSET_DELTA if rng.random() < 0.5 else -UPSET_DELTA
@@ -832,6 +862,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         t = TOURNAMENTS.get(week)
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
+            if acted: tourney_exp(s, TOURNEY_EXP_ROAD * (1.0 if won_t else TOURNEY_EXP_LOSS), "road")   # 大会の経験点（較正A）
             if acted: s._joint = True
             if acted and EVENTS_APP: _app_result(s, bool(won_t))
             if RUN_TRACK is not None and acted:
@@ -855,6 +886,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     CHALLENGER_STATS["boredom_applied"] += 1
                 line += _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, line, rng, final=False)
+                tourney_exp(s, (1 + TOURNEY_EXP_ROUND_STEP * gp_stage) * (1.0 if ok else TOURNEY_EXP_LOSS), "round")   # 大会の経験点（較正A）
                 acted = True
                 s._joint = True
                 if EVENTS_APP: _app_result(s, bool(ok))
@@ -881,8 +913,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
 
         if week == GP_FINAL_WEEK:
             if revival:                              # 敗者復活 → 通過なら同週の決勝へ（客層はお茶の間=視聴者投票想定）
-                rev_line = GP_REVIVAL_LINE + upset + _neta_line_adj(s, f"GP{year}", rng)
+                rev_line = GP_REVIVAL_LINE + late + upset + _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, rev_line, rng, final=True)
+                tourney_exp(s, TOURNEY_EXP_REVIVAL * (1.0 if ok else TOURNEY_EXP_LOSS), "final")   # 大会の経験点（較正A）
                 acted = True
                 s._joint = True
                 if EVENTS_APP: _app_result(s, bool(ok))
@@ -899,6 +932,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 eff_line = line_final + upset - FAME_FINAL_BONUS * (s.fame - 50) / 50
                 eff_line += _neta_line_adj(s, f"GP決勝{year}", rng, final=True)
                 ok, _ = _gp_perform(s, eff_line, rng, final=True)
+                tourney_exp(s, TOURNEY_EXP_FINAL * (1.0 if ok else TOURNEY_EXP_LOSS), "final")   # 大会の経験点（較正A）
                 acted = True
                 s._joint = True
                 if EVENTS_APP: _app_result(s, bool(ok))

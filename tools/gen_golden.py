@@ -5,7 +5,8 @@ GameCore同期用 golden生成器【正典v2 2026-07-05改訂】
 - SwiftのSplitMix64と同一実装の乱数で、大会・グランプリ・オファー込みの3年を決定的に実行し、
   週ごとの全状態をSwiftテスト用リテラルとして出力する
 - ここで定義する「乱数消費と週処理の順序」が正典。GameCore/Sources/GameCore/Career.swift（と WeekRunner.swift）は必ずこれに従う:
-   0) 年初: 体力全回復 → 成長予算の更新（キャリア累計 = Σ_{k=1..min(年,15)} max(2.0, 6.0−0.4×(k−1))・乱数消費なし・使用量はリセットしない）
+   0) 年初: 体力全回復 → 成長予算の更新（キャリア累計 = Σ_{k=1..min(年,15)} f(k)·max(2.0, 6.0−0.4×(k−1))・f(k)=0.6^(k−10)（11年目〜）他は1・乱数消費なし・使用量はリセットしない）
+   ※ 大会・GP回戦・敗者復活・決勝の perform の直後に大会の経験点（C.tourney_exp・乱数なし）。11年目以降は決勝・敗者復活ライン+2（較正A）
    1) 大会週: 出場判定(資格→エントリー費2,000＋大阪なら交通費の支払可否)→ 支払→ perform(2draw: 出来ブレ→ハマった夜)
    2) 1)で行動していなければ GP回戦週: 前年準々決勝以上なら1回戦免除(2回戦から=シード制)。その年最初の回戦週にエントリー費2,000(払えなければその年は不出場・週は自由行動へ)→ perform(2draw)
    3) 第47週: 敗者復活なら perform(2draw)→通過で決勝へ / 決勝進出なら perform(2draw)
@@ -55,7 +56,7 @@ PATTERN = [("train", "ネタ作り"), ("train", "ネタ合わせ"), ("job", "標
 
 def year_budget(year):
     base, slope, floor = C.CAP_CURVE
-    return sum(max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
+    return sum(C.late_growth_factor(k) * max(floor, base - slope * (k - 1)) for k in range(1, min(year, C.GROWTH_END_YEAR) + 1))
 
 class _GoPolicy:
     choose_invite = None   # golden 台本は誘いに「行く」
@@ -66,7 +67,8 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
     gp_stage = 1 if gp_seed else 0   # シード組（前年準々以上）は2回戦から
     gp_entry_paid = False
     gp_alive, finalist, revival = (not seed_final), seed_final, False   # 王者シード: 予選免除・決勝直行
-    line_final = C.GP_FINAL_LINE if final_line is None else final_line   # 王者ライン上書き（飽きられ）
+    late = C.GP_LATE_LINE_BONUS if year >= C.GP_LATE_START_YEAR else 0.0   # 11年目以降の決勝・敗者復活の上乗せ（較正A）
+    line_final = C.GP_FINAL_LINE + late if final_line is None else final_line   # 王者ライン上書き（飽きられ）
     for week in range(1, B.WEEKS + 1):
         compat0 = s.compat   # 途中解散（rift）の判定用
         acted = False
@@ -80,6 +82,7 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
                     s.money -= B.BUS["cost"]
                     B.add(s, "stamina", B.BUS["stam"])
                 ok, _ = B.perform(s, t["line"], rng)
+                C.tourney_exp(s, C.TOURNEY_EXP_ROAD * (1.0 if ok else C.TOURNEY_EXP_LOSS), "road")   # 大会の経験点（較正A・乱数なし）
                 if ok:
                     s.money += t["prize"]
                     B.add(s, "fame", t["fame"])
@@ -94,6 +97,7 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
                     s.money -= C.GP_ENTRY_FEE      # GPエントリー費（その年最初の回戦週に1回）
                     gp_entry_paid = True
                 ok, _ = B.perform(s, C.GP_ROUNDS[gp_stage][1], rng)
+                C.tourney_exp(s, (1 + C.TOURNEY_EXP_ROUND_STEP * gp_stage) * (1.0 if ok else C.TOURNEY_EXP_LOSS), "round")
                 acted = True
                 s._joint = True
                 if not ok:
@@ -113,7 +117,8 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
             if trace is not None:
                 trace.update(revival=revival, finalist=finalist)
             if revival:
-                ok, _ = B.perform(s, C.GP_REVIVAL_LINE, rng)
+                ok, _ = B.perform(s, C.GP_REVIVAL_LINE + late, rng)
+                C.tourney_exp(s, C.TOURNEY_EXP_REVIVAL * (1.0 if ok else C.TOURNEY_EXP_LOSS), "final")
                 acted = True
                 s._joint = True
                 if ok:
@@ -123,6 +128,7 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
             if finalist:
                 eff_line = line_final - C.FAME_FINAL_BONUS * (s.fame - 50) / 50
                 ok, _ = B.perform(s, eff_line, rng)
+                C.tourney_exp(s, C.TOURNEY_EXP_FINAL * (1.0 if ok else C.TOURNEY_EXP_LOSS), "final")
                 acted = True
                 s._joint = True
                 if ok:

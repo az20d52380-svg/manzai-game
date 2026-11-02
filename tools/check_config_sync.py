@@ -51,6 +51,24 @@ PAIRS = {
     "itemDrinkStamina":     B.ITEM_DRINK_STAMINA,
     "itemDrinkLStamina":    B.ITEM_DRINK_L_STAMINA,
     "itemThroatInjuryMult": B.ITEM_THROAT_INJURY_MULT,
+    # 較正A（11/02・calibration_all_1101_v0 §5）
+    "gpRevivalLine":        C.GP_REVIVAL_LINE,
+    "gpFinalLine":          C.GP_FINAL_LINE,
+    "gpLateStartYear":      C.GP_LATE_START_YEAR,
+    "gpLateLineBonus":      C.GP_LATE_LINE_BONUS,
+    "lateGrowthDecay":      C.LATE_GROWTH_DECAY,
+    "lateGrowthStartYear":  C.GP_LATE_START_YEAR,
+    "tourneyExpK":          C.TOURNEY_EXP_K,
+    "tourneyExpWeightRoad": C.TOURNEY_EXP_W["road"],
+    "tourneyExpWeightRound": C.TOURNEY_EXP_W["round"],
+    "tourneyExpWeightFinal": C.TOURNEY_EXP_W["final"],
+    "tourneyExpUnit":       C.TOURNEY_EXP_UNIT,
+    "tourneyExpSplit":      C.TOURNEY_EXP_SPLIT,
+    "tourneyExpLoss":       C.TOURNEY_EXP_LOSS,
+    "tourneyExpRoad":       C.TOURNEY_EXP_ROAD,
+    "tourneyExpRoundStep":  C.TOURNEY_EXP_ROUND_STEP,
+    "tourneyExpRevival":    C.TOURNEY_EXP_REVIVAL,
+    "tourneyExpFinal":      C.TOURNEY_EXP_FINAL,
 }
 
 def swift_defaults(paths):

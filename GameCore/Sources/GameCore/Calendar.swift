@@ -70,12 +70,18 @@ public struct CalendarConfig {
     ]
 
     /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。ライン【正典v2 2026-07-05】docs/canonical_v2_spec.md）
-    public var gpRounds: [(week: Int, line: Double)] = [(30, 16), (39, 24), (41, 32), (43, 43), (45, 72)]
+    public var gpRounds: [(week: Int, line: Double)] = [(30, 16), (39, 24), (41, 32), (43, 43), (45, 78)]   // 準決勝 72→78 較正A（calibration_all_1101_v0 §5）
     /// 回戦の表示名（Python: GP_ROUNDS のラベルと同一・UI用）
     public var gpRoundNames = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
     public var gpFinalWeek = 47
-    public var gpRevivalLine = 74.0   // 敗者復活（準決勝敗退のみ・決勝と同週）。予選ライン−2（7本統合・docs/combined7_bands_v0.md 追記）
-    public var gpFinalLine = 80.0     // 【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+    public var gpRevivalLine = 75.0   // 74→75 較正A。 敗者復活（準決勝敗退のみ・決勝と同週）。予選ライン−2（7本統合・docs/combined7_bands_v0.md 追記）
+    public var gpFinalLine = 81.0     // 80→81 較正A。 【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+    /// 11年目以降だけ決勝・敗者復活のラインに上乗せ【仮】較正A（calibration_all_1101_v0 §5）。王者ライン上書きには足さない。
+    /// Python: sim_career.GP_LATE_START_YEAR / GP_LATE_LINE_BONUS
+    public var gpLateStartYear = 11
+    public var gpLateLineBonus = 2.0
+    /// その年の決勝・敗者復活ラインへの上乗せ（10年目までは0）
+    public func gpLateBonus(year: Int) -> Double { year >= gpLateStartYear ? gpLateLineBonus : 0 }
     public var gpRoundFame = 3.0      // 回戦通過の知名度【仮】
     public var fameFinalBonus = 1.5   // 決勝のみの人気補正【機微】: 実効ライン = ライン − 本値×(知名度−50)/50
     public var gpPrize = 5_000_000    // 優勝賞金（表示1,000万の半分・手元）【仮】

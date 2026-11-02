@@ -29,7 +29,9 @@ final class CalendarInvariantTests: XCTestCase {
         XCTAssertEqual(lines, lines.sorted())
         XCTAssertLessThan(weeks.last!, c.gpFinalWeek)
         XCTAssertLessThanOrEqual(c.gpFinalWeek, cfg.weeks)
-        XCTAssertLessThan(lines.last!, c.gpRevivalLine)
+        // 較正A（calibration_all_1101_v0 §5）で準決勝78・敗者復活75 になり「復活は準決勝より上」は崩れた（オーナー決定の表どおり）。
+        // 残す不変条件：復活は決勝より下・準々決勝より上
+        XCTAssertLessThan(lines[lines.count - 2], c.gpRevivalLine)
         XCTAssertLessThan(c.gpRevivalLine, c.gpFinalLine)
     }
 }

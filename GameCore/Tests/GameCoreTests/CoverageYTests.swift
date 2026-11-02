@@ -60,7 +60,7 @@ final class CoverageYTests: XCTestCase {
         XCTAssertEqual(cal.gpRoundNames.count, cal.gpRounds.count)
         XCTAssertGreaterThan(cal.gpFinalWeek, weeks.last!)
         XCTAssertLessThan(cal.gpRevivalLine, cal.gpFinalLine)
-        XCTAssertGreaterThan(cal.gpRevivalLine, lines.last!)
+        XCTAssertGreaterThan(cal.gpRevivalLine, lines[lines.count - 2])   // 較正A：準決勝78＞復活75（§5 の表どおり）。復活は準々決勝より上だけ残す
     }
 
     // MARK: Codable 往復
