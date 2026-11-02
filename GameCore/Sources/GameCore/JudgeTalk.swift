@@ -139,7 +139,7 @@ public enum JudgeTalk {
 
     /// テンプレートの差し込み口を埋める。{題} はネタ名が無ければ「このネタ」に落とす（候補選びで外すので通常は来ない）。
     static func fill(_ template: String, scene: Scene, salt: Int) -> String {
-        let table = vocab[scene.kata] ?? vocab[nil]!
+        let table = vocab[nil]!   // 型なしの語彙に統一（キュー115）。型別の表は読まれない・Scene.kata は互換のため残す
         var s = template
         for (i, slot) in Slot.allCases.enumerated() {
             let token = "{\(slot.rawValue)}"

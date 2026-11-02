@@ -832,9 +832,6 @@ struct FinalsPresentationView: View {
         // M-1と同じく、7人全員の札が出るまで合計は出さない（途中の点数は伏せる・オーナー指摘 2026-10-10）
         let total = d.judges.reduce(0) { $0 + $1.score }
         let allShown = revealedJudges >= 7
-        // 見せ札の型ラベル（v2 §4-3補2）: FinalsData（Σ=S補正・rng.int等）の計算には一切関与しない、
-        // 既に確定済みの点数・出順の上に、選択中ネタの型を審査員の固定嗜好表で引いて添えるだけの純表示。
-        let kata: NetaKata? = nil   // 型は表示しない（キュー115）
         return VStack(spacing: 12) {
             // 誰の採点かを明示する黒漆バー
             HStack(spacing: 8) {
@@ -853,12 +850,12 @@ struct FinalsPresentationView: View {
             VStack(spacing: 10) {
                 HStack(spacing: 8) {
                     ForEach(0..<4, id: \.self) { i in
-                        judgeCard(d.judges[i], shown: i < revealedJudges, kata: kata).frame(width: cw)
+                        judgeCard(d.judges[i], shown: i < revealedJudges).frame(width: cw)
                     }
                 }
                 HStack(spacing: 8) {   // 2段目の3枚は中央に（下の合計箱と軸を揃える）
                     ForEach(4..<min(7, d.judges.count), id: \.self) { i in
-                        judgeCard(d.judges[i], shown: i < revealedJudges, kata: kata).frame(width: cw)
+                        judgeCard(d.judges[i], shown: i < revealedJudges).frame(width: cw)
                     }
                 }
             }
@@ -891,8 +888,6 @@ struct FinalsPresentationView: View {
             }
             if revealedJudges == 0 {
                 mcBubble(FinalsMC.startScoring)
-            } else if let kata, allShown {
-                YoseNarration(text: "\(NetaCatalog.displayName(kata))で挑んだ一本。")
             }
         }
         .onChange(of: allShown) { _, now in
@@ -902,11 +897,11 @@ struct FinalsPresentationView: View {
         }
     }
 
-    private func judgeCard(_ j: JudgeScore, shown: Bool, kata: NetaKata?) -> some View {
+    private func judgeCard(_ j: JudgeScore, shown: Bool) -> some View {
         // 木札の表と裏を別の面で描く＝回転の途中で面を切り替えるので鏡文字にならない（A2 §3-B1・L10 FlipCard）。
-        let h: CGFloat = kata != nil ? 112 : 96
+        let h: CGFloat = 96
         return FlipCard(shown: shown) {
-            judgeFace(j, kata: kata, height: h)
+            judgeFace(j, height: h)
         } back: {
             judgeBack(j, height: h)
         }
@@ -926,16 +921,12 @@ struct FinalsPresentationView: View {
         .background(dim ? YoseColor.kuroUrushi.opacity(0.85) : YoseColor.kuroUrushi)
     }
 
-    private func judgeFace(_ j: JudgeScore, kata: NetaKata?, height: CGFloat) -> some View {
+    private func judgeFace(_ j: JudgeScore, height: CGFloat) -> some View {
         VStack(spacing: 4) {
             Text("\(j.score)").font(YoseFont.number(30, weight: .black))
                 .foregroundStyle(j.score >= 95 ? YoseColor.shu : YoseColor.sumi)
                 .frame(height: 34)
             judgeNamePlate(j.name)
-            if let kata {
-                Text(NetaCatalog.affinity(kata, judge: j.name)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
-                    .lineLimit(1).minimumScaleFactor(0.6)
-            }
         }
         .padding(.top, 6).padding(.bottom, 6).padding(.horizontal, 3)
         .frame(maxWidth: .infinity).frame(height: height, alignment: .top)

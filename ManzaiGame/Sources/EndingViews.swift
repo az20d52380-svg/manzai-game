@@ -381,12 +381,12 @@ struct DisbandFarewellView: View {
     @State private var showSummary = false
 
     static let card = ReminiscenceCard(
-        caption: "夕方。いつもの稽古場。", mood: .after,
-        talk: [Advice(name: "俺", text: "話がある。コンビは今日で終わりにしよう"),
+        caption: "夜。二人の帰り道。", mood: .after,
+        talk: [Advice(name: "俺", text: "ここでお別れだ。コンビは今日で終わりにしよう"),
                Advice(name: "谷口", text: "……そっか。わかった"),
                Advice(name: "谷口", text: "今までありがとう。体には気をつけてね"),
                Advice(name: "俺", text: "そっちもね。じゃあ、また")],
-        together: true, backdrop: EventBackdrop(.keikoba, .evening))
+        together: true, backdrop: EventBackdrop(.street, .night))
 
     var body: some View {
         ZStack {

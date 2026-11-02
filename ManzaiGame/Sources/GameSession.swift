@@ -874,13 +874,6 @@ final class GameSession {
         saveNow()
     }
 
-    /// 型の組み替え（大改稿で1度・v2 §3-1補）
-    func changeNetaKata(_ id: Int, to kata: NetaKata) {
-        runner.applyNetaChangeKata(id: id, to: kata)
-        state = runner.state
-        saveNow()
-    }
-
     /// 改名（自動命名の上書き・v2 §9決点3）
     /// 買い物（ShopView）。買えなければ何もしない
     @discardableResult

@@ -11,7 +11,6 @@ struct NotebookView: View {
     let session: GameSession
     var onClose: () -> Void
     @State private var tab: Tab = NotebookView.initialTab
-    /// 型変更ピッカーを開いているネタID（1つだけ開く・トグル）
     /// 改名フィールドを開いているネタID
     @State private var renamingID: Int?
     @State private var renameDraft: String = ""
