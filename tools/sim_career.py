@@ -60,7 +60,7 @@ GP_ROUNDS = [
     (43, 43, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
     (45, 78, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)  72→78 較正A（calibration_all_1101_v0 §5）
 ]
-GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 75   # 74→75 較正A（calibration_all_1101_v0 §5）。 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
+GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 79   # 74→75 較正A→79（11/02 オーナー：復活は準決勝で落ちた組の救済＝準決勝78より難しく決勝81より易しく）。 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
 GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 81   # 80→81 較正A（calibration_all_1101_v0 §5）。 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
 # 11年目以降（結成15年化）だけ決勝・敗者復活のラインを上乗せ【仮】較正A（calibration_all_1101_v0 §5）。王者ライン上書き（final_line）には足さない
 GP_LATE_START_YEAR = 11

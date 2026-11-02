@@ -87,7 +87,7 @@ public struct CalendarConfig {
     /// 回戦の表示名（Python: GP_ROUNDS のラベルと同一・UI用）
     public var gpRoundNames = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
     public var gpFinalWeek = 47
-    public var gpRevivalLine = 75.0   // 74→75 較正A。 敗者復活（準決勝敗退のみ・決勝と同週）。予選ライン−2（7本統合・docs/combined7_bands_v0.md 追記）
+    public var gpRevivalLine = 79.0   // 74→75 較正A→79（11/02 オーナー：準決勝78と決勝81の間）。 敗者復活（準決勝敗退のみ・決勝と同週）。予選ライン−2（7本統合・docs/combined7_bands_v0.md 追記）
     public var gpFinalLine = 81.0     // 80→81 較正A。 【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
     /// 11年目以降だけ決勝・敗者復活のラインに上乗せ【仮】較正A（calibration_all_1101_v0 §5）。王者ライン上書きには足さない。
     /// Python: sim_career.GP_LATE_START_YEAR / GP_LATE_LINE_BONUS
