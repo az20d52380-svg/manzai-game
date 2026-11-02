@@ -455,12 +455,16 @@ struct AbilityUpView: View {
         Sound.play(.tap)   // 木札を盤に打つ音（既存の決定音）
         withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.45))) { confirmBump = true }
         withAnimation(.easeOut(duration: 0.05)) { confirmGlow = true }
+        var hold: UInt64 = 450_000_000
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { hold = 20_000_000_000; return }   // 目視用：余韻の最中で止める（タップで閉じる）
+        #endif
         Task {
             try? await Task.sleep(nanoseconds: 220_000_000)
             withAnimation(.easeOut(duration: 0.25)) { confirmGlow = false }   // 枠と行の山吹は0.2〜0.25秒で消える
         }
         Task {
-            try? await Task.sleep(nanoseconds: 450_000_000)
+            try? await Task.sleep(nanoseconds: hold)
             finishConfirm()
         }
     }
