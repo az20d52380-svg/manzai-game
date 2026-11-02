@@ -246,7 +246,9 @@ struct AbilityUpView: View {
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .frame(width: 22, height: 22).background(wa(c), in: Circle())
-                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel(c.displayName)
+                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1))
+                        .yoseExpPing(Self.points(pv[currency: c]), color: wa(c))   // 増えた時だけ（使って減る時は何もしない）
+                        .accessibilityLabel(c.displayName)
                     Text("\(Self.points(pv[currency: c]))").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
