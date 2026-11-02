@@ -837,6 +837,7 @@ struct WeekMainView: View {
     /// 行動の実行（二拍：引き抜き→一言→週送り→バースト）。行動カードとネタの一覧から呼ぶ。
     private func perform(_ v: CommandVariant) {
         Sound.play(.tap)   // 実行の決定音（週送りの一拍目）
+        if case .rest = v.action { Haptics.soft() } else { Haptics.rigid() }   // 振動は実行（=週送り）の押した瞬間だけ。硬い一発（休むだけ柔らかく）＝Gemini R7 §2-B
         // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
         // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
         // 監査A-04: 一言はこのカードで直近4週に出していない時だけ（毎週同じ3本が回るのを避ける）
@@ -854,7 +855,6 @@ struct WeekMainView: View {
             resultName = v.name
             burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
             burstHold = true
-            Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
             if case .acceptOffer = v.action { session.chooseOffer(index: offerPick) }   // キュー96：選んだ札を今週のオファーにする
             session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
             if let p = pendingNetaTitle {   // 新しいネタに、プレイヤーが付けた題名を付ける
@@ -935,6 +935,7 @@ struct WeekMainView: View {
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .frame(width: 22, height: 22).background(Self.expColor(c), in: Circle())
+                        .yoseExpPing(ExpDisplay.value(s[currency: c]), color: Self.expColor(c))   // 増えた瞬間に跳ねて輪が広がる（Gemini R7 §2-D）
                         .accessibilityLabel(c.displayName)
                     Text("\(ExpDisplay.value(s[currency: c]))").font(YoseFont.number(17, weight: .heavy)).foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.7)
@@ -1032,7 +1033,7 @@ struct WeekMainView: View {
             }
         }
         .buttonStyle(YoseButtonStyle(.command, badgeText: c == .能力アップ && unspentBeforeStage ? "未振分あり" : nil,
-                                       highlight: c == .能力アップ && unspentBeforeStage))
+                                       highlight: c == .能力アップ && unspentBeforeStage, silent: true))
     }
 
     /// カードの顔（貼り紙）: アイコン箱＋名前／説明／伸び（経験点は正本の5色）／コスト（所持金・体力）。
