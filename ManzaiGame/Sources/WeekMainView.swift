@@ -837,6 +837,7 @@ struct WeekMainView: View {
     /// 行動の実行（二拍：引き抜き→一言→週送り→バースト）。行動カードとネタの一覧から呼ぶ。
     private func perform(_ v: CommandVariant) {
         Sound.play(.tap)   // 実行の決定音（週送りの一拍目）
+        if case .rest = v.action { Haptics.soft() } else { Haptics.rigid() }   // 振動は実行（=週送り）の押した瞬間だけ。硬い一発（休むだけ柔らかく）＝Gemini R7 §2-B
         // 二拍実行: 引き抜き0.12s→Beat1 発話0.7s（画面タップで即スキップ）→週送り→Beat2 バースト。
         // cancel() されても choose は必ず一度だけ走る（sleep が即返るだけ）＝スキップ＝早送り。
         // 監査A-04: 一言はこのカードで直近4週に出していない時だけ（毎週同じ3本が回るのを避ける）
@@ -854,7 +855,6 @@ struct WeekMainView: View {
             resultName = v.name
             burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
             burstHold = true
-            Haptics.tick()              // 振動は実行（=週送り）のみ（Haptics 3段）
             if case .acceptOffer = v.action { session.chooseOffer(index: offerPick) }   // キュー96：選んだ札を今週のオファーにする
             session.choose(v.action)    // ＝即実行・1週進む（つぎへ廃止）
             if let p = pendingNetaTitle {   // 新しいネタに、プレイヤーが付けた題名を付ける

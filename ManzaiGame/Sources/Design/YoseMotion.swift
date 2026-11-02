@@ -65,7 +65,7 @@ struct YoseAppearModifier: ViewModifier {
 }
 
 enum YoseHaptic {
-    static func press() { UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
+    static func press() { Haptics.rigid(0.8) }   // 共通口（0.08秒以内の次は捨てる・強さ0.8＝Gemini R7 §2-B）
 }
 
 extension View {
