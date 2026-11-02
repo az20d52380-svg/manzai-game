@@ -50,3 +50,19 @@
 - 初期経験点の配分（35/27/18/10/10%）は `metaStartExpSplit`（配列）。check_config_sync は配列を読まないので、ここだけ目で合わせた。
 - golden（点0）は変わらない。gen_golden の `year_budget(年, P)` も点を受けるようにした（golden は点0 なので通らない分岐）。Swift の単体テスト `CalibrationA1102Tests.testMetaStartAndBudget` で点8・38 の結成時と 1/11/15年目の予算を Python と突き合わせた。
 - アプリでトロフィー・図鑑から点を数えて `GameState(config:metaPoints:)` に渡す配線は**していない**（別作業）。
+
+## 段3＝THE HANA（calibration_all_1101_v0.md §5）
+
+### 実測スクリプトとの一致
+- 旧正典＋`exp_calib_all_1101_v0` の A＋女性の系列（`hl=14`＝ライン 36/52/70/84）と、新正典で女性コンビにしただけ（`C.FEMALE_COMBO=True`）を、帯の組4ボット×ネタ込×n=300 で seed ごとに比べた。**1200 seed 全部ビット一致**（GP 優勝・HANA 優勝・所持金・能力まで）。
+  - ただし比べる時、ボットの「本番の前の週は休む」（`C.EVENT_WEEKS` を見る）にも THE HANA の週を足した（実測は TOURNAMENTS に混ぜていたのでボットにも見えていた）。正典では `EVENT_WEEKS` に THE HANA を**入れていない**（入れると男コンビのボットの動きが変わる）。ボットは方針側の話なので、女性コンビのボットが THE HANA の前に休むかは今は見えない＝女性の系列を正典で測り直す時は数字が少し動きうる。
+- 男コンビ（既定）は段2 までと全 seed 一致（変わらない）。golden（男）は変わらない。
+
+### 細部の決め
+- **男コンビでは一切出ない形**：Python は `TOURNAMENTS` と分けて `HANA_TOURNAMENTS` を持ち、`tournament_of(s, 週)` が女性コンビ（`s.female`）の時だけ返す。Swift は `CalendarConfig.hanaTournaments` と `tournament(inWeek:state:)`。`tournaments` 配列に混ぜなかったのは、アプリが `calendar.tournaments` を一覧に使っている所（WeekMainView・GameSession.upcomingStages）に男コンビでも出てしまうため。
+- **コンビの形**：Python `new_state(female=)`（省略時は `FEMALE_COMBO`＝False）→ `s.female`。Swift `GameState(config:metaPoints:femaleCombo:)` → `GameState.femaleCombo`（Optional・男は nil のまま）。
+- **段の進み**：実測の `s._hana＝(年, 次の段)` と同じ。Swift は `hanaYear`/`hanaNext`（通過した時だけ書く）。優勝回数 `hanaWins`（Python は実測と同じ `_hana_win`/`_hana_fin` に加えて `hana_wins`）。
+- **大会の経験点**：THE HANA の段は道中の大会と同じ扱い（重み 0.5）＝実測と同じ（§4-5）。エントリー費 2,000円は段ごと（道中の大会と同じ・実測と同じ）。
+- **イベント層**：`_honban_ahead`・`_app_stages`（実測用のイベント判定）は女性コンビなら THE HANA の週も「次の本番」に数える（実測と同じ）。
+- golden に女性コンビの分岐（`BRANCH_SCRIPTS` の台本C・seed=24・4年：3年目 1回戦通過→2回戦敗退、4年目 準決勝敗退）を足した。Swift の `CareerGoldenTests.testBranchTheHanaFemale` が Python とビット一致。優勝の経路は単体テスト `testTheHanaFemaleOnly`。
+- 動画審査の見せ方などアプリの画面は作っていない。女性コンビを選ぶ口もアプリには無い（別作業）。

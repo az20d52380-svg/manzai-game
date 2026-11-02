@@ -216,6 +216,14 @@ public struct WeekRunner<R: RandomSource> {
                 }
                 let netaLine = spec.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
                 let result = GameEngine.perform(state, line: netaLine, config: config, rng: &rng)
+                if case .hana(let i) = spec.eligibility, result.passed {   // THE HANA の段（Python: hana_result）
+                    if i < config.calendar.hanaTournaments.count - 1 {
+                        state.hanaYear = year
+                        state.hanaNext = i + 1
+                    } else {
+                        state.hanaWins = (state.hanaWins ?? 0) + 1
+                    }
+                }
                 GameEngine.creditTourneyExp(config.tourneyExpRoad * (result.passed ? 1.0 : config.tourneyExpLoss),
                                             weight: config.tourneyExpWeightRoad, to: &state, config: config)   // 大会の経験点（較正A）
                 markNetaUsed()
@@ -388,7 +396,7 @@ public struct WeekRunner<R: RandomSource> {
 
         if section == .tournament {
             section = .gp
-            if !acted, let spec = cal.tournament(inWeek: week), spec.isEligible(year: year, state: state) {
+            if !acted, let spec = cal.tournament(inWeek: week, state: state), spec.isEligible(year: year, state: state) {
                 pendingSpec = spec
                 return .tournamentDecision(spec)
             }
@@ -678,7 +686,7 @@ extension WeekRunner where R: Codable {
         self.acted = snap.acted
         self.weekResults = snap.weekResults
         if snap.pendingSpec != nil {
-            self.pendingSpec = config.calendar.tournament(inWeek: snap.week) ?? snap.pendingSpec
+            self.pendingSpec = config.calendar.tournament(inWeek: snap.week, state: snap.state) ?? snap.pendingSpec
         } else {
             self.pendingSpec = nil
         }

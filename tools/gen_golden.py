@@ -76,7 +76,7 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
         compat0 = s.compat   # 途中解散（rift）の判定用
         acted = False
 
-        t = C.TOURNAMENTS.get(week)
+        t = C.tournament_of(s, week)   # 女性コンビなら THE HANA も（男コンビ＝既定の golden では TOURNAMENTS と同じ）
         if t and t["ok"](year, s):
             need = C.GP_ENTRY_FEE + (B.BUS["cost"] if t["osaka"] else 0)
             if s.money >= need:
@@ -85,6 +85,7 @@ def run_year(s, year, rng, log=None, gp_seed=False, seed_final=False, final_line
                     s.money -= B.BUS["cost"]
                     B.add(s, "stamina", B.BUS["stam"])
                 ok, _ = B.perform(s, t["line"], rng)
+                if "hana" in t: C.hana_result(s, year, t["hana"], ok)
                 C.tourney_exp(s, C.TOURNEY_EXP_ROAD * (1.0 if ok else C.TOURNEY_EXP_LOSS), "road")   # 大会の経験点（較正A・乱数なし）
                 if ok:
                     s.money += t["prize"]
@@ -202,13 +203,17 @@ def swift_row(year, week, snap):
 BRANCH_SCRIPTS = [
     ("敗者復活(3年目)・GPシード(4年目)", 1, [(False, None)] * 4),
     ("王者シード(2年目・優勝)・王者ライン上書き(3年目・不通過)", 424243, [(False, None), (True, -999.0), (True, 999.0)]),
+    # THE HANA（女性コンビ・11/02 規律A 段3）: 3年目 1回戦通過→2回戦敗退（準決勝に出ない）・4年目 1回戦→2回戦通過→準決勝敗退
+    ("THE HANA（女性コンビ）", 24, [(False, None)] * 4, True),
 ]
 
 def run_branch_scripts():
-    for label, seed, plan in BRANCH_SCRIPTS:
+    for label, seed, plan, *female in BRANCH_SCRIPTS:
         print(f"// branch seed={seed}: {label} / plan(seedFinal,finalLine)={plan}")
         rng = SplitMix64(seed)
         s = B.S()
+        if female and female[0]:
+            s.female = True   # 女性コンビ（Swift: GameState(config:femaleCombo: true)）
         prev = 0
         for y, (sf, fl) in enumerate(plan, 1):
             champ, stage = run_year(s, y, rng, gp_seed=(prev >= 3), seed_final=sf, final_line=fl)

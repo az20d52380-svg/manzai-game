@@ -164,6 +164,42 @@ TOURNAMENTS = {
 
 EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
 
+# ------------------------------------------------------------
+# THE HANA（女性コンビだけの大会・オーナー決定 10/20・較正 calibration_all_1101_v0 §5）【仮】
+# 1回戦（動画審査＝式の上は普通の段）→2回戦→準決勝→決勝・敗者復活なし・芸歴の制限なし・東京。
+# 女性コンビ（s.female）の時だけ出る＝男コンビ（既定・golden）では一切出ない。EVENT_WEEKS には入れない（男コンビのボットの動きを変えない）。
+# 2回戦以降は「その年に前の段を通過した」時だけ出られる（s._hana＝(年, 次の段)）。exp_the_hana_1025_v0.install と同じ振る舞い
+# ------------------------------------------------------------
+FEMALE_COMBO = False   # new_state の既定（外から渡す口。アプリは GameState(config:femaleCombo:)）
+HANA_WEEKS = (32, 37, 42, 44)
+HANA_NAMES = ("HANA1回戦", "HANA2回戦", "HANA準決勝", "HANA決勝")
+HANA_LINES = (36, 52, 70, 84)   # 「難」22/38/56/70 を +14（15年＋大会の経験点で優勝 5.9%・§1）
+HANA_PRIZE = 2_500_000          # 優勝の手元賞金（GP 優勝 500万の半分）
+HANA_CHAMP_FAME = 8
+HANA_TOURNAMENTS = {
+    w: dict(name=nm, line=ln, prize=HANA_PRIZE if i == len(HANA_WEEKS) - 1 else 0,
+            fame=HANA_CHAMP_FAME if i == len(HANA_WEEKS) - 1 else GP_ROUND_FAME, osaka=False, hana=i,
+            ok=(lambda i: lambda year, s: getattr(s, "female", False) and (i == 0 or getattr(s, "_hana", (0, 0)) == (year, i)))(i))
+    for i, (w, nm, ln) in enumerate(zip(HANA_WEEKS, HANA_NAMES, HANA_LINES))
+}
+
+def tournament_of(s, week):
+    """その週の大会（女性コンビなら THE HANA も）。CalendarConfig.tournament(inWeek:state:) の鏡像"""
+    t = TOURNAMENTS.get(week)
+    if t is None and getattr(s, "female", False):
+        t = HANA_TOURNAMENTS.get(week)
+    return t
+
+def hana_result(s, year, i, ok):
+    """THE HANA の段の結果（通過で次の段へ・決勝の通過で優勝）。乱数なし"""
+    if ok and i < len(HANA_WEEKS) - 1:
+        s._hana = (year, i + 1)
+    elif ok:
+        s._hana_win = True
+        s.hana_wins = getattr(s, "hana_wins", 0) + 1
+    if ok and i == len(HANA_WEEKS) - 2:
+        s._hana_fin = True
+
 # 敗者復活の実測用カウンタ（improvement_proposals_v0.md 課題#1）
 REVIVAL_STATS = {"attempts": 0, "passes": 0}
 
@@ -326,8 +362,9 @@ def _others_apply(s, k):
         if s.money >= 50_000: _ev_add(s, "sense", 1); _ev_add(s, "fame", 1); s.money -= 5000; _ev_add(s, "stamina", -10)
         elif s.money >= 1500: _ev_add(s, "compat", 1); _ev_add(s, "mental", 1); s.money -= 1500
 
-def _honban_ahead(week):
-    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
+def _honban_ahead(week, s=None):
+    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]
+                    + (list(HANA_TOURNAMENTS) if getattr(s, "female", False) else [])))
     return min([w - week for w in ws if w > week] or [99])
 
 # --- 実測用: アプリ(GameSession.swift 週次抽選)と同じ選択肢イベント。既定OFF（False では従来と1ビットも変わらない）---
@@ -368,7 +405,7 @@ def _app_stages(s, year, week, gp_alive, gp_stage, finalist, revival):
         ms.append((GP_FINAL_WEEK, True))
     elif revival:
         ms.append((GP_REVIVAL_WEEK, True))
-    for w, t in TOURNAMENTS.items():
+    for w, t in list(TOURNAMENTS.items()) + (list(HANA_TOURNAMENTS.items()) if getattr(s, "female", False) else []):
         if t["ok"](year, s):
             ms.append((w, True))
     return sorted(m for m in ms if m[0] > week)
@@ -733,8 +770,10 @@ BOTS = (CareerBalanced, CareerSmart)
 # 1キャリア（最大10年）を回す
 # ============================================================
 
-def new_state(init_ability=None, compat=None, meta_points=None):
+def new_state(init_ability=None, compat=None, meta_points=None, female=None):
     s = B.S()
+    if FEMALE_COMBO if female is None else female:
+        s.female = True   # 女性コンビ（THE HANA に出られる）
     if init_ability is not None:
         s.sense = s.idea = s.expr = s.chara = s.mental = float(init_ability)
         if CAREER_BUDGET and init_ability > B.INIT_ABILITY:
@@ -903,9 +942,10 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         compat0 = s.compat   # 途中解散：この週に相性が上がったか（乱数なし）
 
         # --- その他の大会（出場資格があり交通費が払えるなら出る） ---
-        t = TOURNAMENTS.get(week)
+        t = tournament_of(s, week)
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
+            if acted and "hana" in t: hana_result(s, year, t["hana"], won_t)   # THE HANA（女性コンビだけ）
             if acted: tourney_exp(s, TOURNEY_EXP_ROAD * (1.0 if won_t else TOURNEY_EXP_LOSS), "road")   # 大会の経験点（較正A）
             if acted: s._joint = True
             if acted and EVENTS_APP: _app_result(s, bool(won_t))
@@ -1058,14 +1098,14 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
             if EVENT_FORCE and not acted and OTHERS_ON and RUN_EVENTS_FIRED is not None:
                 for fk, fw in EVENT_FORCE.items():
                     fi = len(EVENT_TABLE) + OTHERS_EVENTS.index(fk)
-                    if (week == fw if isinstance(fw, int) else fw[0] <= week <= fw[1]) and fi not in RUN_EVENTS_FIRED and _others_fireable(fk, s, week, year, _honban_ahead(week)) \
+                    if (week == fw if isinstance(fw, int) else fw[0] <= week <= fw[1]) and fi not in RUN_EVENTS_FIRED and _others_fireable(fk, s, week, year, _honban_ahead(week, s)) \
                             and not (EVENT_FIRE_CAP is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP):
                         RUN_EVENTS_FIRED.add(fi); _others_apply(s, fk); forced = True; break
             if EVENT_DRAW_FILTER and not forced and not acted and RUN_EVENTS_FIRED is not None and rng.random() < EVENT_RATE:
                 if EVENT_FIRE_CAP is None or len(RUN_EVENTS_FIRED) < EVENT_FIRE_CAP:
                     cands = [i for i in range(len(EVENT_TABLE) + (len(OTHERS_EVENTS) if OTHERS_ON else 0))
                              if i not in RUN_EVENTS_FIRED and (i < len(EVENT_TABLE) or
-                                 _others_fireable(OTHERS_EVENTS[i - len(EVENT_TABLE)], s, week, year, _honban_ahead(week)))]
+                                 _others_fireable(OTHERS_EVENTS[i - len(EVENT_TABLE)], s, week, year, _honban_ahead(week, s)))]
                     if cands:
                         idx = cands[min(int(rng.random() * len(cands)), len(cands) - 1)]
                         RUN_EVENTS_FIRED.add(idx)
@@ -1079,7 +1119,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     k = OTHERS_EVENTS[idx - len(EVENT_TABLE)]
                     capped = EVENT_FIRE_CAP is not None and RUN_EVENTS_FIRED is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP
                     if (RUN_EVENTS_FIRED is None or idx not in RUN_EVENTS_FIRED) and not capped \
-                            and _others_fireable(k, s, week, year, _honban_ahead(week)):
+                            and _others_fireable(k, s, week, year, _honban_ahead(week, s)):
                         if RUN_EVENTS_FIRED is not None:
                             RUN_EVENTS_FIRED.add(idx)
                         _others_apply(s, k)

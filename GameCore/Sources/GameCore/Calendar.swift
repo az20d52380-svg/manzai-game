@@ -23,6 +23,7 @@ public struct TournamentSpec: Codable {
         case always
         case careerYearAtMost(Int)   // 芸歴・結成n年以内
         case fameAtLeast(Double)     // 推薦制（知名度条件）【仮】
+        case hana(round: Int)        // THE HANA の段（0始まり）。女性コンビだけ・2段目以降はその年に前の段を通過した時だけ
     }
 
     public let name: String
@@ -51,6 +52,8 @@ public struct TournamentSpec: Codable {
             return year <= n
         case .fameAtLeast(let f):
             return state.fame >= f
+        case .hana(let i):   // Python: HANA_TOURNAMENTS の ok（s._hana＝(年, 次の段)）
+            return state.femaleCombo == true && (i == 0 || (state.hanaYear == year && state.hanaNext == i))
         }
     }
 }
@@ -67,6 +70,16 @@ public struct CalendarConfig {
         TournamentSpec(name: "推薦制中堅賞",     week: 38, line: 33, prize: 500_000, fame: 10, osaka: false, eligibility: .fameAtLeast(30)),
         // 1〜3月の小さな大会（GP準決勝の翌週）【仮】キュー98 §98。Python: TOURNAMENTS[46]
         TournamentSpec(name: "寒梅漫才杯",       week: 46, line: 34, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(10)),
+    ]
+
+    /// THE HANA（女性コンビだけの大会・オーナー決定 10/20・calibration_all_1101_v0 §5）【仮】。Python: sim_career.HANA_TOURNAMENTS。
+    /// 1回戦（動画審査＝式の上は普通の段）→2回戦→準決勝→決勝・敗者復活なし・芸歴の制限なし・東京。通過で知名度+gpRoundFame、優勝で手元250万・知名度+8。
+    /// tournaments とは分けて持つ＝男コンビ（既定）では一切出ない（tournament(inWeek:state:) が女性コンビの時だけ返す）
+    public var hanaTournaments: [TournamentSpec] = [
+        TournamentSpec(name: "HANA1回戦", week: 32, line: 36, prize: 0,         fame: 3, osaka: false, eligibility: .hana(round: 0)),
+        TournamentSpec(name: "HANA2回戦", week: 37, line: 52, prize: 0,         fame: 3, osaka: false, eligibility: .hana(round: 1)),
+        TournamentSpec(name: "HANA準決勝", week: 42, line: 70, prize: 0,        fame: 3, osaka: false, eligibility: .hana(round: 2)),
+        TournamentSpec(name: "HANA決勝", week: 44, line: 84, prize: 2_500_000,  fame: 8, osaka: false, eligibility: .hana(round: 3)),
     ]
 
     /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。ライン【正典v2 2026-07-05】docs/canonical_v2_spec.md）
@@ -97,6 +110,13 @@ public struct CalendarConfig {
 
     public func tournament(inWeek week: Int) -> TournamentSpec? {
         tournaments.first { $0.week == week }
+    }
+
+    /// その週の大会（女性コンビなら THE HANA も）。Python: sim_career.tournament_of
+    public func tournament(inWeek week: Int, state: GameState) -> TournamentSpec? {
+        if let t = tournament(inWeek: week) { return t }
+        guard state.femaleCombo == true else { return nil }
+        return hanaTournaments.first { $0.week == week }
     }
 
     public func travelSpec(_ travel: Travel) -> TravelSpec {

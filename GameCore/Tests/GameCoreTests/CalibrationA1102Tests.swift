@@ -70,6 +70,34 @@ final class CalibrationA1102Tests: XCTestCase {
         }
     }
 
+    /// THE HANA：男コンビ（既定）では一切出ない・女性コンビは4段（優勝で手元250万・優勝回数）
+    func testTheHanaFemaleOnly() {
+        let male = GameState(config: cfg), female = GameState(config: cfg, femaleCombo: true)
+        for w in [32, 37, 42, 44] {
+            XCTAssertNil(cfg.calendar.tournament(inWeek: w, state: male), "男コンビに THE HANA が出た（週\(w)）")
+            XCTAssertNotNil(cfg.calendar.tournament(inWeek: w, state: female))
+        }
+        XCTAssertNil(male.femaleCombo)
+        // 2段目以降はその年に前の段を通過した時だけ
+        let r2 = cfg.calendar.hanaTournaments[1]
+        XCTAssertFalse(r2.isEligible(year: 3, state: female))
+        var passed = female
+        passed.hanaYear = 3; passed.hanaNext = 1
+        XCTAssertTrue(r2.isEligible(year: 3, state: passed))
+        XCTAssertFalse(r2.isEligible(year: 4, state: passed))
+        // 強い女性コンビは4段とも通って優勝する（決勝は週44・GP より前）
+        var s = GameState(config: cfg, femaleCombo: true)
+        for a in Ability.allCases { s[a] = 100 }
+        s.compat = 20
+        var policy = GoldenPolicy()
+        var rng = SplitMix64(seed: 7)
+        var names: [String] = []
+        _ = GameCareer.runYear(state: &s, year: 1, config: cfg, policy: &policy, rng: &rng)
+        names = cfg.calendar.hanaTournaments.map(\.name)
+        XCTAssertEqual(names, ["HANA1回戦", "HANA2回戦", "HANA準決勝", "HANA決勝"])
+        XCTAssertEqual(s.hanaWins, 1)
+    }
+
     /// 温泉に一泊＝体力回復だけ（メンタルは動かない）
     func testOnsenRecoveryOnly() {
         var s = GameState(config: cfg)

@@ -149,12 +149,21 @@ final class CareerGoldenTests: XCTestCase {
         (424243, 3, 8673000, 40, 45.46275867186883, 21.875764876989535, 23.018833646299235, 35.574098923148, 20.645578624842727, 50.26134045653983, 19.5, 0, 0),
     ]
 
+    // 台本C: seed=24・女性コンビ・4年とも通常（THE HANA：3年目 1回戦通過→2回戦敗退／4年目 1回戦・2回戦通過→準決勝敗退。11/02 規律A 段3）
+    static let branchC: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)] = [
+        (24, 1, -183000, 90, 10.204309747552378, 15.927679339717933, 16.07491161891837, 16.155770046562065, 15.7352013384573, 16.67820561087455, 10.0, 0, 0),
+        (24, 2, -242000, 90, 15.732945855223878, 15.927679339717933, 19.1540576128146, 19.588398758911822, 18.53324802806332, 3.2720841431259835, 16.0, 0, 0),
+        (24, 3, -47000, 55, 22.74060573841314, 18.401049561018258, 20.98604432788057, 22.821577018714308, 20.94642014657564, 3.413403652256677, 20, 0, 0),
+        (24, 4, 1345000, 70, 36.9089371559027, 23.229889865073893, 23.89353288235513, 31.698855202435468, 21.491705370597227, 21.53517431021224, 19.875, 4, 0),
+    ]
+
     private func runBranch(seed: UInt64, plan: [(Bool, Double?)],
-                           expected: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)]) {
+                           expected: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)],
+                           female: Bool = false) {
         let config = GameConfig()
         var rng = SplitMix64(seed: seed)
         var policy = GoldenPolicy()
-        var s = GameState(config: config)
+        var s = GameState(config: config, femaleCombo: female)
         var prev = 0
         for (i, e) in expected.enumerated() {
             let y = i + 1
@@ -172,6 +181,10 @@ final class CareerGoldenTests: XCTestCase {
 
     func testBranchRevivalAndGpSeed() {
         runBranch(seed: 1, plan: Array(repeating: (false, nil), count: 4), expected: Self.branchA)
+    }
+
+    func testBranchTheHanaFemale() {
+        runBranch(seed: 24, plan: Array(repeating: (false, nil), count: 4), expected: Self.branchC, female: true)
     }
 
     func testBranchSeedFinalAndLineOverride() {
