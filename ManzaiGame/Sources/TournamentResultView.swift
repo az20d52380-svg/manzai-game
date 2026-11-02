@@ -19,6 +19,8 @@ struct TournamentResultView: View {
     @State private var showPass = false        // 回戦突破の祝い（次へ 押下で1度だけ・GPの通過のみ）
     @State private var showBurstCutIn = false  // ハマった夜の斜めカットイン（判の叩きつけと同時に1度だけ）
     @State private var signIn = false          // 番組アイキャッチ：大会看板がドンと打ち出される
+    @State private var stampHold = false       // 判の前の溜め（0.18秒・画面が少し暗く、巨大な判が薄く浮く・無音）
+    @State private var inkBleed = false        // 朱肉のにじみ（判の後 1.0→1.08 倍で薄れる）
     @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
     @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
     /// 開示列のタスク（保持して画面を離れたら取り消す＝投げっぱなしにしない・X4-08）
@@ -192,6 +194,8 @@ struct TournamentResultView: View {
                           origin: UnitPoint(x: 0.5, y: 0.40))
         }
         .screenShake(trigger: slamFire, intensity: r.passed ? 10 : 7)     // 判の衝撃（勝敗とも）
+        .edgePulse(trigger: slamFire, color: YoseColor.shu)               // 視差を減らす時：揺れの代わりに縁が朱色に2回明滅
+        .overlay { Color.black.opacity(stampHold ? 0.2 : 0).ignoresSafeArea().allowsHitTesting(false).animation(.easeOut(duration: 0.08), value: stampHold) }   // 溜めの間、画面が少し暗くなる
         .screenFlash(trigger: r.passed ? slamFire : 0,                    // 白むのは通過だけ
                      color: Color(hex: 0xFFEDCB), strength: 0.4)
         .overlay {
@@ -311,19 +315,31 @@ struct TournamentResultView: View {
         if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
         await pause(0.7)
         if Task.isCancelled { return }
+        if !skipRequested, !needsAnnounce, !UIAccessibility.isReduceMotionEnabled {
+            // 判の前の溜め：0.18秒（序盤の予選は0.1秒）。画面が少し暗くなり、巨大な判が薄く浮く。無音（Gemini R7 §2-C・§4-3）
+            stampHold = true
+            await pause(needsQual ? 0.10 : 0.18)
+            stampHold = false
+            if Task.isCancelled { return }
+        }
+        inkBleed = false
         withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.62))) { revealed = true }   // 判の叩きつけ
+        if !UIAccessibility.isReduceMotionEnabled { DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.45)) { inkBleed = true } } }
         slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
         if r.burst == true && !skipRequested { showBurstCutIn = true }   // ハマった夜＝斜めカットイン（約1秒で自動退場）
         if needsAnnounce {
             // 準決勝は発表で結果が分かっている＝客席の反応・判の叩きつけは出さない（講評・結果の札は続けて出す）
         } else if r.passed {
             if needsQual { Sound.play(.applauseHall) }                   // 予選＝拍手と歓声だけ（判の文字・紙吹雪・太鼓なし）
-            else { confettiFire += 1; Haptics.rare(); Sound.play(.taiko); Sound.play(.applauseHall) }   // 通過＝太鼓ドン＋会場拍手
+            else {
+                confettiFire += 1; Haptics.rare(); Sound.play(.taiko); Sound.play(.applauseHall)   // 通過＝太鼓ドン＋会場拍手
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) { Haptics.rigid(0.6) }      // 叩きつけの0.08秒後に硬い一発（Gemini R7 §2-C）
+            }
         } else {
             if !needsQual { Haptics.confirm(); Sound.play(.taiko2) }     // 予選の敗退は静かな客席だけ
             // 敗退＝重いドドン（拍手なし＝静けさ）
         }
-        try? await Task.sleep(nanoseconds: 400_000_000)                  // 判の解放は畳まない（0.4s は必ず見せる）
+        try? await Task.sleep(nanoseconds: 450_000_000)                  // 判の余韻は畳まない（0.45s は必ず見せる・朱肉のにじみが薄れる間）
         if Task.isCancelled { return }
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { return }   // 目視用：判の直後で止める（段階の途中を撮る）
@@ -392,8 +408,16 @@ struct TournamentResultView: View {
         StageVerdictPlate(text: stampLabel(passed: passed), lost: !passed)
             .scaleEffect(1.15)
             .padding(.vertical, 6)
-            .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))
-            .opacity(revealed ? 1 : 0)
+            .scaleEffect(revealed ? 1 : (stampHold ? 2.8 : (passed ? 2.6 : 1.5)))
+            .opacity(revealed ? 1 : (stampHold ? 0.22 : 0))
+            .animation(.easeOut(duration: 0.18), value: stampHold)
+            .overlay {
+                // 朱肉のにじみ：叩きつけの直後に縁がにじみ、1.0→1.08 倍で薄れる
+                Rectangle().stroke(YoseColor.shu.opacity(0.6), lineWidth: 5).blur(radius: 2)
+                    .scaleEffect(inkBleed ? 1.08 : 1)
+                    .opacity(revealed && !inkBleed ? 1 : 0)
+                    .allowsHitTesting(false)
+            }
     }
 
     /// 客席のウケの波形（24本の縦スリット。通過＝後半へ育ってオチで跳ねる／敗退＝低く疎ら・惜しいほど後半が立つ）
