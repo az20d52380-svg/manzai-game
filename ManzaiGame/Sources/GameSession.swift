@@ -695,9 +695,9 @@ final class GameSession {
             }
         }
         if runner.isFinalist || runner.isGPAlive {
-            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine, highStakes: true, isGP: true, length: NetaCatalog.lengthForGPFinal))
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine + cal.gpLateBonus(year: year), highStakes: true, isGP: true, length: NetaCatalog.lengthForGPFinal))
         } else if runner.hasRevival {
-            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine, highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine + cal.gpLateBonus(year: year), highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
         }
         for t in cal.tournaments where t.isEligible(year: year, state: state) {
             ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
