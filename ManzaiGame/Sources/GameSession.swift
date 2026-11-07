@@ -42,6 +42,14 @@ final class GameSession {
     private(set) var lastFameDelta: Double = 0
     /// 大会結果画面の知名度の増分（decideTournament 経由・表示専用・golden非対象）
     private(set) var lastResultFameDelta: Double = 0
+    /// 大会結果画面の経験点の増分（5種ごと・decideTournament／advanceAuto 経由・表示専用・golden非対象）。負けても少し入る
+    private(set) var lastResultExpDelta: [ExpCurrency: Double] = [:]
+    private func expSnapshot() -> [ExpCurrency: Double] { Dictionary(uniqueKeysWithValues: ExpCurrency.allCases.map { ($0, state[currency: $0]) }) }
+    private func recordExpDelta(from before: [ExpCurrency: Double]) {
+        var d: [ExpCurrency: Double] = [:]
+        for c in ExpCurrency.allCases { d[c] = state[currency: c] - (before[c] ?? 0) }
+        lastResultExpDelta = d
+    }
     /// 上記の増減が属する週。View は lastDeltaWeek == week の時だけバーストを出す＝大会画面を
     /// 挟んで戻った時に古い増減が再生される事故を防ぐ（表示ゲートのみ・golden非対象）。
     private(set) var lastDeltaWeek = -1
@@ -335,10 +343,12 @@ final class GameSession {
     func decideTournament(_ travel: Travel?) {
         guard case .tournamentDecision = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let fameBefore = state.fame
+        let expBefore = expSnapshot()
         phase = runner.resolveTournament(travel: travel)
         if travel == .夜行バス, TrophyBook.bump("bus") >= 10 { TrophyBook.award(.t12) }
         pump()
         lastResultFameDelta = state.fame - fameBefore   // 表示専用（大会結果画面の「知名度 +n」札）
+        recordExpDelta(from: expBefore)
         saveNow()
     }
 
@@ -946,8 +956,10 @@ final class GameSession {
         case .gpRound, .gpRevival, .gpFinal: break
         default: return
         }
+        let expBefore = expSnapshot()
         phase = runner.resolveAuto()
         pump()
+        recordExpDelta(from: expBefore)
         saveNow()
     }
 

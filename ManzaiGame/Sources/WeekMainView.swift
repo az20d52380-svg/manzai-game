@@ -1548,7 +1548,7 @@ struct WeekMainView: View {
     }
 
     /// 経験点5色（正本 §2・能力アップ画面の5色と同じ）
-    private static func expColor(_ c: ExpCurrency) -> Color {
+    static func expColor(_ c: ExpCurrency) -> Color {
         switch c {
         case .閃き: return YoseColor.expSen
         case .語彙: return YoseColor.expGo

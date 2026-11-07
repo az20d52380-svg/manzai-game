@@ -532,11 +532,41 @@ struct TournamentResultView: View {
                 .frame(maxWidth: .infinity).padding(.vertical, 8)
                 .background(YoseColor.ki.opacity(0.35))
             }
+            expGainRow(passed: r.passed)
         }
         .yoseHarigami(isFeatured: r.passed)   // 突破・賞金の下段を主役に（講評の貼り紙は普通の枠）
         .overlay { if r.passed { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5).allowsHitTesting(false) } }   // 通過したら枠が金に光る
         .shadow(color: r.passed ? YoseColor.kinBright.opacity(0.7) : .clear, radius: 9)
         .padding(.bottom, 2)
+    }
+
+    /// 大会で入った経験点（5種の丸＋合計）。負けても少し入る＝その旨を添える。表示専用・％なし
+    @ViewBuilder
+    private func expGainRow(passed: Bool) -> some View {
+        let d = session.lastResultExpDelta
+        let total = ExpDisplay.value(ExpCurrency.allCases.reduce(0.0) { $0 + max(0, d[$1] ?? 0) })
+        if total >= 1 {
+            VStack(spacing: 0) {
+                Rectangle().fill(YoseColor.kiDark).frame(height: 1)
+                HStack(spacing: 8) {
+                    Text("経験点 +\(total)").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                    ForEach(ExpCurrency.allCases, id: \.self) { c in
+                        let n = ExpDisplay.value(max(0, d[c] ?? 0))
+                        if n >= 1 {
+                            Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                                .frame(width: 22, height: 22).background(WeekMainView.expColor(c), in: Circle())
+                                .yoseExpPing(revealedRest ? n : 0, color: WeekMainView.expColor(c))
+                                .accessibilityLabel(c.displayName)
+                            Text("+\(n)").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.leading, -4)
+                        }
+                    }
+                    if !passed { Text("負けても入る").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
+                }
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 8)
+                .background(YoseColor.ki.opacity(0.35))
+            }
+        }
     }
 
     /// DEBUG限定の目視フック：MZ_FANREPORT=1 でハマった夜でなくてもカードを出す（表示だけ・判定不変）
