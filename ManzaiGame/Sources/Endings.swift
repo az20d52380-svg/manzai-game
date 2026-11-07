@@ -150,7 +150,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         case .tenYearsTrue:
             return [
                 c("年末。最初に二人で出た劇場。", bg: EventBackdrop(.theater,.evening), [("谷口", "ここ、最初に二人で出たとこだね"), ("俺", "うん。今日の出番、ここで頼んだ")]),
-                c("出番の前。舞台の袖。", bg: EventBackdrop(.theater,.evening), [("谷口", "十五年、ずっと隣にいたね"), ("俺", "そうだね。出番、そろそろだよ"), ("谷口", "そうだね。じゃあ行こうか")]),
+                c("出番の前。舞台の袖。", bg: EventBackdrop(.theater,.evening), [("谷口", "十五年、ずっと隣にいたね"), ("俺", "そうだね。出番、そろそろだよ"), ("谷口", "うん。行こうか")]),
                 c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.theaterOutside,.night), [("谷口", "来年のグランプリ、もう一回決勝に行こう"), ("俺", "行こう。一月から週二で練習を入れる"),
                                                  ("谷口", "よし。体だけは壊さないようにしよう")]),
             ]
