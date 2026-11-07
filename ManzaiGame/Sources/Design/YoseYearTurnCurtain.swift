@@ -224,7 +224,7 @@ struct YoseYearTurnCurtainView: View {
                         .accessibilityHidden(true)   // めくれて消える前年の札は読ませない（19l §1-4）
                         .rotation3DEffect(.degrees(mekuriFlipped ? 90 : 0), axis: (x: 1, y: 0, z: 0), anchor: .top, perspective: 0.35)
                         .opacity(mekuriFlipped ? 0 : 1)
-                        .animation(.linear(duration: 0.01).delay(mekuriFlipped ? 0.2 : 0), value: mekuriFlipped)
+                        .animation(Theme.Motion.r(.linear(duration: 0.01).delay(mekuriFlipped ? 0.2 : 0)), value: mekuriFlipped)
                 }
                 .padding(.top, 4)
             }
@@ -378,32 +378,32 @@ struct YoseYearTurnCurtainView: View {
 
         // 0.00〜0.32s: 幕が閉じたまま静止（溜め）→ ピンスポットが点る
         guard await pause(320_000_000) else { return }
-        withAnimation(.easeOut(duration: 0.3)) { spotOn = true }
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { spotOn = true }
 
         // 0.32s: 定式幕が左右へ引き開けられる
-        withAnimation(.easeInOut(duration: 0.30)) { curtainClosed = false }
+        withAnimation(Theme.Motion.r(.easeInOut(duration: 0.30))) { curtainClosed = false }
 
         // 0.78s: めくり札が上辺を軸にパタン！＋金火花＋揺れ
         guard await pause(460_000_000) else { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-        withAnimation(.spring(response: 0.26, dampingFraction: 0.62)) { mekuriFlipped = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.26, dampingFraction: 0.62))) { mekuriFlipped = true }
         burstTrigger += 1
-        withAnimation(.linear(duration: 0.04)) { shakeY = 5 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeY = 5 }
         guard await pause(50_000_000) else { return }
-        withAnimation(.linear(duration: 0.05)) { shakeY = -3 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = -3 }
         guard await pause(55_000_000) else { return }
-        withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = 0 }
 
         // 1.0s: 朱印『開幕』
         guard await pause(110_000_000) else { return }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) { stamped = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { stamped = true }
         burstTrigger += 1
-        withAnimation(.linear(duration: 0.04)) { shakeY = 3 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeY = 3 }
         guard await pause(50_000_000) else { return }
-        withAnimation(.linear(duration: 0.05)) { shakeY = 0 }
+        withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = 0 }
         guard await pause(100_000_000) else { return }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { contentAppeared = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.8))) { contentAppeared = true }
     }
 
     /// 待つ。閉じられて Task が取り消されたら false（残りの触覚・揺れを鳴らさない＝code_review_2026-10-19l §1-3）
@@ -464,6 +464,6 @@ private struct YearTurnStageBackdrop: View {
             ctx.fill(Path(ellipseIn: CGRect(x: cx - 200, y: fy + 60, width: 400, height: 60)),
                      with: .radialGradient(Gradient(colors: [YoseColor.kinBright.opacity(0.35), .clear]),
                                            center: CGPoint(x: cx, y: fy + 90), startRadius: 0, endRadius: 200))
-        }
+        }.accessibilityHidden(true)
     }
 }

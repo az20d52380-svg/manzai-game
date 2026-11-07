@@ -118,7 +118,7 @@ struct RadarChart: View {
             }
         }
         .onAppear {
-            if animate && !reduceMotion { withAnimation(.easeInOut(duration: 0.8)) { progress = 1 } }
+            if animate && !reduceMotion { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8))) { progress = 1 } }
             else { progress = 1 }
         }
         // 図は Canvas 1枚で読み上げが無かった＝能力ごとの「現在（年初）」を文で読む（a11y_check_1026_voiceover_v0 #4・表示は不変）
