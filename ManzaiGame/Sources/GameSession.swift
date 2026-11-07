@@ -345,11 +345,11 @@ final class GameSession {
 
     /// 大会週の回答（travel=nil は見送り）
     func decideTournament(_ travel: Travel?) {
-        guard case .tournamentDecision = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
+        guard case .tournamentDecision(let decisionSpec) = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let fameBefore = state.fame
         let expBefore = expSnapshot()
         phase = runner.resolveTournament(travel: travel)
-        if travel == .夜行バス, TrophyBook.bump("bus") >= 10 { TrophyBook.award(.t12) }
+        if travel == .夜行バス, decisionSpec.osaka, TrophyBook.bump("bus") >= 10 { TrophyBook.award(.t12) }   // 大阪開催の大会だけ数える（東京開催・動画審査は交通費0＝バスに乗っていない・C-16）
         pump()
         lastResultFameDelta = state.fame - fameBefore   // 表示専用（大会結果画面の「知名度 +n」札）
         recordExpDelta(from: expBefore)
