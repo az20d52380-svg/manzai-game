@@ -263,7 +263,7 @@ struct YosePassCelebrationView: View {
         let steps = 14
         for i in 1...steps {
             try? await Task.sleep(nanoseconds: 32_000_000)
-            if done { return }
+            if done || Task.isCancelled { return }   // 閉じた後に触覚を鳴らさない（code_review_1107e #3）
             if i % 4 == 0 { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
             let v = Int(Double(power) * pow(Double(i) / Double(steps), 1.6)) + (i == steps ? 0 : Int.random(in: 0...6))
             withAnimation(Theme.Motion.r(.linear(duration: 0.03))) { shownPower = min(v, power) }
@@ -271,7 +271,7 @@ struct YosePassCelebrationView: View {
         withAnimation(Theme.Motion.r(.linear(duration: 0.03))) { shownPower = power }
         // 0.45〜0.57s 無音の停止
         try? await Task.sleep(nanoseconds: 120_000_000)
-        if done { return }
+        if done || Task.isCancelled { return }
         // 0.57s 突破：看板点灯・朱印・フラッシュ・揺れ・斜光
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         flash = 0.24; withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { flash = 0 }
@@ -286,7 +286,7 @@ struct YosePassCelebrationView: View {
         withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeY = 0 }
         // 0.78s 角印『秀』
         try? await Task.sleep(nanoseconds: 220_000_000)
-        if done { return }
+        if done || Task.isCancelled { return }
         UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
         withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { hidemarkIn = true }
         try? await Task.sleep(nanoseconds: 300_000_000)
@@ -424,6 +424,7 @@ struct YoseBigSuccessCutIn: View {
         withAnimation(Theme.Motion.r(.spring(response: 0.18, dampingFraction: 0.82))) { bandIn = true }
         // 0.22s 朱印『大成功』＋揺れ＋火花
         try? await Task.sleep(nanoseconds: 120_000_000)
+        if Task.isCancelled { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         flash = 0.32; withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { flash = 0 }
         withAnimation(Theme.Motion.r(.spring(response: 0.2, dampingFraction: 0.55))) { stamped = true }

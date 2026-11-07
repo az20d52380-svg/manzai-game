@@ -9,7 +9,7 @@ import GameCore
 
 struct S6bView: View {
     let session: GameSession
-    var kougyouOnly = false    // #5 十年で区切り：①引退興行だけ（あとは endings_spec の場面へ）
+    var kougyouOnly = false    // #5 十五年で区切り：①引退興行だけ（あとは endings_spec の場面へ）
     var finishLabel = "また、幕が上がる ▶"
     var onFinish: () -> Void   // 緞帳→S1顔合わせ（MVPはもう一度＝新周回）
 

@@ -17,6 +17,10 @@ targets:
         buildPhase: resources
         excludes:
           - "**/*.md"        # CREDITS.md はバンドルに含めない（repo内の記録用）
+    entitlements:
+      path: ManzaiGame.entitlements        # iCloud キー値ストア（衣装ガチャの持ち物を機種変更でも残す）
+      properties:
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)$(CFBundleIdentifier)
     dependencies:
       - package: GameCore
         product: GameCore
@@ -32,7 +36,7 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO      # 標準の暗号のみ＝輸出コンプライアンス申告（監査G-11）
-        INFOPLIST_KEY_CFBundleDisplayName: "四分の夜"         # ホーム画面名（確定時に SettingsView.AppInfo と揃える・監査H-06）
+        INFOPLIST_KEY_CFBundleDisplayName: "漫才王になろう"       # ホーム画面名（確定時に SettingsView.AppInfo と揃える・監査H-06）
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon          # 1024px を Resources/Assets.xcassets/AppIcon.appiconset に置く（監査G-01）
   ManzaiGameTests:
     type: bundle.unit-test
