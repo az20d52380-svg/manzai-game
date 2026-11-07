@@ -185,9 +185,9 @@ final class GameSession {
     private(set) var hasYearStart = true
     /// 1年＝1行の記録（年末の「これまで」と勇退エンディングの年表に使う・表示専用・golden非対象）
     private(set) var yearHistory: [YearRecord] = []
-    /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。保存しない（中断復帰した年は数え直し）
-    @ObservationIgnored private var smallEntered = 0
-    @ObservationIgnored private var smallWon = 0
+    /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。中断しても数え直さないよう保存する（code_review_1107g #1）
+    @ObservationIgnored private(set) var smallEntered = 0
+    @ObservationIgnored private(set) var smallWon = 0
     @ObservationIgnored private var didRecordChampion = false   // その年の優勝を記録したか（年が替わると戻す）
     /// 優勝の年末で勇退を選んだ（選ぶと保存が消えるのでセーブには持たない）
     private(set) var retiredAfterWin = false
@@ -327,6 +327,8 @@ final class GameSession {
         self.lastBanterRollWeek = save.lastBanterRollWeek
         self.categoryLog = save.categoryLog
         self.totalPrize = save.totalPrize
+        self.smallEntered = save.smallEntered ?? 0
+        self.smallWon = save.smallWon ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
     }
 
@@ -1253,6 +1255,8 @@ final class GameSession {
         var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
         var weeksWithoutPartner: Int?     // 相方と過ごさない週の連続数（旧セーブ＝nil＝0）
         var injuryNoticeWeeks: Int?       // 体調ダウンの知らせ待ち（旧セーブ＝nil＝0・code_review_2026-10-19c §2-4）
+        var smallEntered: Int?            // その年の道中大会に出た数（旧セーブ＝nil＝0）
+        var smallWon: Int?                // その年の道中大会で優勝した数（旧セーブ＝nil＝0）
         var writeNetaID: Int?             // 書く対象のネタ（旧セーブ＝nil＝勝負ネタを磨く・queue108）
     }
 
@@ -1321,7 +1325,7 @@ final class GameSession {
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
-                            injuryNoticeWeeks: injuryNoticeWeeks, writeNetaID: writeNetaID)
+                            injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
