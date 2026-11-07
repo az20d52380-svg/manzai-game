@@ -158,6 +158,26 @@ final class GachaTests: XCTestCase {
         XCTAssertEqual(fresh.merged(with: stale).shards, 0)
     }
 
+    func testMergeDoesNotResurrectOpenedPaidPulls() {
+        var a = GachaState(); a.freeTickets = 0; a.credit(txID: "1", count: 10)
+        let b = a                                  // 古い側（未開封10のまま）
+        var g = SystemRandomNumberGenerator()
+        for _ in 0..<10 { _ = a.pullOne(&g) }       // 端末Aが10回開封
+        XCTAssertEqual(a.paidPending, 0)
+        XCTAssertEqual(b.merged(with: a).paidPending, 0)
+        XCTAssertEqual(a.merged(with: b).paidPending, 0)
+        var mm = a.merged(with: b); XCTAssertFalse(mm.credit(txID: "1", count: 10))   // 同じ購入は二重に付かない
+    }
+
+    func testLegacyPaidPendingMigrates() throws {
+        let json = #"{"owned":["kon"],"freeTickets":0,"paidPending":3,"shards":0,"pity":0,"totalPulls":2,"loginStamps":0,"lastLoginDay":"","creditedTx":["9"]}"#
+        let s = try JSONDecoder().decode(GachaState.self, from: Data(json.utf8))
+        XCTAssertEqual(s.paidPending, 3)
+        XCTAssertEqual(s.paidOpened, 0)
+        let back = try JSONDecoder().decode(GachaState.self, from: JSONEncoder().encode(s))
+        XCTAssertEqual(back, s)
+    }
+
     @MainActor func testStorePersists() {
         let suite = UserDefaults(suiteName: "gacha-test-\(UUID().uuidString)")!
         let a = GachaStore(defaults: suite, useCloud: false)

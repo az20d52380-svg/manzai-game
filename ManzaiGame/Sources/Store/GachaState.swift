@@ -47,7 +47,13 @@ struct PullResult: Equatable {
 struct GachaState: Codable, Equatable {
     var owned: Set<String> = []        // ガチャで出た衣装（standard/黒紋付は含めない）
     var freeTickets = 1                // 無料の回数（新規は「はじめての1回」分の1回を最初から持つ。以後はログインボーナスで貯まる）
-    var paidPending = 0                // 買ったが、まだ回していない回数（その場で回す＝貯めない）
+    var paidCredited = 0               // 購入で付与された回数の累計（増えるだけ）
+    var paidOpened = 0                 // 購入分を開封（回した）回数の累計（増えるだけ）
+    /// 買ったが、まだ回していない回数＝付与−開封（旧データは付与＝旧の未開封・開封＝0 に移す）。代入は付与側で合わせる
+    var paidPending: Int {
+        get { max(0, paidCredited - paidOpened) }
+        set { paidCredited = paidOpened + max(0, newValue) }
+    }
     var shards = 0
     var pity = 0
     var totalPulls = 0
@@ -55,13 +61,44 @@ struct GachaState: Codable, Equatable {
     var lastLoginDay = ""              // yyyy-MM-dd（端末の日付）
     var creditedTx: [String] = []      // 付与済みの取引ID（二重付与の防止・直近50件）
 
+    init() {}
+    private enum CodingKeys: String, CodingKey {
+        case owned, freeTickets, paidPending, paidCredited, paidOpened, shards, pity, totalPulls, loginStamps, lastLoginDay, creditedTx
+    }
+    func encode(to e: Encoder) throws {
+        var c = e.container(keyedBy: CodingKeys.self)
+        try c.encode(owned, forKey: .owned); try c.encode(freeTickets, forKey: .freeTickets)
+        try c.encode(paidCredited, forKey: .paidCredited); try c.encode(paidOpened, forKey: .paidOpened)
+        try c.encode(shards, forKey: .shards); try c.encode(pity, forKey: .pity); try c.encode(totalPulls, forKey: .totalPulls)
+        try c.encode(loginStamps, forKey: .loginStamps); try c.encode(lastLoginDay, forKey: .lastLoginDay)
+        try c.encode(creditedTx, forKey: .creditedTx)
+    }
+    init(from d: Decoder) throws {
+        let c = try d.container(keyedBy: CodingKeys.self)
+        owned = try c.decodeIfPresent(Set<String>.self, forKey: .owned) ?? []
+        freeTickets = try c.decodeIfPresent(Int.self, forKey: .freeTickets) ?? 1
+        shards = try c.decodeIfPresent(Int.self, forKey: .shards) ?? 0
+        pity = try c.decodeIfPresent(Int.self, forKey: .pity) ?? 0
+        totalPulls = try c.decodeIfPresent(Int.self, forKey: .totalPulls) ?? 0
+        loginStamps = try c.decodeIfPresent(Int.self, forKey: .loginStamps) ?? 0
+        lastLoginDay = try c.decodeIfPresent(String.self, forKey: .lastLoginDay) ?? ""
+        creditedTx = try c.decodeIfPresent([String].self, forKey: .creditedTx) ?? []
+        if let cr = try c.decodeIfPresent(Int.self, forKey: .paidCredited) {
+            paidCredited = cr
+            paidOpened = try c.decodeIfPresent(Int.self, forKey: .paidOpened) ?? 0
+        } else {   // 旧形式：未開封の数だけ持っていた
+            paidCredited = try c.decodeIfPresent(Int.self, forKey: .paidPending) ?? 0
+            paidOpened = 0
+        }
+    }
+
     func owns(_ o: StageOutfit) -> Bool { o == .standard || owned.contains(o.rawValue) }
     var availableTickets: Int { freeTickets + paidPending }
 
     // MARK: 抽選
     /// 1回分を引く（券は無料→有料の順に使う）。券が無ければ nil
     mutating func pullOne<G: RandomNumberGenerator>(_ g: inout G) -> PullResult? {
-        if freeTickets > 0 { freeTickets -= 1 } else if paidPending > 0 { paidPending -= 1 } else { return nil }
+        if freeTickets > 0 { freeTickets -= 1 } else if paidPending > 0 { paidOpened += 1 } else { return nil }
         let outfit = (totalPulls == 0) ? Self.drawFirst(&g) : Self.draw(&g)   // 初回ガチャ【仮】：最初の1回は特別が必ず出る
         totalPulls += 1
         pity += 1
@@ -133,7 +170,7 @@ struct GachaState: Codable, Equatable {
         guard !creditedTx.contains(txID) else { return false }
         creditedTx.append(txID)
         if creditedTx.count > 50 { creditedTx.removeFirst(creditedTx.count - 50) }
-        paidPending += count
+        paidCredited += count
         return true
     }
 
@@ -148,7 +185,8 @@ struct GachaState: Codable, Equatable {
         // 回数が同じでも、かけら・天井で交換して持ち物が増えた側が新しい（古い側の残高が戻って二重に使えるのを防ぐ）
         let newer = (o.totalPulls, o.owned.count) > (totalPulls, owned.count) ? o : self
         m.shards = newer.shards; m.pity = newer.pity; m.freeTickets = newer.freeTickets
-        m.paidPending = max(paidPending, o.paidPending)
+        m.paidCredited = max(paidCredited, o.paidCredited)
+        m.paidOpened = max(paidOpened, o.paidOpened)
         for t in o.creditedTx where !m.creditedTx.contains(t) { m.creditedTx.append(t) }
         if m.creditedTx.count > 50 { m.creditedTx.removeFirst(m.creditedTx.count - 50) }
         return m
