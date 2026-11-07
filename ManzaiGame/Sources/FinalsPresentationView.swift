@@ -56,6 +56,7 @@ struct FinalsPresentationView: View {
     @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
     @State private var holdingSeventh = false
+    @State private var voteTailTask: Task<Void, Never>?   // 決着後の残りの札を開く途中で閉じたら止める（閉じた後に音が鳴らない）
     // 番組の演出（見せ方だけ・結果は FinalsData のまま）
     @State private var lotRevealed = false     // 出番くじ: 心拍のあと出順が出る
     @State private var lotPulse = false
@@ -114,7 +115,7 @@ struct FinalsPresentationView: View {
             // 暖色の客席に光る舞台（オーナー判断 Q1=A・visual_genre_overhaul_v1 §6 F1）。採点〜最終決戦は金屏風
             StageFrame(mode: stageMode, performers: stagePerformers,
                        floorTop: beat == .lot ? 0.60 : (beat == .result ? 0.62 : (beat == .perform ? 0.58 : 0.56)))
-                .animation(.easeInOut(duration: 0.5), value: beat)
+                .animation(Theme.Motion.r(.easeInOut(duration: 0.5)), value: beat)
             FinalsStudioLights(duel: beat == .duel)   // スタジオ照明（最終決戦だけ真紅×群青）
             if beat == .perform {   // ネタ中：舞台袖のめくり（コンビ名）
                 VStack { Spacer(); HStack { Spacer(); StageMakuri(name: spectator ? "客席" : session.combiName).padding(.trailing, 20) }.padding(.bottom, 190) }
@@ -171,7 +172,7 @@ struct FinalsPresentationView: View {
                 if beat < .result, beat != .perform, !(beat == .duel && revealVotes < 7) {
                     // 送りは下部固定の朱の主ボタン1つ（画面のどこをタップしても進む仕様は不変・押し場所を見せるだけ）
                     Button { if ceremonyDone { advance() } } label: { Text(advanceLabel) }
-                        .buttonStyle(YoseButtonStyle(.primary))
+                        .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
                         .padding(.bottom, 6)
                 }
             }
@@ -202,7 +203,7 @@ struct FinalsPresentationView: View {
                     FinalsBroadcastIntro(combiName: session.combiName, year: session.year, spectator: spectator,
                                          finalists: d.entries.map { (name: displayName($0), isSelf: $0.isSelf) },
                                          startStage: introStart) {
-                        withAnimation(.easeOut(duration: 0.3)) { introDone = true }
+                        withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { introDone = true }
                     }
                     .transition(.opacity)
                 } else {
@@ -215,8 +216,8 @@ struct FinalsPresentationView: View {
             if showChamp {   // 優勝の瞬間（金テープ・大判優勝めくり・賞金ボード・相方の言葉）。タップで即完成→もう一度タップで先へ
                 YoseChampionCelebrationView(tournamentName: "頂グランプリ 決勝戦", generationText: "結成\(session.year)年目",
                                             duoName: session.combiName, prizeAmountYen: session.config.calendar.gpPrize,
-                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、日本一だよ」") {
-                    withAnimation(.easeOut(duration: 0.3)) { showChamp = false }
+                                            partnerName: Names.partner, partnerLine: "「\(session.repeatWinLine)」") {
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { showChamp = false }
                     // 優勝年は全画面の後に「優勝は……！」の結果発表を重ねない（結果が2度伝わるため）＝そのまま番組エンディングへ
                     endingFull = FinalsSeen.first("ending") && !reduceMotion
                     showEnding = true
@@ -270,23 +271,24 @@ struct FinalsPresentationView: View {
             #endif
         }
         // 先の組・後の組の自動送り（1.25秒ごとに1組）とネタの間（1.8秒で採点へ）。タップはいつでも次へ
+        .onDisappear { voteTailTask?.cancel() }
         .task(id: autoKey) {
             guard ceremonyDone else { return }
             if beat == .perform {
                 if entranceFull && !reduceMotion {   // 扉が割れる→紹介テロップ→ネタ（初回は長め）
-                    try? await Task.sleep(nanoseconds: 350_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 350_000_000)
                     withAnimation { doorsOpen = true }
                     Haptics.confirm()          // se_door_open_heavy（大扉が割れる）
-                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 3_000_000_000)
                 } else {
                     doorsOpen = true
-                    try? await Task.sleep(nanoseconds: 1_800_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 1_800_000_000)
                 }
                 if !Task.isCancelled, beat == .perform { goNext() }
                 return
             }
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_250_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 1_250_000_000)
                 if Task.isCancelled { return }
                 if beat == .preceding, shown < d.order - 1 { stepBoard() }
                 else if beat == .board, boardAuto, shown < d.entries.count { stepBoard() }
@@ -346,7 +348,7 @@ struct FinalsPresentationView: View {
         case .preceding where shown < d.order - 1:
             stepBoard()
         case .comments where commentStep < commentPicks.count - 1:
-            withAnimation(.easeOut(duration: 0.25)) { commentStep += 1 }
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { commentStep += 1 }
             Sound.play(.cursor); Haptics.tick()
         case .board where !boardAuto:
             boardAuto = true      // 自組の入りを見せた後のタップ＝後の組を流し始める（最初の1組はすぐ出す・大トリなら確定へ）
@@ -358,7 +360,7 @@ struct FinalsPresentationView: View {
             holdingSeventh = true
             Sound.hushSE(true); Sound.duck(0.25, over: 0.2)
             Task {
-                try? await Task.sleep(nanoseconds: 600_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 600_000_000)
                 Sound.hushSE(false); Sound.duck(1, over: 0.4)
                 holdingSeventh = false
                 revealJudge()
@@ -366,7 +368,7 @@ struct FinalsPresentationView: View {
         case .open where revealedJudges < 7:
             revealJudge()
         case .lot where !lotRevealed:
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { lotRevealed = true }   // くじの溜めを畳む
+            withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6))) { lotRevealed = true }   // くじの溜めを畳む
             Haptics.rare()
         case .duel where revealVotes < 7:
             // 王手（勝者の3票）の次が決着の札なら、めくる前に溜める（全SE断＋BGMを絞る・初回0.9秒／以降0.35秒）
@@ -377,7 +379,7 @@ struct FinalsPresentationView: View {
                 Haptics.tick()
                 let hold: UInt64 = duelFull && !reduceMotion ? 900_000_000 : 350_000_000
                 Task {
-                    try? await Task.sleep(nanoseconds: hold)
+                    try? await MZSpeed.sleep(nanoseconds: hold)
                     Sound.hushSE(false); Sound.duck(1, over: 0.4)
                     holdingSeventh = false
                     revealVote()
@@ -387,7 +389,7 @@ struct FinalsPresentationView: View {
             }
         default:
             if beat == .duel && d.champion && !celebrate {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { celebrate = true }
+                withAnimation(Theme.Motion.r(.spring(response: 0.5, dampingFraction: 0.55))) { celebrate = true }
                 Haptics.rare(); burstFire += 1
             }
             goNext()
@@ -396,7 +398,7 @@ struct FinalsPresentationView: View {
 
     /// 最終決戦の票札を1枚めくる
     private func revealVote() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealVotes += 1 } // めくり1枚
+        withAnimation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.6))) { revealVotes += 1 } // めくり1枚
         let winCount = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
         if winCount == 4 {                                          // 過半数到達＝その瞬間に決着
             slamFire += 1                                           // 揺れ・閃光は決着の1回だけ（X2-26〜28）
@@ -404,12 +406,12 @@ struct FinalsPresentationView: View {
             Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
             if revealVotes < 7 {                                    // 4票で決まったあとの残りの札：1拍おいて、早めに1枚ずつ開く（連打の手間を省く）
                 holdingSeventh = true
-                Task {
-                    try? await Task.sleep(nanoseconds: 1_100_000_000)
-                    while revealVotes < 7 {
-                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) { revealVotes += 1 }
+                voteTailTask = Task {
+                    try? await MZSpeed.sleep(nanoseconds: 1_100_000_000)
+                    while revealVotes < 7, !Task.isCancelled {
+                        withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.7))) { revealVotes += 1 }
                         Haptics.confirm(); Sound.play(.don)
-                        try? await Task.sleep(nanoseconds: 380_000_000)
+                        try? await MZSpeed.sleep(nanoseconds: 380_000_000)
                     }
                     holdingSeventh = false
                 }
@@ -459,14 +461,14 @@ struct FinalsPresentationView: View {
             let rank = (standings(shown).firstIndex { $0.isSelf } ?? 0) + 1
             if rank <= 3 { Sound.play(.cheerMid); Haptics.confirm() } else { Sound.play(.taiko2); Haptics.rare() }
         }
-        withAnimation(.easeInOut(duration: 0.4)) { beat = nextBeat }
+        withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { beat = nextBeat }
     }
 
     /// ボードに次の組を1組載せる。暫定席（上位3）に入れば「ドン」、自組が押し出されたら重い太鼓
     private func stepBoard() {
         guard shown < d.entries.count else { return }
         let wasSelfSeated = standings(shown).prefix(3).contains { $0.isSelf }
-        withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) { shown += 1 }
+        withAnimation(Theme.Motion.r(.spring(response: 0.38, dampingFraction: 0.82))) { shown += 1 }
         let entry = d.entries[shown - 1]
         let top = standings(shown).prefix(3)
         let seated = top.contains { $0.order == entry.order }
@@ -481,7 +483,7 @@ struct FinalsPresentationView: View {
 
     /// 審査員を1人開く（M-1式＝1人ずつ・オーナー判断 Q2）。揺れ・閃光は付けない（決着と優勝だけ）
     private func revealJudge() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { revealedJudges += 1 }
+        withAnimation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.6))) { revealedJudges += 1 }
         // se_score_flip_electronic_wood ×7／95点以上は se_crowd_gasp_high（どよめき）と強い振動
         if d.judges.indices.contains(revealedJudges - 1), d.judges[revealedJudges - 1].score >= 95 { Haptics.rare() } else { Haptics.confirm() }
         Sound.play(revealedJudges >= 7 ? .tada : .don)            // 1人ずつドン・全員出たらジャジャーン
@@ -493,18 +495,18 @@ struct FinalsPresentationView: View {
         guard !holdingSeventh else { return }
         switch beat {
         case .preceding where shown < d.order - 1:
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { shown = d.order - 1 }
+            withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.8))) { shown = d.order - 1 }
             Haptics.confirm()
         case .board where shown < d.entries.count:
             boardAuto = true
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { shown = d.entries.count }
+            withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.8))) { shown = d.entries.count }
             Haptics.confirm()
         case .open where revealedJudges < 7:
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { revealedJudges = 7 }
+            withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.7))) { revealedJudges = 7 }
             Haptics.confirm(); Sound.play(.tada); Sound.play(.applauseHall)
         case .duel where revealVotes < 7:
             let before = d.voteOrder.prefix(revealVotes).filter { $0 == d.winnerIndex }.count
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { revealVotes = 7 }
+            withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.7))) { revealVotes = 7 }
             if before < 4 {   // 早送りの中で決着が来た＝決着の一打だけは鳴らす
                 slamFire += 1; Haptics.rare(); burstFire += 1
                 Sound.play(.taiko); Sound.play(.cheerBig)
@@ -582,15 +584,15 @@ struct FinalsPresentationView: View {
         let full = FinalsSeen.first("lot") && !reduceMotion
         for _ in 0..<(full ? 4 : 1) {
             guard !Task.isCancelled, !lotRevealed else { return }
-            withAnimation(.easeOut(duration: 0.12)) { lotPulse = true }
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.12))) { lotPulse = true }
             Haptics.confirm()                         // se_heartbeat_low（ドクン）
-            try? await Task.sleep(nanoseconds: 170_000_000)
-            withAnimation(.easeIn(duration: 0.12)) { lotPulse = false }
+            try? await MZSpeed.sleep(nanoseconds: 170_000_000)
+            withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { lotPulse = false }
             Haptics.tick()                            // （ドクッ）
-            try? await Task.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
+            try? await MZSpeed.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
         }
         guard !Task.isCancelled, !lotRevealed else { return }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { lotRevealed = true }
+        withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6))) { lotRevealed = true }
         Haptics.rare()                                // se_taiko_grand_hit（出順確定）
     }
 
@@ -618,7 +620,7 @@ struct FinalsPresentationView: View {
         }
         .task {   // .task＝場面を送ったら取り消される（送った後の採点で大歓声が鳴らない・code_review_2026-10-19d）
             Sound.play(.cheerMid)
-            try? await Task.sleep(nanoseconds: 800_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 800_000_000)
             if Task.isCancelled { return }
             Sound.play(.cheerBig)
         }
@@ -832,9 +834,6 @@ struct FinalsPresentationView: View {
         // M-1と同じく、7人全員の札が出るまで合計は出さない（途中の点数は伏せる・オーナー指摘 2026-10-10）
         let total = d.judges.reduce(0) { $0 + $1.score }
         let allShown = revealedJudges >= 7
-        // 見せ札の型ラベル（v2 §4-3補2）: FinalsData（Σ=S補正・rng.int等）の計算には一切関与しない、
-        // 既に確定済みの点数・出順の上に、選択中ネタの型を審査員の固定嗜好表で引いて添えるだけの純表示。
-        let kata: NetaKata? = nil   // 型は表示しない（キュー115）
         return VStack(spacing: 12) {
             // 誰の採点かを明示する黒漆バー
             HStack(spacing: 8) {
@@ -853,12 +852,12 @@ struct FinalsPresentationView: View {
             VStack(spacing: 10) {
                 HStack(spacing: 8) {
                     ForEach(0..<4, id: \.self) { i in
-                        judgeCard(d.judges[i], shown: i < revealedJudges, kata: kata).frame(width: cw)
+                        judgeCard(d.judges[i], shown: i < revealedJudges).frame(width: cw)
                     }
                 }
                 HStack(spacing: 8) {   // 2段目の3枚は中央に（下の合計箱と軸を揃える）
                     ForEach(4..<min(7, d.judges.count), id: \.self) { i in
-                        judgeCard(d.judges[i], shown: i < revealedJudges, kata: kata).frame(width: cw)
+                        judgeCard(d.judges[i], shown: i < revealedJudges).frame(width: cw)
                     }
                 }
             }
@@ -891,27 +890,25 @@ struct FinalsPresentationView: View {
             }
             if revealedJudges == 0 {
                 mcBubble(FinalsMC.startScoring)
-            } else if let kata, allShown {
-                YoseNarration(text: "\(NetaCatalog.displayName(kata))で挑んだ一本。")
             }
         }
         .onChange(of: allShown) { _, now in
             guard now else { return }
             totalCount = 0
-            withAnimation(.easeOut(duration: reduceMotion ? 0.2 : 1.1)) { totalCount = Double(total) }
+            withAnimation(Theme.Motion.r(.easeOut(duration: reduceMotion ? 0.2 : 1.1))) { totalCount = Double(total) }
         }
     }
 
-    private func judgeCard(_ j: JudgeScore, shown: Bool, kata: NetaKata?) -> some View {
+    private func judgeCard(_ j: JudgeScore, shown: Bool) -> some View {
         // 木札の表と裏を別の面で描く＝回転の途中で面を切り替えるので鏡文字にならない（A2 §3-B1・L10 FlipCard）。
-        let h: CGFloat = kata != nil ? 112 : 96
+        let h: CGFloat = 96
         return FlipCard(shown: shown) {
-            judgeFace(j, kata: kata, height: h)
+            judgeFace(j, height: h)
         } back: {
             judgeBack(j, height: h)
         }
         .scaleEffect(shown ? 1 : 0.96)
-        .animation(.spring(response: 0.32, dampingFraction: 0.7), value: shown)
+        .animation(Theme.Motion.r(.spring(response: 0.32, dampingFraction: 0.7)), value: shown)
     }
 
     /// 審査員の名札（姓＋名の2行）
@@ -926,16 +923,12 @@ struct FinalsPresentationView: View {
         .background(dim ? YoseColor.kuroUrushi.opacity(0.85) : YoseColor.kuroUrushi)
     }
 
-    private func judgeFace(_ j: JudgeScore, kata: NetaKata?, height: CGFloat) -> some View {
+    private func judgeFace(_ j: JudgeScore, height: CGFloat) -> some View {
         VStack(spacing: 4) {
             Text("\(j.score)").font(YoseFont.number(30, weight: .black))
                 .foregroundStyle(j.score >= 95 ? YoseColor.shu : YoseColor.sumi)
                 .frame(height: 34)
             judgeNamePlate(j.name)
-            if let kata {
-                Text(NetaCatalog.affinity(kata, judge: j.name)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
-                    .lineLimit(1).minimumScaleFactor(0.6)
-            }
         }
         .padding(.top, 6).padding(.bottom, 6).padding(.horizontal, 3)
         .frame(maxWidth: .infinity).frame(height: height, alignment: .top)
@@ -1018,7 +1011,7 @@ struct FinalsPresentationView: View {
             }
             if revealVotes < 7 {
                 Button { advance() } label: { Text("次の審査員札をめくる（\(revealVotes)/7）▶") }
-                    .buttonStyle(YoseButtonStyle(.primary))
+                    .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
             } else {
                 YTelop(text: "——開票、出揃った。", size: 16, color: YoseColor.kinBright)
             }
@@ -1057,7 +1050,7 @@ struct FinalsPresentationView: View {
                     .offset(y: -11).transition(.scale.combined(with: .opacity))
             }
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: check)
+        .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6)), value: check)
         .padding(.bottom, 2)
     }
 
@@ -1080,7 +1073,7 @@ struct FinalsPresentationView: View {
                 .background(YoseColor.ki)
                 .overlay(Rectangle().stroke(YoseColor.kiDark, lineWidth: 1.5).padding(3))
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.65), value: shown)
+        .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.65)), value: shown)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(shown ? "票札、\(voteName)に一票" + (forUs ? "（あなたたち）" : "") : "封をした票札、まだ開いていない")
     }
@@ -1127,7 +1120,7 @@ struct FinalsPresentationView: View {
                         .padding(.horizontal, 10).padding(.vertical, 3)
                         .background(YoseColor.kuroUrushi)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
-                    YoseSpeechBox(speaker: "谷口", text: "……本当に、勝ったんだね", roleLabel: "相方")
+                    YoseSpeechBox(speaker: "谷口", text: session.yearHistory.contains { $0.champion && $0.year != session.year } ? "……また、勝ったんだね" : "……本当に、勝ったんだね", roleLabel: "相方")
                 }
             } else if spectator {
                 // 固定の一文：このキャリアで二度目以降は出さない（毎年同じ最後の一行にならない）
@@ -1147,7 +1140,7 @@ struct FinalsPresentationView: View {
         .frame(maxHeight: .infinity)
         .onAppear {
             if d.champion {
-                withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.2)) { celebrate = true }
+                withAnimation(Theme.Motion.r(.spring(response: 0.55, dampingFraction: 0.55).delay(0.2))) { celebrate = true }
                 Sound.play(.fanfare); Sound.play(.cheerBig)   // 優勝＝ファンファーレ＋大歓声
             } else {
                 silverFire += 1                                // 他組の優勝・決勝敗退は銀の紙吹雪だけ
@@ -1454,10 +1447,10 @@ private struct RaysView: View {
                     p.closeSubpath()
                     ctx.fill(p, with: .color(YoseColor.kinBright.opacity(i.isMultiple(of: 2) ? 0.10 : 0.05)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .task {
-            try? await Task.sleep(nanoseconds: 6_600_000_000)
+            try? await Task.sleep(nanoseconds: 6_600_000_000)   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }
@@ -1489,10 +1482,10 @@ private struct ConfettiView: View {
                     rect = rect.applying(CGAffineTransform(rotationAngle: rot)).applying(CGAffineTransform(translationX: x, y: y))
                     ctx.fill(rect, with: .color(c.opacity(0.9)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .task {
-            try? await Task.sleep(nanoseconds: 16_600_000_000)
+            try? await Task.sleep(nanoseconds: 16_600_000_000)   // 実時間のまま（描画の時刻が実時間＝縮めると紙吹雪が空中で固まる）
             frozen = true
         }
     }

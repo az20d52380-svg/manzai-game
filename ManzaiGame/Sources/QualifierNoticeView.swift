@@ -14,9 +14,12 @@ struct QualifierNoticeView: View {
     let passed: Bool
     let onFinish: () -> Void
 
-    static func applies(_ name: String) -> Bool { ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝"].contains(name) }
+    static func applies(_ name: String) -> Bool { ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "HANA1回戦"].contains(name) }
     private var isChat: Bool { roundName == "GP準々決勝" }
-    private var roundLabel: String { roundName.replacingOccurrences(of: "GP", with: "") }
+    /// THE HANA 1回戦＝動画審査（舞台に立たず、動画を送って結果の通知を待つ）。通知の送り主と表題だけ差し替える
+    private var isVideo: Bool { roundName == "HANA1回戦" }
+    private var sender: String { isVideo ? "THE HANA公式" : "頂GP公式" }
+    private var roundLabel: String { isVideo ? "動画審査" : roundName.replacingOccurrences(of: "GP", with: "") }
 
     private enum Stage { case lock, list, chat }
     @State private var stage: Stage = .lock
@@ -83,14 +86,14 @@ struct QualifierNoticeView: View {
                         RoundedRectangle(cornerRadius: 9).fill(YoseColor.kin).frame(width: 38, height: 38)
                             .overlay(Image(systemName: isChat ? "bubble.left.fill" : "megaphone.fill").font(.system(size: 18, weight: .semibold)).foregroundStyle(YoseColor.kuroUrushi).accessibilityHidden(true))   // 大きい文字で記号だけ膨らみ枠からはみ出した（ax3_hooks_audit_1026 L4）
                         VStack(alignment: .leading, spacing: 3) {
-                            HStack { Text(isChat ? partnerName : "頂GP公式").font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.5)) }
+                            HStack { Text(isChat ? partnerName : sender).font(YoseFont.gothic(13, weight: .bold)); Spacer(); Text("いま").font(YoseFont.gothic(12)).foregroundStyle(.white.opacity(0.5)) }
                             Text(isChat ? "見た？" : "【結果発表】\(roundLabel)の通過者を掲載しました").font(YoseFont.gothic(13)).multilineTextAlignment(.leading)
                         }.foregroundStyle(.white)
                     }
                     .padding(12).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                     .padding(.horizontal, 14)
                 }
-                .accessibilityLabel(isChat ? "\(partnerName)からの通知を開く。見た？" : "頂GP公式からの通知を開く。\(roundLabel)の通過者を掲載しました")
+                .accessibilityLabel(isChat ? "\(partnerName)からの通知を開く。見た？" : "\(sender)からの通知を開く。\(roundLabel)の通過者を掲載しました")
                 .buttonStyle(.plain).transition(.move(edge: .top).combined(with: .opacity))
                 Text("通知をタップ").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(.white.opacity(0.8)).padding(.top, 8)   // 暗い地で読みにくかった（firstlook_check_1027b #5）
             }
@@ -102,7 +105,7 @@ struct QualifierNoticeView: View {
     private var listScreen: some View {
         VStack(spacing: 0) {
             VStack(spacing: 4) {
-                Text("頂GP公式").font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.kin)
+                Text(sender).font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.kin)
                 Text("\(roundLabel) 通過者").font(YoseFont.mincho(22)).foregroundStyle(.white)
             }.padding(.top, 96).padding(.bottom, 14)
             ScrollViewReader { proxy in

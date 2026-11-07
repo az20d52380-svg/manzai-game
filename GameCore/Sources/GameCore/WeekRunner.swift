@@ -5,6 +5,8 @@
 // 【docs/ui_design_v0.md §5・2026-07-05 委譲済み】GameCareer.runYear はこの WeekRunner を policy で
 // 駆動するだけの薄いラッパになった。週処理と乱数消費順の正典実体はこのファイルが唯一持つ。
 
+import Foundation   // pow（11年目以降の成長予算の倍率・Python の ** と同じ libm）
+
 /// 大会・回戦の結果1件（UIの結果トースト用）。Codable は中断セーブ用（proposals-0039）＝挙動不変。
 public struct StageResult: Codable {
     public let name: String
@@ -129,10 +131,21 @@ public struct WeekRunner<R: RandomSource> {
         var s = state
         s.stamina = config.initStamina   // 体力のみ年初に全回復（runYear冒頭と同一）
         var budget = 0.0                 // 成長予算の更新（キャリア累計・正典v2）
-        for k in 1...min(year, config.growthEndYear) {
-            budget += max(config.capCurveFloor, config.capCurveBase - config.capCurveSlope * Double(k - 1))
+        var capBase = config.capCurveBase, capFloor = config.capCurveFloor
+        let metaP = s.metaPoints ?? 0
+        if metaP > 0 {                   // 周回：年の成長上限の基準と下限を持ち上げる（案2）。Python: meta_cap_lift
+            let lift = config.metaCapLiftCoef * pow(Double(metaP), config.metaCapLiftExp)
+            capBase += lift
+            capFloor += lift
         }
-        s.growthBudget = budget
+        for k in 1...min(year, config.growthEndYear) {
+            // 11年目以降の加算は ×decay^(k−10)（較正A）。Python: late_growth_factor（10年目までは ×1.0＝従来と同値）
+            let f = k >= config.lateGrowthStartYear ? pow(config.lateGrowthDecay, Double(k - (config.lateGrowthStartYear - 1))) : 1.0
+            budget += f * max(capFloor, capBase - config.capCurveSlope * Double(k - 1))
+        }
+        // 周回：累計予算に頂点の束 +top·(P/38)^8（Python: meta_budget + sum(...) と同じ足し順）
+        let metaBudget = metaP > 0 ? config.metaBudgetTop * pow(Double(metaP) / config.metaTopPoints, config.metaTopExp) : 0.0
+        s.growthBudget = metaBudget + budget
         GameEngine.resetYearlyItems(&s)  // その年だけのアイテム効果と回数を消す（未購入は恒等）
         // 同じネタは飽きられる（キュー60）：前の年に大会で掛けたネタは飽きが1段進む（乱数なし）。Python: run_career 年初
         for i in s.netas.indices where s.netas[i].lastUsedTaikaiYear == year - 1 {
@@ -150,7 +163,7 @@ public struct WeekRunner<R: RandomSource> {
         self.gpStage = gpSeeded ? 1 : 0   // シード組は2回戦から
         self.gpAlive = !seedFinal
         self.finalist = seedFinal
-        self.finalLine = finalLineOverride ?? config.calendar.gpFinalLine
+        self.finalLine = finalLineOverride ?? (config.calendar.gpFinalLine + config.calendar.gpLateBonus(year: year))   // 11年目以降+2（較正A）
     }
 
     /// 大会で選択中のネタを掛けた印（年初の飽きの判定用・乱数なし）。Python: _neta_use の used_y
@@ -203,6 +216,16 @@ public struct WeekRunner<R: RandomSource> {
                 }
                 let netaLine = spec.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
                 let result = GameEngine.perform(state, line: netaLine, config: config, rng: &rng)
+                if case .hana(let i) = spec.eligibility, result.passed {   // THE HANA の段（Python: hana_result）
+                    if i < config.calendar.hanaTournaments.count - 1 {
+                        state.hanaYear = year
+                        state.hanaNext = i + 1
+                    } else {
+                        state.hanaWins = (state.hanaWins ?? 0) + 1
+                    }
+                }
+                GameEngine.creditTourneyExp(config.tourneyExpRoad * (result.passed ? 1.0 : config.tourneyExpLoss),
+                                            weight: config.tourneyExpWeightRoad, to: &state, config: config)   // 大会の経験点（較正A）
                 markNetaUsed()
                 state.riftJointWeek = true   // §94 二人で舞台に立つ週
                 if result.passed {
@@ -234,6 +257,8 @@ public struct WeekRunner<R: RandomSource> {
             let name = gpStage < cal.gpRoundNames.count ? cal.gpRoundNames[gpStage] : "GP回戦\(gpStage + 1)"
             let roundLine = round.line - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
             let result = GameEngine.perform(state, line: roundLine, config: config, rng: &rng)
+            GameEngine.creditTourneyExp((1 + config.tourneyExpRoundStep * Double(gpStage)) * (result.passed ? 1.0 : config.tourneyExpLoss),
+                                        weight: config.tourneyExpWeightRound, to: &state, config: config)   // 大会の経験点（較正A）
             markNetaUsed()
             acted = true
             state.riftJointWeek = true
@@ -256,8 +281,10 @@ public struct WeekRunner<R: RandomSource> {
             weekResults.append(StageResult(name: name, passed: result.passed, prize: 0, margin: result.score - roundLine, burst: result.burst))
         case .revival:
             revivalTried = true
-            let revivalLine = cal.gpRevivalLine - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
+            let revivalLine = cal.gpRevivalLine + cal.gpLateBonus(year: year) - GameEngine.netaScoreBonus(state, isFinal: false, config: config)
             let result = GameEngine.perform(state, line: revivalLine, config: config, rng: &rng)
+            GameEngine.creditTourneyExp(config.tourneyExpRevival * (result.passed ? 1.0 : config.tourneyExpLoss),
+                                        weight: config.tourneyExpWeightFinal, to: &state, config: config)   // 大会の経験点（較正A）
             markNetaUsed()
             acted = true
             state.riftJointWeek = true
@@ -274,6 +301,8 @@ public struct WeekRunner<R: RandomSource> {
             let effLine = finalLine - cal.fameFinalBonus * (state.fame - 50) / 50
                         - GameEngine.netaScoreBonus(state, isFinal: true, config: config)
             let result = GameEngine.perform(state, line: effLine, config: config, rng: &rng)
+            GameEngine.creditTourneyExp(config.tourneyExpFinal * (result.passed ? 1.0 : config.tourneyExpLoss),
+                                        weight: config.tourneyExpWeightFinal, to: &state, config: config)   // 大会の経験点（較正A）
             markNetaUsed()
             acted = true
             state.riftJointWeek = true
@@ -367,7 +396,7 @@ public struct WeekRunner<R: RandomSource> {
 
         if section == .tournament {
             section = .gp
-            if !acted, let spec = cal.tournament(inWeek: week), spec.isEligible(year: year, state: state) {
+            if !acted, let spec = cal.tournament(inWeek: week, state: state), spec.isEligible(year: year, state: state) {
                 pendingSpec = spec
                 return .tournamentDecision(spec)
             }
@@ -645,7 +674,7 @@ extension WeekRunner where R: Codable {
         self.year = snap.year
         self.config = config
         // A-4: バランス更新が古いセーブに固定化されないよう、決勝ライン・保留中の大会/オファーは config から取り直す
-        self.finalLine = config.calendar.gpFinalLine
+        self.finalLine = config.calendar.gpFinalLine + config.calendar.gpLateBonus(year: snap.year)   // 11年目以降+2（較正A）
         // アプリ更新で回戦数を減らしても、古いセーブの段が配列の外を指さないよう丸める（code_review_2026-10-25d §2）
         self.gpStage = min(snap.gpStage, config.calendar.gpRounds.count)
         self.gpAlive = snap.gpAlive
@@ -657,7 +686,7 @@ extension WeekRunner where R: Codable {
         self.acted = snap.acted
         self.weekResults = snap.weekResults
         if snap.pendingSpec != nil {
-            self.pendingSpec = config.calendar.tournament(inWeek: snap.week) ?? snap.pendingSpec
+            self.pendingSpec = config.calendar.tournament(inWeek: snap.week, state: snap.state) ?? snap.pendingSpec
         } else {
             self.pendingSpec = nil
         }
