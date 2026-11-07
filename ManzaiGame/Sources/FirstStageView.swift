@@ -128,9 +128,11 @@ struct FirstStageView: View {
 
     private func start() {
         task = Task { @MainActor in
-            await wait(1.6); phase = .ready; Sound.play(.pop); Haptics.soft(0.5)
+            guard await wait(1.6) else { return }
+            phase = .ready; Sound.play(.pop); Haptics.soft(0.5)
             // 押さなくても約6.5秒で進む
-            await wait(6.5); if !UIAccessibility.isVoiceOverRunning { press() }   // 読み上げ中はボタンを探す時間が要る＝自動で押さない
+            guard await wait(6.5) else { return }
+            if !UIAccessibility.isVoiceOverRunning { press() }   // 読み上げ中はボタンを探す時間が要る＝自動で押さない
         }
     }
 
@@ -140,20 +142,24 @@ struct FirstStageView: View {
         task?.cancel()
         Sound.play(.don); Haptics.rigid(0.9)
         task = Task { @MainActor in
-            await wait(0.1)
+            guard await wait(0.1) else { return }
             phase = .burst; Sound.play(.cheerBig); Haptics.confirm(); flash += 1; burstTick += 1
             withAnimation(Theme.Motion.r(.easeOut(duration: 0.8))) { ripple = true }
-            await wait(0.9)
+            guard await wait(0.9) else { return }
             shake += 1; burstTick += 1; Haptics.tick()
-            await wait(1.1)
+            guard await wait(1.1) else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.6))) { phase = .stamped }
             Sound.play(.taiko); Haptics.rare(); shake += 1
-            await wait(2.0)
+            guard await wait(2.0) else { return }
             phase = .reality; Sound.play(.applauseSmall)   // 振動・光は出さない
-            await wait(2.6)
+            guard await wait(2.6) else { return }
             phase = .bitter; Sound.play(.pop)
         }
     }
 
-    private func wait(_ s: Double) async { try? await Task.sleep(nanoseconds: UInt64(s * 1_000_000_000)) }
+    /// 待つ。取り消されたら false（「とばす」や画面を閉じた後に、残りの音と振動を鳴らさない・code_review_1107d #1）
+    private func wait(_ s: Double) async -> Bool {
+        try? await Task.sleep(nanoseconds: UInt64(s * 1_000_000_000))
+        return !Task.isCancelled
+    }
 }
