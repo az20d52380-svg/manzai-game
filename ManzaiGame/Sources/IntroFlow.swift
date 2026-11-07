@@ -546,6 +546,7 @@ struct NameEntryView: View {
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
                 Button {
+                    focused = false   // キーボードを閉じつつ同じタップで進める
                     var pick = Self.candidates.randomElement() ?? "なんば亭"
                     if pick == name { pick = Self.candidates.randomElement() ?? pick }
                     withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { name = pick }
@@ -676,6 +677,7 @@ struct NameEntryView: View {
     }
 
     private func decide() {
+        focused = false   // キーボードを閉じつつ同じタップで進める
         guard !decided else { return }
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
