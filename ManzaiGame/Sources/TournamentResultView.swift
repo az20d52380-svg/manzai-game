@@ -163,7 +163,7 @@ struct TournamentResultView: View {
                         if revealedReview {
                             washi(text: review.text, judge: review.judge, passed: r.passed)
                                 .transition(.opacity.combined(with: .offset(y: 10)))
-                            if !r.passed && Self.gpQualifierNames.contains(r.name) {   // §94 予選で落ちると相性が下がる（数字は出さない・ボケない）
+                            if !r.passed && (Self.gpQualifierNames.contains(r.name) || Self.hanaQualifierNames.contains(r.name)) {   // §94 予選で落ちると相性が下がる（数字は出さない・ボケない）
                                 taniguchiLossLine
                                     .transition(.opacity)
                             }
@@ -496,6 +496,8 @@ struct TournamentResultView: View {
 
     /// §94 予選（1回戦〜準決勝）。敗者復活・決勝の負けでは相性は下がらない
     private static let gpQualifierNames: Set<String> = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
+    /// THE HANA の予選（動画審査〜準決勝）で落ちた時も、同じ一言だけ出す（相性は下げない＝GP予選とは別・C-9）
+    private static let hanaQualifierNames: Set<String> = ["HANA1回戦", "HANA2回戦", "HANA準決勝"]
     private var taniguchiLossLine: some View {
         HStack(spacing: 8) {
             Text("谷口").font(YoseFont.captionBold).foregroundStyle(YoseColor.kin)
