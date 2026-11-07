@@ -118,7 +118,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)   // 見出しの左朱帯
-                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
             }
             VStack(spacing: 12) { content() }
                 .padding(YoseMetrics.padH + 2)

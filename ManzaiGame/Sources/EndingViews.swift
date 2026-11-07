@@ -337,10 +337,10 @@ struct EndingGalleryView: View {
         let got = TrophyBook.load()
         let fastest = rec.fastestWinYear.map { "\($0)年目" } ?? "まだ"
         return VStack(alignment: .leading, spacing: 8) {
-            Text("記録").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-            Text("通算優勝 \(rec.totalWins)回／最多連覇 \(rec.bestStreak)／最速優勝 \(fastest)" + ((rec.hanaWins ?? 0) > 0 ? "／THE HANA 優勝 \(rec.hanaWins ?? 0)回" : ""))
+            Text("記録").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
+            Text("通算優勝 \(rec.totalWins)回／最多連覇 \(rec.bestStreak)年／最速優勝 \(fastest)" + ((rec.hanaWins ?? 0) > 0 ? "／THE HANA 優勝 \(rec.hanaWins ?? 0)回" : ""))
                 .font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
-            Text("トロフィー \(got.filter(\.obtainable).count) / \(TrophyID.allCases.filter(\.obtainable).count)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.top, 6)
+            Text("トロフィー \(got.filter(\.obtainable).count) / \(TrophyID.allCases.filter(\.obtainable).count)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.top, 6).accessibilityAddTraits(.isHeader)
             ForEach(TrophyID.allCases.filter { got.contains($0) }) { t in
                 Text("\(t.title)　\(t.condition)").font(YoseFont.gothic(12, weight: .medium)).foregroundStyle(YoseColor.sumi)
             }
@@ -388,6 +388,7 @@ struct EndingGalleryView: View {
             .contentShape(Rectangle())   // 枠の全体を押せる
         }
         .buttonStyle(.plain)
+        .accessibilityRemoveTraits(rec == nil ? .isButton : [])   // 未入手の札は押しても何も起きない＝読み上げで「ボタン」と言わない（見た目は変えない・a11y_check_1107 #15）
     }
 
     private static func dateText(_ d: Date) -> String {
