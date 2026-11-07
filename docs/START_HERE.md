@@ -572,3 +572,4 @@ cd GameCore && swift test
 - `release_build_check_1108.md` — 発売用ビルド点検（11/08・ソース無変更・commit なし）
 - `visual_check_1108e.md` — 目視点検 1108e（11/08 の表示の直しの確認）
 - `visual_dark_1108_v0.md` — ダークモードの点検 11/08（10/27 以降の新しい画面10枚・問題0。提供割合はフック MZ_UI=gacha_rates）
+- `code_review_1108f_kiritsu_a.md` — 11/02 の規律A（15年・周回・THE HANA・復活ライン）を仕様と突き合わせた点検（高0中1低5・中1は check_config_sync に HANA を足して解消）

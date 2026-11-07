@@ -109,6 +109,28 @@ def parse(v):
     except ValueError:
         return None
 
+# THE HANA の段（週・名前・ライン・賞金・知名度）。golden の女性分岐は決勝まで届かないので、ここで突き合わせる（code_review_1108f 中1）
+_HANA_RE = re.compile(r'TournamentSpec\(name:\s*"([^"]+)",\s*week:\s*(\d+),\s*line:\s*([\d.]+),\s*prize:\s*([\d_]+),\s*fame:\s*([\d.]+),\s*osaka:\s*(true|false),\s*eligibility:\s*\.hana\(round:\s*(\d+)\)')
+
+def check_hana():
+    sw = {}
+    for line in open(os.path.join(_SRC, "Calendar.swift"), encoding="utf-8"):
+        m = _HANA_RE.search(line)
+        if m:
+            nm, wk, ln, pr, fm, osk, rd = m.groups()
+            sw[int(wk)] = dict(name=nm, line=float(ln), prize=int(pr.replace("_", "")), fame=float(fm), osaka=osk == "true", hana=int(rd))
+    bad = 0
+    if set(sw) != set(C.HANA_TOURNAMENTS):
+        print(f"NG HANA の週: Swift {sorted(sw)} / Python {sorted(C.HANA_TOURNAMENTS)}"); bad += 1
+    for w, t in C.HANA_TOURNAMENTS.items():
+        s = sw.get(w)
+        if s is None:
+            continue
+        for k in ("name", "line", "prize", "fame", "osaka", "hana"):
+            if (s[k] != t[k]) if k in ("name", "osaka", "hana", "prize") else abs(float(s[k]) - float(t[k])) > 1e-12:
+                print(f"NG HANA 週{w} {k}: Swift {s[k]} / Python {t[k]}"); bad += 1
+    return bad, 1 + len(C.HANA_TOURNAMENTS)
+
 def main():
     sw = swift_defaults(SWIFT)
     bad = 0
@@ -122,7 +144,9 @@ def main():
                 print(f"NG {name}: Swift {raw} / Python {py}"); bad += 1
         elif abs(float(py) - val) > 1e-12:
             print(f"NG {name}: Swift {raw} / Python {py}"); bad += 1
-    print(f"config sync: {len(PAIRS) - bad}/{len(PAIRS)} 一致")
+    bad_h, n_h = check_hana()
+    bad += bad_h
+    print(f"config sync: {len(PAIRS) + n_h - bad}/{len(PAIRS) + n_h} 一致")
     return 1 if bad else 0
 
 if __name__ == "__main__":
