@@ -72,6 +72,7 @@ struct NotebookView: View {
             if exp > 0 && !cfg.autoPourAllocation {
                 HStack {
                     YoseTag(text: "経験点 \(exp) 未使用", style: .outlineShu)
+                    Text("週の画面の能力アップで使う").font(YoseFont.gothic(12)).foregroundStyle(YoseColor.haiSumi)
                     Spacer()
                 }
             }
