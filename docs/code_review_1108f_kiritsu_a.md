@@ -17,6 +17,7 @@
 - 仕様：通過で知名度+gpRoundFame（Calendar.swift L76 の注記）。
 - 実装：Swift は hanaTournaments の fame に直書き 3（Calendar.swift L79-81）。Python は定義時に GP_ROUND_FAME を読む。
 - ずれ：gpRoundFame を調整しても Swift の HANA は追従しない（Python は import 時に追従）。現在値は 3 で一致。
+- 対処（11/08 親）：d830dc74 で check_config_sync が HANA の fame を Python（GP_ROUND_FAME 由来）と突き合わせるので、片方だけ変えると NG になる＝事故は拾える。直書きをやめる作りの変更はしない。
 
 ### 低-2 王者ライン上書きには 11年目以降の +2 が付かない（仕様どおりだが穴）
 - 仕様（notes 段1）：上書きには足さない。sim_career.py L934 / WeekRunner.swift L166。
