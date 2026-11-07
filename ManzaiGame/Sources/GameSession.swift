@@ -42,6 +42,14 @@ final class GameSession {
     private(set) var lastFameDelta: Double = 0
     /// 大会結果画面の知名度の増分（decideTournament 経由・表示専用・golden非対象）
     private(set) var lastResultFameDelta: Double = 0
+    /// 大会結果画面の経験点の増分（5種ごと・decideTournament／advanceAuto 経由・表示専用・golden非対象）。負けても少し入る
+    private(set) var lastResultExpDelta: [ExpCurrency: Double] = [:]
+    private func expSnapshot() -> [ExpCurrency: Double] { Dictionary(uniqueKeysWithValues: ExpCurrency.allCases.map { ($0, state[currency: $0]) }) }
+    private func recordExpDelta(from before: [ExpCurrency: Double]) {
+        var d: [ExpCurrency: Double] = [:]
+        for c in ExpCurrency.allCases { d[c] = state[currency: c] - (before[c] ?? 0) }
+        lastResultExpDelta = d
+    }
     /// 上記の増減が属する週。View は lastDeltaWeek == week の時だけバーストを出す＝大会画面を
     /// 挟んで戻った時に古い増減が再生される事故を防ぐ（表示ゲートのみ・golden非対象）。
     private(set) var lastDeltaWeek = -1
@@ -177,6 +185,12 @@ final class GameSession {
     private(set) var hasYearStart = true
     /// 1年＝1行の記録（年末の「これまで」と勇退エンディングの年表に使う・表示専用・golden非対象）
     private(set) var yearHistory: [YearRecord] = []
+    /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。中断しても数え直さないよう保存する（code_review_1107g #1）
+    @ObservationIgnored private(set) var smallEntered = 0
+    @ObservationIgnored private(set) var smallWon = 0
+    @ObservationIgnored private var didRecordChampion = false   // その年の優勝を記録したか（年が替わると戻す）
+    /// 優勝の年末で勇退を選んだ（選ぶと保存が消えるのでセーブには持たない）
+    private(set) var retiredAfterWin = false
     let combiName: String              // S1で入力（表示専用・golden非対象）
     /// 自分の名前・相方の名前（S1で入力・nil/空＝俺・谷口のまま・表示専用・golden非対象）
     let myName: String?
@@ -229,7 +243,7 @@ final class GameSession {
         self.isRestored = false
         // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
-        let start = startState ?? GameState(config: cfg)
+        let start = startState ?? GameState(config: cfg, metaPoints: MetaBook.points, femaleCombo: comboKind == .femaleFemale)   // 周回の点（点0＝1周目は今と同じ）・女コンビだけ THE HANA
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
         self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
@@ -260,7 +274,7 @@ final class GameSession {
         // 段の種類が同じなら、中身（大会・オファー・回戦名）は runner が新しい config から取り直した物を使う
         // （保存時の古い値が画面に出て、実際に効く値と食い違っていた＝code_review_2026-10-25e §3-3）
         if let now = restoredRunner.restoredPhase, Self.sameStep(save.phase, now) { self.phase = now } else { self.phase = save.phase }
-        self.week = save.runner.week
+        self.week = min(save.runner.week, cfg.weeks)   // 年を終えた年末は runner が週数+1（49）まで進んでいる＝閉じる前の表示（48）に揃える
         // 複数年（v3）: 旧セーブ（1年完結時代）には無い＝1年目の新規と同じ基準に落とす
         self.yearStartState = save.yearStartState ?? GameState(config: cfg)
         self.hasYearStart = save.yearStartState != nil || save.runner.year <= 1
@@ -270,7 +284,7 @@ final class GameSession {
         if case .yearDone(let o) = save.phase {
             // 年末の画面（S6）で中断した＝翌年へ進む前。年末の結果をそのまま出し直す
             self.outcome = o
-            if o.champion {
+            if o.champion, save.winAcknowledged != true {
                 self.winFinale = true      // A-3: 勝利演出の途中で閉じた＝演出から出し直す（「次へ」で S4）
             } else {
                 self.finished = true
@@ -313,6 +327,8 @@ final class GameSession {
         self.lastBanterRollWeek = save.lastBanterRollWeek
         self.categoryLog = save.categoryLog
         self.totalPrize = save.totalPrize
+        self.smallEntered = save.smallEntered ?? 0
+        self.smallWon = save.smallWon ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
     }
 
@@ -331,9 +347,12 @@ final class GameSession {
     func decideTournament(_ travel: Travel?) {
         guard case .tournamentDecision = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let fameBefore = state.fame
+        let expBefore = expSnapshot()
         phase = runner.resolveTournament(travel: travel)
+        if travel == .夜行バス, TrophyBook.bump("bus") >= 10 { TrophyBook.award(.t12) }
         pump()
         lastResultFameDelta = state.fame - fameBefore   // 表示専用（大会結果画面の「知名度 +n」札）
+        recordExpDelta(from: expBefore)
         saveNow()
     }
 
@@ -359,6 +378,7 @@ final class GameSession {
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
         weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
+        if case .train = action, runner.lastTrainingDone != nil, TrophyBook.bump("train") >= 100 { TrophyBook.award(.t13) }
         // 練習が休みに差し替わった週（体力ゲート・体調ダウン・お金不足）は、日程の印も「回復」で残す（稽古の印が付いていた）
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
         if case .train(.ネタ合わせ) = action, runner.lastTrainingDone == nil { weeksWithoutPartner = prevWithoutPartner + 1 }   // 休みに差し替わった週は相方と合わせていない（code_review_2026-10-19j §3）
@@ -572,7 +592,7 @@ final class GameSession {
         } else if justPassedStage, !didFirePassFork, let m = nextMilestoneForEvent(), m.week - week >= 3, state.stamina >= 15 {
             pendingChoiceEvent = .justPassedFork
             didFirePassFork = true
-        } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
+        } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes, !(state.femaleCombo == true && m.week == config.calendar.hanaTournaments.first?.week) {   // 動画審査は舞台に立たない＝「明日、駅で」の前夜は出さない
             pendingChoiceEvent = .preTournamentEve
             didFireEve = true
         } else if !didFireEarlyFormality, year == 1, week >= 3, week < 15, state.compat <= 7 {   // 結成初期＝1年目だけ
@@ -703,12 +723,12 @@ final class GameSession {
             }
         }
         if runner.isFinalist || runner.isGPAlive {
-            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine, highStakes: true, isGP: true, length: NetaCatalog.lengthForGPFinal))
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "頂GP 決勝", line: cal.gpFinalLine + cal.gpLateBonus(year: year), highStakes: true, isGP: true, length: NetaCatalog.lengthForGPFinal))
         } else if runner.hasRevival {
-            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine, highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
+            ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine + cal.gpLateBonus(year: year), highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
         }
-        for t in cal.tournaments where t.isEligible(year: year, state: state) {
-            ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
+        for t in cal.tournaments + (state.femaleCombo == true ? cal.hanaTournaments : []) where t.isEligible(year: year, state: state) {
+            ms.append(StageInfo(week: t.week, name: GPName.display(t.name), line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))   // HANA は結果画面と同じ「THE HANA 1回戦」に（他の大会は名前のまま）
         }
         let includeThisWeek: Bool = { if case .freeAction = phase { return false }; return true }()
         return ms.filter { $0.week > week || (includeThisWeek && $0.week == week) }
@@ -882,13 +902,6 @@ final class GameSession {
         saveNow()
     }
 
-    /// 型の組み替え（大改稿で1度・v2 §3-1補）
-    func changeNetaKata(_ id: Int, to kata: NetaKata) {
-        runner.applyNetaChangeKata(id: id, to: kata)
-        state = runner.state
-        saveNow()
-    }
-
     /// 改名（自動命名の上書き・v2 §9決点3）
     /// 買い物（ShopView）。買えなければ何もしない
     @discardableResult
@@ -955,8 +968,10 @@ final class GameSession {
         case .gpRound, .gpRevival, .gpFinal: break
         default: return
         }
+        let expBefore = expSnapshot()
         phase = runner.resolveAuto()
         pump()
+        recordExpDelta(from: expBefore)
         saveNow()
     }
 
@@ -1071,7 +1086,7 @@ final class GameSession {
     func acknowledgeWin() {
         winFinale = false
         finished = true
-        saveNow()   // 優勝＝キャリアの区切り（勇退）なのでセーブは消える
+        saveNow()   // 勇退か続けるかを選ぶ間に閉じても、選ぶ画面から出し直す（winAcknowledged）
     }
 
     // MARK: 複数年キャリア（core_loop_reconsideration_v0 §7・2026-10-10）
@@ -1090,12 +1105,62 @@ final class GameSession {
         var dissolved: Bool? = nil
         /// その年の決勝を客席から観たか。nil＝観ていない／旧セーブ。戦績の年表の灰「観戦」札（表示専用）
         var watchedFinal: Bool? = nil
+        /// その年の THE HANA の結果の1行（女コンビだけ）。nil＝出ていない／旧セーブ。年表の下の行に出す
+        var hanaReach: String? = nil
+        /// その年の道中大会の優勝の数（記録は年ごとに消えるので、手帳の通算優勝のために持つ）。nil＝旧セーブ（0 扱い）
+        var smallWins: Int? = nil
     }
 
-    /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／解散／結成 careerYears 年目の年末）
+    /// 記録から道中大会の優勝だけを数える（頂GP と THE HANA は別に数えるので除く）
+    static func smallWinCount(log: [String]) -> Int {
+        log.flatMap(parseLogLine).filter { $0.mark == "優勝" && !$0.title.contains("HANA") && !$0.title.contains("頂GP") }.count
+    }
+
+    /// 出来事ログの行から、その年の THE HANA の結果を1行にする（表示専用）
+    static func hanaReach(log: [String]) -> String? {
+        var last: (round: String, mark: String)?
+        for line in log {
+            for part in line.components(separatedBy: " / ") {
+                guard let r = part.range(of: "THE HANA ") else { continue }
+                let w = part[r.upperBound...].split(separator: " ").map(String.init)
+                if w.count >= 2 { last = (w[0], w[1]) }
+            }
+        }
+        guard let last else { return nil }
+        return last.mark == "優勝" ? "THE HANA 優勝" : "THE HANA \(last.round) \(last.mark)"
+    }
+
+    /// このキャリアがこの年末で区切られるか（勇退を選んだ／夜逃げ／解散／結成 careerYears 年目の年末）
     var careerOver: Bool {
         guard let o = outcome else { return false }
-        return o.champion || o.bankrupt || o.dissolved || year >= config.careerYears
+        return retiredAfterWin || o.bankrupt || o.dissolved || year >= config.careerYears
+    }
+
+    /// 優勝した年末で「勇退する／続ける」を選べるか（最後の年の優勝はそのまま終わり・オーナー 11/07）
+    var canChooseRetire: Bool {
+        guard let o = outcome, finished, !winFinale else { return false }
+        return o.champion && !careerOver
+    }
+
+    /// 共有カードの見出し（2年続けて勝つと「2連覇」）
+    var winHeadline: String {
+        var streak = 0
+        for rec in yearHistory.reversed() { if rec.champion { streak += 1 } else { break } }
+        return streak >= 2 ? "\(streak)連覇" : "優勝"
+    }
+
+    /// 優勝の夜の相方の一言（初優勝・連覇・返り咲きで変える。表示専用）
+    var repeatWinLine: String {
+        let past = yearHistory.filter { $0.champion && $0.year != year }
+        if past.isEmpty { return "やったね。本当に、日本一だよ" }
+        return past.contains { $0.year == year - 1 } ? "やったね。今年も、日本一だよ" : "やったね。もう一度、日本一だよ"
+    }
+
+    /// 優勝の年末の「勇退する」。ここでキャリアが終わる（セーブは消える）
+    func retireAfterWin() {
+        guard canChooseRetire else { return }
+        retiredAfterWin = true
+        saveNow()
     }
 
     /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
@@ -1110,6 +1175,7 @@ final class GameSession {
         // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）
         finished = false
         outcome = nil
+        didRecordChampion = false   // 連覇＝次の年の優勝も記録する
         pendingResult = nil
         log = []
         categoryLog = [:]
@@ -1188,6 +1254,7 @@ final class GameSession {
         var partnerName: String?   // 相方の名前（旧セーブ＝nil＝谷口）
         var comboKind: String?     // コンビの形 ComboKind.rawValue（旧セーブ＝nil＝男コンビ）
         var meetingKind: String?   // 出会い方 MeetingKind.rawValue（旧セーブ＝nil＝高校の同級生）
+        var winAcknowledged: Bool? // 優勝の演出を見終えた＝勇退か続けるかを選ぶ所（旧セーブ＝nil＝演出から）
         var didFireRiftWarn: Bool? // 途中解散の予告を出したか（旧セーブ＝nil＝まだ）
         var riftWarnChoice: String? // 予告の選択 "A"/"B"（旧セーブ＝nil）
         var didShowRiftHint: Bool?  // 予告の後の知らせを出したか（旧セーブ＝nil＝まだ）
@@ -1196,6 +1263,8 @@ final class GameSession {
         var shownOnce: [String]?          // このキャリアで一度出した固定の一文の印（旧セーブ＝nil）
         var weeksWithoutPartner: Int?     // 相方と過ごさない週の連続数（旧セーブ＝nil＝0）
         var injuryNoticeWeeks: Int?       // 体調ダウンの知らせ待ち（旧セーブ＝nil＝0・code_review_2026-10-19c §2-4）
+        var smallEntered: Int?            // その年の道中大会に出た数（旧セーブ＝nil＝0）
+        var smallWon: Int?                // その年の道中大会で優勝した数（旧セーブ＝nil＝0）
         var writeNetaID: Int?             // 書く対象のネタ（旧セーブ＝nil＝勝負ネタを磨く・queue108）
     }
 
@@ -1260,10 +1329,11 @@ final class GameSession {
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
                             yearStartState: yearStartState, yearHistory: yearHistory,
                             debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName, comboKind: comboKind.rawValue, meetingKind: meetingKind.rawValue,
+                            winAcknowledged: (finished && outcome?.champion == true) ? true : nil,
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
-                            injuryNoticeWeeks: injuryNoticeWeeks, writeNetaID: writeNetaID)
+                            injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
@@ -1298,6 +1368,10 @@ final class GameSession {
             switch phase {
             case .weekDone(let summary):
                 state = summary.state
+                for r in summary.results where r.isStage {
+                    TrophyBook.onStage(r, state: summary.state, config: config)
+                    let c = TrophyBook.smallTournamentCount(r); smallEntered += c.entered; smallWon += c.won
+                }
                 week = summary.week
                 if summary.results.contains(where: { $0.name == "体調ダウン" }) { injuryNoticeWeeks = config.injuryRestWeeks }
                 if summary.results.contains(where: { $0.name == "体調ダウン" || $0.name == "療養" }) { categoryLog[summary.week] = .kaifuku }   // 日程表に「回」を残す（療養週が空白にならない）
@@ -1328,6 +1402,10 @@ final class GameSession {
             case .yearDone(let outcome):
                 state = runner.state
                 self.outcome = outcome
+                TrophyBook.onYearEnd(outcome: outcome, year: runner.year, careerYears: config.careerYears,
+                                     smallEntered: smallEntered, smallWon: smallWon,
+                                     wonBefore: yearHistory.contains { $0.champion && $0.year != runner.year })
+                smallEntered = 0; smallWon = 0
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
                 if yearHistory.last?.year != runner.year {
@@ -1347,9 +1425,20 @@ final class GameSession {
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
                                                       || loggedGPEntry,
                                                   dissolved: outcome.dissolved ? true : nil,
-                                                  watchedFinal: didWatchFinal ? true : nil))
+                                                  watchedFinal: didWatchFinal ? true : nil,
+                                                  hanaReach: Self.hanaReach(log: log),
+                                                  smallWins: Self.smallWinCount(log: log)))
                 }
                 if outcome.champion {
+                    // 周をまたぐ記録（連覇は yearHistory の末尾から数える）。pump が同じ年末に再入しても二重に積まない
+                    if !didRecordChampion {
+                        didRecordChampion = true
+                        var streak = 0
+                        for rec in yearHistory.reversed() { if rec.champion { streak += 1 } else { break } }
+                        TrophyBook.recordChampion(year: runner.year, streak: streak)
+                        // 玉座奪還＝前に優勝していて、前の年は優勝していない
+                        if streak == 1, yearHistory.dropLast().contains(where: { $0.champion }) { TrophyBook.award(.t20) }
+                    }
                     // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）
                     lastFinalMargin = runner.snapshot().weekResults.last(where: { $0.name == "GP決勝" })?.margin
                     // GP決勝の優勝は WeekRunner が週の結果を返さず即 yearDone になる（Calendar の即時リターン）＝
@@ -1618,6 +1707,7 @@ final class GameSession {
                 default: steps = 600
                 }
             }
+            if canChooseRetire { retireAfterWin() }
             guard finished, !careerOver else { return }
             startNextYear()
         }
@@ -1692,6 +1782,7 @@ extension GameSession {
         while steps < maxSteps {
             steps += 1
             if s.winFinale { s.acknowledgeWin(); continue }
+            if s.canChooseRetire { s.retireAfterWin() }   // 自動プレイは優勝で勇退（これまでと同じ区切り）
             if s.finished { if s.careerOver { return nil }; s.startNextYear(); continue }
             if s.watchingFinal { s.finishWatchingFinal(winner: "—"); continue }
             if let k = s.pendingChoiceEvent {
