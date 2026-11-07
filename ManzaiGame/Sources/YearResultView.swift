@@ -13,6 +13,7 @@ struct YearResultView: View {
     var onRestart: () -> Void
     var onEnding: (() -> Void)? = nil   // キャリアの区切り（全エンド）: エンディングへ
     var onNextYear: (() -> Void)? = nil // キャリアが続く年末のみ: 翌年へ
+    @State private var confirmRetire = false
     var onRetire: (() -> Void)? = nil   // 優勝の年末のみ: 勇退してエンディングへ
 
     private var s: GameState { session.state }
@@ -493,11 +494,18 @@ struct YearResultView: View {
             // 主ボタンの位置は「続ける」＝連打しても勇退にならない
             VStack(spacing: 6) {
                 Text("ここで勇退するか、連覇を狙うか").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
-                let retire = Button(action: onRetire) { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
+                let retire = Button { confirmRetire = true } label: { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
                 let goOn = Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶").lineLimit(1) }.buttonStyle(YoseButtonStyle(.primary))
                 ViewThatFits(in: .horizontal) {   // 大きい文字で横に収まらない時は縦に積む（code_review_1107f #4）
                     HStack(spacing: 10) { retire; goOn }
                     VStack(spacing: 8) { retire; goOn }
+                }
+                // 【候補・code_review_1107f #1】押し間違いでこの周が終わらないように1段確かめる
+                .confirmationDialog("ここで勇退しますか？", isPresented: $confirmRetire, titleVisibility: .visible) {
+                    Button("勇退する", role: .destructive, action: onRetire)
+                    Button("もどる", role: .cancel) {}
+                } message: {
+                    Text("エンディングへ進み、このコンビの続きは遊べなくなります。")
                 }
             }
         } else { singleButton }
