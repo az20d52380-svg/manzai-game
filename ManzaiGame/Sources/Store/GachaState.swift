@@ -181,12 +181,15 @@ struct GachaState: Codable, Equatable {
         var m = self
         m.owned.formUnion(o.owned)
         m.totalPulls = max(totalPulls, o.totalPulls)
-        m.loginStamps = max(loginStamps, o.loginStamps)
-        m.lastLoginDay = max(lastLoginDay, o.lastLoginDay)
         // 残高は回数の多い側（新しい側）を採る
-        // 回数が同じでも、かけら・天井で交換して持ち物が増えた側が新しい（古い側の残高が戻って二重に使えるのを防ぐ）
-        let newer = (o.totalPulls, o.owned.count) > (totalPulls, owned.count) ? o : self
+        // 回数が同じでも、かけら・天井で交換して持ち物が増えた側・札を後の日に取った側が新しい（古い側の残高が戻って二重に使えるのを防ぐ）
+        let newer = (o.totalPulls, o.owned.count, o.lastLoginDay) > (totalPulls, owned.count, lastLoginDay) ? o : self
         m.shards = newer.shards; m.pity = newer.pity; m.freeTickets = newer.freeTickets
+        // ログインの札と最後の日は、後の日に取った側から組で採る（別々に max すると、7枚目で0に戻った札が6に戻って無料1回を二重に取れる）
+        let login = o.lastLoginDay == lastLoginDay ? newer : (o.lastLoginDay > lastLoginDay ? o : self)
+        m.loginStamps = login.loginStamps; m.lastLoginDay = login.lastLoginDay
+        // 回数は古いが札は新しい側が7枚目を取っていたら（札が減っている）、その無料1回は newer の残高に入っていないので足す
+        if login.lastLoginDay > newer.lastLoginDay, login.loginStamps < newer.loginStamps { m.freeTickets += 1 }
         for (k, v) in o.ledger { m.ledger[k] = max(m.ledger[k] ?? 0, v) }   // 台帳は和集合
         m.paidOpened = max(paidOpened, o.paidOpened)
         return m
