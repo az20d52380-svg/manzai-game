@@ -90,11 +90,10 @@ final class StoreIDsTests: XCTestCase {
     func testAllIDsUniquePrefixedAndCostumesMatchOutfits() {
         XCTAssertEqual(Set(StoreIDs.all).count, StoreIDs.all.count)
         XCTAssertTrue(StoreIDs.all.allSatisfy { $0.hasPrefix(StoreIDs.prefix + ".") })
-        XCTAssertEqual(StoreIDs.costume("hakama"), "\(StoreIDs.prefix).costume.hakama")
-        // 商品になる衣装名は StageOutfit の rawValue と一致し、standard（無料）は商品にしない
-        for n in StoreIDs.costumeNames { XCTAssertNotNil(StageOutfit(rawValue: n), n) }
-        XCTAssertFalse(StoreIDs.costumeNames.contains(StageOutfit.standard.rawValue))
-        XCTAssertEqual(StoreIDs.all.count, 2 + StoreIDs.costumeNames.count)
+        // 券は消耗型の2商品（1回・10回）
+        XCTAssertEqual(StoreIDs.ticketCounts[StoreIDs.ticket1], 1)
+        XCTAssertEqual(StoreIDs.ticketCounts[StoreIDs.ticket10], 10)
+        XCTAssertEqual(StoreIDs.all.count, 4)
     }
 }
 

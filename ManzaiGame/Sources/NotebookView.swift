@@ -11,7 +11,6 @@ struct NotebookView: View {
     let session: GameSession
     var onClose: () -> Void
     @State private var tab: Tab = NotebookView.initialTab
-    /// 型変更ピッカーを開いているネタID（1つだけ開く・トグル）
     /// 改名フィールドを開いているネタID
     @State private var renamingID: Int?
     @State private var renameDraft: String = ""
@@ -73,6 +72,7 @@ struct NotebookView: View {
             if exp > 0 && !cfg.autoPourAllocation {
                 HStack {
                     YoseTag(text: "経験点 \(exp) 未使用", style: .outlineShu)
+                    Text("週の画面の能力アップで使う").font(YoseFont.gothic(12)).foregroundStyle(YoseColor.haiSumi)
                     Spacer()
                 }
             }
@@ -168,10 +168,18 @@ struct NotebookView: View {
         return out
     }
 
+    /// 通算の優勝＝今年の記録の優勝＋過去の年の頂GP優勝＋過去の年の THE HANA 優勝（記録は年ごとに消えるので、通算 hanaWins から今年の分を引いて足す・code_review_1107c #6）。表示専用。
+    static func kirokuWins(marks: [(title: String, mark: String)], gpChampionYears: Int, hanaWins: Int?, pastSmallWins: Int = 0) -> Int {
+        let thisYear = marks.filter { $0.mark == "優勝" }
+        let hanaThisYear = thisYear.filter { $0.title.contains("HANA") }.count
+        return thisYear.count + gpChampionYears + max(0, (hanaWins ?? 0) - hanaThisYear) + pastSmallWins
+    }
+
     private var kirokuPage: some View {
         let entries = logEntries
         let played = entries.filter { ["通過", "敗退", "優勝"].contains($0.mark) }.count
-        let wins = entries.filter { $0.mark == "優勝" }.count + session.yearHistory.filter { $0.champion }.count
+        let wins = Self.kirokuWins(marks: entries.map { ($0.title, $0.mark) }, gpChampionYears: session.yearHistory.filter { $0.champion }.count, hanaWins: session.state.hanaWins,
+                                     pastSmallWins: session.yearHistory.reduce(0) { $0 + ($1.smallWins ?? 0) })
         let total = entries.reduce(0) { $0 + $1.prize } + session.yearHistory.reduce(0) { $0 + $1.prize / 10000 }
         return VStack(alignment: .leading, spacing: 10) {
             // 通算戦績（3カラム木札）
@@ -192,9 +200,12 @@ struct NotebookView: View {
                     HStack(spacing: 10) {
                         Text("\(r.year)年目").font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
-                        Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
-                            .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
+                                .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            if let h = r.hanaReach { Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         if r.watchedFinal == true, !r.reachedFinal {
                             YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た")   // 決勝を客席から観た年＝灰の札（queue108・観るのは任意なので実際に観た年だけ）
                         }
@@ -472,6 +483,6 @@ struct StampShake: ViewModifier {
     func body(content: Content) -> some View {
         content
             .modifier(ShakeEffect(travel: 3, animatableData: t))
-            .onAppear { withAnimation(.linear(duration: 0.3)) { t = 1 } }
+            .onAppear { withAnimation(Theme.Motion.r(.linear(duration: 0.3))) { t = 1 } }
     }
 }
