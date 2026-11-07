@@ -45,8 +45,14 @@ def rows():
                 B.add(s, "mental", dmt)
         body = ", ".join(f"{sw}: {num(getattr(s, py), sw == 'money')}" for sw, py in FIELDS)
         out.append(f"(.{kind}(.{name}), Expected({body})),")
+    rows.final = s
     return out
 
 
 if __name__ == "__main__":
-    print("\n".join(rows()))
+    import sys
+    r = rows()
+    if sys.argv[1:] == ["derived"]:   # GoldenTests.swift の末尾「最終状態での派生値」用（blurWidth・jitsuryoku）
+        print(repr(B.blur_width(rows.final.mental)), repr(B.jitsuryoku(rows.final)))
+    else:
+        print("\n".join(r))

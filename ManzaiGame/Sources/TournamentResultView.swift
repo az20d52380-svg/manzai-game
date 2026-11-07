@@ -16,9 +16,12 @@ struct TournamentResultView: View {
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
     @State private var ctaPulse = false
+    @State private var showHanaChamp = false   // THE HANA 優勝の瞬間（頂GP 決勝と同じ優勝演出を使い回す）
     @State private var showPass = false        // 回戦突破の祝い（次へ 押下で1度だけ・GPの通過のみ）
     @State private var showBurstCutIn = false  // ハマった夜の斜めカットイン（判の叩きつけと同時に1度だけ）
     @State private var signIn = false          // 番組アイキャッチ：大会看板がドンと打ち出される
+    @State private var stampHold = false       // 判の前の溜め（0.18秒・画面が少し暗く、巨大な判が薄く浮く・無音）
+    @State private var inkBleed = false        // 朱肉のにじみ（判の後 1.0→1.08 倍で薄れる）
     @State private var slamFire = 0            // 判の叩きつけ（screenShake+screenFlash・Juice.swift）
     @State private var confettiFire = 0        // 通過のみ: 紙吹雪（敗退は無音の重さ＝紙吹雪なし）
     /// 開示列のタスク（保持して画面を離れたら取り消す＝投げっぱなしにしない・X4-08）
@@ -67,7 +70,11 @@ struct TournamentResultView: View {
         return ClimaxData.pages(for: result, finalYear: session.year >= session.config.careerYears, repeatSeen: seen > 0)
     }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
-    private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
+    /// THE HANA（女性コンビだけの大会）。道中の単発ではなく勝ち上がり戦＝通過の祝い・「突破」の語は頂GPと同じ型で出す
+    private var isHana: Bool { result.name.hasPrefix("HANA") }
+    private var isHanaFinal: Bool { result.name == "HANA決勝" }
+    private var isHanaVideo: Bool { result.name == "HANA1回戦" }   // 動画審査＝舞台に立たない
+    private var isMidTournament: Bool { !isHana && session.config.calendar.tournament(inWeek: summary.week) != nil }
     /// 負けの距離 0..1（監査E-03）。margin（スコア−実効ライン）を3段に丸めて波形に渡す。数字は出さない。【仮】
     private func nearMiss(_ r: StageResult) -> Double {
         guard !r.passed, let m = r.margin else { return 0 }
@@ -87,7 +94,7 @@ struct TournamentResultView: View {
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
     private func stampLabel(passed: Bool) -> String {
         // 道中の単発大会（春新人賞など）は通過ライン超え＝その賞を取る（賞金・知名度＝TournamentSpec の「優勝時」）＝「優勝」。GP回戦は「通過」
-        if isMidTournament { return passed ? "優勝" : "敗退" }
+        if isMidTournament || (isHanaFinal && passed) { return passed ? "優勝" : "敗退" }
         return passed ? "通過" : "敗退"
     }
 
@@ -117,20 +124,20 @@ struct TournamentResultView: View {
                 if !revealed {
                     waveBoard(passed: r.passed, nearMiss: nearMiss(r), burst: r.burst == true)
                         .position(x: geo.size.width / 2, y: geo.size.height * 0.645)
-                        .opacity(revealedWave && !(fanActive && fanShown > 1) ? 1 : 0)   // 声の札が2枚以上並ぶ間は波形を譲る（札の下に透けて重なる崩れを避ける・順番は不変）
+                        .opacity(revealedWave && !isHanaVideo && !(fanActive && fanShown > 1) ? 1 : 0)   // 声の札が2枚以上並ぶ間は波形を譲る（札の下に透けて重なる崩れを避ける・順番は不変）
                         .animation(Theme.Motion.r(.easeOut(duration: 0.25)), value: fanShown)
                         .transition(.opacity)
                 }
 
                 VStack(spacing: 0) {
                     // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
-                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
+                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament || isHana ? nil : "頂グランプリ")   // THE HANA は題名に大会名が入っている＝札を重ねない
                         .padding(.top, 8)
                         .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
                         .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6)), value: signIn)
                     // 番組の下三分（小型）：LIVE札＋コンビ名＋結成年・週。点数は出さない
                     HStack(spacing: 8) {
-                        Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Text(isHanaVideo ? "動画審査" : "LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                             .padding(.horizontal, 6).frame(height: 20).background(YoseColor.shu)
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
                         Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)
@@ -147,7 +154,7 @@ struct TournamentResultView: View {
                     VStack(spacing: 10) {
                         if !needsQual && !needsAnnounce { verdictPlate(passed: r.passed) }   // 予選は通知で結果を先に知っている＝判の文字は出さない（客席の反応と講評だけ）
                         if revealed {
-                            StageTelopBelt(text: r.passed ? "——どっと沸いた！" : missLine(r))
+                            StageTelopBelt(text: r.passed ? (isHanaVideo ? "——動画審査を通った。" : "——どっと沸いた！") : (isHanaVideo ? "——動画審査で落ちた。" : missLine(r)))
                                 .transition(.opacity)
                         }
                     }
@@ -171,7 +178,11 @@ struct TournamentResultView: View {
                                 .transition(.opacity)
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
-                                if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
+                                if r.passed && isHanaFinal {
+                                    Sound.play(.fanfare); Sound.play(.cheerBig)   // 頂GP 決勝の優勝と同じ音（優勝演出の画面は音を鳴らさない・code_review_1107e #1）
+                                    withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true }
+                                }
+                                else if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
                                 else if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.5))) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
@@ -196,6 +207,8 @@ struct TournamentResultView: View {
                           origin: UnitPoint(x: 0.5, y: 0.40))
         }
         .screenShake(trigger: slamFire, intensity: r.passed ? 10 : 7)     // 判の衝撃（勝敗とも）
+        .edgePulse(trigger: slamFire, color: YoseColor.shu)               // 視差を減らす時：揺れの代わりに縁が朱色に2回明滅
+        .overlay { Color.black.opacity(stampHold ? 0.2 : 0).ignoresSafeArea().allowsHitTesting(false).animation(.easeOut(duration: 0.08), value: stampHold) }   // 溜めの間、画面が少し暗くなる
         .screenFlash(trigger: r.passed ? slamFire : 0,                    // 白むのは通過だけ
                      color: Color(hex: 0xFFEDCB), strength: 0.4)
         .overlay {
@@ -260,7 +273,7 @@ struct TournamentResultView: View {
         .onDisappear { revealTask?.cancel() }
         #if DEBUG
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
+            if ["result_done", "lose_done", "hana_result"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
         .overlay {
@@ -281,6 +294,16 @@ struct TournamentResultView: View {
         }
         .overlay {
             if showBurstCutIn { YoseBigSuccessCutIn(title: "ハマった夜！", showGains: false) { showBurstCutIn = false }.allowsHitTesting(false) }
+        }
+        .overlay {
+            if showHanaChamp {   // 決勝の通過＝優勝。タップで先へ
+                YoseChampionCelebrationView(tournamentName: "THE HANA 決勝", generationText: "結成\(summary.year)年目",
+                                            duoName: session.combiName, prizeAmountYen: r.prize,
+                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」") {
+                    showHanaChamp = false; session.acknowledgeResult()
+                }
+                .transition(.opacity)
+            }
         }
         .overlay {
             if showPass {   // 回戦突破の祝い（通過の判の後・次へ の代わりに1度だけ）。タップで閉じて先へ
@@ -307,33 +330,45 @@ struct TournamentResultView: View {
     private func runReveal() async {
         let r = result
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.35))) { revealedWave = true }  // ①波形が先
-        if r.passed && !needsAnnounce { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
+        if r.passed && !needsAnnounce && !isHanaVideo { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
         await pause(0.9)
         if Task.isCancelled { return }
-        if !needsAnnounce { await runFanVoices() }                       // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
+        if !needsAnnounce && !isHanaVideo { await runFanVoices() }                       // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
         if Task.isCancelled { return }
         if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
         await pause(0.7)
         if Task.isCancelled { return }
+        if !skipRequested, !needsAnnounce, !UIAccessibility.isReduceMotionEnabled {
+            // 判の前の溜め：0.18秒（序盤の予選は0.1秒）。画面が少し暗くなり、巨大な判が薄く浮く。無音（Gemini R7 §2-C・§4-3）
+            stampHold = true
+            await pause(needsQual ? 0.10 : 0.18)
+            stampHold = false
+            if Task.isCancelled { return }
+        }
+        inkBleed = false
         withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.62))) { revealed = true }   // 判の叩きつけ
+        if !UIAccessibility.isReduceMotionEnabled { DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.45)) { inkBleed = true } } }
         slamFire += 1                                                    // シェイク＋（通過なら）フラッシュ
         if r.burst == true && !skipRequested { showBurstCutIn = true }   // ハマった夜＝斜めカットイン（約1秒で自動退場）
         if needsAnnounce {
             // 準決勝は発表で結果が分かっている＝客席の反応・判の叩きつけは出さない（講評・結果の札は続けて出す）
         } else if r.passed {
             if needsQual { Sound.play(.applauseHall) }                   // 予選＝拍手と歓声だけ（判の文字・紙吹雪・太鼓なし）
-            else { confettiFire += 1; Haptics.rare(); Sound.play(.taiko); Sound.play(.applauseHall) }   // 通過＝太鼓ドン＋会場拍手
+            else {
+                confettiFire += 1; Haptics.rare(); Sound.play(.taiko); Sound.play(.applauseHall)   // 通過＝太鼓ドン＋会場拍手
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) { Haptics.rigid(0.6) }      // 叩きつけの0.08秒後に硬い一発（Gemini R7 §2-C）
+            }
         } else {
             if !needsQual { Haptics.confirm(); Sound.play(.taiko2) }     // 予選の敗退は静かな客席だけ
             // 敗退＝重いドドン（拍手なし＝静けさ）
         }
-        try? await Task.sleep(nanoseconds: 400_000_000)                  // 判の解放は畳まない（0.4s は必ず見せる）
+        try? await Task.sleep(nanoseconds: 450_000_000)                  // 判の余韻は畳まない（0.45s は必ず見せる・朱肉のにじみが薄れる間）
         if Task.isCancelled { return }
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { return }   // 目視用：判の直後で止める（段階の途中を撮る）
         #endif
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { revealedReview = true }
-        try? await Task.sleep(nanoseconds: 600_000_000)
+        try? await MZSpeed.sleep(nanoseconds: 600_000_000)
         if Task.isCancelled { return }
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { revealedRest = true }
         withAnimation(Theme.Motion.r(.easeOut(duration: r.passed ? 1.1 : 0.8))) { countProgress = 1 }   // ④数字がカウントアップ
@@ -358,7 +393,7 @@ struct TournamentResultView: View {
             let t0 = fanTap
             for _ in 0..<48 {   // 2.4秒
                 if skipRequested || Task.isCancelled || fanTap != t0 { break }
-                try? await Task.sleep(nanoseconds: 50_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 50_000_000)
             }
             if skipRequested || Task.isCancelled { break }
         }
@@ -369,14 +404,14 @@ struct TournamentResultView: View {
     private func pause(_ seconds: Double) async {
         for _ in 0..<Int(seconds / 0.05) {
             if skipRequested || Task.isCancelled { return }
-            try? await Task.sleep(nanoseconds: 50_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 50_000_000)
         }
     }
 
     /// 今どの段かを示す3つの角札（客席の反応 ▶ 結果発表 ▶ 講評と精算）。順序・時間は変えない表示だけ
     private var stepDots: some View {
         let cur = !revealed ? 0 : (revealedReview ? 2 : 1)
-        let names = ["① 客席の反応", "② 結果発表", "③ 講評・精算"]
+        let names = [isHanaVideo ? "① 動画審査" : "① 客席の反応", "② 結果発表", "③ 講評・精算"]
         return HStack(spacing: 5) {
             ForEach(0..<3, id: \.self) { i in
                 Text(names[i]).font(YoseFont.gothic(12, weight: .heavy))
@@ -396,8 +431,16 @@ struct TournamentResultView: View {
         StageVerdictPlate(text: stampLabel(passed: passed), lost: !passed)
             .scaleEffect(1.15)
             .padding(.vertical, 6)
-            .scaleEffect(revealed ? 1 : (passed ? 2.6 : 1.5))
-            .opacity(revealed ? 1 : 0)
+            .scaleEffect(revealed ? 1 : (stampHold ? 2.8 : (passed ? 2.6 : 1.5)))
+            .opacity(revealed ? 1 : (stampHold ? 0.22 : 0))
+            .animation(.easeOut(duration: 0.18), value: stampHold)
+            .overlay {
+                // 朱肉のにじみ：叩きつけの直後に縁がにじみ、1.0→1.08 倍で薄れる
+                Rectangle().stroke(YoseColor.shu.opacity(0.6), lineWidth: 5).blur(radius: 2)
+                    .scaleEffect(inkBleed ? 1.08 : 1)
+                    .opacity(revealed && !inkBleed ? 1 : 0)
+                    .allowsHitTesting(false)
+            }
     }
 
     /// 客席のウケの波形（24本の縦スリット。通過＝後半へ育ってオチで跳ねる／敗退＝低く疎ら・惜しいほど後半が立つ）
@@ -475,7 +518,7 @@ struct TournamentResultView: View {
         let hasFame = session.lastResultFameDelta >= 0.5
         return VStack(spacing: 0) {
             if r.passed {
-                YoseHankoStamp(text: isMidTournament ? "優勝" : "突破", angle: -8)
+                YoseHankoStamp(text: isMidTournament || isHanaFinal ? "優勝" : "突破", angle: -8)
                     .frame(maxWidth: .infinity).padding(.vertical, 10)
             }
             if hasPrize || hasFame {
@@ -496,11 +539,42 @@ struct TournamentResultView: View {
                 .frame(maxWidth: .infinity).padding(.vertical, 8)
                 .background(YoseColor.ki.opacity(0.35))
             }
+            expGainRow(passed: r.passed)
         }
         .yoseHarigami(isFeatured: r.passed)   // 突破・賞金の下段を主役に（講評の貼り紙は普通の枠）
         .overlay { if r.passed { Rectangle().stroke(YoseColor.kinBright, lineWidth: 2.5).allowsHitTesting(false) } }   // 通過したら枠が金に光る
         .shadow(color: r.passed ? YoseColor.kinBright.opacity(0.7) : .clear, radius: 9)
         .padding(.bottom, 2)
+    }
+
+    /// 大会で入った経験点（5種の丸＋合計）。負けても少し入る＝その旨を添える。表示専用・％なし
+    @ViewBuilder
+    private func expGainRow(passed: Bool) -> some View {
+        let d = session.lastResultExpDelta
+        let total = ExpDisplay.total(ExpCurrency.allCases.map { max(0, d[$0] ?? 0) })
+        if total >= 1 {
+            VStack(spacing: 0) {
+                Rectangle().fill(YoseColor.kiDark).frame(height: 1)
+                HStack(spacing: 8) {
+                    Text("経験点 +\(total)").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                    ForEach(ExpCurrency.allCases, id: \.self) { c in
+                        let n = ExpDisplay.value(max(0, d[c] ?? 0))
+                        if n >= 1 {
+                            Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                                .frame(width: 22, height: 22).background(WeekMainView.expColor(c), in: Circle())
+                                .yoseExpPing(revealedRest ? n : 0, color: WeekMainView.expColor(c))
+                                .accessibilityLabel(c.displayName)
+                            Text("+\(n)").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.leading, -4)
+                        }
+                    }
+                    if !passed { Text("負けても入る").font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
+                }
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 8)
+                .background(YoseColor.ki.opacity(0.35))
+                .accessibilityElement(children: .combine)
+            }
+        }
     }
 
     /// DEBUG限定の目視フック：MZ_FANREPORT=1 でハマった夜でなくてもカードを出す（表示だけ・判定不変）
