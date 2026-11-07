@@ -177,6 +177,10 @@ final class GameSession {
     private(set) var hasYearStart = true
     /// 1年＝1行の記録（年末の「これまで」と勇退エンディングの年表に使う・表示専用・golden非対象）
     private(set) var yearHistory: [YearRecord] = []
+    /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。保存しない（中断復帰した年は数え直し）
+    @ObservationIgnored private var smallEntered = 0
+    @ObservationIgnored private var smallWon = 0
+    @ObservationIgnored private var didRecordChampion = false
     let combiName: String              // S1で入力（表示専用・golden非対象）
     /// 自分の名前・相方の名前（S1で入力・nil/空＝俺・谷口のまま・表示専用・golden非対象）
     let myName: String?
@@ -229,7 +233,7 @@ final class GameSession {
         self.isRestored = false
         // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
-        let start = startState ?? GameState(config: cfg)
+        let start = startState ?? GameState(config: cfg, metaPoints: MetaBook.points)   // 周回：集めた点を渡す（点0＝1周目は今と同じ）
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
         self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
@@ -332,6 +336,7 @@ final class GameSession {
         guard case .tournamentDecision = phase else { return }   // 二度押し・別の段からの呼び出しは無視（懸念の台帳 L37）
         let fameBefore = state.fame
         phase = runner.resolveTournament(travel: travel)
+        if travel == .夜行バス, TrophyBook.bump("bus") >= 10 { TrophyBook.award(.t12) }
         pump()
         lastResultFameDelta = state.fame - fameBefore   // 表示専用（大会結果画面の「知名度 +n」札）
         saveNow()
@@ -359,6 +364,7 @@ final class GameSession {
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
         weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
+        if case .train = action, runner.lastTrainingDone != nil, TrophyBook.bump("train") >= 100 { TrophyBook.award(.t13) }
         // 練習が休みに差し替わった週（体力ゲート・体調ダウン・お金不足）は、日程の印も「回復」で残す（稽古の印が付いていた）
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
         if case .train(.ネタ合わせ) = action, runner.lastTrainingDone == nil { weeksWithoutPartner = prevWithoutPartner + 1 }   // 休みに差し替わった週は相方と合わせていない（code_review_2026-10-19j §3）
@@ -1283,6 +1289,10 @@ final class GameSession {
             switch phase {
             case .weekDone(let summary):
                 state = summary.state
+                for r in summary.results where r.isStage {
+                    TrophyBook.onStage(r, state: summary.state, config: config)
+                    if !r.name.hasPrefix("GP"), r.name != "敗者復活" { smallEntered += 1; if r.passed { smallWon += 1 } }
+                }
                 week = summary.week
                 if summary.results.contains(where: { $0.name == "体調ダウン" }) { injuryNoticeWeeks = config.injuryRestWeeks }
                 if summary.results.contains(where: { $0.name == "体調ダウン" || $0.name == "療養" }) { categoryLog[summary.week] = .kaifuku }   // 日程表に「回」を残す（療養週が空白にならない）
@@ -1313,6 +1323,9 @@ final class GameSession {
             case .yearDone(let outcome):
                 state = runner.state
                 self.outcome = outcome
+                TrophyBook.onYearEnd(outcome: outcome, year: runner.year, careerYears: config.careerYears,
+                                     smallEntered: smallEntered, smallWon: smallWon)
+                smallEntered = 0; smallWon = 0
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
                 if yearHistory.last?.year != runner.year {
@@ -1335,6 +1348,13 @@ final class GameSession {
                                                   watchedFinal: didWatchFinal ? true : nil))
                 }
                 if outcome.champion {
+                    // 周をまたぐ記録（連覇は yearHistory の末尾から数える）。pump が同じ年末に再入しても二重に積まない
+                    if !didRecordChampion {
+                        didRecordChampion = true
+                        var streak = 0
+                        for rec in yearHistory.reversed() { if rec.champion { streak += 1 } else { break } }
+                        TrophyBook.recordChampion(year: runner.year, streak: streak)
+                    }
                     // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）
                     lastFinalMargin = runner.snapshot().weekResults.last(where: { $0.name == "GP決勝" })?.margin
                     // GP決勝の優勝は WeekRunner が週の結果を返さず即 yearDone になる（Calendar の即時リターン）＝
