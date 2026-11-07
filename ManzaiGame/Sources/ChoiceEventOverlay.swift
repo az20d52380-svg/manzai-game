@@ -248,7 +248,7 @@ struct ChoiceEventOverlay: View {
                 Button { advance() } label: {
                     Text("次へ 進む ▶").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(YoseButtonStyle(.primary))
+                .buttonStyle(YoseButtonStyle(.primary, silent: true))
             }
             if footerReady {
                 if chosenID == nil, setupDone {
@@ -261,7 +261,7 @@ struct ChoiceEventOverlay: View {
                                 Text(text.choiceLabels[choice.id] ?? choice.id)
                                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                             }
-                            .buttonStyle(YoseButtonStyle(.secondary))
+                            .buttonStyle(YoseButtonStyle(.secondary, silent: true))
                         }
                     }
                 } else if afterDone {
