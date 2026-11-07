@@ -39,3 +39,15 @@ final class RepeatWinLine1108Tests: IsolatedStoreTestCase {
         XCTAssertEqual(s.noStagesLeft, s.upcomingStages().isEmpty)
     }
 }
+
+/// 購入の成否の分かれ目（券は所有にならないので handle の結果を返す）。カバー率の点検 11/08 で 0%
+final class StoreIDsTicket1108Tests: XCTestCase {
+    func testOnlyTicketsAreConsumable() {
+        XCTAssertTrue(StoreIDs.isTicket(StoreIDs.ticket1))
+        XCTAssertTrue(StoreIDs.isTicket(StoreIDs.ticket10))
+        XCTAssertFalse(StoreIDs.isTicket(StoreIDs.adFree))
+        XCTAssertFalse(StoreIDs.isTicket(StoreIDs.agency))
+        XCTAssertFalse(StoreIDs.isTicket(""))
+        XCTAssertEqual(Set(StoreIDs.all), Set([StoreIDs.adFree, StoreIDs.agency]).union(StoreIDs.ticketCounts.keys))   // 券の表と商品一覧がずれない
+    }
+}
