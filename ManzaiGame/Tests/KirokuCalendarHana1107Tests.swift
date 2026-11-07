@@ -20,4 +20,15 @@ final class KirokuCalendarHana1107Tests: XCTestCase {
         XCTAssertFalse(CalendarView.paintsPastWeek(tournamentName: "HANA2回戦", category: nil))
         XCTAssertTrue(CalendarView.paintsPastWeek(tournamentName: "春新人賞A", category: nil))   // 道中は従来どおり
     }
+
+    /// 前の年の道中優勝が年をまたいで消えない（通算の数字が年明けに減らない）
+    func testPastSmallWinsKept() {
+        XCTAssertEqual(NotebookView.kirokuWins(marks: [], gpChampionYears: 0, hanaWins: nil, pastSmallWins: 2), 2)
+    }
+
+    func testSmallWinCountExcludesGPAndHana() {
+        let log = ["第5週: 春新人賞A 優勝 +10万 / 夏中堅賞 敗退", "第30週: THE HANA 決勝 優勝 +100万", "第47週: 頂GP 決勝 優勝 +1000万",
+                   "第47週: 頂GP 決勝 優勝「誰か」（客席から）", "第9週: 寒梅漫才杯 優勝 +20万"]
+        XCTAssertEqual(GameSession.smallWinCount(log: log), 2)
+    }
 }

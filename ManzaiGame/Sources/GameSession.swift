@@ -1097,6 +1097,13 @@ final class GameSession {
         var watchedFinal: Bool? = nil
         /// その年の THE HANA の結果の1行（女コンビだけ）。nil＝出ていない／旧セーブ。年表の下の行に出す
         var hanaReach: String? = nil
+        /// その年の道中大会の優勝の数（記録は年ごとに消えるので、手帳の通算優勝のために持つ）。nil＝旧セーブ（0 扱い）
+        var smallWins: Int? = nil
+    }
+
+    /// 記録から道中大会の優勝だけを数える（頂GP と THE HANA は別に数えるので除く）
+    static func smallWinCount(log: [String]) -> Int {
+        log.flatMap(parseLogLine).filter { $0.mark == "優勝" && !$0.title.contains("HANA") && !$0.title.contains("頂GP") }.count
     }
 
     /// 出来事ログの行から、その年の THE HANA の結果を1行にする（表示専用）
@@ -1407,7 +1414,8 @@ final class GameSession {
                                                       || loggedGPEntry,
                                                   dissolved: outcome.dissolved ? true : nil,
                                                   watchedFinal: didWatchFinal ? true : nil,
-                                                  hanaReach: Self.hanaReach(log: log)))
+                                                  hanaReach: Self.hanaReach(log: log),
+                                                  smallWins: Self.smallWinCount(log: log)))
                 }
                 if outcome.champion {
                     // 周をまたぐ記録（連覇は yearHistory の末尾から数える）。pump が同じ年末に再入しても二重に積まない
