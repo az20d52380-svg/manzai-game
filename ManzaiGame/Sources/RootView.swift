@@ -54,12 +54,17 @@ struct RootView: View {
                 .onAppear { if ProcessInfo.processInfo.environment["MZ_TAB"] == "kiroku" { session.debugSeedKirokuLog() } }
             case "calendar": CalendarView(session: session, onClose: {})   // S4目視（.taskで数週プレイ）
             case "disband": DisbandFarewellView(bestLine: session.bestRunLine) {}   // 設定の解散の後の別れの場面（MZ_ENDSTEP 不要）
+            case "gacha": GachaView(onClose: {})   // 衣装ガチャの目視（新規インストールなら初回の無料1回）
             case "settings": SettingsView(onClose: {}, onQuitRun: {})   // S1b目視（MZ_STEP=0/1/2 で確認の段へ）
             case "qual_notice": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "GP1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 予選の知らせ（通知→一覧）の目視（MZ_PASS=0 で落選。MZ_OPEN=1 で通知を開いた後から）
+            case "hana_video": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "HANA1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // THE HANA 動画審査の結果の知らせの目視
+            case "hana_result": TournamentResultView(session: session, summary: WeekSummary(year: 1, week: 32, results: [StageResult(name: "HANA1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", prize: 0)], state: session.state))   // THE HANA 動画審査の結果画面の目視（MZ_PASS=0 で敗退）
+            case "hana_entry": TournamentEntryView(session: session, spec: session.config.calendar.hanaTournaments[0])   // THE HANA 1回戦（動画審査）の入口の目視
             case "qual_line": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "GP準々決勝", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 準々決勝の相方のメッセージの目視
             case "finalist_announce": FinalistAnnounceView(combiName: session.combiName, year: 1, passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 決勝進出者の発表の目視（MZ_PASS=0 で落選・MZ_HOLD_AT=n で読み上げn組目で止める）
             case "glossary": GlossaryView(onClose: {})                      // 用語集の目視
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
+            case "firststage": FirstStageView(combiName: "ミナトヤ", onSkip: ProcessInfo.processInfo.environment["MZ_SECOND"] != nil ? {} : nil, onComplete: {})   // 初舞台の目視（MZ_SECOND=1 で2周目の「とばす」）
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "intro": ReminiscencePlayer(cards: (MeetingKind.debugForced ?? .highSchool).cards, onComplete: {}) // 導入の回想カード目視（MZ_MEET=1〜4 で型）
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
@@ -121,9 +126,14 @@ struct RootView: View {
             if ui == "grown" || (ui == "notebook" && session.year == 1), session.week <= 1 {   // notebook は MZ_YEARS 後（2年目〜）はその年のまま見る（year10_visual_1026_v0）
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
-            if ui == "yearend", session.week <= 1 {
+            if ui == "yearend" || (ui == "notebook" && ["champion2", "champion3"].contains(ProcessInfo.processInfo.environment["MZ_MODE"] ?? "")), session.week <= 1 {   // notebook＋champion2/3＝連覇の年が並ぶ戦績の目視
                 // 年末リザルト本体の目視: 通常は最後まで自動で進め、客席観戦の決勝を観終えた扱いにして年末総決算へ。MZ_MODE=champion は優勝版
-                if ProcessInfo.processInfo.environment["MZ_MODE"] == "champion" { forceChampion(); session.acknowledgeWin() }
+                let mode = ProcessInfo.processInfo.environment["MZ_MODE"]
+                if mode == "champion2" || mode == "champion3" {   // 優勝→続ける（champion2＝翌年の週画面・champion3＝翌年も優勝した年末の2択）
+                    forceChampion(); session.acknowledgeWin(); session.startNextYear()
+                    if mode == "champion3" { session.debugAdvanceToChampionFinale(); session.acknowledgeWin() }
+                }
+                else if mode == "champion" { forceChampion(); session.acknowledgeWin() }
                 else {
                     session.debugPlayToEnd()
                     if session.watchingFinal { session.finishWatchingFinal(winner: "（見本）"); session.debugPlayToEnd() }
@@ -212,6 +222,10 @@ struct RootView: View {
                 // ジュース目視: 2秒後にネタ作りを自動実行＝Beat2バースト＋パーティクル＋ピル跳ねをスクショで拾う
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
                 session.choose(.train(.ネタ作り))
+            }
+            if ui == "lose" || ui == "lose_done", session.week <= 1 {
+                // 敗退の結果画面（経験点の札など）の目視: 初期能力のまま最初の大会へ
+                session.debugAdvanceToFirstResult()
             }
             if ui == "pass" || ui == "result_done", session.week <= 1 {
                 // 合否演出（通過側）目視: 能力マックスで初回大会へ＝「通過」判＋紙吹雪＋フラッシュを拾う
@@ -380,7 +394,8 @@ struct RootView: View {
                 YearResultView(session: session,
                                onRestart: { returnToTitle() },
                                onEnding: session.endingID != nil ? { showEnding = true } : nil,
-                               onNextYear: session.careerOver ? nil : { beginYearTurn() })
+                               onNextYear: session.careerOver ? nil : { beginYearTurn() },
+                               onRetire: session.canChooseRetire ? { session.retireAfterWin(); showEnding = true } : nil)
             }
         } else if let result = session.pendingResult {
             if let r = result.results.last, r.name == "GP決勝", !r.passed {
@@ -445,6 +460,7 @@ struct RootView: View {
             if s.pendingResult != nil { s.acknowledgeResult(); continue }
             if s.finished {
                 try? await Task.sleep(nanoseconds: 800_000_000)
+                if s.canChooseRetire { s.retireAfterWin() }
                 if s.careerOver {
                     if s.endingID != nil { showEnding = true; try? await Task.sleep(nanoseconds: 3_000_000_000) }
                     showEnding = false

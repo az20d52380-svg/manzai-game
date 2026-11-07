@@ -222,6 +222,7 @@ cd GameCore && swift test
 - `dissolution_rift_measure_v0.md` — 途中解散（すれ違いゲージ）の実測 v0・2026-10-15
 - `dissolution_rift_spec_v1.md` — 途中解散（すれ違いゲージ）の正典案 v1・2026-10-15
 - `effects_design_argon_v1.md` — 演出・エフェクト設計 v1（寄席と計器）・2026-10-15
+- `effects_impl_inventory_1101_v0.md` — 演出設計 v1 の19項目の実装棚卸し（接続済み14・無い4・外した1・未接続の上位5つ）・2026-11-01
 - `effects_redo_argon_v1.md` — 優勝演出の解剖と再設計仕様 v1・2026-10-15
 - `endings_distribution_v0.md` — エンディング判定案の分布 v0（実測）・2026-10-16
 - `event_backgrounds_argon_v1.md` — イベント会話背景のデザイン仕様 v1・2026-10-15
@@ -379,6 +380,9 @@ cd GameCore && swift test
 - `remeasure_after_harness_fix_v0.md` — 並列の漏れを直した後の撮り直し（balance_q93_98 の元9本）
 - `the_hana_measure_1025_v0.md` — 女性コンビだけの大会 THE HANA（4段）を足した時の実測（GP で有利にならない・ライン「難」推奨・キュー112）
 - `fifteen_years_1020_v0.md` — 結成15年化の実測（11年目以降だけ決勝ラインを上げると10年目までが今のまま・キュー114）
+- `calibration_all_1101_v0.md` — 総合の較正（15年・大会の経験点・周回・温泉・THE HANA を同時に）の実測・推奨 A＝p2・準決勝+6・決勝+1・M2・D0.6／周回は優勝を上げない懸念（2026-11-01）
+- `calibration_meta_1102_v0.md` — 周回で天井も上がる形の実測・推奨 案2＝年の上限 +0.2·点^0.3＋相性 +2.27·√点＋頂点の束／2周目 11%・点38 で1年目 8%・15連覇 0.8%・解散は周回で減る／集めきりはほぼ必ず優勝の懸念（2026-11-02）
+- `kiritsu_a_1102_notes.md` — 較正A・周回 案2・THE HANA を規律A で本体の式に入れた時の細部の決めと確かめ（実測スクリプトと seed 一致・やり込みの温泉の穴）（2026-11-02）
 - `autopilot_report_1025.md` — 10/25 の自走のまとめ（オーナー向け・入った物・測った物・決めてほしい3問）
 - `meta_bonus_examples_1025_v0.md` — 周回のごほうび：他の作品の例6つ（型1・型2 の材料・判断待ち3問目）
 
@@ -504,6 +508,7 @@ cd GameCore && swift test
 - `candidate_merge_matrix_1027_v0.md` — 候補16本の合わせ表 10/27 深夜（単独は全部 green・候補どうしの衝突はテスト末尾の6本と the-hana×calendar-jan の1行だけ）
 - `worktree_inventory_1027_v0.md` — 作業場所（git worktree）43個の棚卸し 10/27 深夜（入り済み17・約8.7GB・何も消していない＝キュー139）
 - `unused_parts_1027_v0.md` — 参照0の画面部品の一覧 10/27 深夜（12型＋ぶら下がり・約520行・消すかはキュー118）
+- `owner_return_1027_v0.md` — オーナーが戻った時の1枚 10/27 深夜（状況3行・最初の1問＝どの候補ブランチを入れるか）
 - `name_reality_check_1026_v0.md` — 固有名の実在チェック 10/26（Web 25回・有名な実在と同名0・近い5）
 - `event_reach_relax_1026_v0.md` — 出会いにくい4種の条件をゆるめたら 10/26（効いているのは上限15＝3〜4年目で使い切る）
 - `event_repeat_research_1026_v0.md` — 長期育成ゲームのイベント再発の扱い 10/26（#129 の材料・クールダウン／2回目の文面／後半専用／続き物）

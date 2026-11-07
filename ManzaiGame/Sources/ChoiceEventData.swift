@@ -89,7 +89,7 @@ enum ChoiceEventData {
         choiceLabels: [
             "A": "遅くまで残って稽古する",
             "B": "今日はまっすぐ帰って寝る",
-            "C": "二人でラーメンを食べに行く",
+            "C": "帰りの電車で、二人で話しながら帰る",
         ],
         afterChoice: [
             "A": [
@@ -101,8 +101,8 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "そうだね。お風呂に入って、早く寝るよ"),
             ],
             "C": [
-                Advice(name: "俺", text: "ラーメン行こう。今日は{me}が出す"),
-                Advice(name: "谷口", text: "本当？ ありがとう、ちょっと元気が出たよ"),
+                Advice(name: "俺", text: "電車で話しながら帰ろう。反省会は短めで"),
+                Advice(name: "谷口", text: "そうだね。話したら、ちょっと元気が出たよ"),
             ],
         ]
     )
@@ -214,11 +214,11 @@ enum ChoiceEventData {
             Advice(name: nil, text: "稽古場。予選を通った次の週の昼。"),
             Advice(name: "谷口", text: "通ってから、やたら飲み会に呼ばれるようになったね"),
             Advice(name: "俺", text: "今週だけで三つだよ。体、もつ？"),
-            Advice(name: "谷口", text: "全部行ったら顔は売れるね。本当は家で映画でも観てたいんだ"),
+            Advice(name: "谷口", text: "全部行ったら顔は売れるね。本当は、ネタを見直す時間がほしいんだ"),
         ],
         choiceLabels: [
             "A": "誘われた飲み会に全部顔を出す",
-            "B": "谷口の家で古い映画を観る",
+            "B": "断って、二人でネタを見直す",
         ],
         afterChoice: [
             "A": [
@@ -226,8 +226,8 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "よし。しばらく寝不足だね"),
             ],
             "B": [
-                Advice(name: "俺", text: "今週は断ろう。家で映画でも観よう"),
-                Advice(name: "谷口", text: "いいね。古いのが何本かあるんだ"),
+                Advice(name: "俺", text: "今週は断ろう。稽古場でネタを見直そう"),
+                Advice(name: "谷口", text: "いいね。気になる所が何か所かあるんだ"),
             ],
         ]
     )
@@ -1056,7 +1056,7 @@ enum ChoiceEventData {
         ],
         choiceLabels: [
             "A": "番組を最後まで二人で見る",
-            "B": "テレビを消して、銭湯に行く",
+            "B": "テレビを消して、ネタ合わせをする",
         ],
         afterChoice: [
             "A": [
@@ -1064,7 +1064,7 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "うん。石黒、ずっと緊張した顔してるね"),
             ],
             "B": [
-                Advice(name: "俺", text: "消そう。銭湯に行って、今日はもう寝よう"),
+                Advice(name: "俺", text: "消そう。一本だけネタ合わせして、今日はもう寝よう"),
                 Advice(name: "谷口", text: "そうだね。石黒には、明日おめでとうって言うよ"),
             ],
         ]

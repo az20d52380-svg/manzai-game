@@ -79,20 +79,30 @@ final class SoundEngine {
         Float(UserDefaults.standard.object(forKey: "vol_bgm") as? Double ?? 0.6)
     }
 
+    /// 共通ルール（Gemini R7 §3）：同じ効果音は0.06秒以内なら捨てる。毎週押す音（決定・カーソル）は音程を±3%ずらす
+    private var lastPlayed: [String: Date] = [:]
+
     func play(_ se: SE) {
         let vol = seVolume
         guard vol > 0.01, !seHushed else { return }
+        let now = Date()
+        if let t = lastPlayed[se.rawValue], now.timeIntervalSince(t) < 0.06 { return }
+        lastPlayed[se.rawValue] = now
+        let rate: Float = (se == .tap || se == .cursor) ? Float.random(in: 0.97...1.03) : 1
         guard let url = Bundle.main.url(forResource: se.rawValue, withExtension: "mp3") else { return }
         var pool = sePlayers[se.rawValue] ?? []
         // 空いている面を探す（鳴っていないプレイヤーを再利用）
         if let idle = pool.first(where: { !$0.isPlaying }) {
             idle.volume = vol
+            idle.rate = rate
             idle.currentTime = 0
             idle.play()
             return
         }
         guard pool.count < 3, let p = try? AVAudioPlayer(contentsOf: url) else { return }
         p.volume = vol
+        p.enableRate = true
+        p.rate = rate
         p.prepareToPlay()
         p.play()
         pool.append(p)
@@ -127,6 +137,7 @@ final class SoundEngine {
         currentBGM = nil
         fadeOut(bgmPlayer, over: fade)
         bgmPlayer = nil
+        duckFactor = 1   // 絞ったまま止めても、次の BGM に持ち越さない（code_review_1107e #8）
     }
 
     /// 設定スライダー変更の即時反映（SettingsView から呼ぶ）

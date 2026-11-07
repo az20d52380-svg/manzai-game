@@ -208,11 +208,29 @@ extension View {
 /// Haptics 3段（閲覧操作は常に無振動＝カテゴリ開閉・戻る・スクロールには付けない）。
 enum Haptics {
     /// 実行（=週送り）のみ
-    static func tick() { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
-    /// 合否押印・籤の自組コール
-    static func confirm() { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
-    /// 優勝確定・SSR級のみ
-    static func rare() { UIImpactFeedbackGenerator(style: .heavy).impactOccurred() }
+    static func tick() { fire(.light, 1.0) }
+    /// 合否押印・籤の自組コール（強い振動は捨てない）
+    static func confirm() { UIImpactFeedbackGenerator(style: .medium).impactOccurred(); last = Date() }
+    /// 優勝確定・SSR級のみ（強い振動は捨てない）
+    static func rare() { UIImpactFeedbackGenerator(style: .heavy).impactOccurred(); last = Date() }
+    /// 週の操作の実行・寄席ボタン：硬い短い一発（Gemini R7 §2-B・強さ0.8）
+    static func rigid(_ intensity: CGFloat = 0.8) { fire(.rigid, intensity) }
+    /// 休む・お金が減る：柔らかい一発（強さ0.5）
+    static func soft(_ intensity: CGFloat = 0.5) { fire(.soft, intensity) }
+    /// 押せない：軽い二連（0.06秒間隔）
+    static func denied() {
+        fire(.light, 0.7)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) { UIImpactFeedbackGenerator(style: .light).impactOccurred(intensity: 0.7) }
+    }
+
+    /// 共通ルール（Gemini R7 §3）：0.08秒以内の次の弱い振動は捨てる（連打で震えが団子にならない）
+    private static var last = Date.distantPast
+    private static func fire(_ style: UIImpactFeedbackGenerator.FeedbackStyle, _ intensity: CGFloat) {
+        let now = Date()
+        guard now.timeIntervalSince(last) >= 0.08 else { return }
+        last = now
+        UIImpactFeedbackGenerator(style: style).impactOccurred(intensity: intensity)
+    }
 }
 
 /// 丸ゴシック（見出し・数字）＝ゲームフォント M PLUS Rounded 1c（OFL・FontLoader が起動時登録）。
@@ -251,7 +269,8 @@ struct PressableStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed && enabled
         configuration.label
-            .offset(y: pressed ? 2 : 0)
+            .offset(y: pressed && !UIAccessibility.isReduceMotionEnabled ? 2 : 0)   // 視差を減らす時は沈まない
+            .overlay { if pressed && UIAccessibility.isReduceMotionEnabled { YoseColor.kinBright.opacity(0.3).allowsHitTesting(false) } }
             .animation(.easeOut(duration: Theme.Motion.press),
                        value: pressed)
             .onChange(of: pressed) { _, now in

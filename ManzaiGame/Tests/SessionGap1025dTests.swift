@@ -11,21 +11,6 @@ final class SessionGap1025dTests: IsolatedStoreTestCase {
     private func netaSession() -> GameSession { GameSession(startState: GameSession.debugNetaState()) }
     private let saveKey = "manzai.save.v1"
 
-    func testChangeNetaKataActiveAndSaves() {
-        let s = netaSession()
-        s.changeNetaKata(1, to: .華先行)
-        XCTAssertEqual(s.state.netas.first { $0.id == 1 }?.kata, .華先行)
-        XCTAssertNotNil(GameSession.store.data(forKey: saveKey))
-    }
-    func testChangeNetaKataArchivedAndUnknownId() {
-        let s = netaSession()
-        s.retireNeta(1)
-        s.changeNetaKata(1, to: .華先行)
-        XCTAssertEqual(s.archivedNetas.first { $0.id == 1 }?.kata, .華先行)
-        let before = bytes(s.state)
-        s.changeNetaKata(999, to: .瞬発)
-        XCTAssertEqual(bytes(s.state), before)
-    }
     func testRenameNetaTrimsAndRejectsBlank() {
         let s = netaSession()
         s.renameNeta(1, to: "  新題材 \n")

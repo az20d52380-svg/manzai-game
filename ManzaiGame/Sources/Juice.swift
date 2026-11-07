@@ -259,3 +259,35 @@ extension View {
         modifier(ScreenShakeModifier(trigger: trigger, intensity: intensity))
     }
 }
+
+/// 「視差効果を減らす」時の判子の代わり：動かさず、画面の縁が色で2回明滅する（Gemini R7 §2-C）。
+/// 減らさない設定の時は何もしない。trigger +1 で再生。
+private struct EdgePulseModifier: ViewModifier {
+    let trigger: Int
+    let color: Color
+    @State private var on = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                Rectangle().strokeBorder(color, lineWidth: 12)
+                    .opacity(on ? 0.85 : 0)
+                    .ignoresSafeArea().allowsHitTesting(false)
+            }
+            .onChange(of: trigger) { _, _ in
+                guard reduceMotion else { return }
+                Task { @MainActor in
+                    for _ in 0..<2 {
+                        withAnimation(.easeOut(duration: 0.08)) { on = true }
+                        try? await Task.sleep(nanoseconds: 140_000_000)
+                        withAnimation(.easeIn(duration: 0.1)) { on = false }
+                        try? await Task.sleep(nanoseconds: 140_000_000)
+                    }
+                }
+            }
+    }
+}
+
+extension View {
+    func edgePulse(trigger: Int, color: Color) -> some View { modifier(EdgePulseModifier(trigger: trigger, color: color)) }
+}

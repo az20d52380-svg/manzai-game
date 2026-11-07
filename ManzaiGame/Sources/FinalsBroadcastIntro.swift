@@ -331,7 +331,7 @@ struct FinalsBroadcastIntro: View {
     }
 
     // MARK: 進行
-    private func pause(_ sec: Double) async { try? await Task.sleep(nanoseconds: UInt64(sec * 1_000_000_000)) }
+    private func pause(_ sec: Double) async { try? await MZSpeed.sleep(nanoseconds: UInt64(sec * 1_000_000_000)) }
 
     private func run(_ s: FinalsIntroStage) async {
         step = 0; slam = false; titleIn = false
@@ -585,11 +585,11 @@ struct FinalsBroadcastEnding: View {
         .onTapGesture { finish() }
         .task {
             for i in 1...4 {
-                try? await Task.sleep(nanoseconds: UInt64((short ? 0.3 : 0.9) * 1_000_000_000))
+                try? await MZSpeed.sleep(nanoseconds: UInt64((short ? 0.3 : 0.9) * 1_000_000_000))
                 if Task.isCancelled || done { return }
                 step = i   // se_applause_hall（余韻の拍手・最初の1回）
             }
-            try? await Task.sleep(nanoseconds: UInt64((short ? 0.7 : 1.8) * 1_000_000_000))
+            try? await MZSpeed.sleep(nanoseconds: UInt64((short ? 0.7 : 1.8) * 1_000_000_000))
             if Task.isCancelled || voiceOver { return }   // VoiceOver 中は自動で閉じない（スキップ／タップで閉じる・a11y_check_1019）
             finish()
         }

@@ -26,6 +26,12 @@ struct AbilityUpView: View {
     @State private var pulse = false
     @State private var hint: HintSpec?   // 初めて開いた時だけの説明（`？` で読み返せる）
     @State private var bumped: Ability? = nil
+    /// 確定の演出（Gemini R7 §2-A）：押すと全項目が同時に跳ね・光り、0.45秒の「焼き付けの間」を置いてから閉じる。余韻中に触れたら即閉じる
+    @State private var confirming = false
+    @State private var confirmBump = false
+    @State private var confirmGlow = false
+    @State private var confirmFinished = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 和の五色（閃・語・間・存・胆）＝正本 §2 の経験点5色
     private func wa(_ c: ExpCurrency) -> Color {
@@ -74,6 +80,10 @@ struct AbilityUpView: View {
         }
         .background(YoseColor.kinari.ignoresSafeArea())
         .overlay { if let h = hint { HintModal(spec: h) { OneTimeHint.markDone(h.key); hint = nil } } }
+        .overlay {
+            // 余韻中のどこをタップしても、待たずに閉じる
+            if confirming { Color.clear.contentShape(Rectangle()).onTapGesture { finishConfirm() } }
+        }
         .task {
             if !OneTimeHint.suppressedForDebug, !OneTimeHint.isDone(Self.hintSpec.key) {
                 try? await Task.sleep(nanoseconds: 450_000_000)
@@ -221,7 +231,9 @@ struct AbilityUpView: View {
                 VStack(spacing: 1) {
                     Text(Theme.currencyChar(c)).font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .frame(width: 22, height: 22).background(wa(c), in: Circle())
-                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1)).accessibilityLabel(c.displayName)
+                        .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1))
+                        .yoseExpPing(Self.points(pv[currency: c]), color: wa(c))   // 増えた時だけ（使って減る時は何もしない）
+                        .accessibilityLabel(c.displayName)
                     Text("\(Self.points(pv[currency: c]))").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
@@ -254,7 +266,7 @@ struct AbilityUpView: View {
         flash = a
         withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.5))) {
             taps += Array(repeating: a, count: steps)
-            bumped = a
+            if !reduceMotion { bumped = a }   // 視差を減らす時は拡大しない（行の山吹光りだけ）
         }
         Task { try? await Task.sleep(nanoseconds: 100_000_000); withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.5))) { bumped = nil } }
         Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { flash = nil } }
@@ -271,7 +283,7 @@ struct AbilityUpView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("\(a)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)
                 Text("\(Int(v.rounded()))").font(YoseFont.number(16, weight: .black)).foregroundStyle(gained > 0 ? YoseColor.shu : YoseColor.haiSumi)
-                    .lineLimit(1).contentTransition(.numericText()).scaleEffect(bumped == a ? 1.25 : 1, anchor: .leading)
+                    .lineLimit(1).contentTransition(.numericText()).scaleEffect(confirmBump && gained > 0 ? 1.35 : (bumped == a ? 1.25 : 1), anchor: .leading)
             }
             .frame(width: 58, alignment: .leading)
             Button {
@@ -317,7 +329,7 @@ struct AbilityUpView: View {
             }
         }
         .padding(.leading, 6).padding(.trailing, 4).padding(.vertical, 4)
-        .background(flash == a ? YoseColor.kinBright.opacity(0.35) : (gained > 0 ? YoseColor.kinBright.opacity(0.14) : YoseColor.washi))
+        .background(flash == a || (confirmGlow && gained > 0) ? YoseColor.kinBright.opacity(confirmGlow ? 0.55 : 0.35) : (gained > 0 ? YoseColor.kinBright.opacity(0.14) : YoseColor.washi))
         .overlay(alignment: .leading) { if gained > 0 { Rectangle().fill(YoseColor.shu).frame(width: 4) } }
         .overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.35), lineWidth: 1))
         let caption = canTap ? [] : Self.shortageLines(a, state: pv, config: cfg)
@@ -400,6 +412,7 @@ struct AbilityUpView: View {
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
             Button { confirm() } label: { Text("確定").padding(.trailing, active ? 34 : 0) }
                 .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "+\(taps.count)段階" : nil)).frame(maxWidth: .infinity, minHeight: 48)
+                .overlay { Rectangle().stroke(YoseColor.kinBright, lineWidth: 4).opacity(confirmGlow ? 1 : 0).allowsHitTesting(false) }   // 山吹の枠が0.2秒光る
         }
         .font(YoseFont.gothic(14, weight: .heavy))
         .frame(height: 52)
@@ -408,10 +421,34 @@ struct AbilityUpView: View {
         .overlay(alignment: .top) { Rectangle().fill(YoseColor.kiDark).frame(height: 1.5) }
     }
 
-    /// 確定＝押した段をそのまま反映（RNG非消費）。何も押していなければ閉じるだけ
+    /// 確定＝押した段をそのまま反映（RNG非消費）。何も押していなければ閉じるだけ。
+    /// 押した段がある時は、全項目が同時に跳ねて光り、0.45秒の「焼き付けの間」を置いてから反映して閉じる（余韻中のタップで即閉じ）
     private func confirm() {
+        guard !confirming else { finishConfirm(); return }
+        guard !taps.isEmpty else { onClose(); return }
+        confirming = true
+        Sound.play(.tap)   // 木札を盤に打つ音（既存の決定音）
+        withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.45))) { confirmBump = true }
+        withAnimation(.easeOut(duration: 0.05)) { confirmGlow = true }
+        var hold: UInt64 = 450_000_000
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { hold = 20_000_000_000; return }   // 目視用：余韻の最中で止める（タップで閉じる）
+        #endif
+        Task {
+            try? await Task.sleep(nanoseconds: 220_000_000)
+            withAnimation(.easeOut(duration: 0.25)) { confirmGlow = false }   // 枠と行の山吹は0.2〜0.25秒で消える
+        }
+        Task {
+            try? await Task.sleep(nanoseconds: hold)
+            finishConfirm()
+        }
+    }
+
+    private func finishConfirm() {
+        guard confirming, !confirmFinished else { return }
+        confirmFinished = true   // 二度押し・余韻の自動閉じと即閉じが重なっても反映は1回（code_review_2026-10-19e §4）
         let t = taps
-        taps.removeAll()   // 先に空にする＝「確定」の二度押しで同じ割り振りを2回かけない（code_review_2026-10-19e §4）
+        taps.removeAll()
         if !t.isEmpty { _ = session.allocate(t) }
         onClose()
     }
@@ -430,8 +467,14 @@ extension View {
 /// 経験点の表示用変換（内部値×10の整数）。画面に経験点の数を出す所はすべてここを通す。表示専用＝GameCore・判定は不変。
 /// 持ち分・増分は切り捨て、必要数は切り上げ（ただし内部で足りるなら持ち分の表示値を超えない）＝「14持ち・15必要なのに押せる」を出さない。
 enum ExpDisplay {
-    /// 持ち分・増分（合計は内部で足してから渡す＝掛けてから丸める）
+    /// 持ち分・増分（1つの値を掛けてから丸める）
     static func value(_ raw: Double) -> Int { Int(raw * 10 + 1e-6) }
+    /// 種ごとの札と並べる増分の合計＝札の数字の足し算と必ず合う（内部で足してから丸めると 14+4 が 19 になる＝playtest_v11b #5）
+    /// 札が1枚も出ないほど細かい増分（敗退の大会は各 0.48 で札は全部 0）は、内部で足した値を出す（足さないと合計 0 になり行ごと消える）
+    static func total(_ raws: [Double]) -> Int {
+        let parts = raws.reduce(0) { $0 + value($1) }
+        return parts > 0 ? parts : value(raws.reduce(0, +))
+    }
     /// 必要数（切り上げ・最低1）。have＝その時の内部の持ち分。内部で足りる(amount<=have)なら持ち分の表示値以下に収める
     static func cost(_ amount: Double, have: Double) -> Int {
         let up = max(1, Int((amount * 10 - 1e-6).rounded(.up)))
