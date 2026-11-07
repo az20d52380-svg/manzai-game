@@ -16,7 +16,7 @@ struct SettingsView: View {
     @State private var restartStep = 0
     @StateObject private var store = StoreManager.shared
     @State private var restoring = false
-    private enum FullCover: String, Identifiable { case glossary, endingBook; var id: String { rawValue } }
+    private enum FullCover: String, Identifiable { case glossary, endingBook, rates; var id: String { rawValue } }
     @State private var cover: FullCover?
 
     var body: some View {
@@ -53,6 +53,8 @@ struct SettingsView: View {
                             if let m = store.lastMessage {
                                 Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
                             }
+                            Button { cover = .rates } label: { linkRow("衣装ガチャの提供割合", external: false, inApp: true) }
+                                .buttonStyle(.plain)
                         }
                         section("遊び方") {
                             Button { cover = .glossary } label: { linkRow("用語集", external: false, inApp: true) }
@@ -99,6 +101,7 @@ struct SettingsView: View {
             switch c {
             case .glossary: GlossaryView { cover = nil }
             case .endingBook: EndingGalleryView { cover = nil }
+            case .rates: GachaRatesView { cover = nil }
             }
         }
     }
