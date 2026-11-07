@@ -46,6 +46,7 @@ final class StoreManager: ObservableObject {
     /// 購入。成功したら true
     @discardableResult
     func purchase(_ id: String) async -> Bool {
+        if products[id] == nil { await refresh() }   // オフライン起動で読めなかった時は押した時に読み直す（code_review_1107e #12）
         guard let product = products[id] else { lastMessage = "商品が見つかりません"; return false }
         do {
             switch try await product.purchase() {
@@ -86,7 +87,7 @@ final class StoreManager: ObservableObject {
     @discardableResult
     private func handle(_ result: VerificationResult<Transaction>) async -> Bool {
         guard case .verified(let tx) = result else { return false }
-        if let n = StoreIDs.ticketCounts[tx.productID] {
+        if tx.revocationDate == nil, let n = StoreIDs.ticketCounts[tx.productID] {   // 払い戻しの更新では券を付けない（code_review_1107e #11）
             GachaStore.shared.credit(txID: String(tx.id), count: n)
         }
         await tx.finish()
@@ -97,7 +98,12 @@ final class StoreManager: ObservableObject {
     private func updateEntitlements() async {
         var ids: Set<String> = []
         for await result in Transaction.currentEntitlements {
-            if case .verified(let tx) = result, tx.revocationDate == nil { ids.insert(tx.productID) }
+            switch result {
+            case .verified(let tx):
+                if tx.revocationDate == nil { ids.insert(tx.productID) }
+            case .unverified(let tx, _):   // 一時的に検証できなくても、持っていた物は外さない（code_review_1107e #10）
+                if tx.revocationDate == nil, ownedIDs.contains(tx.productID) { ids.insert(tx.productID) }
+            }
         }
         ownedIDs = ids
         UserDefaults.standard.set(Array(ids), forKey: Self.cacheKey)

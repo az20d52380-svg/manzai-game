@@ -137,6 +137,7 @@ final class SoundEngine {
         currentBGM = nil
         fadeOut(bgmPlayer, over: fade)
         bgmPlayer = nil
+        duckFactor = 1   // 絞ったまま止めても、次の BGM に持ち越さない（code_review_1107e #8）
     }
 
     /// 設定スライダー変更の即時反映（SettingsView から呼ぶ）
