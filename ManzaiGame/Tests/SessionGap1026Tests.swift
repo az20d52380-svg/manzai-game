@@ -42,7 +42,7 @@ final class SessionGap1026Tests: IsolatedStoreTestCase {
     // MARK: ② おすすめ注ぎの延長
 
     func testRecommendedAllocationExtendsPastCanonPlanAndExhausts() {
-        // 成長予算が尽きて一番低い能力は伸びないが、予算の外のメンタルにはまだ注げる＝正典の台本は止まる（F-02 の形）
+        // 成長予算が尽きて一番低い能力は伸びないが、予算の外のメンタルにはまだ注げる＝正典の台本もメンタルへ続ける（pour_stop_1108・候補）
         var st = GameState(config: GameConfig())
         st.exp閃き = 50; st.exp語彙 = 50; st.exp間合い = 50; st.exp存在感 = 50; st.exp胆力 = 150
         st.growthBudget = 0
@@ -50,7 +50,7 @@ final class SessionGap1026Tests: IsolatedStoreTestCase {
         let s = GameSession(startState: st)
         let canon = GameEngine.recommendedPlan(state: s.state, config: s.config)
         let plan = s.recommendedAllocation()
-        XCTAssertGreaterThan(plan.count, canon.count, "台本の続きを UI 側で拾う")
+        XCTAssertFalse(canon.isEmpty, "正典の台本が伸びない能力で止まらない")
         XCTAssertEqual(Array(plan.prefix(canon.count)), canon, "先頭は正典の台本のまま")
         var probe = s.state
         for a in plan { GameEngine.pourStep(a, to: &probe, config: s.config) }
