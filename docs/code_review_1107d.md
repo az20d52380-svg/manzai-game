@@ -6,7 +6,7 @@
 | # | ファイル:行 | 具体的に何が起きるか | 重さ | 直し方の案 |
 |---|---|---|---|---|
 | 1 | FirstStageView.swift:149〜153 `wait`（`try? await Task.sleep`）と :134〜139 `start()`／:141 `press()` | `wait` は取り消されても例外を握りつぶして即戻る。2周目以降の「とばす ▶」（:84 で `task?.cancel()`）や画面が閉じた時の `onDisappear` で start 側の Task が取り消されると、待ちが飛んで `phase = .ready` → `press()` が呼ばれる（`pressed` はまだ false）。`press()` は取り消されていない新しい Task を作るので、画面が第1週に移った後も約8秒間、`.don`・`.cheerBig`・`.taiko`・`.applauseSmall` と触覚が鳴り続ける。確かめた事：コードの流れ。実機で音が出るかは未確認。 | 中 | `wait` を `try await` にして取り消しで抜ける／各段の前に `guard !Task.isCancelled`。`press()` の頭にも `guard !Task.isCancelled`。 |
-| 2 | GachaState.swift:180〜193 `merged`（`loginStamps`/`lastLoginDay` は max、`freeTickets` は「回数が多い側」） | 同じ回数の2台で片方が7枚目の札を取って無料券+1・札0に戻った後に合流すると、札は max で6に戻り、無料券は同点時に自分側（self）が残る。self が古い側なら取った無料1回が消え、新しい側なら札6が残って翌日の7枚目でもう1回もらえる（二重取り）。確かめた事：コード上の組み合わせ。実際に iCloud でこの順になる頻度は未確認。 | 低 | 札と無料券を同じ「新しい側」から丸ごと採る（`lastLoginDay` の新しい側の `loginStamps`・`freeTickets` を使う）。式・乱数には触れない。 |
+| 2（済 e66d644） | GachaState.swift:180〜193 `merged`（`loginStamps`/`lastLoginDay` は max、`freeTickets` は「回数が多い側」） | 同じ回数の2台で片方が7枚目の札を取って無料券+1・札0に戻った後に合流すると、札は max で6に戻り、無料券は同点時に自分側（self）が残る。self が古い側なら取った無料1回が消え、新しい側なら札6が残って翌日の7枚目でもう1回もらえる（二重取り）。確かめた事：コード上の組み合わせ。実際に iCloud でこの順になる頻度は未確認。 | 低 | 札と無料券を同じ「新しい側」から丸ごと採る（`lastLoginDay` の新しい側の `loginStamps`・`freeTickets` を使う）。式・乱数には触れない。 |
 
 ## 確かめて問題なしだった点
 - 周回の記録（Meta.swift）：`fastestWinYear` の `Int.max` 比較、`hanaWins` が nil の旧データ、`CareerRecords` の欠けたキー（Optional）はいずれも読み込めて落ちない。
@@ -18,7 +18,7 @@
 - DEBUG 漏れ：新規の `MZ_TROPHIES`・`MZ_COSTUME` は `#if DEBUG` 内。TournamentResultView の `MZ_UI`（result_done 等）と RootView の目視 case は環境変数が無ければ動かず、挙動に影響しない（既存と同じ作り）。
 
 ## 未確認
-- `GameSession.hanaReach(log:)`：出来事ログの行の実際の書式（「THE HANA 1回戦 通過」の語順）を確かめていない。w[1] が結果語でないと年表の1行が崩れる可能性。
+- （済 11/07 夜）`GameSession.hanaReach(log:)`：ログの行は GameSession.swift:1714 の「GPName.display＋結果語＋賞金」＝「THE HANA 1回戦 通過」の語順で正しい。崩れない。
 - t15/t16（体力・所持金の条件）は `summary.state`（週末処理後）で判定している。条件の意味どおりかは設計意図を未確認。
 - 中断復帰した年は smallEntered/smallWon が 0 から数え直し（コメントどおりの仕様）。六冠が取りにくくなるだけで壊れはしない。
 - `ShareCard` の ImageRenderer と `.task` の件は 1107b #10・#11 の続きなので扱っていない。
