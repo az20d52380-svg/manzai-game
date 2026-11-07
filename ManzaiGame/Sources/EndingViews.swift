@@ -88,6 +88,10 @@ struct EndingFlowView: View {
                     Text("エンディング図鑑に記録しました").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.65))
                 }
                 Spacer()
+                if let session {
+                    ShareCardButton(combiName: session.combiName, headline: ending.title, detail: "No.\(ending.number)　\(ending.kind.label)")
+                        .foregroundStyle(YoseColor.kinari)
+                }
                 Button(action: onFinish) { Text(replay ? "とじる" : "もう一度 ▶") }
                     .buttonStyle(YoseButtonStyle(.primary))
                     .padding(.horizontal, 14).padding(.bottom, 30)

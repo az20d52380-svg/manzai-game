@@ -59,6 +59,10 @@ struct YearResultView: View {
                 .stagger(4, appear)   // 本文より先に「▼」だけ出て、空の画面に見えた（soak_playthrough_1019・1026 で再発）
             }
             }
+            if let o, o.champion || o.reachedFinal {
+                ShareCardButton(combiName: session.combiName, headline: o.champion ? "優勝" : "決勝進出", detail: "結成\(session.year)年目")
+                    .padding(.vertical, 6).frame(maxWidth: .infinity).background(YoseColor.kinari)
+            }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 66)   // 他画面の主ボタン（約y=747）と高さを揃える（連打の空振り防止）
