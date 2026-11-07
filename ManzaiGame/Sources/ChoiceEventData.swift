@@ -233,11 +233,11 @@ enum ChoiceEventData {
             Advice(name: nil, text: "稽古場。予選を通った次の週の昼。"),
             Advice(name: "谷口", text: "通ってから、やたら飲み会に呼ばれるようになったね"),
             Advice(name: "俺", text: "今週だけで三つだよ。体、もつ？"),
-            Advice(name: "谷口", text: "全部行ったら顔は売れるね。本当は、ネタを見直す時間がほしいんだ"),
+            Advice(name: "谷口", text: "全部行ったら顔は売れるね。本当は、二人でゆっくり話したいんだ"),
         ],
         choiceLabels: [
             "A": "誘われた飲み会に全部顔を出す",
-            "B": "断って、二人でネタを見直す",
+            "B": "断って、二人でゆっくり過ごす",
         ],
         afterChoice: [
             "A": [
@@ -245,8 +245,8 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "よし。しばらく寝不足だね"),
             ],
             "B": [
-                Advice(name: "俺", text: "今週は断ろう。稽古場でネタを見直そう"),
-                Advice(name: "谷口", text: "いいね。気になる所が何か所かあるんだ"),
+                Advice(name: "俺", text: "今週は断ろう。二人で落ち着いて過ごそう"),
+                Advice(name: "谷口", text: "いいね。ちょうど疲れてたんだ"),
             ],
         ]
     )
@@ -1075,7 +1075,7 @@ enum ChoiceEventData {
         ],
         choiceLabels: [
             "A": "番組を最後まで二人で見る",
-            "B": "テレビを消して、ネタ合わせをする",
+            "B": "テレビを消して、二人で少し話す",
         ],
         afterChoice: [
             "A": [
@@ -1083,7 +1083,7 @@ enum ChoiceEventData {
                 Advice(name: "谷口", text: "うん。石黒、ずっと緊張した顔してるね"),
             ],
             "B": [
-                Advice(name: "俺", text: "消そう。一本だけネタ合わせして、今日はもう寝よう"),
+                Advice(name: "俺", text: "消そう。少し話したら、今日はもう寝よう"),
                 Advice(name: "谷口", text: "そうだね。石黒には、明日おめでとうって言うよ"),
             ],
         ]
