@@ -392,8 +392,7 @@ struct YearResultView: View {
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
         // 前の年に優勝した人に「去年と変わらない」は合わない
         if session.yearHistory.contains(where: { $0.champion && $0.year == session.year - 1 }) {
-            let kept = pool.filter { !$0.contains("去年と") }
-            if !kept.isEmpty { pool = kept }
+            pool = Self.withoutLastYearLines(pool)
         }
         // 頂グランプリの決勝に立った年は独白を出さない（オーナー 10/18「寒そう」→A：決勝の余韻は決勝の場面で足りる）
         if Self.silentFinalsYear(bankrupt: o.bankrupt, dissolved: o.dissolved, champion: o.champion, reachedFinal: o.reachedFinal) { return nil }
@@ -483,14 +482,22 @@ struct YearResultView: View {
         "谷口とのコンビは、解散することにした。\n明日、二人で事務所に話しに行く。",
     ]
 
+    /// 前の年に優勝した人には、去年と比べる独白（「去年の自分が見たら、驚くような一年」等）を出さない（code_review_1107f #2）
+    static func withoutLastYearLines(_ pool: [String]) -> [String] {
+        let kept = pool.filter { !$0.contains("去年") }
+        return kept.isEmpty ? pool : kept
+    }
+
     @ViewBuilder private var restartButton: some View {
         if let onRetire, let onNextYear {
             // 主ボタンの位置は「続ける」＝連打しても勇退にならない
             VStack(spacing: 6) {
                 Text("ここで勇退するか、連覇を狙うか").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
-                HStack(spacing: 10) {
-                    Button(action: onRetire) { Text("勇退する") }.buttonStyle(YoseButtonStyle(.secondary))
-                    Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶") }.buttonStyle(YoseButtonStyle(.primary))
+                let retire = Button(action: onRetire) { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
+                let goOn = Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶").lineLimit(1) }.buttonStyle(YoseButtonStyle(.primary))
+                ViewThatFits(in: .horizontal) {   // 大きい文字で横に収まらない時は縦に積む（code_review_1107f #4）
+                    HStack(spacing: 10) { retire; goOn }
+                    VStack(spacing: 8) { retire; goOn }
                 }
             }
         } else { singleButton }
