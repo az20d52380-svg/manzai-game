@@ -429,6 +429,7 @@ cd GameCore && swift test
 - `h3_stamina_penalty_measure_1025_v0.md` — 体力の本番ペナルティ H3（<10で-15）の有無の差の実測（2026-10-25・材料・正典不変・-15の段を外しても決勝/優勝は誤差内・ボットが本番で体力<10なのは約7〜8%）
 - `judge_comment_repeat_measure_1025_v0.md` — 10年遊んだ時の講評の読み返し率の実測（2026-10-25・材料・コード不変・紙講評は11〜18%が既読の文・決勝は型Cで1.1%）
 - `judge_comment_recent_avoid_measure_1025_v0.md` — 紙講評の「直近に出た文を避ける」案①の効き目の実測（2026-10-25 夜・材料・L41／キュー125・直近3〜10回ではほぼ効かず・キャリア内の未出優先で0%）
+- `decision_brief_2026-11-08.md` — 決めてほしい事の一覧 11/08 版（11/07 までの回答を除いて並べ直し・候補ブランチとの対応つき）
 - `decision_brief_2026-10-25.md` — 決めてほしい事の一覧 10/25 版（全22問・大3 中11 小8＋出す前に決める事・旧 10-14 版を更新）
 - `store_fee_check_1025_v0.md` — ストア手数料の前提の確認（2026-10-25・懸念の台帳 L60・日本の Apple 実効15%／Google 15〜25%・直す行の一覧）
 - `patches/ci_app_build_L38.patch` — CI に iOS ビルドを足す差分（2026-10-25・push のトークンに workflow 権限が無いためオーナーが `git am` で入れる）
@@ -515,3 +516,39 @@ cd GameCore && swift test
 - `det_event_path_1026_v0.md` — 確定で出るイベントの効き目の分解 10/26（決勝に効くのは能力と相性・判断 §3 の材料）
 - `rare_screens_visual_1026_v0.md` — 最近目視していない画面の目視 10/26（重要0・軽微1＝DEBUG の部品見本のみ）
 - `q93_c_catchup_1026_v0.md` — 判断 #1 推奨C の手当て候補3案 10/26（休む・バイト週に一番少ない経験点を少し＝○）
+
+## その他の文書（追補・2026-11-07 定期の回で索引から漏れていた29本）
+- `a11y_check_1107_v0.md` — 読み上げ（VoiceOver）＋文字サイズ点検 a11y_check_1107_v0（2026-11-07・読み取りのみ・コード未変更）
+- `a11y_large_text_check_1107_v0.md` — 大きい文字の目視点検（2026-11-07・iPhone 17・sonnet）
+- `after_win_check_1107.md` — 優勝後「勇退／続ける」の点検 11/07（e42bba2d・448afa1f）
+- `after_win_lines_1107.md` — 優勝後の年に矛盾しうる文の点検（2026-11-07）
+- `app_icon_drafts_1107_v0.md` — アプリのアイコンの下書き 11/07 v0（キュー145・判断材料）
+- `button_press_se_cand_1101_v0.md` — ボタン押下SE 候補（button_press_se_cand）v0 — 2026-11-01
+- `calendar_words_1107_v0.md` — 暦の言葉の食い違い 11/07 v0（キュー128・判断材料）
+- `code_review_1107.md` — コード点検 11/07（Meta・Gacha・FirstStage・THE HANA・ComboKind・経験点の行）
+- `code_review_1107b.md` — コード点検 11/07 その2（6a92f9c~1..HEAD：ガチャ台帳・MZSpeed・共有ボタン・経験点の合計）
+- `code_review_1107c.md` — コード点検 11/07c（女性コンビ × THE HANA を1キャリア通しで見る・読み取りのみ）
+- `code_review_1107d.md` — コード点検 11/07d（今日のコミット全体・読み取りのみ。1107/b/c の項目は除く）
+- `code_review_1107e.md` — コード点検 11/07e（音・演出・購入まわり。読み取りのみ。1107/b/c/d の項目は除く）
+- `code_review_1107f.md` — コード点検 11/07f（優勝後の「勇退／続ける」差分 487df7ba..HEAD。読み取りのみ・コード変更なし）
+- `dialogue_score_1107.md` — 文章採点 1107（11/02 以降の追加分）
+- `dynasty_measure_1107_v0.md` — 優勝後も続けた場合の連覇の実測 v0（2026-11-07・【仮】・材料）
+- `fifteen_ui_notes_1107.md` — 結成15年への文言そろえ 判断メモ（11/07）
+- `first3min_hook_v0.md` — 最初の3分で「気持ちいい」を1回出す設計案 v0（2026-11-02）
+- `gemini_design_r7_feel_1102_v0.md` — Gemini 設計 R7：押した時の手応え（2026-11-02 v0）
+- `late_game_content_v0.md` — 終盤（6〜15年目）の中身の案 v0（2026-11-07・材料まで・決めるのはオーナー）
+- `late_game_events_draft_1107.md` — 終盤イベント下書き（11年目以降・新20本）1107 v0
+- `late_game_events_score_1108.md` — 書き直し後の再採点（○16△4×0）
+- `late_game_events_score_1107.md` — 終盤イベント下書き20本 採点（1107）
+- `code_review_1107g.md` — 年またぎで消える値・15年で壊れる所のコード点検（#1 は保存するよう直した）
+- `entry_share_research_1108_v0.md` — ガチャと毎日の受け取りの入口・共有の出口の材料（判断待ち141・143）
+- `visual_check_1107d_late_years.md` — 11〜15年目の画面の目視（崩れ0・日程表の出られない大会は直した）
+- `code_review_1108.md` — 11/08 未明の差分のコード点検（#1 推薦制の週の塗りは直した・残りは低2件）
+- `playtest_dynasty_1107.md` — 実プレイ点検：優勝後も続けて15年（2026-11-07）
+- `playtest_late_1107.md` — 終盤（11〜15年目）点検 11/07
+- `playtest_mid_1107.md` — 中盤（3〜8年目）の目視点検 2026-11-07
+- `playtest_v11b.md` — 実プレイ点検 v11b（初回プレイ〜1年目・iPhone 17・2026-11-07）※既存の playtest_v11.md（10月・5年
+- `playtest_v17_first_hour_1107.md` — 実プレイ点検 v17（起動〜1年目の最初の大会・2026-11-07）※通し点検は実施できず
+- `visual_check_1107_v0.md` — 目視点検 1107 v0（iPhone 17・ソース無変更・各画面1枚）
+- `visual_check_1107b_v0.md` — 女性コンビ 1年通し表示点検（2026-11-07）
+- `visual_check_1107c_v0.md` — 目視点検 1107c（勇退・図鑑・トロフィー・記録・戦績）iPhone 17

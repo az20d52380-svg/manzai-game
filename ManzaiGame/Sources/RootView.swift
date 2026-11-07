@@ -59,7 +59,7 @@ struct RootView: View {
             case "qual_notice": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "GP1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 予選の知らせ（通知→一覧）の目視（MZ_PASS=0 で落選。MZ_OPEN=1 で通知を開いた後から）
             case "hana_video": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "HANA1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // THE HANA 動画審査の結果の知らせの目視
             case "hana_result": TournamentResultView(session: session, summary: WeekSummary(year: 1, week: 32, results: [StageResult(name: "HANA1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", prize: 0)], state: session.state))   // THE HANA 動画審査の結果画面の目視（MZ_PASS=0 で敗退）
-            case "hana_entry": TournamentEntryView(session: session, spec: session.config.calendar.hanaTournaments[0])   // THE HANA 1回戦（動画審査）の入口の目視
+            case "hana_entry": TournamentEntryView(session: session, spec: session.config.calendar.hanaTournaments[min(Int(ProcessInfo.processInfo.environment["MZ_HANAIDX"] ?? "") ?? 0, session.config.calendar.hanaTournaments.count - 1)])   // THE HANA 1回戦（動画審査）の入口の目視
             case "qual_line": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "GP準々決勝", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 準々決勝の相方のメッセージの目視
             case "finalist_announce": FinalistAnnounceView(combiName: session.combiName, year: 1, passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 決勝進出者の発表の目視（MZ_PASS=0 で落選・MZ_HOLD_AT=n で読み上げn組目で止める）
             case "glossary": GlossaryView(onClose: {})                      // 用語集の目視
@@ -485,6 +485,9 @@ struct RootView: View {
     private func forceChampion() {
         session = GameSession(startState: GameSession.debugMaxedState())
         session.debugAdvanceToChampionFinale()
+        // MZ_CHAMP_YEARS=n：n 年続けて優勝した状態（勇退の年表の行数を見る目視用）
+        let n = Int(ProcessInfo.processInfo.environment["MZ_CHAMP_YEARS"] ?? "") ?? 1
+        if n > 1 { for _ in 1..<n { session.acknowledgeWin(); session.startNextYear(); session.debugAdvanceToChampionFinale() } }
     }
 
     /// MZ_UI=frame の舞台の状態（MZ_MODE=preshow/lit/judging/winner/loser/spectator・既定 lit）
