@@ -29,9 +29,9 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .nightEscape: "始発の駅"
         case .breakup: "右と左"
-        case .gaveUp: "十冊目のノート"
+        case .gaveUp: "十五冊目のノート"
         case .keptGoing: "来年の出番表"
-        case .tenYearsClose: "十年分の年表"
+        case .tenYearsClose: "十五年分の年表"
         case .tenYearsTrue: "同じ劇場"
         case .championRetire: "勇退"
         case .championPair: "間の席"
@@ -57,10 +57,10 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .nightEscape: "お金が尽きた先にある終わり"
         case .breakup: "相方と会わない日が続いた先にある終わり"
-        case .gaveUp: "決勝を知らないまま十年が過ぎ、二人が離れていた"
-        case .keptGoing: "決勝を知らないまま十年。それでも二人は近くにいた"
-        case .tenYearsClose: "決勝の舞台を知って、十年で区切った"
-        case .tenYearsTrue: "決勝の舞台を知って、十年、二人は近くにいた"
+        case .gaveUp: "決勝を知らないまま十五年が過ぎ、二人が離れていた"
+        case .keptGoing: "決勝を知らないまま十五年。それでも二人は近くにいた"
+        case .tenYearsClose: "決勝の舞台を知って、十五年で区切った"
+        case .tenYearsTrue: "決勝の舞台を知って、十五年、二人は近くにいた"
         case .championRetire: "頂に立つ"
         case .championPair: "頂に立ち、二人は近くにいた"
         }
@@ -70,10 +70,10 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .nightEscape: "始発は五時十二分に出た。"
         case .breakup: "楽屋口を出て、右と左に分かれた。"
-        case .gaveUp: "十冊目のノートは、半分が白いままだった。"
+        case .gaveUp: "十五冊目のノートは、半分が白いままだった。"
         case .keptGoing: "来年の一月の欄に、もう二人の名前が書いてあった。"
-        case .tenYearsClose: "十年分の行が、全部埋まった。"
-        case .tenYearsTrue: "十一年目の一月も、同じ劇場の出番から始まる。"
+        case .tenYearsClose: "十五年分の行が、全部埋まった。"
+        case .tenYearsTrue: "十六年目の一月も、同じ劇場の出番から始まる。"
         case .championRetire: "二着の衣装は、掛けたまま楽屋に残した。"
         case .championPair: "トロフィーは、二人の間の席に置いた。"
         }
@@ -150,7 +150,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         case .tenYearsTrue:
             return [
                 c("年末。最初に二人で出た劇場。", bg: EventBackdrop(.theater,.evening), [("谷口", "ここ、最初に二人で出たとこだね"), ("俺", "うん。今日の出番、ここで頼んだ")]),
-                c("出番の前。舞台の袖。", bg: EventBackdrop(.theater,.evening), [("谷口", "十年、ずっと隣にいたね"), ("俺", "そうだね。出番、そろそろだよ"), ("谷口", "そうだね。じゃあ行こうか")]),
+                c("出番の前。舞台の袖。", bg: EventBackdrop(.theater,.evening), [("谷口", "十五年、ずっと隣にいたね"), ("俺", "そうだね。出番、そろそろだよ"), ("谷口", "そうだね。じゃあ行こうか")]),
                 c("終演の後。劇場の前。", mood: .after, bg: EventBackdrop(.theaterOutside,.night), [("谷口", "来年のグランプリ、もう一回決勝に行こう"), ("俺", "行こう。一月から週二で練習を入れる"),
                                                  ("谷口", "よし。体だけは壊さないようにしよう")]),
             ]

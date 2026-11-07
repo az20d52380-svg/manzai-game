@@ -1496,7 +1496,7 @@ struct WeekMainView: View {
     /// 飽きの知らせの toast と重なる時は、それが消えるのを待ってから出す。
     private func maybeShowLastYouthNotice() {
         let caps = session.config.calendar.tournaments.compactMap { t -> Int? in
-            if case .careerYearAtMost(let n) = t.eligibility, n < 10 { return n } else { return nil }
+            if case .careerYearAtMost(let n) = t.eligibility, n < session.config.careerYears { return n } else { return nil }
         }
         guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
         youthNoticeYear = session.year
