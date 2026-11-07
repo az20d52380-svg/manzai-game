@@ -20,7 +20,7 @@ import balance_sim as B
 # CONFIG —— 全て【仮】
 # ============================================================
 
-YEARS      = 10        # キャリア年数
+YEARS      = 15        # キャリア年数（結成15年・GP 出場は結成15年以内。オーナー決定 10/20・較正A docs/calibration_all_1101_v0.md §5）
 N_CAREERS  = 2000      # 1設定あたりの試行キャリア数
 BASE_SEED  = 20260704  # 乱数シード（balance_sim と同系）
 
@@ -58,10 +58,78 @@ GP_ROUNDS = [
     (39, 24, "GP2回戦"),      # 10月中旬〜下旬 /  1,912 →   380 (19.9%)
     (41, 32, "GP3回戦"),      # 11月上旬       /    380 →   134 (35.3%)
     (43, 43, "GP準々決勝"),   # 11月中旬       /    134 →    30 (22%)
-    (45, 72, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)
+    (45, 78, "GP準決勝"),     # 12月上旬       /     31 →     9 (29%)  72→78 較正A（calibration_all_1101_v0 §5）
 ]
-GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 74   # 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
-GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 80   # 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+GP_REVIVAL_WEEK, GP_REVIVAL_LINE = 47, 79   # 74→75 較正A→79（11/02 オーナー：復活は準決勝で落ちた組の救済＝準決勝78より難しく決勝81より易しく）。 敗者復活: 決勝-6（7本統合に伴い予選−2・docs/combined7_bands_v0.md 追記）
+GP_FINAL_WEEK,   GP_FINAL_LINE   = 47, 81   # 80→81 較正A（calibration_all_1101_v0 §5）。 決勝【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+# 11年目以降（結成15年化）だけ決勝・敗者復活のラインを上乗せ【仮】較正A（calibration_all_1101_v0 §5）。王者ライン上書き（final_line）には足さない
+GP_LATE_START_YEAR = 11
+GP_LATE_LINE_BONUS = 2.0
+# 11年目以降の成長予算の加算を ×LATE_GROWTH_DECAY^(k−10)（k＝累計に足す年）【仮】較正A（calibration_all_1101_v0 §5）
+LATE_GROWTH_DECAY = 0.6
+
+# 大会の経験点（パワプロ式 p2・オーナー決定 10/20〜11/01）【仮】較正A（calibration_all_1101_v0 §5・exp_calib_all_1101_v0.install_exp と同じ量）
+# 量＝基本点 pw × K × 種類の重み W。単位 UNIT 点を5通貨に均等（1/5ずつ）に credit_currency で積む（供給スケールも掛かる）。乱数は使わない
+# 基本点: 道中の大会 通過1.0／敗退は×LOSS、GP 回戦 i（1始まり）通過 1+STEP×(i−1)・敗退は×LOSS、敗者復活 2.4、決勝 3.0（敗退は×LOSS）
+TOURNEY_EXP_K = 0.5
+TOURNEY_EXP_W = {"road": 0.5, "round": 1.0, "final": 2.0}   # 道中の大会（THE HANA も）／GP 回戦／敗者復活・決勝
+TOURNEY_EXP_UNIT = 4.0
+TOURNEY_EXP_SPLIT = 0.2      # 5通貨に均等
+TOURNEY_EXP_LOSS = 0.5
+TOURNEY_EXP_ROAD = 1.0
+TOURNEY_EXP_ROUND_STEP = 0.35
+TOURNEY_EXP_REVIVAL = 2.4
+TOURNEY_EXP_FINAL = 3.0
+
+def tourney_exp(s, pw, kind):
+    """大会の結果の直後に経験点を5通貨均等に積む（GameEngine.creditTourneyExp の鏡像・乱数なし）"""
+    tot = pw * TOURNEY_EXP_K * TOURNEY_EXP_W[kind]
+    for cur in B.CURRENCIES:
+        B.credit_currency(s, cur, tot * TOURNEY_EXP_UNIT * TOURNEY_EXP_SPLIT)
+
+# 周回ボーナス（オーナー決定 11/02・docs/calibration_meta_1102_v0.md §5 推奨 案2＋型1）【仮】
+# 周回の点 P＝トロフィーpt＋図鑑の数（meta_start_bonus_1020_v0 の数え方・最大38）。P=0 では全部0＝1周目と golden は変わらない。乱数なし
+META_POINTS = 0                 # new_state の既定の点（外から渡す口。アプリは GameState(config:metaPoints:)）
+META_TOP_POINTS = 38.0          # 集めきり（頂点の束の基準）
+META_CAP_LIFT_COEF = 0.2        # 年の成長上限 CAP_CURVE の基準と下限に +0.2·P^0.3（canon_v2 の才能解放と同じ位置）
+META_CAP_LIFT_EXP = 0.3
+META_BUDGET_TOP = 36.0          # 累計予算に +36·(P/38)^8（頂点の束）
+META_TOP_EXP = 8.0
+META_START_COMPAT_COEF = 2.27   # 初期の相性 +min(14, 2.27·√P)（COMPAT_CAP で止める）
+META_START_COMPAT_EXP = 0.5
+META_START_COMPAT_CAP = 14.0
+META_START_EXP_PER_POINT = 4.0  # 型1：初期経験点 4/点・上限160
+META_START_EXP_CAP = 160.0
+META_START_EXP_TOP = 300.0      # 頂点の束：初期経験点 +300·(P/38)^8（上限なし）
+META_START_EXP_SPLIT = {"hirameki": .35, "maai": .27, "goi": .18, "sonzaikan": .10, "tanryoku": .10}
+META_START_MONEY_PER_POINT = 30_000   # 型1：初期の所持金 3万/点・上限100万
+META_START_MONEY_CAP = 1_000_000
+
+def meta_cap_lift(P):
+    return META_CAP_LIFT_COEF * P ** META_CAP_LIFT_EXP if P > 0 else 0.0
+
+def meta_budget(P):
+    return META_BUDGET_TOP * (P / META_TOP_POINTS) ** META_TOP_EXP if P > 0 else 0.0
+
+def apply_meta_start(s, P):
+    """結成時の周回ボーナス（GameState.init(config:metaPoints:) の鏡像）。型1 → 相性 → 頂点の経験点 の順（実測と同じ）"""
+    s.meta_points = P
+    if P <= 0:
+        return
+    tot_e = min(META_START_EXP_CAP, META_START_EXP_PER_POINT * P)
+    for cur, r in META_START_EXP_SPLIT.items():
+        setattr(s, "exp_" + cur, getattr(s, "exp_" + cur) + tot_e * r)
+    s.money += min(META_START_MONEY_CAP, META_START_MONEY_PER_POINT * P)
+    add = min(META_START_COMPAT_CAP, META_START_COMPAT_COEF * P ** META_START_COMPAT_EXP)
+    s.compat = min(float(B.COMPAT_CAP), s.compat + add)
+    ex2 = META_START_EXP_TOP * (P / META_TOP_POINTS) ** META_TOP_EXP
+    for cur, r in META_START_EXP_SPLIT.items():
+        setattr(s, "exp_" + cur, getattr(s, "exp_" + cur) + ex2 * r)
+
+def late_growth_factor(k):
+    """成長予算の累計に足す k 年目の分の倍率（10年目までは1.0）"""
+    return LATE_GROWTH_DECAY ** (k - (GP_LATE_START_YEAR - 1)) if k >= GP_LATE_START_YEAR else 1.0
+
 GP_PRIZE = B.GPF_PRIZE                       # 手元500万（表示1,000万の半分【仮】）
 GP_ENTRY_FEE = 2_000    # 【正典v2】GPエントリー費（実在の賞レース準拠・1回戦週に徴収。払えなければその年は出場不可）
 
@@ -95,6 +163,42 @@ TOURNAMENTS = {
 }
 
 EVENT_WEEKS = set(TOURNAMENTS) | {w for w, _, _ in GP_ROUNDS} | {GP_FINAL_WEEK}
+
+# ------------------------------------------------------------
+# THE HANA（女性コンビだけの大会・オーナー決定 10/20・較正 calibration_all_1101_v0 §5）【仮】
+# 1回戦（動画審査＝式の上は普通の段）→2回戦→準決勝→決勝・敗者復活なし・芸歴の制限なし・東京。
+# 女性コンビ（s.female）の時だけ出る＝男コンビ（既定・golden）では一切出ない。EVENT_WEEKS には入れない（男コンビのボットの動きを変えない）。
+# 2回戦以降は「その年に前の段を通過した」時だけ出られる（s._hana＝(年, 次の段)）。exp_the_hana_1025_v0.install と同じ振る舞い
+# ------------------------------------------------------------
+FEMALE_COMBO = False   # new_state の既定（外から渡す口。アプリは GameState(config:femaleCombo:)）
+HANA_WEEKS = (32, 37, 42, 44)
+HANA_NAMES = ("HANA1回戦", "HANA2回戦", "HANA準決勝", "HANA決勝")
+HANA_LINES = (36, 52, 70, 84)   # 「難」22/38/56/70 を +14（15年＋大会の経験点で優勝 5.9%・§1）
+HANA_PRIZE = 2_500_000          # 優勝の手元賞金（GP 優勝 500万の半分）
+HANA_CHAMP_FAME = 8
+HANA_TOURNAMENTS = {
+    w: dict(name=nm, line=ln, prize=HANA_PRIZE if i == len(HANA_WEEKS) - 1 else 0,
+            fame=HANA_CHAMP_FAME if i == len(HANA_WEEKS) - 1 else GP_ROUND_FAME, osaka=False, hana=i,
+            ok=(lambda i: lambda year, s: getattr(s, "female", False) and (i == 0 or getattr(s, "_hana", (0, 0)) == (year, i)))(i))
+    for i, (w, nm, ln) in enumerate(zip(HANA_WEEKS, HANA_NAMES, HANA_LINES))
+}
+
+def tournament_of(s, week):
+    """その週の大会（女性コンビなら THE HANA も）。CalendarConfig.tournament(inWeek:state:) の鏡像"""
+    t = TOURNAMENTS.get(week)
+    if t is None and getattr(s, "female", False):
+        t = HANA_TOURNAMENTS.get(week)
+    return t
+
+def hana_result(s, year, i, ok):
+    """THE HANA の段の結果（通過で次の段へ・決勝の通過で優勝）。乱数なし"""
+    if ok and i < len(HANA_WEEKS) - 1:
+        s._hana = (year, i + 1)
+    elif ok:
+        s._hana_win = True
+        s.hana_wins = getattr(s, "hana_wins", 0) + 1
+    if ok and i == len(HANA_WEEKS) - 2:
+        s._hana_fin = True
 
 # 敗者復活の実測用カウンタ（improvement_proposals_v0.md 課題#1）
 REVIVAL_STATS = {"attempts": 0, "passes": 0}
@@ -258,8 +362,9 @@ def _others_apply(s, k):
         if s.money >= 50_000: _ev_add(s, "sense", 1); _ev_add(s, "fame", 1); s.money -= 5000; _ev_add(s, "stamina", -10)
         elif s.money >= 1500: _ev_add(s, "compat", 1); _ev_add(s, "mental", 1); s.money -= 1500
 
-def _honban_ahead(week):
-    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]))
+def _honban_ahead(week, s=None):
+    ws = sorted(set(list(TOURNAMENTS.keys()) + [r[0] for r in GP_ROUNDS]
+                    + (list(HANA_TOURNAMENTS) if getattr(s, "female", False) else [])))
     return min([w - week for w in ws if w > week] or [99])
 
 # --- 実測用: アプリ(GameSession.swift 週次抽選)と同じ選択肢イベント。既定OFF（False では従来と1ビットも変わらない）---
@@ -300,7 +405,7 @@ def _app_stages(s, year, week, gp_alive, gp_stage, finalist, revival):
         ms.append((GP_FINAL_WEEK, True))
     elif revival:
         ms.append((GP_REVIVAL_WEEK, True))
-    for w, t in TOURNAMENTS.items():
+    for w, t in list(TOURNAMENTS.items()) + (list(HANA_TOURNAMENTS.items()) if getattr(s, "female", False) else []):
         if t["ok"](year, s):
             ms.append((w, True))
     return sorted(m for m in ms if m[0] > week)
@@ -665,8 +770,10 @@ BOTS = (CareerBalanced, CareerSmart)
 # 1キャリア（最大10年）を回す
 # ============================================================
 
-def new_state(init_ability=None, compat=None):
+def new_state(init_ability=None, compat=None, meta_points=None, female=None):
     s = B.S()
+    if FEMALE_COMBO if female is None else female:
+        s.female = True   # 女性コンビ（THE HANA に出られる）
     if init_ability is not None:
         s.sense = s.idea = s.expr = s.chara = s.mental = float(init_ability)
         if CAREER_BUDGET and init_ability > B.INIT_ABILITY:
@@ -675,6 +782,7 @@ def new_state(init_ability=None, compat=None):
         s.compat = float(compat)
     if NETA_ON:
         s.netas = [_neta_new()]   # 結成時の初ネタ1本
+    apply_meta_start(s, META_POINTS if meta_points is None else meta_points)   # 周回ボーナス（P=0 なら何もしない）
     return s
 
 def enter_tournament(s, pol, t, rng):
@@ -799,10 +907,14 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
     B.reset_yearly_items(s)    # その年だけのアイテム効果（GameCore WeekRunner.init と同位置・未購入は恒等）
     if CAP_CURVE is not None:
         base, slope, floor = CAP_CURVE
+        P = getattr(s, "meta_points", 0)
+        if P > 0:                          # 周回：年の成長上限の基準と下限を持ち上げる（案2・P=0 は従来と同値）
+            lift = meta_cap_lift(P)
+            base, floor = base + lift, floor + lift
         if CAREER_BUDGET:
             # キャリア累計予算: 結成からの成長総量に天井（初期ボーナスは前借り済み・_ygはリセットしない）
-            B.YEAR_GROWTH_CAP = sum(max(floor, base - slope * (k - 1))
-                                    for k in range(1, min(year, GROWTH_END_YEAR) + 1))
+            B.YEAR_GROWTH_CAP = meta_budget(P) + sum(late_growth_factor(k) * max(floor, base - slope * (k - 1))
+                                                     for k in range(1, min(year, GROWTH_END_YEAR) + 1))
             if not hasattr(s, "_yg"):
                 s._yg = 0.0
         else:
@@ -818,7 +930,8 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
     gp_alive = not seed_final  # 今年のグランプリ挑戦が続いているか（王者は予選免除）
     finalist = seed_final
     revival = False            # 準決勝敗退→敗者復活に回るか
-    line_final = GP_FINAL_LINE if final_line is None else final_line
+    late = GP_LATE_LINE_BONUS if year >= GP_LATE_START_YEAR else 0.0   # 11年目以降の決勝・敗者復活の上乗せ（較正A）
+    line_final = GP_FINAL_LINE + late if final_line is None else final_line
     upset = 0.0                # 波乱の年（dynasty §3）: その年のGP全ラインを揺らす
     if UPSET_ON and rng.random() < UPSET_P:
         upset = UPSET_DELTA if rng.random() < 0.5 else -UPSET_DELTA
@@ -829,9 +942,11 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
         compat0 = s.compat   # 途中解散：この週に相性が上がったか（乱数なし）
 
         # --- その他の大会（出場資格があり交通費が払えるなら出る） ---
-        t = TOURNAMENTS.get(week)
+        t = tournament_of(s, week)
         if t and t["ok"](year, s):
             acted, won_t = enter_tournament(s, pol, t, rng)
+            if acted and "hana" in t: hana_result(s, year, t["hana"], won_t)   # THE HANA（女性コンビだけ）
+            if acted: tourney_exp(s, TOURNEY_EXP_ROAD * (1.0 if won_t else TOURNEY_EXP_LOSS), "road")   # 大会の経験点（較正A）
             if acted: s._joint = True
             if acted and EVENTS_APP: _app_result(s, bool(won_t))
             if RUN_TRACK is not None and acted:
@@ -855,6 +970,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     CHALLENGER_STATS["boredom_applied"] += 1
                 line += _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, line, rng, final=False)
+                tourney_exp(s, (1 + TOURNEY_EXP_ROUND_STEP * gp_stage) * (1.0 if ok else TOURNEY_EXP_LOSS), "round")   # 大会の経験点（較正A）
                 acted = True
                 s._joint = True
                 if EVENTS_APP: _app_result(s, bool(ok))
@@ -881,8 +997,9 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
 
         if week == GP_FINAL_WEEK:
             if revival:                              # 敗者復活 → 通過なら同週の決勝へ（客層はお茶の間=視聴者投票想定）
-                rev_line = GP_REVIVAL_LINE + upset + _neta_line_adj(s, f"GP{year}", rng)
+                rev_line = GP_REVIVAL_LINE + late + upset + _neta_line_adj(s, f"GP{year}", rng)
                 ok, _ = _gp_perform(s, rev_line, rng, final=True)
+                tourney_exp(s, TOURNEY_EXP_REVIVAL * (1.0 if ok else TOURNEY_EXP_LOSS), "final")   # 大会の経験点（較正A）
                 acted = True
                 s._joint = True
                 if EVENTS_APP: _app_result(s, bool(ok))
@@ -899,6 +1016,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                 eff_line = line_final + upset - FAME_FINAL_BONUS * (s.fame - 50) / 50
                 eff_line += _neta_line_adj(s, f"GP決勝{year}", rng, final=True)
                 ok, _ = _gp_perform(s, eff_line, rng, final=True)
+                tourney_exp(s, TOURNEY_EXP_FINAL * (1.0 if ok else TOURNEY_EXP_LOSS), "final")   # 大会の経験点（較正A）
                 acted = True
                 s._joint = True
                 if EVENTS_APP: _app_result(s, bool(ok))
@@ -980,14 +1098,14 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
             if EVENT_FORCE and not acted and OTHERS_ON and RUN_EVENTS_FIRED is not None:
                 for fk, fw in EVENT_FORCE.items():
                     fi = len(EVENT_TABLE) + OTHERS_EVENTS.index(fk)
-                    if (week == fw if isinstance(fw, int) else fw[0] <= week <= fw[1]) and fi not in RUN_EVENTS_FIRED and _others_fireable(fk, s, week, year, _honban_ahead(week)) \
+                    if (week == fw if isinstance(fw, int) else fw[0] <= week <= fw[1]) and fi not in RUN_EVENTS_FIRED and _others_fireable(fk, s, week, year, _honban_ahead(week, s)) \
                             and not (EVENT_FIRE_CAP is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP):
                         RUN_EVENTS_FIRED.add(fi); _others_apply(s, fk); forced = True; break
             if EVENT_DRAW_FILTER and not forced and not acted and RUN_EVENTS_FIRED is not None and rng.random() < EVENT_RATE:
                 if EVENT_FIRE_CAP is None or len(RUN_EVENTS_FIRED) < EVENT_FIRE_CAP:
                     cands = [i for i in range(len(EVENT_TABLE) + (len(OTHERS_EVENTS) if OTHERS_ON else 0))
                              if i not in RUN_EVENTS_FIRED and (i < len(EVENT_TABLE) or
-                                 _others_fireable(OTHERS_EVENTS[i - len(EVENT_TABLE)], s, week, year, _honban_ahead(week)))]
+                                 _others_fireable(OTHERS_EVENTS[i - len(EVENT_TABLE)], s, week, year, _honban_ahead(week, s)))]
                     if cands:
                         idx = cands[min(int(rng.random() * len(cands)), len(cands) - 1)]
                         RUN_EVENTS_FIRED.add(idx)
@@ -1001,7 +1119,7 @@ def run_year(pol, s, year, rng, seed_final=False, final_line=None, gp_seed=False
                     k = OTHERS_EVENTS[idx - len(EVENT_TABLE)]
                     capped = EVENT_FIRE_CAP is not None and RUN_EVENTS_FIRED is not None and len(RUN_EVENTS_FIRED) >= EVENT_FIRE_CAP
                     if (RUN_EVENTS_FIRED is None or idx not in RUN_EVENTS_FIRED) and not capped \
-                            and _others_fireable(k, s, week, year, _honban_ahead(week)):
+                            and _others_fireable(k, s, week, year, _honban_ahead(week, s)):
                         if RUN_EVENTS_FIRED is not None:
                             RUN_EVENTS_FIRED.add(idx)
                         _others_apply(s, k)

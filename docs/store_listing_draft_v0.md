@@ -138,7 +138,8 @@ Appleは2025年から年齢帯が **4+ / 9+ / 13+ / 16+ / 18+** に変わり、�
 |通信（URLSession／WebKit／外部API）|**なし**（コード上のURL参照は設定画面のプライバシーポリシー用 `Link` のみ・URL未設定のため非表示）|
 |解析SDK・クラッシュ収集・広告・IDFA（ATT）|**なし**（Firebase／AdSupport／ATTracking いずれも無し）|
 |アプリ内課金（StoreKit）|~~なし~~ → **あり**（10/27 更新：StoreKit 2 で購入・復元＝StoreManager.swift。扱うのは所有の有無だけで、個人を特定するデータは送らない＝Apple の購入記録の範囲）|
-|iCloud／CloudKit／アカウント|**なし**|
+|iCloud（Key-Value Store）|**あり**（11/07 実装：ガチャの衣装・券・札のみ。セーブは入らない・運営者は読めない＝release/privacy_policy_ja.md 2-3）|
+|CloudKit／アカウント|**なし**|
 |セーブデータ|**端末内のみ**（UserDefaults の単一キー `manzai.save.v1`・1スロット）|
 |その他の UserDefaults|音量（`vol_se`／`vol_bgm`）・初回表示済みフラグ・通知の許可状況（`notif_asked`／`notif_snooze_until`）|
 |通知（`UNUserNotificationCenter`）|**許可を求める呼び出しだけ**（IntroFlow.swift:321）。**通知をスケジュールするコードは無い**|
@@ -148,7 +149,7 @@ Appleは2025年から年齢帯が **4+ / 9+ / 13+ / 16+ / 18+** に変わり、�
 **要対応（オーナー判断を含む）**：
 1. **プライバシーポリシーのURL**：コードの `AppInfo.privacyPolicyURL` が `nil`。審査5.1.1でアプリ内リンクとストア欄の両方が必要。「何も収集しない・端末内のみ」の短い文面で足りる。公開先（GitHub Pages 等）が決まったら入れる。
 2. **通知の扱い**：今は許可ダイアログを出すだけで送るものが無い。選択肢＝(a) 本当に使う（例：大会の前日に知らせる）(b) 許可の依頼を外す。(b) が安全（使わない権限を求めると審査・ユーザー双方で印象が悪い）。(a) を選ぶなら「ローカル通知のみ・サーバー無し」で、申告は変わらず「収集なし」。推奨：**(b)**（出す場面が決まるまで外す）。
-3. 将来 追加シナリオを売る（StoreKit）／iCloud同期を足す場合は、申告と `PrivacyInfo` を更新。
+3. 将来 追加シナリオを売る（StoreKit）を足す場合や iCloud に入れるものを増やす場合は、申告と `PrivacyInfo` を更新。
 
 ---
 

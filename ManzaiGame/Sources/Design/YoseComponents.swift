@@ -2,6 +2,7 @@
 // ％表示は出さない。外部画像なし。
 
 import SwiftUI
+import UIKit
 
 // MARK: ① ヘッダー帯
 struct YoseHeaderBar: View {
@@ -69,11 +70,14 @@ struct YoseButtonStyle: ButtonStyle {
     var badgeText: String? = nil
     /// 注意を促す強調（朱の太枠＋山吹の薄塗り）。押せる状態の時だけ
     var highlight = false
+    /// true=押下音を鳴らさない（action 側で別の音を鳴らす時の二重鳴り防止。PressableStyle.silent と同じ考え方）
+    var silent = false
 
-    init(_ role: YoseButtonRole = .secondary, badgeText: String? = nil, highlight: Bool = false) {
+    init(_ role: YoseButtonRole = .secondary, badgeText: String? = nil, highlight: Bool = false, silent: Bool = false) {
         self.role = role
         self.badgeText = badgeText
         self.highlight = highlight
+        self.silent = silent
     }
 
     private var depth: CGFloat {
@@ -92,6 +96,7 @@ struct YoseButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         let pressed = isEnabled && configuration.isPressed
+        let still = UIAccessibility.isReduceMotionEnabled   // 視差を減らす時：沈まず、押した間だけ飴色に染める（Gemini R7 §2-B）
         configuration.label
             .font(YoseFont.gothic(role == .command ? 18 : 15, weight: .heavy))
             .foregroundStyle(textColor)
@@ -101,6 +106,7 @@ struct YoseButtonStyle: ButtonStyle {
                 ZStack {
                     fillColor
                     if highlight && isEnabled { YoseColor.kinBright.opacity(0.18) }
+                    if still && pressed { YoseColor.kinBright.opacity(0.4) }
                     if !isEnabled {
                         YoseDiagonalStripes().stroke(YoseColor.sumi.opacity(0.07), lineWidth: 4)
                     } else if role == .primary {
@@ -126,14 +132,14 @@ struct YoseButtonStyle: ButtonStyle {
                         .offset(x: -6, y: -4)
                 }
             }
-            .offset(y: pressed ? depth : 0)
+            .offset(y: pressed && !still ? depth : 0)
             .background(
                 RoundedRectangle(cornerRadius: YoseMetrics.radius).fill(YoseColor.sumi)
                     .offset(y: depth).opacity(isEnabled ? 1 : 0)
             )
             .padding(.bottom, depth)   // 影ぶんの高さを確保（押下時の沈みで隣が動かない）
             .animation(Theme.Motion.r(.easeOut(duration: 0.06)), value: configuration.isPressed)
-            .onChange(of: configuration.isPressed) { _, p in if p && isEnabled { YoseHaptic.press() } }
+            .onChange(of: configuration.isPressed) { _, p in if p && isEnabled { YoseHaptic.press(); if !silent { Sound.play(.cursor) } } }
     }
 }
 
