@@ -149,6 +149,15 @@ final class GachaTests: XCTestCase {
         XCTAssertEqual(m.shards, 4)
     }
 
+    func testMergeDoesNotRefundExchangedShards() {
+        var stale = GachaState()
+        stale.owned = ["kon"]; stale.totalPulls = 5; stale.shards = 20
+        var fresh = stale
+        fresh.owned.insert("hakama"); fresh.shards = 0   // 別の端末で交換済み（回数は同じ）
+        XCTAssertEqual(stale.merged(with: fresh).shards, 0)
+        XCTAssertEqual(fresh.merged(with: stale).shards, 0)
+    }
+
     @MainActor func testStorePersists() {
         let suite = UserDefaults(suiteName: "gacha-test-\(UUID().uuidString)")!
         let a = GachaStore(defaults: suite, useCloud: false)

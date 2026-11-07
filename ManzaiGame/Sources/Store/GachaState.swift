@@ -145,7 +145,8 @@ struct GachaState: Codable, Equatable {
         m.loginStamps = max(loginStamps, o.loginStamps)
         m.lastLoginDay = max(lastLoginDay, o.lastLoginDay)
         // 残高は回数の多い側（新しい側）を採る
-        let newer = o.totalPulls > totalPulls ? o : self
+        // 回数が同じでも、かけら・天井で交換して持ち物が増えた側が新しい（古い側の残高が戻って二重に使えるのを防ぐ）
+        let newer = (o.totalPulls, o.owned.count) > (totalPulls, owned.count) ? o : self
         m.shards = newer.shards; m.pity = newer.pity; m.freeTickets = newer.freeTickets
         m.paidPending = max(paidPending, o.paidPending)
         for t in o.creditedTx where !m.creditedTx.contains(t) { m.creditedTx.append(t) }
