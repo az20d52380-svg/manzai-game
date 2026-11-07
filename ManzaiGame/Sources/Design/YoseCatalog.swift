@@ -36,7 +36,7 @@ struct YoseCatalogView: View {
                         section("ボタン（主・副・押せない・コマンド）")
                         HStack(spacing: YoseMetrics.gridGap) {
                             Button("勝負ネタにする") { }.buttonStyle(YoseButtonStyle(.primary)).frame(maxWidth: .infinity, minHeight: 44)
-                            Button("型を変える") { }.buttonStyle(YoseButtonStyle(.secondary)).frame(maxWidth: .infinity, minHeight: 44)
+                            Button("改名する") { }.buttonStyle(YoseButtonStyle(.secondary)).frame(maxWidth: .infinity, minHeight: 44)
                         }
                         HStack(spacing: YoseMetrics.gridGap) {
                             Button("押せない") { }.buttonStyle(YoseButtonStyle(.secondary)).disabled(true).frame(maxWidth: .infinity, minHeight: 44)

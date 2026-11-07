@@ -13,7 +13,7 @@ final class JudgeTalkTests: XCTestCase {
     /// 具体物が入っているか（その型の語彙・ネタ名・型なし語彙のどれか）
     private func hasSpecific(_ text: String, _ scene: JudgeTalk.Scene) -> Bool {
         if let n = scene.netaName, text.contains("『\(n)』") { return true }
-        let table = JudgeTalk.vocab[scene.kata] ?? JudgeTalk.vocab[nil]!
+        let table = JudgeTalk.vocab[nil]!   // 型なしの語彙に統一
         return table.values.flatMap { $0 }.contains { text.contains($0) }
     }
 

@@ -12,13 +12,14 @@ enum StoreIDs {
     static let adFree = "\(prefix).adfree"
     /// 事務所選び（非消耗型・仮 480円）。UI はまだ作らない
     static let agency = "\(prefix).agency"
-    /// 舞台衣装（非消耗型・仮 1着 120円）。名前は StageOutfit の rawValue
-    static func costume(_ name: String) -> String { "\(prefix).costume.\(name)" }
-
-    /// 仮の衣装名（StageOutfit.standard は無料の既定＝商品なし）
-    static let costumeNames = ["hakama", "leopard"]
+    /// ガチャ券（消耗型・仮 1回100円／10回1,000円）。買ったらその場で回す＝残高は貯めない（docs/costume_gacha_v0.md）
+    static let ticket1 = "\(prefix).ticket1"
+    static let ticket10 = "\(prefix).ticket10"
+    /// 券の商品ID → 回数
+    static let ticketCounts: [String: Int] = [ticket1: 1, ticket10: 10]
+    static func isTicket(_ id: String) -> Bool { ticketCounts[id] != nil }
 
     static var all: [String] {
-        [adFree, agency] + costumeNames.map(costume)
+        [adFree, agency, ticket1, ticket10]
     }
 }

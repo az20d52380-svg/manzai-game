@@ -36,6 +36,13 @@ struct YoseVitalMoneyBar: View {
     var fameDelta: Int? = nil
     var staminaColor: Color = Color(hex: 0x3E8E57)   // 黒帯の上でも満タンが読める若竹色
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize   // 起動中に文字の大きさを変えた時も描き直す（19l §2-9）
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// お金の出入りの浮き札（§2 #7）：変わった瞬間に「+¥3,000／-¥3,000」を所持金の上に0.9秒だけ出す。表示のみ
+    @State private var moneyFloat: Int? = nil
+    @State private var moneyFloatUp = false
+    @State private var moneyFloatGone = false
+    @State private var moneyFloatSeq = 0
+    @State private var moneyFlash = 0   // 視差を減らす時の代わり：金額の文字が0.2秒だけ光る（+1白／-1赤）
 
     var body: some View {
         let big = dynamicTypeSize >= .large && Font.mzScaled(10) > 11   // 大きい文字サイズでは体力ゲージを縮めて、知名度・借金・所持金を潰さない
@@ -47,6 +54,7 @@ struct YoseVitalMoneyBar: View {
                 (Text("\(stamina)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                 + Text("/\(maxStamina)").font(YoseFont.number(11, weight: .bold)).foregroundStyle(YoseColor.ginNezu))
                     .lineLimit(1).fixedSize()
+                    .yoseNumberBounce(Double(stamina))   // 増減の瞬間に小さく跳ねる（effects_design §2 #8・表示のみ）
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("体力 \(maxStamina)のうち\(stamina)")
@@ -55,6 +63,7 @@ struct YoseVitalMoneyBar: View {
                 HStack(spacing: 3) {
                     Text("知名度").font(YoseFont.gothic(12, weight: .bold)).lineLimit(1).fixedSize().foregroundStyle(YoseColor.kinari.opacity(0.8))
                     Text("\(fame)").font(YoseFont.number(15, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                        .yoseNumberBounce(Double(fame))   // §2 #9
                     if let fameDelta, fameDelta > 0 {
                         Text("↑+\(fameDelta)").font(YoseFont.number(11, weight: .heavy)).foregroundStyle(YoseColor.kinBright)
                     }
@@ -64,14 +73,55 @@ struct YoseVitalMoneyBar: View {
             }
             if money < 0 { YoseTag(text: "借金", style: .outlineShu).fixedSize() }   // 所持金マイナスの間だけ（表示のみ）
             Text("\(money < 0 ? "-" : "")¥\(abs(money).formatted(.number))").font(YoseFont.number(17, weight: .heavy))   // 借金は「-¥100,000」（「¥-100,000」は符号の位置が不自然＝hooks_audit_1026）
-                .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinBright)
+                .foregroundStyle(moneyFlash > 0 ? Color.white : (moneyFlash < 0 || money < 0 ? YoseColor.shu : YoseColor.kinBright))   // 視差を減らす時：0.2秒だけ白（減る時は赤）に光る
                 .lineLimit(1).fixedSize()
+                .yoseNumberBounce(Double(money))   // §2 #7（お金の出入り）
+                .overlay(alignment: .topTrailing) { moneyFloatTag }
+                .onChange(of: money) { old, new in
+                    guard new != old else { return }
+                    showMoneyFloat(new - old)
+                }
                 .accessibilityLabel(money < 0 ? "所持金 マイナス\(-money)円、借金" : "所持金 \(money)円")
         }
         .padding(.horizontal, YoseMetrics.screenMargin)
         .frame(height: 36)
         .background(YoseColor.kuroUrushi)
         .overlay(alignment: .top) { Rectangle().fill(YoseColor.sumi).frame(height: 2) }
+    }
+
+    /// 増＝山吹地に黒字／減＝墨地に赤字の小さな木札。10pt 下から18pt 上へ0.55秒浮き、0.25秒止まって消える。
+    /// 新しい出入りが来たら古い札は即消して上書き（縦に並べない）。視差を減らす時は動かさず、固定位置で薄く出て消える。
+    @ViewBuilder private var moneyFloatTag: some View {
+        if let d = moneyFloat {
+            let up = d > 0
+            Text("\(up ? "+" : "-")¥\(abs(d).formatted(.number))")
+                .font(YoseFont.number(12, weight: .heavy))
+                .foregroundStyle(up ? YoseColor.sumi : YoseColor.shu)
+                .padding(.horizontal, 5).padding(.vertical, 1)
+                .background(up ? YoseColor.kinBright : YoseColor.sumi)
+                .overlay(Rectangle().stroke(up ? YoseColor.sumi : YoseColor.shu, lineWidth: 1))
+                .fixedSize()
+                .offset(y: reduceMotion ? -26 : (moneyFloatUp ? -28 : -10))
+                .opacity(moneyFloatGone ? 0 : (reduceMotion ? 0.8 : 1))
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private func showMoneyFloat(_ d: Int) {
+        moneyFloatSeq += 1
+        let seq = moneyFloatSeq
+        var t = Transaction(); t.disablesAnimations = true
+        withTransaction(t) { moneyFloat = d; moneyFloatUp = false; moneyFloatGone = false }   // 古い札はアニメ無しで即上書き
+        if reduceMotion {
+            moneyFlash = d > 0 ? 1 : -1
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { if moneyFloatSeq == seq { moneyFlash = 0 } }
+        } else {
+            DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.55)) { moneyFloatUp = true } }
+        }
+        let hold = reduceMotion ? 0.6 : 0.8
+        DispatchQueue.main.asyncAfter(deadline: .now() + hold) { if moneyFloatSeq == seq { withAnimation(.easeIn(duration: 0.15)) { moneyFloatGone = true } } }
+        DispatchQueue.main.asyncAfter(deadline: .now() + hold + 0.2) { if moneyFloatSeq == seq { moneyFloat = nil } }
     }
 }
 
