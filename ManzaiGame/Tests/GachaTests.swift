@@ -169,11 +169,23 @@ final class GachaTests: XCTestCase {
         var mm = a.merged(with: b); XCTAssertFalse(mm.credit(txID: "1", count: 10))   // 同じ購入は二重に付かない
     }
 
+    func testMergeKeepsPurchasesFromBothDevices() {
+        var a = GachaState(); a.credit(txID: "A1", count: 1)
+        var b = GachaState(); b.credit(txID: "B1", count: 10)
+        XCTAssertEqual(a.merged(with: b).paidPending, 11)
+        XCTAssertEqual(b.merged(with: a).paidPending, 11)
+        var m = a.merged(with: b)
+        XCTAssertFalse(m.credit(txID: "B1", count: 10))
+        XCTAssertEqual(m.paidPending, 11)
+    }
+
     func testLegacyPaidPendingMigrates() throws {
         let json = #"{"owned":["kon"],"freeTickets":0,"paidPending":3,"shards":0,"pity":0,"totalPulls":2,"loginStamps":0,"lastLoginDay":"","creditedTx":["9"]}"#
         let s = try JSONDecoder().decode(GachaState.self, from: Data(json.utf8))
         XCTAssertEqual(s.paidPending, 3)
         XCTAssertEqual(s.paidOpened, 0)
+        XCTAssertEqual(s.ledger[GachaState.legacyID], 3)
+        XCTAssertNil(s.ledger["9"] .flatMap { $0 > 0 ? $0 : nil })
         let back = try JSONDecoder().decode(GachaState.self, from: JSONEncoder().encode(s))
         XCTAssertEqual(back, s)
     }

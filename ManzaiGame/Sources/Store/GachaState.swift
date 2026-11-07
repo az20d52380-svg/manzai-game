@@ -47,31 +47,34 @@ struct PullResult: Equatable {
 struct GachaState: Codable, Equatable {
     var owned: Set<String> = []        // ガチャで出た衣装（standard/黒紋付は含めない）
     var freeTickets = 1                // 無料の回数（新規は「はじめての1回」分の1回を最初から持つ。以後はログインボーナスで貯まる）
-    var paidCredited = 0               // 購入で付与された回数の累計（増えるだけ）
+    var ledger: [String: Int] = [:]    // 購入の台帳：取引ID→付与した回数（合流は和集合＝別端末の購入が消えない・同じIDは二重に付かない）。旧データの分は固定ID "legacy" 1件
+    static let legacyID = "legacy"
+    var paidCredited: Int { ledger.values.reduce(0, +) }   // 付与の累計＝台帳の合計
     var paidOpened = 0                 // 購入分を開封（回した）回数の累計（増えるだけ）
     /// 買ったが、まだ回していない回数＝付与−開封（旧データは付与＝旧の未開封・開封＝0 に移す）。代入は付与側で合わせる
     var paidPending: Int {
         get { max(0, paidCredited - paidOpened) }
-        set { paidCredited = paidOpened + max(0, newValue) }
+        set {   // テスト・移行用：未開封が newValue になるよう、固定IDの行で合わせる
+            let others = ledger.filter { $0.key != "_set" }.values.reduce(0, +)
+            ledger["_set"] = max(0, paidOpened + max(0, newValue) - others)
+        }
     }
     var shards = 0
     var pity = 0
     var totalPulls = 0
     var loginStamps = 0
     var lastLoginDay = ""              // yyyy-MM-dd（端末の日付）
-    var creditedTx: [String] = []      // 付与済みの取引ID（二重付与の防止・直近50件）
 
     init() {}
     private enum CodingKeys: String, CodingKey {
-        case owned, freeTickets, paidPending, paidCredited, paidOpened, shards, pity, totalPulls, loginStamps, lastLoginDay, creditedTx
+        case owned, freeTickets, paidPending, paidCredited, paidOpened, ledger, shards, pity, totalPulls, loginStamps, lastLoginDay, creditedTx
     }
     func encode(to e: Encoder) throws {
         var c = e.container(keyedBy: CodingKeys.self)
         try c.encode(owned, forKey: .owned); try c.encode(freeTickets, forKey: .freeTickets)
-        try c.encode(paidCredited, forKey: .paidCredited); try c.encode(paidOpened, forKey: .paidOpened)
+        try c.encode(ledger, forKey: .ledger); try c.encode(paidOpened, forKey: .paidOpened)
         try c.encode(shards, forKey: .shards); try c.encode(pity, forKey: .pity); try c.encode(totalPulls, forKey: .totalPulls)
         try c.encode(loginStamps, forKey: .loginStamps); try c.encode(lastLoginDay, forKey: .lastLoginDay)
-        try c.encode(creditedTx, forKey: .creditedTx)
     }
     init(from d: Decoder) throws {
         let c = try d.container(keyedBy: CodingKeys.self)
@@ -82,17 +85,18 @@ struct GachaState: Codable, Equatable {
         totalPulls = try c.decodeIfPresent(Int.self, forKey: .totalPulls) ?? 0
         loginStamps = try c.decodeIfPresent(Int.self, forKey: .loginStamps) ?? 0
         lastLoginDay = try c.decodeIfPresent(String.self, forKey: .lastLoginDay) ?? ""
-        creditedTx = try c.decodeIfPresent([String].self, forKey: .creditedTx) ?? []
-        if let cr = try c.decodeIfPresent(Int.self, forKey: .paidCredited) {
-            paidCredited = cr
-            paidOpened = try c.decodeIfPresent(Int.self, forKey: .paidOpened) ?? 0
-        } else {   // 旧形式：未開封の数だけ持っていた
-            paidCredited = try c.decodeIfPresent(Int.self, forKey: .paidPending) ?? 0
-            paidOpened = 0
+        paidOpened = try c.decodeIfPresent(Int.self, forKey: .paidOpened) ?? 0
+        if let l = try c.decodeIfPresent([String: Int].self, forKey: .ledger) {
+            ledger = l
+        } else {   // 旧形式：未開封の数（または付与の累計）と取引IDの一覧 → 台帳へ（旧の分は固定ID 1件）
+            let n = try c.decodeIfPresent(Int.self, forKey: .paidCredited) ?? c.decodeIfPresent(Int.self, forKey: .paidPending) ?? 0
+            if n > 0 { ledger[Self.legacyID] = n }
+            for t in try c.decodeIfPresent([String].self, forKey: .creditedTx) ?? [] where ledger[t] == nil { ledger[t] = 0 }
         }
     }
 
     func owns(_ o: StageOutfit) -> Bool { o == .standard || owned.contains(o.rawValue) }
+
     var availableTickets: Int { freeTickets + paidPending }
 
     // MARK: 抽選
@@ -167,10 +171,8 @@ struct GachaState: Codable, Equatable {
     /// 取引IDごとに1度だけ回数を足す（Transaction.updates の再配信で二重に付かない）
     @discardableResult
     mutating func credit(txID: String, count: Int) -> Bool {
-        guard !creditedTx.contains(txID) else { return false }
-        creditedTx.append(txID)
-        if creditedTx.count > 50 { creditedTx.removeFirst(creditedTx.count - 50) }
-        paidCredited += count
+        guard ledger[txID] == nil else { return false }
+        ledger[txID] = count
         return true
     }
 
@@ -185,10 +187,8 @@ struct GachaState: Codable, Equatable {
         // 回数が同じでも、かけら・天井で交換して持ち物が増えた側が新しい（古い側の残高が戻って二重に使えるのを防ぐ）
         let newer = (o.totalPulls, o.owned.count) > (totalPulls, owned.count) ? o : self
         m.shards = newer.shards; m.pity = newer.pity; m.freeTickets = newer.freeTickets
-        m.paidCredited = max(paidCredited, o.paidCredited)
+        for (k, v) in o.ledger { m.ledger[k] = max(m.ledger[k] ?? 0, v) }   // 台帳は和集合
         m.paidOpened = max(paidOpened, o.paidOpened)
-        for t in o.creditedTx where !m.creditedTx.contains(t) { m.creditedTx.append(t) }
-        if m.creditedTx.count > 50 { m.creditedTx.removeFirst(m.creditedTx.count - 50) }
         return m
     }
 }
