@@ -17,6 +17,10 @@ targets:
         buildPhase: resources
         excludes:
           - "**/*.md"        # CREDITS.md はバンドルに含めない（repo内の記録用）
+    entitlements:
+      path: ManzaiGame.entitlements        # iCloud キー値ストア（衣装ガチャの持ち物を機種変更でも残す）
+      properties:
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)$(CFBundleIdentifier)
     dependencies:
       - package: GameCore
         product: GameCore

@@ -50,8 +50,8 @@ final class StoreManager: ObservableObject {
         do {
             switch try await product.purchase() {
             case .success(let result):
-                await handle(result)
-                return owns(id)
+                let ok = await handle(result)
+                return StoreIDs.isTicket(id) ? ok : owns(id)
             case .userCancelled:
                 return false
             case .pending:
@@ -82,10 +82,16 @@ final class StoreManager: ObservableObject {
         }
     }
 
-    private func handle(_ result: VerificationResult<Transaction>) async {
-        guard case .verified(let tx) = result else { return }
+    /// 検証済みの取引を処理。券（消耗型）は finish の前にガチャ側へ付与する（取引IDで二重付与を防ぐ）。付与できたら true
+    @discardableResult
+    private func handle(_ result: VerificationResult<Transaction>) async -> Bool {
+        guard case .verified(let tx) = result else { return false }
+        if let n = StoreIDs.ticketCounts[tx.productID] {
+            GachaStore.shared.credit(txID: String(tx.id), count: n)
+        }
         await tx.finish()
         await updateEntitlements()
+        return true
     }
 
     private func updateEntitlements() async {

@@ -30,6 +30,7 @@
 		23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */; };
 		25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */; };
 		2643395E9DDCAF2BA532E57B /* se_grain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */; };
+		2722319503C421A50EEC0721 /* GachaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF328C240994A9AE25E60A6 /* GachaStore.swift */; };
 		274A09C6852CB442400DAE49 /* se_taiko.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */; };
 		290A540EAC4D4FD7912614B4 /* se_tada.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EDB0AA57D3930ABAC02C8D8D /* se_tada.mp3 */; };
 		29383121F034EDCD512A2999 /* YoseMilestoneFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3922B827A8BB6C8A1576AAC /* YoseMilestoneFX.swift */; };
@@ -59,6 +60,7 @@
 		6C7AE0E5AF2E0E84B8B2FE89 /* se_applause_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */; };
 		6E71D733049D8E6E9DC696B5 /* SessionGap1025eTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170249E13DCADAC83FC08CF5 /* SessionGap1025eTests.swift */; };
 		70D5CD0C4FBD5217C11058D4 /* YoseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D87A214DB8E1FE8512D92D /* YoseComponents.swift */; };
+		72BCEBE06BA5A11C7484D762 /* GachaRatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2695E7E001A8EE7BD016C094 /* GachaRatesView.swift */; };
 		73587F79732C11E8E43D20FE /* SessionGap1025cTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2E58A31BD7A19D7847716 /* SessionGap1025cTests.swift */; };
 		74DDE7A5903D2D4934E9536F /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = 27B231D4CDB45E90519F75D6 /* GameCore */; };
 		78C7F495D368DDFE1BD4AAC9 /* YoseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */; };
@@ -77,6 +79,7 @@
 		90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */; };
 		91217B57A08A20012B50956D /* MPLUSRounded1c-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */; };
 		91723692D04B2F63B7FBD319 /* ChoiceEventPairing1027Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */; };
+		927F1FB42DF8E5AFB04FDF12 /* GachaState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10B1C879654055E2170C2C4 /* GachaState.swift */; };
 		9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */; };
 		9BB5D10DDFE9D132890F774E /* RadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = F840A919C087A92A94339899 /* RadarChart.swift */; };
 		9C0D027CDCFED1A3CCE43054 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B56CF2CC9552602E05AC67B /* CalendarView.swift */; };
@@ -85,6 +88,7 @@
 		9FB3C8B8D6363401D9B7EEFD /* S6bView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AAFBC0284B7A53A0A48C18D /* S6bView.swift */; };
 		A04542CD185A20BC467338C6 /* AppCoverage1025Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E271E3EB3BF64D4F08ABCC74 /* AppCoverage1025Tests.swift */; };
 		A5261165B97770A127810577 /* CommandData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC4BFE7F49C021AD57F4D7 /* CommandData.swift */; };
+		A66F8433F9545816B3A9765C /* GachaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F066C29B4170D0D02565018 /* GachaView.swift */; };
 		A8FF5567E87E89520907F182 /* FirstStageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B661217CF9AAE526E8E6A97A /* FirstStageView.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
 		AC8082ECD71EB2B651C7148D /* se_cheer_big.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */; };
@@ -109,6 +113,7 @@
 		D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */; };
 		D6DD3EA8BA750EBBFE6DBB11 /* se_rankup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C0518515B27DFACD1B80A893 /* se_rankup.mp3 */; };
 		DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */; };
+		E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */; };
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
 		E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */; };
 		E58B538509C7357838D5078F /* AppSaveFixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340E4B0117C5AF8BBEC2AC57 /* AppSaveFixtureTests.swift */; };
@@ -140,6 +145,7 @@
 
 /* Begin PBXFileReference section */
 		024DBFE5B9622AFE4F257FBA /* bgm_daily.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_daily.mp3; sourceTree = "<group>"; };
+		02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaTests.swift; sourceTree = "<group>"; };
 		03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaCatalog.swift; sourceTree = "<group>"; };
 		0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameApp.swift; sourceTree = "<group>"; };
 		08B86D882DE6689C655ADD0C /* FanReportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanReportData.swift; sourceTree = "<group>"; };
@@ -152,6 +158,7 @@
 		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		2479B3303C35A9B094342137 /* se_cursor.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cursor.mp3; sourceTree = "<group>"; };
 		24E06D95088D26FB3DC94453 /* FinalistAnnounceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalistAnnounceView.swift; sourceTree = "<group>"; };
+		2695E7E001A8EE7BD016C094 /* GachaRatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaRatesView.swift; sourceTree = "<group>"; };
 		2AAFBC0284B7A53A0A48C18D /* S6bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S6bView.swift; sourceTree = "<group>"; };
 		2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
 		2DC7AD55C10948F6D9376264 /* se_deny.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_deny.mp3; sourceTree = "<group>"; };
@@ -161,6 +168,7 @@
 		340E4B0117C5AF8BBEC2AC57 /* AppSaveFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSaveFixtureTests.swift; sourceTree = "<group>"; };
 		3B1F087A453470E4CF970A6B /* StageScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageScene.swift; sourceTree = "<group>"; };
 		3E034762E4A6192639CA2DCF /* WaIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaIcons.swift; sourceTree = "<group>"; };
+		3F066C29B4170D0D02565018 /* GachaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaView.swift; sourceTree = "<group>"; };
 		4AD82B142FBAB45CCE873CB9 /* QualifierNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QualifierNoticeView.swift; sourceTree = "<group>"; };
 		4EE7F6B8DDE4970A034B1FDA /* EventBackgrounds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBackgrounds.swift; sourceTree = "<group>"; };
 		5077E6524DE17A958E0227F5 /* YoseChampionCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseChampionCelebrationView.swift; sourceTree = "<group>"; };
@@ -183,6 +191,7 @@
 		7E9074D521E24C7B5B3FE240 /* MPLUSRounded1c-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Medium.ttf"; sourceTree = "<group>"; };
 		7F4BD130E2E1C169A1A5799E /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
 		7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogRoundTrip1026Tests.swift; sourceTree = "<group>"; };
+		7FF328C240994A9AE25E60A6 /* GachaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaStore.swift; sourceTree = "<group>"; };
 		823BBF1D645262269F322646 /* SessionGap1025fTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025fTests.swift; sourceTree = "<group>"; };
 		830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_big.mp3; sourceTree = "<group>"; };
 		858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventPairing1027Tests.swift; sourceTree = "<group>"; };
@@ -228,6 +237,7 @@
 		C6A2E58A31BD7A19D7847716 /* SessionGap1025cTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025cTests.swift; sourceTree = "<group>"; };
 		CC1F100811789DF64591C427 /* DialogueData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogueData.swift; sourceTree = "<group>"; };
 		CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coverage1026AppTests.swift; sourceTree = "<group>"; };
+		D10B1C879654055E2170C2C4 /* GachaState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaState.swift; sourceTree = "<group>"; };
 		D47D421441D548D881226B2E /* FontLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontLoader.swift; sourceTree = "<group>"; };
 		D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterAvatars.swift; sourceTree = "<group>"; };
 		D84CB9905639D09C704FC9DB /* YoseYearTurnCurtain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseYearTurnCurtain.swift; sourceTree = "<group>"; };
@@ -329,6 +339,8 @@
 				5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */,
 				B661217CF9AAE526E8E6A97A /* FirstStageView.swift */,
 				D47D421441D548D881226B2E /* FontLoader.swift */,
+				2695E7E001A8EE7BD016C094 /* GachaRatesView.swift */,
+				3F066C29B4170D0D02565018 /* GachaView.swift */,
 				2B25F19CAF5E2C3DC88CD88D /* GameSession.swift */,
 				915FB4D3357203506A4F5A67 /* IntroFlow.swift */,
 				F5D08F932A4334F422E73881 /* JudgeData.swift */,
@@ -388,6 +400,8 @@
 			isa = PBXGroup;
 			children = (
 				D8E215A1A530CA3FBC2B0257 /* AdProvider.swift */,
+				D10B1C879654055E2170C2C4 /* GachaState.swift */,
+				7FF328C240994A9AE25E60A6 /* GachaStore.swift */,
 				A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */,
 				E1B680F784150145461F1B91 /* StoreIDs.swift */,
 				E3B3D0E4892F3438C35FA663 /* StoreManager.swift */,
@@ -423,6 +437,7 @@
 				C0FD8C5D4F11D970B78D68B9 /* CommandCatalogTests.swift */,
 				CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */,
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
+				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
 				E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */,
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
@@ -617,6 +632,10 @@
 				877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */,
 				A8FF5567E87E89520907F182 /* FirstStageView.swift in Sources */,
 				53DD57D26963633913018B7A /* FontLoader.swift in Sources */,
+				72BCEBE06BA5A11C7484D762 /* GachaRatesView.swift in Sources */,
+				927F1FB42DF8E5AFB04FDF12 /* GachaState.swift in Sources */,
+				2722319503C421A50EEC0721 /* GachaStore.swift in Sources */,
+				A66F8433F9545816B3A9765C /* GachaView.swift in Sources */,
 				9B44B01224E52B94ADF16059 /* GameSession.swift in Sources */,
 				5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */,
 				6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */,
@@ -673,6 +692,7 @@
 				CDB07DD7D5C98BA8BB44BD2E /* CommandCatalogTests.swift in Sources */,
 				AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */,
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
+				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
 				90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */,
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
@@ -707,6 +727,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = ManzaiGame.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -787,6 +808,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = ManzaiGame.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;

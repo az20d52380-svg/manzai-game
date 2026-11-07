@@ -1,0 +1,153 @@
+// 衣装ガチャのテスト（抽選の割合・初回・被り→かけら・天井・ログインボーナス・二重付与・保存）。本編の乱数とは無関係。
+import XCTest
+@testable import ManzaiGame
+
+/// 固定列の乱数（テスト用）
+struct SeededGen: RandomNumberGenerator {
+    var s: UInt64
+    mutating func next() -> UInt64 {
+        s &+= 0x9E3779B97F4A7C15
+        var z = s
+        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+        return z ^ (z >> 31)
+    }
+}
+
+final class GachaTests: XCTestCase {
+    func testCatalogRates() {
+        XCTAssertEqual(GachaCatalog.pool.count, 12)
+        XCTAssertEqual(OutfitRarity.allCases.map { $0.tierPercent }.reduce(0, +), 100)
+        XCTAssertEqual(GachaCatalog.pool.map { GachaCatalog.percent(of: $0) }.reduce(0, +), 100, accuracy: 1e-9)
+        XCTAssertEqual(GachaCatalog.display(GachaCatalog.percent(of: .kon)), "12.00%")
+        XCTAssertEqual(GachaCatalog.display(GachaCatalog.percent(of: .stripe)), "7.50%")
+        XCTAssertEqual(GachaCatalog.display(GachaCatalog.percent(of: .hakama)), "3.33%")
+        XCTAssertNil(StageOutfit.kuromontsuki.rarity)
+        XCTAssertNil(StageOutfit.standard.rarity)
+    }
+
+    func testDrawDistribution() {
+        var g = SeededGen(s: 7)
+        var counts: [OutfitRarity: Int] = [:]
+        let n = 20000
+        for _ in 0..<n {
+            let r = GachaState.draw(&g).rarity!
+            counts[r, default: 0] += 1
+        }
+        for r in OutfitRarity.allCases {
+            XCTAssertEqual(Double(counts[r] ?? 0) / Double(n) * 100, Double(r.tierPercent), accuracy: 1.5, r.label)
+        }
+    }
+
+    func testNoTicketNoPull() {
+        var s = GachaState()
+        var g = SeededGen(s: 1)
+        XCTAssertNil(s.pullOne(&g))
+        XCTAssertEqual(s.totalPulls, 0)
+    }
+
+    func testFirstPullIsSpecialAndFreeSpentBeforePaid() {
+        var s = GachaState()
+        var g = SeededGen(s: 2)
+        s.freeTickets = 1
+        s.paidPending = 1
+        let r = s.pullOne(&g)!
+        XCTAssertEqual(r.outfit.rarity, .tokubetsu)
+        XCTAssertTrue(r.isNew)
+        XCTAssertEqual(s.freeTickets, 0)
+        XCTAssertEqual(s.paidPending, 1)
+        XCTAssertEqual(s.pity, 1)
+        XCTAssertTrue(s.owns(r.outfit))
+    }
+
+    func testDuplicateBecomesShards() {
+        var s = GachaState()
+        var g = SeededGen(s: 3)
+        s.totalPulls = 5
+        s.paidPending = 400
+        for _ in 0..<400 { _ = s.pullOne(&g) }
+        XCTAssertEqual(s.owned.count, 12)
+        XCTAssertGreaterThan(s.shards, 0)
+        XCTAssertEqual(s.pity, 400)
+        XCTAssertTrue(GachaCatalog.pool.allSatisfy { !s.canExchangeShards(for: $0) && !s.canExchangePity(for: $0) })
+    }
+
+    func testShardExchange() {
+        var s = GachaState()
+        s.shards = 9
+        XCTAssertFalse(s.exchangeShards(for: .kon))
+        s.shards = 10
+        XCTAssertTrue(s.exchangeShards(for: .kon))
+        XCTAssertEqual(s.shards, 0)
+        XCTAssertTrue(s.owns(.kon))
+        s.shards = 100
+        XCTAssertFalse(s.exchangeShards(for: .kon))
+        XCTAssertFalse(s.exchangeShards(for: .standard))
+        XCTAssertFalse(s.exchangeShards(for: .kuromontsuki))
+        XCTAssertTrue(s.exchangeShards(for: .hakama))
+        XCTAssertEqual(s.shards, 60)
+    }
+
+    func testPityExchange() {
+        var s = GachaState()
+        s.pity = 39
+        XCTAssertFalse(s.exchangePity(for: .kira))
+        s.pity = 40
+        XCTAssertTrue(s.exchangePity(for: .kira))
+        XCTAssertEqual(s.pity, 0)
+        XCTAssertTrue(s.owns(.kira))
+        s.pity = 80
+        XCTAssertFalse(s.exchangePity(for: .kira))
+        XCTAssertEqual(s.pity, 80)
+    }
+
+    func testPityReachedAtFortyPulls() {
+        var s = GachaState()
+        var g = SeededGen(s: 9)
+        s.paidPending = 40
+        for _ in 0..<40 { _ = s.pullOne(&g) }
+        XCTAssertGreaterThanOrEqual(s.pity, GachaCatalog.pityGoal)
+    }
+
+    func testLoginBonus() {
+        var s = GachaState()
+        XCTAssertTrue(s.claimLogin(today: "2026-11-01"))
+        XCTAssertFalse(s.claimLogin(today: "2026-11-01"))
+        XCTAssertFalse(s.canClaimLogin(today: "2026-10-31"))
+        for d in 2...6 { XCTAssertTrue(s.claimLogin(today: "2026-11-0\(d)")) }
+        XCTAssertEqual(s.loginStamps, 6)
+        XCTAssertEqual(s.freeTickets, 0)
+        XCTAssertTrue(s.claimLogin(today: "2026-11-07"))
+        XCTAssertEqual(s.freeTickets, 1)
+        XCTAssertEqual(s.loginStamps, 0)
+    }
+
+    func testCreditOnlyOncePerTransaction() {
+        var s = GachaState()
+        XCTAssertTrue(s.credit(txID: "100", count: 10))
+        XCTAssertFalse(s.credit(txID: "100", count: 10))
+        XCTAssertEqual(s.paidPending, 10)
+    }
+
+    func testMergeKeepsOwnedUnion() {
+        var a = GachaState()
+        a.owned = ["kon"]; a.totalPulls = 3; a.pity = 3
+        var b = GachaState()
+        b.owned = ["gray"]; b.totalPulls = 5; b.pity = 5; b.shards = 4
+        let m = a.merged(with: b)
+        XCTAssertEqual(m.owned, ["kon", "gray"])
+        XCTAssertEqual(m.pity, 5)
+        XCTAssertEqual(m.shards, 4)
+    }
+
+    @MainActor func testStorePersists() {
+        let suite = UserDefaults(suiteName: "gacha-test-\(UUID().uuidString)")!
+        let a = GachaStore(defaults: suite, useCloud: false)
+        a.credit(txID: "1", count: 1)
+        _ = a.pull(count: 1)
+        let b = GachaStore(defaults: suite, useCloud: false)
+        XCTAssertEqual(b.state.totalPulls, 1)
+        XCTAssertEqual(b.state.owned.count, 1)
+        XCTAssertTrue(b.owns(.standard))
+    }
+}
