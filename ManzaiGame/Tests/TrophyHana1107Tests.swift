@@ -65,6 +65,15 @@ final class TrophyHana1107Tests: XCTestCase {
         XCTAssertFalse(names.contains("HANA1回戦"))
     }
 
+    /// 年表の THE HANA の行は、その年の最後の結果
+    func testHanaReachFromLog() {
+        XCTAssertNil(GameSession.hanaReach(log: ["第12週: 春新人賞A 優勝 +50万"]))
+        XCTAssertEqual(GameSession.hanaReach(log: ["第32週: THE HANA 1回戦 通過", "第37週: THE HANA 2回戦 敗退"]), "THE HANA 2回戦 敗退")
+        XCTAssertEqual(GameSession.hanaReach(log: ["第32週: THE HANA 1回戦 通過"]), "THE HANA 1回戦 通過")
+        XCTAssertEqual(GameSession.hanaReach(log: ["第44週: THE HANA 決勝 優勝 +250万"]), "THE HANA 優勝")
+        XCTAssertEqual(GameSession.hanaReach(log: ["第44週: THE HANA 決勝 敗退"]), "THE HANA 決勝 敗退")
+    }
+
     /// 図鑑の分母は「今取れる物」だけ（取れない T19・T20 を数えると全部そろわない）
     func testObtainableCountIsTwenty() {
         XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 20)

@@ -191,9 +191,12 @@ struct NotebookView: View {
                     HStack(spacing: 10) {
                         Text("\(r.year)年目").font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
-                        Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
-                            .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
+                                .font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            if let h = r.hanaReach { Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         if r.watchedFinal == true, !r.reachedFinal {
                             YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た")   // 決勝を客席から観た年＝灰の札（queue108・観るのは任意なので実際に観た年だけ）
                         }

@@ -1093,6 +1093,22 @@ final class GameSession {
         var dissolved: Bool? = nil
         /// その年の決勝を客席から観たか。nil＝観ていない／旧セーブ。戦績の年表の灰「観戦」札（表示専用）
         var watchedFinal: Bool? = nil
+        /// その年の THE HANA の結果の1行（女コンビだけ）。nil＝出ていない／旧セーブ。年表の下の行に出す
+        var hanaReach: String? = nil
+    }
+
+    /// 出来事ログの行から、その年の THE HANA の結果を1行にする（表示専用）
+    static func hanaReach(log: [String]) -> String? {
+        var last: (round: String, mark: String)?
+        for line in log {
+            for part in line.components(separatedBy: " / ") {
+                guard let r = part.range(of: "THE HANA ") else { continue }
+                let w = part[r.upperBound...].split(separator: " ").map(String.init)
+                if w.count >= 2 { last = (w[0], w[1]) }
+            }
+        }
+        guard let last else { return nil }
+        return last.mark == "優勝" ? "THE HANA 優勝" : "THE HANA \(last.round) \(last.mark)"
     }
 
     /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／解散／結成 careerYears 年目の年末）
@@ -1357,7 +1373,8 @@ final class GameSession {
                                                   enteredGP: outcome.roundsPassed > 0 || outcome.reachedFinal || outcome.champion
                                                       || loggedGPEntry,
                                                   dissolved: outcome.dissolved ? true : nil,
-                                                  watchedFinal: didWatchFinal ? true : nil))
+                                                  watchedFinal: didWatchFinal ? true : nil,
+                                                  hanaReach: Self.hanaReach(log: log)))
                 }
                 if outcome.champion {
                     // 周をまたぐ記録（連覇は yearHistory の末尾から数える）。pump が同じ年末に再入しても二重に積まない

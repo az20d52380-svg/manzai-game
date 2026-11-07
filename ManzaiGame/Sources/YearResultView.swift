@@ -161,7 +161,10 @@ struct YearResultView: View {
                     HStack(spacing: 10) {
                         Text("\(r.year)年目").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
-                        Text(label).font(YoseFont.mincho(15)).foregroundStyle(r.champion || r.reachedFinal ? YoseColor.shu : YoseColor.sumi)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(label).font(YoseFont.mincho(15)).foregroundStyle(r.champion || r.reachedFinal ? YoseColor.shu : YoseColor.sumi)
+                            if let h = r.hanaReach { Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
+                        }
                         Spacer()
                         if r.year == session.year { YoseTag(text: "今年", style: .solidEnji) }
                     }
