@@ -313,6 +313,7 @@ struct EndingGalleryView: View {
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "エンディング図鑑", subtitle: "\(seen.count) / \(EndingID.allCases.count)", closeAction: onClose)
                 ScrollView {
+                    recordsAndTrophies
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                         ForEach(EndingID.allCases) { id in cell(id) }
                     }
@@ -324,6 +325,25 @@ struct EndingGalleryView: View {
         .fullScreenCover(item: $replaying) { id in
             EndingFlowView(session: nil, ending: id, replay: true, onFinish: { replaying = nil })
         }
+    }
+
+    /// 周をまたぐ記録とトロフィー（取った物は名前と条件、まだの物は伏せて数だけ）
+    private var recordsAndTrophies: some View {
+        let rec = TrophyBook.loadRecords()
+        let got = TrophyBook.load()
+        let fastest = rec.fastestWinYear.map { "\($0)年目" } ?? "まだ"
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("記録").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            Text("通算優勝 \(rec.totalWins)回／最多連覇 \(rec.bestStreak)／最速優勝 \(fastest)")
+                .font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
+            Text("トロフィー \(got.count) / \(TrophyID.allCases.count)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.top, 6)
+            ForEach(TrophyID.allCases.filter { got.contains($0) }) { t in
+                Text("\(t.title)　\(t.condition)").font(YoseFont.gothic(12, weight: .medium)).foregroundStyle(YoseColor.sumi)
+            }
+            Text("集めた分は、次の周のはじめの力になる。").font(YoseFont.gothic(11, weight: .medium)).foregroundStyle(YoseColor.haiSumi)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 16)
     }
 
     private func cell(_ id: EndingID) -> some View {
