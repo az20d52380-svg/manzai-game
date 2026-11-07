@@ -186,9 +186,9 @@ struct NotebookView: View {
             HStack(spacing: 0) {
                 kirokuStat("今年の出場", "\(played)", "回")   // 出場は今年の記録から数える（優勝・賞金は通算）＝名前で分ける（code_review_2026-10-19g §3）
                 Rectangle().fill(YoseColor.kiDark).frame(width: 1).padding(.vertical, 8)
-                kirokuStat("優勝", "\(wins)", "回")
+                kirokuStat("通算の優勝", "\(wins)", "回")
                 Rectangle().fill(YoseColor.kiDark).frame(width: 1).padding(.vertical, 8)
-                kirokuStat("獲得賞金", "\(total)", "万")
+                kirokuStat("通算の賞金", "\(total)", "万")
             }
             .frame(height: 68).frame(maxWidth: .infinity).yoseKifuda()
             .padding(.bottom, 2)
