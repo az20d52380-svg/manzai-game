@@ -102,3 +102,4 @@
 4. 年齢区分でガチャ・広告が引き上げる場合の方針
 5. 事務所選びは発売後（決定済み）
 6. アプリのアイコン（11/07 確認：AppIcon.appiconset に画像が無く、Release ビルドにアイコンが入らない。無いと App Store に出せない）
+7. バンドルID：今は com.manzaigame.mvp で「mvp」が残っている。商品IDにも同じ文字が入るので、変えるなら App Store Connect に登録する前（docs/release_build_check_1108.md）
