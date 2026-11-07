@@ -1119,15 +1119,15 @@ final class StorePurchaseGuard1027Tests: XCTestCase {
 final class CareerEndSaveCandidateTests: IsolatedStoreTestCase {
     private let key = "manzai.save.v1"
     func testCareerOverYearEndKeepsSaveUntilClosed() {
-        let s = GameSession(startState: GameSession.debugMaxedState())
+        var c = GameConfig(); c.careerYears = 1   // 最終年の優勝＝勇退の選択なしで区切りの年末へ
+        let s = GameSession(config: c, startState: GameSession.debugMaxedState())
         s.debugAdvanceToChampionFinale()
         s.acknowledgeWin()
         XCTAssertTrue(s.finished && s.careerOver)
         s.saveNow()
         XCTAssertNotNil(GameSession.store.data(forKey: key))          // 年末で落ちても残る
-        let back = GameSession.loadedOrNew()
-        XCTAssertTrue(back.winFinale)                                   // 優勝の年末は勝利演出から出し直す
-        back.acknowledgeWin()
+        let back = GameSession.loadedOrNew(config: c)
+        XCTAssertFalse(back.winFinale)                                  // 本体の 11/07 の形：確認済みの年末は年末の画面から
         XCTAssertTrue(back.finished && back.careerOver)
         XCTAssertEqual(back.endingID, s.endingID)                       // 同じ結末へ進める
         s.closeCareer()
