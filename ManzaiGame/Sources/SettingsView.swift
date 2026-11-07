@@ -12,11 +12,12 @@ struct SettingsView: View {
     var onQuitRun: (() -> Void)? = nil
     @AppStorage("vol_bgm") private var bgm: Double = 0.6   // SoundManager の既定（0.6）とそろえる（code_review_2026-10-19f §1）
     @AppStorage("vol_se") private var se: Double = 0.8
+    @AppStorage(MZSpeed.key) private var animSpeed: Int = 0
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
     @StateObject private var store = StoreManager.shared
     @State private var restoring = false
-    private enum FullCover: String, Identifiable { case glossary, endingBook; var id: String { rawValue } }
+    private enum FullCover: String, Identifiable { case glossary, endingBook, rates; var id: String { rawValue } }
     @State private var cover: FullCover?
 
     var body: some View {
@@ -44,6 +45,13 @@ struct SettingsView: View {
                             volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
                         }
+                        section("演出の速さ") {
+                            Picker("演出の速さ", selection: $animSpeed) {
+                                Text("ふつう").tag(0)
+                                Text("はやい").tag(1)
+                            }.pickerStyle(.segmented)
+                            Text("大会・結果の演出が速くなる。勝ち負けは変わらない。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)
+                        }
                         section("購入") {
                             Button { Task { restoring = true; _ = await store.restore(); restoring = false } } label: {
                                 linkRow(restoring ? "復元しています…" : "購入を復元", external: false)
@@ -53,6 +61,8 @@ struct SettingsView: View {
                             if let m = store.lastMessage {
                                 Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
                             }
+                            Button { cover = .rates } label: { linkRow("衣装ガチャの提供割合", external: false, inApp: true) }
+                                .buttonStyle(.plain)
                         }
                         section("遊び方") {
                             Button { cover = .glossary } label: { linkRow("用語集", external: false, inApp: true) }
@@ -99,6 +109,7 @@ struct SettingsView: View {
             switch c {
             case .glossary: GlossaryView { cover = nil }
             case .endingBook: EndingGalleryView { cover = nil }
+            case .rates: GachaRatesView { cover = nil }
             }
         }
     }
@@ -107,7 +118,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)   // 見出しの左朱帯
-                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
             }
             VStack(spacing: 12) { content() }
                 .padding(YoseMetrics.padH + 2)
@@ -201,8 +212,8 @@ struct SettingsView: View {
 
 /// 出荷情報の置き場（監査G-02/G-11/H-06）。名前とURLはオーナー確定待ち＝ここだけ書き換える。
 enum AppInfo {
-    /// アプリ名（ストア名・ホーム画面名と揃える）。確定前は作業名。
-    static let displayName = "四分の夜"
+    /// アプリ名（ストア名・ホーム画面名と揃える）。2026-11-02 オーナー確定。
+    static let displayName = "漫才王になろう"
     /// プライバシーポリシーのURL（審査5.1.1で必須）。nil の間は設定画面に行を出さない＝申請前に必ず埋める。
     static let privacyPolicyURL: URL? = nil
     static var version: String {

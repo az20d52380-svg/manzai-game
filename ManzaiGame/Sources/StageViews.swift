@@ -69,7 +69,7 @@ struct WaveformView: View {
                 }
                 ctx.opacity = 0.4
                 ctx.stroke(bottom, with: grad, style: StrokeStyle(lineWidth: 3, lineJoin: .round))
-            }
+            }.accessibilityHidden(true)
         }
         .frame(height: compact ? 44 : 104)
         .overlay(alignment: .bottom) {
@@ -89,7 +89,7 @@ struct WaveformView: View {
         .onAppear {
             guard compact else { return }
             runIn = 0
-            withAnimation(.easeOut(duration: 0.6)) { runIn = 1 }
+            withAnimation(Theme.Motion.r(.easeOut(duration: 0.6))) { runIn = 1 }
         }
     }
 }
@@ -164,6 +164,8 @@ struct TournamentEntryView: View {
     @Bindable var session: GameSession
     let spec: TournamentSpec
     @State private var hint: HintSpec?   // 初めて大会に出る時だけの説明（右上の「？」で読み返せる）
+    /// THE HANA 1回戦＝動画審査（舞台に立たず、動画を送って結果を待つ）。式の上は普通の段・見せ方だけ変える
+    private var isVideo: Bool { spec.name == "HANA1回戦" }
 
     /// 大会エントリーの用語説明（金額・体力は GameConfig から読む）
     static func hintSpec(_ cal: CalendarConfig) -> HintSpec {
@@ -176,7 +178,7 @@ struct TournamentEntryView: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            EntryHeader(tag: spec.osaka ? "大阪遠征" : "エントリー", name: spec.name)
+            EntryHeader(tag: isVideo ? "動画審査" : spec.name.hasPrefix("HANA") ? "THE HANA" : spec.osaka ? "大阪遠征" : "エントリー", name: GPName.display(spec.name))
                 .overlay(alignment: .topTrailing) {
                     HintMarkButton { hint = Self.hintSpec(session.config.calendar) }.padding(.trailing, 8).padding(.top, 60)   // 見出しは画面の上端まで伸びる（ignoresSafeArea）＝上の臙脂の帯52pt の下に置く（4 だと電池の表示に重なった）
                 }
@@ -186,7 +188,7 @@ struct TournamentEntryView: View {
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）
-            NetaPickRow(session: session, title: "今夜かけるネタ", requiredLength: NetaCatalog.lengthForTournament,
+            NetaPickRow(session: session, title: isVideo ? "審査に送るネタ" : "今夜かけるネタ", requiredLength: NetaCatalog.lengthForTournament,
                         selected: session.selectedNeta, onSelect: { session.selectNeta($0) })
                 .padding(.horizontal, YoseMetrics.screenMargin)
                 .onAppear { session.ensureStageNetaDefault() }
@@ -219,7 +221,8 @@ struct TournamentEntryView: View {
                                 enabled: session.state.money >= trainTotal) { session.decideTournament(.新幹線) }
                 } else {
                     let cost = fee   // 東京開催はエントリー費のみ（WeekRunner.resolveTournament と同じ条件・監査G-05）
-                    entryButton("出場する", glyph: "mic.fill", sub: "東京開催・エントリー費 ¥\(cost.formatted())",
+                    entryButton(isVideo ? "動画を送る" : "出場する", glyph: isVideo ? "video.fill" : "mic.fill",
+                                sub: isVideo ? "舞台には立たない・結果は後日・エントリー費 ¥\(cost.formatted())" : "東京開催・エントリー費 ¥\(cost.formatted())",
                                 enabled: session.state.money >= cost) { session.decideTournament(.夜行バス) }
                 }
                 Button { session.decideTournament(nil) } label: { Text("見送る") }
@@ -273,11 +276,16 @@ struct TournamentEntryView: View {
 /// 大会名の表示変換（内部キー "GP1回戦" "GP決勝" 等は変えず、画面に出す所だけ「頂GP 1回戦」にする）
 enum GPName {
     static func display(_ key: String) -> String {
+        if key.hasPrefix("HANA") { return "THE HANA " + key.dropFirst(4) }   // 女性コンビだけの大会（架空）
         guard key.hasPrefix("GP") else { return key }
         return "頂GP " + key.dropFirst(2)
     }
     /// 狭い所用（空白なし）
     static func short(_ key: String) -> String {
+        if key.hasPrefix("HANA") {
+            let r = String(key.dropFirst(4))
+            return "HANA" + (r == "1回戦" ? "1" : r == "2回戦" ? "2" : r == "準決勝" ? "準決" : r)
+        }
         guard key.hasPrefix("GP") else { return key }
         return "頂" + key
     }

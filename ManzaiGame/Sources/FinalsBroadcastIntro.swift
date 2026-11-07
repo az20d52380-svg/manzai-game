@@ -63,7 +63,7 @@ struct FinalsBroadcastIntro: View {
             if !(ProcessInfo.processInfo.environment["MZ_FIN"] ?? "").isEmpty { short = false }   // 目視用: MZ_FIN 指定中は常にフル
             #endif
             stage = startStage
-            if reduceMotion { blink = true } else { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } }
+            if reduceMotion { blink = true } else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8).repeatForever(autoreverses: true))) { blink = true } }
         }
     }
 
@@ -309,7 +309,7 @@ struct FinalsBroadcastIntro: View {
                     let y = size.height - (t * speed + Double(i) * 53).truncatingRemainder(dividingBy: size.height + 20)
                     g.fill(Path(ellipseIn: CGRect(x: x, y: y, width: 2, height: 2)), with: .color(YoseColor.kinBright.opacity(0.55)))
                 }
-            }
+            }.accessibilityHidden(true)
         }
         .ignoresSafeArea().allowsHitTesting(false)
     }
@@ -331,7 +331,7 @@ struct FinalsBroadcastIntro: View {
     }
 
     // MARK: 進行
-    private func pause(_ sec: Double) async { try? await Task.sleep(nanoseconds: UInt64(sec * 1_000_000_000)) }
+    private func pause(_ sec: Double) async { try? await MZSpeed.sleep(nanoseconds: UInt64(sec * 1_000_000_000)) }
 
     private func run(_ s: FinalsIntroStage) async {
         step = 0; slam = false; titleIn = false
@@ -446,7 +446,7 @@ struct FinalsLiveBar: View {
         .padding(.horizontal, 8).frame(height: 26)
         .background(YoseColor.kuroUrushi.opacity(0.88))
         .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1) }
-        .onAppear { if reduceMotion { blink = true } else { withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { blink = true } } }
+        .onAppear { if reduceMotion { blink = true } else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8).repeatForever(autoreverses: true))) { blink = true } } }
     }
 }
 
@@ -585,11 +585,11 @@ struct FinalsBroadcastEnding: View {
         .onTapGesture { finish() }
         .task {
             for i in 1...4 {
-                try? await Task.sleep(nanoseconds: UInt64((short ? 0.3 : 0.9) * 1_000_000_000))
+                try? await MZSpeed.sleep(nanoseconds: UInt64((short ? 0.3 : 0.9) * 1_000_000_000))
                 if Task.isCancelled || done { return }
                 step = i   // se_applause_hall（余韻の拍手・最初の1回）
             }
-            try? await Task.sleep(nanoseconds: UInt64((short ? 0.7 : 1.8) * 1_000_000_000))
+            try? await MZSpeed.sleep(nanoseconds: UInt64((short ? 0.7 : 1.8) * 1_000_000_000))
             if Task.isCancelled || voiceOver { return }   // VoiceOver 中は自動で閉じない（スキップ／タップで閉じる・a11y_check_1019）
             finish()
         }
