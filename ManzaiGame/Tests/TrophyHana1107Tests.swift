@@ -55,6 +55,16 @@ final class TrophyHana1107Tests: XCTestCase {
         XCTAssertEqual(TrophyBook.loadRecords().hanaWins, 1)
     }
 
+    /// 日程の表示名は結果画面と同じ「THE HANA 1回戦」（他の大会は名前のまま）
+    func testHanaStageDisplayNames() {
+        XCTAssertEqual(GPName.display("HANA1回戦"), "THE HANA 1回戦")
+        XCTAssertEqual(GPName.display("春新人賞A"), "春新人賞A")
+        let s = GameSession(comboKind: .femaleFemale)
+        let names = s.upcomingStages().map(\.name)
+        XCTAssertTrue(names.contains("THE HANA 1回戦"), "\(names)")
+        XCTAssertFalse(names.contains("HANA1回戦"))
+    }
+
     /// 図鑑の分母は「今取れる物」だけ（取れない T19・T20 を数えると全部そろわない）
     func testObtainableCountIsTwenty() {
         XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 20)

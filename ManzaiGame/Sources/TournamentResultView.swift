@@ -120,7 +120,7 @@ struct TournamentResultView: View {
                 if !revealed {
                     waveBoard(passed: r.passed, nearMiss: nearMiss(r), burst: r.burst == true)
                         .position(x: geo.size.width / 2, y: geo.size.height * 0.645)
-                        .opacity(revealedWave && !(fanActive && fanShown > 1) ? 1 : 0)   // 声の札が2枚以上並ぶ間は波形を譲る（札の下に透けて重なる崩れを避ける・順番は不変）
+                        .opacity(revealedWave && !isHanaVideo && !(fanActive && fanShown > 1) ? 1 : 0)   // 声の札が2枚以上並ぶ間は波形を譲る（札の下に透けて重なる崩れを避ける・順番は不変）
                         .animation(Theme.Motion.r(.easeOut(duration: 0.25)), value: fanShown)
                         .transition(.opacity)
                 }
@@ -150,7 +150,7 @@ struct TournamentResultView: View {
                     VStack(spacing: 10) {
                         if !needsQual && !needsAnnounce { verdictPlate(passed: r.passed) }   // 予選は通知で結果を先に知っている＝判の文字は出さない（客席の反応と講評だけ）
                         if revealed {
-                            StageTelopBelt(text: r.passed ? "——どっと沸いた！" : missLine(r))
+                            StageTelopBelt(text: r.passed ? (isHanaVideo ? "——動画審査を通った。" : "——どっと沸いた！") : missLine(r))
                                 .transition(.opacity)
                         }
                     }
@@ -323,10 +323,10 @@ struct TournamentResultView: View {
     private func runReveal() async {
         let r = result
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.35))) { revealedWave = true }  // ①波形が先
-        if r.passed && !needsAnnounce { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
+        if r.passed && !needsAnnounce && !isHanaVideo { Sound.play(.cheerMid) }                            // 客席の「どっ」（波形と同時）
         await pause(0.9)
         if Task.isCancelled { return }
-        if !needsAnnounce { await runFanVoices() }                       // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
+        if !needsAnnounce && !isHanaVideo { await runFanVoices() }                       // 判の前：観客の声を2〜4枚（タップ送り・飛ばせる）
         if Task.isCancelled { return }
         if !skipRequested { Sound.play(.drumroll) }                      // 開示前のタメ（畳んだ時は鳴らさない）
         await pause(0.7)

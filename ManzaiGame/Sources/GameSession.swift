@@ -580,7 +580,7 @@ final class GameSession {
         } else if justPassedStage, !didFirePassFork, let m = nextMilestoneForEvent(), m.week - week >= 3, state.stamina >= 15 {
             pendingChoiceEvent = .justPassedFork
             didFirePassFork = true
-        } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes {
+        } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes, !(state.femaleCombo == true && m.week == config.calendar.hanaTournaments.first?.week) {   // 動画審査は舞台に立たない＝「明日、駅で」の前夜は出さない
             pendingChoiceEvent = .preTournamentEve
             didFireEve = true
         } else if !didFireEarlyFormality, year == 1, week >= 3, week < 15, state.compat <= 7 {   // 結成初期＝1年目だけ
@@ -716,7 +716,7 @@ final class GameSession {
             ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine + cal.gpLateBonus(year: year), highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
         }
         for t in cal.tournaments + (state.femaleCombo == true ? cal.hanaTournaments : []) where t.isEligible(year: year, state: state) {
-            ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
+            ms.append(StageInfo(week: t.week, name: GPName.display(t.name), line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))   // HANA は結果画面と同じ「THE HANA 1回戦」に（他の大会は名前のまま）
         }
         let includeThisWeek: Bool = { if case .freeAction = phase { return false }; return true }()
         return ms.filter { $0.week > week || (includeThisWeek && $0.week == week) }
