@@ -13,7 +13,7 @@ final class BoundaryGapTests: XCTestCase {
     /// しきい値ちょうどは「未満」ではないので次の帯。しきい値の直前は手前の帯
     func testRankCostMultiplierBandEdges() {
         let expected: [(Double, Double)] = [
-            (0, 1.00), (14.999, 1.00), (15, 1.15), (24.999, 1.15), (25, 1.35), (34.999, 1.35),
+            (0, 0.70), (14.999, 0.70), (15, 1.15),   // 最初の帯 1.00→0.70（較正A・calibration_all_1101_v0 §5） (24.999, 1.15), (25, 1.35), (34.999, 1.35),
             (35, 1.60), (44.999, 1.60), (45, 2.00), (54.999, 2.00), (55, 2.50), (69.999, 2.50),
             (70, 3.20), (89.999, 3.20), (90, 4.20), (100, 4.20),
         ]
@@ -32,7 +32,7 @@ final class BoundaryGapTests: XCTestCase {
         s.発想 = 15
         let after = GameEngine.nextStepCost(.発想, state: s, config: cfg)
         for (b, a) in zip(before, after) {
-            XCTAssertEqual(a.amount / b.amount, 1.15, accuracy: 1e-9)
+            XCTAssertEqual(a.amount / b.amount, 1.15 / 0.70, accuracy: 1e-9)   // G 0.70 → F 1.15（較正A）
         }
         let w = cfg.abilityRecipes[.発想]!
         XCTAssertEqual(after.map(\.amount), w.map { cfg.allocationStep * $0.1 * 1.15 })
