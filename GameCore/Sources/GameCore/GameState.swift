@@ -5,6 +5,8 @@
 //    Swift の合成 Decodable は「既定値付きの非Optional」でも旧セーブにキーが無いと復号に失敗する。
 //    出荷後に足すフィールドは必ず Optional（`var x: T? = nil`）にし、読む側で `?? 既定値` にすること。
 
+import Foundation   // pow（周回ボーナスの相性・頂点の経験点・Python の ** と同じ libm）
+
 public struct GameState: Codable {
     public var money: Int
     public var stamina: Double
@@ -100,8 +102,20 @@ public struct GameState: Codable {
     public var studioActive: Bool? = nil
     // --- 部屋の段（キュー90）：nil/0＝安アパート（今と同一）。古いセーブは nil ---
     public var room: Int? = nil
+    /// 周回の点（トロフィーpt＋図鑑の数・calibration_meta_1102_v0 §5）。nil/0＝1周目。年初の成長上限・予算（WeekRunner）が読む
+    public var metaPoints: Int? = nil
+    /// 女性コンビか（THE HANA に出られる）。nil/false＝男コンビ（既定・今と同一）
+    public var femaleCombo: Bool? = nil
+    /// THE HANA の進み（その年に通過して次に出られる段）。Python: s._hana＝(hanaYear, hanaNext)
+    public var hanaYear: Int? = nil
+    public var hanaNext: Int? = nil
+    /// THE HANA の優勝回数
+    public var hanaWins: Int? = nil
 
-    public init(config: GameConfig = GameConfig()) {
+    /// metaPoints＝周回の点（0＝1周目＝今と同一）。0 より大きければ結成時の周回ボーナス（経験点・所持金・相性）を足す。
+    /// Python: sim_career.new_state(meta_points=) → apply_meta_start（型1 → 相性 → 頂点の経験点 の順）
+    /// femaleCombo＝女性コンビ（THE HANA に出られる）。既定 false＝男コンビ＝今と同一
+    public init(config: GameConfig = GameConfig(), metaPoints: Int = 0, femaleCombo: Bool = false) {
         money = config.initMoney
         stamina = config.initStamina
         fame = config.initFame
@@ -111,6 +125,18 @@ public struct GameState: Codable {
         華 = config.initAbility
         メンタル = config.initAbility
         compat = config.compatInit
+        if femaleCombo { self.femaleCombo = true }
+        if metaPoints > 0 {
+            self.metaPoints = metaPoints
+            let P = Double(metaPoints)
+            let totE = min(config.metaStartExpCap, config.metaStartExpPerPoint * P)
+            for (c, r) in config.metaStartExpSplit { self[currency: c] += totE * r }
+            money += min(config.metaStartMoneyCap, config.metaStartMoneyPerPoint * metaPoints)
+            let add = min(config.metaStartCompatCap, config.metaStartCompatCoef * pow(P, config.metaStartCompatExp))
+            compat = min(config.compatCap, compat + add)
+            let ex2 = config.metaStartExpTop * pow(P / config.metaTopPoints, config.metaTopExp)
+            for (c, r) in config.metaStartExpSplit { self[currency: c] += ex2 * r }
+        }
     }
 
     public subscript(_ a: Ability) -> Double {

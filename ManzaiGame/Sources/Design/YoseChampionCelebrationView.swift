@@ -790,7 +790,7 @@ private struct ChampionStageBackdropCanvas: View {
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }
@@ -895,7 +895,7 @@ private struct ChampionGoldenHaloCanvas: View {
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }
@@ -1003,7 +1003,7 @@ private struct ChampionCannonAndConfettiCanvas: View {
         }
         .task {
             let rest = championHoldSeconds + championSettleSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }

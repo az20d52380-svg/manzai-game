@@ -93,6 +93,15 @@ public enum GameEngine {
         s[currency: c] += v * config.expSupplyScale
     }
 
+    /// 大会の経験点（較正A calibration_all_1101_v0 §5）：基本点 pw × K × 種類の重み を5通貨に均等に積む。乱数なし。
+    /// Python: sim_career.tourney_exp の鏡像（式の順序も同じ＝ビット一致）
+    public static func creditTourneyExp(_ pw: Double, weight: Double, to s: inout GameState, config: GameConfig) {
+        let tot = pw * config.tourneyExpK * weight
+        for c in [ExpCurrency.閃き, .語彙, .間合い, .存在感, .胆力] {
+            creditCurrency(c, tot * config.tourneyExpUnit * config.tourneyExpSplit, to: &s, config: config)
+        }
+    }
+
     /// Python: do_training。有料稽古は所持金必須【仮】。払えなければ false（呼び出し側でフォールバック）。
     /// 借金中は通貨獲得に debtTrainFactor（正典v2・生活苦）——倍率は通貨の量に掛ける（能力でなく通貨に）。
     /// 正典v3: 通貨の正加算は creditCurrency へ。cost/stamina/fame/相性は従来どおり add 直結。
