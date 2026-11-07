@@ -360,7 +360,7 @@ struct FinalsPresentationView: View {
             holdingSeventh = true
             Sound.hushSE(true); Sound.duck(0.25, over: 0.2)
             Task {
-                try? await MZSpeed.sleep(nanoseconds: 600_000_000)
+                try? await Task.sleep(nanoseconds: 600_000_000)   // 無音の間は「はやい」でも縮めない（B-13）
                 Sound.hushSE(false); Sound.duck(1, over: 0.4)
                 holdingSeventh = false
                 revealJudge()
@@ -379,7 +379,7 @@ struct FinalsPresentationView: View {
                 Haptics.tick()
                 let hold: UInt64 = duelFull && !reduceMotion ? 900_000_000 : 350_000_000
                 Task {
-                    try? await MZSpeed.sleep(nanoseconds: hold)
+                    try? await Task.sleep(nanoseconds: hold)   // 無音の間は「はやい」でも縮めない（B-13）
                     Sound.hushSE(false); Sound.duck(1, over: 0.4)
                     holdingSeventh = false
                     revealVote()
