@@ -26,6 +26,7 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "設定", closeAction: onClose)
                     .onAppear {
+                        store.clearMessage()
                         #if DEBUG
                         if let n = Int(ProcessInfo.processInfo.environment["MZ_STEP"] ?? "") { restartStep = n }
                         // 目視用：MZ_QUIT=1 で確認を出して約1.5秒後に「解散する」を押したのと同じにする（MZ_UI=week MZ_WEEK=settings と併用・tap_check_1025_v0 A）
