@@ -1150,7 +1150,7 @@ final class GameSession {
     func retireAfterWin() {
         guard canChooseRetire else { return }
         retiredAfterWin = true
-        saveNow()
+        closeCareer()   // 【候補・キュー117】勇退はそのままエンディングへ入る＝ここでセーブを消す
     }
 
     /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
