@@ -537,6 +537,7 @@ cd GameCore && swift test
 - `gemini_design_r7_feel_1102_v0.md` — Gemini 設計 R7：押した時の手応え（2026-11-02 v0）
 - `late_game_content_v0.md` — 終盤（6〜15年目）の中身の案 v0（2026-11-07・材料まで・決めるのはオーナー）
 - `late_game_events_draft_1107.md` — 終盤イベント下書き（11年目以降・新20本）1107 v0
+- `late_game_events_score_1108.md` — 書き直し後の再採点（○16△4×0）
 - `late_game_events_score_1107.md` — 終盤イベント下書き20本 採点（1107）
 - `code_review_1107g.md` — 年またぎで消える値・15年で壊れる所のコード点検（#1 は保存するよう直した）
 - `entry_share_research_1108_v0.md` — ガチャと毎日の受け取りの入口・共有の出口の材料（判断待ち141・143）
