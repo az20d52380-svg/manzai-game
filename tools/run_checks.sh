@@ -12,6 +12,9 @@ echo "$g" | grep -q ' 0 failures' || rc=1
 s=$(cd tools && python3 check_golden_sync.py 2>&1); src=$?
 echo "同期: $(echo "$s" | grep -cE '✅') 項目 OK・$(echo "$s" | tail -1)"
 [ $src -ne 0 ] && { echo "$s" | grep -vE '✅' | head -5; rc=1; }
+e=$(cd tools && python3 check_event_parity.py 2>&1); erc=$?
+echo "イベント効果: $(echo "$e" | grep -m1 '^一致' | sed 's/（.*//')"
+[ $erc -ne 0 ] && { echo "$e" | grep '不一致:' | head -3; rc=1; }
 a=$(xcodebuild test -project ManzaiGame/ManzaiGame.xcodeproj -scheme ManzaiGame \
   -destination "platform=iOS Simulator,id=$SIM" -derivedDataPath "$DD" 2>&1 \
   | grep -E 'Executed [0-9]+ tests|error:|TEST (SUCCEEDED|FAILED)' | tail -2 | sed 's/^[[:space:]]*//;s/ in [0-9.]* ([0-9.]*) seconds//' | tr '\n' ' ')
