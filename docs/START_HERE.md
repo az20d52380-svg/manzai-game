@@ -571,3 +571,4 @@ cd GameCore && swift test
 - `pour_stop_1108_v0.md` — おすすめ注ぎが途中で止まる件の実測 v0（2026-11-08・決めるのはオーナー）
 - `release_build_check_1108.md` — 発売用ビルド点検（11/08・ソース無変更・commit なし）
 - `visual_check_1108e.md` — 目視点検 1108e（11/08 の表示の直しの確認）
+- `visual_dark_1108_v0.md` — ダークモードの点検 11/08（10/27 以降の新しい画面10枚・問題0。提供割合はフック MZ_UI=gacha_rates）
