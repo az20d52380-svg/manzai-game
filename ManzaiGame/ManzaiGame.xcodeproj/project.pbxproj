@@ -28,6 +28,7 @@
 		1FCCD2091EABB90AE69CD4DA /* se_cancel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */; };
 		20F0B7D5C531DEC3C828D71C /* NetaCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */; };
 		21E800CFC18797B54C85B120 /* StageScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1F087A453470E4CF970A6B /* StageScene.swift */; };
+		237774A82CCB356B070CD9A7 /* GachaRatesPage1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */; };
 		23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */; };
 		25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */; };
 		2643395E9DDCAF2BA532E57B /* se_grain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */; };
@@ -212,6 +213,7 @@
 		90F1CCD211EF9B53B4DA3AF7 /* se_taiko.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_taiko.mp3; sourceTree = "<group>"; };
 		915FB4D3357203506A4F5A67 /* IntroFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroFlow.swift; sourceTree = "<group>"; };
 		9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-Black.ttf"; sourceTree = "<group>"; };
+		9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaRatesPage1107Tests.swift; sourceTree = "<group>"; };
 		9602D87CE2E13D9365DE6EEE /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		9906C18C1D125D16D6DEA7D0 /* WeekHint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekHint.swift; sourceTree = "<group>"; };
 		9A4BBB14240832141FE63318 /* ComboKindPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboKindPickerView.swift; sourceTree = "<group>"; };
@@ -453,6 +455,7 @@
 				CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */,
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
 				17DB9778EF13E155A068361C /* ExpDisplay1107Tests.swift */,
+				9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */,
 				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
 				E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */,
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
@@ -714,6 +717,7 @@
 				AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */,
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
 				741FA79F0A0E44D0CDA6DD26 /* ExpDisplay1107Tests.swift in Sources */,
+				237774A82CCB356B070CD9A7 /* GachaRatesPage1107Tests.swift in Sources */,
 				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
 				90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */,
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
