@@ -511,7 +511,11 @@ enum ExpDisplay {
     /// 持ち分・増分（1つの値を掛けてから丸める）
     static func value(_ raw: Double) -> Int { Int(raw * 10 + 1e-6) }
     /// 種ごとの札と並べる増分の合計＝札の数字の足し算と必ず合う（内部で足してから丸めると 14+4 が 19 になる＝playtest_v11b #5）
-    static func total(_ raws: [Double]) -> Int { raws.reduce(0) { $0 + value($1) } }
+    /// 札が1枚も出ないほど細かい増分（敗退の大会は各 0.48 で札は全部 0）は、内部で足した値を出す（足さないと合計 0 になり行ごと消える）
+    static func total(_ raws: [Double]) -> Int {
+        let parts = raws.reduce(0) { $0 + value($1) }
+        return parts > 0 ? parts : value(raws.reduce(0, +))
+    }
     /// 必要数（切り上げ・最低1）。have＝その時の内部の持ち分。内部で足りる(amount<=have)なら持ち分の表示値以下に収める
     static func cost(_ amount: Double, have: Double) -> Int {
         let up = max(1, Int((amount * 10 - 1e-6).rounded(.up)))

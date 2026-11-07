@@ -10,6 +10,7 @@ final class ExpDisplay1107Tests: IsolatedStoreTestCase {
         XCTAssertEqual(ExpDisplay.total(parts), 18)
         XCTAssertEqual(ExpDisplay.value(parts.reduce(0, +)), 19, "この差を直した")
         XCTAssertEqual(ExpDisplay.total([]), 0)
+        XCTAssertEqual(ExpDisplay.total(Array(repeating: 0.048, count: 5)), 2, "札が全部 0 の細かい増分でも合計は出す（敗退の大会）")
     }
 
     /// おまかせを確定した直後は、押せる＋が残らない＝朱の帯（anyPlusEnabled が条件）は消える

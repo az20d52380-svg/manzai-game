@@ -266,7 +266,7 @@ struct TournamentResultView: View {
         .onDisappear { revealTask?.cancel() }
         #if DEBUG
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "result_done" { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
+            if ["result_done", "lose_done"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
         .overlay {
