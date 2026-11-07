@@ -216,7 +216,7 @@ struct FinalsPresentationView: View {
             if showChamp {   // 優勝の瞬間（金テープ・大判優勝めくり・賞金ボード・相方の言葉）。タップで即完成→もう一度タップで先へ
                 YoseChampionCelebrationView(tournamentName: "頂グランプリ 決勝戦", generationText: "結成\(session.year)年目",
                                             duoName: session.combiName, prizeAmountYen: session.config.calendar.gpPrize,
-                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、日本一だよ」") {
+                                            partnerName: Names.partner, partnerLine: "「\(session.repeatWinLine)」") {
                     withAnimation(Theme.Motion.r(.easeOut(duration: 0.3))) { showChamp = false }
                     // 優勝年は全画面の後に「優勝は……！」の結果発表を重ねない（結果が2度伝わるため）＝そのまま番組エンディングへ
                     endingFull = FinalsSeen.first("ending") && !reduceMotion
@@ -1120,7 +1120,7 @@ struct FinalsPresentationView: View {
                         .padding(.horizontal, 10).padding(.vertical, 3)
                         .background(YoseColor.kuroUrushi)
                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
-                    YoseSpeechBox(speaker: "谷口", text: "……本当に、勝ったんだね", roleLabel: "相方")
+                    YoseSpeechBox(speaker: "谷口", text: session.yearHistory.contains { $0.champion && $0.year != session.year } ? "……また、勝ったんだね" : "……本当に、勝ったんだね", roleLabel: "相方")
                 }
             } else if spectator {
                 // 固定の一文：このキャリアで二度目以降は出さない（毎年同じ最後の一行にならない）

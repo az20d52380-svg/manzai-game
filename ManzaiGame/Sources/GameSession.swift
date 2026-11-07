@@ -1125,6 +1125,13 @@ final class GameSession {
         return o.champion && !careerOver
     }
 
+    /// 優勝の夜の相方の一言（初優勝・連覇・返り咲きで変える。表示専用）
+    var repeatWinLine: String {
+        let past = yearHistory.filter { $0.champion && $0.year != year }
+        if past.isEmpty { return "やったね。本当に、日本一だよ" }
+        return past.contains { $0.year == year - 1 } ? "やったね。今年も、日本一だよ" : "やったね。もう一度、日本一だよ"
+    }
+
     /// 優勝の年末の「勇退する」。ここでキャリアが終わる（セーブは消える）
     func retireAfterWin() {
         guard canChooseRetire else { return }
