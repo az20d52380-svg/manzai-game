@@ -128,7 +128,12 @@ struct RootView: View {
             }
             if ui == "yearend", session.week <= 1 {
                 // 年末リザルト本体の目視: 通常は最後まで自動で進め、客席観戦の決勝を観終えた扱いにして年末総決算へ。MZ_MODE=champion は優勝版
-                if ProcessInfo.processInfo.environment["MZ_MODE"] == "champion" { forceChampion(); session.acknowledgeWin() }
+                let mode = ProcessInfo.processInfo.environment["MZ_MODE"]
+                if mode == "champion2" || mode == "champion3" {   // 優勝→続ける（champion2＝翌年の週画面・champion3＝翌年も優勝した年末の2択）
+                    forceChampion(); session.acknowledgeWin(); session.startNextYear()
+                    if mode == "champion3" { session.debugAdvanceToChampionFinale(); session.acknowledgeWin() }
+                }
+                else if mode == "champion" { forceChampion(); session.acknowledgeWin() }
                 else {
                     session.debugPlayToEnd()
                     if session.watchingFinal { session.finishWatchingFinal(winner: "（見本）"); session.debugPlayToEnd() }

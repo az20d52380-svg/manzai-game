@@ -98,6 +98,29 @@ final class SessionGap1025fTests: IsolatedStoreTestCase {
         XCTAssertEqual(s.yearHistory.filter(\.champion).count, 1, "前の年の優勝は記録に残る")
     }
 
+    /// 続けた年も優勝できる＝記録・賞金・連覇が二重にも抜けにもならず、閉じて開き直しても選ぶ画面に戻る
+    func testSecondWinCountsStreakAndRestores() throws {
+        let s = make(.champion)
+        drive(s) { $0.winFinale }
+        s.acknowledgeWin()
+        s.startNextYear()
+        drive(s) { $0.winFinale }
+        XCTAssertTrue(s.winFinale, "続けた年も優勝の演出に届く")
+        XCTAssertEqual(s.yearHistory.count, 2)
+        XCTAssertEqual(s.yearHistory.filter(\.champion).count, 2)
+        XCTAssertEqual(TrophyBook.loadRecords().totalWins, 2)
+        XCTAssertEqual(TrophyBook.loadRecords().bestStreak, 2, "連覇は年ごとに数える")
+        XCTAssertFalse(TrophyBook.load().contains(.t20), "連覇は玉座奪還ではない")
+        XCTAssertEqual(s.yearHistory.last?.prize, s.totalPrize, "その年の賞金だけ（前の年を足さない）")
+        s.acknowledgeWin()
+        XCTAssertTrue(s.canChooseRetire)
+        let back = GameSession.loadedOrNew()
+        XCTAssertEqual(back.year, s.year)
+        XCTAssertTrue(back.canChooseRetire)
+        XCTAssertEqual(back.yearHistory.count, 2)
+        XCTAssertEqual(TrophyBook.loadRecords().totalWins, 2, "復元で二重に数えない")
+    }
+
     func testEndingForFormerChampionAtLastYear() {
         let y = GameConfig().careerYears
         let won = GameSession.YearRecord(year: 1, roundsPassed: 5, reachedFinal: true, champion: true, bankrupt: false, prize: 0)
