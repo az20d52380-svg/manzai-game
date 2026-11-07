@@ -10,6 +10,10 @@ final class SessionFuzz1107Tests: IsolatedStoreTestCase {
         do { return try e.encode(s.state) } catch { XCTFail("\(label) 状態を書けない（NaN 等）: \(error)"); return Data() }
     }
 
+    private func stepName(_ p: WeekRunner<SplitMix64>.Phase) -> String {
+        String(String(describing: p).prefix { $0 != "(" })
+    }
+
     private func play(seed: UInt64, start: GameState?, kind: ComboKind) -> String? {
         var rng = FuzzRNG(x: seed &* 7919 &+ 13)
         func dice(_ n: Int) -> Int { Int(rng.next() % UInt64(n)) }
@@ -23,8 +27,14 @@ final class SessionFuzz1107Tests: IsolatedStoreTestCase {
             // 閉じて開き直す（バックグラウンドの保存→起動）
             if dice(40) == 0, !(s.finished && s.careerOver) {
                 let before = json(s, where_); let (y, w, h) = (s.year, s.week, s.yearHistory)
+                let (p, ev, res, prize, lg) = (stepName(s.phase), s.pendingChoiceEvent?.id, s.pendingResult != nil, s.totalPrize, s.log)
                 s.saveNow()
                 let r = GameSession.loadedOrNew()
+                XCTAssertEqual(stepName(r.phase), p, "段 \(where_)")   // 中身は辞書の並びで文字列が揺れる＝種類だけ比べる（状態は json で並びを揃えて比べる）
+                XCTAssertEqual(r.pendingChoiceEvent?.id, ev, "イベント \(where_)")
+                XCTAssertEqual(r.pendingResult != nil, res, "結果 \(where_)")
+                XCTAssertEqual(r.totalPrize, prize, "賞金 \(where_)")
+                XCTAssertEqual(r.log, lg, "記録 \(where_)")
                 XCTAssertEqual(r.year, y, where_); XCTAssertEqual(r.week, w, where_); XCTAssertEqual(r.yearHistory, h, where_)
                 XCTAssertEqual(json(r, where_), before, "保存→復元で状態が変わった \(where_)")
                 s = r
@@ -46,7 +56,11 @@ final class SessionFuzz1107Tests: IsolatedStoreTestCase {
 
             if s.winFinale { s.acknowledgeWin(); continue }
             if s.finished {
-                if s.careerOver { return nil }
+                if s.careerOver {
+                    XCTAssertNotNil(s.endingID, "結末が無い seed=\(seed)")
+                    XCTAssertEqual(s.yearHistory.map(\.year), Array(1...s.year), "年表 seed=\(seed)")
+                    return nil
+                }
                 if s.canChooseRetire, dice(4) == 0 { s.retireAfterWin(); continue }
                 s.startNextYear(); continue
             }
