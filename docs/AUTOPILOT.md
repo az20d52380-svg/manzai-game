@@ -32,6 +32,7 @@
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
 - 候補ブランチの確認（10/27 深夜〜）：`bash tools/check_candidates.sh` で本体に入るか・候補どうしの衝突を一覧（書き換えなし）。
+- 候補ブランチの取り込み直し（11/08〜）：`bash tools/refresh_candidates.sh <dd> [遅れの下限=50]`＝衝突しない候補に本体を取り込み、GameCore とアプリが green の時だけ push（pbxproj だけの衝突は xcodegen で作り直す・1本約2分・iPhone 17 を使う）。
 - テストの足し方（10/27 深夜〜）：候補ブランチでも本体でも、新しいテストは ManzaiGame/Tests/ に**新しいファイル**（例 `Foo1028Tests.swift`）で足し `cd ManzaiGame && xcodegen generate`。ManzaiGameTests.swift の末尾に足すと、候補どうし・本体と毎回末尾で衝突する（10/27 は2回取り込み直した）。
 - 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。道具＝`python3 tools/merge_candidate_tests.py <本体のブランチ>`（merge が止まった状態で実行→ git add → commit）。
 - アプリの画面の文字（「俺」を含む説明文など）を変えた時も `cd GameCore && swift test` を回す（FirstPersonLiteralTests がアプリのソースを読み、例外の文を完全一致で持つ＝10/27 に形の選択の説明を言い換えて赤にした・d0661a6 で直した）。
@@ -160,6 +161,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
 - 11/08 定期 済（昼・続き12）：点検の1本 全 green（GameCore 449・同期80/80・イベント効果62・アプリ 365）／女コンビ10〜15年目の目視 visual_check_1108f（崩れ0・「優勝18回」は道中込みの数え方＝C-5 の論点）／画面の文言の句読点の機械点検＝誤りなし。
 - 11/08 定期 済（昼・続き11）：golden に THE HANA の決勝まで届く枝 D（seed 165・女性コンビ・6年目に決勝で敗退）を足す＝規律A の手順（gen_golden→Swift の表→GameCore 449 green・同期67行一致）。式は不変。優勝の枝は golden の台本（GoldenPolicy）では seed 1〜3000・8年で一度も優勝せず＝作れない（優勝の処理は CalibrationA1102Tests の能力100の単体テストで押さえている）。
 - 11/08 定期 済（昼・続き10）：イベント効果の突き合わせ検査 tools/check_event_parity.py（62一致・不一致0・Swift の値を1つずらすと不一致1を確認）→ run_checks.sh に組み込み。
