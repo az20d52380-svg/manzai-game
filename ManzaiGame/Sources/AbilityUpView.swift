@@ -508,8 +508,10 @@ struct HexEmblem: Shape {
 /// 経験点の表示用変換（内部値×10の整数）。画面に経験点の数を出す所はすべてここを通す。表示専用＝GameCore・判定は不変。
 /// 持ち分・増分は切り捨て、必要数は切り上げ（ただし内部で足りるなら持ち分の表示値を超えない）＝「14持ち・15必要なのに押せる」を出さない。
 enum ExpDisplay {
-    /// 持ち分・増分（合計は内部で足してから渡す＝掛けてから丸める）
+    /// 持ち分・増分（1つの値を掛けてから丸める）
     static func value(_ raw: Double) -> Int { Int(raw * 10 + 1e-6) }
+    /// 種ごとの札と並べる増分の合計＝札の数字の足し算と必ず合う（内部で足してから丸めると 14+4 が 19 になる＝playtest_v11b #5）
+    static func total(_ raws: [Double]) -> Int { raws.reduce(0) { $0 + value($1) } }
     /// 必要数（切り上げ・最低1）。have＝その時の内部の持ち分。内部で足りる(amount<=have)なら持ち分の表示値以下に収める
     static func cost(_ amount: Double, have: Double) -> Int {
         let up = max(1, Int((amount * 10 - 1e-6).rounded(.up)))

@@ -544,7 +544,7 @@ struct TournamentResultView: View {
     @ViewBuilder
     private func expGainRow(passed: Bool) -> some View {
         let d = session.lastResultExpDelta
-        let total = ExpDisplay.value(ExpCurrency.allCases.reduce(0.0) { $0 + max(0, d[$1] ?? 0) })
+        let total = ExpDisplay.total(ExpCurrency.allCases.map { max(0, d[$0] ?? 0) })
         if total >= 1 {
             VStack(spacing: 0) {
                 Rectangle().fill(YoseColor.kiDark).frame(height: 1)

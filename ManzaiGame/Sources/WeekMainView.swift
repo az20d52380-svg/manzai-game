@@ -1250,7 +1250,7 @@ struct WeekMainView: View {
         var parts: [String] = []
         let md = session.lastMoneyDelta
         if md != 0 { parts.append("所持金 \(signed(md))") }
-        let exp = ExpDisplay.value(session.lastGrainGains.reduce(0) { $0 + $1.amount })
+        let exp = ExpDisplay.total(session.lastGrainGains.map(\.amount))
         if exp > 0 { parts.append("経験点 +\(exp)") }
         let sd = session.lastStaminaDelta
         if sd != 0 { parts.append("体力 \(signed(sd))") }
