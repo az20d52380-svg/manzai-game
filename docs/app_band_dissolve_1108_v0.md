@@ -47,3 +47,12 @@
 ## 再現手順（②は無かったので、①の確認手順）
 1. 一時テスト ManzaiGame/Tests/AppBandDirect1108Tests.swift（コミットしない）に、解散時の年週・rift・相性・最後に相性が上がってからの週数・行動配分の集計と、`yariGuard`（rift≥30 で ネタ合わせ／体力40未満は相方と過ごす）を足した。
 2. `xcodebuild test -project ManzaiGame.xcodeproj -scheme ManzaiGame -destination 'id=E5D11233-FE99-429F-A55C-8B0FA5793568' -only-testing:ManzaiGameTests/AppBandDirect1108Tests/testYari`（と `/testYariGuard`）。ログは scratchpad の appband1108.log。
+
+## 追記（n=300・seed 1000〜1299・守りつき やり込み・週イベントの有無）
+| 条件 | 15年内の初優勝 | 決勝に1度でも | 解散 |
+|---|---|---|---|
+| 週イベントあり（枠15） | 9.0%（27回） | 84.0% | 0% |
+| 週イベントなし（枠0） | 2.7%（8回） | 66.0% | 0% |
+
+一時テストは app_band_direct_1108 の末尾の全文に、やり込みの休みの判定の直後へ次の1行を足した物：
+`if (st.rift ?? 0) >= 30 { return st.stamina < 40 ? .rest(.相方と過ごす) : .train(.ネタ合わせ) }`
