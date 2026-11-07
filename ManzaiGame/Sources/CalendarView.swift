@@ -161,7 +161,8 @@ struct CalendarView: View {
     private func tournamentName(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "頂GP" }
         if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return GPName.short(cal.gpRoundNames[i]) }
-        guard let n = cal.tournament(inWeek: w)?.name else { return "" }
+        guard let n = cal.tournament(inWeek: w, state: session.state)?.name else { return "" }
+        if n.hasPrefix("HANA") { return GPName.short(n) }
         return n.replacingOccurrences(of: "漫才杯", with: "杯").replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }
 
@@ -173,7 +174,7 @@ struct CalendarView: View {
     }
 
     private func isTournamentWeek(_ w: Int) -> Bool {
-        if let spec = cal.tournament(inWeek: w) {
+        if let spec = cal.tournament(inWeek: w, state: session.state) {
             // これからの週は、今の状態で出られる大会だけ塗る（推薦制・若手限定で入口が出ない週を「大会」と見せない・code_review_2026-10-19g §2）。過ぎた週は従来どおり
             if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
             return true

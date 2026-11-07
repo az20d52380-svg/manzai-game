@@ -229,7 +229,7 @@ final class GameSession {
         self.isRestored = false
         // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
         self.uiEventRng = SplitMix64(seed: seed &+ 0x9E3779B97F4A7C15)
-        let start = startState ?? GameState(config: cfg)
+        let start = startState ?? GameState(config: cfg, femaleCombo: comboKind == .femaleFemale)   // 女コンビだけ THE HANA に出られる（男・男女は GameCore 既定のまま＝今と同一）
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
         self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
@@ -699,7 +699,7 @@ final class GameSession {
         } else if runner.hasRevival {
             ms.append(StageInfo(week: cal.gpFinalWeek, name: "敗者復活", line: cal.gpRevivalLine + cal.gpLateBonus(year: year), highStakes: true, isGP: true, length: NetaCatalog.lengthForGPRevival))
         }
-        for t in cal.tournaments where t.isEligible(year: year, state: state) {
+        for t in cal.tournaments + (state.femaleCombo == true ? cal.hanaTournaments : []) where t.isEligible(year: year, state: state) {
             ms.append(StageInfo(week: t.week, name: t.name, line: t.line, highStakes: true, isGP: false, length: NetaCatalog.lengthForTournament))
         }
         let includeThisWeek: Bool = { if case .freeAction = phase { return false }; return true }()

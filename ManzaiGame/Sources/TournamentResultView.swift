@@ -16,6 +16,7 @@ struct TournamentResultView: View {
     @State private var revealedRest = false    // 星・賞金・次へ（さらに0.6s後）＝段階的な情報開示（§2-3）
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
     @State private var ctaPulse = false
+    @State private var showHanaChamp = false   // THE HANA 優勝の瞬間（頂GP 決勝と同じ優勝演出を使い回す）
     @State private var showPass = false        // 回戦突破の祝い（次へ 押下で1度だけ・GPの通過のみ）
     @State private var showBurstCutIn = false  // ハマった夜の斜めカットイン（判の叩きつけと同時に1度だけ）
     @State private var signIn = false          // 番組アイキャッチ：大会看板がドンと打ち出される
@@ -65,7 +66,11 @@ struct TournamentResultView: View {
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
     private var climaxPages: [ClimaxPage] { ClimaxData.pages(for: result, finalYear: session.year >= session.config.careerYears) }
     /// この本番が道中大会（単発6種）か。道中週とGP週は重ならないので週で判別（名前ヒューリスティックを避ける）。
-    private var isMidTournament: Bool { session.config.calendar.tournament(inWeek: summary.week) != nil }
+    /// THE HANA（女性コンビだけの大会）。道中の単発ではなく勝ち上がり戦＝通過の祝い・「突破」の語は頂GPと同じ型で出す
+    private var isHana: Bool { result.name.hasPrefix("HANA") }
+    private var isHanaFinal: Bool { result.name == "HANA決勝" }
+    private var isHanaVideo: Bool { result.name == "HANA1回戦" }   // 動画審査＝舞台に立たない
+    private var isMidTournament: Bool { !isHana && session.config.calendar.tournament(inWeek: summary.week) != nil }
     /// 負けの距離 0..1（監査E-03）。margin（スコア−実効ライン）を3段に丸めて波形に渡す。数字は出さない。【仮】
     private func nearMiss(_ r: StageResult) -> Double {
         guard !r.passed, let m = r.margin else { return 0 }
@@ -85,7 +90,7 @@ struct TournamentResultView: View {
     /// 結果スタンプの語。道中は単発コンテスト（入賞/敗退）、GPは回戦（通過/敗退）。判定は不変・語だけの演出的合成（⑬）。
     private func stampLabel(passed: Bool) -> String {
         // 道中の単発大会（春新人賞など）は通過ライン超え＝その賞を取る（賞金・知名度＝TournamentSpec の「優勝時」）＝「優勝」。GP回戦は「通過」
-        if isMidTournament { return passed ? "優勝" : "敗退" }
+        if isMidTournament || (isHanaFinal && passed) { return passed ? "優勝" : "敗退" }
         return passed ? "通過" : "敗退"
     }
 
@@ -122,13 +127,13 @@ struct TournamentResultView: View {
 
                 VStack(spacing: 0) {
                     // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
-                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : "頂グランプリ")
+                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : isHana ? "THE HANA" : "頂グランプリ")
                         .padding(.top, 8)
                         .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
                         .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6)), value: signIn)
                     // 番組の下三分（小型）：LIVE札＋コンビ名＋結成年・週。点数は出さない
                     HStack(spacing: 8) {
-                        Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
+                        Text(isHanaVideo ? "動画審査" : "LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                             .padding(.horizontal, 6).frame(height: 20).background(YoseColor.shu)
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.2))
                         Text(session.combiName).font(YoseFont.mincho(14)).foregroundStyle(YoseColor.kinari).lineLimit(1).minimumScaleFactor(0.6)
@@ -169,7 +174,8 @@ struct TournamentResultView: View {
                                 .transition(.opacity)
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
-                                if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
+                                if r.passed && isHanaFinal { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true } }
+                                else if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
                                 else if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.5))) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
@@ -281,6 +287,16 @@ struct TournamentResultView: View {
         }
         .overlay {
             if showBurstCutIn { YoseBigSuccessCutIn(title: "ハマった夜！", showGains: false) { showBurstCutIn = false }.allowsHitTesting(false) }
+        }
+        .overlay {
+            if showHanaChamp {   // 決勝の通過＝優勝。タップで先へ
+                YoseChampionCelebrationView(tournamentName: "THE HANA 決勝", generationText: "結成\(summary.year)年目",
+                                            duoName: session.combiName, prizeAmountYen: r.prize,
+                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」") {
+                    showHanaChamp = false; session.acknowledgeResult()
+                }
+                .transition(.opacity)
+            }
         }
         .overlay {
             if showPass {   // 回戦突破の祝い（通過の判の後・次へ の代わりに1度だけ）。タップで閉じて先へ
@@ -495,7 +511,7 @@ struct TournamentResultView: View {
         let hasFame = session.lastResultFameDelta >= 0.5
         return VStack(spacing: 0) {
             if r.passed {
-                YoseHankoStamp(text: isMidTournament ? "優勝" : "突破", angle: -8)
+                YoseHankoStamp(text: isMidTournament || isHanaFinal ? "優勝" : "突破", angle: -8)
                     .frame(maxWidth: .infinity).padding(.vertical, 10)
             }
             if hasPrize || hasFame {
