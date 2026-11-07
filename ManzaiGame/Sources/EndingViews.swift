@@ -88,6 +88,10 @@ struct EndingFlowView: View {
                     Text("エンディング図鑑に記録しました").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.65))
                 }
                 Spacer()
+                if let session {
+                    ShareCardButton(combiName: session.combiName, headline: ending.title, detail: "No.\(ending.number)　\(ending.kind.label)")
+                        .foregroundStyle(YoseColor.kinari)
+                }
                 Button(action: onFinish) { Text(replay ? "とじる" : "もう一度 ▶") }
                     .buttonStyle(YoseButtonStyle(.primary))
                     .padding(.horizontal, 14).padding(.bottom, 30)
@@ -165,15 +169,15 @@ struct EndingArt: View {
         }
     }
 
-    // #3 段ボール箱に立てたノート十冊（最後の1冊だけ薄い）・畳んだバイトの制服
+    // #3 段ボール箱に立てたノート十五冊（最後の1冊だけ薄い）・畳んだバイトの制服
     private func gaveUp(_ w: CGFloat, _ h: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
             LinearGradient(colors: [YoseColor.ki, YoseColor.kiDark], startPoint: .top, endPoint: .bottom)
-            ForEach(0..<10, id: \.self) { i in
-                Rectangle().fill(i == 9 ? Color(hex: 0xE9DFC8) : Color(hex: 0x3F5A7A).opacity(0.9 - 0.04 * Double(i % 3)))
-                    .frame(width: w * 0.04, height: h * 0.34)
+            ForEach(0..<15, id: \.self) { i in
+                Rectangle().fill(i == 14 ? Color(hex: 0xE9DFC8) : Color(hex: 0x3F5A7A).opacity(0.9 - 0.04 * Double(i % 3)))
+                    .frame(width: w * 0.028, height: h * 0.34)
                     .overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.4), lineWidth: 1))
-                    .offset(x: w * (0.27 + 0.05 * CGFloat(i)), y: h * 0.3)
+                    .offset(x: w * (0.27 + 0.0335 * CGFloat(i)), y: h * 0.3)
             }
             Path { p in                                                                                                         // 箱（台形）
                 p.move(to: CGPoint(x: w * 0.2, y: h * 0.52)); p.addLine(to: CGPoint(x: w * 0.8, y: h * 0.52))
@@ -209,16 +213,16 @@ struct EndingArt: View {
         }.frame(width: w * 0.11, height: h * 0.32, alignment: .topLeading).position(x: x * w + w * 0.055, y: h * 0.78)
     }
 
-    // #5 年表10行（決勝に出た年の行だけ金の縁）・一番下に幕の線
+    // #5 年表15行（決勝に出た年の行だけ金の縁）・一番下に幕の線
     private func tenYearsClose(_ w: CGFloat, _ h: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
             YoseColor.kinari
-            ForEach(1...10, id: \.self) { y in
+            ForEach(1...15, id: \.self) { y in
                 let gold = goldRows.contains(y)
-                Rectangle().fill(YoseColor.washi).frame(width: w * 0.7, height: h * 0.065)
+                Rectangle().fill(YoseColor.washi).frame(width: w * 0.7, height: h * 0.045)
                     .overlay(Rectangle().stroke(gold ? YoseColor.kin : YoseColor.sumi.opacity(0.35), lineWidth: gold ? 2.5 : 1))
                     .overlay(alignment: .leading) { Rectangle().fill(gold ? YoseColor.kin : YoseColor.sumi.opacity(0.4)).frame(width: w * 0.06, height: 3).padding(.leading, 8) }
-                    .offset(x: w * 0.15, y: h * (0.04 + 0.083 * CGFloat(y - 1)))
+                    .offset(x: w * 0.15, y: h * (0.03 + 0.058 * CGFloat(y - 1)))
             }
             HStack(spacing: 0) {                                                                                                // 幕の線
                 ForEach(0..<12, id: \.self) { i in Rectangle().fill(i % 3 == 0 ? YoseColor.kuroUrushi : (i % 3 == 1 ? YoseColor.shu : YoseColor.tokiwa)) }
@@ -313,6 +317,7 @@ struct EndingGalleryView: View {
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "エンディング図鑑", subtitle: "\(seen.count) / \(EndingID.allCases.count)", closeAction: onClose)
                 ScrollView {
+                    recordsAndTrophies
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                         ForEach(EndingID.allCases) { id in cell(id) }
                     }
@@ -324,6 +329,25 @@ struct EndingGalleryView: View {
         .fullScreenCover(item: $replaying) { id in
             EndingFlowView(session: nil, ending: id, replay: true, onFinish: { replaying = nil })
         }
+    }
+
+    /// 周をまたぐ記録とトロフィー（取った物は名前と条件、まだの物は伏せて数だけ）
+    private var recordsAndTrophies: some View {
+        let rec = TrophyBook.loadRecords()
+        let got = TrophyBook.load()
+        let fastest = rec.fastestWinYear.map { "\($0)年目" } ?? "まだ"
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("記録").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
+            Text("通算優勝 \(rec.totalWins)回／最多連覇 \(rec.bestStreak)年／最速優勝 \(fastest)" + ((rec.hanaWins ?? 0) > 0 ? "／THE HANA 優勝 \(rec.hanaWins ?? 0)回" : ""))
+                .font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
+            Text("トロフィー \(got.filter(\.obtainable).count) / \(TrophyID.allCases.filter(\.obtainable).count)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.top, 6).accessibilityAddTraits(.isHeader)
+            ForEach(TrophyID.allCases.filter { got.contains($0) }) { t in
+                Text("\(t.title)　\(t.condition)").font(YoseFont.gothic(12, weight: .medium)).foregroundStyle(YoseColor.sumi)
+            }
+            Text("集めた分は、次の周のはじめの力になる。").font(YoseFont.gothic(11, weight: .medium)).foregroundStyle(YoseColor.haiSumi)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 16)
     }
 
     private func cell(_ id: EndingID) -> some View {
@@ -364,6 +388,7 @@ struct EndingGalleryView: View {
             .contentShape(Rectangle())   // 枠の全体を押せる
         }
         .buttonStyle(.plain)
+        .accessibilityRemoveTraits(rec == nil ? .isButton : [])   // 未入手の札は押しても何も起きない＝読み上げで「ボタン」と言わない（見た目は変えない・a11y_check_1107 #15）
     }
 
     private static func dateText(_ d: Date) -> String {
@@ -381,12 +406,12 @@ struct DisbandFarewellView: View {
     @State private var showSummary = false
 
     static let card = ReminiscenceCard(
-        caption: "夕方。いつもの稽古場。", mood: .after,
-        talk: [Advice(name: "俺", text: "話がある。コンビは今日で終わりにしよう"),
+        caption: "夜。二人の帰り道。", mood: .after,
+        talk: [Advice(name: "俺", text: "ここでお別れだ。コンビは今日で終わりにしよう"),
                Advice(name: "谷口", text: "……そっか。わかった"),
                Advice(name: "谷口", text: "今までありがとう。体には気をつけてね"),
                Advice(name: "俺", text: "そっちもね。じゃあ、また")],
-        together: true, backdrop: EventBackdrop(.keikoba, .evening))
+        together: true, backdrop: EventBackdrop(.street, .night))
 
     var body: some View {
         ZStack {

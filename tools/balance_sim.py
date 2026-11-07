@@ -252,7 +252,7 @@ _W = {"sense": W_SENSE, "idea": W_IDEA, "expr": W_EXPR, "chara": W_CHARA, "menta
 # （帯ごとの階段状カーブ・g→sで数倍に跳ね上がる）。GameConfig.abilityRankCostBands の鏡像。
 # しきい値は Theme.rank の等級ラダー（G/F/E/D/C/B/A/S）と同じ帯＝UIの等級表示と経済上の意味が一致する。
 # 数値は全て【仮】（sim較正で確定・docs/exp_currency_redesign_v0.md §7-1）。
-RANK_COST_BANDS = [(15, 1.00), (25, 1.15), (35, 1.35), (45, 1.60), (55, 2.00), (70, 2.50), (90, 3.20)]
+RANK_COST_BANDS = [(15, 0.70), (25, 1.15), (35, 1.35), (45, 1.60), (55, 2.00), (70, 2.50), (90, 3.20)]
 RANK_COST_MULT_S = 4.20   # 最終帯（S・90以上）のデフォルト倍率
 
 def _rank_cost_multiplier(value):
@@ -484,7 +484,7 @@ def offer_fatigued(s, wk):
 # Swift: Rest.サウナ/.温泉に一泊（GameConfig.rests/restCosts）と同値。既定では RESTS に入れない＝既存の基準不変。
 PAID_RESTS = {
     "サウナ":     (80,  ("mental", 2)),
-    "温泉に一泊": (100, ("mental", 2)),   # 相性+1 は帯を壊した（v3やり込み 初回優勝3.3→12.3%・§6-2）＝メンタルに【仮】
+    "温泉に一泊": (100, ("mental", 0)),   # 相性+1 は帯を壊した（v3やり込み 初回優勝3.3→12.3%・§6-2）＝メンタルに【仮】→ 体力回復だけ（メンタル+2 も外す・較正A calibration_all_1101_v0 §5）
 }
 REST_COST = {"サウナ": 10_000, "温泉に一泊": 60_000}
 

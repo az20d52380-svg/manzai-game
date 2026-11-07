@@ -964,3 +964,153 @@ final class PracticeLabelSyncTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(seen, 8)
     }
 }
+
+/// 広告の差し込み口（iap_design_v0 §3-6）：広告カットを持っていれば provider を呼ばない・何も出さない実装はすぐ先へ
+@MainActor
+final class AdGateTests: XCTestCase {
+    private final class SpyProvider: AdProvider {
+        var calls = 0
+        func showInterstitial(at placement: AdPlacement, completion: @escaping () -> Void) { calls += 1; completion() }
+    }
+    func testAdFreeSkipsProvider() {
+        let gate = AdGate(); let spy = SpyProvider(); gate.provider = spy
+        var done = 0
+        gate.isAdFree = { true }
+        gate.showInterstitial(at: .yearEnd) { done += 1 }
+        XCTAssertEqual(spy.calls, 0); XCTAssertEqual(done, 1); XCTAssertEqual(gate.shownCount, 0)
+        gate.isAdFree = { false }
+        gate.showInterstitial(at: .tournament) { done += 1 }
+        XCTAssertEqual(spy.calls, 1); XCTAssertEqual(done, 2); XCTAssertEqual(gate.shownCount, 1)
+    }
+    func testNoAdProviderCompletesImmediately() {
+        var done = false
+        NoAdProvider().showInterstitial(at: .yearEnd) { done = true }
+        XCTAssertTrue(done)
+    }
+}
+
+// 2026-10-27 追加：アプリ側の純粋関数（ネタ札の表示名・自動割当・GP尺・ログ行の分解・ネタおろし台詞）の現状固定。
+final class AppCoverage1027Tests: XCTestCase {
+    func testKataAndLengthDisplayNames() {
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.リターン), "リターン型")
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.非定型), "飛び道具")
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.瞬発), "畳みかけ")
+        XCTAssertEqual(NetaCatalog.displayName(NetaKata.華先行), "つかみ型")
+        XCTAssertEqual(NetaCatalog.displayName(NetaLength.短尺), "短め")
+        XCTAssertEqual(NetaCatalog.displayName(NetaLength.中尺), "ふつう")
+        XCTAssertEqual(NetaCatalog.displayName(NetaLength.長尺), "長め")
+    }
+    func testAutoKataCyclesAndHandlesNegative() {
+        let all = NetaKata.allCases
+        for id in 0..<(all.count * 2) { XCTAssertEqual(NetaCatalog.autoKata(forID: id), all[id % all.count]) }
+        XCTAssertEqual(NetaCatalog.autoKata(forID: -1), all[all.count - 1])
+    }
+    func testDefaultLengthFit() {
+        XCTAssertEqual(NetaCatalog.defaultLengthFit(for: .伏線回収), [.長尺])
+        XCTAssertEqual(NetaCatalog.defaultLengthFit(for: .華先行), [.短尺])
+        XCTAssertEqual(NetaCatalog.defaultLengthFit(for: .瞬発), [.短尺, .中尺])
+        for k in NetaKata.allCases { XCTAssertFalse(NetaCatalog.defaultLengthFit(for: k).isEmpty) }
+    }
+    func testAutoNameDeterministicAndCyclic() {
+        XCTAssertEqual(NetaCatalog.autoName(forID: 0), "商店街の福引")
+        XCTAssertEqual(NetaCatalog.autoName(forID: 5), "健康診断の結果")
+        XCTAssertEqual(NetaCatalog.autoName(forID: 50), NetaCatalog.autoName(forID: 0))
+        XCTAssertEqual(NetaCatalog.autoName(forID: -1), "自転車のパンク")
+    }
+    func testLengthForGPRound() {
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 0), .短尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 1), .短尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 2), .中尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 3), .中尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 4), .長尺)
+        XCTAssertEqual(NetaCatalog.lengthForGPRound(index: 9), .長尺)
+    }
+    func testParseLogLine() {
+        let a = GameSession.parseLogLine("第3週: 地区予選 通過 +5万 / 商店街祭り 敗退")
+        XCTAssertEqual(a, [GameSession.LogPart(week: "第3週", title: "地区予選 通過", mark: "通過", prize: 5),
+                           GameSession.LogPart(week: "第3週", title: "商店街祭り 敗退", mark: "敗退", prize: 0)])
+        let b = GameSession.parseLogLine("第4週: 準決勝（客席から）")
+        XCTAssertEqual(b, [GameSession.LogPart(week: "第4週", title: "準決勝（客席から）", mark: "観戦", prize: 0)])
+        let c = GameSession.parseLogLine("第5週: バイト")
+        XCTAssertEqual(c.first?.mark, "休")
+    }
+    func testNetaOroshiDeterministicNonEmpty() {
+        for s in 0..<8 {
+            XCTAssertFalse(DialogueData.netaOroshi(salt: s).isEmpty)
+            XCTAssertEqual(DialogueData.netaOroshi(salt: s), DialogueData.netaOroshi(salt: s))
+        }
+    }
+}
+
+/// いちばん古い形のセーブ（後から足した任意の項目が全部無い）から開けるか（10/27 深夜・カバー率の点検で init(restoring:) の既定値が全部未通過だった）
+final class OldestSaveRestore1027Tests: XCTestCase {
+    func testRestoreWithAllOptionalKeysMissingFallsBackToDefaults() throws {
+        let s = GameSession(comboKind: .femaleMale)
+        s.saveNow()
+        let d = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var o = try XCTUnwrap(JSONSerialization.jsonObject(with: d) as? [String: Any])
+        let optionalKeys = ["pendingResult", "pendingChoiceEvent", "weekBanter", "version", "didFireLostRehearsal", "didFirePassFork",
+                            "didFireEve", "didWatchFinal", "yearStartState", "yearHistory", "debtWarnTier", "myName", "partnerName",
+                            "comboKind", "meetingKind", "didFireRiftWarn", "riftWarnChoice", "didShowRiftHint", "usedPicks",
+                            "usedFanLines", "shownOnce", "weeksWithoutPartner", "injuryNoticeWeeks", "writeNetaID"]
+        for k in optionalKeys { o.removeValue(forKey: k) }
+        let old = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: o))
+        let r = GameSession(restoring: old)
+        XCTAssertEqual(r.comboKind, .maleMale)
+        XCTAssertTrue(r.hasYearStart)          // 1年目＝年初の状態が無くても新規と同じ基準
+        XCTAssertEqual(r.yearHistory.count, 0)
+        XCTAssertEqual(r.debtWarnTier, 0)
+        XCTAssertFalse(r.didWatchFinal)
+        XCTAssertFalse(r.didFireRiftWarn)
+        XCTAssertFalse(r.didShowRiftHint)
+        XCTAssertFalse(r.didFireEve)
+        XCTAssertFalse(r.didFirePassFork)
+        XCTAssertFalse(r.didFireLostRehearsal)
+        XCTAssertEqual(r.weeksWithoutPartner, 0)
+        XCTAssertEqual(r.injuryNoticeWeeks, 0)
+        XCTAssertNil(r.writeNetaID)
+        XCTAssertEqual(r.week, s.week)
+        // 開いたセーブを保存し直すと、今の形（任意の項目あり）で書かれて読み直せる
+        r.saveNow()
+        let d2 = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        let again = try JSONDecoder().decode(GameSession.SaveData.self, from: d2)
+        XCTAssertEqual(again.comboKind, "maleMale")
+        XCTAssertEqual(again.debtWarnTier, 0)
+    }
+}
+
+/// 月末の支払いの内訳：部屋の上乗せは「家賃」の行にだけ乗り、合計は崩れない（10/27 深夜・未通過だった引数）
+final class RentStatementRoom1027Tests: XCTestCase {
+    func testRoomExtraGoesOnRentLineOnly() {
+        let plain = RentStatement.make(livingCost: 140_000, moneyAfter: 100_000)
+        let r = RentStatement.make(livingCost: 170_000, moneyAfter: 100_000, roomExtra: 30_000, roomName: "風呂つき")
+        XCTAssertEqual(r.lines[0].label, "家賃（風呂つき）")
+        XCTAssertEqual(r.lines[0].amount, plain.lines[0].amount + 30_000)
+        XCTAssertEqual(Array(r.lines.dropFirst()), Array(plain.lines.dropFirst()))   // 家賃以外は部屋で変わらない
+        XCTAssertEqual(r.lines.reduce(0) { $0 + $1.amount }, r.total)
+        XCTAssertEqual(r.moneyBefore, 270_000)
+        XCTAssertTrue(r.paid)
+    }
+    func testRoomNameWithoutExtraOnlyRenames() {
+        let r = RentStatement.make(livingCost: 140_000, moneyAfter: 0, roomName: "四畳半")
+        XCTAssertEqual(r.lines[0].label, "家賃（四畳半）")
+        XCTAssertEqual(r.lines.reduce(0) { $0 + $1.amount }, 140_000)
+    }
+    func testYenIsAbsoluteWithSeparators() {
+        XCTAssertEqual(RentStatement.yen(140_000), "140,000")
+        XCTAssertEqual(RentStatement.yen(-30_000), "30,000")   // 符号は画面側で付ける
+        XCTAssertEqual(RentStatement.yen(0), "0")
+    }
+}
+
+/// 購入：商品の一覧に無い ID は知らせを立てて false（StoreManager.purchase の入口・10/27 深夜）。
+/// 購入・返金の本体を SKTestSession で試したが、この sim のテストでは Product.products が空で返り通らなかった（AUTOPILOT 済 10/27 深夜 続き14）
+@MainActor
+final class StorePurchaseGuard1027Tests: XCTestCase {
+    func testUnknownProductSetsMessage() async {
+        let ok = await StoreManager.shared.purchase("com.manzaigame.mvp.nope")
+        XCTAssertFalse(ok)
+        XCTAssertEqual(StoreManager.shared.lastMessage, "商品が見つかりません")
+        XCTAssertFalse(StoreManager.shared.owns("com.manzaigame.mvp.nope"))
+    }
+}
