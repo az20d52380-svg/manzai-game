@@ -505,7 +505,7 @@ struct YearResultView: View {
                     Button("勇退する", role: .destructive, action: onRetire)
                     Button("もどる", role: .cancel) {}
                 } message: {
-                    Text("エンディングへ進み、このコンビの続きは遊べなくなります。")
+                    Text("ここで終わります。このコンビの続きは遊べません。")
                 }
             }
         } else { singleButton }
