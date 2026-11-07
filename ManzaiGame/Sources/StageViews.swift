@@ -326,6 +326,11 @@ struct StagePreludeView: View {
                     NetaPickRow(session: session, title: "決勝・2本目（温存の一手）",
                                 requiredLength: requiredLength, selected: session.selectedNeta2,
                                 onSelect: { session.selectNeta2($0) }, excludeID: session.selectedNeta?.id)
+                    if session.neta2DroppedNotice && session.selectedNeta2 == nil {
+                        Text("1本目を2本目と同じネタにしたので、2本目の選択が外れました。選び直してください。")
+                            .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.shu)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
             .padding(.horizontal, YoseMetrics.screenMargin)
