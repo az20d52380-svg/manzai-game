@@ -274,19 +274,19 @@ struct FinalsPresentationView: View {
             guard ceremonyDone else { return }
             if beat == .perform {
                 if entranceFull && !reduceMotion {   // 扉が割れる→紹介テロップ→ネタ（初回は長め）
-                    try? await Task.sleep(nanoseconds: 350_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 350_000_000)
                     withAnimation { doorsOpen = true }
                     Haptics.confirm()          // se_door_open_heavy（大扉が割れる）
-                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 3_000_000_000)
                 } else {
                     doorsOpen = true
-                    try? await Task.sleep(nanoseconds: 1_800_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 1_800_000_000)
                 }
                 if !Task.isCancelled, beat == .perform { goNext() }
                 return
             }
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_250_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 1_250_000_000)
                 if Task.isCancelled { return }
                 if beat == .preceding, shown < d.order - 1 { stepBoard() }
                 else if beat == .board, boardAuto, shown < d.entries.count { stepBoard() }
@@ -358,7 +358,7 @@ struct FinalsPresentationView: View {
             holdingSeventh = true
             Sound.hushSE(true); Sound.duck(0.25, over: 0.2)
             Task {
-                try? await Task.sleep(nanoseconds: 600_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 600_000_000)
                 Sound.hushSE(false); Sound.duck(1, over: 0.4)
                 holdingSeventh = false
                 revealJudge()
@@ -377,7 +377,7 @@ struct FinalsPresentationView: View {
                 Haptics.tick()
                 let hold: UInt64 = duelFull && !reduceMotion ? 900_000_000 : 350_000_000
                 Task {
-                    try? await Task.sleep(nanoseconds: hold)
+                    try? await MZSpeed.sleep(nanoseconds: hold)
                     Sound.hushSE(false); Sound.duck(1, over: 0.4)
                     holdingSeventh = false
                     revealVote()
@@ -405,11 +405,11 @@ struct FinalsPresentationView: View {
             if revealVotes < 7 {                                    // 4票で決まったあとの残りの札：1拍おいて、早めに1枚ずつ開く（連打の手間を省く）
                 holdingSeventh = true
                 Task {
-                    try? await Task.sleep(nanoseconds: 1_100_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 1_100_000_000)
                     while revealVotes < 7 {
                         withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.7))) { revealVotes += 1 }
                         Haptics.confirm(); Sound.play(.don)
-                        try? await Task.sleep(nanoseconds: 380_000_000)
+                        try? await MZSpeed.sleep(nanoseconds: 380_000_000)
                     }
                     holdingSeventh = false
                 }
@@ -584,10 +584,10 @@ struct FinalsPresentationView: View {
             guard !Task.isCancelled, !lotRevealed else { return }
             withAnimation(Theme.Motion.r(.easeOut(duration: 0.12))) { lotPulse = true }
             Haptics.confirm()                         // se_heartbeat_low（ドクン）
-            try? await Task.sleep(nanoseconds: 170_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 170_000_000)
             withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { lotPulse = false }
             Haptics.tick()                            // （ドクッ）
-            try? await Task.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
+            try? await MZSpeed.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
         }
         guard !Task.isCancelled, !lotRevealed else { return }
         withAnimation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6))) { lotRevealed = true }
@@ -618,7 +618,7 @@ struct FinalsPresentationView: View {
         }
         .task {   // .task＝場面を送ったら取り消される（送った後の採点で大歓声が鳴らない・code_review_2026-10-19d）
             Sound.play(.cheerMid)
-            try? await Task.sleep(nanoseconds: 800_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 800_000_000)
             if Task.isCancelled { return }
             Sound.play(.cheerBig)
         }
@@ -1448,7 +1448,7 @@ private struct RaysView: View {
             }.accessibilityHidden(true)
         }
         .task {
-            try? await Task.sleep(nanoseconds: 6_600_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 6_600_000_000)
             frozen = true
         }
     }
@@ -1483,7 +1483,7 @@ private struct ConfettiView: View {
             }.accessibilityHidden(true)
         }
         .task {
-            try? await Task.sleep(nanoseconds: 16_600_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 16_600_000_000)
             frozen = true
         }
     }

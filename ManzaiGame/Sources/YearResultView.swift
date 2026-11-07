@@ -43,7 +43,7 @@ struct YearResultView: View {
             #if DEBUG
             .task {   // 目視フック MZ_SCROLL=history|events|breakdown|radar：その段を上にして開く（下の段が撮れなかった＝yearend_records_visual_1026_v0 軽微2）
                 if let id = ProcessInfo.processInfo.environment["MZ_SCROLL"] {
-                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 1_500_000_000)
                     proxy.scrollTo(id, anchor: .top)
                 }
             }
@@ -58,6 +58,10 @@ struct YearResultView: View {
                 .accessibilityHidden(true)   // 見た目の合図だけ（読み上げはスクロールで続きに行ける＝a11y_check_1026 中2）
                 .stagger(4, appear)   // 本文より先に「▼」だけ出て、空の画面に見えた（soak_playthrough_1019・1026 で再発）
             }
+            }
+            if let o, o.champion || o.reachedFinal {
+                ShareCardButton(combiName: session.combiName, headline: o.champion ? "優勝" : "決勝進出", detail: "結成\(session.year)年目")
+                    .padding(.vertical, 6).frame(maxWidth: .infinity).background(YoseColor.kinari)
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
@@ -75,7 +79,7 @@ struct YearResultView: View {
             withAnimation(Theme.Motion.r(.easeOut(duration: Theme.Motion.emph))) { appear = true }
         }
         .task {   // 判は0.4秒後。すぐ送った時は取り消す（遅れてファンファーレが鳴らない・code_review_2026-10-19d）
-            try? await Task.sleep(nanoseconds: 400_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 400_000_000)
             if Task.isCancelled { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.35, dampingFraction: 0.55))) { stampIn = true }
             Haptics.confirm()   // 年1回の重み
@@ -553,10 +557,10 @@ struct CountUpText: View {
             .contentTransition(.numericText())
             .task(id: value) {
                 if reduceMotion { shown = value; return }
-                try? await Task.sleep(nanoseconds: 500_000_000)   // 判の押印の後から数え始める
+                try? await MZSpeed.sleep(nanoseconds: 500_000_000)   // 判の押印の後から数え始める
                 let steps = 20
                 for i in 1...steps {
-                    try? await Task.sleep(nanoseconds: 40_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 40_000_000)
                     withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shown = Int(Double(value) * Double(i) / Double(steps)) }
                 }
                 shown = value
