@@ -358,9 +358,11 @@ struct S1TitleView: View {
                 Spacer(minLength: 12)
                 if let lines = MetaBook.bannerLines(points: MetaBook.points) {   // 周の始め：集めた分で増えた物（点0＝1周目は出さない）
                     VStack(spacing: 3) {
-                        ForEach(lines, id: \.self) { Text($0).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari) }
+                        ForEach(lines, id: \.self) { Text($0).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(.white) }
                     }
                     .multilineTextAlignment(.center)
+                    .padding(.vertical, 8).frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.62))   // 縞背景に埋もれない濃い帯（v11b #15）
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 10)
                 }
                 Button(action: onStart) {
