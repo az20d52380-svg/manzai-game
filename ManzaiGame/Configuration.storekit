@@ -33,34 +33,34 @@
       "type": "NonConsumable"
     },
     {
-      "displayPrice": "120",
+      "displayPrice": "100",
       "familyShareable": false,
-      "internalID": "919633992",
+      "internalID": "410581123",
       "localizations": [
         {
-          "description": "衣装・袴（仮）",
-          "displayName": "衣装・袴（仮）",
+          "description": "衣装ガチャ1回（仮）",
+          "displayName": "衣装ガチャ1回（仮）",
           "locale": "ja"
         }
       ],
-      "productID": "com.manzaigame.mvp.costume.hakama",
-      "referenceName": "衣装・袴（仮）",
-      "type": "NonConsumable"
+      "productID": "com.manzaigame.mvp.ticket1",
+      "referenceName": "衣装ガチャ1回（仮）",
+      "type": "Consumable"
     },
     {
-      "displayPrice": "120",
+      "displayPrice": "1000",
       "familyShareable": false,
-      "internalID": "237069394",
+      "internalID": "410581124",
       "localizations": [
         {
-          "description": "衣装・ヒョウ柄（仮）",
-          "displayName": "衣装・ヒョウ柄（仮）",
+          "description": "衣装ガチャ10回（仮）",
+          "displayName": "衣装ガチャ10回（仮）",
           "locale": "ja"
         }
       ],
-      "productID": "com.manzaigame.mvp.costume.leopard",
-      "referenceName": "衣装・ヒョウ柄（仮）",
-      "type": "NonConsumable"
+      "productID": "com.manzaigame.mvp.ticket10",
+      "referenceName": "衣装ガチャ10回（仮）",
+      "type": "Consumable"
     }
   ],
   "settings": {

@@ -23,6 +23,7 @@ public struct TournamentSpec: Codable {
         case always
         case careerYearAtMost(Int)   // 芸歴・結成n年以内
         case fameAtLeast(Double)     // 推薦制（知名度条件）【仮】
+        case hana(round: Int)        // THE HANA の段（0始まり）。女性コンビだけ・2段目以降はその年に前の段を通過した時だけ
     }
 
     public let name: String
@@ -51,6 +52,8 @@ public struct TournamentSpec: Codable {
             return year <= n
         case .fameAtLeast(let f):
             return state.fame >= f
+        case .hana(let i):   // Python: HANA_TOURNAMENTS の ok（s._hana＝(年, 次の段)）
+            return state.femaleCombo == true && (i == 0 || (state.hanaYear == year && state.hanaNext == i))
         }
     }
 }
@@ -69,13 +72,29 @@ public struct CalendarConfig {
         TournamentSpec(name: "寒梅漫才杯",       week: 46, line: 34, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(10)),
     ]
 
+    /// THE HANA（女性コンビだけの大会・オーナー決定 10/20・calibration_all_1101_v0 §5）【仮】。Python: sim_career.HANA_TOURNAMENTS。
+    /// 1回戦（動画審査＝式の上は普通の段）→2回戦→準決勝→決勝・敗者復活なし・芸歴の制限なし・東京。通過で知名度+gpRoundFame、優勝で手元250万・知名度+8。
+    /// tournaments とは分けて持つ＝男コンビ（既定）では一切出ない（tournament(inWeek:state:) が女性コンビの時だけ返す）
+    public var hanaTournaments: [TournamentSpec] = [
+        TournamentSpec(name: "HANA1回戦", week: 32, line: 36, prize: 0,         fame: 3, osaka: false, eligibility: .hana(round: 0)),
+        TournamentSpec(name: "HANA2回戦", week: 37, line: 52, prize: 0,         fame: 3, osaka: false, eligibility: .hana(round: 1)),
+        TournamentSpec(name: "HANA準決勝", week: 42, line: 70, prize: 0,        fame: 3, osaka: false, eligibility: .hana(round: 2)),
+        TournamentSpec(name: "HANA決勝", week: 44, line: 84, prize: 2_500_000,  fame: 8, osaka: false, eligibility: .hana(round: 3)),
+    ]
+
     /// グランプリ各回戦（Python: sim_career.GP_ROUNDS。ライン【正典v2 2026-07-05】docs/canonical_v2_spec.md）
-    public var gpRounds: [(week: Int, line: Double)] = [(30, 16), (39, 24), (41, 32), (43, 43), (45, 72)]
+    public var gpRounds: [(week: Int, line: Double)] = [(30, 16), (39, 24), (41, 32), (43, 43), (45, 78)]   // 準決勝 72→78 較正A（calibration_all_1101_v0 §5）
     /// 回戦の表示名（Python: GP_ROUNDS のラベルと同一・UI用）
     public var gpRoundNames = ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "GP準決勝"]
     public var gpFinalWeek = 47
-    public var gpRevivalLine = 74.0   // 敗者復活（準決勝敗退のみ・決勝と同週）。予選ライン−2（7本統合・docs/combined7_bands_v0.md 追記）
-    public var gpFinalLine = 80.0     // 【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+    public var gpRevivalLine = 79.0   // 74→75 較正A→79（11/02 オーナー：準決勝78と決勝81の間）。 敗者復活（準決勝敗退のみ・決勝と同週）。予選ライン−2（7本統合・docs/combined7_bands_v0.md 追記）
+    public var gpFinalLine = 81.0     // 80→81 較正A。 【正典v2】のんびり改0.3%・やり込み2.1%（exp_v2_anchor）
+    /// 11年目以降だけ決勝・敗者復活のラインに上乗せ【仮】較正A（calibration_all_1101_v0 §5）。王者ライン上書きには足さない。
+    /// Python: sim_career.GP_LATE_START_YEAR / GP_LATE_LINE_BONUS
+    public var gpLateStartYear = 11
+    public var gpLateLineBonus = 2.0
+    /// その年の決勝・敗者復活ラインへの上乗せ（10年目までは0）
+    public func gpLateBonus(year: Int) -> Double { year >= gpLateStartYear ? gpLateLineBonus : 0 }
     public var gpRoundFame = 3.0      // 回戦通過の知名度【仮】
     public var fameFinalBonus = 1.5   // 決勝のみの人気補正【機微】: 実効ライン = ライン − 本値×(知名度−50)/50
     public var gpPrize = 5_000_000    // 優勝賞金（表示1,000万の半分・手元）【仮】
@@ -91,6 +110,13 @@ public struct CalendarConfig {
 
     public func tournament(inWeek week: Int) -> TournamentSpec? {
         tournaments.first { $0.week == week }
+    }
+
+    /// その週の大会（女性コンビなら THE HANA も）。Python: sim_career.tournament_of
+    public func tournament(inWeek week: Int, state: GameState) -> TournamentSpec? {
+        if let t = tournament(inWeek: week) { return t }
+        guard state.femaleCombo == true else { return nil }
+        return hanaTournaments.first { $0.week == week }
     }
 
     public func travelSpec(_ travel: Travel) -> TravelSpec {

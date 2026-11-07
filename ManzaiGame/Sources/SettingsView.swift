@@ -12,11 +12,12 @@ struct SettingsView: View {
     var onQuitRun: (() -> Void)? = nil
     @AppStorage("vol_bgm") private var bgm: Double = 0.6   // SoundManager の既定（0.6）とそろえる（code_review_2026-10-19f §1）
     @AppStorage("vol_se") private var se: Double = 0.8
+    @AppStorage(MZSpeed.key) private var animSpeed: Int = 0
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
     @StateObject private var store = StoreManager.shared
     @State private var restoring = false
-    private enum FullCover: String, Identifiable { case glossary, endingBook; var id: String { rawValue } }
+    private enum FullCover: String, Identifiable { case glossary, endingBook, rates; var id: String { rawValue } }
     @State private var cover: FullCover?
 
     var body: some View {
@@ -25,6 +26,7 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "設定", closeAction: onClose)
                     .onAppear {
+                        store.clearMessage()
                         #if DEBUG
                         if let n = Int(ProcessInfo.processInfo.environment["MZ_STEP"] ?? "") { restartStep = n }
                         // 目視用：MZ_QUIT=1 で確認を出して約1.5秒後に「解散する」を押したのと同じにする（MZ_UI=week MZ_WEEK=settings と併用・tap_check_1025_v0 A）
@@ -44,6 +46,13 @@ struct SettingsView: View {
                             volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
                         }
+                        section("演出の速さ") {
+                            Picker("演出の速さ", selection: $animSpeed) {
+                                Text("ふつう").tag(0)
+                                Text("はやい").tag(1)
+                            }.pickerStyle(.segmented)
+                            Text("大会・結果の演出が速くなる。勝ち負けは変わらない。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)
+                        }
                         section("購入") {
                             Button { Task { restoring = true; _ = await store.restore(); restoring = false } } label: {
                                 linkRow(restoring ? "復元しています…" : "購入を復元", external: false)
@@ -53,6 +62,8 @@ struct SettingsView: View {
                             if let m = store.lastMessage {
                                 Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
                             }
+                            Button { cover = .rates } label: { linkRow("衣装ガチャの提供割合", external: false, inApp: true) }
+                                .buttonStyle(.plain)
                         }
                         section("遊び方") {
                             Button { cover = .glossary } label: { linkRow("用語集", external: false, inApp: true) }
@@ -99,6 +110,7 @@ struct SettingsView: View {
             switch c {
             case .glossary: GlossaryView { cover = nil }
             case .endingBook: EndingGalleryView { cover = nil }
+            case .rates: GachaRatesView { cover = nil }
             }
         }
     }
@@ -107,7 +119,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)   // 見出しの左朱帯
-                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                Text(title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
             }
             VStack(spacing: 12) { content() }
                 .padding(YoseMetrics.padH + 2)
@@ -201,8 +213,8 @@ struct SettingsView: View {
 
 /// 出荷情報の置き場（監査G-02/G-11/H-06）。名前とURLはオーナー確定待ち＝ここだけ書き換える。
 enum AppInfo {
-    /// アプリ名（ストア名・ホーム画面名と揃える）。確定前は作業名。
-    static let displayName = "四分の夜"
+    /// アプリ名（ストア名・ホーム画面名と揃える）。2026-11-02 オーナー確定。
+    static let displayName = "漫才王になろう"
     /// プライバシーポリシーのURL（審査5.1.1で必須）。nil の間は設定画面に行を出さない＝申請前に必ず埋める。
     static let privacyPolicyURL: URL? = nil
     static var version: String {
@@ -221,7 +233,7 @@ struct GlossaryView: View {
             ("実力", "コンビの強さ。センス・発想・表現・華の4つから決まる。大会での勝ち上がりやすさに関わる。"),
             ("相性", "二人の息の合い方。実力に足されて数えられる。"),
             ("体力", "行動すると減り、休むと戻る。低いと稽古ができず、体調を崩して休むことがある（体調ダウン）。"),
-            ("経験点", "練習やネタ書きでたまる5種の経験点。ネタ種・ことば帳・間（ま）・見せ場・場数。画面では「種・帳・間・見・場」の一字の丸で出る。能力アップで使う。能力アップ画面の「持ち分」は、今持っている数。"),
+            ("経験点", "練習やネタ書きでたまる5種の経験点。ネタ種・ことば帳・間\u{2060}（ま）・見せ場・場数。画面では「種・帳・間・見・場」の一字の丸で出る。能力アップで使う。能力アップ画面の「持ち分」は、今持っている数。"),
             ("能力", "センス・発想・表現・華・メンタル。経験点で上がる。メンタルは、本番の出来のばらつきを小さくする。"),
             ("ランク", "能力の高さを G から S までの文字で表したもの。能力が上がると文字も上がる。上がる時の知らせでは「番付」とも呼ぶ。"),
             ("特技", "余った経験点で覚える力。一度覚えたらずっと効く。"),

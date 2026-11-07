@@ -34,7 +34,7 @@ final class CoverageWTests: XCTestCase {
         let out = JudgeTalk.fill("{入り}と{中}と{一言}と{締め}と{題}", scene: scene, salt: 3)
         XCTAssertFalse(out.contains("{"))
         XCTAssertTrue(out.hasSuffix("と『桃太郎』"))
-        let table = JudgeTalk.vocab[.関係性]!
+        let table = JudgeTalk.vocab[nil]!   // 型があっても型なしの語彙を使う
         XCTAssertTrue(table[.入り]!.contains { out.hasPrefix($0) })
     }
 

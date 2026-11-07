@@ -119,7 +119,7 @@ public struct GameConfig {
     public var weeks = 48
     /// 1キャリアの年数（本編は結成10年で完結・master_spec_v2 §1。Python: sim_career.YEARS と同期）。
     /// 年の進め方そのもの（年初の体力全回復・成長予算・GPシード）は WeekRunner(year:) が持つ＝この値は「何年目で区切るか」だけ
-    public var careerYears = 10
+    public var careerYears = 15   // 10→15（結成15年・GP 出場は結成15年以内。較正A docs/calibration_all_1101_v0.md §5）
     public var initMoney = 300_000
     public var initStamina = 100.0
     public var initFame = 3.0
@@ -138,6 +138,42 @@ public struct GameConfig {
     public var capCurveFloor = 2.0
     /// 成長が完成する結成年数（王者の特権で解除される・sim_career.GROWTH_END_YEAR と同期）
     public var growthEndYear = 15
+    /// 11年目以降の成長予算の加算を ×本値^(k−(lateGrowthStartYear−1))（k＝累計に足す年）【仮】較正A（calibration_all_1101_v0 §5）。
+    /// Python: sim_career.LATE_GROWTH_DECAY・late_growth_factor。開始年は calendar.gpLateStartYear と同じ 11
+    public var lateGrowthDecay = 0.6
+    public var lateGrowthStartYear = 11
+
+    // --- 周回ボーナス（オーナー決定 11/02・docs/calibration_meta_1102_v0.md §5 推奨 案2＋型1）【仮】 ---
+    // 周回の点 P＝トロフィーpt＋図鑑の数（最大38）。GameState(config:metaPoints:) で渡す。P=0 では全部0＝1周目と golden は不変。乱数なし。
+    // Python: sim_career.META_* / apply_meta_start / meta_cap_lift / meta_budget
+    public var metaTopPoints = 38.0            // 集めきり（頂点の束の基準）
+    public var metaCapLiftCoef = 0.2           // 年の成長上限の基準と下限に +coef·P^exp
+    public var metaCapLiftExp = 0.3
+    public var metaBudgetTop = 36.0            // 累計予算に +top·(P/38)^metaTopExp（頂点の束）
+    public var metaTopExp = 8.0
+    public var metaStartCompatCoef = 2.27      // 初期の相性 +min(cap, coef·P^exp)（compatCap で止める）
+    public var metaStartCompatExp = 0.5
+    public var metaStartCompatCap = 14.0
+    public var metaStartExpPerPoint = 4.0      // 型1：初期経験点 4/点・上限160
+    public var metaStartExpCap = 160.0
+    public var metaStartExpTop = 300.0         // 頂点の束：初期経験点 +300·(P/38)^metaTopExp（上限なし）
+    public var metaStartExpSplit: [(ExpCurrency, Double)] = [(.閃き, 0.35), (.間合い, 0.27), (.語彙, 0.18), (.存在感, 0.10), (.胆力, 0.10)]
+    public var metaStartMoneyPerPoint = 30_000 // 型1：初期の所持金 3万/点・上限100万
+    public var metaStartMoneyCap = 1_000_000
+
+    // --- 大会の経験点（パワプロ式 p2・較正A calibration_all_1101_v0 §5）【仮】。Python: sim_career.TOURNEY_EXP_* / tourney_exp ---
+    // 量＝基本点 × K × 種類の重み。単位 Unit 点を5通貨に均等（Split ずつ）に creditCurrency で積む（供給スケールも掛かる）。乱数なし
+    public var tourneyExpK = 0.5
+    public var tourneyExpWeightRoad = 0.5     // 道中の大会（THE HANA も）
+    public var tourneyExpWeightRound = 1.0    // GP 回戦
+    public var tourneyExpWeightFinal = 2.0    // 敗者復活・決勝
+    public var tourneyExpUnit = 4.0
+    public var tourneyExpSplit = 0.2
+    public var tourneyExpLoss = 0.5           // 敗退は基本点×本値
+    public var tourneyExpRoad = 1.0           // 道中の大会の基本点
+    public var tourneyExpRoundStep = 0.35     // GP 回戦 i（1始まり）の基本点 1+本値×(i−1)
+    public var tourneyExpRevival = 2.4        // 敗者復活の基本点
+    public var tourneyExpFinal = 3.0          // 決勝の基本点
 
     // --- 経験点割り振り【正典v3・パワプロ式5通貨。docs/exp_currency_redesign_v0.md。全て【仮】】 ---
     /// 割り振り1段（+1タップ）で注ぐ「生の伸び試行量」の上限。UIの逐次見積もり・確定・sim/goldenボットが
@@ -163,7 +199,7 @@ public struct GameConfig {
     /// (未満のしきい値, その帯の倍率) の昇順配列＋最終帯（S）のデフォルト倍率。balance_sim.RANK_COST_BANDS/
     /// RANK_COST_MULT_S と同期。数値は全て【仮】（sim較正で確定・docs/exp_currency_redesign_v0.md §7-1）。
     public var abilityRankCostBands: [(threshold: Double, multiplier: Double)] = [
-        (15, 1.00), (25, 1.15), (35, 1.35), (45, 1.60), (55, 2.00), (70, 2.50), (90, 3.20),
+        (15, 0.70), (25, 1.15), (35, 1.35), (45, 1.60), (55, 2.00), (70, 2.50), (90, 3.20),
     ]
     public var abilityRankCostMultS = 4.20
     /// 行動直後に WeekRunner が recommendedPlan で粒を自動全量注ぎするか【正典分離】。
@@ -281,7 +317,7 @@ public struct GameConfig {
         .相方と過ごす: (recovery: 20, bonus: (.コンビ相性, 1)),
         // 有料【仮】（Python: PAID_RESTS/REST_COST と同値。golden/sim の既定ボットは使わない）
         .サウナ:       (recovery: 80, bonus: (.ability(.メンタル), 2)),
-        .温泉に一泊:   (recovery: 100, bonus: (.ability(.メンタル), 2)),   // 相性+1 は帯を壊した（money_items_neta_v1 §6-2）
+        .温泉に一泊:   (recovery: 100, bonus: (.ability(.メンタル), 0)),   // 相性+1 は帯を壊した（money_items_neta_v1 §6-2）→ 体力回復だけ（較正A calibration_all_1101_v0 §5）
     ]
     /// 休みの費用（無い＝無料）。払えなければ完全休養になる
     public var restCosts: [Rest: Int] = [.サウナ: 10_000, .温泉に一泊: 60_000]

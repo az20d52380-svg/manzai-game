@@ -13,6 +13,7 @@ struct YearResultView: View {
     var onRestart: () -> Void
     var onEnding: (() -> Void)? = nil   // キャリアの区切り（全エンド）: エンディングへ
     var onNextYear: (() -> Void)? = nil // キャリアが続く年末のみ: 翌年へ
+    var onRetire: (() -> Void)? = nil   // 優勝の年末のみ: 勇退してエンディングへ
 
     private var s: GameState { session.state }
     private var o: YearOutcome? { session.outcome }
@@ -45,7 +46,7 @@ struct YearResultView: View {
             #if DEBUG
             .task {   // 目視フック MZ_SCROLL=history|events|breakdown|radar：その段を上にして開く（下の段が撮れなかった＝yearend_records_visual_1026_v0 軽微2）
                 if let id = ProcessInfo.processInfo.environment["MZ_SCROLL"] {
-                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 1_500_000_000)
                     proxy.scrollTo(id, anchor: .top)
                 }
             }
@@ -61,6 +62,10 @@ struct YearResultView: View {
                 .stagger(4, appear)   // 本文より先に「▼」だけ出て、空の画面に見えた（soak_playthrough_1019・1026 で再発）
             }
             }
+            if let o, o.champion || o.reachedFinal {
+                ShareCardButton(combiName: session.combiName, headline: o.champion ? session.winHeadline : "決勝進出", detail: "結成\(session.year)年目")
+                    .padding(.vertical, 6).frame(maxWidth: .infinity).background(YoseColor.kinari)
+            }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）
             restartButton.stagger(6, appear)
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 66)   // 他画面の主ボタン（約y=747）と高さを揃える（連打の空振り防止）
@@ -74,12 +79,12 @@ struct YearResultView: View {
                           style: .confetti, count: 54, origin: UnitPoint(x: 0.5, y: 0.18))
         }
         .onAppear {
-            withAnimation(.easeOut(duration: Theme.Motion.emph)) { appear = true }
+            withAnimation(Theme.Motion.r(.easeOut(duration: Theme.Motion.emph))) { appear = true }
         }
         .task {   // 判は0.4秒後。すぐ送った時は取り消す（遅れてファンファーレが鳴らない・code_review_2026-10-19d）
-            try? await Task.sleep(nanoseconds: 400_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 400_000_000)
             if Task.isCancelled { return }
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) { stampIn = true }
+            withAnimation(Theme.Motion.r(.spring(response: 0.35, dampingFraction: 0.55))) { stampIn = true }
             Haptics.confirm()   // 年1回の重み
             if o?.champion == true { confettiFire += 1; Sound.play(.fanfare) }
         }
@@ -159,7 +164,10 @@ struct YearResultView: View {
                     HStack(spacing: 10) {
                         Text("\(r.year)年目").font(YoseFont.number(13, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
-                        Text(label).font(YoseFont.mincho(15)).foregroundStyle(r.champion || r.reachedFinal ? YoseColor.shu : YoseColor.sumi)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(label).font(YoseFont.mincho(15)).foregroundStyle(r.champion || r.reachedFinal ? YoseColor.shu : YoseColor.sumi)
+                            if let h = r.hanaReach { Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
+                        }
                         Spacer()
                         if r.year == session.year { YoseTag(text: "今年", style: .solidEnji) }
                     }
@@ -384,6 +392,10 @@ struct YearResultView: View {
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
+        // 前の年に優勝した人に「去年と変わらない」は合わない
+        if session.yearHistory.contains(where: { $0.champion && $0.year == session.year - 1 }) {
+            pool = Self.withoutLastYearLines(pool)
+        }
         // 頂グランプリの決勝に立った年は独白を出さない（オーナー 10/18「寒そう」→A：決勝の余韻は決勝の場面で足りる）
         if Self.silentFinalsYear(bankrupt: o.bankrupt, dissolved: o.dissolved, champion: o.champion, reachedFinal: o.reachedFinal) { return nil }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
@@ -472,7 +484,28 @@ struct YearResultView: View {
         "谷口とのコンビは、解散することにした。\n明日、二人で事務所に話しに行く。",
     ]
 
-    private var restartButton: some View {
+    /// 前の年に優勝した人には、去年と比べる独白（「去年の自分が見たら、驚くような一年」等）を出さない（code_review_1107f #2）
+    static func withoutLastYearLines(_ pool: [String]) -> [String] {
+        let kept = pool.filter { !$0.contains("去年") }
+        return kept.isEmpty ? pool : kept
+    }
+
+    @ViewBuilder private var restartButton: some View {
+        if let onRetire, let onNextYear {
+            // 主ボタンの位置は「続ける」＝連打しても勇退にならない
+            VStack(spacing: 6) {
+                Text("ここで勇退するか、連覇を狙うか").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
+                let retire = Button(action: onRetire) { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
+                let goOn = Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶").lineLimit(1) }.buttonStyle(YoseButtonStyle(.primary))
+                ViewThatFits(in: .horizontal) {   // 大きい文字で横に収まらない時は縦に積む（code_review_1107f #4）
+                    HStack(spacing: 10) { retire; goOn }
+                    VStack(spacing: 8) { retire; goOn }
+                }
+            }
+        } else { singleButton }
+    }
+
+    private var singleButton: some View {
         Button(action: onNextYear ?? onEnding ?? onRestart) {
             Text(onNextYear != nil ? "\(session.year + 1)年目へ ▶" : onEnding != nil ? "エンディングへ ▶" : "もう一度")
         }
@@ -537,7 +570,7 @@ private extension View {
         self
             .opacity(appear ? 1 : 0)
             .offset(y: appear ? 0 : 10)
-            .animation(.easeOut(duration: Theme.Motion.std).delay(0.1 + Double(index) * 0.15), value: appear)
+            .animation(Theme.Motion.r(.easeOut(duration: Theme.Motion.std).delay(0.1 + Double(index) * 0.15)), value: appear)
     }
 }
 
@@ -555,11 +588,11 @@ struct CountUpText: View {
             .contentTransition(.numericText())
             .task(id: value) {
                 if reduceMotion { shown = value; return }
-                try? await Task.sleep(nanoseconds: 500_000_000)   // 判の押印の後から数え始める
+                try? await MZSpeed.sleep(nanoseconds: 500_000_000)   // 判の押印の後から数え始める
                 let steps = 20
                 for i in 1...steps {
-                    try? await Task.sleep(nanoseconds: 40_000_000)
-                    withAnimation(.linear(duration: 0.04)) { shown = Int(Double(value) * Double(i) / Double(steps)) }
+                    try? await MZSpeed.sleep(nanoseconds: 40_000_000)
+                    withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shown = Int(Double(value) * Double(i) / Double(steps)) }
                 }
                 shown = value
             }
