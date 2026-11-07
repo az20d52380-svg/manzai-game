@@ -144,6 +144,10 @@ struct CalendarView: View {
             Text("頂GP＝頂グランプリ（1回戦から勝ち上がり、第\(cal.gpFinalWeek)週が決勝）")
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).multilineTextAlignment(.center)
+            // 去年まで朱だった週が判子に変わる理由が画面に無かった（code_review_1108 指摘2・表示だけ）
+            Text("出られなかった大会の週は塗りません")
+                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .lineLimit(1).minimumScaleFactor(0.8)
         }
         .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
         .padding(.horizontal, 10).padding(.vertical, 8)
