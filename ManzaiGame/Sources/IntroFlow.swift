@@ -491,6 +491,8 @@ struct NameEntryView: View {
     var onDecide: (String, String?, String?, MeetingKind) -> Void   // コンビ名・自分の名前・相方の名前（空欄＝nil）・出会い方
     @State private var name = ""
     @State private var meeting: MeetingKind = .highSchool   // 出会い方（既定＝①高校の同級生・表示専用）
+    @State private var meetingAuto = false   // 「おまかせ」＝決める時に4つから1つ選ぶ（表示専用・ゲームの乱数は使わない）
+    private var meetingLabel: String { meetingAuto ? "おまかせ" : meeting.label }
     @State private var myName = ""
     @State private var partnerName = ""
     @State private var inkWet = false
@@ -641,18 +643,21 @@ struct NameEntryView: View {
     /// 出会い方の選択（結成届の1行・押すと4つから選べる。決めた後の回想がこの型で流れる）
     private var meetingMenu: some View {
         Menu {
-            Picker("出会い方", selection: $meeting) {
-                ForEach(MeetingKind.allCases, id: \.self) { m in Text(m.label).tag(m) }
+            Picker("出会い方", selection: Binding<Int>(
+                get: { meetingAuto ? -1 : (MeetingKind.allCases.firstIndex(of: meeting) ?? 0) },
+                set: { i in if i < 0 { meetingAuto = true } else { meetingAuto = false; meeting = MeetingKind.allCases[i] } })) {
+                ForEach(Array(MeetingKind.allCases.enumerated()), id: \.offset) { i, m in Text(m.label).tag(i) }
+                Text("おまかせ").tag(-1)
             }
         } label: {
             HStack(spacing: 6) {
-                Text(meeting.label).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                Text(meetingLabel).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
                     .lineLimit(1).minimumScaleFactor(0.6)
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: Font.mzScaled(11), weight: .bold))
                     .foregroundStyle(YoseColor.haiSumi)
             }
         }
-        .accessibilityLabel("出会い方、\(meeting.label)")
+        .accessibilityLabel("出会い方、\(meetingLabel)")
         .accessibilityHint("押すと出会い方を選べる")   // a11y_check_1026 低5
     }
 
@@ -668,7 +673,7 @@ struct NameEntryView: View {
         decided = true
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.4))) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meeting) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meetingAuto ? (MeetingKind.allCases.randomElement() ?? .highSchool) : meeting) }
     }
 }
 
