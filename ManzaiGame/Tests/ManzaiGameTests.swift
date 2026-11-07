@@ -310,6 +310,28 @@ final class RiftWarnEventTests: IsolatedStoreTestCase {
         s.fastForwardToYearEnd()
         XCTAssertTrue(s.didFireRiftWarn)
     }
+    /// t19 雨天決行：予告に答えて解散せず年末を迎えたら渡す（重複しない）。答えずに閉じただけでは渡さない
+    func testRiftTrophyAwardedAfterAnsweredWarningSurvivesYearEnd() {
+        var st = GameState(config: GameConfig()); st.compat = 12; st.money = 5_000_000; st.rift = 10; st.riftWarned = true
+        let s = GameSession(startState: st)
+        XCTAssertEqual(s.pendingChoiceEvent, .riftWarning)
+        s.applyEventChoice(s.availableEventChoices()[0].id)
+        s.dismissChoiceEvent()
+        XCTAssertFalse(TrophyBook.load().contains(.t19), "年末前に渡った")
+        s.fastForwardToYearEnd()
+        if s.watchingFinal { s.finishWatchingFinal(winner: "x"); s.fastForwardToYearEnd() }
+        XCTAssertTrue(s.finished && !s.careerOver, "年末まで進む前提")
+        XCTAssertTrue(TrophyBook.load().contains(.t19))
+        XCTAssertFalse(TrophyBook.award(.t19), "重複して渡した")
+    }
+    func testRiftTrophyNotAwardedWithoutAnswer() {
+        var st = GameState(config: GameConfig()); st.compat = 12; st.money = 5_000_000; st.rift = 10; st.riftWarned = true
+        let s = GameSession(startState: st)
+        s.dismissChoiceEvent()
+        s.fastForwardToYearEnd()
+        if s.watchingFinal { s.finishWatchingFinal(winner: "x"); s.fastForwardToYearEnd() }
+        XCTAssertFalse(TrophyBook.load().contains(.t19))
+    }
     func testNoRiftWarnWhenFlagNeverSet() {
         var st = GameState(config: GameConfig()); st.rift = 0
         let s = GameSession(startState: st)

@@ -74,9 +74,9 @@ final class TrophyHana1107Tests: XCTestCase {
         XCTAssertEqual(GameSession.hanaReach(log: ["第44週: THE HANA 決勝 敗退"]), "THE HANA 決勝 敗退")
     }
 
-    /// 図鑑の分母は「今取れる物」だけ（取れない T19・T20 を数えると全部そろわない）
-    func testObtainableCountIsTwenty() {
-        XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 21)
+    /// 図鑑の分母は「今取れる物」＝全22個
+    func testObtainableCountIsAll() {
+        XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 22)
     }
 
     /// 旧データ（hanaWins の鍵なし）も読める

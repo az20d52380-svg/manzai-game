@@ -1387,6 +1387,8 @@ final class GameSession {
                                      smallEntered: smallEntered, smallWon: smallWon,
                                      wonBefore: yearHistory.contains { $0.champion && $0.year != runner.year })
                 smallEntered = 0; smallWon = 0
+                // 雨天決行＝途中解散の予告に答えたキャリアが、解散せずに年末を迎えた（award は重複しない・再入しても同じ）
+                if didFireRiftWarn, riftWarnChoice != nil, !outcome.dissolved, !outcome.bankrupt { TrophyBook.award(.t19) }
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
                 if yearHistory.last?.year != runner.year {

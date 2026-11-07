@@ -72,8 +72,8 @@ enum TrophyID: String, CaseIterable, Identifiable {
         case .t22: "同じ年に出た大会をすべて優勝し、GPも制する"
         }
     }
-    /// 今のアプリで取れるか（解散危機の和解は仕組みが無い・玉座奪還は優勝後に続けられる 11/07 で取れるようになった）
-    var obtainable: Bool { self != .t19 }
+    /// 今のアプリで取れるか（t19 は途中解散の予告を越えた年末で渡す配線を入れたので全部取れる）
+    var obtainable: Bool { true }
 }
 
 /// 周をまたぐ記録（最多連覇・最速優勝・通算優勝）
