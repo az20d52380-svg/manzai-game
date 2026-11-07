@@ -61,7 +61,7 @@ struct YearResultView: View {
             }
             }
             if let o, o.champion || o.reachedFinal {
-                ShareCardButton(combiName: session.combiName, headline: o.champion ? "優勝" : "決勝進出", detail: "結成\(session.year)年目")
+                ShareCardButton(combiName: session.combiName, headline: o.champion ? session.winHeadline : "決勝進出", detail: "結成\(session.year)年目")
                     .padding(.vertical, 6).frame(maxWidth: .infinity).background(YoseColor.kinari)
             }
             // 押せるボタンは画面下に固定（スクロールの末尾に埋もれさせない）

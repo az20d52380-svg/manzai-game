@@ -1125,6 +1125,13 @@ final class GameSession {
         return o.champion && !careerOver
     }
 
+    /// 共有カードの見出し（2年続けて勝つと「2連覇」）
+    var winHeadline: String {
+        var streak = 0
+        for rec in yearHistory.reversed() { if rec.champion { streak += 1 } else { break } }
+        return streak >= 2 ? "\(streak)連覇" : "優勝"
+    }
+
     /// 優勝の夜の相方の一言（初優勝・連覇・返り咲きで変える。表示専用）
     var repeatWinLine: String {
         let past = yearHistory.filter { $0.champion && $0.year != year }
