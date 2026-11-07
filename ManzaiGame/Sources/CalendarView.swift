@@ -173,11 +173,17 @@ struct CalendarView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = nil } } }
     }
 
+    /// 過ぎた週の塗り：THE HANA は通過しないと次の段に出られないので、実際に出た週（大会の記録がある週）だけ塗る。道中の大会はこれまでどおり（code_review_1107c #8）。表示専用。
+    static func paintsPastWeek(tournamentName: String, category: BandCategory?) -> Bool {
+        guard tournamentName.hasPrefix("HANA") else { return true }
+        return category == .taikai
+    }
+
     private func isTournamentWeek(_ w: Int) -> Bool {
         if let spec = cal.tournament(inWeek: w, state: session.state) {
             // これからの週は、今の状態で出られる大会だけ塗る（推薦制・若手限定で入口が出ない週を「大会」と見せない・code_review_2026-10-19g §2）。過ぎた週は従来どおり
             if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
-            return true
+            return Self.paintsPastWeek(tournamentName: spec.name, category: session.categoryLog[w])
         }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
         return w == cal.gpFinalWeek

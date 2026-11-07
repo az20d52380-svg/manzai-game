@@ -127,7 +127,7 @@ struct TournamentResultView: View {
 
                 VStack(spacing: 0) {
                     // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
-                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament ? nil : isHana ? "THE HANA" : "頂グランプリ")
+                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament || isHana ? nil : "頂グランプリ")   // THE HANA は題名に大会名が入っている＝札を重ねない
                         .padding(.top, 8)
                         .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
                         .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6)), value: signIn)
@@ -150,7 +150,7 @@ struct TournamentResultView: View {
                     VStack(spacing: 10) {
                         if !needsQual && !needsAnnounce { verdictPlate(passed: r.passed) }   // 予選は通知で結果を先に知っている＝判の文字は出さない（客席の反応と講評だけ）
                         if revealed {
-                            StageTelopBelt(text: r.passed ? (isHanaVideo ? "——動画審査を通った。" : "——どっと沸いた！") : missLine(r))
+                            StageTelopBelt(text: r.passed ? (isHanaVideo ? "——動画審査を通った。" : "——どっと沸いた！") : (isHanaVideo ? "——動画審査で落ちた。" : missLine(r)))
                                 .transition(.opacity)
                         }
                     }
@@ -266,7 +266,7 @@ struct TournamentResultView: View {
         .onDisappear { revealTask?.cancel() }
         #if DEBUG
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
-            if ["result_done", "lose_done"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
+            if ["result_done", "lose_done", "hana_result"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
         .overlay {
@@ -404,7 +404,7 @@ struct TournamentResultView: View {
     /// 今どの段かを示す3つの角札（客席の反応 ▶ 結果発表 ▶ 講評と精算）。順序・時間は変えない表示だけ
     private var stepDots: some View {
         let cur = !revealed ? 0 : (revealedReview ? 2 : 1)
-        let names = ["① 客席の反応", "② 結果発表", "③ 講評・精算"]
+        let names = [isHanaVideo ? "① 動画審査" : "① 客席の反応", "② 結果発表", "③ 講評・精算"]
         return HStack(spacing: 5) {
             ForEach(0..<3, id: \.self) { i in
                 Text(names[i]).font(YoseFont.gothic(12, weight: .heavy))
