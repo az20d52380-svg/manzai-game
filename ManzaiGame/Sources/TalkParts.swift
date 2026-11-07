@@ -42,7 +42,7 @@ struct AdvanceCue: View {
             .offset(y: bob ? 2.5 : 0)
             .onAppear {
                 guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { bob = true }
+                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.55).repeatForever(autoreverses: true))) { bob = true }
             }
             .accessibilityHidden(true)
     }
