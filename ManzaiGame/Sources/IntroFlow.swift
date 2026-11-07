@@ -749,7 +749,7 @@ struct IntroFlowView: View {
     @State private var partnerName: String? = nil
     @State private var kind: ComboKind = IntroFlowView.initialKind
     @State private var meeting: MeetingKind = IntroFlowView.initialMeeting
-    private enum Stage { case title, comboKind, nameEntry, reminiscence, notif }
+    private enum Stage { case title, comboKind, nameEntry, reminiscence, firstStage, notif }
 
     private func finish() { onComplete(name, myName, partnerName, kind, meeting) }
 
@@ -813,8 +813,16 @@ struct IntroFlowView: View {
             case .reminiscence:
                 ReminiscencePlayer(
                     cards: meeting.cards,
-                    onComplete: { Self.markIntroSeen(); finish() },
+                    onComplete: {
+                        // 1周目だけ初舞台へ（2周目以降は回想の「とばす」と同じく飛ばす）
+                        let first = !Self.hasSeenIntro
+                        Self.markIntroSeen()
+                        if first { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = .firstStage } } else { finish() }
+                    },
                     onSkip: Self.hasSeenIntro ? { finish() } : nil)
+                    .transition(.opacity)
+            case .firstStage:
+                FirstStageView(combiName: name) { finish() }
                     .transition(.opacity)
             case .notif:
                 // 通知機能が1本も実装されていない間は許諾を求めない（初週前の摩擦だけが残るため導線から外す）。

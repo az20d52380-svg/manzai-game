@@ -60,6 +60,7 @@ struct RootView: View {
             case "finalist_announce": FinalistAnnounceView(combiName: session.combiName, year: 1, passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 決勝進出者の発表の目視（MZ_PASS=0 で落選・MZ_HOLD_AT=n で読み上げn組目で止める）
             case "glossary": GlossaryView(onClose: {})                      // 用語集の目視
             case "shop": ShopView(session: session, onClose: {})            // 買い物目視
+            case "firststage": FirstStageView(combiName: "ミナトヤ", onSkip: ProcessInfo.processInfo.environment["MZ_SECOND"] != nil ? {} : nil, onComplete: {})   // 初舞台の目視（MZ_SECOND=1 で2周目の「とばす」）
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "intro": ReminiscencePlayer(cards: (MeetingKind.debugForced ?? .highSchool).cards, onComplete: {}) // 導入の回想カード目視（MZ_MEET=1〜4 で型）
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
