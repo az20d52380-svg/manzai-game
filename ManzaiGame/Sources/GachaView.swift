@@ -94,7 +94,7 @@ struct GachaView: View {
                     .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 Button {
                     let before = s.freeTickets
-                    if gacha.claimLogin() { loginNote = gacha.state.freeTickets > before ? "無料の1回がたまりました" : "今日の札をもらいました" }
+                    if gacha.claimLogin() { let note = gacha.state.freeTickets > before ? "無料の1回がたまりました" : "今日の札をもらいました"; loginNote = note; UIAccessibility.post(notification: .announcement, argument: note) }
                 } label: {
                     Text(can ? "今日の札をもらう" : "今日の札はもらいました").frame(maxWidth: .infinity)
                 }
@@ -168,6 +168,7 @@ struct GachaView: View {
                     Text("天井").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                     Spacer()
                     Text("\(min(s.pity, GachaCatalog.pityGoal)) / \(GachaCatalog.pityGoal)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        .accessibilityLabel("\(min(s.pity, GachaCatalog.pityGoal))回、\(GachaCatalog.pityGoal)回で交換")
                 }
                 YoseGauge(value: Double(s.pity), total: Double(GachaCatalog.pityGoal), fill: YoseColor.kin)
                 Text(s.pity >= GachaCatalog.pityGoal ? "好きな衣装を1着えらべます。下の「持っていない衣装」を押してください。" : "回すたびに1たまります。\(GachaCatalog.pityGoal)で好きな衣装と交換できます。")

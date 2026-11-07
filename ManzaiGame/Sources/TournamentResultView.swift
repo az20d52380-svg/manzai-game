@@ -565,6 +565,7 @@ struct TournamentResultView: View {
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity).padding(.vertical, 8).padding(.horizontal, 8)
                 .background(YoseColor.ki.opacity(0.35))
+                .accessibilityElement(children: .combine)
             }
         }
     }

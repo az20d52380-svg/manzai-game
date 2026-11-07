@@ -70,6 +70,7 @@ struct FirstStageView: View {
                 VStack { HStack { Spacer()
                     Button("とばす ▶") { task?.cancel(); Sound.play(.cursor); onSkip() }
                         .buttonStyle(YoseButtonStyle(.secondary)).padding(.trailing, 12).padding(.top, 6)
+                        .accessibilityLabel("とばす")
                 }; Spacer() }
             }
         }

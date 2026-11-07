@@ -54,8 +54,8 @@ struct GachaRatesView: View {
 
     private var rateTables: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("提供割合").font(YoseFont.gothic(14, weight: .heavy))
-            Text("レアリティ別").font(YoseFont.gothic(12, weight: .heavy))
+            Text("提供割合").font(YoseFont.gothic(14, weight: .heavy)).accessibilityAddTraits(.isHeader)
+            Text("レアリティ別").font(YoseFont.gothic(12, weight: .heavy)).accessibilityAddTraits(.isHeader)
             ForEach(Array(OutfitRarity.allCases.reversed()), id: \.self) { r in
                 row(r.label, GachaCatalog.display(Double(r.tierPercent)), "\(GachaCatalog.items(r).count)着")
             }
@@ -79,5 +79,6 @@ struct GachaRatesView: View {
             if !c.isEmpty { Text(c).font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
         }
         .foregroundStyle(YoseColor.sumi)
+        .accessibilityElement(children: .combine)
     }
 }
