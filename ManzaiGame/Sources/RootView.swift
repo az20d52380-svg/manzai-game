@@ -126,7 +126,7 @@ struct RootView: View {
             if ui == "grown" || (ui == "notebook" && session.year == 1), session.week <= 1 {   // notebook は MZ_YEARS 後（2年目〜）はその年のまま見る（year10_visual_1026_v0）
                 session = GameSession(startState: GameSession.debugMaxedState())
             }
-            if ui == "yearend", session.week <= 1 {
+            if ui == "yearend" || (ui == "notebook" && ["champion2", "champion3"].contains(ProcessInfo.processInfo.environment["MZ_MODE"] ?? "")), session.week <= 1 {   // notebook＋champion2/3＝連覇の年が並ぶ戦績の目視
                 // 年末リザルト本体の目視: 通常は最後まで自動で進め、客席観戦の決勝を観終えた扱いにして年末総決算へ。MZ_MODE=champion は優勝版
                 let mode = ProcessInfo.processInfo.environment["MZ_MODE"]
                 if mode == "champion2" || mode == "champion3" {   // 優勝→続ける（champion2＝翌年の週画面・champion3＝翌年も優勝した年末の2択）

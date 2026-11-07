@@ -123,6 +123,12 @@ enum TrophyBook {
     }
 
     static func loadRecords() -> CareerRecords {
+        #if DEBUG
+        if let s = ProcessInfo.processInfo.environment["MZ_RECORDS"] {   // 目視用: MZ_RECORDS=通算優勝,最多連覇,最速年（保存しない）
+            let v = s.split(separator: ",").compactMap { Int($0) }
+            if v.count >= 3 { return CareerRecords(bestStreak: v[1], fastestWinYear: v[2], totalWins: v[0], hanaWins: v.count > 3 ? v[3] : nil) }
+        }
+        #endif
         guard let data = store.data(forKey: recordKey), let r = try? JSONDecoder().decode(CareerRecords.self, from: data) else { return CareerRecords() }
         return r
     }
