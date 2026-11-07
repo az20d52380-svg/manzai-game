@@ -8,7 +8,7 @@ enum StoreIDs {
     /// 【仮】bundle id が確定したら差し替える（project.yml の PRODUCT_BUNDLE_IDENTIFIER と揃える）
     static let prefix = "com.manzaigame.mvp"
 
-    /// 広告カット（非消耗型・仮 480円）
+    /// 広告カット（非消耗型・仮 1,000円）
     static let adFree = "\(prefix).adfree"
     /// 事務所選び（非消耗型・仮 480円）。UI はまだ作らない
     static let agency = "\(prefix).agency"
