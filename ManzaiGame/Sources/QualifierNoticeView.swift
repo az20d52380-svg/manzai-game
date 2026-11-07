@@ -36,7 +36,7 @@ struct QualifierNoticeView: View {
         let mobs = FinalsData.yearRoster(year: year &+ roundName.count &* 31, selfName: combiName, count: passed ? n - 1 : n)
         var arr = mobs
         if passed { arr.append(combiName) }
-        let selfY = combiName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? combiName
+        let selfY = FinalistAnnounceView.selfYomi(combiName, year: year &+ roundName.count &* 31)   // 漢字・英字名は年ごとに位置を散らす（C-18）
         return arr.sorted { (FinalistAnnounceView.yomi[$0] ?? selfY) < (FinalistAnnounceView.yomi[$1] ?? selfY) }
     }
 

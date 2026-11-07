@@ -52,10 +52,20 @@ struct FinalistAnnounceView: View {
     }
     /// 読み上げ順（五十音順）。自組は名前を読みに直せない＝先頭の仮名で置く（読みは名前そのものに近い仮名と見なす）
     private var readOrder: [Slot] {
-        let selfYomi = combiName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? combiName
+        let selfYomi = Self.selfYomi(combiName, year: year)
         return slots.filter { $0.finalist }
             .map { $0.isSelf ? Slot(id: $0.id, name: $0.name, yomi: selfYomi, isSelf: true, finalist: true) : $0 }
             .sorted { $0.yomi < $1.yomi }
+    }
+    /// 自組の読み。かな（ひらがな・カタカナ・ー）だけの名前はひらがなに直して使う。漢字・英字を含む名前は読みを持たないので、
+    /// 年と名前から決まる仮名1字で置く＝呼ばれる位置が端に固定されない（乱数は使わない・表示専用・C-18）
+    static func selfYomi(_ name: String, year: Int) -> String {
+        let hira = name.applyingTransform(.hiraganaToKatakana, reverse: true) ?? name
+        let kanaOnly = !hira.isEmpty && hira.unicodeScalars.allSatisfy { (0x3041...0x3096).contains($0.value) || $0.value == 0x30FC }
+        if kanaOnly { return hira }
+        let pool = Array("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわ")
+        let sum = name.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) % 1_000_003 }
+        return String(pool[((sum &+ year &* 7) % pool.count + pool.count) % pool.count])
     }
     private func isCalled(_ s: Slot) -> Bool { readOrder.prefix(called).contains { $0.id == s.id } }
     private var selfCalled: Bool { passed && readOrder.prefix(called).contains { $0.isSelf } }
