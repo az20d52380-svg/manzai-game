@@ -56,6 +56,7 @@ struct FinalsPresentationView: View {
     @State private var silverFire = 0
     /// 7人目の前の間（全SE断＋BGMを絞る0.6s）。この間のタップは受けない
     @State private var holdingSeventh = false
+    @State private var voteTailTask: Task<Void, Never>?   // 決着後の残りの札を開く途中で閉じたら止める（閉じた後に音が鳴らない）
     // 番組の演出（見せ方だけ・結果は FinalsData のまま）
     @State private var lotRevealed = false     // 出番くじ: 心拍のあと出順が出る
     @State private var lotPulse = false
@@ -270,6 +271,7 @@ struct FinalsPresentationView: View {
             #endif
         }
         // 先の組・後の組の自動送り（1.25秒ごとに1組）とネタの間（1.8秒で採点へ）。タップはいつでも次へ
+        .onDisappear { voteTailTask?.cancel() }
         .task(id: autoKey) {
             guard ceremonyDone else { return }
             if beat == .perform {
@@ -404,9 +406,9 @@ struct FinalsPresentationView: View {
             Sound.play(.taiko); Sound.play(.cheerBig)              // 決着＝太鼓＋大歓声
             if revealVotes < 7 {                                    // 4票で決まったあとの残りの札：1拍おいて、早めに1枚ずつ開く（連打の手間を省く）
                 holdingSeventh = true
-                Task {
+                voteTailTask = Task {
                     try? await MZSpeed.sleep(nanoseconds: 1_100_000_000)
-                    while revealVotes < 7 {
+                    while revealVotes < 7, !Task.isCancelled {
                         withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.7))) { revealVotes += 1 }
                         Haptics.confirm(); Sound.play(.don)
                         try? await MZSpeed.sleep(nanoseconds: 380_000_000)
