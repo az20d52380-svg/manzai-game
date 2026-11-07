@@ -485,6 +485,9 @@ struct RootView: View {
     private func forceChampion() {
         session = GameSession(startState: GameSession.debugMaxedState())
         session.debugAdvanceToChampionFinale()
+        // MZ_CHAMP_YEARS=n：n 年続けて優勝した状態（勇退の年表の行数を見る目視用）
+        let n = Int(ProcessInfo.processInfo.environment["MZ_CHAMP_YEARS"] ?? "") ?? 1
+        if n > 1 { for _ in 1..<n { session.acknowledgeWin(); session.startNextYear(); session.debugAdvanceToChampionFinale() } }
     }
 
     /// MZ_UI=frame の舞台の状態（MZ_MODE=preshow/lit/judging/winner/loser/spectator・既定 lit）
