@@ -274,7 +274,7 @@ final class GameSession {
         // 段の種類が同じなら、中身（大会・オファー・回戦名）は runner が新しい config から取り直した物を使う
         // （保存時の古い値が画面に出て、実際に効く値と食い違っていた＝code_review_2026-10-25e §3-3）
         if let now = restoredRunner.restoredPhase, Self.sameStep(save.phase, now) { self.phase = now } else { self.phase = save.phase }
-        self.week = save.runner.week
+        self.week = min(save.runner.week, cfg.weeks)   // 年を終えた年末は runner が週数+1（49）まで進んでいる＝閉じる前の表示（48）に揃える
         // 複数年（v3）: 旧セーブ（1年完結時代）には無い＝1年目の新規と同じ基準に落とす
         self.yearStartState = save.yearStartState ?? GameState(config: cfg)
         self.hasYearStart = save.yearStartState != nil || save.runner.year <= 1
