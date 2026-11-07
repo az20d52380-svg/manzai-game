@@ -40,7 +40,7 @@ final class GachaTests: XCTestCase {
     }
 
     func testNoTicketNoPull() {
-        var s = GachaState()
+        var s = GachaState(); s.freeTickets = 0
         var g = SeededGen(s: 1)
         XCTAssertNil(s.pullOne(&g))
         XCTAssertEqual(s.totalPulls, 0)
@@ -109,6 +109,15 @@ final class GachaTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(s.pity, GachaCatalog.pityGoal)
     }
 
+    func testFreshInstallHasFirstFreePull() {
+        var s = GachaState()
+        XCTAssertEqual(s.freeTickets, 1)
+        var g = SeededGen(s: 5)
+        let r = s.pullOne(&g)
+        XCTAssertEqual(r?.outfit.rarity, .tokubetsu)   // はじめての1回は特別が必ず出る
+        XCTAssertEqual(s.freeTickets, 0)
+    }
+
     func testLoginBonus() {
         var s = GachaState()
         XCTAssertTrue(s.claimLogin(today: "2026-11-01"))
@@ -116,9 +125,9 @@ final class GachaTests: XCTestCase {
         XCTAssertFalse(s.canClaimLogin(today: "2026-10-31"))
         for d in 2...6 { XCTAssertTrue(s.claimLogin(today: "2026-11-0\(d)")) }
         XCTAssertEqual(s.loginStamps, 6)
-        XCTAssertEqual(s.freeTickets, 0)
+        XCTAssertEqual(s.freeTickets, 1)   // 新規の「はじめての1回」分のみ
         XCTAssertTrue(s.claimLogin(today: "2026-11-07"))
-        XCTAssertEqual(s.freeTickets, 1)
+        XCTAssertEqual(s.freeTickets, 2)
         XCTAssertEqual(s.loginStamps, 0)
     }
 

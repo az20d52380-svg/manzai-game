@@ -46,7 +46,7 @@ struct PullResult: Equatable {
 
 struct GachaState: Codable, Equatable {
     var owned: Set<String> = []        // ガチャで出た衣装（standard/黒紋付は含めない）
-    var freeTickets = 0                // ログインボーナスで貯まった無料の回数
+    var freeTickets = 1                // 無料の回数（新規は「はじめての1回」分の1回を最初から持つ。以後はログインボーナスで貯まる）
     var paidPending = 0                // 買ったが、まだ回していない回数（その場で回す＝貯めない）
     var shards = 0
     var pity = 0
