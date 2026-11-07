@@ -361,7 +361,7 @@ struct TournamentResultView: View {
         if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { return }   // 目視用：判の直後で止める（段階の途中を撮る）
         #endif
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { revealedReview = true }
-        try? await Task.sleep(nanoseconds: 600_000_000)
+        try? await MZSpeed.sleep(nanoseconds: 600_000_000)
         if Task.isCancelled { return }
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { revealedRest = true }
         withAnimation(Theme.Motion.r(.easeOut(duration: r.passed ? 1.1 : 0.8))) { countProgress = 1 }   // ④数字がカウントアップ
@@ -386,7 +386,7 @@ struct TournamentResultView: View {
             let t0 = fanTap
             for _ in 0..<48 {   // 2.4秒
                 if skipRequested || Task.isCancelled || fanTap != t0 { break }
-                try? await Task.sleep(nanoseconds: 50_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 50_000_000)
             }
             if skipRequested || Task.isCancelled { break }
         }
@@ -397,7 +397,7 @@ struct TournamentResultView: View {
     private func pause(_ seconds: Double) async {
         for _ in 0..<Int(seconds / 0.05) {
             if skipRequested || Task.isCancelled { return }
-            try? await Task.sleep(nanoseconds: 50_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 50_000_000)
         }
     }
 

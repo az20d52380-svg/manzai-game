@@ -12,6 +12,7 @@ struct SettingsView: View {
     var onQuitRun: (() -> Void)? = nil
     @AppStorage("vol_bgm") private var bgm: Double = 0.6   // SoundManager の既定（0.6）とそろえる（code_review_2026-10-19f §1）
     @AppStorage("vol_se") private var se: Double = 0.8
+    @AppStorage(MZSpeed.key) private var animSpeed: Int = 0
     /// 0=通常 1=確認1段目 2=確認2段目
     @State private var restartStep = 0
     @StateObject private var store = StoreManager.shared
@@ -43,6 +44,13 @@ struct SettingsView: View {
                             Rectangle().fill(YoseColor.kiDark).frame(height: 1)
                             volumeRow("SE", value: $se)
                                 .onChange(of: se) { _, _ in Sound.play(.tap) }                   // 試し鳴らし
+                        }
+                        section("演出の速さ") {
+                            Picker("演出の速さ", selection: $animSpeed) {
+                                Text("ふつう").tag(0)
+                                Text("はやい").tag(1)
+                            }.pickerStyle(.segmented)
+                            Text("大会・結果の演出と台詞送りが速くなる。勝ち負けは変わらない。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)
                         }
                         section("購入") {
                             Button { Task { restoring = true; _ = await store.restore(); restoring = false } } label: {

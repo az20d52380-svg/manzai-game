@@ -105,13 +105,13 @@ struct WeekMainView: View {
         case "calendar": showCalendar = true
         case "rent":   // 月末の支払いの目視: 休むカードを1回実行（MZ_UI=rent と併用）
             Task {
-                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 1_500_000_000)
                 if let v = CommandCatalog.cards(.休む, config: session.config, money: s.money).first { perform(v) }
             }
         case "autojob":   // 結果札の目視: 2.5秒おきにバイトを自動実行（結果→次週のイベントの順を撮る）
             Task {
                 for _ in 0..<3 {
-                    try? await Task.sleep(nanoseconds: 2_500_000_000)
+                    try? await MZSpeed.sleep(nanoseconds: 2_500_000_000)
                     if let v = CommandCatalog.cards(.バイト, config: session.config, money: s.money).first, session.pendingChoiceEvent == nil { perform(v) }
                 }
             }
@@ -254,26 +254,26 @@ struct WeekMainView: View {
             // 保留が外れたら、チップが引いた後に0.3秒の間を置いてから、立っているイベントを出す（G2）。
             guard !holding else { return }
             Task {
-                try? await Task.sleep(nanoseconds: 300_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 300_000_000)
                 syncEventPresentation()
-                try? await Task.sleep(nanoseconds: 300_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 300_000_000)
                 maybeShowDebtNotice()   // 支払いの画面の後に借金の知らせ（イベントが立っていれば出ない）
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { instant { showEvent = false }; Task { try? await Task.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
+            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
-        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await Task.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await Task.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await MZSpeed.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 初回だけの説明（初週／最初の生活費の前の週）。獲得バースト・イベントが落ち着いてから。
-            try? await Task.sleep(nanoseconds: 2_200_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 2_200_000_000)
             maybeShowFirstHints()
         }
         .task(id: session.week) {
             // 新しい週に入ったら、この週の伸びをバーにオレンジで一瞬見せる（実力＝自動注ぎ後の能力差分・相性）。
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
                 gainsVisible = true
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 1_200_000_000)
                 gainsVisible = false
             }
         }
@@ -305,14 +305,14 @@ struct WeekMainView: View {
             await waitOrSkip(seconds: chips.isEmpty ? 1.0 : 1.2)   // 画面タップで畳める（K6）
             clearBeat()
             burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
-            try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
+            try? await MZSpeed.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
             await presentRent()   // 生活費の週末：獲得の後・次の週のイベントより前に支払いの画面
         }
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
             withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
-            try? await Task.sleep(nanoseconds: 700_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 700_000_000)
             withAnimation(Theme.Motion.exit) { weekStampVisible = false }
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
@@ -320,11 +320,11 @@ struct WeekMainView: View {
         .onChange(of: session.week) { _, _ in
             offerPick = 0   // キュー96：週が変わったら札の選びを先頭に戻す
             banterIndex = 0
-            Task { try? await Task.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
+            Task { try? await MZSpeed.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
         }   // 掛け合いの読み位置は週頭でリセット
         .task(id: toast) {
             if let t = toast {
-                try? await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)
+                try? await MZSpeed.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)
                 toast = nil
             }
         }
@@ -850,8 +850,8 @@ struct WeekMainView: View {
         }
         withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { pulledID = v.id }
         beatTask = Task {
-            try? await Task.sleep(nanoseconds: 120_000_000)
-            if showBeat { try? await Task.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
+            try? await MZSpeed.sleep(nanoseconds: 120_000_000)
+            if showBeat { try? await MZSpeed.sleep(nanoseconds: 700_000_000) }   // 発話の一拍
             resultName = v.name
             burstGen += 1               // choose が選択肢イベントを立てても Beat2 退場まで cover を待たせる
             burstHold = true
@@ -1267,7 +1267,7 @@ struct WeekMainView: View {
         rentShownKey = key
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { rent = RentStatement.make(livingCost: paid, moneyAfter: s.money, roomExtra: GameEngine.roomRent(s, config: session.config),
                                                                   roomName: ShopView.roomNames[min(max(s.room ?? 0, 0), ShopView.roomNames.count - 1)]) }
-        while rent != nil && !Task.isCancelled { try? await Task.sleep(nanoseconds: 100_000_000) }
+        while rent != nil && !Task.isCancelled { try? await MZSpeed.sleep(nanoseconds: 100_000_000) }
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
@@ -1282,7 +1282,7 @@ struct WeekMainView: View {
         burstSkip = true
         Task {
             var n = 0
-            while burstHold, n < 60 { try? await Task.sleep(nanoseconds: 50_000_000); n += 1 }
+            while burstHold, n < 60 { try? await MZSpeed.sleep(nanoseconds: 50_000_000); n += 1 }
             if !burstHold { run() }
         }
     }
@@ -1291,7 +1291,7 @@ struct WeekMainView: View {
         let steps = Int(seconds / 0.05)
         for _ in 0..<steps {
             if burstSkip || Task.isCancelled { return }
-            try? await Task.sleep(nanoseconds: 50_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 50_000_000)
         }
     }
 
@@ -1384,9 +1384,9 @@ struct WeekMainView: View {
                     Task {
                         for _ in 0..<(new == 0 ? 2 : 1) {
                             withAnimation(Theme.Motion.r(.easeIn(duration: 0.15))) { gaugeFlash = true }
-                            try? await Task.sleep(nanoseconds: 150_000_000)
+                            try? await MZSpeed.sleep(nanoseconds: 150_000_000)
                             withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { gaugeFlash = false }
-                            try? await Task.sleep(nanoseconds: 150_000_000)
+                            try? await MZSpeed.sleep(nanoseconds: 150_000_000)
                         }
                     }
                 }
@@ -1501,7 +1501,7 @@ struct WeekMainView: View {
         guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
         youthNoticeYear = session.year
         Task {
-            if toast != nil { try? await Task.sleep(nanoseconds: 4_500_000_000) }
+            if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
             showToast("谷口「若手限定の大会に出られるのは、今年が最後だ」")
         }
     }

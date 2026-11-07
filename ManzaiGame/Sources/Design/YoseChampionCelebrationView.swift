@@ -789,7 +789,7 @@ private struct ChampionStageBackdropCanvas: View {
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await MZSpeed.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
             frozen = true
         }
     }
@@ -894,7 +894,7 @@ private struct ChampionGoldenHaloCanvas: View {
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await MZSpeed.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
             frozen = true
         }
     }
@@ -1002,7 +1002,7 @@ private struct ChampionCannonAndConfettiCanvas: View {
         }
         .task {
             let rest = championHoldSeconds + championSettleSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await MZSpeed.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
             frozen = true
         }
     }
