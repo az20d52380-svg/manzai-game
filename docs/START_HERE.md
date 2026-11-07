@@ -552,3 +552,4 @@ cd GameCore && swift test
 - `visual_check_1107_v0.md` — 目視点検 1107 v0（iPhone 17・ソース無変更・各画面1枚）
 - `visual_check_1107b_v0.md` — 女性コンビ 1年通し表示点検（2026-11-07）
 - `visual_check_1107c_v0.md` — 目視点検 1107c（勇退・図鑑・トロフィー・記録・戦績）iPhone 17
+- `docs/veteran_stages_measure_1108_v0.md`：終盤のベテラン向け大会・仕事4本（late_game_content §3）の実測（11/08・道具 tools/measure_veteran_stages_1108.py・正典は不変）
