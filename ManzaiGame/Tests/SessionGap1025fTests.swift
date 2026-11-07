@@ -61,7 +61,7 @@ final class SessionGap1025fTests: IsolatedStoreTestCase {
         XCTAssertEqual(r.prize, s.totalPrize, "優勝年の賞金は戦績の行にも載る")
         XCTAssertEqual(s.bestRunLine?.contains("優勝"), true)
     }
-    func testAcknowledgeWinFinishesCareerAndClearsSave() {
+    func testAcknowledgeWinFinishesCareerAndClearsSave() throws {
         let s = make(.champion)
         drive(s) { $0.winFinale }
         let key = "manzai.save.v1"
@@ -69,9 +69,42 @@ final class SessionGap1025fTests: IsolatedStoreTestCase {
         s.acknowledgeWin()
         XCTAssertFalse(s.winFinale)
         XCTAssertTrue(s.finished)
-        XCTAssertTrue(s.careerOver, "優勝＝勇退でキャリアが区切れる")
-        XCTAssertNil(GameSession.store.data(forKey: key), "優勝後はセーブが消える")
+        // 優勝の年末は勇退か続けるかを選ぶ（11/07）。選ぶ間はセーブが残り、終わりも決まらない
+        XCTAssertFalse(s.careerOver)
+        XCTAssertTrue(s.canChooseRetire)
+        XCTAssertNil(s.endingID)
+        XCTAssertNotNil(GameSession.store.data(forKey: key), "選ぶ間に閉じても戻れる")
         XCTAssertEqual(s.yearHistory.count, 1, "二重に積まれない")
+        // 閉じて開き直すと、演出からではなく選ぶ画面から
+        let back = GameSession.loadedOrNew()
+        XCTAssertFalse(back.winFinale)
+        XCTAssertTrue(back.canChooseRetire)
+        s.retireAfterWin()
+        XCTAssertTrue(s.careerOver, "勇退でキャリアが区切れる")
+        XCTAssertFalse(s.canChooseRetire)
+        XCTAssertNotNil(s.endingID)
+        XCTAssertNil(GameSession.store.data(forKey: key), "勇退でセーブが消える")
+    }
+
+    func testContinueAfterWinGoesToNextYearAndCountsAgain() {
+        let s = make(.champion)
+        drive(s) { $0.winFinale }
+        s.acknowledgeWin()
+        let y = s.year
+        s.startNextYear()
+        XCTAssertEqual(s.year, y + 1)
+        XCTAssertFalse(s.finished)
+        XCTAssertNil(s.outcome)
+        XCTAssertEqual(s.yearHistory.filter(\.champion).count, 1, "前の年の優勝は記録に残る")
+    }
+
+    func testEndingForFormerChampionAtLastYear() {
+        let y = GameConfig().careerYears
+        let won = GameSession.YearRecord(year: 1, roundsPassed: 5, reachedFinal: true, champion: true, bankrupt: false, prize: 0)
+        let lost = YearOutcome(champion: false, roundsPassed: 1, reachedFinal: false)
+        XCTAssertEqual(EndingID.judge(outcome: lost, compat: 20, history: [won], year: y, careerYears: y), .championPair)
+        XCTAssertEqual(EndingID.judge(outcome: lost, compat: 5, history: [won], year: y, careerYears: y), .championRetire)
+        XCTAssertNil(EndingID.judge(outcome: lost, compat: 5, history: [won], year: y - 1, careerYears: y))
     }
 
     // MARK: 敗者復活

@@ -188,7 +188,9 @@ final class GameSession {
     /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。保存しない（中断復帰した年は数え直し）
     @ObservationIgnored private var smallEntered = 0
     @ObservationIgnored private var smallWon = 0
-    @ObservationIgnored private var didRecordChampion = false
+    @ObservationIgnored private var didRecordChampion = false   // その年の優勝を記録したか（年が替わると戻す）
+    /// 優勝の年末で勇退を選んだ（選ぶと保存が消えるのでセーブには持たない）
+    private(set) var retiredAfterWin = false
     let combiName: String              // S1で入力（表示専用・golden非対象）
     /// 自分の名前・相方の名前（S1で入力・nil/空＝俺・谷口のまま・表示専用・golden非対象）
     let myName: String?
@@ -282,7 +284,7 @@ final class GameSession {
         if case .yearDone(let o) = save.phase {
             // 年末の画面（S6）で中断した＝翌年へ進む前。年末の結果をそのまま出し直す
             self.outcome = o
-            if o.champion {
+            if o.champion, save.winAcknowledged != true {
                 self.winFinale = true      // A-3: 勝利演出の途中で閉じた＝演出から出し直す（「次へ」で S4）
             } else {
                 self.finished = true
@@ -1074,7 +1076,7 @@ final class GameSession {
     func acknowledgeWin() {
         winFinale = false
         finished = true
-        saveNow()   // 優勝＝キャリアの区切り（勇退）なのでセーブは消える
+        saveNow()   // 勇退か続けるかを選ぶ間に閉じても、選ぶ画面から出し直す（winAcknowledged）
     }
 
     // MARK: 複数年キャリア（core_loop_reconsideration_v0 §7・2026-10-10）
@@ -1111,10 +1113,23 @@ final class GameSession {
         return last.mark == "優勝" ? "THE HANA 優勝" : "THE HANA \(last.round) \(last.mark)"
     }
 
-    /// このキャリアがこの年末で区切られるか（優勝＝勇退／夜逃げ／解散／結成 careerYears 年目の年末）
+    /// このキャリアがこの年末で区切られるか（勇退を選んだ／夜逃げ／解散／結成 careerYears 年目の年末）
     var careerOver: Bool {
         guard let o = outcome else { return false }
-        return o.champion || o.bankrupt || o.dissolved || year >= config.careerYears
+        return retiredAfterWin || o.bankrupt || o.dissolved || year >= config.careerYears
+    }
+
+    /// 優勝した年末で「勇退する／続ける」を選べるか（最後の年の優勝はそのまま終わり・オーナー 11/07）
+    var canChooseRetire: Bool {
+        guard let o = outcome, finished, !winFinale else { return false }
+        return o.champion && !careerOver
+    }
+
+    /// 優勝の年末の「勇退する」。ここでキャリアが終わる（セーブは消える）
+    func retireAfterWin() {
+        guard canChooseRetire else { return }
+        retiredAfterWin = true
+        saveNow()
     }
 
     /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
@@ -1129,6 +1144,7 @@ final class GameSession {
         // その年だけの記録と、直前の行動への反応はリセット（キャリア通算のイベント進行フラグ・連敗数・UI乱数は持ち越す）
         finished = false
         outcome = nil
+        didRecordChampion = false   // 連覇＝次の年の優勝も記録する
         pendingResult = nil
         log = []
         categoryLog = [:]
@@ -1207,6 +1223,7 @@ final class GameSession {
         var partnerName: String?   // 相方の名前（旧セーブ＝nil＝谷口）
         var comboKind: String?     // コンビの形 ComboKind.rawValue（旧セーブ＝nil＝男コンビ）
         var meetingKind: String?   // 出会い方 MeetingKind.rawValue（旧セーブ＝nil＝高校の同級生）
+        var winAcknowledged: Bool? // 優勝の演出を見終えた＝勇退か続けるかを選ぶ所（旧セーブ＝nil＝演出から）
         var didFireRiftWarn: Bool? // 途中解散の予告を出したか（旧セーブ＝nil＝まだ）
         var riftWarnChoice: String? // 予告の選択 "A"/"B"（旧セーブ＝nil）
         var didShowRiftHint: Bool?  // 予告の後の知らせを出したか（旧セーブ＝nil＝まだ）
@@ -1279,6 +1296,7 @@ final class GameSession {
                             didFireEve: didFireEve, didWatchFinal: didWatchFinal,
                             yearStartState: yearStartState, yearHistory: yearHistory,
                             debtWarnTier: debtWarnTier, myName: myName, partnerName: partnerName, comboKind: comboKind.rawValue, meetingKind: meetingKind.rawValue,
+                            winAcknowledged: (finished && outcome?.champion == true) ? true : nil,
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
@@ -1352,7 +1370,8 @@ final class GameSession {
                 state = runner.state
                 self.outcome = outcome
                 TrophyBook.onYearEnd(outcome: outcome, year: runner.year, careerYears: config.careerYears,
-                                     smallEntered: smallEntered, smallWon: smallWon)
+                                     smallEntered: smallEntered, smallWon: smallWon,
+                                     wonBefore: yearHistory.contains { $0.champion && $0.year != runner.year })
                 smallEntered = 0; smallWon = 0
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
@@ -1383,6 +1402,8 @@ final class GameSession {
                         var streak = 0
                         for rec in yearHistory.reversed() { if rec.champion { streak += 1 } else { break } }
                         TrophyBook.recordChampion(year: runner.year, streak: streak)
+                        // 玉座奪還＝前に優勝していて、前の年は優勝していない
+                        if streak == 1, yearHistory.dropLast().contains(where: { $0.champion }) { TrophyBook.award(.t20) }
                     }
                     // 優勝の週は weekDone を経ないので、決勝の点差は runner のスナップショットの週内結果から読む（表示専用）
                     lastFinalMargin = runner.snapshot().weekResults.last(where: { $0.name == "GP決勝" })?.margin
@@ -1652,6 +1673,7 @@ final class GameSession {
                 default: steps = 600
                 }
             }
+            if canChooseRetire { retireAfterWin() }
             guard finished, !careerOver else { return }
             startNextYear()
         }
@@ -1726,6 +1748,7 @@ extension GameSession {
         while steps < maxSteps {
             steps += 1
             if s.winFinale { s.acknowledgeWin(); continue }
+            if s.canChooseRetire { s.retireAfterWin() }   // 自動プレイは優勝で勇退（これまでと同じ区切り）
             if s.finished { if s.careerOver { return nil }; s.startNextYear(); continue }
             if s.watchingFinal { s.finishWatchingFinal(winner: "—"); continue }
             if let k = s.pendingChoiceEvent {

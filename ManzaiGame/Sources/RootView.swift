@@ -389,7 +389,8 @@ struct RootView: View {
                 YearResultView(session: session,
                                onRestart: { returnToTitle() },
                                onEnding: session.endingID != nil ? { showEnding = true } : nil,
-                               onNextYear: session.careerOver ? nil : { beginYearTurn() })
+                               onNextYear: session.careerOver ? nil : { beginYearTurn() },
+                               onRetire: session.canChooseRetire ? { session.retireAfterWin(); showEnding = true } : nil)
             }
         } else if let result = session.pendingResult {
             if let r = result.results.last, r.name == "GP決勝", !r.passed {
@@ -454,6 +455,7 @@ struct RootView: View {
             if s.pendingResult != nil { s.acknowledgeResult(); continue }
             if s.finished {
                 try? await Task.sleep(nanoseconds: 800_000_000)
+                if s.canChooseRetire { s.retireAfterWin() }
                 if s.careerOver {
                     if s.endingID != nil { showEnding = true; try? await Task.sleep(nanoseconds: 3_000_000_000) }
                     showEnding = false

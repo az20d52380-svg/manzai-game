@@ -13,6 +13,7 @@ struct YearResultView: View {
     var onRestart: () -> Void
     var onEnding: (() -> Void)? = nil   // キャリアの区切り（全エンド）: エンディングへ
     var onNextYear: (() -> Void)? = nil // キャリアが続く年末のみ: 翌年へ
+    var onRetire: (() -> Void)? = nil   // 優勝の年末のみ: 勇退してエンディングへ
 
     private var s: GameState { session.state }
     private var o: YearOutcome? { session.outcome }
@@ -477,7 +478,20 @@ struct YearResultView: View {
         "谷口とのコンビは、解散することにした。\n明日、二人で事務所に話しに行く。",
     ]
 
-    private var restartButton: some View {
+    @ViewBuilder private var restartButton: some View {
+        if let onRetire, let onNextYear {
+            // 主ボタンの位置は「続ける」＝連打しても勇退にならない
+            VStack(spacing: 6) {
+                Text("ここで勇退するか、連覇を狙うか").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
+                HStack(spacing: 10) {
+                    Button(action: onRetire) { Text("勇退する") }.buttonStyle(YoseButtonStyle(.secondary))
+                    Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶") }.buttonStyle(YoseButtonStyle(.primary))
+                }
+            }
+        } else { singleButton }
+    }
+
+    private var singleButton: some View {
         Button(action: onNextYear ?? onEnding ?? onRestart) {
             Text(onNextYear != nil ? "\(session.year + 1)年目へ ▶" : onEnding != nil ? "エンディングへ ▶" : "もう一度")
         }

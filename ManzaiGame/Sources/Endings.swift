@@ -87,6 +87,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         if o.dissolved { return .breakup }                                             // #2
         if o.champion { return compat >= 15 ? .championPair : .championRetire }        // #8 / #7
         guard year >= careerYears else { return nil }                                  // まだ続く
+        if history.contains(where: { $0.champion }) { return compat >= 15 ? .championPair : .championRetire }   // 優勝のあと続けて、最後の年まで走った
         let finals = history.filter { $0.reachedFinal }.count
         switch (finals >= 1, compat >= 15) {
         case (true, true): return .tenYearsTrue                                        // #6
@@ -166,7 +167,7 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
 extension GameSession {
     /// 今の年末で決まる終わり（まだ続く年末は nil）
     var endingID: EndingID? {
-        guard finished, let o = outcome else { return nil }
+        guard finished, let o = outcome, !canChooseRetire else { return nil }   // 勇退か続けるかを選ぶ間はまだ終わらない
         return EndingID.judge(outcome: o, compat: state.compat, history: yearHistory, year: year, careerYears: config.careerYears)
     }
 }
