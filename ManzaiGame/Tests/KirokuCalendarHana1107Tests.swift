@@ -1,4 +1,5 @@
 import XCTest
+import GameCore
 @testable import ManzaiGame
 
 /// きろくの通算優勝と日程表の塗り（THE HANA・code_review_1107c #6 #8）
@@ -30,5 +31,15 @@ final class KirokuCalendarHana1107Tests: XCTestCase {
         let log = ["第5週: 春新人賞A 優勝 +10万 / 夏中堅賞 敗退", "第30週: THE HANA 決勝 優勝 +100万", "第47週: 頂GP 決勝 優勝 +1000万",
                    "第47週: 頂GP 決勝 優勝「誰か」（客席から）", "第9週: 寒梅漫才杯 優勝 +20万"]
         XCTAssertEqual(GameSession.smallWinCount(log: log), 2)
+    }
+
+    func testAgedOutOnlyAfterCap() {
+        let t = GameConfig().calendar.tournaments
+        let capped = t.first { if case .careerYearAtMost = $0.eligibility { return true } else { return false } }!
+        guard case .careerYearAtMost(let n) = capped.eligibility else { return XCTFail() }
+        XCTAssertFalse(CalendarView.isAgedOut(capped, year: n))
+        XCTAssertTrue(CalendarView.isAgedOut(capped, year: n + 1))
+        let open = t.first { if case .careerYearAtMost = $0.eligibility { return false } else { return true } }!
+        XCTAssertFalse(CalendarView.isAgedOut(open, year: 15))
     }
 }
