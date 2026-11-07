@@ -374,6 +374,11 @@ def _honban_ahead(week, s=None):
 # docs/events_app_parity_v0.md
 EVENTS_APP     = False
 APP_EVENT_CAP  = 15      # GameConfig.weeklyEventCap（確定発火は数えない）
+APP_CAP_BASE_YEARS = 5   # GameConfig.weeklyEventCapBaseYears（この年目までは APP_EVENT_CAP 固定）【仮】
+APP_CAP_PER_YEAR   = 3   # GameConfig.weeklyEventCapPerLateYear（6年目以降、年ごとに通算上限へ足す枠）【仮】
+def app_event_cap(year):
+    """通算上限 = 15 + 3×(年−5)（年は1始まり・5年目まで15）。GameConfig.weeklyEventCap(year:) と同じ式"""
+    return APP_EVENT_CAP + APP_CAP_PER_YEAR * max(0, year - APP_CAP_BASE_YEARS)
 APP_UNIQUE = ["brokedrink", "meishi", "peerchair", "lineuptop", "greenroom", "lasttrain", "luckythird", "wrote", "photo"]
 APP_POOL   = APP_UNIQUE + OTHERS_EVENTS      # 25種
 
@@ -498,7 +503,7 @@ def _app_week_event(s, year, week, stages, gp_alive):
     if not a["tani_fired"] and s.money < 100_000 and s.compat >= 8 and ahead > 3:
         a["tani_fired"] = True; _app_apply(s, "tani"); done("tani"); return
     # 週次ランダム抽選
-    if a["count"] >= APP_EVENT_CAP:
+    if a["count"] >= app_event_cap(year):
         return
     rng = s._app_rng
     if rng.random() >= EVENT_RATE:

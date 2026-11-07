@@ -414,6 +414,13 @@ public struct GameConfig {
     public var weeklyEventRate = 0.12
     /// キャリア通算のイベント発火上限（sim EVENT_FIRE_CAP＝連発による希釈を防ぐ総量予算）
     public var weeklyEventCap = 15
+    /// 通算上限を 15 固定にする最後の年（1始まり）。6年目以降は年ごとに weeklyEventCapPerLateYear ずつ足す【仮】（late_events_cand_1108）
+    public var weeklyEventCapBaseYears = 5
+    public var weeklyEventCapPerLateYear = 3
+    /// 通算上限 = 15 + 3×(年−5)（年は1始まり・5年目まで15）。sim_career.app_event_cap と同じ式
+    public func weeklyEventCap(year: Int) -> Int {
+        weeklyEventCap + weeklyEventCapPerLateYear * max(0, year - weeklyEventCapBaseYears)
+    }
 
     public init() {}
 }

@@ -616,7 +616,7 @@ final class GameSession {
     private func rollWeeklyRandomEvent() {
         guard week != lastEventRollWeek else { return }   // 同一週の pump 複数回呼びで二重に引かない
         lastEventRollWeek = week
-        guard weeklyEventFiredCount < config.weeklyEventCap else { return }
+        guard weeklyEventFiredCount < config.weeklyEventCap(year: year) else { return }
         guard uiEventRng.nextUniform() < config.weeklyEventRate else { return }   // 12%【仮】で抽選成立
         // 発火帯に入っていて未発火の候補（proposals 各票のゲート）を集める
         let candidates = ChoiceEventKind.allCases.filter {

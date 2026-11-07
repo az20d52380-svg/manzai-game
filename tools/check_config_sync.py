@@ -32,6 +32,8 @@ PAIRS = {
     "injuryMentalHit":      C.INJURY_MENTAL,
     "weeklyEventRate":      C.EVENT_RATE,
     "weeklyEventCap":       C.APP_EVENT_CAP,
+    "weeklyEventCapBaseYears":   C.APP_CAP_BASE_YEARS,
+    "weeklyEventCapPerLateYear": C.APP_CAP_PER_YEAR,
     "capCurveBase":         C.CAP_CURVE[0],
     "capCurveSlope":        C.CAP_CURVE[1],
     "capCurveFloor":        C.CAP_CURVE[2],
