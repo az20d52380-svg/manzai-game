@@ -239,6 +239,7 @@ final class GameSession {
         self.comboKind = comboKind
         self.meetingKind = meetingKind
         Names.set(me: myName, partner: partnerName)
+        Names.setCombi(combiName)
         Names.setKind(comboKind)
         self.isRestored = false
         // 週次イベント抽選用の UI 乱数を seed から導出（runner の乱数列とは別シード＝独立列＝golden非干渉）。
@@ -265,6 +266,7 @@ final class GameSession {
         self.comboKind = ComboKind.from(save.comboKind)
         self.meetingKind = MeetingKind.from(save.meetingKind)
         Names.set(me: save.myName, partner: save.partnerName)
+        Names.setCombi(save.combiName)
         Names.setKind(self.comboKind)
         self.isRestored = true
         self.uiEventRng = save.uiEventRng

@@ -18,6 +18,15 @@ enum Names {
     /// 既定＝谷口
     static var partner = defaultPartner
 
+    /// コンビ名（入力そのまま・置き換えの対象外）。空＝保護なし
+    static var combi = ""
+    static func setCombi(_ c: String?) { combi = c ?? "" }
+    /// コンビ名を保護できるか（名前が「谷口」「俺」ちょうどだと台詞と区別できないので保護しない）
+    private static var protectsCombi: Bool {
+        !combi.isEmpty && combi != defaultPartner && combi != defaultMe
+            && (combi.contains(defaultPartner) || combi.contains("{"))
+    }
+
     /// コンビの形（既定＝男コンビ）。{me}{partner1} の一人称と、名前が空の時の自分の札（俺／私）を決める
     static var kind: ComboKind = .maleMale
     static func setKind(_ k: ComboKind) { kind = k }
@@ -35,6 +44,13 @@ enum Names {
     /// 画面に出す文字列へ。差し替えが無ければそのまま返す
     static func show(_ s: String) -> String {
         if s == defaultMe { return me.isEmpty ? kind.meFirstPerson : me }
+        if protectsCombi, s.contains(combi) {   // コンビ名はそのまま出す（結成届の入力どおり・code_review_1108d #2）
+            return s.components(separatedBy: combi).map { replaceTokens($0) }.joined(separator: combi)
+        }
+        return replaceTokens(s)
+    }
+
+    private static func replaceTokens(_ s: String) -> String {
         var t = s
         if t.contains("{") {   // 一人称の差し込み記号（{me}＝自分・{partner1}＝相方）
             // 「{me}ら」だけを「私たち」に（文中の「私らしい」等を巻き込まない・code_review_2026-10-25 §6）
