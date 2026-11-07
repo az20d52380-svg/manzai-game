@@ -160,6 +160,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/08 定期 済（昼・続き5）：索引の点検＝11/07〜08 の文書18本を START_HERE に足す／参照切れ4件のうち voice_bible_v0・voice_corpus_v0 は別ブランチ origin/claude/manzai-voice-calibration-2i9etz にだけある（本体に未合流＝記録のみ）。
 - 11/08 定期 済（昼・続き4）：ベテラン向け4本の実測 veteran_stages_measure_1108（判断の一覧 A-1 に反映）／二度押しで処理が2回走る型を点検＝残りなし（エンディングの「つづき」は何度呼んでも同じ）。
 - 11/08 定期 済（昼・続き3）：StoreIDs.isTicket のテスト dab478de（365 green）／候補ブランチの点検＝本体と衝突は4本。うち金額表示の2本（money-format・cprime）は pbxproj だけ＝本体を取り込み xcodegen で作り直し dcbe7d39・dbc76a51（各 GameCore 448・アプリ 367 green）。残り3本はキュー151。
 - 11/08 定期 済（昼・続き2）：selftest 失敗0／相方と過ごす場面の台詞の採点 outing_lines_score_1108（○11△13×0・v3 と食い違い＝判断の一覧 C-20・案②の候補 claude/outing-v3-cand f23b6af7）／アプリのカバー率の点検＝0% の getter 2つにテスト RepeatWinLine1108Tests（364 green）。
