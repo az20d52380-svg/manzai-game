@@ -13,6 +13,7 @@ final class FirstPersonLiteralTests: XCTestCase {
         "選んだ形で、台詞の「俺」「私」と見た目が変わる。\\nこのコンビでいるあいだは変えられない。",   // 形の選択画面の説明
         "よし。じゃあ、俺が一年目の頃の話からな",       // 堀口（先輩）
         "よし。社長には、俺から二人の名前を伝えておく",   // 野々村（事務所）
+        "俺たち、今月で解散する",                       // 石黒（同期・E7。主人公の台詞ではない）
     ]
 
     func testNoHardcodedOreInAppStrings() throws {

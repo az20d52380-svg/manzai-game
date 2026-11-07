@@ -381,6 +381,26 @@ def app_event_cap(year):
     return APP_EVENT_CAP + APP_CAP_PER_YEAR * max(0, year - APP_CAP_BASE_YEARS)
 APP_UNIQUE = ["brokedrink", "meishi", "peerchair", "lineuptop", "greenroom", "lasttrain", "luckythird", "wrote", "photo"]
 APP_POOL   = APP_UNIQUE + OTHERS_EVENTS      # 25種
+# 終盤イベント（late_events_cand_1108）: E1〜E20＝6年目以降／N1〜N16＝11年目以降。N17〜N20（優勝経験者向け）は初優勝でキャリアが閉じる sim では出ない。
+# 表は late_events_data.py（GameCore/ChoiceEventLate.swift と同じ）。False なら従来どおり（実測の「変更前」用）
+APP_LATE_ON = True
+from late_events_data import LATE_EVENTS
+LATE_POOL = [k for k, v in LATE_EVENTS.items() if not v["champ"]]
+
+def _late_pick(s, k):
+    """終盤イベントの選択（方針は _others_apply と同じ『余裕(体力50+)があれば A』）。選べる方が無ければ None"""
+    ev = LATE_EVENTS[k]
+    ok = lambda c: s.money >= ev[c]["gate"]
+    if s.stamina >= 50 and ok("A"): return "A"
+    if ok("B"): return "B"
+    return "A" if ok("A") else None
+
+def _late_apply(s, k):
+    c = _late_pick(s, k)
+    if c is None: return
+    for st, v in LATE_EVENTS[k][c]["eff"]:
+        if st == "money": s.money += v
+        else: _ev_add(s, st, v)
 
 def _app_state(s, seed=None):
     a = s.__dict__.get("_app")
@@ -416,6 +436,7 @@ def _app_stages(s, year, week, gp_alive, gp_stage, finalist, revival):
     return sorted(m for m in ms if m[0] > week)
 
 def _app_band(k, s, week, year, ahead, nxt, a):
+    if k.startswith("late"): return year >= LATE_EVENTS[k]["min_year"]
     if k == "brokedrink": return s.money < 50_000 and s.compat < B.COMPAT_CAP
     if k == "meishi":     return s.money < 200_000 and s.fame < 50
     if k == "peerchair":  return week >= 20
@@ -508,14 +529,16 @@ def _app_week_event(s, year, week, stages, gp_alive):
     rng = s._app_rng
     if rng.random() >= EVENT_RATE:
         return
-    cands = [k for k in APP_POOL if k not in a["fired"]
+    cands = [k for k in APP_POOL + (LATE_POOL if APP_LATE_ON else []) if k not in a["fired"]
              and _app_band(k, s, week, year, ahead, nxt, a)
-             and (k != "yearend" or s.money >= 1500)]       # 選べる選択肢が無いイベントは出さない
+             and (k != "yearend" or s.money >= 1500)       # 選べる選択肢が無いイベントは出さない
+             and (not k.startswith("late") or _late_pick(s, k) is not None)]
     if not cands:
         return
     k = cands[min(int(rng.random() * len(cands)), len(cands) - 1)]
     a["fired"].add(k); a["count"] += 1; done(k)
     if k in APP_UNIQUE: _app_apply(s, k)
+    elif k.startswith("late"): _late_apply(s, k)
     else: _others_apply(s, k)
 
 # 季節催事（週固定・毎年）

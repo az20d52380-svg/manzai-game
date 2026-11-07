@@ -92,6 +92,8 @@ enum ChoiceEventData {
         case .partnerFever: return partnerFever
         case .lostNotebook: return lostNotebook
         case .yearEndLive: return yearEndLive
+        case .lateE01, .lateE02, .lateE03, .lateE04, .lateE05, .lateE06, .lateE07, .lateE08, .lateE09, .lateE10, .lateE11, .lateE12, .lateE13, .lateE14, .lateE15, .lateE16, .lateE17, .lateE18, .lateE19, .lateE20, .lateN01, .lateN02, .lateN03, .lateN04, .lateN05, .lateN06, .lateN07, .lateN08, .lateN09, .lateN10, .lateN11, .lateN12, .lateN13, .lateN14, .lateN15, .lateN16, .lateN17, .lateN18, .lateN19, .lateN20:
+            return lateText(for: kind)!   // ChoiceEventDataLate.swift
         }
     }
 

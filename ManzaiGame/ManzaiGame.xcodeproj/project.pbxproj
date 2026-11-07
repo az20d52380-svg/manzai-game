@@ -61,6 +61,7 @@
 		5DB922218F668B8CC8DDF60E /* se_taiko2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */; };
 		5EA1A814CA2CFA7DF978D4CA /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B3D0E4892F3438C35FA663 /* StoreManager.swift */; };
 		600E61599EB49B504429661D /* SessionGap1025bTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62FE4805AE73B7FD14E1CA7 /* SessionGap1025bTests.swift */; };
+		695C00CCEF52AB05A4128903 /* LateEvents1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA19CCD6A2FB1B6ED54E15E /* LateEvents1108Tests.swift */; };
 		6A55EF31B2C64F85F506CF93 /* TrophyHana1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA673092EEA63EF1E2CC53DF /* TrophyHana1107Tests.swift */; };
 		6B0231312E498F6023B914D2 /* JudgeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D08F932A4334F422E73881 /* JudgeData.swift */; };
 		6C7AE0E5AF2E0E84B8B2FE89 /* se_applause_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */; };
@@ -126,6 +127,7 @@
 		D77894E998538F74B1007C23 /* MetaWireTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */; };
 		D782B299A77D14F37CE5CAA1 /* SoundInterruption1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A9DEDD228736371D634684 /* SoundInterruption1108Tests.swift */; };
 		DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */; };
+		DE4C3A9EC83B6030F556F240 /* ChoiceEventDataLate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F1BD3DF25E0333107FD24E /* ChoiceEventDataLate.swift */; };
 		E090A17DEBCCD958D563E909 /* ResultExpRow1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D43F98004DD415C0C5FDB72 /* ResultExpRow1107Tests.swift */; };
 		E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */; };
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
@@ -161,6 +163,7 @@
 /* Begin PBXFileReference section */
 		024DBFE5B9622AFE4F257FBA /* bgm_daily.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_daily.mp3; sourceTree = "<group>"; };
 		02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaTests.swift; sourceTree = "<group>"; };
+		02F1BD3DF25E0333107FD24E /* ChoiceEventDataLate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventDataLate.swift; sourceTree = "<group>"; };
 		03CD35C357DC138BA0BD8FF9 /* NetaCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaCatalog.swift; sourceTree = "<group>"; };
 		0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameApp.swift; sourceTree = "<group>"; };
 		08B86D882DE6689C655ADD0C /* FanReportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanReportData.swift; sourceTree = "<group>"; };
@@ -240,6 +243,7 @@
 		A799C1CDD04C665A5DE37ABB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameTests.swift; sourceTree = "<group>"; };
 		A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageOutfit.swift; sourceTree = "<group>"; };
+		AAA19CCD6A2FB1B6ED54E15E /* LateEvents1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LateEvents1108Tests.swift; sourceTree = "<group>"; };
 		ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventData.swift; sourceTree = "<group>"; };
 		AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_drumroll.mp3; sourceTree = "<group>"; };
 		AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_mid.mp3; sourceTree = "<group>"; };
@@ -355,6 +359,7 @@
 				0B56CF2CC9552602E05AC67B /* CalendarView.swift */,
 				D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */,
 				ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */,
+				02F1BD3DF25E0333107FD24E /* ChoiceEventDataLate.swift */,
 				E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */,
 				E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */,
 				9A4BBB14240832141FE63318 /* ComboKindPickerView.swift */,
@@ -476,6 +481,7 @@
 				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
 				E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */,
 				95B96675CA30EB03A4395279 /* KirokuCalendarHana1107Tests.swift */,
+				AAA19CCD6A2FB1B6ED54E15E /* LateEvents1108Tests.swift */,
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
 				4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */,
@@ -661,6 +667,7 @@
 				9C0D027CDCFED1A3CCE43054 /* CalendarView.swift in Sources */,
 				4671A140B09142E5B42D60D7 /* CharacterAvatars.swift in Sources */,
 				8A594478EA03EF55A5AEACB6 /* ChoiceEventData.swift in Sources */,
+				DE4C3A9EC83B6030F556F240 /* ChoiceEventDataLate.swift in Sources */,
 				F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */,
 				FDD40E534362160170CB232B /* ComboKind.swift in Sources */,
 				E9D7F86C18BB501C36FC64F0 /* ComboKindPickerView.swift in Sources */,
@@ -746,6 +753,7 @@
 				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
 				90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */,
 				91739408737C3DF915CFEF2D /* KirokuCalendarHana1107Tests.swift in Sources */,
+				695C00CCEF52AB05A4128903 /* LateEvents1108Tests.swift in Sources */,
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
 				D77894E998538F74B1007C23 /* MetaWireTests.swift in Sources */,

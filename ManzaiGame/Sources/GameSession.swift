@@ -622,7 +622,7 @@ final class GameSession {
         let candidates = ChoiceEventKind.allCases.filter {
             $0.isWeeklyRandom
                 && !firedWeeklyEvents.contains($0)
-                && ChoiceEventTable.weeklyFireable($0, state: state, week: week, config: config)
+                && ChoiceEventTable.weeklyFireable($0, state: state, week: week, config: config, year: year)
                 && weeklyExtraGate($0)
         }
         guard !candidates.isEmpty else { return }
@@ -683,10 +683,19 @@ final class GameSession {
             // 0051: 炎天下の営業が本番の前週に重ならない（0042 と同じ）
             guard let m = nextMilestoneForEvent() else { return true }
             return m.week - week >= 2
+        // 終盤イベントの優勝経験者向け(N17〜N20)。前年・前々年の優勝は yearHistory（年末に積む・新しい保存項目なし）で判定する
+        case .lateN17: return wonLastYear && !wonTwoYearsAgo   // 優勝した直後の年
+        case .lateN18: return !wonLastYear && wonTwoYearsAgo   // 王座を失った翌年
+        case .lateN19: return wonLastYear && wonTwoYearsAgo    // 連覇中
+        case .lateN20: return hasWonBefore && !wonLastYear && !wonTwoYearsAgo   // 優勝後も続けている年（上の3つに当たらない時）
         default:
             return true
         }
     }
+
+    private var wonLastYear: Bool { yearHistory.contains { $0.year == year - 1 && $0.champion } }
+    private var wonTwoYearsAgo: Bool { yearHistory.contains { $0.year == year - 2 && $0.champion } }
+    private var hasWonBefore: Bool { yearHistory.contains { $0.year < year && $0.champion } }
 
     /// 今後の本番1件（表示・発火判定用）。
     struct StageInfo {
@@ -772,8 +781,13 @@ final class GameSession {
              .kouhaiInvite, .senpaiAllNight, .stageCrewChairs, .writerPostcards, .doukiJointLive,
              .baitoInventory, .homecomingCall, .regularFanOranges, .officeTicketQuota,
              .summerFestivalGig, .doukiOnTV, .theaterRenovation, .classmateInAudience, .partnerFever,
-             .lostNotebook, .yearEndLive:
-            break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み
+             .lostNotebook, .yearEndLive,
+             .lateE01, .lateE02, .lateE03, .lateE04, .lateE05, .lateE06, .lateE07, .lateE08,
+             .lateE09, .lateE10, .lateE11, .lateE12, .lateE13, .lateE14, .lateE15, .lateE16,
+             .lateE17, .lateE18, .lateE19, .lateE20, .lateN01, .lateN02, .lateN03, .lateN04,
+             .lateN05, .lateN06, .lateN07, .lateN08, .lateN09, .lateN10, .lateN11, .lateN12,
+             .lateN13, .lateN14, .lateN15, .lateN16, .lateN17, .lateN18, .lateN19, .lateN20:
+            break   // 週次イベントは発火時に firedWeeklyEvents で1回制管理済み（終盤イベント40本も同じ）
         case .regularEmployment:
             break   // 0023 廃止（抽選外）。古いセーブの保留中イベント互換のためケースだけ残す
         case .namelessReservationSlip:

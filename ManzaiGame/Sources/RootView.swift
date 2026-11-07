@@ -313,7 +313,7 @@ struct RootView: View {
                 case "preTournamentEve": kind = .preTournamentEve
                 case "tsuukaBreak": kind = .tsuukaBreak
                 case "earlyFormality": kind = .earlyFormality
-                default:     kind = .brokeDrinkingInvite
+                default:     kind = ProcessInfo.processInfo.environment["MZ_EV"].flatMap { ChoiceEventKind(rawValue: $0) } ?? .brokeDrinkingInvite   // 終盤イベントは rawValue（例 lateE01）で開ける
                 }
                 // MZ_EVWEEK=n：n 週休んでから出す（styleTalk・weekend は週で文面の型が変わる＝ChoiceEventData.text(for:year:week:)）
                 if let n = ProcessInfo.processInfo.environment["MZ_EVWEEK"].flatMap(Int.init), n > 0 { session.debugFreeWeeks(n, .rest(.完全休養)) }

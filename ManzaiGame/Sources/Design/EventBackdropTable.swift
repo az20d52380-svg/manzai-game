@@ -44,6 +44,47 @@ extension EventBackdrop {
         case .partnerFever:            return .init(.keikoba, .morning) // 稽古場・相方から電話が来た朝
         case .lostNotebook:            return .init(.stationGate, .morning) // 駅の忘れ物の窓口→近い背景=駅・朝
         case .yearEndLive:             return .init(.gakuya, .night)    // 劇場の楽屋・年末のライブの後
+        // 終盤イベント（late_events_cand_1108）。ト書きの場所と時間帯に合わせる
+        case .lateE01:                return .init(.theater, .day) // E1 劇場の裏口。昼。
+        case .lateE02:                return .init(.gakuya, .night) // E2 楽屋の廊下。夜。
+        case .lateE03:                return .init(.street, .evening) // E3 駅前のビジョン。夕方。
+        case .lateE04:                return .init(.office, .day) // E4 事務所の応接室。昼。
+        case .lateE05:                return .init(.apartment, .night) // E5 アパート。夜。
+        case .lateE06:                return .init(.office, .morning) // E6 病院の待合室。朝。
+        case .lateE07:                return .init(.street, .night) // E7 居酒屋の前。夜。
+        case .lateE08:                return .init(.theater, .day) // E8 劇場のロビー。昼。
+        case .lateE09:                return .init(.office, .day) // E9 制作会社の会議室。昼。
+        case .lateE10:                return .init(.apartment, .night) // E10 アパート。深夜。
+        case .lateE11:                return .init(.keikoba, .day) // E11 稽古場。昼。
+        case .lateE12:                return .init(.apartment, .night) // E12 アパートの押し入れ。夜。
+        case .lateE13:                return .init(.theater, .evening) // E13 劇場の階段。夕方。
+        case .lateE14:                return .init(.apartment, .morning) // E14 アパート。朝。
+        case .lateE15:                return .init(.theater, .night) // E15 劇場の出口。夜。
+        case .lateE16:                return .init(.office, .day) // E16 事務所の事務室。昼。
+        case .lateE17:                return .init(.keikoba, .morning) // E17 稽古場。朝。
+        case .lateE18:                return .init(.office, .day) // E18 事務所の応接室。昼。
+        case .lateE19:                return .init(.theaterOutside, .evening) // E19 古い劇場の前。夕方。
+        case .lateE20:                return .init(.apartment, .night) // E20 アパートの廊下。夜。
+        case .lateN01:                return .init(.theater, .day) // N1 劇場の応接室。昼。
+        case .lateN02:                return .init(.office, .evening) // N2 事務所の電話口。夕方。
+        case .lateN03:                return .init(.theater, .morning) // N3 劇場の事務室。朝。
+        case .lateN04:                return .init(.keikoba, .day) // N4 会場の控室。昼。
+        case .lateN05:                return .init(.keikoba, .evening) // N5 稽古場の入口。夕方。
+        case .lateN06:                return .init(.gakuya, .evening) // N6 舞台袖。本番前。
+        case .lateN07:                return .init(.theater, .day) // N7 劇場の客席。昼。
+        case .lateN08:                return .init(.keikoba, .day) // N8 稽古場。昼。
+        case .lateN09:                return .init(.theater, .evening) // N9 劇場の事務室。夕方。
+        case .lateN10:                return .init(.street, .night) // N10 商店街の店先。夜。
+        case .lateN11:                return .init(.street, .evening) // N11 定食屋の前。夕方。
+        case .lateN12:                return .init(.office, .evening) // N12 事務所の会議室。夕方。
+        case .lateN13:                return .init(.keikoba, .day) // N13 衣装部屋。昼。
+        case .lateN14:                return .init(.office, .day) // N14 事務所の受付。昼。
+        case .lateN15:                return .init(.office, .day) // N15 事務所の会議室。昼。
+        case .lateN16:                return .init(.theater, .night) // N16 劇場の事務室。夜。
+        case .lateN17:                return .init(.theater, .day) // N17 劇場の応接室。昼。
+        case .lateN18:                return .init(.keikoba, .day) // N18 稽古場。昼。
+        case .lateN19:                return .init(.office, .morning) // N19 事務所の掲示板の前。朝。
+        case .lateN20:                return .init(.theater, .evening) // N20 劇場の受付。夕方。
         }
     }
 }

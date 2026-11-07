@@ -47,6 +47,47 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     case partnerFever        // 0055: 相方の熱（週6以降・体力<50）
     case lostNotebook        // 0056: なくしたノート（週10以降・持ちネタあり）
     case yearEndLive         // 0057: 年末のライブ（12月=週33-36）
+    // --- 終盤イベント 40本（late_events_cand_1108・docs/late_game_content_v0.md §2 の E1〜E20＝6年目以降／docs/late_game_events_draft_1107.md の N1〜N20＝11年目以降・各1回制。N17〜N20 は優勝経験者のみ。効果は ChoiceEventLate.swift） ---
+    case lateE01
+    case lateE02
+    case lateE03
+    case lateE04
+    case lateE05
+    case lateE06
+    case lateE07
+    case lateE08
+    case lateE09
+    case lateE10
+    case lateE11
+    case lateE12
+    case lateE13
+    case lateE14
+    case lateE15
+    case lateE16
+    case lateE17
+    case lateE18
+    case lateE19
+    case lateE20
+    case lateN01
+    case lateN02
+    case lateN03
+    case lateN04
+    case lateN05
+    case lateN06
+    case lateN07
+    case lateN08
+    case lateN09
+    case lateN10
+    case lateN11
+    case lateN12
+    case lateN13
+    case lateN14
+    case lateN15
+    case lateN16
+    case lateN17
+    case lateN18
+    case lateN19
+    case lateN20
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
@@ -59,7 +100,7 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
              .lostNotebook, .yearEndLive:
             return true
         default:
-            return false
+            return isLateEvent   // 終盤イベント（ChoiceEventLate.swift）は週次抽選プール
         }
     }
 }
@@ -364,6 +405,8 @@ public enum ChoiceEventTable {
         case .weekendInvite:
             // §102: A=行く(所持金-5,000/体力-10/メンタル+1/半分で発想+0.5＝GameSession が runner.applyInviteGo で適用)　B=断る(何も起きない)
             return [ChoiceEventChoice(id: "A", effects: []), ChoiceEventChoice(id: "B", effects: [])]
+        case .lateE01, .lateE02, .lateE03, .lateE04, .lateE05, .lateE06, .lateE07, .lateE08, .lateE09, .lateE10, .lateE11, .lateE12, .lateE13, .lateE14, .lateE15, .lateE16, .lateE17, .lateE18, .lateE19, .lateE20, .lateN01, .lateN02, .lateN03, .lateN04, .lateN05, .lateN06, .lateN07, .lateN08, .lateN09, .lateN10, .lateN11, .lateN12, .lateN13, .lateN14, .lateN15, .lateN16, .lateN17, .lateN18, .lateN19, .lateN20:
+            return lateChoices(for: kind)   // 終盤イベント40本（ChoiceEventLate.swift）
         case .namelessReservationSlip, .lineupTop, .greenroomSilentTen, .luckyThirdLine:
             return []   // 選択肢なしフレーバー（会話を送り切って閉じる・効果なし）
         }
@@ -371,15 +414,16 @@ public enum ChoiceEventTable {
 
     /// 週次抽選イベントの発火ゲート（純関数・RNG非消費）。確定発火の kind は常に false（抽選プール外）。
     /// GameSession の週次抽選が「発火帯に入っている候補」だけを対象にする（proposals 各票の発火条件）。
-    public static func weeklyFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig) -> Bool {
-        guard weeklyBandFireable(kind, state: state, week: week, config: config) else { return false }
+    /// year は1始まり（終盤イベントの「6年目以降／11年目以降」の判定用・既定1＝終盤イベントは出ない）
+    public static func weeklyFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig, year: Int = 1) -> Bool {
+        guard weeklyBandFireable(kind, state: state, week: week, config: config, year: year) else { return false }
         // 全イベント共通: 選択肢があるのに今の状態で1つも選べないイベントは出さない（発火も上限消費もしない）。
         // 選択肢なしのフレーバーは対象外。RNG非消費・候補の絞り込みのみ。
         let cs = choices(for: kind, config: config)
         return cs.isEmpty || cs.contains { $0.gate(state) }
     }
 
-    private static func weeklyBandFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig) -> Bool {
+    private static func weeklyBandFireable(_ kind: ChoiceEventKind, state: GameState, week: Int, config: GameConfig, year: Int) -> Bool {
         switch kind {
         case .brokeDrinkingInvite:
             // 0011: 低所持金帯（<5万）＋相性が上限未満（上限だと A の相性+1 が死んで B 上位互換化＝proposal リスク節）
@@ -430,6 +474,8 @@ public enum ChoiceEventTable {
         case .lostNotebook:        return week >= 10 && !state.netas.isEmpty
         case .yearEndLive:         return (33...36).contains(week)        // 12月
         default:
+            // 終盤イベント（E=6年目以降・N=11年目以降）。優勝経験者向け(N17〜N20)の判定は GameSession 側（yearHistory を要する）
+            if let minYear = kind.lateEventMinYear { return year >= minYear }
             return false
         }
     }
