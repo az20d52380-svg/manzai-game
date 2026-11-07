@@ -190,6 +190,7 @@ struct CalendarView: View {
             // これからの週は、今の状態で出られる大会だけ塗る（推薦制・若手限定で入口が出ない週を「大会」と見せない・code_review_2026-10-19g §2）。過ぎた週は従来どおり
             if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
             if Self.isAgedOut(spec, year: session.year) { return false }   // 結成の年数で出られなくなった大会は、過ぎた週でも塗らない（やった事の判を出す・visual_check_1107d）
+            if case .fameAtLeast = spec.eligibility { return session.categoryLog[w] == .taikai }   // 推薦制は知名度が足りず出られない週があるので、出た週だけ塗る（code_review_1108 #1）
             return Self.paintsPastWeek(tournamentName: spec.name, category: session.categoryLog[w])
         }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
