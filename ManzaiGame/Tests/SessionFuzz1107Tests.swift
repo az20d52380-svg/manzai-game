@@ -92,6 +92,18 @@ final class SessionFuzz1107Tests: IsolatedStoreTestCase {
         for seed in UInt64(100)..<112 { let r = play(seed: seed, start: nil, kind: seed % 2 == 0 ? .maleMale : .femaleFemale); XCTAssertNil(r, r ?? "") }
     }
 
+    /// 周回の点が多い開始（初期の経験点・所持金が増える）でも同じように通る。点はキャリアで増えるだけ
+    func testRandomOrderWithMetaPoints() {
+        for (i, pts) in [10, 24, 36, 38].enumerated() {
+            let female = i % 2 == 1
+            let before = TrophyBook.points
+            let start = GameState(config: GameConfig(), metaPoints: pts, femaleCombo: female)
+            let r = play(seed: 300 + UInt64(i), start: start, kind: female ? .femaleFemale : .maleMale)
+            XCTAssertNil(r, r ?? "")
+            XCTAssertGreaterThanOrEqual(TrophyBook.points, before)
+        }
+    }
+
     func testRandomOrderMaxedStart() {
         for seed in UInt64(200)..<206 { let r = play(seed: seed, start: GameSession.debugMaxedState(), kind: seed % 2 == 0 ? .maleMale : .femaleFemale); XCTAssertNil(r, r ?? "") }
     }
