@@ -19,10 +19,10 @@ final class CoverageXTests: XCTestCase {
 
     func testAffordableRawIsBottleneckBelowStep() {
         var s = GameState(config: cfg)
-        s.発想 = 10     // 倍率1.0（レシピ 閃き0.65 / 語彙0.35）
+        s.発想 = 10     // 倍率0.70（G帯・較正A。レシピ 閃き0.65 / 語彙0.35）
         s.exp閃き = 100
-        s.exp語彙 = 0.175   // 0.175/0.35 = 0.5 がボトルネック
-        XCTAssertEqual(GameEngine.affordableRaw(.発想, state: s, config: cfg), 0.5, accuracy: 1e-12)
+        s.exp語彙 = 0.175   // 0.175/(0.35×0.70) がボトルネック
+        XCTAssertEqual(GameEngine.affordableRaw(.発想, state: s, config: cfg), 0.175 / (0.35 * 0.70), accuracy: 1e-12)
     }
 
     func testAffordableRawClampedToAllocationStep() {
@@ -34,12 +34,12 @@ final class CoverageXTests: XCTestCase {
 
     func testAffordableRawShrinksAsRankRises() {
         var lo = GameState(config: cfg), hi = GameState(config: cfg)
-        lo.発想 = 10; hi.発想 = 60   // 倍率 1.0 と 2.5（55〜70未満の帯）
+        lo.発想 = 10; hi.発想 = 60   // 倍率 0.70（G帯・較正A）と 2.5（55〜70未満の帯）
         lo.exp閃き = 100; hi.exp閃き = 100
         lo.exp語彙 = 0.175; hi.exp語彙 = 0.175
         let a = GameEngine.affordableRaw(.発想, state: lo, config: cfg)
         let b = GameEngine.affordableRaw(.発想, state: hi, config: cfg)
-        XCTAssertEqual(a, 0.5, accuracy: 1e-12)
+        XCTAssertEqual(a, 0.5 / 0.70, accuracy: 1e-12)
         XCTAssertEqual(b, 0.5 / 2.5, accuracy: 1e-9)
         XCTAssertLessThan(b, a)
     }

@@ -44,7 +44,7 @@ struct CalendarView: View {
     private var summary: some View {
         VStack(spacing: 3) {
             Text("\(session.combiName)").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-            Text("\(session.year)年目　第\(session.week)週 ・ 賞金 ¥\(session.totalPrize.formatted())")
+            Text("\(session.year)年目　第\(session.week)週 ・ 今年の賞金 ¥\(session.totalPrize.formatted())")
                 .font(YoseFont.number(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 7)
@@ -94,9 +94,9 @@ struct CalendarView: View {
             if isTournament {
                 Rectangle().fill(isPast ? YoseColor.shu.opacity(0.55) : YoseColor.shu)   // 大会週＝朱の色面
                 VStack(spacing: 0) {
-                    Text(tournamentName(w)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                    Text(tournamentName(w)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(isPast ? YoseColor.sumi : YoseColor.kinBright)   // 過ぎた週は薄い朱＝金や生成りだと読めない
                         .lineLimit(1).minimumScaleFactor(0.7)
-                    Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                    Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(isPast ? YoseColor.sumi : YoseColor.kinari)
                         .lineLimit(1)
                 }
                 .padding(.horizontal, 2)
@@ -144,6 +144,10 @@ struct CalendarView: View {
             Text("頂GP＝頂グランプリ（1回戦から勝ち上がり、第\(cal.gpFinalWeek)週が決勝）")
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).multilineTextAlignment(.center)
+            // 去年まで朱だった週が判子に変わる理由が画面に無かった（code_review_1108 指摘2・表示だけ）
+            Text("出られなかった大会の週は塗りません")
+                .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                .lineLimit(1).minimumScaleFactor(0.8)
         }
         .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
         .padding(.horizontal, 10).padding(.vertical, 8)
@@ -161,7 +165,8 @@ struct CalendarView: View {
     private func tournamentName(_ w: Int) -> String {
         if w == cal.gpFinalWeek { return "頂GP" }
         if let i = cal.gpRounds.firstIndex(where: { $0.week == w }), i < cal.gpRoundNames.count { return GPName.short(cal.gpRoundNames[i]) }
-        guard let n = cal.tournament(inWeek: w)?.name else { return "" }
+        guard let n = cal.tournament(inWeek: w, state: session.state)?.name else { return "" }
+        if n.hasPrefix("HANA") { return GPName.short(n) }
         return n.replacingOccurrences(of: "漫才杯", with: "杯").replacingOccurrences(of: "コンクール", with: "").replacingOccurrences(of: "賞", with: "").replacingOccurrences(of: "制", with: "")
     }
 
@@ -172,11 +177,30 @@ struct CalendarView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { if toastToken == token { withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { toast = nil } } }
     }
 
+    /// 過ぎた週の塗り：THE HANA は通過しないと次の段に出られないので、実際に出た週（大会の記録がある週）だけ塗る。道中の大会はこれまでどおり（code_review_1107c #8）。表示専用。
+    static func paintsPastWeek(tournamentName: String, category: BandCategory?) -> Bool {
+        guard tournamentName.hasPrefix("HANA") else { return true }
+        return category == .taikai
+    }
+
+    /// 過ぎた大会週を塗るか（表示専用・純関数にしてテストで押さえる＝PastWeekPaint1108Tests）
+    static func paintsPastTournamentWeek(_ spec: TournamentSpec, year: Int, category: BandCategory?) -> Bool {
+        if isAgedOut(spec, year: year) { return false }   // 結成の年数で出られなくなった大会は、過ぎた週でも塗らない（やった事の判を出す・visual_check_1107d）
+        if case .fameAtLeast = spec.eligibility { return category == .taikai }   // 推薦制は知名度が足りず出られない週があるので、出た週だけ塗る（code_review_1108 #1）
+        return paintsPastWeek(tournamentName: spec.name, category: category)
+    }
+
+    /// 結成◯年以内の大会で、今年はもう出られない（年が決まれば変わらない条件だけを見る）
+    static func isAgedOut(_ spec: TournamentSpec, year: Int) -> Bool {
+        if case .careerYearAtMost(let n) = spec.eligibility { return year > n }
+        return false
+    }
+
     private func isTournamentWeek(_ w: Int) -> Bool {
-        if let spec = cal.tournament(inWeek: w) {
+        if let spec = cal.tournament(inWeek: w, state: session.state) {
             // これからの週は、今の状態で出られる大会だけ塗る（推薦制・若手限定で入口が出ない週を「大会」と見せない・code_review_2026-10-19g §2）。過ぎた週は従来どおり
             if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
-            return true
+            return Self.paintsPastTournamentWeek(spec, year: session.year, category: session.categoryLog[w])
         }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
         return w == cal.gpFinalWeek

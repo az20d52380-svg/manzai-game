@@ -50,6 +50,40 @@ struct YoseRowGlowModifier: ViewModifier {
     }
 }
 
+/// 経験点の丸アイコン：増えた瞬間に 1.35→1.0 で跳ね、同色の細い輪が 1.0→1.6 倍に広がって消える（0.3秒）。
+/// 視差を減らす時は跳ねも輪も止め、丸を0.25秒だけ白く光らせる。減った時は何もしない（Gemini R7 §2-D）。
+struct YoseExpPingModifier: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let value: Int
+    let color: Color
+    @State private var bump = false
+    @State private var ring = false
+    @State private var ringOn = false
+    @State private var glow = false
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(bump ? 1.35 : 1.0)
+            .overlay { Circle().fill(Color.white).opacity(glow ? 0.55 : 0).allowsHitTesting(false) }
+            .overlay {
+                Circle().stroke(color, lineWidth: 1.5)
+                    .scaleEffect(ring ? 1.6 : 1.0).opacity(ringOn ? 0.9 : 0)
+                    .allowsHitTesting(false)
+            }
+            .onChange(of: value) { old, new in
+                guard new > old else { return }
+                if reduceMotion {
+                    glow = true
+                    DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.25)) { glow = false } }
+                    return
+                }
+                ring = false; ringOn = true
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.5)) { bump = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { withAnimation(.spring(response: 0.28, dampingFraction: 0.5)) { bump = false } }
+                DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.3)) { ring = true; ringOn = false } }
+            }
+    }
+}
+
 /// 要素の出現：下から10pt せり上がる（delay で順送り。講評→結果は 0.12 秒差）
 struct YoseAppearModifier: ViewModifier {
     var delay: Double = 0
@@ -65,12 +99,13 @@ struct YoseAppearModifier: ViewModifier {
 }
 
 enum YoseHaptic {
-    static func press() { UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
+    static func press() { Haptics.rigid(0.8) }   // 共通口（0.08秒以内の次は捨てる・強さ0.8＝Gemini R7 §2-B）
 }
 
 extension View {
     func yoseStampImpact(_ isStamped: Bool) -> some View { modifier(YoseStampImpactModifier(isStamped: isStamped)) }
     func yoseNumberBounce(_ value: Double) -> some View { modifier(YoseNumberBounceModifier(value: value)) }
+    func yoseExpPing(_ value: Int, color: Color) -> some View { modifier(YoseExpPingModifier(value: value, color: color)) }
     func yoseRowGlow(trigger: Int) -> some View { modifier(YoseRowGlowModifier(trigger: trigger)) }
     func yoseAppear(delay: Double = 0) -> some View { modifier(YoseAppearModifier(delay: delay)) }
 }

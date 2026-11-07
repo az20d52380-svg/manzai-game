@@ -67,10 +67,10 @@ final class AllocationTests: XCTestCase {
         s.exp閃き = 10; s.exp間合い = 10; s.exp胆力 = 10   // 全通貨に余裕＝ボトルネックはallocationStep側
         let gain = GameEngine.pourStep(.センス, to: &s, config: config)
         XCTAssertGreaterThan(gain, 0)
-        // allocationStep=1.0 を各重みで按分して消費（10-1×0.45=9.55 等）
-        XCTAssertEqual(s.exp閃き, 10 - 1.0 * 0.45, accuracy: 1e-9)
-        XCTAssertEqual(s.exp間合い, 10 - 1.0 * 0.35, accuracy: 1e-9)
-        XCTAssertEqual(s.exp胆力, 10 - 1.0 * 0.20, accuracy: 1e-9)
+        // allocationStep=1.0 を各重みで按分し、G帯の倍率0.70（較正A）を掛けて消費（10-1×0.45×0.7 等）
+        XCTAssertEqual(s.exp閃き, 10 - 1.0 * 0.45 * 0.70, accuracy: 1e-9)
+        XCTAssertEqual(s.exp間合い, 10 - 1.0 * 0.35 * 0.70, accuracy: 1e-9)
+        XCTAssertEqual(s.exp胆力, 10 - 1.0 * 0.20 * 0.70, accuracy: 1e-9)
     }
 
     /// 通貨のどれか1つでも0なら、その能力は一切伸びない（ボトルネック＝全通貨が揃って初めて伸びる）。
@@ -114,7 +114,8 @@ final class AllocationTests: XCTestCase {
 
     /// 段刻みループは一括 add() を決して上回らない（貯め込みの1点評価上振れが構造的に消えている）
     func testStepLoopNeverExceedsSingleShot() {
-        let config = GameConfig()   // 発想: 閃き0.65 / 語彙0.35
+        var config = GameConfig()   // 発想: 閃き0.65 / 語彙0.35
+        config.abilityRankCostBands[0].multiplier = 1.0   // 帯の倍率と独立に「段刻み≦一括」の機構だけを見る（G帯0.70＝較正A だと同じ通貨で生量6を超えて注げる）
         var single = GameState(config: config)
         single.growthBudget = 100   // 予算で切られない条件で逓減複利だけを見る
         GameEngine.add(.ability(.発想), 6, to: &single, config: config)
@@ -148,7 +149,7 @@ final class AllocationTests: XCTestCase {
         let config = GameConfig()   // 発想: 閃き0.65 / 語彙0.35。しきい値15/25/…でG→F→…と上がる
         var low = GameState(config: config)
         low.growthBudget = nil
-        low.発想 = 10   // G帯（倍率1.0）
+        low.発想 = 10   // G帯（倍率0.70・較正A）
         low.exp閃き = 10; low.exp語彙 = 10
         let lowGain = GameEngine.pourStep(.発想, to: &low, config: config)
         let lowSpent = 10 - low.exp閃き
@@ -162,8 +163,8 @@ final class AllocationTests: XCTestCase {
 
         XCTAssertGreaterThan(lowGain, 0)
         XCTAssertGreaterThan(highGain, 0)
-        XCTAssertEqual(highSpent, lowSpent * 2.0, accuracy: 1e-9, "50(C帯)は10(G帯)の倍率2.0倍の通貨を消費するはず")
-        XCTAssertEqual(GameEngine.rankCostMultiplier(.発想, state: GameState(config: config), config: config), 1.0)
+        XCTAssertEqual(highSpent, lowSpent * 2.0 / 0.70, accuracy: 1e-9, "50(C帯 2.0)は10(G帯 0.70)の 2.0/0.70 倍の通貨を消費するはず")
+        XCTAssertEqual(GameEngine.rankCostMultiplier(.発想, state: GameState(config: config), config: config), 0.70)
     }
 
     /// おすすめ注ぎ: 決定論・注げる通貨を残さない（器と上限とレシピが許す限り）・現在値が低い能力を優先
