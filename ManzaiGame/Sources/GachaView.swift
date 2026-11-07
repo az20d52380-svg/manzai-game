@@ -88,6 +88,8 @@ struct GachaView: View {
                             .overlay(Circle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("札 \(s.loginStamps)枚、\(GachaCatalog.loginGoal)枚で無料1回")
                 Text("毎日1枚もらえます。\(GachaCatalog.loginGoal)枚で無料のガチャ1回。")
                     .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 Button {
@@ -209,13 +211,16 @@ struct GachaView: View {
             .yoseHarigami(isFeatured: wearing == o && owned)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(owned ? "\(o.displayName)\(wearing == o ? "、着用中" : "")" : "未入手の衣装")
+        .accessibilityLabel(owned ? "\(o.displayName)\(wearing == o ? "、着用中" : "")"
+                            : "未入手の衣装\(canX ? "、交換できる" : "")\(o == .kuromontsuki ? "、広告カット付き" : "")")
+        .accessibilityAddTraits(wearing == o && owned ? .isSelected : [])
     }
 
     // MARK: 結果
     private var resultOverlay: some View {
         ZStack {
             Color.black.opacity(0.55).ignoresSafeArea().onTapGesture { results = [] }
+                .accessibilityHidden(true)   // とじるボタンがあるので読み上げ対象から外す
             VStack(spacing: 12) {
                 Text("結果").font(YoseFont.gothic(18, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                 ScrollView {
@@ -231,6 +236,7 @@ struct GachaView: View {
             .background(YoseColor.kinari)
             .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
             .padding(.horizontal, 24)
+            .accessibilityAddTraits(.isModal)   // 結果が出ている間は後ろの一覧を読まない
         }
     }
 
@@ -248,5 +254,7 @@ struct GachaView: View {
         }
         .frame(maxWidth: .infinity).padding(8)
         .yoseHarigami(isFeatured: r.isNew)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(r.outfit.displayName)、\(r.outfit.rarity?.label ?? "")、\(r.isNew ? "新しく入手" : "かけら\(r.shardsGained)個")")
     }
 }

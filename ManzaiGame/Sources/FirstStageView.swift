@@ -111,6 +111,16 @@ struct FirstStageView: View {
         }
         .padding(.horizontal, 14).padding(.bottom, 34)
         .animation(.easeOut(duration: 0.25), value: phase)
+        .onChange(of: phase) { _, p in   // 画面が自動で進む場面＝変わった文を読み上げる（stamped は burst と同じ文）
+            let line: String? = switch p {
+            case .enter, .stamped: nil
+            case .ready: "最初のツッコミ。ここだ。"
+            case .burst: "客席が、どっと沸いた。"
+            case .reality: "お辞儀をして、顔を上げる。"
+            case .bitter: "ウケた。でも、客は十人だった。"
+            }
+            if let line { UIAccessibility.post(notification: .announcement, argument: line) }
+        }
     }
 
     // MARK: 時間軸
@@ -119,7 +129,7 @@ struct FirstStageView: View {
         task = Task { @MainActor in
             await wait(1.6); phase = .ready; Sound.play(.pop); Haptics.soft(0.5)
             // 押さなくても約6.5秒で進む
-            await wait(6.5); press()
+            await wait(6.5); if !UIAccessibility.isVoiceOverRunning { press() }   // 読み上げ中はボタンを探す時間が要る＝自動で押さない
         }
     }
 
