@@ -94,9 +94,9 @@ struct CalendarView: View {
             if isTournament {
                 Rectangle().fill(isPast ? YoseColor.shu.opacity(0.55) : YoseColor.shu)   // 大会週＝朱の色面
                 VStack(spacing: 0) {
-                    Text(tournamentName(w)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
+                    Text(tournamentName(w)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(isPast ? YoseColor.sumi : YoseColor.kinBright)   // 過ぎた週は薄い朱＝金や生成りだと読めない
                         .lineLimit(1).minimumScaleFactor(0.7)
-                    Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                    Text(tournamentLabel(w)).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(isPast ? YoseColor.sumi : YoseColor.kinari)
                         .lineLimit(1)
                 }
                 .padding(.horizontal, 2)
