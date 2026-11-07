@@ -165,15 +165,15 @@ struct EndingArt: View {
         }
     }
 
-    // #3 段ボール箱に立てたノート十冊（最後の1冊だけ薄い）・畳んだバイトの制服
+    // #3 段ボール箱に立てたノート十五冊（最後の1冊だけ薄い）・畳んだバイトの制服
     private func gaveUp(_ w: CGFloat, _ h: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
             LinearGradient(colors: [YoseColor.ki, YoseColor.kiDark], startPoint: .top, endPoint: .bottom)
-            ForEach(0..<10, id: \.self) { i in
-                Rectangle().fill(i == 9 ? Color(hex: 0xE9DFC8) : Color(hex: 0x3F5A7A).opacity(0.9 - 0.04 * Double(i % 3)))
-                    .frame(width: w * 0.04, height: h * 0.34)
+            ForEach(0..<15, id: \.self) { i in
+                Rectangle().fill(i == 14 ? Color(hex: 0xE9DFC8) : Color(hex: 0x3F5A7A).opacity(0.9 - 0.04 * Double(i % 3)))
+                    .frame(width: w * 0.028, height: h * 0.34)
                     .overlay(Rectangle().stroke(YoseColor.sumi.opacity(0.4), lineWidth: 1))
-                    .offset(x: w * (0.27 + 0.05 * CGFloat(i)), y: h * 0.3)
+                    .offset(x: w * (0.27 + 0.0335 * CGFloat(i)), y: h * 0.3)
             }
             Path { p in                                                                                                         // 箱（台形）
                 p.move(to: CGPoint(x: w * 0.2, y: h * 0.52)); p.addLine(to: CGPoint(x: w * 0.8, y: h * 0.52))
@@ -209,16 +209,16 @@ struct EndingArt: View {
         }.frame(width: w * 0.11, height: h * 0.32, alignment: .topLeading).position(x: x * w + w * 0.055, y: h * 0.78)
     }
 
-    // #5 年表10行（決勝に出た年の行だけ金の縁）・一番下に幕の線
+    // #5 年表15行（決勝に出た年の行だけ金の縁）・一番下に幕の線
     private func tenYearsClose(_ w: CGFloat, _ h: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
             YoseColor.kinari
-            ForEach(1...10, id: \.self) { y in
+            ForEach(1...15, id: \.self) { y in
                 let gold = goldRows.contains(y)
-                Rectangle().fill(YoseColor.washi).frame(width: w * 0.7, height: h * 0.065)
+                Rectangle().fill(YoseColor.washi).frame(width: w * 0.7, height: h * 0.045)
                     .overlay(Rectangle().stroke(gold ? YoseColor.kin : YoseColor.sumi.opacity(0.35), lineWidth: gold ? 2.5 : 1))
                     .overlay(alignment: .leading) { Rectangle().fill(gold ? YoseColor.kin : YoseColor.sumi.opacity(0.4)).frame(width: w * 0.06, height: 3).padding(.leading, 8) }
-                    .offset(x: w * 0.15, y: h * (0.04 + 0.083 * CGFloat(y - 1)))
+                    .offset(x: w * 0.15, y: h * (0.03 + 0.058 * CGFloat(y - 1)))
             }
             HStack(spacing: 0) {                                                                                                // 幕の線
                 ForEach(0..<12, id: \.self) { i in Rectangle().fill(i % 3 == 0 ? YoseColor.kuroUrushi : (i % 3 == 1 ? YoseColor.shu : YoseColor.tokiwa)) }
