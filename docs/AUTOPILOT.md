@@ -160,6 +160,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/08 定期 済（昼・続き3）：StoreIDs.isTicket のテスト dab478de（365 green）／候補ブランチの点検＝本体と衝突は4本。うち金額表示の2本（money-format・cprime）は pbxproj だけ＝本体を取り込み xcodegen で作り直し dcbe7d39・dbc76a51（各 GameCore 448・アプリ 367 green）。残り3本はキュー151。
 - 11/08 定期 済（昼・続き2）：selftest 失敗0／相方と過ごす場面の台詞の採点 outing_lines_score_1108（○11△13×0・v3 と食い違い＝判断の一覧 C-20・案②の候補 claude/outing-v3-cand f23b6af7）／アプリのカバー率の点検＝0% の getter 2つにテスト RepeatWinLine1108Tests（364 green）。
 - 11/08 定期 済（昼・続き）：点検 GameCore 448・アプリ 354 green・同期OK／今日の直しのテスト PastWeekPaint1108Tests 57bf59a2（日程表の過ぎた大会週の塗りを純関数に・推薦制・無名のファンの声＝アプリ 359 green）／sleep 後に場面を進める所48か所を点検＝取りこぼしなし・「0万」も他画面は守られている。
 - 11/08 定期 済（昼）：点検 GameCore 448・アプリ 354 green・同期OK／判断待ちの小件7本を候補ブランチに用意 candidates_small_1108（B-13・C-5・C-6・C-9・C-16・C-17・C-18＝重ねて green・目視は未）。C-5 の前の推奨は誤りと分かり判断の一覧を直した。目視4本＝崩れなし・B-6 の候補 first-pass-share（candidates_visual_1108）。終盤イベントの弱め方の実測 late_events_tuning_1108（能力アップを外すと優勝 20.1→9.2%）。未点検ファイルのコード点検 1108d＝決勝導入の場面飛びを直す 0807c13c・#2 は判断の一覧 C-19。#3 は実測のボットと台本でだけ起きると分かり（遊ぶ人の画面では起きない）pour_stop_1108・判断の一覧 B-14・候補 pour-skip-zero（c8d0647f）。発売準備の突き合わせ release_prep_check_1108（文書3か所を直す 5ce38095）／目視 visual_check_1108e＝崩れなし（フック 8b98e14a・ファン報告と推薦制の塗りと大きい文字は目視未）。C-19 の候補 combi-name-verbatim（アプリ 360 green）。点検 GameCore 448・アプリ 354 green。
