@@ -216,6 +216,10 @@ struct RootView: View {
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
                 session.choose(.train(.ネタ作り))
             }
+            if ui == "lose", session.week <= 1 {
+                // 敗退の結果画面（経験点の札など）の目視: 初期能力のまま最初の大会へ
+                session.debugAdvanceToFirstResult()
+            }
             if ui == "pass" || ui == "result_done", session.week <= 1 {
                 // 合否演出（通過側）目視: 能力マックスで初回大会へ＝「通過」判＋紙吹雪＋フラッシュを拾う
                 session = GameSession(startState: GameSession.debugMaxedState())

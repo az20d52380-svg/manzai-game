@@ -29,7 +29,8 @@ final class GachaStore: ObservableObject {
     }
 
     private static func decode(_ data: Data?) -> GachaState {
-        guard let data, let s = try? JSONDecoder().decode(GachaState.self, from: data) else { return GachaState() }
+        guard let data, var s = try? JSONDecoder().decode(GachaState.self, from: data) else { return GachaState() }
+        if s.totalPulls == 0 && s.freeTickets == 0 { s.freeTickets = 1 }   // 一度も回していない既存データにも「はじめての1回」分を渡す
         return s
     }
 
