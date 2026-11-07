@@ -340,7 +340,7 @@ struct EndingGalleryView: View {
             Text("記録").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             Text("通算優勝 \(rec.totalWins)回／最多連覇 \(rec.bestStreak)／最速優勝 \(fastest)" + ((rec.hanaWins ?? 0) > 0 ? "／THE HANA 優勝 \(rec.hanaWins ?? 0)回" : ""))
                 .font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
-            Text("トロフィー \(got.count) / \(TrophyID.allCases.count)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.top, 6)
+            Text("トロフィー \(got.filter(\.obtainable).count) / \(TrophyID.allCases.filter(\.obtainable).count)").font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi).padding(.top, 6)
             ForEach(TrophyID.allCases.filter { got.contains($0) }) { t in
                 Text("\(t.title)　\(t.condition)").font(YoseFont.gothic(12, weight: .medium)).foregroundStyle(YoseColor.sumi)
             }

@@ -55,6 +55,11 @@ final class TrophyHana1107Tests: XCTestCase {
         XCTAssertEqual(TrophyBook.loadRecords().hanaWins, 1)
     }
 
+    /// 図鑑の分母は「今取れる物」だけ（取れない T19・T20 を数えると全部そろわない）
+    func testObtainableCountIsTwenty() {
+        XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 20)
+    }
+
     /// 旧データ（hanaWins の鍵なし）も読める
     func testOldRecordsDecode() throws {
         let old = #"{"totalWins":2,"bestStreak":1,"fastestWinYear":3}"#.data(using: .utf8)!
