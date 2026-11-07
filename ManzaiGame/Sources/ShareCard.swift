@@ -52,7 +52,7 @@ struct ShareCardButton: View {
                 Color.clear.frame(width: 1, height: 1)
             }
         }
-        .task {
+        .task(id: "\(combiName)|\(headline)|\(detail ?? "")") {
             let r = ImageRenderer(content: ShareCardView(combiName: combiName, headline: headline, detail: detail))
             r.scale = 2
             if let ui = r.uiImage { image = Image(uiImage: ui) }

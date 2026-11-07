@@ -1448,7 +1448,7 @@ private struct RaysView: View {
             }.accessibilityHidden(true)
         }
         .task {
-            try? await MZSpeed.sleep(nanoseconds: 6_600_000_000)
+            try? await Task.sleep(nanoseconds: 6_600_000_000)   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }
@@ -1483,7 +1483,7 @@ private struct ConfettiView: View {
             }.accessibilityHidden(true)
         }
         .task {
-            try? await MZSpeed.sleep(nanoseconds: 16_600_000_000)
+            try? await Task.sleep(nanoseconds: 16_600_000_000)   // 実時間のまま（描画の時刻が実時間＝縮めると紙吹雪が空中で固まる）
             frozen = true
         }
     }

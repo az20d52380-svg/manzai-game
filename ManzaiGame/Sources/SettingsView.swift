@@ -50,7 +50,7 @@ struct SettingsView: View {
                                 Text("ふつう").tag(0)
                                 Text("はやい").tag(1)
                             }.pickerStyle(.segmented)
-                            Text("大会・結果の演出と台詞送りが速くなる。勝ち負けは変わらない。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)
+                            Text("大会・結果の演出が速くなる。勝ち負けは変わらない。").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).frame(maxWidth: .infinity, alignment: .leading)
                         }
                         section("購入") {
                             Button { Task { restoring = true; _ = await store.restore(); restoring = false } } label: {

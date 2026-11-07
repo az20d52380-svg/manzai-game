@@ -305,7 +305,7 @@ struct WeekMainView: View {
             await waitOrSkip(seconds: chips.isEmpty ? 1.0 : 1.2)   // 画面タップで畳める（K6）
             clearBeat()
             burstVisible = false   // 退場も per-chip アニメ（下へ沈みつつフェード）
-            try? await MZSpeed.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）
+            try? await Task.sleep(nanoseconds: 250_000_000)   // 退場を見せ切ってから cover 解禁（defer）＝アニメの長さは不変なので縮めない
             await presentRent()   // 生活費の週末：獲得の後・次の週のイベントより前に支払いの画面
         }
         .task(id: session.week) {
@@ -324,7 +324,7 @@ struct WeekMainView: View {
         }   // 掛け合いの読み位置は週頭でリセット
         .task(id: toast) {
             if let t = toast {
-                try? await MZSpeed.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)
+                try? await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)   // 読む時間＝演出の速さで縮めない
                 toast = nil
             }
         }
@@ -1282,7 +1282,7 @@ struct WeekMainView: View {
         burstSkip = true
         Task {
             var n = 0
-            while burstHold, n < 60 { try? await MZSpeed.sleep(nanoseconds: 50_000_000); n += 1 }
+            while burstHold, n < 60 { try? await Task.sleep(nanoseconds: 50_000_000); n += 1 }   // 待ちの上限＝演出ではないので縮めない
             if !burstHold { run() }
         }
     }
