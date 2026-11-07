@@ -1303,7 +1303,7 @@ final class GameSession {
                 state = summary.state
                 for r in summary.results where r.isStage {
                     TrophyBook.onStage(r, state: summary.state, config: config)
-                    if !r.name.hasPrefix("GP"), r.name != "敗者復活" { smallEntered += 1; if r.passed { smallWon += 1 } }
+                    let c = TrophyBook.smallTournamentCount(r); smallEntered += c.entered; smallWon += c.won
                 }
                 week = summary.week
                 if summary.results.contains(where: { $0.name == "体調ダウン" }) { injuryNoticeWeeks = config.injuryRestWeeks }

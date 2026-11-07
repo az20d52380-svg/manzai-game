@@ -81,6 +81,7 @@ struct CareerRecords: Codable, Equatable {
     var bestStreak = 0          // 最多連覇（年）
     var fastestWinYear: Int?    // 最速優勝（何年目）
     var totalWins = 0           // 通算優勝回数
+    var hanaWins: Int? = nil    // THE HANA の通算優勝回数（女コンビだけ・nil＝旧データ）
 }
 
 enum TrophyBook {
@@ -134,6 +135,13 @@ enum TrophyBook {
         if let data = try? JSONEncoder().encode(r) { store.set(data, forKey: recordKey) }
     }
 
+    /// THE HANA で優勝した時だけ呼ぶ
+    static func recordHanaWin() {
+        var r = loadRecords()
+        r.hanaWins = (r.hanaWins ?? 0) + 1
+        if let data = try? JSONEncoder().encode(r) { store.set(data, forKey: recordKey) }
+    }
+
     // MARK: 判定（GameSession の各入力確定点から呼ぶ）
 
     /// 大会・GP回戦の結果1件。state は週末処理後
@@ -151,6 +159,7 @@ enum TrophyBook {
             case "若手限定賞": award(.t10)
             case "推薦制中堅賞": award(.t11)
             case "敗者復活": award(.t21)
+            case "HANA決勝": recordHanaWin()
             default: break
             }
             if r.name.hasPrefix("GP") || r.name == "敗者復活" {
@@ -160,6 +169,16 @@ enum TrophyBook {
         }
         if r.name == "GP準決勝" { award(.t05) }
         if state.compat >= config.compatCap { award(.t14) }
+    }
+
+    /// 六冠の年の数え方：1件の結果が「出た大会」「優勝した大会」をいくつ増やすか。
+    /// THE HANA は勝ち上がり戦なので1大会＝1回戦で「出た」・決勝の通過で「優勝」（回戦の通過を優勝に数えない）
+    static func smallTournamentCount(_ r: StageResult) -> (entered: Int, won: Int) {
+        if r.name.hasPrefix("GP") || r.name == "敗者復活" { return (0, 0) }
+        if r.name.hasPrefix("HANA") {
+            return (r.name == "HANA1回戦" ? 1 : 0, r.name == "HANA決勝" && r.passed ? 1 : 0)
+        }
+        return (1, r.passed ? 1 : 0)
     }
 
     /// 年末。smallEntered/smallWon＝その年の道中大会の出た数・優勝した数
