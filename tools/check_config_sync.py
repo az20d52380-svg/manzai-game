@@ -131,6 +131,49 @@ def check_hana():
                 print(f"NG HANA 週{w} {k}: Swift {s[k]} / Python {t[k]}"); bad += 1
     return bad, 1 + len(C.HANA_TOURNAMENTS)
 
+# 道中の大会と GP の回戦（週・名前・ライン・賞金・知名度・大阪・資格）。golden のボットが出ない大会（推薦制など）もここで突き合わせる
+_TOUR_RE = re.compile(r'TournamentSpec\(name:\s*"([^"]+)",\s*week:\s*(\d+),\s*line:\s*([\d.]+),\s*prize:\s*([\d_]+),\s*fame:\s*([\d.]+),\s*osaka:\s*(true|false),\s*eligibility:\s*\.(always|careerYearAtMost|fameAtLeast)(?:\(([\d.]+)\))?')
+
+class _S:
+    def __init__(self, fame): self.fame = fame
+
+def check_tournaments():
+    sw = {}
+    gp = None
+    for line in open(os.path.join(_SRC, "Calendar.swift"), encoding="utf-8"):
+        m = _TOUR_RE.search(line)
+        if m:
+            nm, wk, ln, pr, fm, osk, el, arg = m.groups()
+            sw[int(wk)] = dict(name=nm, line=float(ln), prize=int(pr.replace("_", "")), fame=float(fm), osaka=osk == "true", el=el, arg=float(arg) if arg else None)
+        g = re.search(r"public var gpRounds: \[\(week: Int, line: Double\)\] = \[(.*?)\]", line)
+        if g:
+            gp = [tuple(float(x) for x in t) for t in re.findall(r"\((\d+),\s*([\d.]+)\)", g.group(1))]
+    bad = 0
+    if set(sw) != set(C.TOURNAMENTS):
+        print(f"NG 大会の週: Swift {sorted(sw)} / Python {sorted(C.TOURNAMENTS)}"); bad += 1
+    for w, t in C.TOURNAMENTS.items():
+        s = sw.get(w)
+        if s is None:
+            continue
+        for k in ("name", "line", "prize", "fame", "osaka"):
+            if (s[k] != t[k]) if k in ("name", "osaka", "prize") else abs(float(s[k]) - float(t[k])) > 1e-12:
+                print(f"NG 大会 週{w} {k}: Swift {s[k]} / Python {t[k]}"); bad += 1
+        for year in range(1, C.YEARS + 2):
+            for fame in (0, 29.9, 30, 50, 100):
+                want = t["ok"](year, _S(fame))
+                got = {"always": True, "careerYearAtMost": s["arg"] is not None and year <= s["arg"],
+                       "fameAtLeast": s["arg"] is not None and fame >= s["arg"]}[s["el"]]
+                if want != got:
+                    print(f"NG 大会 週{w} 資格: {year}年目・知名度{fame} で Swift {got} / Python {want}"); bad += 1
+                    break
+            else:
+                continue
+            break
+    py_gp = [(float(w), float(l)) for w, l, _ in C.GP_ROUNDS]
+    if gp != py_gp:
+        print(f"NG GP の回戦: Swift {gp} / Python {py_gp}"); bad += 1
+    return bad, 2 + len(C.TOURNAMENTS)
+
 def main():
     sw = swift_defaults(SWIFT)
     bad = 0
@@ -146,6 +189,8 @@ def main():
             print(f"NG {name}: Swift {raw} / Python {py}"); bad += 1
     bad_h, n_h = check_hana()
     bad += bad_h
+    bad_t, n_t = check_tournaments()
+    bad += bad_t; n_h += n_t
     print(f"config sync: {len(PAIRS) + n_h - bad}/{len(PAIRS) + n_h} 一致")
     return 1 if bad else 0
 
