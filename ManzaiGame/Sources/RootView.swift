@@ -250,6 +250,10 @@ struct RootView: View {
                 st.netas = ns.netas; st.nextNetaID = ns.nextNetaID; st.selectedNetaID = ns.selectedNetaID; st.archivedNetas = ns.archivedNetas
                 session = GameSession(startState: st)
                 session.debugAdvanceToPrelude(final: ui == "prelude_final")
+                if ui == "prelude_final", ProcessInfo.processInfo.environment["MZ_NOTICE"] != nil, session.state.netas.count >= 3 {   // 目視用（C-17）：2本目を選んでから1本目を同じネタにして「2本目が外れました」の注意を出す
+                    let id = session.state.netas[2].id
+                    session.selectNeta2(id); session.selectNeta(id)
+                }
                 if ui == "gpresult" { session.advanceAuto() }   // GP回戦の結果画面へ（目視）
             }
             if ui == "offer", session.week <= 1, session.year > 1 { session.debugUntilOffer() }   // MZ_YEARS 後はその年のままオファーの週まで進める（year10_visual_1026_v0）
