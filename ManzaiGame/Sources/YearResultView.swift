@@ -390,6 +390,11 @@ struct YearResultView: View {
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
+        // 前の年に優勝した人に「去年と変わらない」は合わない
+        if session.yearHistory.contains(where: { $0.champion && $0.year == session.year - 1 }) {
+            let kept = pool.filter { !$0.contains("去年と") }
+            if !kept.isEmpty { pool = kept }
+        }
         // 頂グランプリの決勝に立った年は独白を出さない（オーナー 10/18「寒そう」→A：決勝の余韻は決勝の場面で足りる）
         if Self.silentFinalsYear(bankrupt: o.bankrupt, dissolved: o.dissolved, champion: o.champion, reachedFinal: o.reachedFinal) { return nil }
         let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
