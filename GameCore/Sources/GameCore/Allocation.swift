@@ -126,7 +126,10 @@ extension GameEngine {
         var plan: [Ability] = []
         var guardCount = 0
         while guardCount < 10_000 {
-            let candidates = Ability.allCases.filter { affordableRaw($0, state: scratch, config: config) > pourEpsilon }
+            let candidates = Ability.allCases.filter {   // 伸びない能力で止まらない（pour_stop_1108）
+                let amount = affordableRaw($0, state: scratch, config: config)
+                return amount > pourEpsilon && projectedGain($0, amount: amount, state: scratch, config: config) > pourEpsilon
+            }
             guard let target = candidates.min(by: { scratch[$0] < scratch[$1] }) else { break }
             guard pourStep(target, to: &scratch, config: config) > 0 else { break }
             plan.append(target)

@@ -318,7 +318,9 @@ def recommended_plan(s):
     plan = []
     guard = 0
     while guard < 10_000:
-        candidates = [a for a in ALL_ABILITIES if _affordable_raw(scratch, a) > POUR_EPS]
+        candidates = [a for a in ALL_ABILITIES
+                      if _affordable_raw(scratch, a) > POUR_EPS
+                      and projected_gain(scratch, a, _affordable_raw(scratch, a)) > POUR_EPS]   # 伸びない能力で止まらない（pour_stop_1108）
         if not candidates:
             break
         target = min(candidates, key=lambda a: getattr(scratch, a))
