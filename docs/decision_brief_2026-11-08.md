@@ -110,7 +110,7 @@
 | C-24 | 体力が足りない週でもオファー（ロケ・営業など）は押せて、体力0で週を終える（実測：ボットで1キャリア約30〜50回・`offer_low_stamina_measure_1108_v0`） | 札に小さく「体力0になる」と出す（表示だけ）。スクショ `shots_1109/c24_offer_stamina_note.png`・候補 `offer-stamina-note`（492c26e2）に用意 |
 | C-25 | 日程表で、頂GP は予選で落ちた後も残りの回戦と決勝が赤いまま（他の大会は出られない時は塗らない。年に平均1週弱・`calendar_ineligible_paint_1108_v0`） | 落ちた後は塗らない、か薄い色にする（表示だけ）。塗らない案（スクショ `shots_1109/c25_calendar_gp_paint.png`）を候補 `calendar-gp-paint`（411be31a）に用意 |
 
-見比べ用の前後スクショ（C-1・2・3・6・9・19・24・25）は `shots_1109/README.md` に一覧（11/09）。
+見比べ用の前後スクショ（C-1・2・3・4・6・9・15・17・19・22・24・25。C-18 は静止画で差が出ない）は `shots_1109/README.md` に一覧（11/09）。
 
 候補ブランチの状態は `candidates_check_1108.md`（本体に重ねてビルドとテストを確かめた結果）。11/08 に足した7本は `candidates_small_1108_v0.md`（7本を重ねて green）、目視と B-6 は `candidates_visual_1108_v0.md`（崩れなし）。入れる時に目視と GameCore のテストをやり直す。
 
