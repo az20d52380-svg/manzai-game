@@ -184,7 +184,7 @@ struct TournamentEntryView: View {
                 }
 
             // G4: 大会結果でも同じ2つを同じ大きさで再掲する（大きくしない＝見込みに寄せない・X2-02）
-            LineBoard(week: spec.week, prize: Yen.man(spec.prize))
+            LineBoard(week: spec.week, prize: spec.prize > 0 ? Yen.man(spec.prize) : nil)   // 賞金の無い段に「0万」を出さない
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）

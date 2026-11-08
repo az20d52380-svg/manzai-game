@@ -13,6 +13,7 @@ struct FirstStageView: View {
 
     private enum Phase { case enter, ready, burst, stamped, reality, bitter }
     @State private var phase: Phase = .enter
+    @State private var finished = false
     @State private var flash = 0
     @State private var shake = 0
     @State private var burstTick = 0
@@ -106,7 +107,11 @@ struct FirstStageView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .yoseHarigami(isFeatured: false).padding(.horizontal, 6)
                     .transition(.opacity)
-                Button("第1週へ") { task?.cancel(); Sound.play(.tap); Haptics.rigid(0.7); onComplete() }
+                Button("第1週へ") {
+                    guard !finished else { return }   // 二度押しで GameSession を2回作らない
+                    finished = true
+                    task?.cancel(); Sound.play(.tap); Haptics.rigid(0.7); onComplete()
+                }
                     .buttonStyle(YoseButtonStyle(.primary)).padding(.horizontal, 60)
             }
         }

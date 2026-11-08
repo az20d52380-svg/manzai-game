@@ -183,6 +183,13 @@ struct CalendarView: View {
         return category == .taikai
     }
 
+    /// 過ぎた大会週を塗るか（表示専用・純関数にしてテストで押さえる＝PastWeekPaint1108Tests）
+    static func paintsPastTournamentWeek(_ spec: TournamentSpec, year: Int, category: BandCategory?) -> Bool {
+        if isAgedOut(spec, year: year) { return false }   // 結成の年数で出られなくなった大会は、過ぎた週でも塗らない（やった事の判を出す・visual_check_1107d）
+        if case .fameAtLeast = spec.eligibility { return category == .taikai }   // 推薦制は知名度が足りず出られない週があるので、出た週だけ塗る（code_review_1108 #1）
+        return paintsPastWeek(tournamentName: spec.name, category: category)
+    }
+
     /// 結成◯年以内の大会で、今年はもう出られない（年が決まれば変わらない条件だけを見る）
     static func isAgedOut(_ spec: TournamentSpec, year: Int) -> Bool {
         if case .careerYearAtMost(let n) = spec.eligibility { return year > n }
@@ -193,9 +200,7 @@ struct CalendarView: View {
         if let spec = cal.tournament(inWeek: w, state: session.state) {
             // これからの週は、今の状態で出られる大会だけ塗る（推薦制・若手限定で入口が出ない週を「大会」と見せない・code_review_2026-10-19g §2）。過ぎた週は従来どおり
             if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
-            if Self.isAgedOut(spec, year: session.year) { return false }   // 結成の年数で出られなくなった大会は、過ぎた週でも塗らない（やった事の判を出す・visual_check_1107d）
-            if case .fameAtLeast = spec.eligibility { return session.categoryLog[w] == .taikai }   // 推薦制は知名度が足りず出られない週があるので、出た週だけ塗る（code_review_1108 #1）
-            return Self.paintsPastWeek(tournamentName: spec.name, category: session.categoryLog[w])
+            return Self.paintsPastTournamentWeek(spec, year: session.year, category: session.categoryLog[w])
         }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
         return w == cal.gpFinalWeek
