@@ -585,6 +585,7 @@ cd GameCore && swift test
 - `late_events_tuning_1108_v0.md` — 終盤イベント候補の「弱め方」の実測 v0（2026-11-08・見本・決めるのはオーナー）
 - `old_questions_remeasure_1108_v0.md` — 古い3論点の測り直し（15年・較正A・周回の式の今の本体） v0（2026-11-08・材料。推奨の決定はしない）
 - `outing_lines_score_1108.md` — 台詞採点 c9a123b1（v3バナー基準）
+- `dialogue_score_1108b.md` — 文章採点 0e7f0da2..HEAD（○12 ×1＝生活費の予告の万円が整数割りで切り捨て→Yen.man に）
 - `perf_check_1108.md` — 重さの測り直し 11/08（iPhone 17 シミュレータ・Debug・`tools/run_perf.sh`）
 - `pour_stop_1108_v0.md` — おすすめ注ぎが途中で止まる件の実測 v0（2026-11-08・決めるのはオーナー）
 - `release_build_check_1108.md` — 発売用ビルド点検（11/08・ソース無変更・commit なし）
