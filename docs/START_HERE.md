@@ -440,9 +440,21 @@ cd GameCore && swift test
 - `visual_check_1108h.md` — 目視 1108h（決勝導入・客席アンケートの直し後・崩れ0・持ち越し低1）
 - `playtest_y1_1108.md` — 1年目の実プレイ点検（7週・生活費の金額を直した・他は 111/137/146 の決定待ち）
 - `playtest_y5_1108.md` — 5年目の実プレイ点検（日程表と一致・崩れ0・中3件は仕様／128／既知）
+- `playtest_y2_1108.md` — 2年目の実プレイ点検（記録のみ）
+- `playtest_y7_1108.md` — 7年目の実プレイ点検（記録のみ）
 - `visual_sweep_1108i.md` — 未目視14画面の点検（崩れ0・フックの撮り方つき）
 - `worktrees_cleanup_1108_v0.md` — 古い作業場所56個（約13GB）の片付けの材料（C-13・何も消していない）
 - `index_crash_audit_1108_v0.md` — 配列の添字で落ちる所の静的点検（11/08 の soak で落ちた件の横展開・確実0・条件付き2）
+- `unwrap_crash_audit_1108_v0.md` — 強制アンラップ・0除算・Int 変換で落ちる所の静的点検（確実0・条件付き3）
+- `save_compat_audit_1108_v0.md` — セーブ読み込み互換の静的点検（高1は続き39で直した・中＝退避の扱い）
+- `delayed_callback_audit_1108_v0.md` — 画面を閉じた後に遅れて走る処理の静的点検（実害1は続き42で直した・条件付き8＝キュー155）
+- `number_display_audit_1108_v0.md` — 数値の表示の端の値（借金・大きな値・0）の静的点検（4件は続き45で直した）
+- `hardcoded_numbers_audit_1108_v0.md` — 画面の文の直書き数字と GameConfig の突き合わせ（不一致0・直書き8）
+- `long_name_layout_audit_1108_v0.md` — 長い名前（コンビ名12字・名前6字）の表示の点検（崩れ1は続き49で直した）
+- `storekit_edge_audit_1108_v0.md` — 課金の端の場面（未検証・返金・復元・二重付与）の静的点検（高0・中3＝キュー156）
+- `notification_audit_1108_v0.md` — ローカル通知の静的点検（予約なし・許可画面は休眠）
+- `playtest_y9_1108_v0.md` — 9年目の実プレイ点検（高0・中3＝判断もの）
+- `playtest_female_y3_1108_v0.md` — 女性コンビ3年目の実プレイ点検（高0・中1＝凡例の文を直した）
 - `payment_services_act_check_1025_v0.md` — 資金決済法（前払式支払手段）の確認（2026-10-25・懸念の台帳 L43・今の作りは対象外の見込み・有料石を入れる場合の対応表）
 - `banter_repeat_measure_1025_v0.md` — 10年遊んだ時の週頭の声（掛け合い・独白）の読み返し率の実測（2026-10-25・懸念の台帳 L40・材料・コード不変）
 - `fan_report_repeat_measure_1025_v0.md` — 10年遊んだ時のファンレポ（ヒトコエ）の読み返し率の実測（2026-10-25・懸念の台帳 L39・材料・コード不変・全体63〜67%・A帯に集中）
@@ -575,12 +587,26 @@ cd GameCore && swift test
 - `late_events_tuning_1108_v0.md` — 終盤イベント候補の「弱め方」の実測 v0（2026-11-08・見本・決めるのはオーナー）
 - `old_questions_remeasure_1108_v0.md` — 古い3論点の測り直し（15年・較正A・周回の式の今の本体） v0（2026-11-08・材料。推奨の決定はしない）
 - `outing_lines_score_1108.md` — 台詞採点 c9a123b1（v3バナー基準）
+- `dialogue_score_1108b.md` — 文章採点 0e7f0da2..HEAD（○12 ×1＝生活費の予告の万円が整数割りで切り捨て→Yen.man に）
 - `perf_check_1108.md` — 重さの測り直し 11/08（iPhone 17 シミュレータ・Debug・`tools/run_perf.sh`）
 - `pour_stop_1108_v0.md` — おすすめ注ぎが途中で止まる件の実測 v0（2026-11-08・決めるのはオーナー）
 - `release_build_check_1108.md` — 発売用ビルド点検（11/08・ソース無変更・commit なし）
 - `visual_check_1108e.md` — 目視点検 1108e（11/08 の表示の直しの確認）
 - `visual_dark_1108_v0.md` — ダークモードの点検 11/08（10/27 以降の新しい画面10枚・問題0。提供割合はフック MZ_UI=gacha_rates）
 - `code_review_1108f_kiritsu_a.md` — 11/02 の規律A（15年・周回・THE HANA・復活ライン）を仕様と突き合わせた点検（高0中1低5・中1は check_config_sync に HANA を足して解消）
+- `code_review_1108g.md` — コード点検 1108g（決勝の幕開けの二重進行・日程表の塗り・DEBUG フック。低3件・すべて済 c3282822）
 - `event_parity_check_1108_v0.md` — アプリの選択肢イベントの効果（ChoiceEvent.swift）と Python の鏡像（_app_apply/_others_apply）の突き合わせ（62一致・不一致0・道具 tools/check_event_parity.py・run_checks.sh に組み込み）
 - `visual_check_1108f_female_late.md` — 女コンビの10〜15年目の目視（週・日程表・年末の年表・きろく＝崩れ0・低1は C-5 と同じ論点）
-- docs/week_prompts_inventory_1108_v0.md — 週の画面の促し・注意の出所の棚卸し（12か所・二重7組・整理案3つ・キュー146の材料）
+- `week_prompts_inventory_1108_v0.md` — 週の画面の促し・注意の出所の棚卸し（12か所・二重7組・整理案3つ・キュー146の材料）
+- `playtest_y4_1108.md` — 実プレイ点検 4年目（11/08・記録のみ）
+- `playtest_y6_1108.md` — 実プレイ点検 6年目（11/08・記録のみ）
+- `playtest_y8_1108.md` — 実プレイ点検 8年目（11/08・記録のみ）
+- `playtest_y10_1108.md` — 実プレイ点検 10年目（11/08・記録のみ・15年制で10年目は最終年でない）
+- `playtest_y11_15_1108.md` — 実プレイ点検 11・13・15年目（11/08・記録のみ・出場条件と週番号の照合つき）
+- `playtest_female_y12_1108.md` — 実プレイ点検 女性コンビ12年目（11/08・記録のみ）
+- `playtest_female_y15_endings_1108.md` — 実プレイ点検 女性コンビ15年目＋エンディング#4〜#6（11/08・記録のみ）
+- `endings_male_check_1108.md` — エンディング目視 男性コンビ #1〜#3・#7・#8（11/08・記録のみ）
+- `code_review_1108h.md` — コード点検 1108h（低2・高中なし・名札のコメントを式に合わせた）
+- `ten_year_leftovers_1108_v0.md` — 10年前提の取り残しの静的点検（careerYears 10→15・高0中0低6・所見3のデバッグ表記は 8dae1189 で直した）
+- `text_repeat_15y_1108_v0.md` — 結成15年通しの文の読み返し率（11〜15年目の週頭の声が70〜76%・判断の一覧 B-15 の材料）
+- `playtest_female_y7_1108.md` — 実プレイ点検 女性コンビ7年目（11/08・記録のみ・高0中0低2＝HANA の略称の揺れ・フック状態の年表＝どちらも既知）
