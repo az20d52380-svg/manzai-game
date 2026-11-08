@@ -69,6 +69,7 @@
 ## 7. TestFlight（目安：準備 1〜2日＋内部テスト 数日〜1週間）
 【C】
 - ビルド・アーカイブの準備：バージョン、ビルド番号、アイコン、`PrivacyInfo.xcprivacy`、通知の許可（使わないなら外す案）、課金の商品（広告カット・券1・券10）の登録内容（`Configuration.storekit` と App Store Connect の商品を一致）。
+  - 11/08 点検：コード（StoreIDs）と `Configuration.storekit` は4商品（adfree 1,000円・agency 480円・ticket1 100円・ticket10 1,000円）で一致。agency（事務所選び）は UI 未実装＝発売版で登録するかはオーナー判断。ビルドは Xcode 26.6／iOS 26.5 SDK（2026-04-28 以降の提出要件 iOS 26 SDK を満たす）・最低 iOS 17。詳細は docs/release/release_prep_check_1108.md。
 - スクリーンショットの用意（6.7インチ・縦・docs/store_listing_draft_v0.md §4 の構成）。
 - 実機での目視チェックリスト（課金のサンドボックス・復元・iCloud・広告・機種変更の想定）。
 【オ】
