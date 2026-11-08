@@ -174,6 +174,7 @@
 192. [済 11/09 定期] 目視フック MZ_GPLOST（0f77a6c7・頂GP の予選で落ちた扱い・DEBUG のみ）を本体に足し、候補 calendar-gp-paint に取り込み直して（green）C-25 の前後を撮った＝shots_1109/c25_calendar_gp_before/after.png（前は GP の残り5マスが赤・後は白）。
 193. [済 11/09 定期] キュー182 の文字数点検を常設のテストに：TextPoolDuplicateTests.testLinesStayWithinKnownMaxLength（DialogueData 35字・FanReportData 44字＝既存の最長33/42＋2の見張り）。候補3本（lull/monologue/minor-pools・最長32字）は通る見込み。
 194. [済 11/09 定期] コード点検（cf0881f2..a3bead36・ソース3ファイル +27/−6）：MZ_GPLOST（debugMarkGPLost＝スナップショットの gpAlive だけ下ろす・乱数非消費）・MZ_UI=offers（debugUntilOffer に行動の引数）・コメントと selftest のラベルの15年化。どれも #if DEBUG の中＝本番に影響なし・高0 中0 低0。点検の1本も緑（GameCore 468・同期80/80・イベント62/26 一致・アプリ 391）。
+195. [済 11/09 定期] 候補の取り込み直し：yose-sound-wire（遅れ122）・fanreport-plus・invite-variants・lull-plus・minor-pools-plus・monologue-plus（遅れ49〜58）に本体を取り込み green で push（新しい文の長さの見張りテストも通過）。refresh_candidates.sh を直した＝①古いエージェントの作業場所に出しっぱなしの候補は origin の版を分離 HEAD で扱う ②その前に枝を取り直す（remote.origin.fetch は本体だけ＝origin/候補 は古い。invite-variants が非 fast-forward で失敗していた） ③push の失敗を「push 失敗」と出す ④本体に別の形で入った vitalbar-numberpop（d3c26557）・the-hana 2本を対象外に。注意：`git rev-parse origin/claude/<候補>` は古いことがある＝確かめる時は `git ls-remote origin refs/heads/claude/<候補>`。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
