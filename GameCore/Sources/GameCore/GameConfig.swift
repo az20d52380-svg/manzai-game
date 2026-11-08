@@ -150,7 +150,7 @@ public struct GameConfig {
     public var metaCapLiftCoef = 0.2           // 年の成長上限の基準と下限に +coef·P^exp
     public var metaCapLiftExp = 0.3
     public var metaBudgetTop = 36.0            // 累計予算に +top·(P/38)^metaTopExp（頂点の束）
-    public var metaTopExp = 8.0
+    public var metaTopExp = 16.0
     public var metaStartCompatCoef = 2.27      // 初期の相性 +min(cap, coef·P^exp)（compatCap で止める）
     public var metaStartCompatExp = 0.5
     public var metaStartCompatCap = 14.0
