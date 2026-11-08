@@ -20,7 +20,7 @@
 | C-21 | claude/shop-manager-name-cand | MZ_UI=event MZ_EV=0023 MZ_EVSTEP=99 MZ_EVPICK=1 | q21_manager_before.png | q21_manager_after.png | 写る | 「正社員の話」の返事の話者名：「店長」→「矢島」（中ほどの吹き出しの名札。エンディングの布施店長→矢島は別場面で未撮影） |
 | Q141 | claude/gacha-entry-cand | MZ_UI=shop | q141_gacha_before.png | q141_gacha_after.png | 写る | お店の一番上（部屋の上）に「衣装ガチャ」の帯と「今日の札」ボタンが増える（前は無し） |
 | Q132 | claude/yearly-goal-cand | MZ_UI=yearend | q132_goal_before.png | q132_goal_after.png | 写る | 年末総決算の見出しの下に「来年の狙い　3回戦を突破」の帯が増える |
-| Q112 | claude/tv-fatigue-display-candidate | MZ_TVTIRED（候補では外れ、慣れ段階で出る） | - | - | 写らない | 「テレビ慣れ・すこし／強い」は受けたオファーの履歴が要り、直行するフックが無い（MZ_OFFER は札を出すだけで慣れ段階は0のまま）。後は慣れ0＝帯なし |
+| Q112 | claude/tv-fatigue-display-candidate | MZ_UI=offers MZ_STAMINA=100 MZ_OFFERWEEKS=3（すこし）／4（強い） | （本体は何も出ない） | q112_tv_slight_after.png・q112_tv_strong_after.png | 写る | オファーの札の上に赤い札「テレビ慣れ・すこし／強い」と一言が出る（11/09 定期でフックを候補に足して撮影）。崩れなし。すこしの一言は2行目が「める」だけになる（文言を詰めるならオーナー判断） |
 | Q110 | claude/qual-long-list-candidate | MZ_UI=qual_notice MZ_OPEN=1 | q110_qual_before.png | q110_qual_after.png | 写る | 1回戦の通過者一覧：前は9組、後は長い一覧（スクロール想定で15組超が並ぶ） |
 
 注: C-2 の「前」でも持ち分の割り振り表示は同じ（フックが粒を積んだ状態）。差は右下の確定ボタンのみ。
