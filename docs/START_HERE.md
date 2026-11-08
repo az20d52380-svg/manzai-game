@@ -575,3 +575,4 @@ cd GameCore && swift test
 - `code_review_1108f_kiritsu_a.md` — 11/02 の規律A（15年・周回・THE HANA・復活ライン）を仕様と突き合わせた点検（高0中1低5・中1は check_config_sync に HANA を足して解消）
 - `event_parity_check_1108_v0.md` — アプリの選択肢イベントの効果（ChoiceEvent.swift）と Python の鏡像（_app_apply/_others_apply）の突き合わせ（62一致・不一致0・道具 tools/check_event_parity.py・run_checks.sh に組み込み）
 - `visual_check_1108f_female_late.md` — 女コンビの10〜15年目の目視（週・日程表・年末の年表・きろく＝崩れ0・低1は C-5 と同じ論点）
+- docs/week_prompts_inventory_1108_v0.md — 週の画面の促し・注意の出所の棚卸し（12か所・二重7組・整理案3つ・キュー146の材料）
