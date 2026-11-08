@@ -138,6 +138,7 @@
 158. [ ] （11/08 定期・判断が要る＝演出）寄席系の音の口 YoseFX.sound（Design/YoseEffects.swift:45・口32個）が未接続で、本編の優勝演出の3音が無音。①今のまま（触覚とファンファーレ等の既存の音で足りる）②今ある SE（tada・fanfare・taiko・shakin・money など23個）に当てて繋ぐ（推奨：championImpact→taiko、stampHeavy→don、prizeGet→money）③新しい音を作る（Gemini の演出の往復＝キュー84 と一緒に）。【11/08 定期：②を候補ブランチ claude/yose-sound-wire-cand（05c6b582）に用意・ビルド OK・音の耳での確認は未】
 159. [済 11/08 定期] 増分の文の採点 dialogue_score_1108b（○12 ×1）。×＝生活費の予告がやりくり上手の 133,000円を「13万円」と切り捨て→Yen.man で「13.3万円」に（WeekHint.swift 3か所・テスト WeekHintLivingMan1108Tests）。続き：生活費の説明カード WeekMainView.livingHint も同じ切り捨て→Yen.man。他の `/ 10_000)万` は賞金・設定値・周回メタで全部1万円単位（倍率なし）＝据え置き。
 160. [済 11/08 定期] 漏れ点検 soak 10分を女×男（MZ_KIND=femaleMale・MZ_SOAK_MS=10）で：落ちず・常駐 308→346MB（2分以降 336〜349 で横ばい）・クラッシュログ増えず。続けて男×女（maleFemale）も10分：落ちず・317→346MB 横ばい＝4つの形すべて10分 soak を通した。設定画面「暮らし」の説明（夜逃げの境目＝借金100万超・知名度0〜100）も実際の判定と一致。点検の1本 run_checks も緑（GameCore 453・同期80/80・アプリ370）。スキル倍率が表示に入らない所は生活費だけ（知名度の札は実際の増分）。
+161. [済 11/08 定期] 候補ブランチの確認：money-format-cand／money-format-cprime-cand の2本が本体と WeekMainView で衝突（本体 0e444ed1「1万円未満は整数円」と候補の Yen.short が同じ行）→ 候補の Yen.short（同じ扱い）を残して本体を取り込み（260ac004・019124c1・アプリ374／GameCore 453 green）。他の候補は本体に入る（ok）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
