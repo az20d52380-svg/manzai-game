@@ -183,7 +183,7 @@
 - 11/08 定期 済（昼・続き32）：A-2（キュー147）の推奨・案2（周回の頂点の束の指数 8→16）を候補ブランチ claude/meta-smooth-exp16-cand（1fef55a9）に用意＝規律A（Python と GameConfig を同時・golden 差分0・P=8 の期待値は Python から取り直し）・GameCore 449／アプリ 368 green。
 - 11/08 定期 済（昼・続き33）：C-13 の材料＝古い作業場所の数え直し（56個・約13GB・未コミット変更0・未追跡のある5個を表に・worktrees_cleanup_1108_v0）。途中で A-2 の候補 claude/rift-trophy-cand がリモートに無いと分かり push（aec46ccc）。
 - 11/08 定期 済（昼・続き34）：A-2 の候補2本（rift-trophy・meta-smooth-exp16）を本体に重ねる合わせ試験＝衝突なし・GameCore 449／アプリ 370 green。
-- 11/08 定期 済（昼・続き35）：漏れ点検 soak（MZ_SOAK_MS=30）で**約5分で落ちる不具合**を見つけた＝週の画面のオファーの札（WeekMainView.offerPicker の `ForEach(0..<offers.count)`＋`offers[i]`）が、札が減った週の描き直しで添字が範囲外（クラッシュログ ManzaiGame-2026-11-08-113405）→ 要素ごと渡す形に直した。直した後 7.5分 落ちず・常駐 325→335MB で横ばい。アプリ 368 green。同じ形（可変配列の添字の ForEach）は他に無し（タブ・下の帯は固定の並び・可変の範囲の5か所は添字を確かめているか配列を引かない）。速い soak（MZ_SOAK_MS=10）10分も落ちず・326→344MB（上下しながら横ばい）。
+- 11/08 定期 済（昼・続き35）：漏れ点検 soak（MZ_SOAK_MS=30）で**約5分で落ちる不具合**を見つけた＝週の画面のオファーの札（WeekMainView.offerPicker の `ForEach(0..<offers.count)`＋`offers[i]`）が、札が減った週の描き直しで添字が範囲外（クラッシュログ ManzaiGame-2026-11-08-113405）→ 要素ごと渡す形に直した。直した後 7.5分 落ちず・常駐 325→335MB で横ばい。アプリ 368 green。同じ形（可変配列の添字の ForEach）は他に無し（タブ・下の帯は固定の並び・可変の範囲の5か所は添字を確かめているか配列を引かない）。速い soak（MZ_SOAK_MS=10）10分も落ちず・326→344MB（上下しながら横ばい）。女性コンビ（MZ_KIND=femaleFemale＝THE HANA の道も通る）でも10分落ちず・324→342MB 横ばい。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
