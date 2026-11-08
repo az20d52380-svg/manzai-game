@@ -443,6 +443,16 @@ cd GameCore && swift test
 - `visual_sweep_1108i.md` — 未目視14画面の点検（崩れ0・フックの撮り方つき）
 - `worktrees_cleanup_1108_v0.md` — 古い作業場所56個（約13GB）の片付けの材料（C-13・何も消していない）
 - `index_crash_audit_1108_v0.md` — 配列の添字で落ちる所の静的点検（11/08 の soak で落ちた件の横展開・確実0・条件付き2）
+- `unwrap_crash_audit_1108_v0.md` — 強制アンラップ・0除算・Int 変換で落ちる所の静的点検（確実0・条件付き3）
+- `save_compat_audit_1108_v0.md` — セーブ読み込み互換の静的点検（高1は続き39で直した・中＝退避の扱い）
+- `delayed_callback_audit_1108_v0.md` — 画面を閉じた後に遅れて走る処理の静的点検（実害1は続き42で直した・条件付き8＝キュー155）
+- `number_display_audit_1108_v0.md` — 数値の表示の端の値（借金・大きな値・0）の静的点検（4件は続き45で直した）
+- `hardcoded_numbers_audit_1108_v0.md` — 画面の文の直書き数字と GameConfig の突き合わせ（不一致0・直書き8）
+- `long_name_layout_audit_1108_v0.md` — 長い名前（コンビ名12字・名前6字）の表示の点検（崩れ1は続き49で直した）
+- `storekit_edge_audit_1108_v0.md` — 課金の端の場面（未検証・返金・復元・二重付与）の静的点検（高0・中3＝キュー156）
+- `notification_audit_1108_v0.md` — ローカル通知の静的点検（予約なし・許可画面は休眠）
+- `playtest_y9_1108_v0.md` — 9年目の実プレイ点検（高0・中3＝判断もの）
+- `playtest_female_y3_1108_v0.md` — 女性コンビ3年目の実プレイ点検（高0・中1＝凡例の文を直した）
 - `payment_services_act_check_1025_v0.md` — 資金決済法（前払式支払手段）の確認（2026-10-25・懸念の台帳 L43・今の作りは対象外の見込み・有料石を入れる場合の対応表）
 - `banter_repeat_measure_1025_v0.md` — 10年遊んだ時の週頭の声（掛け合い・独白）の読み返し率の実測（2026-10-25・懸念の台帳 L40・材料・コード不変）
 - `fan_report_repeat_measure_1025_v0.md` — 10年遊んだ時のファンレポ（ヒトコエ）の読み返し率の実測（2026-10-25・懸念の台帳 L39・材料・コード不変・全体63〜67%・A帯に集中）
@@ -575,6 +585,7 @@ cd GameCore && swift test
 - `late_events_tuning_1108_v0.md` — 終盤イベント候補の「弱め方」の実測 v0（2026-11-08・見本・決めるのはオーナー）
 - `old_questions_remeasure_1108_v0.md` — 古い3論点の測り直し（15年・較正A・周回の式の今の本体） v0（2026-11-08・材料。推奨の決定はしない）
 - `outing_lines_score_1108.md` — 台詞採点 c9a123b1（v3バナー基準）
+- `dialogue_score_1108b.md` — 文章採点 0e7f0da2..HEAD（○12 ×1＝生活費の予告の万円が整数割りで切り捨て→Yen.man に）
 - `perf_check_1108.md` — 重さの測り直し 11/08（iPhone 17 シミュレータ・Debug・`tools/run_perf.sh`）
 - `pour_stop_1108_v0.md` — おすすめ注ぎが途中で止まる件の実測 v0（2026-11-08・決めるのはオーナー）
 - `release_build_check_1108.md` — 発売用ビルド点検（11/08・ソース無変更・commit なし）
