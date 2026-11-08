@@ -1517,7 +1517,7 @@ final class GameSession {
     }
 
     /// DEBUG: オファーが来る週まで休んで進める（MZ_UI=offer の目視用）
-    func debugUntilOffer() {
+    func debugUntilOffer(_ action: WeekAction = .rest(.完全休養)) {
         var steps = 0
         while !finished, steps < 120 {
             steps += 1
@@ -1527,7 +1527,7 @@ final class GameSession {
             }
             guard case .freeAction(let o) = phase else { return }
             if o != nil { return }
-            choose(.rest(.完全休養))
+            choose(action)
         }
     }
 
