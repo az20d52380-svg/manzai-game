@@ -172,20 +172,29 @@ struct S6bView: View {
 
     // MARK: ③ 年表（1年=1行）＋ ④ スタッフロール（最小）
 
+    /// 年表の行（1年＝1行）
+    private var nenpyouRows: some View {
+        VStack(spacing: 6) {
+            ForEach(session.yearHistory, id: \.year) { r in
+                HStack {
+                    Text("\(r.year)年目").font(.maru(13)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
+                    Spacer()
+                    Text(r.champion ? "頂グランプリ 優勝" : YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
+                        .font(.maru(14)).foregroundStyle(r.champion ? Theme.gold : .white.opacity(0.85))
+                }
+            }
+        }
+    }
+
     private var nenpyou: some View {
         VStack(spacing: Theme.Sp.s16) {
             Spacer()
             Text("年表").font(.maru(12)).tracking(2).foregroundStyle(.white.opacity(0.75))   // 暗い地で読める濃さに（0.5 は沈んだ）
             // 1年＝1行（結成からの頂グランプリの到達）。最後の行が優勝の年
-            VStack(spacing: 6) {
-                ForEach(session.yearHistory, id: \.year) { r in
-                    HStack {
-                        Text("\(r.year)年目").font(.maru(13)).monospacedDigit().foregroundStyle(.white.opacity(0.7))
-                        Spacer()
-                        Text(r.champion ? "頂グランプリ 優勝" : YearResultView.reachLabel(r, names: session.config.calendar.gpRoundNames))
-                            .font(.maru(14)).foregroundStyle(r.champion ? Theme.gold : .white.opacity(0.85))
-                    }
-                }
+            // 15年ぶんは小さい画面・大きい文字で入りきらない＝入らない時だけスクロール（タップで進むのは同じ）
+            ViewThatFits(in: .vertical) {
+                nenpyouRows
+                ScrollView { nenpyouRows }
             }
             .padding(Theme.Sp.s16).background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: Theme.Rad.card))
             .padding(.horizontal, Theme.Sp.s24)
@@ -214,7 +223,7 @@ struct S6bView: View {
                             Capsule().fill(.black.opacity(0.55)).frame(width: 44, height: 100)
                         }.offset(y: 20)
                     )
-                    .overlay(Text(session.combiName).font(.maru(12)).foregroundStyle(.black.opacity(0.7)).offset(y: 78))
+                    .overlay(Text(session.combiName).font(.maru(12)).lineLimit(1).minimumScaleFactor(0.7).frame(maxWidth: 140).foregroundStyle(.black.opacity(0.7)).offset(y: 78))   // 12字でも枠内（long_name_layout_audit_1108_v0）
                 Circle().fill(Theme.verm).frame(width: 10, height: 10).offset(y: -4)   // ピン
             }
             .scaleEffect(burned ? 1 : 1.05).opacity(burned ? 1 : 0)

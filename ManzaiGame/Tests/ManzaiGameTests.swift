@@ -439,7 +439,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testLiving() {
         var i = base(); i.livingThisWeek = true; i.money = 139_999
-        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")
         i.money = 140_000; XCTAssertNil(WeekHint.line(i))
         i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
     }
@@ -463,7 +463,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
         XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
-        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
         i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
@@ -896,7 +896,17 @@ final class Pure1027Tests: XCTestCase {
         XCTAssertEqual(Yen.man(25000), "2.5万")
         XCTAssertEqual(Yen.man(150000), "15万")
         XCTAssertEqual(Yen.man(-5000), "-0.5万")
-        XCTAssertEqual(Yen.man(9999), "1.0万")
+        XCTAssertEqual(Yen.man(99_999), "10万", "丸めで繰り上がっても「10.0万」にしない（number_display_audit_1108_v0 #4）")
+        XCTAssertEqual(Yen.man(14_999), "1.5万")
+        XCTAssertEqual(Yen.man(9999), "1万")   // 11/08：説明どおり整数なら小数なし（旧 "1.0万"）
+    }
+    /// 年替わりの幕の所持金（number_display_audit_1108_v0 #2）：借金は −¥、丸めで繰り上がっても「10.0万」にしない
+    func testYearTurnCompactYen() {
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(-3_000), "−¥3,000")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(-150_000), "−¥15万")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(99_999), "¥10万")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(25_000), "¥2.5万")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(9_999), "¥9,999")
     }
     func testYenTextNegative() {
         XCTAssertEqual(Yen.text(-912000), "−¥912,000")

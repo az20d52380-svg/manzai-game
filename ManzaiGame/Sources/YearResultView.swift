@@ -3,7 +3,7 @@
 // 上から: 年目バッジ → 到達段階の判 → レーダー重ね(4月線+現在面) → 48週行動内訳色帯 → 出来事3行(大会結果のみ) → 賞金/知名度年計。
 // トランジション: 紙面が下から0.4s・要素は上から0.15s間隔の時間差表示。判押印0.25s+hConfirm。レーダーモーフ0.8s・行動内訳帯左から0.6s。
 // 複数年キャリア（2026-10-10）: 区切りでない年末は「◯年目へ」で翌年へ。優勝年は勇退エンディングへ、
-// 夜逃げ・結成10年目の年末は「もう一度」で新しいキャリアへ。締めは年次独白(voice_corpus yearEnd.*)。
+// 夜逃げ・結成の最終年（config.careerYears）の年末は「もう一度」で新しいキャリアへ。締めは年次独白(voice_corpus yearEnd.*)。
 
 import SwiftUI
 import GameCore
@@ -381,7 +381,7 @@ struct YearResultView: View {
     /// オーナー決定 2026-07-06：else（決勝未到達・非破産）を fame/roundsPassed で二分。閾値は【仮】——sim到達分布で後日確定。
     private func yearEndLine() -> String? {
         guard let o else { return nil }
-        var (pool, scene) = Self.yearEndPool(o, fame: Int(s.fame), year: session.year)
+        var (pool, scene) = Self.yearEndPool(o, fame: Int(s.fame.isFinite ? s.fame : 0), year: session.year)
         // 結成最終年の年末には「来年」が無い（year10_visual_1026_v0 §2-2）。来年を語る行を外す（各プール13行中2行）。
         if session.careerOver || session.year >= session.config.careerYears {   // 優勝・夜逃げ・解散で早く終わる年も（code_review_2026-10-26c §2-1）
             let kept = pool.filter { !$0.contains("来年") }
@@ -390,9 +390,13 @@ struct YearResultView: View {
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
         let rec = Self.stageRecord(log: session.log)
         pool = Self.filterByRecord(pool, wins: rec.wins, losses: rec.losses)
+        // 前の年に優勝した人に「去年と変わらない」は合わない
+        if session.yearHistory.contains(where: { $0.champion && $0.year == session.year - 1 }) {
+            pool = Self.withoutLastYearLines(pool)
+        }
         // 頂グランプリの決勝に立った年は独白を出さない（オーナー 10/18「寒そう」→A：決勝の余韻は決勝の場面で足りる）
         if Self.silentFinalsYear(bankrupt: o.bankrupt, dissolved: o.dissolved, champion: o.champion, reachedFinal: o.reachedFinal) { return nil }
-        let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
+        let salt = Int(s.fame.isFinite ? s.fame : 0) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
         // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
         return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
     }
@@ -478,14 +482,22 @@ struct YearResultView: View {
         "谷口とのコンビは、解散することにした。\n明日、二人で事務所に話しに行く。",
     ]
 
+    /// 前の年に優勝した人には、去年と比べる独白（「去年の自分が見たら、驚くような一年」等）を出さない（code_review_1107f #2）
+    static func withoutLastYearLines(_ pool: [String]) -> [String] {
+        let kept = pool.filter { !$0.contains("去年") }
+        return kept.isEmpty ? pool : kept
+    }
+
     @ViewBuilder private var restartButton: some View {
         if let onRetire, let onNextYear {
             // 主ボタンの位置は「続ける」＝連打しても勇退にならない
             VStack(spacing: 6) {
                 Text("ここで勇退するか、連覇を狙うか").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
-                HStack(spacing: 10) {
-                    Button(action: onRetire) { Text("勇退する") }.buttonStyle(YoseButtonStyle(.secondary))
-                    Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶") }.buttonStyle(YoseButtonStyle(.primary))
+                let retire = Button(action: onRetire) { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
+                let goOn = Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶").lineLimit(1) }.buttonStyle(YoseButtonStyle(.primary))
+                ViewThatFits(in: .horizontal) {   // 大きい文字で横に収まらない時は縦に積む（code_review_1107f #4）
+                    HStack(spacing: 10) { retire; goOn }
+                    VStack(spacing: 8) { retire; goOn }
                 }
             }
         } else { singleButton }
