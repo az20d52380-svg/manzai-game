@@ -1470,6 +1470,12 @@ final class GameSession {
 
     /// QA用: 選択肢イベントのオーバーレイを強制表示（発火抽選を経ず kind を直接立てる・目視専用）。
     func debugForceEvent(_ kind: ChoiceEventKind) { pendingChoiceEvent = kind }
+    /// 目視用：頂GP の予選で落ちた扱いにする（runner のスナップショットの gpAlive だけ下ろして戻す・乱数非消費）
+    func debugMarkGPLost() {
+        var snap = runner.snapshot()
+        snap.gpAlive = false
+        runner = WeekRunner(restoring: snap, config: config)
+    }
 
     /// QA用: 既定行動で自動プレイし、最初の大会/GP結果（S3）が出た時点で止める。
     /// stopAtEntry=true なら最初の大会入口（tournamentDecision）で止める（入口画面の目視用）。
@@ -1505,7 +1511,7 @@ final class GameSession {
     }
 
     /// DEBUG: オファーが来る週まで休んで進める（MZ_UI=offer の目視用）
-    func debugUntilOffer() {
+    func debugUntilOffer(_ action: WeekAction = .rest(.完全休養)) {
         var steps = 0
         while !finished, steps < 120 {
             steps += 1
@@ -1515,7 +1521,7 @@ final class GameSession {
             }
             guard case .freeAction(let o) = phase else { return }
             if o != nil { return }
-            choose(.rest(.完全休養))
+            choose(action)
         }
     }
 
