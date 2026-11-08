@@ -666,7 +666,7 @@ enum ChoiceEventData {
         title: "正社員の話",
         setup: [
             Advice(name: nil, text: "バイト先の休憩室。昼休み。"),
-            Advice(name: "店長", text: "正社員にならないか。給料も上がるし、生活も落ち着くよ"),
+            Advice(name: "矢島", text: "正社員にならないか。給料も上がるし、生活も落ち着くよ"),
             Advice(name: "俺", text: "ありがたいです。でも、稽古に行ける日が減りますよね"),
             Advice(name: "谷口", text: "自分の暮らしだし、自分で決めればいいよ"),
         ],
@@ -677,12 +677,12 @@ enum ChoiceEventData {
         afterChoice: [
             "A": [
                 Advice(name: "俺", text: "受けます。生活を立て直したいです"),
-                Advice(name: "店長", text: "助かるよ。来月から、よろしく頼むね"),
+                Advice(name: "矢島", text: "助かるよ。来月から、よろしく頼むね"),
                 Advice(name: "谷口", text: "そっか。稽古は、そっちの休みの日にしよう"),
             ],
             "B": [
                 Advice(name: "俺", text: "すみません。今のままで続けさせてください"),
-                Advice(name: "店長", text: "そうか。じゃあ、これからもよろしくね"),
+                Advice(name: "矢島", text: "そうか。じゃあ、これからもよろしくね"),
                 Advice(name: "谷口", text: "よく決めたね。これからも一緒にやろう"),
             ],
         ]
