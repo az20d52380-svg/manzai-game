@@ -195,7 +195,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- 11/08 夜 定期 済：候補の確認＝week-hint-priority が本体の Yen.man（94eba209）と WeekHint.swift で衝突→候補の並びのまま金額を Yen.man に解いて push（226434ea・GameCore 465／アプリ 382 green）。遅れ100以上の候補を refresh_candidates で取り込み直し中（背景）。
+- 11/08 夜 定期 済：候補の確認＝week-hint-priority が本体の Yen.man（94eba209）と WeekHint.swift で衝突→候補の並びのまま金額を Yen.man に解いて push（226434ea・GameCore 465／アプリ 382 green）。遅れ100以上の候補を refresh_candidates で取り込み直し＝green で push 30本／見送り4本（button-press-se・gacha-entry・rift-trophy・the-hana＝古いサブエージェントの作業場所 .claude/worktrees/ が持っている）／衝突2本（the-hana-r1027・vitalbar-numberpop＝既知の151）。赤0。
 - 11/08 夜 定期 済：男女コンビ後半の年の実プレイ点検（femaleMale 6年目・maleFemale 11年目・sonnet・playtest_mixed_late_1108）＝高0中0低1（オファー札と立ち絵の重なり＝既知のキュー137）。
 - 11/08 夜 定期 済：157 の材料＝日程表の塗りの実測とコード確認（食い違いは GP で落ちた後の週だけ）。点検の1本 緑（GameCore 465・同期80/80・効果62/発火26・アプリ 381）。
 - 11/08 夜 定期 済：167 の材料＝体力不足の週のオファー頻度（n=300・受けた内14〜23%が体力不足・記録のみ）。
