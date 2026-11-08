@@ -181,6 +181,7 @@
 199. [済 11/09 定期] 選択イベントの文の長さ（ChoiceEventData 832文・最長は 0041 後輩の誘いの谷口 53字＝{partner1} 込み）を目視：`MZ_UI=event MZ_EV=0041 MZ_EVSTEP=99 MZ_KIND=femaleFemale`＝「私たち」に置き換わって吹き出し2行・崩れなし。次点は37〜39字。
 200. [済 11/09 定期] 文字サイズ拡大 AX1（accessibility-extra-large）の目視を 10/27 以降の画面で4枚：オファーの札（MZ_UI=offers・体力0で札3枚＋オファー）・イベント0041（最長の台詞）・年末総決算（MZ_SCROLL=history）・ネタ帳（能力115）＝崩れなし。年末の右上で「🏆優勝／💪無双」が本文に重なるのは DEBUG 専用の近道ボタン（RootView.debugChip・本番に出ない）。終了後 content_size は large に戻し済み。
 201. [済 11/09 定期] check_candidates.sh も直した：origin の候補を取り直して origin の版を見る（手元の枝は古いことがある）・本体に別の形で入った3本を外す。今の結果＝候補は全部本体にそのまま入る（最大の遅れ43）。候補どうしの衝突23組は ManzaiGameTests.swift の末尾（15組）・project.pbxproj（6組）・sim_career.py（late-events×season-sure）・ChoiceEventOverlay.swift（invite-variants×unused-parts）。C-8（THE HANA・寒梅の優勝トロフィー）は総枠30pt の正典（trophy_design_v1 §2・sim_meta.TROPHY_CAP）と A-2 の周回の点に絡むため候補は作らない（判断の後）。
+202. [済 11/09 定期] invite-variants × unused-parts の ChoiceEventOverlay.swift の衝突は隣り合う2行だけ＝解き方：invite 側の `private var text` の塊（pickIndex で文面を選ぶ6行）を残し、unused-parts 側に合わせて `private var scene: EventScene { ChoiceEventData.scene(for: kind) }` の1行を消す（下の EventSceneView 等の削除は衝突しない）。両方入れる時は後から入れる方でこの手当て。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
