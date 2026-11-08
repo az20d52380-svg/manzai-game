@@ -170,6 +170,7 @@
 188. [済 11/09 定期] Q112（テレビ慣れの表示）の候補に本体を取り込み、目視フック MZ_OFFERWEEKS を足して撮影（shots_1109/q112_*）。
 189. [済 11/09 定期] テスト TextPoolDuplicateTests（GameCore・アプリのソースを読む）：DialogueData・FanReportData・JudgeData の塊ごとに12字以上の文の重複0を確かめる（knownOnly は部分集合なので対象外・塊をまたぐ重複は意図＝ファンレポの24本は knownOnly の写し）。わざと1行重ねると赤になるのを確認。候補 fanreport-plus・lull-plus・minor-pools-plus・monologue-plus も重複0。GameCore 468 green。
 190. [済 11/09 定期] 今日のテスト追加で pbxproj が変わり、候補6本（calendar-gp-paint・late-events・money-format・money-format-cprime・offer-stamina-note・youth-notice-y10）が本体と pbxproj だけ衝突→ refresh_candidates.sh に3つ目の引数（名前の正規表現）を足して6本だけ取り込み直し＝全部 green で push。
+191. [済 11/09 定期・撮れず] C-25 の「後」を撮ろうとした：`MZ_UI=calendar MZ_STOPWEEK=33`（1年目）と `MZ_YEARS=1 MZ_STOPWEEK=33 MZ_CARE=1`（2年目）はどちらも自動台本が GP1回戦（ライン16）を通過し、本体と候補で同じ絵になる。差を撮るには GP 予選で落ちた状態を作るフック（例 MZ_GPLOST）が要る＝次に足すなら候補側と本体の両方に。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
