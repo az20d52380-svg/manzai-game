@@ -120,6 +120,7 @@
 		C7CC7DDD5702BD8FE0DC6F10 /* YoseMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A020307F3B3C34947A00DD3 /* YoseMotion.swift */; };
 		C892078A22A967AE53124380 /* YoseRankUpOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7C2408A19FD4353246D25 /* YoseRankUpOverlay.swift */; };
 		C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */; };
+		CD03DC71FC6F945B75424040 /* EventScene1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CDAEF7EEFB5FED882FF2B3 /* EventScene1108Tests.swift */; };
 		CDB07DD7D5C98BA8BB44BD2E /* CommandCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FD8C5D4F11D970B78D68B9 /* CommandCatalogTests.swift */; };
 		D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */; };
 		D6DD3EA8BA750EBBFE6DBB11 /* se_rankup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C0518515B27DFACD1B80A893 /* se_rankup.mp3 */; };
@@ -301,6 +302,7 @@
 		F5D08F932A4334F422E73881 /* JudgeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JudgeData.swift; sourceTree = "<group>"; };
 		F6A618381798F759B9F5580F /* Juice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Juice.swift; sourceTree = "<group>"; };
 		F6A7C2408A19FD4353246D25 /* YoseRankUpOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseRankUpOverlay.swift; sourceTree = "<group>"; };
+		F6CDAEF7EEFB5FED882FF2B3 /* EventScene1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventScene1108Tests.swift; sourceTree = "<group>"; };
 		F840A919C087A92A94339899 /* RadarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChart.swift; sourceTree = "<group>"; };
 		FA673092EEA63EF1E2CC53DF /* TrophyHana1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrophyHana1107Tests.swift; sourceTree = "<group>"; };
 		FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_tension.mp3; sourceTree = "<group>"; };
@@ -475,6 +477,7 @@
 				CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */,
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
 				3E0B0769E2FD9798657ADACB /* DynastyPlaytest1107Tests.swift */,
+				F6CDAEF7EEFB5FED882FF2B3 /* EventScene1108Tests.swift */,
 				17DB9778EF13E155A068361C /* ExpDisplay1107Tests.swift */,
 				9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */,
 				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
@@ -747,6 +750,7 @@
 				AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */,
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
 				8E0F99F0D2841DC8DB104063 /* DynastyPlaytest1107Tests.swift in Sources */,
+				CD03DC71FC6F945B75424040 /* EventScene1108Tests.swift in Sources */,
 				741FA79F0A0E44D0CDA6DD26 /* ExpDisplay1107Tests.swift in Sources */,
 				237774A82CCB356B070CD9A7 /* GachaRatesPage1107Tests.swift in Sources */,
 				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
