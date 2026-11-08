@@ -158,6 +158,19 @@ struct RootView: View {
                 var st = GameState(config: GameConfig()); st.money = m
                 session = GameSession(startState: st)
             }
+            if ui == "offers", session.week <= 1, session.year == 1 {
+                // オファーの札の目視（C-24 の「体力0になる」・キュー137 の説明の二重）: 知名度60（札3枚）で、標準のバイトを続けて体力を減らしながらオファーの来る週まで進める。
+                // MZ_STAMINA=<n>：その体力以下でオファーが来た週で止める（既定 25・100 なら最初のオファーで止める）。体力は年初に100へ戻るので開始状態では決めない。RNG は通常の週送りと同じ（golden 非対象）
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 60
+                session = GameSession(startState: st)
+                let limit = Double(ProcessInfo.processInfo.environment["MZ_STAMINA"] ?? "") ?? 25
+                for _ in 0..<30 {
+                    session.debugUntilOffer(.job(.標準))
+                    guard case .freeAction(let o) = session.phase, o != nil else { break }
+                    if session.state.stamina <= limit { break }
+                    session.choose(.job(.標準))
+                }
+            }
             if ui == "allocate", session.week <= 1 {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
                 var st = GameSession.debugAllocationState()
