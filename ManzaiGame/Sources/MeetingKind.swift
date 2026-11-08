@@ -73,7 +73,7 @@ enum MeetingKind: String, Codable, CaseIterable {
                                  talk: [Advice(name: "谷口", text: "新しい人？ 谷口っていうんだ、よろしくね"),
                                         Advice(name: "俺", text: "よろしく。今日から昼のシフトに入るよ"),
                                         Advice(name: "谷口", text: "まかないのカレー、おいしいよ。一緒に食べよう")],
-                                 together: false),
+                                 together: false, backdrop: .init(.famires, .day)),   // 字幕どおりファミレスの絵（選択イベントとエンディング#3 の「バイト先の休憩室」と同じ・11/08）
                 ReminiscenceCard(caption: "閉店後の駐車場。",
                                  mood: .night, speaker: "谷口", line: "コンビ、組まない？",
                                  backdrop: .init(.street, .night)),
