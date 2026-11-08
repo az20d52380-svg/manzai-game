@@ -46,10 +46,25 @@ final class SaveFixtureTests: XCTestCase {
         let data = try Data(contentsOf: fixtureURL)
         let snap = try JSONDecoder().decode(WeekRunnerSnapshot<SplitMix64>.self, from: data)
         XCTAssertEqual(Set(snap.state.skills ?? []), Set(Skill.allCases), "特技の全 case が残っている")
+        // 特技は知らない値を捨てて読む（save_compat_audit_1108）ので、case を消したら数の一致で赤にする
+        let raw = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let rawSkills = try XCTUnwrap((raw?["state"] as? [String: Any])?["skills"] as? [String])
+        XCTAssertEqual(snap.state.skills?.count, rawSkills.count, "固定 JSON の特技が全部今も在る")
         XCTAssertEqual(Set(snap.state.netas.map(\.kata)), Set(NetaKata.allCases), "ネタの型の全 case が残っている")
         // 復元して週を進めても落ちない
         var r = WeekRunner(restoring: snap, config: GameConfig())
         _ = r.resolveAction(.rest(.完全休養))
         _ = r.begin()
+    }
+
+    /// 知らない特技（消した case）が混じった旧セーブでも全体は読める＝その要素だけ捨てる（save_compat_audit_1108_v0）
+    func testUnknownSkillIsDroppedNotFatal() throws {
+        var obj = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any])
+        var state = try XCTUnwrap(obj["state"] as? [String: Any])
+        let skills = try XCTUnwrap(state["skills"] as? [String])
+        state["skills"] = skills + ["removedSkillForTest"]
+        obj["state"] = state
+        let snap = try JSONDecoder().decode(WeekRunnerSnapshot<SplitMix64>.self, from: JSONSerialization.data(withJSONObject: obj))
+        XCTAssertEqual(snap.state.skills?.count, skills.count)
     }
 }
