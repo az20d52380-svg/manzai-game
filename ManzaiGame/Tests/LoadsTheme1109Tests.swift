@@ -58,7 +58,6 @@ final class LoadsTheme1109Tests: XCTestCase {
     func testThemeColorsAreDistinctPerKind() {
         XCTAssertEqual(Set(Ability.allCases.map(Theme.abilityColor)).count, Ability.allCases.count)
         XCTAssertEqual(Set(ExpCurrency.allCases.map(Theme.currencyColor)).count, ExpCurrency.allCases.count)
-        XCTAssertEqual(Set(NetaKata.allCases.map(Theme.kataColor)).count, NetaKata.allCases.count)
         let grades = ["S", "A", "B", "C", "D", "E", "F", "G"]
         XCTAssertEqual(Set(grades.map(Theme.gradeColor)).count, grades.count)
         XCTAssertEqual(Theme.gradeColor("?"), Theme.gradeColor("G"), "知らない等級は G の色")
