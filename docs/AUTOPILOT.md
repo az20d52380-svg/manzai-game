@@ -185,6 +185,7 @@
 - 11/08 定期 済（昼・続き34）：A-2 の候補2本（rift-trophy・meta-smooth-exp16）を本体に重ねる合わせ試験＝衝突なし・GameCore 449／アプリ 370 green。
 - 11/08 定期 済（昼・続き35）：漏れ点検 soak（MZ_SOAK_MS=30）で**約5分で落ちる不具合**を見つけた＝週の画面のオファーの札（WeekMainView.offerPicker の `ForEach(0..<offers.count)`＋`offers[i]`）が、札が減った週の描き直しで添字が範囲外（クラッシュログ ManzaiGame-2026-11-08-113405）→ 要素ごと渡す形に直した。直した後 7.5分 落ちず・常駐 325→335MB で横ばい。アプリ 368 green。同じ形（可変配列の添字の ForEach）は他に無し（タブ・下の帯は固定の並び・可変の範囲の5か所は添字を確かめているか配列を引かない）。速い soak（MZ_SOAK_MS=10）10分も落ちず・326→344MB（上下しながら横ばい）。女性コンビ（MZ_KIND=femaleFemale＝THE HANA の道も通る）でも10分落ちず・324→342MB 横ばい。
 - 11/08 定期 済（昼・続き36）：添字の範囲外で落ちる所の静的な点検（sonnet・index_crash_audit_1108_v0）＝確実に落ちる所0・条件付き2（TournamentResultView:52 の results.last! は pump() の非空の守りに頼る・IntroFlow:48 の cards[0] は今は固定の文）＝今は直さない。7a2ae712 と同じ形は他に無し。
+- 11/08 定期 済（昼・続き37）：強制アンラップ・0除算・Int 変換で落ちる所の静的点検（sonnet・unwrap_crash_audit_1108_v0）＝確実0・条件付き3（TournamentResultView:52 は添字点検と同件／YearResultView:384,399 の Int(fame) に isFinite の守りなし／セーブ改ざん経由の Int 変換群）＝どれも通常プレイでは届かないので今は直さない。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
