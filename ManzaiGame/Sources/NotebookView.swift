@@ -72,6 +72,7 @@ struct NotebookView: View {
             if exp > 0 && !cfg.autoPourAllocation {
                 HStack {
                     YoseTag(text: "経験点 \(exp) 未使用", style: .outlineShu)
+                    Text("週の画面の能力アップで使う").font(YoseFont.gothic(12)).foregroundStyle(YoseColor.haiSumi)
                     Spacer()
                 }
             }
@@ -87,7 +88,7 @@ struct NotebookView: View {
                 Text("コンビの名札").font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     .frame(maxWidth: .infinity).padding(.vertical, 5).background(YoseColor.enji)
                     .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
-                ForEach(Array([("コンビ名", session.combiName), ("所属", "吉竹興行"), ("相方", "谷口"), ("いま", "\(session.year)年目　第\(session.week)週"), ("知名度", "\(Int(s.fame.rounded()))"), ("所持金", "¥\(s.money.formatted())")].enumerated()), id: \.offset) { i, row in
+                ForEach(Array([("コンビ名", session.combiName), ("所属", "吉竹興行"), ("相方", Names.partner), ("いま", "\(session.year)年目　第\(session.week)週"), ("知名度", "\(Int(s.fame.rounded()))"), ("所持金", Yen.text(s.money))].enumerated()), id: \.offset) { i, row in
                     VStack(spacing: 0) {
                         if i > 0 { Rectangle().fill(YoseColor.kiDark.opacity(0.5)).frame(height: 1).padding(.horizontal, 14) }
                         HStack(spacing: 12) {
@@ -168,16 +169,17 @@ struct NotebookView: View {
     }
 
     /// 通算の優勝＝今年の記録の優勝＋過去の年の頂GP優勝＋過去の年の THE HANA 優勝（記録は年ごとに消えるので、通算 hanaWins から今年の分を引いて足す・code_review_1107c #6）。表示専用。
-    static func kirokuWins(marks: [(title: String, mark: String)], gpChampionYears: Int, hanaWins: Int?) -> Int {
+    static func kirokuWins(marks: [(title: String, mark: String)], gpChampionYears: Int, hanaWins: Int?, pastSmallWins: Int = 0) -> Int {
         let thisYear = marks.filter { $0.mark == "優勝" }
         let hanaThisYear = thisYear.filter { $0.title.contains("HANA") }.count
-        return thisYear.count + gpChampionYears + max(0, (hanaWins ?? 0) - hanaThisYear)
+        return thisYear.count + gpChampionYears + max(0, (hanaWins ?? 0) - hanaThisYear) + pastSmallWins
     }
 
     private var kirokuPage: some View {
         let entries = logEntries
         let played = entries.filter { ["通過", "敗退", "優勝"].contains($0.mark) }.count
-        let wins = Self.kirokuWins(marks: entries.map { ($0.title, $0.mark) }, gpChampionYears: session.yearHistory.filter { $0.champion }.count, hanaWins: session.state.hanaWins)
+        let wins = Self.kirokuWins(marks: entries.map { ($0.title, $0.mark) }, gpChampionYears: session.yearHistory.filter { $0.champion }.count, hanaWins: session.state.hanaWins,
+                                     pastSmallWins: session.yearHistory.reduce(0) { $0 + ($1.smallWins ?? 0) })
         let total = entries.reduce(0) { $0 + $1.prize } + session.yearHistory.reduce(0) { $0 + $1.prize / 10000 }
         return VStack(alignment: .leading, spacing: 10) {
             // 通算戦績（3カラム木札）
@@ -260,7 +262,7 @@ struct NotebookView: View {
             Text(label).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(value).font(YoseFont.number(24, weight: .black)).foregroundStyle(unit == "万" ? YoseColor.shu : YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.6)   // 通算の賞金（万）は10年で5桁になりうる＝2行に折らない
+                    .lineLimit(1).minimumScaleFactor(0.6)   // 通算の賞金（万）は15年で5〜6桁になりうる＝2行に折らない（縮小0.6まで）
                 Text(unit).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.sumi)
             }
         }

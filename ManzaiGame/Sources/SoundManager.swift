@@ -70,6 +70,29 @@ final class SoundEngine {
         // ambient = マナー(消音)スイッチを尊重＋他アプリ音と混ざれる（ゲームの標準）
         try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
         try? AVAudioSession.sharedInstance().setActive(true)
+        // 電話・Siri・アラームの割り込みが終わったら BGM を戻す。決勝の番組や結果画面は bgm() を最初の1回しか呼ばないので、
+        // 同曲の分岐（playBGM）に届かず残りが無音になっていた（code_review_1108b #1）。
+        NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification,
+                                               object: AVAudioSession.sharedInstance(), queue: .main) { [weak self] note in
+            guard Self.shouldResumeAfterInterruption(note.userInfo) else { return }
+            self?.resumeBGMAfterInterruption()
+        }
+    }
+
+    /// 割り込みが「終わった」かつ OS が再開してよいと言っている時だけ true。
+    static func shouldResumeAfterInterruption(_ info: [AnyHashable: Any]?) -> Bool {
+        guard let rawType = info?[AVAudioSessionInterruptionTypeKey] as? UInt,
+              AVAudioSession.InterruptionType(rawValue: rawType) == .ended,
+              let rawOptions = info?[AVAudioSessionInterruptionOptionKey] as? UInt else { return false }
+        return AVAudioSession.InterruptionOptions(rawValue: rawOptions).contains(.shouldResume)
+    }
+
+    private func resumeBGMAfterInterruption() {
+        guard currentBGM != nil, let p = bgmPlayer else { return }   // 止めた後（currentBGM=nil）は鳴らさない
+        try? AVAudioSession.sharedInstance().setActive(true)
+        cancelFade(p)
+        p.volume = bgmVolume * duckFactor
+        if !p.isPlaying { p.play() }
     }
 
     private var seVolume: Float {
@@ -137,6 +160,7 @@ final class SoundEngine {
         currentBGM = nil
         fadeOut(bgmPlayer, over: fade)
         bgmPlayer = nil
+        duckFactor = 1   // 絞ったまま止めても、次の BGM に持ち越さない（code_review_1107e #8）
     }
 
     /// 設定スライダー変更の即時反映（SettingsView から呼ぶ）

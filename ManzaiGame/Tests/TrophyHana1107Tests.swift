@@ -76,7 +76,7 @@ final class TrophyHana1107Tests: XCTestCase {
 
     /// 図鑑の分母は「今取れる物」だけ（取れない T19・T20 を数えると全部そろわない）
     func testObtainableCountIsTwenty() {
-        XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 20)
+        XCTAssertEqual(TrophyID.allCases.filter(\.obtainable).count, 21)
     }
 
     /// 旧データ（hanaWins の鍵なし）も読める

@@ -868,13 +868,13 @@ struct WeekMainView: View {
     /// キュー96：オファーの札を横に並べる（仕事の名前・お金・説明・テレビ慣れの一言）。タップで選ぶ（受けるのは下の帯をもう一度押す）。
     private var offerPicker: some View {
         HStack(spacing: 6) {
-            ForEach(0..<offers.count, id: \.self) { i in offerPickCard(i) }
+            // 要素ごと渡す（0..<count の添字で後から offers[i] を引くと、札が減った週の描き直しで範囲外になり落ちた＝soak 11/08）
+            ForEach(Array(offers.enumerated()), id: \.offset) { i, o in offerPickCard(i, o) }
         }
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func offerPickCard(_ i: Int) -> some View {
-        let o = offers[i]
+    private func offerPickCard(_ i: Int, _ o: OfferSpec) -> some View {
         let on = i == offerPick
         return Button {
             Sound.play(.tap)
@@ -1138,7 +1138,7 @@ struct WeekMainView: View {
                                         .background(YoseColor.kin.opacity(0.25))
                                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                                 }
-                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
+                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(abs(moneyDelta) < 10000 ? abs(moneyDelta).formatted() : Yen.man(abs(moneyDelta)))")   // 1万円未満は整数円（costPill と同じ・¥0.5万／¥0.0万を出さない）
                                     .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
                                     .foregroundStyle(moneyDelta > 0 ? YoseColor.sumi : YoseColor.shu)
                             }
@@ -1439,7 +1439,7 @@ struct WeekMainView: View {
     private func maybeShowDebtNotice() {
         if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
             session.clearInjuryNotice()
-            injuryNotice = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
+            injuryNotice = GameSession.injuryNoticeText
             return
         }
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
@@ -1473,7 +1473,7 @@ struct WeekMainView: View {
         let c = session.config
         let living = GameEngine.livingCostDue(session.state, config: c)
         return HintSpec(key: "living", title: "生活費", rows: [
-            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(living / 10_000)万円が引かれる。今週がその週。"),
+            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(Yen.man(living))円が引かれる。今週がその週。"),
             .init(term: "借金", text: "お金が足りないと、足りない分が借金になる。"),
         ])
     }

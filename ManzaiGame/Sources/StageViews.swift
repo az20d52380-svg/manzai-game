@@ -184,7 +184,7 @@ struct TournamentEntryView: View {
                 }
 
             // G4: 大会結果でも同じ2つを同じ大きさで再掲する（大きくしない＝見込みに寄せない・X2-02）
-            LineBoard(week: spec.week, prize: Yen.man(spec.prize))
+            LineBoard(week: spec.week, prize: spec.prize > 0 ? Yen.man(spec.prize) : nil)   // 賞金の無い段に「0万」を出さない
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
             // 今夜かけるネタ（v2 §4-1補・golden非干渉＝state参照のみ・尺マッチは表示のみで合否に効かせない）
@@ -236,7 +236,7 @@ struct TournamentEntryView: View {
         .overlay {   // 療養明けが大会の入口に重なった週は、体調ダウンの知らせを入口より先に出す（表示の順だけ・判定不変）
             if session.injuryNoticeWeeks > 0 {
                 YoseModal(title: "体調ダウン", primaryTitle: "わかった", primaryAction: { session.clearInjuryNotice() }, cancelTitle: nil) {
-                    Text("無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。")
+                    Text(GameSession.injuryNoticeText)
                         .font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
                         .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                 }

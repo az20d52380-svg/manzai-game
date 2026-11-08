@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-漫才師育成SLG 10年キャリア検証シミュレータ v0
+漫才師育成SLG キャリア検証シミュレータ v0（年数は YEARS＝結成15年。旧名「10年キャリア検証」）
 - 1年48週×10年（最大480手）。能力・お金・知名度・相性は年をまたいで引き継ぎ、体力のみ年初全回復
 - グランプリ（架空名）を実在の全国漫才賞レースと同じ多段階構造にし、初優勝が何年目に出るかを測る
 - 相方ガチャ／周回ボーナス／アイテムは未設計のため、パラメータ実験（感度実験A/B/C）で適正な強さの材料を採る
@@ -487,7 +487,8 @@ def _app_week_event(s, year, week, stages, gp_alive):
         a["style_done"] = True; _app_apply(s, "styletalk"); done("styletalk"); return
     if a["jp"] and not a["fork_fired"] and nxt and nxt[0] - week >= 3 and s.stamina >= 15:
         a["fork_fired"] = True; _app_apply(s, "passfork"); a["jp"] = False; done("passfork"); return
-    if not a["eve_fired"] and nxt and nxt[0] - week == 1 and nxt[1]:
+    if (not a["eve_fired"] and nxt and nxt[0] - week == 1 and nxt[1]
+            and not (getattr(s, "female", False) and nxt[0] == HANA_WEEKS[0])):   # 動画審査（THE HANA 1回戦）は舞台に立たない＝前夜は出さない（GameSession.swift の同じ節）
         a["eve_fired"] = True; _app_apply(s, "eve"); done("eve"); return
     if not a["early_done"] and year == 1 and 3 <= week < 15 and s.compat <= 7:
         a["early_done"] = True; _app_apply(s, "early"); done("early"); return
@@ -1239,7 +1240,7 @@ def fmt_dist(r):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else N_CAREERS
-    print(f"=== 10年キャリア検証 v0 | {YEARS}年×48週 × {n}キャリア/設定 | シード{BASE_SEED} | 数値は全て【仮】 ===")
+    print(f"=== {YEARS}年キャリア検証 v0 | {YEARS}年×48週 × {n}キャリア/設定 | シード{BASE_SEED} | 数値は全て【仮】 ===")
     lines = " → ".join(f"{lbl}{ln}(第{wk}週)" for wk, ln, lbl in GP_ROUNDS)
     print(f"グランプリ: {lines} → 敗者復活{GP_REVIVAL_LINE}/決勝{GP_FINAL_LINE}(第{GP_FINAL_WEEK}週)")
     print()

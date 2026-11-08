@@ -69,6 +69,7 @@
 ## 7. TestFlight（目安：準備 1〜2日＋内部テスト 数日〜1週間）
 【C】
 - ビルド・アーカイブの準備：バージョン、ビルド番号、アイコン、`PrivacyInfo.xcprivacy`、通知の許可（使わないなら外す案）、課金の商品（広告カット・券1・券10）の登録内容（`Configuration.storekit` と App Store Connect の商品を一致）。
+  - 11/08 点検：コード（StoreIDs）と `Configuration.storekit` は4商品（adfree 1,000円・agency 480円・ticket1 100円・ticket10 1,000円）で一致。agency（事務所選び）は UI 未実装＝発売版で登録するかはオーナー判断。ビルドは Xcode 26.6／iOS 26.5 SDK（2026-04-28 以降の提出要件 iOS 26 SDK を満たす）・最低 iOS 17。詳細は docs/release/release_prep_check_1108.md。
 - スクリーンショットの用意（6.7インチ・縦・docs/store_listing_draft_v0.md §4 の構成）。
 - 実機での目視チェックリスト（課金のサンドボックス・復元・iCloud・広告・機種変更の想定）。
 【オ】
@@ -101,3 +102,5 @@
 3. 初回ガチャの中身、衣装名・値段・割合（すべて仮・docs/costume_gacha_v0.md）
 4. 年齢区分でガチャ・広告が引き上げる場合の方針
 5. 事務所選びは発売後（決定済み）
+6. アプリのアイコン（11/07 確認：AppIcon.appiconset に画像が無く、Release ビルドにアイコンが入らない。無いと App Store に出せない）
+7. バンドルID：今は com.manzaigame.mvp で「mvp」が残っている。商品IDにも同じ文字が入るので、変えるなら App Store Connect に登録する前（docs/release_build_check_1108.md）

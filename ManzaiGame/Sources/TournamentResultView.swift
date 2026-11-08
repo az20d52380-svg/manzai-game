@@ -174,7 +174,10 @@ struct TournamentResultView: View {
                                 .transition(.opacity)
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
-                                if r.passed && isHanaFinal { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true } }
+                                if r.passed && isHanaFinal {
+                                    Sound.play(.fanfare); Sound.play(.cheerBig)   // 頂GP 決勝の優勝と同じ音（優勝演出の画面は音を鳴らさない・code_review_1107e #1）
+                                    withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true }
+                                }
                                 else if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
                                 else if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.5))) { climaxIndex = 0 } }   // ⑪ 山場へ

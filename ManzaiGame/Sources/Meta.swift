@@ -72,8 +72,8 @@ enum TrophyID: String, CaseIterable, Identifiable {
         case .t22: "同じ年に出た大会をすべて優勝し、GPも制する"
         }
     }
-    /// 今のアプリで取れるか（解散危機の和解・王座陥落後の返り咲きは、まだ仕組みが無い）
-    var obtainable: Bool { self != .t19 && self != .t20 }
+    /// 今のアプリで取れるか（解散危機の和解は仕組みが無い・玉座奪還は優勝後に続けられる 11/07 で取れるようになった）
+    var obtainable: Bool { self != .t19 }
 }
 
 /// 周をまたぐ記録（最多連覇・最速優勝・通算優勝）
@@ -123,6 +123,12 @@ enum TrophyBook {
     }
 
     static func loadRecords() -> CareerRecords {
+        #if DEBUG
+        if let s = ProcessInfo.processInfo.environment["MZ_RECORDS"] {   // 目視用: MZ_RECORDS=通算優勝,最多連覇,最速年（保存しない）
+            let v = s.split(separator: ",").compactMap { Int($0) }
+            if v.count >= 3 { return CareerRecords(bestStreak: v[1], fastestWinYear: v[2], totalWins: v[0], hanaWins: v.count > 3 ? v[3] : nil) }
+        }
+        #endif
         guard let data = store.data(forKey: recordKey), let r = try? JSONDecoder().decode(CareerRecords.self, from: data) else { return CareerRecords() }
         return r
     }
@@ -182,10 +188,10 @@ enum TrophyBook {
     }
 
     /// 年末。smallEntered/smallWon＝その年の道中大会の出た数・優勝した数
-    static func onYearEnd(outcome: YearOutcome, year: Int, careerYears: Int, smallEntered: Int, smallWon: Int) {
+    static func onYearEnd(outcome: YearOutcome, year: Int, careerYears: Int, smallEntered: Int, smallWon: Int, wonBefore: Bool = false) {
         if outcome.reachedFinal || outcome.champion { award(.t17) }
         if outcome.champion, smallEntered >= 5, smallWon == smallEntered { award(.t22) }
-        if year >= careerYears, !outcome.champion, !outcome.bankrupt, !outcome.dissolved { award(.t18) }
+        if year >= careerYears, !outcome.champion, !wonBefore, !outcome.bankrupt, !outcome.dissolved { award(.t18) }
     }
 }
 

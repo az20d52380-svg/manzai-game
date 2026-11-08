@@ -185,4 +185,40 @@ final class StoreMeta1107Tests: XCTestCase {
         XCTAssertTrue(l[1].contains("+\(pv.exp)"))
         XCTAssertTrue(l[1].contains("+\(pv.money / 10_000)万円"))
     }
+
+    // MARK: ログインの札の合流（code_review_1107d #2）
+
+    /// 同じ回数の2台：片方が7枚目を取った後に合流しても、無料1回が消えず、札が6に戻って二重に取れない
+    func testMergeLoginSeventhStampNotDoubled() {
+        var stale = GachaState(); stale.freeTickets = 0; stale.loginStamps = 6; stale.lastLoginDay = "2026-11-06"
+        var fresh = stale
+        fresh.loginStamps = 0; fresh.freeTickets = 1; fresh.lastLoginDay = "2026-11-07"
+        for m in [stale.merged(with: fresh), fresh.merged(with: stale)] {
+            XCTAssertEqual(m.freeTickets, 1)
+            XCTAssertEqual(m.loginStamps, 0)
+            XCTAssertEqual(m.lastLoginDay, "2026-11-07")
+        }
+    }
+
+    /// 回数が多い側と札が新しい側が別の台：札の側が取った無料1回を足す。合流し直しても増えない
+    func testMergeLoginWrapOnOlderPullSide() {
+        var pulled = GachaState(); pulled.freeTickets = 0; pulled.totalPulls = 5; pulled.loginStamps = 6; pulled.lastLoginDay = "2026-11-06"
+        var stamped = GachaState(); stamped.freeTickets = 1; stamped.totalPulls = 4; stamped.loginStamps = 0; stamped.lastLoginDay = "2026-11-07"
+        let m = pulled.merged(with: stamped)
+        XCTAssertEqual(m, stamped.merged(with: pulled))
+        XCTAssertEqual(m.freeTickets, 1)
+        XCTAssertEqual(m.loginStamps, 0)
+        XCTAssertEqual(m.totalPulls, 5)
+        XCTAssertEqual(m.merged(with: pulled), m)
+        XCTAssertEqual(m.merged(with: stamped), m)
+    }
+
+    /// 札が途中（7枚目でない）で別々の台に進んだだけなら、無料は増えない
+    func testMergeLoginNoWrapNoExtraTicket() {
+        var a = GachaState(); a.freeTickets = 0; a.totalPulls = 5; a.loginStamps = 2; a.lastLoginDay = "2026-11-06"
+        var b = GachaState(); b.freeTickets = 0; b.totalPulls = 4; b.loginStamps = 3; b.lastLoginDay = "2026-11-07"
+        let m = a.merged(with: b)
+        XCTAssertEqual(m.freeTickets, 0)
+        XCTAssertEqual(m.loginStamps, 3)
+    }
 }
