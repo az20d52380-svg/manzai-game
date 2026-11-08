@@ -19,7 +19,7 @@ xcrun simctl install $U "$APP"; xcrun simctl terminate $U $BID 2>/dev/null
 SIMCTL_CHILD_MZ_SMOKE=soak SIMCTL_CHILD_MZ_SOAK_MS=$MS xcrun simctl launch $U $BID >/dev/null
 line=""
 for m in $(seq 1 $MIN); do
-  sleep 60; pid=$(pgrep -f 'ManzaiGame.app/ManzaiGame' | head -1)
+  sleep 60; pid=$(pgrep -f "Devices/$U/.*ManzaiGame.app/ManzaiGame" | head -1)   # 11/09：他の端末（オーナーの Pro 等）の ManzaiGame を拾わないよう UDID で絞る
   [ -z "$pid" ] && { line="$line ${m}分:落ちた"; break; }
   line="$line ${m}分:$(( $(ps -o rss= -p $pid) / 1024 ))MB"
 done
