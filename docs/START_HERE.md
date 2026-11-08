@@ -552,3 +552,27 @@ cd GameCore && swift test
 - `visual_check_1107_v0.md` — 目視点検 1107 v0（iPhone 17・ソース無変更・各画面1枚）
 - `visual_check_1107b_v0.md` — 女性コンビ 1年通し表示点検（2026-11-07）
 - `visual_check_1107c_v0.md` — 目視点検 1107c（勇退・図鑑・トロフィー・記録・戦績）iPhone 17
+- `veteran_stages_measure_1108_v0.md` — 終盤のベテラン向け大会・仕事4本（late_game_content §3）の実測（11/08・道具 tools/measure_veteran_stages_1108.py・正典は不変）
+- `app_band_direct_1108_v0.md` — アプリ本体の GameSession で「週イベントあり／なし」を直接測る（2026-11-08・測るだけ）
+- `app_band_dissolve_1108_v0.md` — やり込みボットの解散約40%の原因（2026-11-08・調べるだけ・式と数値は変更なし）
+- `candidates_check_1108.md` — 候補ブランチの確認 11/08（`tools/check_candidates_build.sh`・どのブランチも書き換えていない）
+- `candidates_small_1108_v0.md` — 小さな判断待ちの候補ブランチ 11/08（B-13・C-5・C-6・C-9・C-16・C-17・C-18）
+- `candidates_visual_1108_v0.md` — 小件候補の目視と B-6 候補 11/08
+- `code_review_1108b_device_events.md` — コード点検 11/08b（実機の割り込みと端末の状態：音声・ライフサイクル・通知・課金。読み取りのみ）
+- `code_review_1108c_screens.md` — コード点検 11/08c（アプリ側の画面11ファイル。読み取りのみ・コード変更なし）
+- `code_review_1108d.md` — コード点検 1108d（ほぼ未点検だったファイル群）
+- `combi_name_verbatim_1108_v0.md` — コンビ名を置き換えなしで表示（C-19 候補・combi_name_verbatim_1108_v0）
+- `crash_audit_1108_v0.md` — クラッシュ点検 2026-11-08（読むだけ・コード変更なし）
+- `dialogue_score_1107b.md` — 台詞採点 1107b（487df7ba..HEAD の増分＋候補ブランチ claude/retire-confirm-cand）
+- `late_events_tuning_1108_v0.md` — 終盤イベント候補の「弱め方」の実測 v0（2026-11-08・見本・決めるのはオーナー）
+- `old_questions_remeasure_1108_v0.md` — 古い3論点の測り直し（15年・較正A・周回の式の今の本体） v0（2026-11-08・材料。推奨の決定はしない）
+- `outing_lines_score_1108.md` — 台詞採点 c9a123b1（v3バナー基準）
+- `perf_check_1108.md` — 重さの測り直し 11/08（iPhone 17 シミュレータ・Debug・`tools/run_perf.sh`）
+- `pour_stop_1108_v0.md` — おすすめ注ぎが途中で止まる件の実測 v0（2026-11-08・決めるのはオーナー）
+- `release_build_check_1108.md` — 発売用ビルド点検（11/08・ソース無変更・commit なし）
+- `visual_check_1108e.md` — 目視点検 1108e（11/08 の表示の直しの確認）
+- `visual_dark_1108_v0.md` — ダークモードの点検 11/08（10/27 以降の新しい画面10枚・問題0。提供割合はフック MZ_UI=gacha_rates）
+- `code_review_1108f_kiritsu_a.md` — 11/02 の規律A（15年・周回・THE HANA・復活ライン）を仕様と突き合わせた点検（高0中1低5・中1は check_config_sync に HANA を足して解消）
+- `event_parity_check_1108_v0.md` — アプリの選択肢イベントの効果（ChoiceEvent.swift）と Python の鏡像（_app_apply/_others_apply）の突き合わせ（62一致・不一致0・道具 tools/check_event_parity.py・run_checks.sh に組み込み）
+- `visual_check_1108f_female_late.md` — 女コンビの10〜15年目の目視（週・日程表・年末の年表・きろく＝崩れ0・低1は C-5 と同じ論点）
+- docs/week_prompts_inventory_1108_v0.md — 週の画面の促し・注意の出所の棚卸し（12か所・二重7組・整理案3つ・キュー146の材料）
