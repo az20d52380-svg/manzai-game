@@ -38,6 +38,7 @@
 - アプリの画面の文字（「俺」を含む説明文など）を変えた時も `cd GameCore && swift test` を回す（FirstPersonLiteralTests がアプリのソースを読み、例外の文を完全一致で持つ＝10/27 に形の選択の説明を言い換えて赤にした・d0661a6 で直した）。
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
 - 定期の回のシミュレータ：タップ操作は許可されていない＝`simctl` の起動・撮影と目視フックだけを使う。別の手段（osascript 等）で操作しない。
+- テストが「失敗0なのに TEST FAILED（signal kill）」の時（11/08）：まず `ps aux | grep -E "xcodebuild|refresh_candidates"` で同じ iPhone 17 を使う別のセッションを確かめる（refresh_candidates.sh は一時フォルダで動くので git status には出ない）。
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
@@ -120,7 +121,7 @@
 143. [ ] （材料 docs/entry_share_research_1108_v0.md §3）（同 §5 G・判断が要る軽微）共有カードの出口が年末とエンディングだけ＝最初の大会の通過では共有できない。①今のまま ②初めての通過の祝いに足す。
 144. [ ] （同 §5 B・C・H・判断が要る軽微）第1週の「はじめに」が用語5つを一度に出す／初舞台の余韻の直後に説明が出る（実機の体感は未確認）／大会前に助言が3方向に分かれる（人工状態での確認＝頻度は未確認）。§5 A（第1週の「ネタを書こう」が3か所）はキュー111（上の一言と重なる問題）と同じ論点。
 145. [ ] （材料 docs/app_icon_drafts_1107_v0.md＝下書き3案）（11/07 夜の定期・発売に必須・判断が要る）アプリのアイコンの画像がまだ無い（Resources/Assets.xcassets/AppIcon.appiconset は枠だけ＝Release ビルドにアイコンが入らない。Release ビルド自体は通り、MZ_ の目視フックの文字は実行ファイルに残っていない）。絵をどうするかはオーナー判断。
-146. [ ] （11/07 夜・playtest_mid_1107・判断が要る軽微）5年目第10週のように、促しと注意が週の画面に5か所同時に出ることがある（帯・吹き出し・赤帯・札・谷口）。キュー123（週の一言の優先順位）と一緒に決める。8年目のオファーの札と舞台の重なりはキュー111・137 の現物例（y8w10）。
+146. [ ] （材料 11/08：docs/week_prompts_inventory_1108_v0.md＝出所12・二重7組・推奨②二重だけ消す＋③の役割1文・聞く1問「赤帯と札、残すのはどちらか」）（11/07 夜・playtest_mid_1107・判断が要る軽微）5年目第10週のように、促しと注意が週の画面に5か所同時に出ることがある（帯・吹き出し・赤帯・札・谷口）。キュー123（週の一言の優先順位）と一緒に決める。8年目のオファーの札と舞台の重なりはキュー111・137 の現物例（y8w10）。
 
 148. [済 11/08 定期] （11/08 定期）終盤イベント下書きの再採点 late_game_events_score_1108＝○16△4×0。△の N19・N3・N4・N7 を直す（本体未接続・判断は要らない）。
 149. [ ] （11/08 定期・実機確認待ち）電話やアラームの割り込みの後に、決勝や結果画面の BGM が戻るか／イヤホンを抜いた時に音が大きく出ないか／優勝演出の直後にホームへ行って戻った時に音が重ならないか（code_review_1108b #1・#2・#4）。シミュレータでは確かめられない。
@@ -161,7 +162,9 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/08 朝 定期 済 15d180c0・fc143ea3・c3282822：点検の1本（GameCore 449・同期80/80・効果62/発火26 一致）でアプリのテストが「失敗0なのに TEST FAILED」＝強制終了（signal kill）の本当の原因は、別のセッション（ebee60bc の refresh_candidates.sh）が同じ iPhone 17 で同時に xcodebuild test を回しアプリを起動し直していたこと（sim のログ「terminate for debugging launch request」）。見立てを誤って客席アンケートの声の関数を軽くした（結果は同じ・2クラス16秒→1.4秒・365 green＝害は無いので残す）。【教訓】テストが「失敗0なのに TEST FAILED」の時は、先に `ps aux | grep xcodebuild` で同じ端末を使う別の処理を確かめる／コード点検 1108g（sonnet・低3）を全部直した／キュー146 の材料 week_prompts_inventory_1108_v0
 - 11/08 定期 済（昼・続き16）：候補 outing-v3（f23b6af7）の13行を再採点＝○12△1×0（△は「今度会った日」の形＝自然な言い方なので直さない）／候補 late-events に突き合わせ検査を40本まで広げた b4c7c960（不一致0）／点検の1本 全 green（5行）。
+- 11/08 定期 済（昼・続き17）：候補ブランチの取り込み直し（遅れ10以上・tools/refresh_candidates.sh）＝green で push 24本／赤5本（night-bus-trophy・notebook-entries-label・offer-desc-short・outing-v3・pour-skip-zero＝最終行 0 failures なのに TEST FAILED・原因は調査中）／衝突2本（the-hana-candidate-r1027＝本体の大会まわり6ファイル・vitalbar-numberpop＝YoseGameParts.swift）／見送り4本（別の作業場所が使用中：button-press-se・gacha-entry・rift-trophy・the-hana-candidate）。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
