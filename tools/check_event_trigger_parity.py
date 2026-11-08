@@ -157,7 +157,7 @@ for mm in re.finditer(r"(?:\bif|\} else if) (.*?) \{\s*(?:pendingChoiceEvent = \
         CHAIN.append((kind, cs))
     except Unreadable as ex: unread.append(f"確定発火 {kind}: {ex}"); CHAIN.append((kind, None))
 known = []   # 既知の差（終了コードに数えない・理由は文書 §発火条件）
-if femme[0]: known.append("確定発火 preTournamentEve: femaleCombo 節（花の動画審査）は Python 鏡像に無い＝この節だけ未照合（True 扱い）")
+if femme[0]: known.append("確定発火 preTournamentEve: femaleCombo 節（花の動画審査）は 11/08 に Python 鏡像にも足した（sim_career._app_week_event）が、この検査の状態に女コンビを入れていない＝この節だけ未照合（True 扱い）")
 
 def swift_confirmed(env):
     for kind, cs in CHAIN:
