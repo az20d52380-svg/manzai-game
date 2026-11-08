@@ -417,7 +417,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testLiving() {
         var i = base(); i.livingThisWeek = true; i.money = 139_999
-        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")
         i.money = 140_000; XCTAssertNil(WeekHint.line(i))
         i.livingThisWeek = false; i.money = 0; XCTAssertNil(WeekHint.line(i))
     }
@@ -440,7 +440,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "今週末に生活費。所持金が足りない。")   // 【候補 #4 案B】お金と体力が先
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")   // 【候補 #4 案B】お金と体力が先
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
         i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
