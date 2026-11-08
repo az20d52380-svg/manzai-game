@@ -236,7 +236,7 @@ struct TournamentEntryView: View {
         .overlay {   // 療養明けが大会の入口に重なった週は、体調ダウンの知らせを入口より先に出す（表示の順だけ・判定不変）
             if session.injuryNoticeWeeks > 0 {
                 YoseModal(title: "体調ダウン", primaryTitle: "わかった", primaryAction: { session.clearInjuryNotice() }, cancelTitle: nil) {
-                    Text("無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。")
+                    Text(GameSession.injuryNoticeText)
                         .font(YoseFont.gothic(15, weight: .bold)).foregroundStyle(YoseColor.sumi)
                         .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                 }
