@@ -100,6 +100,8 @@ struct RootView: View {
             if let n = Int(yearsEnv), n >= 0, session.year == 1 {
                 session.debugAdvanceYears(n)
             }
+            // MZ_GPLOST=1：頂GP の予選で落ちた扱いにする（日程表の塗りの目視＝C-25。DEBUG のみ・乱数は消費しない）
+            if ProcessInfo.processInfo.environment["MZ_GPLOST"] != nil { session.debugMarkGPLost() }
             // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
             if let mk = ProcessInfo.processInfo.environment["MZ_SAVEMAKE"] {
                 var st = mk == "champ" ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
@@ -157,6 +159,19 @@ struct RootView: View {
                 // 部屋選びの目視: MZ_MONEY=<円> で所持金を指定（例 20000＝引っ越せない灰色）
                 var st = GameState(config: GameConfig()); st.money = m
                 session = GameSession(startState: st)
+            }
+            if ui == "offers", session.week <= 1, session.year == 1 {
+                // オファーの札の目視（C-24 の「体力0になる」・キュー137 の説明の二重）: 知名度60（札3枚）で、標準のバイトを続けて体力を減らしながらオファーの来る週まで進める。
+                // MZ_STAMINA=<n>：その体力以下でオファーが来た週で止める（既定 25・100 なら最初のオファーで止める）。体力は年初に100へ戻るので開始状態では決めない。RNG は通常の週送りと同じ（golden 非対象）
+                var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 60
+                session = GameSession(startState: st)
+                let limit = Double(ProcessInfo.processInfo.environment["MZ_STAMINA"] ?? "") ?? 25
+                for _ in 0..<30 {
+                    session.debugUntilOffer(.job(.標準))
+                    guard case .freeAction(let o) = session.phase, o != nil else { break }
+                    if session.state.stamina <= limit { break }
+                    session.choose(.job(.標準))
+                }
             }
             if ui == "allocate", session.week <= 1 {
                 // 割り振り目視: 経験点残高を積んだ開始状態（数値は全て【仮】・発行側の会計移設が入るまでの目視専用）
