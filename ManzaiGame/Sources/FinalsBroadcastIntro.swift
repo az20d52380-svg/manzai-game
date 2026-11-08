@@ -350,17 +350,19 @@ struct FinalsBroadcastIntro: View {
                 await pause(short ? 1.3 : 2.1)
             }
             guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
-            advanceStage()
+            advanceStage(from: s)
         case .title:
             lit = false
             await pause(0.15)            // 暗転→0.15秒の白フラッシュ相当
             guard !Task.isCancelled else { return }
             lit = true; titleIn = true
             UINotificationFeedbackGenerator().notificationOccurred(.warning)   // se_Title_fanfare_brass
-            await pause(0.2); Haptics.rare()
+            await pause(0.2)
+            guard !Task.isCancelled else { return }
+            Haptics.rare()
             await pause(short ? 1.6 : 4.2)
             guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
-            advanceStage()
+            advanceStage(from: s)
         case .judges:
             for i in 0..<7 {
                 guard !Task.isCancelled else { return }
@@ -370,25 +372,34 @@ struct FinalsBroadcastIntro: View {
             }
             await pause(short ? 0.8 : 1.6)
             guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
-            advanceStage()
+            advanceStage(from: s)
         case .finalists:
             for i in 0..<finalists.count {
                 guard !Task.isCancelled else { return }
                 let isSelf = finalists[i].isSelf
-                if isSelf { await pause(short ? 0.1 : 0.4) }
+                if isSelf {
+                    await pause(short ? 0.1 : 0.4)
+                    guard !Task.isCancelled else { return }   // 待ちの間に次の場面へ進んでいたら step を上書きしない
+                }
                 withAnimation(reduceMotion ? nil : .default) { step = i + 1 }
                 if isSelf { Haptics.rare() } else { UISelectionFeedbackGenerator().selectionChanged() }   // se_mekuri_flip_fast
                 await pause(short ? 0.1 : 0.22)
             }
             await pause(short ? 0.9 : 2.0)
             guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
-            advanceStage()
+            advanceStage(from: s)
         }
     }
 
     private func advanceStage() {
         guard !done else { return }
         if let n = stage.next { stage = n } else { finish() }
+    }
+
+    /// 場面の自動進行用：タップで既に先へ進んでいたら何もしない（キャンセルが届く前に古い場面の待ちが明けても1場面飛ばさない＝code_review_1108g #1）。
+    private func advanceStage(from s: FinalsIntroStage) {
+        guard stage == s else { return }
+        advanceStage()
     }
 
     private func finish() {
