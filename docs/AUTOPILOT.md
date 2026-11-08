@@ -164,6 +164,7 @@
 
 183. [ ] （11/08 夜 定期・判断が要る＝文の量・B-15 の続き）15年でファンレポの「通過」側が11〜15年目で92〜93%読み返し（在庫約165本・1キャリア約340本）、先輩の飲みの誘いの文面6種が79%（docs/text_repeat_15y_yearend_1108_v0.md）。①今のまま ②足す（最低 約40本／半分以下にするなら 約100本）。年末の独白は足さなくてよい（8〜12%）。候補：誘いの文面は claude/invite-variants-cand（5a89075e・6→18種・○12＋出した文面を避けて選ぶ（pickIndex・乱数なし・連敗の相談にも効く）・効果/選択肢/条件は不変・GameCore 465／アプリ 383 green。避ける選び方なら1キャリア約29回で計算上の読み返しは約38%＝未測定）。ファンレポは claude/fanreport-plus-cand（ab8db4e8・通過側 +175＝熱狂75/手応え75/ミスリード25・15年全体 54〜56%→15〜18%・10年まで0%・11〜15年目 92〜93%→64〜77%・古参の声25本は knownOnly で無名の組に出さない・点検○85・GameCore 465／アプリ 381 green・目視未）。
 184. [済 11/08 深夜 定期] テスト：大会で掛けたネタの年は回戦・敗者復活・決勝のどの段でも付く（NetaUsedStages1108Tests 2本・段の直前で印を消して確かめる）。GameCore 467 green。別セッションが iPhone 17 で refresh_candidates を回していたので sim は使わず。
+185. [済 11/09 定期] カバレッジの棚卸し：GameCore 行 99.76%（残りは到達しない閉じ括弧1行）・アプリの論理側は GameSession の未カバーがすべて debug フックだけ。拾った2つ（ChoiceEventData.scene の場所割り当て・StageOutfit.current の未所有→standard 戻し）にテスト OutfitScene1109Tests 4本。点検の1本 緑（GameCore 467・アプリ 385）。カバレッジの出し方＝`swift test --enable-code-coverage`＋`xcrun llvm-cov report`／アプリは `xcodebuild test -enableCodeCoverage YES -resultBundlePath …`＋`xcrun xccov view --report --functions-for-file`。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）

@@ -33,6 +33,7 @@
 		21E800CFC18797B54C85B120 /* StageScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1F087A453470E4CF970A6B /* StageScene.swift */; };
 		237774A82CCB356B070CD9A7 /* GachaRatesPage1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */; };
 		23A6C0BA7CF340E637455F11 /* YoseFXPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE3DC9F9348FC074C8976F2 /* YoseFXPreview.swift */; };
+		2449E3A4AC0DF55EB4F2D7BA /* OutfitScene1109Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B76348B4AF43957A86F9F7 /* OutfitScene1109Tests.swift */; };
 		25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */; };
 		2643395E9DDCAF2BA532E57B /* se_grain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CDC6107CFE7CC3957E73137 /* se_grain.mp3 */; };
 		2722319503C421A50EEC0721 /* GachaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF328C240994A9AE25E60A6 /* GachaStore.swift */; };
@@ -266,6 +267,7 @@
 		B450EF892D2F36DEBAB4EF3B /* se_success.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_success.mp3; sourceTree = "<group>"; };
 		B4D4D421A24B3889D5B6DF8B /* SessionGap1026Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1026Tests.swift; sourceTree = "<group>"; };
 		B57C91020D1AD8E52817F6F0 /* se_applause_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_small.mp3; sourceTree = "<group>"; };
+		B5B76348B4AF43957A86F9F7 /* OutfitScene1109Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitScene1109Tests.swift; sourceTree = "<group>"; };
 		B661217CF9AAE526E8E6A97A /* FirstStageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstStageView.swift; sourceTree = "<group>"; };
 		B7DF85596F9C0B35A83AC7E1 /* MeetingKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingKind.swift; sourceTree = "<group>"; };
 		BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBackdropTable.swift; sourceTree = "<group>"; };
@@ -496,6 +498,7 @@
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
 				4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */,
+				B5B76348B4AF43957A86F9F7 /* OutfitScene1109Tests.swift */,
 				6D634556BD3C91BB6B807E91 /* PastWeekPaint1108Tests.swift */,
 				58E80F573B38F73205442EF4 /* PhaseGuardTests.swift */,
 				E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */,
@@ -773,6 +776,7 @@
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
 				D77894E998538F74B1007C23 /* MetaWireTests.swift in Sources */,
+				2449E3A4AC0DF55EB4F2D7BA /* OutfitScene1109Tests.swift in Sources */,
 				F967A1905142AE45BD662184 /* PastWeekPaint1108Tests.swift in Sources */,
 				E9C54A58B50BE31CD4DB1493 /* PhaseGuardTests.swift in Sources */,
 				FA2BF3AD44DE33658099B2B2 /* RankBar1027Tests.swift in Sources */,
