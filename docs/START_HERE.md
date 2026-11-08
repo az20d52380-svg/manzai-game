@@ -597,4 +597,15 @@ cd GameCore && swift test
 - `code_review_1108g.md` — コード点検 1108g（決勝の幕開けの二重進行・日程表の塗り・DEBUG フック。低3件・すべて済 c3282822）
 - `event_parity_check_1108_v0.md` — アプリの選択肢イベントの効果（ChoiceEvent.swift）と Python の鏡像（_app_apply/_others_apply）の突き合わせ（62一致・不一致0・道具 tools/check_event_parity.py・run_checks.sh に組み込み）
 - `visual_check_1108f_female_late.md` — 女コンビの10〜15年目の目視（週・日程表・年末の年表・きろく＝崩れ0・低1は C-5 と同じ論点）
-- docs/week_prompts_inventory_1108_v0.md — 週の画面の促し・注意の出所の棚卸し（12か所・二重7組・整理案3つ・キュー146の材料）
+- `week_prompts_inventory_1108_v0.md` — 週の画面の促し・注意の出所の棚卸し（12か所・二重7組・整理案3つ・キュー146の材料）
+- `playtest_y4_1108.md` — 実プレイ点検 4年目（11/08・記録のみ）
+- `playtest_y6_1108.md` — 実プレイ点検 6年目（11/08・記録のみ）
+- `playtest_y8_1108.md` — 実プレイ点検 8年目（11/08・記録のみ）
+- `playtest_y10_1108.md` — 実プレイ点検 10年目（11/08・記録のみ・15年制で10年目は最終年でない）
+- `playtest_y11_15_1108.md` — 実プレイ点検 11・13・15年目（11/08・記録のみ・出場条件と週番号の照合つき）
+- `playtest_female_y12_1108.md` — 実プレイ点検 女性コンビ12年目（11/08・記録のみ）
+- `playtest_female_y15_endings_1108.md` — 実プレイ点検 女性コンビ15年目＋エンディング#4〜#6（11/08・記録のみ）
+- `endings_male_check_1108.md` — エンディング目視 男性コンビ #1〜#3・#7・#8（11/08・記録のみ）
+- `code_review_1108h.md` — コード点検 1108h（低2・高中なし・名札のコメントを式に合わせた）
+- `ten_year_leftovers_1108_v0.md` — 10年前提の取り残しの静的点検（careerYears 10→15・高0中0低6・所見3のデバッグ表記は 8dae1189 で直した）
+- `text_repeat_15y_1108_v0.md` — 結成15年通しの文の読み返し率（11〜15年目の週頭の声が70〜76%・判断の一覧 B-15 の材料）
