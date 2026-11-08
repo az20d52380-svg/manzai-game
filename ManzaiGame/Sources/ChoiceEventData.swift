@@ -54,6 +54,20 @@ enum ChoiceEventData {
         return v[((year &* 48 &+ week) % v.count + v.count) % v.count]
     }
 
+    /// 文面の種類があるイベントは、このキャリアで出した文面を避けて選ぶ（pick＝GameSession.pickIndex。乱数なし・同じ週の再描画は同じ文面）。
+    /// 種類が無いイベントは上と同じ。11/08 候補（text_repeat_15y_yearend_1108 追記：週だけで回すと同じ文面に当たる）。
+    static func text(for kind: ChoiceEventKind, year: Int, week: Int,
+                     pick: (_ scene: String, _ count: Int, _ salt: Int) -> Int) -> ChoiceEventText {
+        let v: [ChoiceEventText]
+        switch kind {
+        case .weekendInvite: v = weekendInviteVariants
+        case .styleTalk:     v = styleTalkVariants
+        default:             return text(for: kind)
+        }
+        let i = pick("event.\(kind)", v.count, year &* 48 &+ week)
+        return v[min(max(i, 0), v.count - 1)]
+    }
+
     static func text(for kind: ChoiceEventKind) -> ChoiceEventText {
         switch kind {
         case .justLostRehearsal: return justLostRehearsal
