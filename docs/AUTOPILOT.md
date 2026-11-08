@@ -135,7 +135,7 @@
 155. [済 11/08 定期・続き43＝直す所なし：開演の儀の onDone は使う2か所とも1回きりの守り（ceremonyDone の代入・beginReveal の守り）／能力アップは confirmFinished で二重なし／借金の知らせは debtNotice・phase の守りで積まれても1回／名前・形の決定の0.3〜0.45秒の窓は戻る操作が間に合わない幅＝今は直さない／ランクアップは DEBUG のみ] （11/08 定期・材料 docs/delayed_callback_audit_1108_v0.md の条件付き8・判断不要なら直す）閉じ方次第で onDismiss／onDone の二重呼び出し・他画面での通知表示（例 WeekMainView:327 の2秒後の借金の知らせ）。1件ずつ実際に起きるかをコードで確かめ、起きる物だけ守りを足す。
 156. [ ] （11/08 定期・材料 docs/storekit_edge_audit_1108_v0.md・公開前・判断が要る）課金の中3：①未検証の券の購入は付与も finish も案内もしない（StoreManager.swift:58,94＝課金だけ成立しうる）②返金された券を回収しない ③iCloud 無しの再インストールで未開封の券が消える（A-3 の資金決済法の材料 prepaid_ticket_law_1108 と関係）。
 157. [ ] （11/08 定期・材料 playtest_y9_1108_v0／playtest_female_y3_1108_v0・判断が要る軽微）日程表で、これからの大会は出場資格に関係なく全部赤。①今のまま（凡例は続き57で「過ぎた週」に限った）②資格の無い大会（推薦制の知名度不足など）を薄く。
-158. [ ] （11/08 定期・判断が要る＝演出）寄席系の音の口 YoseFX.sound（Design/YoseEffects.swift:45・口32個）が未接続で、本編の優勝演出の3音が無音。①今のまま（触覚とファンファーレ等の既存の音で足りる）②今ある SE（tada・fanfare・taiko・shakin・money など23個）に当てて繋ぐ（推奨：championImpact→taiko、stampHeavy→don、prizeGet→money）③新しい音を作る（Gemini の演出の往復＝キュー84 と一緒に）。
+158. [ ] （11/08 定期・判断が要る＝演出）寄席系の音の口 YoseFX.sound（Design/YoseEffects.swift:45・口32個）が未接続で、本編の優勝演出の3音が無音。①今のまま（触覚とファンファーレ等の既存の音で足りる）②今ある SE（tada・fanfare・taiko・shakin・money など23個）に当てて繋ぐ（推奨：championImpact→taiko、stampHeavy→don、prizeGet→money）③新しい音を作る（Gemini の演出の往復＝キュー84 と一緒に）。【11/08 定期：②を候補ブランチ claude/yose-sound-wire-cand（05c6b582）に用意・ビルド OK・音の耳での確認は未】
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
