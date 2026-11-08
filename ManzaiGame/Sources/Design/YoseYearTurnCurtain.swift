@@ -426,7 +426,7 @@ struct YoseYearTurnCurtainView: View {
         return String(n).map { d[Int(String($0)) ?? 0] }.joined()
     }
 
-    private static func compactYen(_ yen: Int) -> String {
+    static func compactYen(_ yen: Int) -> String {
         // 借金は符号を円記号の前に（Yen.text と同じ「−¥」・number_display_audit_1108_v0 #2）
         if yen < 0 { return "−" + compactYen(-yen) }
         if yen >= 10_000 {
