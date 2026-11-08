@@ -166,6 +166,7 @@
 - 11/08 定期 済（昼・続き16）：候補 outing-v3（f23b6af7）の13行を再採点＝○12△1×0（△は「今度会った日」の形＝自然な言い方なので直さない）／候補 late-events に突き合わせ検査を40本まで広げた b4c7c960（不一致0）／点検の1本 全 green（5行）。
 - 11/08 定期 済（昼・続き17）：候補ブランチの取り込み直し（遅れ10以上・tools/refresh_candidates.sh）＝green で push 24本／赤5本（night-bus-trophy・notebook-entries-label・offer-desc-short・outing-v3・pour-skip-zero＝最終行 0 failures なのに TEST FAILED＝同じ時間に別の定期の回が iPhone 17 で点検の1本を回していた（08fbcad9 の記録と同じ強制終了）→1本ずつ回し直して5本とも green（アプリ365・GameCore 449〜450）で push＝候補はすべて今の本体で green）／衝突2本＝どちらも本体に入り済みの古い版（vitalbar-numberpop＝本体の c4ebcd33/d41092da で取り込み済み・衝突を本体側で解くと差分0／the-hana-candidate-r1027＝THE HANA は別の道で本体に入り、その後 golden 枝 D・同期・演出まで進んでいる）＝取り込み直し不要・ブランチの削除はオーナーの片付け時に／見送り4本（別の作業場所が使用中：button-press-se・gacha-entry・rift-trophy・the-hana-candidate）。
 - 11/08 定期 済（昼・続き18）：判断の一覧 A-3 の材料＝未開封の券と資金決済法（sonnet・prepaid_ticket_law_1108_v0.md・案 A〜D）。
+- 11/08 定期 済（昼・続き19）：自己点検（run_selftest・本体 612bc59d）29行・DONE・失敗0／GameCore のカバー率 99.8%（行）で足す所なし。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
