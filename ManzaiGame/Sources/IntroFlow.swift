@@ -245,13 +245,18 @@ private struct RecallNameBoard: View {
     let name: String
     let band: Color
     let height: CGFloat
+    /// 名前が長いと縦の札からはみ出す（6字×26pt≒200pt＞枠150）ので、字数で縮める（long_name_layout_audit_1108_v0）。4字までは今のまま26pt
+    private var charSize: CGFloat {
+        let n = CGFloat(max(1, Names.show(name).count))
+        return min(26, ((height - 14 - 12) / n - 2) / 1.3)
+    }
     var body: some View {
         VStack(spacing: 0) {
             Rectangle().fill(band).frame(height: 14)
                 .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
             VStack(spacing: 2) {
                 ForEach(Array(Names.show(name).enumerated()), id: \.offset) { _, ch in
-                    Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                    Text(String(ch)).font(YoseFont.mincho(charSize)).foregroundStyle(YoseColor.sumi)
                 }
             }
             .frame(maxHeight: .infinity)
