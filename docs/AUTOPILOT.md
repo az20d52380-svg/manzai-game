@@ -167,6 +167,8 @@
 185. [済 11/09 定期] カバレッジの棚卸し：GameCore 行 99.76%（残りは到達しない閉じ括弧1行）・アプリの論理側は GameSession の未カバーがすべて debug フックだけ。拾った2つ（ChoiceEventData.scene の場所割り当て・StageOutfit.current の未所有→standard 戻し）にテスト OutfitScene1109Tests 4本。点検の1本 緑（GameCore 467・アプリ 385）。カバレッジの出し方＝`swift test --enable-code-coverage`＋`xcrun llvm-cov report`／アプリは `xcodebuild test -enableCodeCoverage YES -resultBundlePath …`＋`xcrun xccov view --report --functions-for-file`。
 186. [済 11/09 定期] テスト LoadsTheme1109Tests 5本：図鑑・トロフィー・通算記録の読み込みが壊れた保存／知らない鍵で空に戻る（知っている物だけ残す）・Theme の1文字ラベルが能力5・通貨5で重ならず全部1字・能力/通貨/ネタの型/等級の色が種類ごとに別（知らない等級は G 色）。全部 green。
 187. [済 11/09 定期] 懸念の台帳 L52 の直し（夜逃げ・解散で終わった週の大会を出来事ログ・賞金年計に足す＝GameSession.pump の yearDone）が、既定の数値では**一度も通らない**と分かった：①借金だと出場できない（所持金≧参加費）②生活費1回（14万）で夜逃げ線 −100万を割らない③二人で舞台に立つ週はすれ違いが増えず、1年目は99で止まる④GP の週（30・39・41・43・45）は生活費の週（4の倍数）と重ならない。数値を変えた時に壊れないよう、試験用 config（夜逃げ線0・生活費12週ごと）で第12週に出て夜逃げ→ログに1回だけ残るテスト BankruptStageWeek1109Tests を足した（green＝直しは正しく動く）。
+188. [済 11/09 定期] Q112（テレビ慣れの表示）の候補に本体を取り込み、目視フック MZ_OFFERWEEKS を足して撮影（shots_1109/q112_*）。
+189. [済 11/09 定期] テスト TextPoolDuplicateTests（GameCore・アプリのソースを読む）：DialogueData・FanReportData・JudgeData の塊ごとに12字以上の文の重複0を確かめる（knownOnly は部分集合なので対象外・塊をまたぐ重複は意図＝ファンレポの24本は knownOnly の写し）。わざと1行重ねると赤になるのを確認。候補 fanreport-plus・lull-plus・minor-pools-plus・monologue-plus も重複0。GameCore 468 green。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
