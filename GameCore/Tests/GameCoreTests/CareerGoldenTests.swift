@@ -157,6 +157,16 @@ final class CareerGoldenTests: XCTestCase {
         (24, 4, 1345000, 70, 36.9089371559027, 23.229889865073893, 23.89353288235513, 31.698855202435468, 21.491705370597227, 21.53517431021224, 19.875, 4, 0),
     ]
 
+    // 台本D: seed=165・女性コンビ・6年とも通常（THE HANA：6年目に準決勝を通過→決勝で敗退＝決勝の段まで突き合わせる・code_review_1108f 中1）。tools/gen_golden.py の出力
+    static let branchD: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)] = [
+        (165, 1, 177000, 85, 16.766288519529073, 15.420067856162996, 14.531584544826712, 16.329897042766866, 14.719689280351977, 26.238575178510533, 9.5, 2, 0),
+        (165, 2, 1138000, 0, 27.89359063971914, 15.743094468635617, 17.725443596967125, 20.783894262695213, 18.299144532122263, 42.99080569113568, 12.0, 0, 0),
+        (165, 3, 1789000, 0, 36.69516890872128, 17.23120310390748, 21.565839432529575, 31.70936367782297, 22.15315437257416, 49.52119510302817, 17.5, 2, 0),
+        (165, 4, 4847000, 25, 47.177656093950375, 18.22250479711664, 24.688112516145868, 40.42959804072353, 24.494025893527454, 61.45099668624382, 19.5, 2, 0),
+        (165, 5, 7820000, 45, 53.796948039327894, 21.439000049876224, 27.42438590184559, 52.40068074626719, 25.023670857992517, 67.99296247317213, 19.75, 3, 0),
+        (165, 6, 10535000, 10, 58.283039415581015, 25.64488617204384, 29.481526951179298, 58.67083940300033, 29.393666204684592, 75.2004402977791, 19.875, 4, 0),
+    ]
+
     private func runBranch(seed: UInt64, plan: [(Bool, Double?)],
                            expected: [(Int, Int, Int, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)],
                            female: Bool = false) {
@@ -185,6 +195,10 @@ final class CareerGoldenTests: XCTestCase {
 
     func testBranchTheHanaFemale() {
         runBranch(seed: 24, plan: Array(repeating: (false, nil), count: 4), expected: Self.branchC, female: true)
+    }
+
+    func testBranchTheHanaFinalFemale() {
+        runBranch(seed: 165, plan: Array(repeating: (false, nil), count: 6), expected: Self.branchD, female: true)
     }
 
     func testBranchSeedFinalAndLineOverride() {
