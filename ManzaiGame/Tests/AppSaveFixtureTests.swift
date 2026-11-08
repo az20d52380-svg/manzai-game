@@ -50,5 +50,13 @@ final class AppSaveFixtureTests: XCTestCase {
         let save = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: obj))
         XCTAssertEqual(save.firedWeeklyEvents.count, Set(fired).count, "知らない値だけ捨てる")
         XCTAssertNil(save.pendingChoiceEvent, "知らない保留イベントは無し扱い")
+        // 日程の印も同じ（[Int: …] は {"週": "種別"} の形）
+        var obj2 = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any])
+        var log = try XCTUnwrap(obj2["categoryLog"] as? [String: Any])
+        let n = log.count
+        log["99"] = "removedCategoryForTest"
+        obj2["categoryLog"] = log
+        let save2 = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: obj2))
+        XCTAssertEqual(save2.categoryLog.count, n, "知らない印の週だけ捨てる")
     }
 }
