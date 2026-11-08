@@ -406,7 +406,7 @@ struct YearResultView: View {
     /// オーナー決定 2026-07-06：else（決勝未到達・非破産）を fame/roundsPassed で二分。閾値は【仮】——sim到達分布で後日確定。
     private func yearEndLine() -> String? {
         guard let o else { return nil }
-        var (pool, scene) = Self.yearEndPool(o, fame: Int(s.fame), year: session.year)
+        var (pool, scene) = Self.yearEndPool(o, fame: Int(s.fame.isFinite ? s.fame : 0), year: session.year)
         // 結成最終年の年末には「来年」が無い（year10_visual_1026_v0 §2-2）。来年を語る行を外す（各プール13行中2行）。
         if session.careerOver || session.year >= session.config.careerYears {   // 優勝・夜逃げ・解散で早く終わる年も（code_review_2026-10-26c §2-1）
             let kept = pool.filter { !$0.contains("来年") }
@@ -421,7 +421,7 @@ struct YearResultView: View {
         }
         // 頂グランプリの決勝に立った年は独白を出さない（オーナー 10/18「寒そう」→A：決勝の余韻は決勝の場面で足りる）
         if Self.silentFinalsYear(bankrupt: o.bankrupt, dissolved: o.dissolved, champion: o.champion, reachedFinal: o.reachedFinal) { return nil }
-        let salt = Int(s.fame) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
+        let salt = Int(s.fame.isFinite ? s.fame : 0) &+ o.roundsPassed &+ session.year                 // 状態から決定的（乱数非消費）
         // 直近の年に出した行は避ける（同じ年の再描画は同じ行＝key=年）
         return DialogueData.choose(pool, salt: salt, scene: scene, picker: session.picker(key: session.year))
     }
