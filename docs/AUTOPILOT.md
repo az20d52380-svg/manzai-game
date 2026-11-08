@@ -178,6 +178,7 @@
 - 11/08 定期 済（昼・続き28）：11/07 以降まだ見ていない14画面の目視（sonnet・visual_sweep_1108i）＝高中0・低3はどれも直さない（見本の固定文字／下寄せの作り／111・137 と同種）。フックの撮り方（weekhint MZ_WH・frame MZ_MODE）も同じ文書に。
 - 11/08 定期 済（昼・続き29）：C-21 の推奨②を候補ブランチ claude/shop-manager-name-cand（1653131f）に用意（店長3か所・布施店長2行→矢島・口調を合わせた・green・目視済み）。
 - 11/08 定期 済（昼・続き30）：参照0の型を取り直し（道具 tools/find_unused_types.py を足した）＝11個・どれも 10/27 の一覧（キュー118）に既出で、新しく増えた物は0。
+- 11/08 定期 済（昼・続き31）：候補の確認（check_candidates）＝本体に入らないのは古い版3本（the-hana 2本・vitalbar＝入り済み）と week-hint-priority（生活費の金額 34a7971c と衝突）→ 候補の並びのまま金額の文に合わせて取り込み直し d93c2e13（GameCore 449／アプリ 369 green）。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
