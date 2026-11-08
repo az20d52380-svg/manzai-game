@@ -126,7 +126,7 @@
 
 150. [ ] （11/08 定期）重さの測り直し：Simulator の窓が出ている時に `SETTLE=1 tools/run_perf.sh <dd> MZ_FX=champion` など（perf_check_1108）。定期の回で窓を出す操作はしない。
 153. [ ] （11/08 昼 追記：候補ブランチ側で突き合わせ検査を40本へ広げた b4c7c960＝効果120・発火66 一致・不一致0。本体を取り込み済み・GameCore 457 green）（11/08 定期・判断が要る）候補 claude/late-events-cand（e1dc9dca）：枠と新イベント40本。効果を下げないと優勝 20.1%（decision_brief_2026-11-08 A-1）。A-4 の基準が決まってから調整して入れる。N17〜N20 の条件の解釈は仮（候補内の文書）。
-151. [ ] （11/08 定期・判断が要る軽微）衝突する古い候補3本（the-hana 2本・vitalbar-numberpop）を消すか（candidates_check_1108 §2）。
+151. [ ] （11/08 定期・判断が要る軽微）衝突する古い候補3本（the-hana 2本・vitalbar-numberpop）を消すか（candidates_check_1108 §2）。（11/09：中身は本体に別の形で入っている＝vitalbar は d3c26557・the-hana は THE HANA の本実装。refresh/check_candidates の対象からは外した・枝は消していない）
 154. [ ] （11/08 定期・材料 docs/save_compat_audit_1108_v0.md・判断が要る軽微）セーブが読めなかった時：今は `manzai.save.v1.broken` に1枠だけ退避して黙って新規（戻す処理なし・2回目で上書き・周回メタは無言で空）。①今のまま ②一言出す ③退避から戻すボタン。BandCategory／Skill の未知の値は続き40 で直した。ネタの型 NetaKata／NetaLength の未知の値は「そのネタを捨てる／既定の型に寄せる」の選び方が要る（今は全体が読めない）。
 156. [ ] （11/08 定期・材料 docs/storekit_edge_audit_1108_v0.md・公開前・判断が要る）課金の中3：①未検証の券の購入は付与も finish も案内もしない（StoreManager.swift:58,94＝課金だけ成立しうる）②返金された券を回収しない ③iCloud 無しの再インストールで未開封の券が消える（A-3 の資金決済法の材料 prepaid_ticket_law_1108 と関係）。
 157. [ ] （材料 11/08 夜：docs/calendar_ineligible_paint_1108_v0.md＝道中の大会と推薦制は既に資格が無ければ塗らない・食い違うのは GP で落ちた後の週だけ＝平均0.7週／年。案②を候補 claude/calendar-gp-paint-cand（411be31a・384 green・目視 崩れなし）に用意）（11/08 定期・材料 playtest_y9_1108_v0／playtest_female_y3_1108_v0・判断が要る軽微）日程表で、これからの大会は出場資格に関係なく全部赤。①今のまま（凡例は続き57で「過ぎた週」に限った）②資格の無い大会（推薦制の知名度不足など）を薄く。
