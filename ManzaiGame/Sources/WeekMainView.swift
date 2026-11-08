@@ -1495,15 +1495,29 @@ struct WeekMainView: View {
     /// 若手の大会（芸歴の上限がある大会）に出られる最後の年の年初に1回だけ、谷口が一言知らせる（表示のみ・判定は不変）。
     /// 飽きの知らせの toast と重なる時は、それが消えるのを待ってから出す。
     private func maybeShowLastYouthNotice() {
-        let caps = session.config.calendar.tournaments.compactMap { t -> Int? in
-            if case .careerYearAtMost(let n) = t.eligibility, n < session.config.careerYears { return n } else { return nil }
-        }
-        guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
+        guard let text = Self.lastYouthNoticeText(year: session.year, config: session.config),
+              session.week <= 1, youthNoticeYear != session.year else { return }
         youthNoticeYear = session.year
         Task {
             if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
-            showToast("谷口「若手限定の大会に出られるのは、今年が最後だ」")
+            showToast(text)
         }
+    }
+
+    /// 芸歴の上限がある大会のうち、今年が最後の年になるもの（キャリアの最終年より前だけ）を谷口の一言にする。無ければ nil。
+    /// 結成15年に延びて10年目にも区切り（春新人A/B・夏中堅・寒梅）ができた＝playtest_y11_15_1108 の親の照合。
+    static func lastYouthNoticeText(year: Int, config: GameConfig) -> String? {
+        let names = config.calendar.tournaments.compactMap { t -> String? in
+            if case .careerYearAtMost(let n) = t.eligibility, n == year, n < config.careerYears { return t.name } else { return nil }
+        }
+        if names.isEmpty { return nil }
+        if names == ["若手限定賞"] { return "谷口「若手限定の大会に出られるのは、今年が最後だ」" }
+        var short: [String] = []
+        for n in names {
+            let k = n.hasPrefix("春新人賞") ? "春の新人賞" : n
+            if !short.contains(k) { short.append(k) }
+        }
+        return "谷口「" + short.joined(separator: "、") + "。どれも出られるのは今年が最後だ」"
     }
 
     /// 年初の週に1回だけ：前の年の大会で使って飽きが進んだネタを事実だけ知らせる（表示のみ）。
