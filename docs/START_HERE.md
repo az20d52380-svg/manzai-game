@@ -610,3 +610,6 @@ cd GameCore && swift test
 - `ten_year_leftovers_1108_v0.md` — 10年前提の取り残しの静的点検（careerYears 10→15・高0中0低6・所見3のデバッグ表記は 8dae1189 で直した）
 - `text_repeat_15y_1108_v0.md` — 結成15年通しの文の読み返し率（11〜15年目の週頭の声が70〜76%・判断の一覧 B-15 の材料）
 - `playtest_female_y7_1108.md` — 実プレイ点検 女性コンビ7年目（11/08・記録のみ・高0中0低2＝HANA の略称の揺れ・フック状態の年表＝どちらも既知）
+- `offer_low_stamina_measure_1108_v0.md` — 体力不足の週のオファー頻度の実測（判断の一覧 C-24・候補 offer-stamina-note）
+- `calendar_ineligible_paint_1108_v0.md` — 日程表で出られない大会が赤くなる頻度（食い違いは GP で落ちた後の週だけ・C-25・候補 calendar-gp-paint）
+- `playtest_mixed_late_1108.md` — 実プレイ点検 男女コンビ後半の年（femaleMale 6年目・maleFemale 11年目・高0中0低1）
