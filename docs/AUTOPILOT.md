@@ -172,6 +172,7 @@
 190. [済 11/09 定期] 今日のテスト追加で pbxproj が変わり、候補6本（calendar-gp-paint・late-events・money-format・money-format-cprime・offer-stamina-note・youth-notice-y10）が本体と pbxproj だけ衝突→ refresh_candidates.sh に3つ目の引数（名前の正規表現）を足して6本だけ取り込み直し＝全部 green で push。
 191. [済 11/09 定期・→後で撮れた] C-25 の「後」を撮ろうとした：`MZ_UI=calendar MZ_STOPWEEK=33`（1年目）と `MZ_YEARS=1 MZ_STOPWEEK=33 MZ_CARE=1`（2年目）はどちらも自動台本が GP1回戦（ライン16）を通過し、本体と候補で同じ絵になる。差を撮るには GP 予選で落ちた状態を作るフック（例 MZ_GPLOST）が要る＝次に足すなら候補側と本体の両方に。
 192. [済 11/09 定期] 目視フック MZ_GPLOST（0f77a6c7・頂GP の予選で落ちた扱い・DEBUG のみ）を本体に足し、候補 calendar-gp-paint に取り込み直して（green）C-25 の前後を撮った＝shots_1109/c25_calendar_gp_before/after.png（前は GP の残り5マスが赤・後は白）。
+193. [済 11/09 定期] キュー182 の文字数点検を常設のテストに：TextPoolDuplicateTests.testLinesStayWithinKnownMaxLength（DialogueData 35字・FanReportData 44字＝既存の最長33/42＋2の見張り）。候補3本（lull/monologue/minor-pools・最長32字）は通る見込み。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
