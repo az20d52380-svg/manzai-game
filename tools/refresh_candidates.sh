@@ -1,7 +1,7 @@
 #!/bin/bash
 # 候補ブランチ（名前に candidate / -cand）のうち、本体から MIN 以上遅れていて衝突しない物に本体を取り込み、
 # GameCore とアプリのテストが green の時だけ push する。衝突（pbxproj だけなら xcodegen で作り直す）・赤は push しない。
-# 使い方: tools/refresh_candidates.sh [derivedDataPath] [MIN=50]   作業場所は一時ディレクトリに作って消す。
+# 使い方: tools/refresh_candidates.sh [derivedDataPath] [MIN=50] [名前の正規表現=全部]（11/09：3つ目で対象の候補を絞れる＝本体と pbxproj だけ衝突した数本を直す時など）   作業場所は一時ディレクトリに作って消す。
 # 11/08 の自走で手で回した手順を道具にした（AUTOPILOT 済 11/08 昼・続き7）。1本あたり約2分。シミュレータ iPhone 17 を使う。
 set -u
 cd "$(dirname "$0")/.."
@@ -11,7 +11,7 @@ MIN=${2:-50}
 U=E5D11233-FE99-429F-A55C-8B0FA5793568
 MAIN=$(git rev-parse --abbrev-ref HEAD)
 TMP=$(mktemp -d)
-for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -v '^claude/q-candidate$'); do
+for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -v '^claude/q-candidate$' | grep -E "${3:-.}"); do
   behind=$(git rev-list --count "$b..$MAIN")
   [ "$behind" -ge "$MIN" ] || continue
   W=$TMP/${b//\//_}
