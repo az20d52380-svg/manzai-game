@@ -142,7 +142,7 @@
 203. [済 11/09 定期] 混合コンビ（男×女・女×男）の11年目・15年目・年末・エンディング#4/#7 の実プレイ点検 playtest_mixed_late_1109_v0（sonnet・16枚・親の照合後 高0 中0 低0）＝札「俺」「私」・谷口の台詞は形どおり・男女前提の語の混入なし・15年制と合わない数字なし。エンディング本編の2画面目以降は未撮影。
 204. [済 11/09 定期] 候補 late-events-cand（6年目以降のイベント40本・本体取り込み後の版）に漏れ点検 soak 10分（MZ_SMOKE=soak MZ_SOAK_MS=10・iPhone 17）＝落ちず・常駐 316〜330MB で横ばい・クラッシュログ増えず。手順は scratchpad の soak_late.sh（候補を分離 HEAD の作業場所でビルド→soak→毎分の常駐メモリ）。【11/09 訂正：この行の常駐メモリの値は iPhone 17 ではなく、同時に動いていたオーナーの 17 Pro / Pro Max の ManzaiGame を拾っていた（pgrep の先頭）＝無効。「落ちず」も同じく無効。クラッシュログが増えなかったことだけは有効。測り直しは 206】
 205. [済 11/09 定期] tools/soak_candidate.sh で候補3本に soak 8分：unused-parts（2e5bb65a・313〜332MB）・yearly-goal（e8f67b64・318〜329MB）・gacha-entry（7d03929d・315〜326MB）＝どれも落ちず・横ばい・クラッシュログ増えず。【11/09 訂正：この行の常駐メモリの値は iPhone 17 ではなく、同時に動いていたオーナーの 17 Pro / Pro Max の ManzaiGame を拾っていた（pgrep の先頭）＝無効。「落ちず」も同じく無効。クラッシュログが増えなかったことだけは有効。測り直しは 206】
-206. [済 11/09 定期] soak の測り直し（iPhone 17 の UDID でプロセスを絞った版・各6分・MZ_SOAK_MS=10）：late-events（46d26d0d・322〜336MB）・money-short-choice（24c49d40・317〜328MB）・unused-parts（2e5bb65a・315〜328MB）＝どれも落ちず・横ばい・クラッシュログ増えず。205 の残り2本（yearly-goal・gacha-entry）と tv-fatigue・season-sure・invite-variants は次に測り直す。
+206. [済 11/09 定期] soak の測り直し（iPhone 17 の UDID でプロセスを絞った版・各6分・MZ_SOAK_MS=10）：late-events（46d26d0d・322〜336MB）・money-short-choice（24c49d40・317〜328MB）・unused-parts（2e5bb65a・315〜328MB）＝どれも落ちず・横ばい・クラッシュログ増えず。続けて yearly-goal（316〜326MB）・gacha-entry（315〜330MB）・tv-fatigue（316〜330MB）・season-sure（319〜329MB）・invite-variants（315〜330MB）も同じく落ちず・横ばい・クラッシュログ増えず＝実行時に触る候補8本は全部問題なし。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
