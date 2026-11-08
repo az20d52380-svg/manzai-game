@@ -1,6 +1,6 @@
 #!/bin/bash
 # 候補ブランチに漏れ点検（soak）をかける：origin の候補を分離 HEAD の一時作業場所でビルド→ iPhone 17 に入れて MZ_SMOKE=soak で回す→毎分の常駐メモリとクラッシュログの増減を出す。
-# 使い方: tools/soak_candidate.sh <候補の枝名 例 claude/late-events-cand> [derivedDataPath] [分=10] [1手の待ちms=10]
+# 使い方: [SOAK_ENV="MZ_KIND=femaleMale"] tools/soak_candidate.sh <候補の枝名 例 claude/late-events-cand> [derivedDataPath] [分=10] [1手の待ちms=10]
 # 11/09 定期で late-events に手で回した手順を道具にした（AUTOPILOT 204）。シミュレータ iPhone 17 だけを使う（同時に1本だけ）。書き込みはしない（push なし）。
 set -u
 B=${1:?候補の枝名}; DD=${2:-/tmp/mz_dd_soak}; MIN=${3:-10}; MS=${4:-10}
@@ -16,7 +16,9 @@ err=$(xcodebuild -project ManzaiGame/ManzaiGame.xcodeproj -scheme ManzaiGame -de
 APP="$DD/Build/Products/Debug-iphonesimulator/ManzaiGame.app"; BID=$(defaults read "$APP/Info.plist" CFBundleIdentifier)
 before=$(ls ~/Library/Logs/DiagnosticReports/ManzaiGame-*.ips 2>/dev/null | wc -l | tr -d ' ')
 xcrun simctl install $U "$APP"; xcrun simctl terminate $U $BID 2>/dev/null
-SIMCTL_CHILD_MZ_SMOKE=soak SIMCTL_CHILD_MZ_SOAK_MS=$MS xcrun simctl launch $U $BID >/dev/null
+# SOAK_ENV="MZ_KIND=femaleMale X=Y" で起動時の目視フックを足せる（11/09）
+extra=(); for kv in ${SOAK_ENV:-}; do extra+=("SIMCTL_CHILD_$kv"); done
+env "${extra[@]}" SIMCTL_CHILD_MZ_SMOKE=soak SIMCTL_CHILD_MZ_SOAK_MS=$MS xcrun simctl launch $U $BID >/dev/null
 line=""
 for m in $(seq 1 $MIN); do
   sleep 60; pid=$(pgrep -f "Devices/$U/.*ManzaiGame.app/ManzaiGame" | head -1)   # 11/09：他の端末（オーナーの Pro 等）の ManzaiGame を拾わないよう UDID で絞る
@@ -25,4 +27,4 @@ for m in $(seq 1 $MIN); do
 done
 after=$(ls ~/Library/Logs/DiagnosticReports/ManzaiGame-*.ips 2>/dev/null | wc -l | tr -d ' ')
 xcrun simctl terminate $U $BID 2>/dev/null
-echo "$B $(git rev-parse --short HEAD):$line | クラッシュログ $before→$after"
+echo "$B $(git rev-parse --short HEAD)${SOAK_ENV:+ [$SOAK_ENV]}:$line | クラッシュログ $before→$after"
