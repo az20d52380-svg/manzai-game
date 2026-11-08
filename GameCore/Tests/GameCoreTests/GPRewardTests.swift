@@ -66,6 +66,64 @@ final class GPRewardTests: XCTestCase {
         XCTAssertTrue(sawFinal)
     }
 
+    /// 大会の経験点 1通貨ぶん（5通貨に均等）＝基本点 × K × 重み × unit × split × 供給スケール
+    private func expPerCurrency(_ pw: Double, weight: Double, _ c: GameConfig) -> Double {
+        pw * c.tourneyExpK * weight * c.tourneyExpUnit * c.tourneyExpSplit * c.expSupplyScale
+    }
+
+    /// 準決勝だけ落ちる設定で、回戦・敗者復活・決勝に積まれる経験点（閃き）を段ごとに確かめる
+    private func runRevivalPath(finalPasses: Bool) -> [(stage: String, gain: Double, expect: Double)] {
+        var c = GameConfig()
+        c.autoPourAllocation = false   // 実ゲームと同じ＝粒を貯める（true だと行動直後に能力へ全量注いで残高が0に戻る）
+        let n = c.calendar.gpRounds.count
+        c.calendar.gpRounds = c.calendar.gpRounds.enumerated().map { (i, r) in (week: r.week, line: i == n - 1 ? 10_000 : -10_000) }
+        c.calendar.gpRevivalLine = -10_000
+        c.calendar.gpFinalLine = finalPasses ? -10_000 : 10_000
+        var s = GameState(config: c)
+        s.money = 5_000_000
+        var r = WeekRunner(state: s, year: 1, config: c, rng: SplitMix64(seed: 5))
+        var out: [(String, Double, Double)] = []
+        var phase = r.begin()
+        var steps = 0
+        while steps < 10_000 {
+            steps += 1
+            switch phase {
+            case .tournamentDecision: phase = r.resolveTournament(travel: nil)
+            case .freeAction: phase = r.resolveAction(.rest(.完全休養))
+            case .gpRound(let i, _):
+                let before = r.state[currency: .閃き]
+                phase = r.resolveAuto()
+                let passed = i < n - 1
+                let pw = (1 + c.tourneyExpRoundStep * Double(i)) * (passed ? 1.0 : c.tourneyExpLoss)
+                out.append(("回戦\(i + 1)", r.state[currency: .閃き] - before, expPerCurrency(pw, weight: c.tourneyExpWeightRound, c)))
+            case .gpRevival:
+                let before = r.state[currency: .閃き]
+                phase = r.resolveAuto()
+                out.append(("敗者復活", r.state[currency: .閃き] - before, expPerCurrency(c.tourneyExpRevival, weight: c.tourneyExpWeightFinal, c)))
+            case .gpFinal:
+                let before = r.state[currency: .閃き]
+                phase = r.resolveAuto()
+                let pw = c.tourneyExpFinal * (finalPasses ? 1.0 : c.tourneyExpLoss)
+                out.append(("決勝", r.state[currency: .閃き] - before, expPerCurrency(pw, weight: c.tourneyExpWeightFinal, c)))
+            case .weekDone: phase = r.begin()
+            case .yearDone: return out
+            }
+        }
+        XCTFail("1年が終わらない")
+        return out
+    }
+
+    func testTourneyExpPerStageThroughRevivalToFinal() {
+        for finalPasses in [true, false] {
+            let t = runRevivalPath(finalPasses: finalPasses)
+            XCTAssertEqual(t.map(\.stage), (1...GameConfig().calendar.gpRounds.count).map { "回戦\($0)" } + ["敗者復活", "決勝"])
+            for row in t {
+                XCTAssertGreaterThan(row.expect, 0)
+                XCTAssertEqual(row.gain, row.expect, accuracy: 1e-9, "\(row.stage)（決勝\(finalPasses ? "優勝" : "敗退")）")
+            }
+        }
+    }
+
     func testChampionFameIsNotDiminishedAndClampsAt100() {
         // addFameRaw（優勝）は逓減なし・addFameBig（決勝進出）は (1−知名度/100) で縮む
         var a = GameState(config: GameConfig()); a.fame = 95
