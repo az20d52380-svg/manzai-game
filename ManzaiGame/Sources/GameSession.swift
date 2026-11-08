@@ -1845,13 +1845,13 @@ extension GameSession {
             let s = GameSession(startState: st); s.debugAdvanceToChampionFinale(); s.acknowledgeWin()
             report("champ compat=\(c)", s, s.finished ? nil : "STUCK")
         }
-        // 10年完走（相性上限・能力マックス）／能力なし
+        // 最終年（careerYears）まで完走（相性上限・能力マックス）／能力なし
         for (n, mk) in [("maxed", true), ("plain", false)] {
             var st = mk ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 20; st.money = 800_000
             if mk { st.センス = 60; st.発想 = 60; st.表現 = 60; st.華 = 60 }
             let s = GameSession(startState: st); let r = debugSelfPlay(s, kinds: &kinds); report("10y \(n) compat20", s, r)
         }
-        // 10年完走（riftOn=false で解散を外す）: 能力・相性を変えて #3〜#6 に到達するか
+        // 最終年（careerYears）まで完走（riftOn=false で解散を外す）: 能力・相性を変えて #3〜#6 に到達するか
         for (n, ab, c) in [("weak c5", 20.0, 5.0), ("weak c20", 20.0, 20.0), ("mid c5", 70.0, 5.0), ("mid c20", 70.0, 20.0), ("high c5", 95.0, 5.0)] {
             var cfg = GameConfig(); cfg.riftOn = false
             var st = GameState(config: cfg); st.センス = ab; st.発想 = ab; st.表現 = ab; st.華 = ab; st.メンタル = ab; st.compat = c; st.money = 800_000
