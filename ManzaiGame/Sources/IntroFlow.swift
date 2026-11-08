@@ -245,13 +245,18 @@ private struct RecallNameBoard: View {
     let name: String
     let band: Color
     let height: CGFloat
+    /// 名前が長いと縦の札からはみ出す（6字×26pt≒200pt＞枠150）ので、字数で縮める（long_name_layout_audit_1108_v0）。3字までは今のまま26pt（枠150なら4字は約22pt＝code_review_1108h 低1）
+    private var charSize: CGFloat {
+        let n = CGFloat(max(1, Names.show(name).count))
+        return min(26, ((height - 14 - 12) / n - 2) / 1.3)
+    }
     var body: some View {
         VStack(spacing: 0) {
             Rectangle().fill(band).frame(height: 14)
                 .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
             VStack(spacing: 2) {
                 ForEach(Array(Names.show(name).enumerated()), id: \.offset) { _, ch in
-                    Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                    Text(String(ch)).font(YoseFont.mincho(charSize)).foregroundStyle(YoseColor.sumi)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -796,6 +801,10 @@ struct IntroFlowView: View {
             return .nameEntry
         }
         if ProcessInfo.processInfo.environment["MZ_UI"] == "combokind" { return .comboKind }   // 目視用: コンビの形を選ぶ画面へ直行
+        if let n = ProcessInfo.processInfo.environment["MZ_NAMES"] {   // 目視用: MZ_NAMES=自分,相方 で長い名前の札を見る（long_name_layout_audit_1108_v0）
+            let p = n.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+            Names.set(me: p.first, partner: p.count > 1 ? p[1] : nil)
+        }
         if MeetingKind.debugForced != nil { return .reminiscence }   // 目視用: MZ_MEET=1〜4 で回想をその型で直接流す
         #endif
         return .title
