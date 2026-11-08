@@ -430,6 +430,7 @@ cd GameCore && swift test
 - `judge_comment_repeat_measure_1025_v0.md` — 10年遊んだ時の講評の読み返し率の実測（2026-10-25・材料・コード不変・紙講評は11〜18%が既読の文・決勝は型Cで1.1%）
 - `judge_comment_recent_avoid_measure_1025_v0.md` — 紙講評の「直近に出た文を避ける」案①の効き目の実測（2026-10-25 夜・材料・L41／キュー125・直近3〜10回ではほぼ効かず・キャリア内の未出優先で0%）
 - `decision_brief_2026-11-08.md` — 決めてほしい事の一覧 11/08 版（11/07 までの回答を除いて並べ直し・候補ブランチとの対応つき）
+- `shots_1109/README.md` — 判断の一覧（C 節・キュー110/112/132/141 ほか）の候補の前後スクショと撮り方のフック（2026-11-09）
 - `decision_brief_2026-10-25.md` — 決めてほしい事の一覧 10/25 版（全22問・大3 中11 小8＋出す前に決める事・旧 10-14 版を更新）
 - `store_fee_check_1025_v0.md` — ストア手数料の前提の確認（2026-10-25・懸念の台帳 L60・日本の Apple 実効15%／Google 15〜25%・直す行の一覧）
 - `patches/ci_app_build_L38.patch` — CI に iOS ビルドを足す差分（2026-10-25・push のトークンに workflow 権限が無いためオーナーが `git am` で入れる）
@@ -610,3 +611,6 @@ cd GameCore && swift test
 - `ten_year_leftovers_1108_v0.md` — 10年前提の取り残しの静的点検（careerYears 10→15・高0中0低6・所見3のデバッグ表記は 8dae1189 で直した）
 - `text_repeat_15y_1108_v0.md` — 結成15年通しの文の読み返し率（11〜15年目の週頭の声が70〜76%・判断の一覧 B-15 の材料）
 - `playtest_female_y7_1108.md` — 実プレイ点検 女性コンビ7年目（11/08・記録のみ・高0中0低2＝HANA の略称の揺れ・フック状態の年表＝どちらも既知）
+- `offer_low_stamina_measure_1108_v0.md` — 体力不足の週のオファー頻度の実測（判断の一覧 C-24・候補 offer-stamina-note）
+- `calendar_ineligible_paint_1108_v0.md` — 日程表で出られない大会が赤くなる頻度（食い違いは GP で落ちた後の週だけ・C-25・候補 calendar-gp-paint）
+- `playtest_mixed_late_1108.md` — 実プレイ点検 男女コンビ後半の年（femaleMale 6年目・maleFemale 11年目・高0中0低1）
