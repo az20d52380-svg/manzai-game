@@ -195,6 +195,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/09 未明 定期 済：漏れ点検 soak 10分（男男・MZ_SOAK_MS=10・本体 43611eb9 のビルド）＝落ちず・常駐 314→328MB（3分以降 317〜329 で横ばい）・クラッシュログ増えず。
 - 11/08 夜 定期 済：候補の確認＝week-hint-priority が本体の Yen.man（94eba209）と WeekHint.swift で衝突→候補の並びのまま金額を Yen.man に解いて push（226434ea・GameCore 465／アプリ 382 green）。遅れ100以上の候補を refresh_candidates で取り込み直し＝green で push 30本＋古い作業場所（変更なし）を detached にして3本（button-press-se・gacha-entry・rift-trophy）も green で push／見送り1本（the-hana＝衝突が既知）／衝突2本（the-hana-r1027・vitalbar-numberpop＝既知の151）。赤0。
 - 11/08 夜 定期 済：男女コンビ後半の年の実プレイ点検（femaleMale 6年目・maleFemale 11年目・sonnet・playtest_mixed_late_1108）＝高0中0低1（オファー札と立ち絵の重なり＝既知のキュー137）。
 - 11/08 夜 定期 済：157 の材料＝日程表の塗りの実測とコード確認（食い違いは GP で落ちた後の週だけ）。点検の1本 緑（GameCore 465・同期80/80・効果62/発火26・アプリ 381）。
