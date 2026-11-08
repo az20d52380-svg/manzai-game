@@ -1138,7 +1138,7 @@ struct WeekMainView: View {
                                         .background(YoseColor.kin.opacity(0.25))
                                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                                 }
-                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
+                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(abs(moneyDelta) < 10000 ? abs(moneyDelta).formatted() : Yen.man(abs(moneyDelta)))")   // 1万円未満は整数円（costPill と同じ・¥0.5万／¥0.0万を出さない）
                                     .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
                                     .foregroundStyle(moneyDelta > 0 ? YoseColor.sumi : YoseColor.shu)
                             }
