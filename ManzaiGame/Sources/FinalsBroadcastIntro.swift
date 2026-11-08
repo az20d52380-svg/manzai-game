@@ -349,6 +349,7 @@ struct FinalsBroadcastIntro: View {
                 } else { Haptics.confirm() }   // se_shaku_wooden_clap（拍子木）
                 await pause(short ? 1.3 : 2.1)
             }
+            guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
             advanceStage()
         case .title:
             lit = false
@@ -358,6 +359,7 @@ struct FinalsBroadcastIntro: View {
             UINotificationFeedbackGenerator().notificationOccurred(.warning)   // se_Title_fanfare_brass
             await pause(0.2); Haptics.rare()
             await pause(short ? 1.6 : 4.2)
+            guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
             advanceStage()
         case .judges:
             for i in 0..<7 {
@@ -367,6 +369,7 @@ struct FinalsBroadcastIntro: View {
                 await pause(short ? 0.15 : 1.1)
             }
             await pause(short ? 0.8 : 1.6)
+            guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
             advanceStage()
         case .finalists:
             for i in 0..<finalists.count {
@@ -378,6 +381,7 @@ struct FinalsBroadcastIntro: View {
                 await pause(short ? 0.1 : 0.22)
             }
             await pause(short ? 0.9 : 2.0)
+            guard !Task.isCancelled else { return }   // タップで先の場面へ進んだ後に、古い場面の末尾がもう一度進めて1場面飛ばさない
             advanceStage()
         }
     }

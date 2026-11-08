@@ -140,8 +140,10 @@
 		F18B258B2BD7A4B03BC16EF4 /* ChoiceEventOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43F15609C94DC583F5813A8 /* ChoiceEventOverlay.swift */; };
 		F33DD67A56FAEDBCFD666534 /* se_applause_hall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */; };
 		F444AA5447FAEA7A8EBF0C76 /* YoseChampionCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5077E6524DE17A958E0227F5 /* YoseChampionCelebrationView.swift */; };
+		F4567396EAA4FCEB182730F2 /* RepeatWinLine1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F4D8F68EE6CC0866FE3347D /* RepeatWinLine1108Tests.swift */; };
 		F5C20BF8C4688D372B1CDAD2 /* se_cheer_mid.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */; };
 		F67F427099D30DD5F0C83E3F /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3508320D6170D988482A068 /* ShareCard.swift */; };
+		F967A1905142AE45BD662184 /* PastWeekPaint1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D634556BD3C91BB6B807E91 /* PastWeekPaint1108Tests.swift */; };
 		FA2BF3AD44DE33658099B2B2 /* RankBar1027Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */; };
 		FAE276B38C7A911C9F8445C2 /* bgm_tension.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */; };
 		FDD40E534362160170CB232B /* ComboKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FB81EAD7F45BC0A7013516 /* ComboKind.swift */; };
@@ -207,6 +209,8 @@
 		62ED400B84054F70C3BA1883 /* se_tap.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_tap.mp3; sourceTree = "<group>"; };
 		64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageRAppTests.swift; sourceTree = "<group>"; };
 		66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaSelectionView.swift; sourceTree = "<group>"; };
+		6D634556BD3C91BB6B807E91 /* PastWeekPaint1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastWeekPaint1108Tests.swift; sourceTree = "<group>"; };
+		6F4D8F68EE6CC0866FE3347D /* RepeatWinLine1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatWinLine1108Tests.swift; sourceTree = "<group>"; };
 		74BDACA803ECB2EFD5DE9293 /* GameCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GameCore; path = ../GameCore; sourceTree = SOURCE_ROOT; };
 		7ABBF9FD27D827A700C7A2A7 /* MPLUSRounded1c-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MPLUSRounded1c-ExtraBold.ttf"; sourceTree = "<group>"; };
 		7C425563187AB800E3E3CAF9 /* MZSpeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MZSpeed.swift; sourceTree = "<group>"; };
@@ -479,8 +483,10 @@
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
 				A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */,
 				4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */,
+				6D634556BD3C91BB6B807E91 /* PastWeekPaint1108Tests.swift */,
 				58E80F573B38F73205442EF4 /* PhaseGuardTests.swift */,
 				E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */,
+				6F4D8F68EE6CC0866FE3347D /* RepeatWinLine1108Tests.swift */,
 				1D43F98004DD415C0C5FDB72 /* ResultExpRow1107Tests.swift */,
 				97A6F552023F2263317ED6B0 /* SessionFuzz1107Tests.swift */,
 				A62FE4805AE73B7FD14E1CA7 /* SessionGap1025bTests.swift */,
@@ -749,8 +755,10 @@
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
 				E4B39C7D4F7EEAFD2FC6A65B /* ManzaiGameTests.swift in Sources */,
 				D77894E998538F74B1007C23 /* MetaWireTests.swift in Sources */,
+				F967A1905142AE45BD662184 /* PastWeekPaint1108Tests.swift in Sources */,
 				E9C54A58B50BE31CD4DB1493 /* PhaseGuardTests.swift in Sources */,
 				FA2BF3AD44DE33658099B2B2 /* RankBar1027Tests.swift in Sources */,
+				F4567396EAA4FCEB182730F2 /* RepeatWinLine1108Tests.swift in Sources */,
 				E090A17DEBCCD958D563E909 /* ResultExpRow1107Tests.swift in Sources */,
 				74EFA08E7D4E27054A50AD80 /* SessionFuzz1107Tests.swift in Sources */,
 				45584A233637EB196C06B0D4 /* SessionGap1025Tests.swift in Sources */,
