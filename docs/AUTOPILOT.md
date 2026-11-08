@@ -196,6 +196,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/09 未明 定期 済：判断の一覧の候補の前後スクショ（sonnet・C-2/3/6/9 の4組＋既存3件＝docs/shots_1109/README.md）。C-19 はコンビ名が出る画面へ直行するフックが無く写らず。
 - 11/09 未明 定期 済：目視フック MZ_UI=offers（2d748944・DEBUG のみ）＋C-24/C-25 の候補2本（offer-stamina-note・calendar-gp-paint・どちらも目視 崩れなし）。自己点検 29行 DONE。
 - 11/09 未明 定期 済：漏れ点検 soak 10分（男男・MZ_SOAK_MS=10・本体 43611eb9 のビルド）＝落ちず・常駐 314→328MB（3分以降 317〜329 で横ばい）・クラッシュログ増えず。
 - 11/08 夜 定期 済：候補の確認＝week-hint-priority が本体の Yen.man（94eba209）と WeekHint.swift で衝突→候補の並びのまま金額を Yen.man に解いて push（226434ea・GameCore 465／アプリ 382 green）。遅れ100以上の候補を refresh_candidates で取り込み直し＝green で push 30本＋古い作業場所（変更なし）を detached にして3本（button-press-se・gacha-entry・rift-trophy）も green で push／見送り1本（the-hana＝衝突が既知）／衝突2本（the-hana-r1027・vitalbar-numberpop＝既知の151）。赤0。
