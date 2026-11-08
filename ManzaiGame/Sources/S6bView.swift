@@ -223,7 +223,7 @@ struct S6bView: View {
                             Capsule().fill(.black.opacity(0.55)).frame(width: 44, height: 100)
                         }.offset(y: 20)
                     )
-                    .overlay(Text(session.combiName).font(.maru(12)).foregroundStyle(.black.opacity(0.7)).offset(y: 78))
+                    .overlay(Text(session.combiName).font(.maru(12)).lineLimit(1).minimumScaleFactor(0.7).frame(maxWidth: 140).foregroundStyle(.black.opacity(0.7)).offset(y: 78))   // 12字でも枠内（long_name_layout_audit_1108_v0）
                 Circle().fill(Theme.verm).frame(width: 10, height: 10).offset(y: -4)   // ピン
             }
             .scaleEffect(burned ? 1 : 1.05).opacity(burned ? 1 : 0)
