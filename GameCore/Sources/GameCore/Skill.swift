@@ -55,3 +55,13 @@ extension GameEngine {
         return true
     }
 }
+
+// MARK: - 中断セーブの寛容な復号（save_compat_audit_1108_v0 §中）
+// GameState は合成 Codable。合成の init(from:) はこの具体型の多重定義を選ぶので、特技に知らない値（case を消した・
+// 名前を変えた旧セーブ）があってもその要素だけ捨て、セーブ全体は読めるようにする。書き出しの形（文字列の配列）は同じ。
+// 乱数・式には触れない（golden 不変）。
+extension KeyedDecodingContainer {
+    public func decodeIfPresent(_ type: [Skill].Type, forKey key: Key) throws -> [Skill]? {
+        try decodeIfPresent([String].self, forKey: key).map { $0.compactMap(Skill.init(rawValue:)) }
+    }
+}
