@@ -801,6 +801,10 @@ struct IntroFlowView: View {
             return .nameEntry
         }
         if ProcessInfo.processInfo.environment["MZ_UI"] == "combokind" { return .comboKind }   // 目視用: コンビの形を選ぶ画面へ直行
+        if let n = ProcessInfo.processInfo.environment["MZ_NAMES"] {   // 目視用: MZ_NAMES=自分,相方 で長い名前の札を見る（long_name_layout_audit_1108_v0）
+            let p = n.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+            Names.set(me: p.first, partner: p.count > 1 ? p[1] : nil)
+        }
         if MeetingKind.debugForced != nil { return .reminiscence }   // 目視用: MZ_MEET=1〜4 で回想をその型で直接流す
         #endif
         return .title
