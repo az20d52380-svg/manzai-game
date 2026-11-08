@@ -868,13 +868,13 @@ struct WeekMainView: View {
     /// キュー96：オファーの札を横に並べる（仕事の名前・お金・説明・テレビ慣れの一言）。タップで選ぶ（受けるのは下の帯をもう一度押す）。
     private var offerPicker: some View {
         HStack(spacing: 6) {
-            ForEach(0..<offers.count, id: \.self) { i in offerPickCard(i) }
+            // 要素ごと渡す（0..<count の添字で後から offers[i] を引くと、札が減った週の描き直しで範囲外になり落ちた＝soak 11/08）
+            ForEach(Array(offers.enumerated()), id: \.offset) { i, o in offerPickCard(i, o) }
         }
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func offerPickCard(_ i: Int) -> some View {
-        let o = offers[i]
+    private func offerPickCard(_ i: Int, _ o: OfferSpec) -> some View {
         let on = i == offerPick
         return Button {
             Sound.play(.tap)
