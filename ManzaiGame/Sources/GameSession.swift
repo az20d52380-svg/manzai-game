@@ -1215,6 +1215,9 @@ final class GameSession {
 
     /// 中断セーブの全内容。runner のスナップショットに加え、UI層のイベント進行フラグを持たないと
     /// 復帰後に一発化イベントが再発火する（didFire系/fired集合/uiEventRng が本体）。
+    /// 体調ダウンの知らせの文（大会の画面と週の画面の2か所で出す＝1か所にまとめる・11/08 自走の重複点検）
+    static let injuryNoticeText = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
+
     struct SaveData: Codable {
         var runner: WeekRunnerSnapshot<SplitMix64>
         var phase: WeekRunner<SplitMix64>.Phase
@@ -1711,7 +1714,7 @@ final class GameSession {
             guard finished, !careerOver else { return }
             startNextYear()
         }
-        // MZ_STOPWEEK=w: 今の年の第w週の自由行動の手前まで同じ台本で進めて止める（10年目の年末を手で遊ぶ用）
+        // MZ_STOPWEEK=w: 今の年の第w週の自由行動の手前まで同じ台本で進めて止める（最終年＝careerYears 年目の年末を手で遊ぶ用）
         if let w = Int(ProcessInfo.processInfo.environment["MZ_STOPWEEK"] ?? ""), w > 0 {
             var steps = 0
             while !finished, !winFinale, steps < 600 {
@@ -1850,18 +1853,18 @@ extension GameSession {
             let s = GameSession(startState: st); s.debugAdvanceToChampionFinale(); s.acknowledgeWin()
             report("champ compat=\(c)", s, s.finished ? nil : "STUCK")
         }
-        // 10年完走（相性上限・能力マックス）／能力なし
+        // 最終年（careerYears）まで完走（相性上限・能力マックス）／能力なし
         for (n, mk) in [("maxed", true), ("plain", false)] {
             var st = mk ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 20; st.money = 800_000
             if mk { st.センス = 60; st.発想 = 60; st.表現 = 60; st.華 = 60 }
-            let s = GameSession(startState: st); let r = debugSelfPlay(s, kinds: &kinds); report("10y \(n) compat20", s, r)
+            let s = GameSession(startState: st); let r = debugSelfPlay(s, kinds: &kinds); report("\(GameConfig().careerYears)y \(n) compat20", s, r)
         }
-        // 10年完走（riftOn=false で解散を外す）: 能力・相性を変えて #3〜#6 に到達するか
+        // 最終年（careerYears）まで完走（riftOn=false で解散を外す）: 能力・相性を変えて #3〜#6 に到達するか
         for (n, ab, c) in [("weak c5", 20.0, 5.0), ("weak c20", 20.0, 20.0), ("mid c5", 70.0, 5.0), ("mid c20", 70.0, 20.0), ("high c5", 95.0, 5.0)] {
             var cfg = GameConfig(); cfg.riftOn = false
             var st = GameState(config: cfg); st.センス = ab; st.発想 = ab; st.表現 = ab; st.華 = ab; st.メンタル = ab; st.compat = c; st.money = 800_000
             let s = GameSession(config: cfg, startState: st); var k = [String: Int](); let r = debugSelfPlay(s, kinds: &k, maxSteps: 60000)
-            report("10y norift \(n)", s, r)
+            report("\(cfg.careerYears)y norift \(n)", s, r)
         }
         // 判定表（#3〜#6）
         let o = YearOutcome(champion: false, roundsPassed: 2, reachedFinal: false)
@@ -1938,3 +1941,23 @@ extension GameSession {
     }
 }
 #endif
+
+// MARK: - 中断セーブの寛容な復号（save_compat_audit_1108_v0 §高）
+// SaveData は合成 Codable。合成の init(from:) はこの具体型の多重定義を選ぶので、
+// 選択イベントの種別に知らない値（case を消した・名前を変えた旧セーブ）があっても、その要素だけ捨てて
+// セーブ全体は読めるようにする。書き出しの形（文字列の配列／文字列）は今までと同じ。
+extension KeyedDecodingContainer {
+    func decode(_ type: Set<ChoiceEventKind>.Type, forKey key: Key) throws -> Set<ChoiceEventKind> {
+        Set(try decode([String].self, forKey: key).compactMap(ChoiceEventKind.init(rawValue:)))
+    }
+    func decodeIfPresent(_ type: ChoiceEventKind.Type, forKey key: Key) throws -> ChoiceEventKind? {
+        try decodeIfPresent(String.self, forKey: key).flatMap(ChoiceEventKind.init(rawValue:))
+    }
+}
+
+extension KeyedDecodingContainer {
+    /// 日程の印（categoryLog）も同じ：知らない種別の週だけ捨てる（書き出しの形 {"週": "種別"} は同じ）。
+    func decode(_ type: [Int: BandCategory].Type, forKey key: Key) throws -> [Int: BandCategory] {
+        try decode([Int: String].self, forKey: key).compactMapValues(BandCategory.init(rawValue:))
+    }
+}
