@@ -39,6 +39,7 @@
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
 - 定期の回のシミュレータ：タップ操作は許可されていない＝`simctl` の起動・撮影と目視フックだけを使う。別の手段（osascript 等）で操作しない。
 - テストが「失敗0なのに TEST FAILED（signal kill）」の時（11/08）：まず `ps aux | grep -E "xcodebuild|refresh_candidates"` で同じ iPhone 17 を使う別のセッションを確かめる（refresh_candidates.sh は一時フォルダで動くので git status には出ない）。
+- 漏れ点検（11/08〜）：soak は**6分以上**回す（3分では 11/08 の落ちる不具合を拾えなかった）。落ちたら `~/Library/Logs/DiagnosticReports/ManzaiGame-*.ips` の triggered スレッドを読む。SwiftUI の `ForEach(0..<xs.count)`＋`xs[i]` は、xs が減る画面で範囲外になる＝要素ごと渡す。
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
@@ -164,7 +165,28 @@
 ## 済
 - 11/08 朝 定期 済 15d180c0・fc143ea3・c3282822：点検の1本（GameCore 449・同期80/80・効果62/発火26 一致）でアプリのテストが「失敗0なのに TEST FAILED」＝強制終了（signal kill）の本当の原因は、別のセッション（ebee60bc の refresh_candidates.sh）が同じ iPhone 17 で同時に xcodebuild test を回しアプリを起動し直していたこと（sim のログ「terminate for debugging launch request」）。見立てを誤って客席アンケートの声の関数を軽くした（結果は同じ・2クラス16秒→1.4秒・365 green＝害は無いので残す）。【教訓】テストが「失敗0なのに TEST FAILED」の時は、先に `ps aux | grep xcodebuild` で同じ端末を使う別の処理を確かめる／コード点検 1108g（sonnet・低3）を全部直した／キュー146 の材料 week_prompts_inventory_1108_v0
 - 11/08 定期 済（昼・続き16）：候補 outing-v3（f23b6af7）の13行を再採点＝○12△1×0（△は「今度会った日」の形＝自然な言い方なので直さない）／候補 late-events に突き合わせ検査を40本まで広げた b4c7c960（不一致0）／点検の1本 全 green（5行）。
-- 11/08 定期 済（昼・続き17）：候補ブランチの取り込み直し（遅れ10以上・tools/refresh_candidates.sh）＝green で push 24本／赤5本（night-bus-trophy・notebook-entries-label・offer-desc-short・outing-v3・pour-skip-zero＝最終行 0 failures なのに TEST FAILED・原因は調査中）／衝突2本（the-hana-candidate-r1027＝本体の大会まわり6ファイル・vitalbar-numberpop＝YoseGameParts.swift）／見送り4本（別の作業場所が使用中：button-press-se・gacha-entry・rift-trophy・the-hana-candidate）。
+- 11/08 定期 済（昼・続き17）：候補ブランチの取り込み直し（遅れ10以上・tools/refresh_candidates.sh）＝green で push 24本／赤5本（night-bus-trophy・notebook-entries-label・offer-desc-short・outing-v3・pour-skip-zero＝最終行 0 failures なのに TEST FAILED＝同じ時間に別の定期の回が iPhone 17 で点検の1本を回していた（08fbcad9 の記録と同じ強制終了）→1本ずつ回し直して5本とも green（アプリ365・GameCore 449〜450）で push＝候補はすべて今の本体で green）／衝突2本＝どちらも本体に入り済みの古い版（vitalbar-numberpop＝本体の c4ebcd33/d41092da で取り込み済み・衝突を本体側で解くと差分0／the-hana-candidate-r1027＝THE HANA は別の道で本体に入り、その後 golden 枝 D・同期・演出まで進んでいる）＝取り込み直し不要・ブランチの削除はオーナーの片付け時に／見送り4本（別の作業場所が使用中：button-press-se・gacha-entry・rift-trophy・the-hana-candidate）。
+- 11/08 定期 済（昼・続き18）：判断の一覧 A-3 の材料＝未開封の券と資金決済法（sonnet・prepaid_ticket_law_1108_v0.md・案 A〜D）。
+- 11/08 定期 済（昼・続き19）：自己点検（run_selftest・本体 612bc59d）29行・DONE・失敗0／GameCore のカバー率 99.8%（行）で足す所なし。
+- 11/08 定期 済（昼・続き20）：目視 1108h（fc143ea3・c3282822 の画面・sonnet）＝崩れ0（「空の枠」は精算の貼り紙で仕様どおりと親が確認）・決勝の「あなた」札（低）は着地のアニメの途中を撮ったものとコードで確認＝直さない。
+- 11/08 定期 済（昼・続き21）：アプリのカバー率の点検で ChoiceEventData.scene が 0% → 調べたら古い背景の表で今は参照されない（キュー118 の参照0の部品）＝ edd63bb1 で直したのは使われない表だった（戻した）。今使う背景の表 EventBackdropTable と導入のト書き（場所・時間帯）の突き合わせテスト EventScene1108Tests に作り直し＝全イベント一致（直す所なし）。アプリ 368 green（1回目に1件赤・同じ物の回し直しで green＝どのテストか出ず・揺れの疑いとして記録→続けて4回回して4回とも green＝再現せず）。
+- 11/08 定期 済（昼・続き22）：エンディングの場面20枚の背景とト書きを突き合わせ→ #3「十五冊目のノート」2枚目「年明け。バイト先の休憩室。」が事務所の絵（番付ボードで芸能事務所に見える）＝選択イベント regularEmployment で 10/19 に直したのと同じずれ→同じファミレス・昼に揃えた（表示だけ・アプリ 368・GameCore 449 green・MZ_ENDING=3 MZ_ENDSTEP=1 で目視）。他19枚は一致。
+- 11/08 定期 済（昼・続き23）：出会いの回想・S6b・別れの場面の背景も突き合わせ→出会い③（バイト先）の「ファミレスの休憩室。昼すぎ。」だけ絵が無く夕景のままだった＝ファミレス・昼を付けた（表示だけ・アプリ 368 green・MZ_MEET=3 で目視）。教室・廊下は合う絵が無いので従来どおり。
+- 11/08 定期 済（昼・続き24）：1年目の実プレイ点検（sonnet・7週・playtest_y1_1108）→ 今週の生活費の警告に金額が無く（再来週の予告は「14万円」）表記が揃わない＝「今週末に生活費14万円。所持金が足りない。」に（表示だけ・アプリ 368・GameCore 449 green・第16週で目視）。オファーの札の重なり【高】は既知の 111/137、促しまわりは 146 の決定待ち。
+- 11/08 定期 済（昼・続き25）：5年目の実プレイ点検（sonnet・6週＋日程表・playtest_y5_1108）＝大会名・残り週は日程表と全一致・崩れ0。中3件は仕様（新人賞は10年以内）・キュー128（年末／年度）・フックの既知の癖＝直す所なし。
+- 11/08 定期 済（昼・続き26）：点検の1本 全 green（GameCore 449・同期80/80・効果62・発火26・アプリ 368）／判断の一覧 A-3 の材料＝広告の会社と追跡の許可画面（sonnet・ads_att_research_1108_v0・案 A〜D）。
+- 11/08 定期 済（昼・続き27）：文の中の大会名を日程表の名前と機械で突き合わせ＝食い違い0／話し手の名前の点検でバイト先の店長が3通り（矢島・店長・布施店長）＝判断の一覧 C-21 に（推奨②矢島にそろえる・決めない）。
+- 11/08 定期 済（昼・続き28）：11/07 以降まだ見ていない14画面の目視（sonnet・visual_sweep_1108i）＝高中0・低3はどれも直さない（見本の固定文字／下寄せの作り／111・137 と同種）。フックの撮り方（weekhint MZ_WH・frame MZ_MODE）も同じ文書に。
+- 11/08 定期 済（昼・続き29）：C-21 の推奨②を候補ブランチ claude/shop-manager-name-cand（1653131f）に用意（店長3か所・布施店長2行→矢島・口調を合わせた・green・目視済み）。
+- 11/08 定期 済（昼・続き30）：参照0の型を取り直し（道具 tools/find_unused_types.py を足した）＝11個・どれも 10/27 の一覧（キュー118）に既出で、新しく増えた物は0。
+- 11/08 定期 済（昼・続き31）：候補の確認（check_candidates）＝本体に入らないのは古い版3本（the-hana 2本・vitalbar＝入り済み）と week-hint-priority（生活費の金額 34a7971c と衝突）→ 候補の並びのまま金額の文に合わせて取り込み直し d93c2e13（GameCore 449／アプリ 369 green）。
+- 11/08 定期 済（昼・続き32）：A-2（キュー147）の推奨・案2（周回の頂点の束の指数 8→16）を候補ブランチ claude/meta-smooth-exp16-cand（1fef55a9）に用意＝規律A（Python と GameConfig を同時・golden 差分0・P=8 の期待値は Python から取り直し）・GameCore 449／アプリ 368 green。
+- 11/08 定期 済（昼・続き33）：C-13 の材料＝古い作業場所の数え直し（56個・約13GB・未コミット変更0・未追跡のある5個を表に・worktrees_cleanup_1108_v0）。途中で A-2 の候補 claude/rift-trophy-cand がリモートに無いと分かり push（aec46ccc）。
+- 11/08 定期 済（昼・続き34）：A-2 の候補2本（rift-trophy・meta-smooth-exp16）を本体に重ねる合わせ試験＝衝突なし・GameCore 449／アプリ 370 green。
+- 11/08 定期 済（昼・続き35）：漏れ点検 soak（MZ_SOAK_MS=30）で**約5分で落ちる不具合**を見つけた＝週の画面のオファーの札（WeekMainView.offerPicker の `ForEach(0..<offers.count)`＋`offers[i]`）が、札が減った週の描き直しで添字が範囲外（クラッシュログ ManzaiGame-2026-11-08-113405）→ 要素ごと渡す形に直した。直した後 7.5分 落ちず・常駐 325→335MB で横ばい。アプリ 368 green。同じ形（可変配列の添字の ForEach）は他に無し（タブ・下の帯は固定の並び・可変の範囲の5か所は添字を確かめているか配列を引かない）。速い soak（MZ_SOAK_MS=10）10分も落ちず・326→344MB（上下しながら横ばい）。女性コンビ（MZ_KIND=femaleFemale＝THE HANA の道も通る）でも10分落ちず・324→342MB 横ばい。
+- 11/08 定期 済（昼・続き36）：添字の範囲外で落ちる所の静的な点検（sonnet・index_crash_audit_1108_v0）＝確実に落ちる所0・条件付き2（TournamentResultView:52 の results.last! は pump() の非空の守りに頼る・IntroFlow:48 の cards[0] は今は固定の文）＝今は直さない。7a2ae712 と同じ形は他に無し。
+- 11/08 定期 済（昼・続き37）：強制アンラップ・0除算・Int 変換で落ちる所の静的点検（sonnet・unwrap_crash_audit_1108_v0）＝確実0・条件付き3（TournamentResultView:52 は添字点検と同件／YearResultView:384,399 の Int(fame) に isFinite の守りなし／セーブ改ざん経由の Int 変換群）＝どれも通常プレイでは届かないので今は直さない。
+- 11/08 定期 済（昼・続き38）：点検の1本 全 green（GameCore 449・同期80/80・効果62・発火26・アプリ 368）／続き37 の YearResultView:384,399 の Int(fame) に DialogueData と同じ isFinite の守りを足した（有限なら値は同じ＝見た目不変・ビルド OK）。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
