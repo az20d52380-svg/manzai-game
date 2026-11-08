@@ -192,6 +192,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 11/08 夜 定期 済 262281c8・（次のコミット）：常設のテスト＝GP の回戦・決勝進出・優勝のお金と知名度（GPRewardTests 2本）／体調ダウンのメンタル減（InjuryMentalHitTests 3本・既定の逓減ありでは差 −4.92）。GameCore 462 green。
 - 11/08 朝 定期 済 15d180c0・fc143ea3・c3282822：点検の1本（GameCore 449・同期80/80・効果62/発火26 一致）でアプリのテストが「失敗0なのに TEST FAILED」＝強制終了（signal kill）の本当の原因は、別のセッション（ebee60bc の refresh_candidates.sh）が同じ iPhone 17 で同時に xcodebuild test を回しアプリを起動し直していたこと（sim のログ「terminate for debugging launch request」）。見立てを誤って客席アンケートの声の関数を軽くした（結果は同じ・2クラス16秒→1.4秒・365 green＝害は無いので残す）。【教訓】テストが「失敗0なのに TEST FAILED」の時は、先に `ps aux | grep xcodebuild` で同じ端末を使う別の処理を確かめる／コード点検 1108g（sonnet・低3）を全部直した／キュー146 の材料 week_prompts_inventory_1108_v0
 - 11/08 定期 済（昼・続き16）：候補 outing-v3（f23b6af7）の13行を再採点＝○12△1×0（△は「今度会った日」の形＝自然な言い方なので直さない）／候補 late-events に突き合わせ検査を40本まで広げた b4c7c960（不一致0）／点検の1本 全 green（5行）。
 - 11/08 定期 済（昼・続き17）：候補ブランチの取り込み直し（遅れ10以上・tools/refresh_candidates.sh）＝green で push 24本／赤5本（night-bus-trophy・notebook-entries-label・offer-desc-short・outing-v3・pour-skip-zero＝最終行 0 failures なのに TEST FAILED＝同じ時間に別の定期の回が iPhone 17 で点検の1本を回していた（08fbcad9 の記録と同じ強制終了）→1本ずつ回し直して5本とも green（アプリ365・GameCore 449〜450）で push＝候補はすべて今の本体で green）／衝突2本＝どちらも本体に入り済みの古い版（vitalbar-numberpop＝本体の c4ebcd33/d41092da で取り込み済み・衝突を本体側で解くと差分0／the-hana-candidate-r1027＝THE HANA は別の道で本体に入り、その後 golden 枝 D・同期・演出まで進んでいる）＝取り込み直し不要・ブランチの削除はオーナーの片付け時に／見送り4本（別の作業場所が使用中：button-press-se・gacha-entry・rift-trophy・the-hana-candidate）。
