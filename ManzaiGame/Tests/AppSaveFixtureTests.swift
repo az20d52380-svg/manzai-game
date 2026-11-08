@@ -33,7 +33,30 @@ final class AppSaveFixtureTests: XCTestCase {
         let save = try JSONDecoder().decode(GameSession.SaveData.self, from: Data(contentsOf: fixtureURL))
         XCTAssertFalse(save.firedWeeklyEvents.isEmpty, "選択イベントの case が復号できた")
         XCTAssertEqual(save.categoryLog.count, 5, "日程の印の全 case が復号できた")
+        // 寛容な復号でも case を消したら赤にする（固定 JSON の文字列の数と、読めた数が一致すること）
+        let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any]
+        let rawFired = try XCTUnwrap(raw?["firedWeeklyEvents"] as? [String])
+        XCTAssertEqual(save.firedWeeklyEvents.count, rawFired.count, "固定 JSON の選択イベントの種別が全部今も在る")
         let restored = GameSession(restoring: save)
         XCTAssertEqual(restored.comboKind, .femaleMale)
+    }
+
+    /// 知らない種別（消した case）が混じった旧セーブでも、セーブ全体は読める＝その要素だけ捨てる（save_compat_audit_1108_v0）。
+    func testUnknownChoiceEventKindIsDroppedNotFatal() throws {
+        var obj = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any])
+        let fired = try XCTUnwrap(obj["firedWeeklyEvents"] as? [String])
+        obj["firedWeeklyEvents"] = fired + ["removedKindForTest"]
+        obj["pendingChoiceEvent"] = "removedKindForTest"
+        let save = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: obj))
+        XCTAssertEqual(save.firedWeeklyEvents.count, Set(fired).count, "知らない値だけ捨てる")
+        XCTAssertNil(save.pendingChoiceEvent, "知らない保留イベントは無し扱い")
+        // 日程の印も同じ（[Int: …] は {"週": "種別"} の形）
+        var obj2 = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any])
+        var log = try XCTUnwrap(obj2["categoryLog"] as? [String: Any])
+        let n = log.count
+        log["99"] = "removedCategoryForTest"
+        obj2["categoryLog"] = log
+        let save2 = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: obj2))
+        XCTAssertEqual(save2.categoryLog.count, n, "知らない印の週だけ捨てる")
     }
 }
