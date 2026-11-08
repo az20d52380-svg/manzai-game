@@ -33,6 +33,7 @@
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
 - 候補ブランチの確認（10/27 深夜〜）：`bash tools/check_candidates.sh` で本体に入るか・候補どうしの衝突を一覧（書き換えなし）。
+- 候補の漏れ点検（11/09〜）：`tools/soak_candidate.sh claude/<候補> [dd] [分=10] [ms=10]`＝origin の候補を一時作業場所でビルド→soak→毎分の常駐メモリとクラッシュログの増減を1行で出す（push なし・iPhone 17 を使うので同時に1本だけ）。
 - 候補ブランチの取り込み直し（11/08〜）：`bash tools/refresh_candidates.sh <dd> [遅れの下限=50]`＝衝突しない候補に本体を取り込み、GameCore とアプリが green の時だけ push（pbxproj だけの衝突は xcodegen で作り直す・1本約2分・iPhone 17 を使う）。
 - テストの足し方（10/27 深夜〜）：候補ブランチでも本体でも、新しいテストは ManzaiGame/Tests/ に**新しいファイル**（例 `Foo1028Tests.swift`）で足し `cd ManzaiGame && xcodegen generate`。ManzaiGameTests.swift の末尾に足すと、候補どうし・本体と毎回末尾で衝突する（10/27 は2回取り込み直した）。
 - 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。道具＝`python3 tools/merge_candidate_tests.py <本体のブランチ>`（merge が止まった状態で実行→ git add → commit）。
