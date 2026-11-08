@@ -179,6 +179,7 @@
 197. [済 11/09 定期] 候補の取り込み直し（遅れ30以上・直した refresh_candidates.sh で一括）：17本 green で push（a11y-tap-next・button-press-se・calendar-jan・career-end-save・final-silence・first-pass-share・meta-smooth-exp16・mob-roster-per-run・money-short-choice・night-bus-trophy・outing-v3・pour-skip-zero・retire-confirm・revival-short・rift-trophy・season-sure・week-hint-priority）。赤1本＝unused-parts-cand（GameCore 469 green・アプリのテストが TEST FAILED）→原因を次で調べる。
 198. [済 11/09 定期] unused-parts-cand の赤の原因＝この候補が消す参照0の部品（Theme.kataColor・ChoiceEventData.scene(for:)）を、本体で今日足したテスト（LoadsTheme1109Tests の1行・OutfitScene1109Tests の①2本）が使っていた。候補側で本体を取り込み、その確認だけ外して green（GameCore 469・アプリ 389）→ push 2e5bb65a。本体の OutfitScene①は今は参照されない古い背景の表を見ている（場面の絵の正は EventBackdropTable＝EventScene1108Tests）。
 199. [済 11/09 定期] 選択イベントの文の長さ（ChoiceEventData 832文・最長は 0041 後輩の誘いの谷口 53字＝{partner1} 込み）を目視：`MZ_UI=event MZ_EV=0041 MZ_EVSTEP=99 MZ_KIND=femaleFemale`＝「私たち」に置き換わって吹き出し2行・崩れなし。次点は37〜39字。
+200. [済 11/09 定期] 文字サイズ拡大 AX1（accessibility-extra-large）の目視を 10/27 以降の画面で4枚：オファーの札（MZ_UI=offers・体力0で札3枚＋オファー）・イベント0041（最長の台詞）・年末総決算（MZ_SCROLL=history）・ネタ帳（能力115）＝崩れなし。年末の右上で「🏆優勝／💪無双」が本文に重なるのは DEBUG 専用の近道ボタン（RootView.debugChip・本番に出ない）。終了後 content_size は large に戻し済み。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
