@@ -169,16 +169,17 @@ struct NotebookView: View {
     }
 
     /// 通算の優勝＝今年の記録の優勝＋過去の年の頂GP優勝＋過去の年の THE HANA 優勝（記録は年ごとに消えるので、通算 hanaWins から今年の分を引いて足す・code_review_1107c #6）。表示専用。
-    static func kirokuWins(marks: [(title: String, mark: String)], gpChampionYears: Int, hanaWins: Int?) -> Int {
+    static func kirokuWins(marks: [(title: String, mark: String)], gpChampionYears: Int, hanaWins: Int?, pastSmallWins: Int = 0) -> Int {
         let thisYear = marks.filter { $0.mark == "優勝" }
         let hanaThisYear = thisYear.filter { $0.title.contains("HANA") }.count
-        return thisYear.count + gpChampionYears + max(0, (hanaWins ?? 0) - hanaThisYear)
+        return thisYear.count + gpChampionYears + max(0, (hanaWins ?? 0) - hanaThisYear) + pastSmallWins
     }
 
     private var kirokuPage: some View {
         let entries = logEntries
         let played = entries.filter { ["通過", "敗退", "優勝"].contains($0.mark) }.count
-        let wins = Self.kirokuWins(marks: entries.map { ($0.title, $0.mark) }, gpChampionYears: session.yearHistory.filter { $0.champion }.count, hanaWins: session.state.hanaWins)
+        let wins = Self.kirokuWins(marks: entries.map { ($0.title, $0.mark) }, gpChampionYears: session.yearHistory.filter { $0.champion }.count, hanaWins: session.state.hanaWins,
+                                     pastSmallWins: session.yearHistory.reduce(0) { $0 + ($1.smallWins ?? 0) })
         let total = entries.reduce(0) { $0 + $1.prize } + session.yearHistory.reduce(0) { $0 + $1.prize / 10000 }
         return VStack(alignment: .leading, spacing: 10) {
             // 通算戦績（3カラム木札）

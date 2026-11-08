@@ -43,9 +43,13 @@ final class StoreManager: ObservableObject {
         await updateEntitlements()
     }
 
+    /// 画面を開いた時に、別の画面で出た一言を消す（ガチャと設定で同じ一言を読むため）
+    func clearMessage() { lastMessage = nil }
+
     /// 購入。成功したら true
     @discardableResult
     func purchase(_ id: String) async -> Bool {
+        lastMessage = nil   // 前の失敗や復元の一言を、成功後や別の操作に残さない
         if products[id] == nil { await refresh() }   // オフライン起動で読めなかった時は押した時に読み直す（code_review_1107e #12）
         guard let product = products[id] else { lastMessage = "商品が見つかりません"; return false }
         do {
@@ -70,6 +74,7 @@ final class StoreManager: ObservableObject {
     /// 購入を復元（審査で必須）。成功したら true
     @discardableResult
     func restore() async -> Bool {
+        lastMessage = nil
         do {
             try await AppStore.sync()
             await updateEntitlements()
