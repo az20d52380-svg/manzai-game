@@ -38,10 +38,14 @@ final class RandomPlayInvariantTests: XCTestCase {
         XCTAssert(s.exp語彙.isFinite && s.exp語彙 >= -eps, "経験点 語彙 \(s.exp語彙) \(where_)")
     }
 
-    func testRandomPlayKeepsStateInRange() {
+    func testRandomPlayKeepsStateInRange() { run(female: false, metaPoints: 0) }
+    /// 女性コンビ（THE HANA の道）と周回メタの初期加算ありでも同じ
+    func testRandomPlayFemaleAndMetaKeepsStateInRange() { run(female: true, metaPoints: 60) }
+
+    private func run(female: Bool, metaPoints: Int) {
         let config = GameConfig()
         for seed in UInt64(1)...40 {
-            var s = GameState(config: config)
+            var s = GameState(config: config, metaPoints: metaPoints, femaleCombo: female)
             var rng = SplitMix64(seed: seed)
             var policy = RandomPolicy(pick: SplitMix64(seed: seed &* 7919 &+ 17))
             for year in 1...10 {
