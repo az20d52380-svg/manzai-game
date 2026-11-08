@@ -18,7 +18,7 @@ before=$(ls ~/Library/Logs/DiagnosticReports/ManzaiGame-*.ips 2>/dev/null | wc -
 xcrun simctl install $U "$APP"; xcrun simctl terminate $U $BID 2>/dev/null
 # SOAK_ENV="MZ_KIND=femaleMale X=Y" で起動時の目視フックを足せる（11/09）
 extra=(); for kv in ${SOAK_ENV:-}; do extra+=("SIMCTL_CHILD_$kv"); done
-env "${extra[@]}" SIMCTL_CHILD_MZ_SMOKE=soak SIMCTL_CHILD_MZ_SOAK_MS=$MS xcrun simctl launch $U $BID >/dev/null
+env ${extra[@]+"${extra[@]}"} SIMCTL_CHILD_MZ_SMOKE=soak SIMCTL_CHILD_MZ_SOAK_MS=$MS xcrun simctl launch $U $BID >/dev/null
 line=""
 for m in $(seq 1 $MIN); do
   sleep 60; pid=$(pgrep -f "Devices/$U/.*ManzaiGame.app/ManzaiGame" | head -1)   # 11/09：他の端末（オーナーの Pro 等）の ManzaiGame を拾わないよう UDID で絞る
