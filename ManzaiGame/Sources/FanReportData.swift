@@ -53,7 +53,7 @@ enum FanReportData {
 
     /// ハマった夜の一言。選び方は salt 剰余＝乱数非消費（紙講評と同じ）
     static func burst(name: String, salt: Int, known: Bool = false) -> String {
-        let pool = known ? burstLines : burstLines.filter { !knownOnly.contains($0) }
+        let pool = known ? burstLines : burstLinesUnknown
         let n = pool.count
         return pool[((salt % n) + n) % n].replacingOccurrences(of: "〈名〉", with: name)
     }
@@ -375,7 +375,15 @@ enum FanReportData {
     /// 判の前に流す観客の声（2〜4枚）。salt 剰余だけで選ぶ＝乱数非消費・同じ週は同じ声。
     /// 通過＝点差が大きければ熱狂／小さければ手応え。敗退＝あと一歩なら五分五分／遠ければ不発。ハマった夜は必ず先頭に。
     /// 「前から見ている客」の言い方（いつも・去年・安定・期待）。無名のうちは出さない（オーナー指摘 10/15：初出場の無名に「いつも通りじゃない」はおかしい）
+    private static let bandAUnknown = bandA.filter { !knownOnly.contains($0) }
+    private static let bandBUnknown = bandB.filter { !knownOnly.contains($0) }
+    private static let bandCUnknown = bandC.filter { !knownOnly.contains($0) }
+    private static let bandDUnknown = bandD.filter { !knownOnly.contains($0) }
+    private static let burstLinesUnknown = burstLines.filter { !knownOnly.contains($0) }
+
     private static let knownOnly: Set<String> = [
+        "常連のおじさんが「今日は〈名〉だな」とつぶやいてた。",
+        "〈名〉、言い終わりが毎回少し弱くて、客席が笑いどころに気づきにくかった。",
         "今日の〈名〉、何かが起きてた。いつも面白いけど今日のは違う。神回。",
         "今日の〈名〉、明らかにいつもの温度じゃなかった。客席の空気が一つになってた。",
         "いつも通りのはずが、今日の〈名〉だけ空気の密度が違った。当たり日を引いた組は強い。",
@@ -408,6 +416,7 @@ enum FanReportData {
         let n = pool.count
         guard n > 0 else { return [] }
         let rotated = (0..<n).map { pool[(((salt + $0) % n) + n) % n] }
+        if used.isEmpty { return rotated }   // 使い済みが無ければ並びは回しただけ（下の名前差し替えを省く・結果は同じ）
         func rep(_ t: String) -> String { t.replacingOccurrences(of: "〈名〉", with: name) }
         let fresh = rotated.filter { !used.contains(rep($0)) }
         let old = rotated.filter { used.contains(rep($0)) }
@@ -417,21 +426,25 @@ enum FanReportData {
 
     static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false, used: [String] = []) -> [String] {
         let count = 2 + ((salt / 7) % 3 + 3) % 3 + (burst ? 1 : 0)   // 2〜4
-        let keep: ([String]) -> [String] = { pool in known ? pool : pool.filter { !knownOnly.contains($0) } }
+        // 無名の時の絞り込みは事前に済ませた版を使う（呼ぶたびに絞り直すと、全体のテストで実行機が落ちるほど重かった＝11/08）
+        let A = known ? bandA : bandAUnknown, B = known ? bandB : bandBUnknown
+        let C = known ? bandC : bandCUnknown, D = known ? bandD : bandDUnknown
         let band: [String]
-        if passed { band = keep((margin ?? 0) >= 8 ? bandA : bandB) }
-        else if let m = margin, m >= -3 { band = keep(bandC) }
-        else if let m = margin, m >= -10 { band = keep(((salt % 2) + 2) % 2 == 0 ? bandC : bandD) }
-        else { band = keep(bandD) }
-        let bursts = keep(burstLines)
+        let isA: Bool, isC: Bool
+        if passed { isA = (margin ?? 0) >= 8; isC = false; band = isA ? A : B }
+        else if let m = margin, m >= -3 { isA = false; isC = true; band = C }
+        else if let m = margin, m >= -10 { isA = false; isC = ((salt % 2) + 2) % 2 == 0; band = isC ? C : D }
+        else { isA = false; isC = false; band = D }
+        let bursts = known ? burstLines : burstLinesUnknown
         var lines: [String] = []
         if burst, let b = ordered(bursts, salt: salt, name: name, used: used).first { lines.append(b) }
         // このキャリアで未使用の声を、同じ帯→隣の帯（A↔B・C↔D）の順で先に使い、それも尽きたら使い済みを古い順に戻す
-        let adjacent: [String] = passed ? keep(band == keep(bandA) ? bandB : bandA) : keep(band == keep(bandC) ? bandD : bandC)
+        let adjacent: [String] = passed ? (isA ? B : A) : (isC ? D : C)
         func rep(_ t: String) -> String { t.replacingOccurrences(of: "〈名〉", with: name) }
         let own = ordered(band, salt: salt, name: name, used: used)
         let near = ordered(adjacent, salt: salt, name: name, used: used)
-        let order = own.filter { !used.contains(rep($0)) } + near.filter { !used.contains(rep($0)) } + own.filter { used.contains(rep($0)) }
+        let order = used.isEmpty ? own + near
+            : own.filter { !used.contains(rep($0)) } + near.filter { !used.contains(rep($0)) } + own.filter { used.contains(rep($0)) }
         var k = 0
         while lines.count < min(count, 4), k < order.count {
             let c = order[k]; k += 1
