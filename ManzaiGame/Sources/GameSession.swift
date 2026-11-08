@@ -1930,3 +1930,16 @@ extension GameSession {
     }
 }
 #endif
+
+// MARK: - 中断セーブの寛容な復号（save_compat_audit_1108_v0 §高）
+// SaveData は合成 Codable。合成の init(from:) はこの具体型の多重定義を選ぶので、
+// 選択イベントの種別に知らない値（case を消した・名前を変えた旧セーブ）があっても、その要素だけ捨てて
+// セーブ全体は読めるようにする。書き出しの形（文字列の配列／文字列）は今までと同じ。
+extension KeyedDecodingContainer {
+    func decode(_ type: Set<ChoiceEventKind>.Type, forKey key: Key) throws -> Set<ChoiceEventKind> {
+        Set(try decode([String].self, forKey: key).compactMap(ChoiceEventKind.init(rawValue:)))
+    }
+    func decodeIfPresent(_ type: ChoiceEventKind.Type, forKey key: Key) throws -> ChoiceEventKind? {
+        try decodeIfPresent(String.self, forKey: key).flatMap(ChoiceEventKind.init(rawValue:))
+    }
+}
