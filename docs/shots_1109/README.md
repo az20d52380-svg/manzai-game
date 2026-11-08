@@ -16,5 +16,11 @@
 | C-22 | claude/youth-notice-y10-cand | MZ_UI=week MZ_YEARS=9 MZ_STOPWEEK=1 MZ_CARE=1 | c22_youth_before.png | c22_youth_after.png | 写る | 10年目1週の下に谷口の一言の札が出る（後のみ・起動7秒後に撮らないと消える）。前は札なし |
 | C-24 | （既存） | - | c24_offer_stamina_note.png | - | - | 既存 |
 | C-25 | （既存） | - | c25_calendar_gp_paint.png | - | - | 既存 |
+| C-5 | claude/notebook-entries-label-cand | MZ_UI=notebook MZ_YEARS=2 MZ_TAB=kiroku | q5_notebook_before.png | q5_notebook_after.png | 写る | 手帳「戦績」上段の見出し：「優勝」→「通算の優勝」、「獲得賞金」→「通算の賞金」（右2つの枠を見る） |
+| C-21 | claude/shop-manager-name-cand | MZ_UI=event MZ_EV=0023 MZ_EVSTEP=99 MZ_EVPICK=1 | q21_manager_before.png | q21_manager_after.png | 写る | 「正社員の話」の返事の話者名：「店長」→「矢島」（中ほどの吹き出しの名札。エンディングの布施店長→矢島は別場面で未撮影） |
+| Q141 | claude/gacha-entry-cand | MZ_UI=shop | q141_gacha_before.png | q141_gacha_after.png | 写る | お店の一番上（部屋の上）に「衣装ガチャ」の帯と「今日の札」ボタンが増える（前は無し） |
+| Q132 | claude/yearly-goal-cand | MZ_UI=yearend | q132_goal_before.png | q132_goal_after.png | 写る | 年末総決算の見出しの下に「来年の狙い　3回戦を突破」の帯が増える |
+| Q112 | claude/tv-fatigue-display-candidate | MZ_TVTIRED（候補では外れ、慣れ段階で出る） | - | - | 写らない | 「テレビ慣れ・すこし／強い」は受けたオファーの履歴が要り、直行するフックが無い（MZ_OFFER は札を出すだけで慣れ段階は0のまま）。後は慣れ0＝帯なし |
+| Q110 | claude/qual-long-list-candidate | MZ_UI=qual_notice MZ_OPEN=1 | q110_qual_before.png | q110_qual_after.png | 写る | 1回戦の通過者一覧：前は9組、後は長い一覧（スクロール想定で15組超が並ぶ） |
 
 注: C-2 の「前」でも持ち分の割り振り表示は同じ（フックが粒を積んだ状態）。差は右下の確定ボタンのみ。
