@@ -20,11 +20,11 @@ enum ChoiceEventData {
     static func scene(for kind: ChoiceEventKind) -> EventScene {
         switch kind {
         // ト書きの場所が絵に出る（表示だけ）: 楽屋・焼肉屋・駅のホーム・ファミレス・事務所
-        case .lineupTop, .greenroomSilentTen, .kouhaiInvite, .yearEndLive: return .gakuya
+        case .lineupTop, .greenroomSilentTen: return .gakuya
         case .senpaiMeishi: return .yakiniku
-        case .lastTrainReview, .lostNotebook: return .station
-        case .wroteOneTonight, .baitoInventory: return .famires
-        case .photoShootOffer, .officeTicketQuota: return .office   // 11/08：後から足した5種が稽古場の絵のままだった（EventScene1108Tests）
+        case .lastTrainReview: return .station
+        case .wroteOneTonight: return .famires
+        case .photoShootOffer: return .office
         case .preTournamentEve, .brokeDrinkingInvite, .justLostRehearsal, .weekendInvite:
             return .dusk
         default:
