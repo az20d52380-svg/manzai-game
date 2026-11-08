@@ -193,6 +193,7 @@
 - 11/08 定期 済（昼・続き40）：同じ形の中2件（特技 Skill・日程の印 BandCategory）も未知の値だけ捨てる復号に（Skill.swift／GameSession.swift 末尾・書き出しの形は不変・golden 不変）＋テスト（固定 JSON の数の一致で case 削除は今も赤）＝GameCore 450・アプリ 369 green・同期80/80。キュー154 の残りは退避の扱い（判断）だけ。
 - 11/08 定期 済（昼・続き41）：記録系3型（年の記録 YearRecord・戦績 CareerRecords・エンディング記録 EndingRecord）の非 Optional を凍結する規約テスト（SaveDataConventionTests・わざと1項目足すと赤を確認）＝GameCore 451。
 - 11/08 定期 済（昼・続き42）：画面を閉じた後に遅れて走る処理の静的点検（sonnet・delayed_callback_audit_1108_v0）＝実害1・条件付き8。実害1（優勝演出で途中に「表彰式へ進む」を押すと、消えた画面から音と触覚が遅れて鳴る＝YoseChampionCelebrationView）を直した＝進む・消えた時に isGone を立て、遅れの段は何もしない（ビルド OK・見た目不変）。条件付き8 はキュー155。
+- 11/08 定期 済（昼・続き44）：セーブ復号を変えた後の自己点検（本体 acb83123）＝29行・DONE・失敗0（古いセーブの通し・選択直後の保存を含む）。1回目は sim の起動直後で5分打ち切り＝2回目で完走（道具の既知の癖）。保存キーの綴り（UserDefaults／AppStorage 18個）の食い違いも0。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
