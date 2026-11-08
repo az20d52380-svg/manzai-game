@@ -121,6 +121,58 @@ def py_keys():
 
 APP_KEYS, OTH_KEYS = py_keys()
 
+SW_LATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "GameCore", "Sources", "GameCore", "ChoiceEventLate.swift")
+
+def read_late(unreadable):
+    """終盤イベント40本（ChoiceEventLate.swift の lateChoices）→ {kind: {id: (effects, gate額)}}。gate は `$0.money >= N` だけ読める"""
+    if not os.path.exists(SW_LATE): return None
+    src = open(SW_LATE, encoding="utf-8").read()
+    seg = re.sub(r"//[^\n]*", "", src[src.index("static func lateChoices"):])
+    out = {}
+    parts = re.split(r"\n\s*case ((?:\.\w+(?:,\s*)?)+):", seg)
+    for i in range(1, len(parts), 2):
+        kinds = [k.strip().lstrip(".") for k in parts[i].split(",")]
+        chs = {}
+        for m in re.finditer(r'ChoiceEventChoice\(id:\s*"(\w)",\s*effects:\s*\[(.*?)\]\s*(?:,\s*gate:\s*\{(.*?)\})?\s*\)', parts[i + 1], re.S):
+            gate = 0
+            if m.group(3):
+                g = re.fullmatch(r"\s*\$0\.money >= ([\d_]+)\s*", m.group(3))
+                if g: gate = int(g.group(1).replace("_", ""))
+                else: unreadable.append(f"{kinds[0]}/{m.group(1)}: gate {{{m.group(3)}}} ??")
+            chs[m.group(1)] = (parse_effects(m.group(2), unreadable, f"{kinds[0]}/{m.group(1)}"), gate)
+        for k in kinds: out[k] = chs
+    return out
+
+def check_late(unreadable):
+    """late_events_data.py の表／_late_pick／_late_apply と Swift lateChoices を突き合わせる。(一致, 不一致行リスト, 件数)"""
+    from late_events_data import LATE_EVENTS as LE
+    sw = read_late(unreadable)
+    if sw is None: return None
+    ok, rows = 0, []
+    norm = lambda effs: sorted((k, float(v)) for k, v in effs)
+    for k in sorted(set(LE) | set(sw)):
+        if k not in LE or k not in sw:
+            rows.append(f"{k}: " + ("Swift に無い" if k not in sw else "Python 表に無い")); continue
+        for cid in sorted(set(LE[k]) & {"A", "B"} | set(sw[k])):
+            if cid not in sw[k] or cid not in LE[k]:
+                rows.append(f"{k}/{cid}: 片側に選択肢が無い"); continue
+            pe, pg = LE[k][cid]["eff"], LE[k][cid]["gate"]; se, sg = sw[k][cid]
+            if norm(pe) == norm(se) and pg == sg: ok += 1
+            else: rows.append(f"{k}/{cid}: Python eff={pe} gate={pg} / Swift eff={se} gate={sg}")
+        # 実行側：_late_apply の差分が Swift のどちらかの選択肢（選べる方）と一致するか
+        for lay, stam, money in itertools.product(LAYOUTS, STAMINA, MONEY):
+            s = mkstate(lay, stam, money); before = {x: getattr(s, x) for x in KEYS}
+            C._late_apply(s, k)
+            d = {x: getattr(s, x) - before[x] for x in KEYS if getattr(s, x) != before[x]}
+            avail = [cid for cid, (e, g) in sw[k].items() if money >= g]
+            if not avail:
+                if d: rows.append(f"{k}: 選べる選択肢が無い状態(所持金{money})で Python が効果 {d}"); break
+                continue
+            if not any(swift_delta(sw[k][cid][0], mkstate(lay, stam, money)) == d for cid in avail):
+                rows.append(f"{k}: 体力{stam}/所持金{money} で Python の差分 {d} がどの選択肢とも違う"); break
+        else: ok += 1
+    return ok, rows, len(LE)
+
 def main():
     table, unreadable = read_swift()
     ok = bad = noop = 0; rows = []; unreached = []
@@ -145,8 +197,17 @@ def main():
     print(f"一致 {ok} / 不一致・未対応 {bad} / ボットが何もしない状態 {noop}（Python キー {len(APP_KEYS|OTH_KEYS)}・Swift case {len(table)}）")
     for r in rows: print("不一致:", " | ".join(r))
     for u in unreadable: print("読めない効果:", u)
+    shown = list(unreadable)
     if unreached: print("Python ボットが一度も選ばない Swift 選択肢:", ", ".join(unreached))
     if nopy: print("Python 側に鏡像が無い Swift case（選択肢あり）:", ", ".join(nopy))
+    late = check_late(unreadable)
+    if late is None: print("終盤イベント: ChoiceEventLate.swift が無い（本体ブランチ）＝対象外")
+    else:
+        lok, lrows, ln = late
+        print(f"終盤イベント{ln}本: 一致 {lok} / 不一致 {len(lrows)}（選択肢の効果・お金gate 80件＋_late_apply の実行 {ln}本）")
+        for r in lrows: print("不一致(終盤):", r)
+        bad += len(lrows)
+    for u in unreadable[len(shown):]: print("読めない効果:", u)
     return 1 if (bad or unreadable) else 0
 
 if __name__ == "__main__":

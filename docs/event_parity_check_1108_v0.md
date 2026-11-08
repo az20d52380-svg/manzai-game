@@ -44,3 +44,26 @@ Python の `_app_apply`/`_others_apply` を状態格子（体力15値×所持金
 - riftWarning・weekendInvite（別実装）は連鎖の読み取りのみで Python 側に対応なし。
 - `weeklyEventCap`(15)・`EVENT_RATE`(0.12 vs weeklyEventRate)・抽選の候補選び方の一様性・同一週の二重抽選ガードは対象外（値の写し合わせのみ別途）。
 - 週次の「本番までの週」は Python の stages 先頭と Swift の `nextStage` が同じ週を指す前提で、その算出（`_app_stages`／`upcomingStages`）自体は比べていない。
+
+## §終盤40本（候補ブランチ claude/late-events-cand・2026-11-08 追記）
+本体の2本の検査を、終盤イベント40本（E1〜E20＝6年目〜／N1〜N20＝11年目〜）も対象に広げた。検査だけを直し、`late_events_data.py`・`ChoiceEventLate.swift`・`GameSession.swift`・`sim_career.py` の中身（数値・条件）は無変更。
+
+### 効果（`tools/check_event_parity.py`）
+- Swift 側は `ChoiceEventLate.swift` の `lateChoices` を読み（効果＋お金 gate `$0.money >= N`）、`late_events_data.py` の表と選択肢ごとに照合。さらに `sim_career._late_apply`（方針＝体力50以上で A）を体力15値×所持金23値×能力配置2 で実行し、差分が Swift の「選べる選択肢」のどれかと一致するかを見た。
+- 結果：**一致 120／不一致 0／読めない 0**（40本×選択肢2＝80件の表照合＋40本の実行照合）。終了コード0。
+
+### 発火条件（`tools/check_event_trigger_parity.py`・`--late` で ChoiceEventLate.swift を差し替え可）
+- Swift 側：`lateEventMinYear`（出る年）・`lateEventNeedsChampion`・`isWeeklyRandom` の `isLateEvent` 入り・`ChoiceEvent.swift` の default 節 `year >= minYear`・`GameSession.weeklyExtraGate`（N17〜N20）・`lateChoices` の gate を読み、Python 式に翻訳して評価。
+- 「読めない」だった `wonLastYear`／`wonTwoYearsAgo`／`hasWonBefore` を評価できる変数に追加（`yearHistory` の定義どおり、前年・前々年に優勝なら過去優勝も真）。
+- 週次抽選：年 {1,2,3,5,6,7,10,11,12}×他の状態 20万件で、全65種（既存25＋終盤40）の Python 候補判定（`_app_band`＋`LATE_POOL`＋`_late_pick` が選べる）と Swift（帯＋追加ゲート＋選択肢 gate）が全件一致。N17〜N20 は sim が初優勝でキャリアを閉じる＝優勝状態を作れないので、Python は常に「出ない」、Swift も優勝歴なしの状態では常に「出ない」で一致（意図どおり）。
+- 優勝状態の網羅（Swift のみ）：(前年,前々年,過去優勝) = (F,F,T)→N20／(T,F,T)→N17／(F,T,T)→N18／(T,T,T)→N19／優勝歴なし→どれも出ない。各状態でちょうど1本＝排他で漏れなし。
+- 結果：**一致 66／不一致 0／読めない 0**（既知1＝femaleCombo 節は従来どおり）。終了コード0。
+
+### 検査の効き確認（わざとずらしたコピーで NG）
+- 効果：`lateE03` A の fame 1→2 にすると、表照合と実行照合の2件で不一致（終了コード1）。
+- 発火条件：終盤の出る年（11→10）と `lateN19` の条件（`&&`→`||`）を変えると、週次の不一致が38種分、優勝状態の網羅でも N18／N19 の二重該当を検出（終了コード1）。変更は確認後に全て元へ戻した（git 差分は検査2本と本書のみ）。
+
+### 限界（この節）
+- N17〜N20 の「優勝経験者」状態は Python に無いため、Python 対 Swift の突き合わせは優勝歴なしの状態のみ（優勝歴ありは Swift 内の網羅確認だけ）。
+- 終盤イベントは各1回制（firedWeeklyEvents）・通算上限・抽選の一様性は対象外（本体と同じ）。
+- 不一致は見つからなかったので何も直していない。
