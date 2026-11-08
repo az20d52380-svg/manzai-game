@@ -488,7 +488,8 @@ def _app_week_event(s, year, week, stages, gp_alive):
         a["style_done"] = True; _app_apply(s, "styletalk"); done("styletalk"); return
     if a["jp"] and not a["fork_fired"] and nxt and nxt[0] - week >= 3 and s.stamina >= 15:
         a["fork_fired"] = True; _app_apply(s, "passfork"); a["jp"] = False; done("passfork"); return
-    if not a["eve_fired"] and nxt and nxt[0] - week == 1 and nxt[1]:
+    if (not a["eve_fired"] and nxt and nxt[0] - week == 1 and nxt[1]
+            and not (getattr(s, "female", False) and nxt[0] == HANA_WEEKS[0])):   # 動画審査（THE HANA 1回戦）は舞台に立たない＝前夜は出さない（GameSession.swift の同じ節）
         a["eve_fired"] = True; _app_apply(s, "eve"); done("eve"); return
     if not a["early_done"] and year == 1 and 3 <= week < 15 and s.compat <= 7:
         a["early_done"] = True; _app_apply(s, "early"); done("early"); return
