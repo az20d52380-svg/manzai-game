@@ -1138,7 +1138,7 @@ struct WeekMainView: View {
                                         .background(YoseColor.kin.opacity(0.25))
                                         .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                                 }
-                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(Yen.man(abs(moneyDelta)))")
+                                Text("\(moneyDelta > 0 ? "+" : "-")¥\(abs(moneyDelta) < 10000 ? abs(moneyDelta).formatted() : Yen.man(abs(moneyDelta)))")   // 1万円未満は整数円（costPill と同じ・¥0.5万／¥0.0万を出さない）
                                     .font(YoseFont.number(22, weight: .heavy)).lineLimit(1).fixedSize()
                                     .foregroundStyle(moneyDelta > 0 ? YoseColor.sumi : YoseColor.shu)
                             }
@@ -1440,7 +1440,7 @@ struct WeekMainView: View {
         session.resetDebtWarnIfRepaid(money: s.money)   // 【候補 #4 後半】返し終えたら次の借金でまた知らせる（ほかの知らせの週でも戻すよう先頭で＝candidate_review_1026_v0 §2）
         if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
             session.clearInjuryNotice()
-            injuryNotice = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
+            injuryNotice = GameSession.injuryNoticeText
             return
         }
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
@@ -1474,7 +1474,7 @@ struct WeekMainView: View {
         let c = session.config
         let living = GameEngine.livingCostDue(session.state, config: c)
         return HintSpec(key: "living", title: "生活費", rows: [
-            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(living / 10_000)万円が引かれる。今週がその週。"),
+            .init(term: "生活費", text: "\(c.livingInterval)週に1度、週の終わりに、家賃や食費で\(Yen.man(living))円が引かれる。今週がその週。"),
             .init(term: "借金", text: "お金が足りないと、足りない分が借金になる。"),
         ])
     }

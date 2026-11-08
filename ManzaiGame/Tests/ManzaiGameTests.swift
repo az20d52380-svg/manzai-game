@@ -888,7 +888,17 @@ final class Pure1027Tests: XCTestCase {
         XCTAssertEqual(Yen.man(25000), "2.5万")
         XCTAssertEqual(Yen.man(150000), "15万")
         XCTAssertEqual(Yen.man(-5000), "-0.5万")
-        XCTAssertEqual(Yen.man(9999), "1.0万")
+        XCTAssertEqual(Yen.man(99_999), "10万", "丸めで繰り上がっても「10.0万」にしない（number_display_audit_1108_v0 #4）")
+        XCTAssertEqual(Yen.man(14_999), "1.5万")
+        XCTAssertEqual(Yen.man(9999), "1万")   // 11/08：説明どおり整数なら小数なし（旧 "1.0万"）
+    }
+    /// 年替わりの幕の所持金（number_display_audit_1108_v0 #2）：借金は −¥、丸めで繰り上がっても「10.0万」にしない
+    func testYearTurnCompactYen() {
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(-3_000), "−¥3,000")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(-150_000), "−¥15万")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(99_999), "¥10万")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(25_000), "¥2.5万")
+        XCTAssertEqual(YoseYearTurnCurtainView.compactYen(9_999), "¥9,999")
     }
     func testYenTextNegative() {
         XCTAssertEqual(Yen.text(-912000), "−¥912,000")

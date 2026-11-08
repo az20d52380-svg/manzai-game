@@ -35,7 +35,7 @@ enum WeekHint {
 
     static func line(_ i: Input) -> String? {
         // 【候補・判断のまとめ #4 案B】お金と体力の警告を先頭に（借金・ネタ0本・撮影の知らせに埋もれない）
-        if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費\(i.livingCost / 10_000)万円。所持金が足りない。" }
+        if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費\(Yen.man(i.livingCost))円。所持金が足りない。" }
         if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
         if i.stamina < injuryWarn { return "谷口：無理すると倒れるよ。" }
         if i.money < 0 { return "所持金はマイナス。今月の家賃のめどが立っていない。" }   // 借金の週は地の文で（谷口の台詞は出さない）
@@ -48,7 +48,7 @@ enum WeekHint {
             return "今週は撮影の仕事で、稽古には出られない。"
         }
         if i.netaCount == 0, !dedupTop { return "まだネタがない。まずはネタを書こう。" }
-        if i.livingInTwoWeeks, i.money < i.livingCost * 2 { return "再来週は月末の支払い（家賃など）\(i.livingCost / 10_000)万円。" }   // 払っても1か月分以上残るなら予告しない（毎年同じ警告で緊急度が合わない＝playtest_v15 #5）
+        if i.livingInTwoWeeks, i.money < i.livingCost * 2 { return "再来週は月末の支払い（家賃など）\(Yen.man(i.livingCost))円。" }   // 払っても1か月分以上残るなら予告しない（毎年同じ警告で緊急度が合わない＝playtest_v15 #5）
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
         return nil
