@@ -145,7 +145,7 @@ struct CalendarView: View {
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).multilineTextAlignment(.center)
             // 去年まで朱だった週が判子に変わる理由が画面に無かった（code_review_1108 指摘2・表示だけ）
-            Text("出られなかった大会の週は塗りません")
+            Text("過ぎた週のうち、出られなかった大会は塗りません")   // これからの大会は塗る＝条件を文に（playtest_y9／female_y3 の中）
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(1).minimumScaleFactor(0.8)
         }
