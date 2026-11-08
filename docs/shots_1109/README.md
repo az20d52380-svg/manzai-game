@@ -7,7 +7,7 @@
 | C-3 | claude/final-year-history-cand | MZ_UI=yearend MZ_YEARS=14 MZ_CARE=1 | c3_yearend_before.png | c3_yearend_after.png | 写る | 最終年は「これまでの頂グランプリ」が上に来て、年ごとの行が見える |
 | C-6 | claude/partner-action-name-cand | MZ_UI=week MZ_WEEK=rest | c6_rest_menu_before.png | c6_rest_menu_after.png | 写る | 「相方と過ごす」→「相方とネタの話をする」 |
 | C-9 | claude/hana-loss-line-cand | MZ_UI=hana_result MZ_PASS=0 | c9_hana_loss_before.png | c9_hana_loss_after.png | 写る | THE HANA 1回戦で落ちた時に谷口の「……次、いこう」の札が増える |
-| C-19 | claude/combi-name-verbatim-cand | MZ_UI=week MZ_COMBI=谷口バンド MZ_NAMES=俺,佐藤 | - | - | 写らない | 週画面にコンビ名が出ず差が見えない（コンビ名が出る画面へのフックが無い）ので削除 |
+| C-19 | claude/combi-name-verbatim-cand | MZ_UI=calendar MZ_COMBI=谷口バンド MZ_NAMES=俺,佐藤 | c19_combi_name_before.png | c19_combi_name_after.png | 写る | 日程表の見出しのコンビ名：前は相方名に置き換わって「佐藤バンド」、後は入力どおり「谷口バンド」（11/09 親が撮り直し） |
 | C-24 | （既存） | - | c24_offer_stamina_note.png | - | - | 既存 |
 | C-25 | （既存） | - | c25_calendar_gp_paint.png | - | - | 既存 |
 
