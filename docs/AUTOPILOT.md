@@ -41,6 +41,7 @@
 - アプリの GameSession（SaveData）を変えた時も `cd GameCore && swift test` を回す（SaveDataConventionTests がアプリのソースを読む＝10/19 に `Int? = nil` で赤にした）。
 - 定期の回のシミュレータ：タップ操作は許可されていない＝`simctl` の起動・撮影と目視フックだけを使う。別の手段（osascript 等）で操作しない。
 - テストが「失敗0なのに TEST FAILED（signal kill）」の時（11/08）：まず `ps aux | grep -E "xcodebuild|refresh_candidates"` で同じ iPhone 17 を使う別のセッションを確かめる（refresh_candidates.sh は一時フォルダで動くので git status には出ない）。
+- 漏れ点検の常駐メモリは**必ず iPhone 17 の UDID でプロセスを絞る**（`pgrep -f "Devices/E5D11233-FE99-429F-A55C-8B0FA5793568/.*ManzaiGame.app/ManzaiGame"`）。オーナーの 17 Pro / Pro Max でも ManzaiGame が動いていることがあり、名前だけの pgrep はそちらを拾う（11/09 に発覚・それより前の soak のメモリ値も同じ取り違えの恐れ）。
 - 漏れ点検（11/08〜）：soak は**6分以上**回す（3分では 11/08 の落ちる不具合を拾えなかった）。落ちたら `~/Library/Logs/DiagnosticReports/ManzaiGame-*.ips` の triggered スレッドを読む。SwiftUI の `ForEach(0..<xs.count)`＋`xs[i]` は、xs が減る画面で範囲外になる＝要素ごと渡す。
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
