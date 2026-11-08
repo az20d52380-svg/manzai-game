@@ -205,6 +205,8 @@ BRANCH_SCRIPTS = [
     ("王者シード(2年目・優勝)・王者ライン上書き(3年目・不通過)", 424243, [(False, None), (True, -999.0), (True, 999.0)]),
     # THE HANA（女性コンビ・11/02 規律A 段3）: 3年目 1回戦通過→2回戦敗退（準決勝に出ない）・4年目 1回戦→2回戦通過→準決勝敗退
     ("THE HANA（女性コンビ）", 24, [(False, None)] * 4, True),
+    # THE HANA の決勝（女性コンビ・6年目に準決勝を通って決勝で敗退＝決勝の段まで Python と Swift を突き合わせる・code_review_1108f 中1）
+    ("THE HANA 決勝（女性コンビ）", 165, [(False, None)] * 6, True),
 ]
 
 def run_branch_scripts():
