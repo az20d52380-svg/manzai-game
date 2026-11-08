@@ -1208,6 +1208,9 @@ final class GameSession {
 
     /// 中断セーブの全内容。runner のスナップショットに加え、UI層のイベント進行フラグを持たないと
     /// 復帰後に一発化イベントが再発火する（didFire系/fired集合/uiEventRng が本体）。
+    /// 体調ダウンの知らせの文（大会の画面と週の画面の2か所で出す＝1か所にまとめる・11/08 自走の重複点検）
+    static let injuryNoticeText = "無理がたたって、体を壊した。しばらく療養で動けなかった。その間のバイト代は入らない。体力が低い時の稽古やキツいバイトは、体を壊しやすい。"
+
     struct SaveData: Codable {
         var runner: WeekRunnerSnapshot<SplitMix64>
         var phase: WeekRunner<SplitMix64>.Phase
