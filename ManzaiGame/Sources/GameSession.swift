@@ -1943,3 +1943,10 @@ extension KeyedDecodingContainer {
         try decodeIfPresent(String.self, forKey: key).flatMap(ChoiceEventKind.init(rawValue:))
     }
 }
+
+extension KeyedDecodingContainer {
+    /// 日程の印（categoryLog）も同じ：知らない種別の週だけ捨てる（書き出しの形 {"週": "種別"} は同じ）。
+    func decode(_ type: [Int: BandCategory].Type, forKey key: Key) throws -> [Int: BandCategory] {
+        try decode([Int: String].self, forKey: key).compactMapValues(BandCategory.init(rawValue:))
+    }
+}

@@ -131,7 +131,8 @@
 153. [ ] （11/08 昼 追記：候補ブランチ側で突き合わせ検査を40本へ広げた b4c7c960＝効果120・発火66 一致・不一致0。本体を取り込み済み・GameCore 457 green）（11/08 定期・判断が要る）候補 claude/late-events-cand（e1dc9dca）：枠と新イベント40本。効果を下げないと優勝 20.1%（decision_brief_2026-11-08 A-1）。A-4 の基準が決まってから調整して入れる。N17〜N20 の条件の解釈は仮（候補内の文書）。
 151. [ ] （11/08 定期・判断が要る軽微）衝突する古い候補3本（the-hana 2本・vitalbar-numberpop）を消すか（candidates_check_1108 §2）。
 152. [済 11/08 定期] アプリ本体を直接回して帯を測る＝app_band_direct_1108（ローテ 優勝 3.7→7.0%・決勝 62→78%・向きは Python と同じ。大きさは未確定）。
-154. [ ] （11/08 定期・材料 docs/save_compat_audit_1108_v0.md・判断が要る軽微）セーブが読めなかった時：今は `manzai.save.v1.broken` に1枠だけ退避して黙って新規（戻す処理なし・2回目で上書き・周回メタは無言で空）。①今のまま ②一言出す ③退避から戻すボタン。BandCategory／Skill の未知の値は続き39 と同じ形で直せる（判断不要＝次の回で）。
+154. [ ] （11/08 定期・材料 docs/save_compat_audit_1108_v0.md・判断が要る軽微）セーブが読めなかった時：今は `manzai.save.v1.broken` に1枠だけ退避して黙って新規（戻す処理なし・2回目で上書き・周回メタは無言で空）。①今のまま ②一言出す ③退避から戻すボタン。BandCategory／Skill の未知の値は続き40 で直した。ネタの型 NetaKata／NetaLength の未知の値は「そのネタを捨てる／既定の型に寄せる」の選び方が要る（今は全体が読めない）。
+155. [済 11/08 定期・続き43＝直す所なし：開演の儀の onDone は使う2か所とも1回きりの守り（ceremonyDone の代入・beginReveal の守り）／能力アップは confirmFinished で二重なし／借金の知らせは debtNotice・phase の守りで積まれても1回／名前・形の決定の0.3〜0.45秒の窓は戻る操作が間に合わない幅＝今は直さない／ランクアップは DEBUG のみ] （11/08 定期・材料 docs/delayed_callback_audit_1108_v0.md の条件付き8・判断不要なら直す）閉じ方次第で onDismiss／onDone の二重呼び出し・他画面での通知表示（例 WeekMainView:327 の2秒後の借金の知らせ）。1件ずつ実際に起きるかをコードで確かめ、起きる物だけ守りを足す。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -189,6 +190,10 @@
 - 11/08 定期 済（昼・続き37）：強制アンラップ・0除算・Int 変換で落ちる所の静的点検（sonnet・unwrap_crash_audit_1108_v0）＝確実0・条件付き3（TournamentResultView:52 は添字点検と同件／YearResultView:384,399 の Int(fame) に isFinite の守りなし／セーブ改ざん経由の Int 変換群）＝どれも通常プレイでは届かないので今は直さない。
 - 11/08 定期 済（昼・続き38）：点検の1本 全 green（GameCore 449・同期80/80・効果62・発火26・アプリ 368）／続き37 の YearResultView:384,399 の Int(fame) に DialogueData と同じ isFinite の守りを足した（有限なら値は同じ＝見た目不変・ビルド OK）。
 - 11/08 定期 済（昼・続き39）：セーブ読み込み互換の静的点検（sonnet・save_compat_audit_1108_v0）＝高1・中は BandCategory／Skill の同じ形と読めない時の退避の扱い。高1（選択イベントの種別の未知の値でセーブ全体が新規に戻る）を直した＝未知の値だけ捨てる復号（GameSession.swift 末尾・書き出しの形は不変）＋テスト2本（固定 JSON の数の一致で case 削除は今も赤・未知の値の混入で読める）＝アプリ 369 green。
+- 11/08 定期 済（昼・続き40）：同じ形の中2件（特技 Skill・日程の印 BandCategory）も未知の値だけ捨てる復号に（Skill.swift／GameSession.swift 末尾・書き出しの形は不変・golden 不変）＋テスト（固定 JSON の数の一致で case 削除は今も赤）＝GameCore 450・アプリ 369 green・同期80/80。キュー154 の残りは退避の扱い（判断）だけ。
+- 11/08 定期 済（昼・続き41）：記録系3型（年の記録 YearRecord・戦績 CareerRecords・エンディング記録 EndingRecord）の非 Optional を凍結する規約テスト（SaveDataConventionTests・わざと1項目足すと赤を確認）＝GameCore 451。
+- 11/08 定期 済（昼・続き42）：画面を閉じた後に遅れて走る処理の静的点検（sonnet・delayed_callback_audit_1108_v0）＝実害1・条件付き8。実害1（優勝演出で途中に「表彰式へ進む」を押すと、消えた画面から音と触覚が遅れて鳴る＝YoseChampionCelebrationView）を直した＝進む・消えた時に isGone を立て、遅れの段は何もしない（ビルド OK・見た目不変）。条件付き8 はキュー155。
+- 11/08 定期 済（昼・続き44）：セーブ復号を変えた後の自己点検（本体 acb83123）＝29行・DONE・失敗0（古いセーブの通し・選択直後の保存を含む）。1回目は sim の起動直後で5分打ち切り＝2回目で完走（道具の既知の癖）。保存キーの綴り（UserDefaults／AppStorage 18個）の食い違いも0。
 - 11/08 定期 済（昼・続き15）：実測の鏡像（sim_career の EVENTS_APP 用の確定発火）に「THE HANA 動画審査の前夜は出さない」節を足し、アプリと揃える（golden 不変・GameCore 449 green・女コンビ EVENTS_APP で60本回ることを確認）。
 - 11/08 定期 済（昼・続き14）：イベントの発火条件の突き合わせ tools/check_event_trigger_parity.py（週次25種＋確定発火の連鎖＝26一致・不一致0・閾値を6か所ずらすと6件 NG）→ run_checks.sh に組み込み。既知の差1（THE HANA 動画審査の前夜を出さない節は Python 鏡像に無い＝女コンビの実測だけに効く）は数えない。
 - 11/08 定期 済（昼・続き13）：候補ブランチの取り込み直しを道具に tools/refresh_candidates.sh（§常設に使い方）。
