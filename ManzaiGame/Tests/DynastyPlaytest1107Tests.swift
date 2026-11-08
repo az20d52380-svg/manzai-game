@@ -63,8 +63,7 @@ final class DynastyPlaytest1107Tests: IsolatedStoreTestCase {
         var champYears: [[Int]] = []
         for seed in [1, 2, 3, 4, 5, 6] {
             GameSession.store.removeObject(forKey: "manzai.save.v1")
-            let s = GameSession(startState: GameSession.debugMaxedState())
-            var st = s.state; st.money = 500_000; _ = st
+            let s = GameSession(seed: UInt64(seed), startState: GameSession.debugMaxedState())   // seed を渡す（11/07 夜まで渡し忘れ＝6回とも同じ走行だった）
             let r = playOn(s)
             XCTAssertNil(r, "seed \(seed) \(r ?? "")")
             check(s, "seed\(seed)")
@@ -75,12 +74,24 @@ final class DynastyPlaytest1107Tests: IsolatedStoreTestCase {
     }
 
     func testDefaultStateContinueTo15() {
-        for _ in 0..<3 {
-            let s = GameSession(startState: GameState(config: GameConfig()))
+        for seed in [11, 12, 13] {
+            let s = GameSession(seed: UInt64(seed), startState: GameState(config: GameConfig()))
             let r = playOn(s)
             XCTAssertNil(r, r ?? "")
             check(s, "default")
-            dynLog(" default y=\(s.year) champ=\(s.yearHistory.filter(\.champion).map(\.year)) bank=\(s.outcome?.bankrupt ?? false)")
+            dynLog(" default seed=\(seed) y=\(s.year) champ=\(s.yearHistory.filter(\.champion).map(\.year)) bank=\(s.outcome?.bankrupt ?? false)")
+        }
+    }
+
+    /// 女コンビ：頂GP に加えて THE HANA のある年を、優勝後も続けて区切りまで通す
+    func testFemaleComboContinueTo15() {
+        for seed in [21, 22, 23] {
+            GameSession.store.removeObject(forKey: "manzai.save.v1")
+            let s = GameSession(seed: UInt64(seed), startState: GameSession.debugMaxedState(), comboKind: .femaleFemale)
+            let r = playOn(s)
+            XCTAssertNil(r, "female seed \(seed) \(r ?? "")")
+            check(s, "female\(seed)")
+            dynLog(" female seed=\(seed) y=\(s.year) champ=\(s.yearHistory.filter(\.champion).map(\.year)) money=\(s.state.money)")
         }
     }
 }
