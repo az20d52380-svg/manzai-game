@@ -400,7 +400,7 @@ enum Yen {
     static func text(_ v: Int) -> String { v < 0 ? "−¥\((-v).formatted())" : "¥\(v.formatted())" }
     /// 万円表記（小数1桁・整数なら小数なし）。例 25000→"2.5万"、150000→"15万"。賞金・費用ピルで共用
     static func man(_ v: Int) -> String {
-        let m = Double(v) / 10000
+        let m = (Double(v) / 1000).rounded() / 10   // 小数1桁に丸めてから整数かを見る（99,999→"10万"・number_display_audit_1108_v0 #4）
         return (m == m.rounded() ? String(Int(m)) : String(format: "%.1f", m)) + "万"
     }
 }
