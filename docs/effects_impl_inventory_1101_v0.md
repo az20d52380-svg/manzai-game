@@ -46,3 +46,11 @@
 3. 能力アップの行フラッシュ＋確定時 yoseLightStreak（#4,#5）：育成の一番楽しい画面なのに部品が未接続。
 4. お金・体力・知名度の増減フロート札と体力ゲージ演出（#7,#8,#9）：毎週の消費・収入が視線に出ず手応えが薄い。
 5. 判子の叩きつけ＋yoseShake／ウケの波（#4位,#13）：結果画面の判子が静止気味で、本番中の客席反応も無い。
+
+## 訂正（11/01 親が実コードで確認）
+この棚卸しは設計書の部品名（YoseFX・yoseLightStreak 等）で grep したため、**別名で作られた既存の演出を見落としている**。上位5つのうち実際に足りないのは②（の一部）だけ。
+- ①ボタン：`YoseButtonStyle` は押下で rigid 振動あり（YoseComponents.swift の onChange → YoseHaptic.press）・音なし。`PressableStyle`（Theme.swift）は音あり・振動なし（Haptics の方針「閲覧操作は無振動」）。→ 寄席ボタンに音を足す候補＝claude/button-press-se-cand。
+- ②数字の跳ね：実力の札（YosePowerBadge）は `yoseNumberBounce` 済み。黒帯の体力・知名度・所持金だけ無かった → 候補＝claude/vitalbar-numberpop-cand。
+- ③能力アップ：[+] の行フラッシュと数字の跳ね（AbilityUpView.plusTap の flash/bumped）は実装済み。「確定」は押すと画面が閉じるので、斜光を足しても見えない＝不要。
+- ⑤判子：結果画面の判は叩きつけ＋画面揺れ＋フラッシュ（TournamentResultView の slamFire → Juice.swift の screenShake）で実装済み。判の前にウケの波形の木札もある。
+- 残りで本当に無いもの：お金・体力の「+¥／−¥」のフロート小札（§2 #7・#8）。足すかは黒帯の跳ね（②）の体感を見てから。

@@ -37,6 +37,8 @@ public struct YoseChampionCelebrationView: View {
     @State private var shimmerTrigger: Int = 0
     @State private var displayedPrize: Int = 0
     @State private var isCompleted: Bool = false
+    /// 進むボタン・画面が消えた後に、遅れて走る段の音と触覚を出さない（delayed_callback_audit_1108_v0）
+    @State private var isGone: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -173,6 +175,7 @@ public struct YoseChampionCelebrationView: View {
         .onAppear {
             runCelebrationTimeline()
         }
+        .onDisappear { isGone = true }
     }
 
     // ========================================================================
@@ -473,7 +476,7 @@ public struct YoseChampionCelebrationView: View {
 
         // 0.28s: Phase 1（白金フラッシュ＋キャノン砲発射＋大看板出現）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
-            guard !isCompleted else { return }
+            guard !isCompleted, !isGone else { return }
             flashOpacity = 0.92
             withAnimation(Theme.Motion.r(.easeOut(duration: 0.35))) {
                 flashOpacity = 0.0
@@ -487,7 +490,7 @@ public struct YoseChampionCelebrationView: View {
 
         // 0.42s: Phase 2（『優』叩きつけ）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
-            guard !isCompleted else { return }
+            guard !isCompleted, !isGone else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.56))) {
                 phase = 2
             }
@@ -496,7 +499,7 @@ public struct YoseChampionCelebrationView: View {
 
         // 0.50s: Phase 3（『勝』叩きつけ＋画面縦大揺れ＋金火花バースト）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) {
-            guard !isCompleted else { return }
+            guard !isCompleted, !isGone else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.54))) {
                 phase = 3
             }
@@ -507,7 +510,7 @@ public struct YoseChampionCelebrationView: View {
 
         // 0.78s: Phase 4（コンビ名めくり＋朱印『日本一』＋斜光シマー）
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.78) {
-            guard !isCompleted else { return }
+            guard !isCompleted, !isGone else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.26, dampingFraction: 0.68))) {
                 phase = 4
             }
@@ -518,7 +521,7 @@ public struct YoseChampionCelebrationView: View {
 
         // 1.15s: Phase 5（賞金木札カウントアップ＋相方セリフ＋完了状態）
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {
-            guard !isCompleted else { return }
+            guard !isCompleted, !isGone else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.32, dampingFraction: 0.78))) {
                 phase = 5
                 displayedPrize = prizeAmountYen
@@ -789,7 +792,7 @@ private struct ChampionStageBackdropCanvas: View {
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }
@@ -894,7 +897,7 @@ private struct ChampionGoldenHaloCanvas: View {
         }
         .task {
             let rest = championHoldSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }
@@ -1002,7 +1005,7 @@ private struct ChampionCannonAndConfettiCanvas: View {
         }
         .task {
             let rest = championHoldSeconds + championSettleSeconds - Date().timeIntervalSince(startTime)
-            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, rest) * 1_000_000_000))   // 実時間のまま（描画の時刻が実時間＝縮めると途中で固まる）
             frozen = true
         }
     }

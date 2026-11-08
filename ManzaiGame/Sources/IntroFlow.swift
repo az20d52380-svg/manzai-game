@@ -245,13 +245,18 @@ private struct RecallNameBoard: View {
     let name: String
     let band: Color
     let height: CGFloat
+    /// 名前が長いと縦の札からはみ出す（6字×26pt≒200pt＞枠150）ので、字数で縮める（long_name_layout_audit_1108_v0）。3字までは今のまま26pt（枠150なら4字は約22pt＝code_review_1108h 低1）
+    private var charSize: CGFloat {
+        let n = CGFloat(max(1, Names.show(name).count))
+        return min(26, ((height - 14 - 12) / n - 2) / 1.3)
+    }
     var body: some View {
         VStack(spacing: 0) {
             Rectangle().fill(band).frame(height: 14)
                 .overlay(Rectangle().fill(YoseColor.kin).frame(width: 14, height: 2))
             VStack(spacing: 2) {
                 ForEach(Array(Names.show(name).enumerated()), id: \.offset) { _, ch in
-                    Text(String(ch)).font(YoseFont.mincho(26)).foregroundStyle(YoseColor.sumi)
+                    Text(String(ch)).font(YoseFont.mincho(charSize)).foregroundStyle(YoseColor.sumi)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -356,6 +361,15 @@ struct S1TitleView: View {
                 Spacer(minLength: 12)
                 stageTableau
                 Spacer(minLength: 12)
+                if let lines = MetaBook.bannerLines(points: MetaBook.points) {   // 周の始め：集めた分で増えた物（点0＝1周目は出さない）
+                    VStack(spacing: 3) {
+                        ForEach(lines, id: \.self) { Text($0).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(.white) }
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 8).frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.62))   // 縞背景に埋もれない濃い帯（v11b #15）
+                    .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 10)
+                }
                 Button(action: onStart) {
                     YoseOutlinedText(text: "はじめる", font: YoseFont.gothic(22, weight: .black),
                                      fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 1.5, dropShadowY: 1.5)
@@ -399,7 +413,7 @@ struct S1TitleView: View {
     /// 寄席大看板（黒漆＋金枠＋朱の内枠）
     private var signboard: some View {
         VStack(spacing: 8) {
-            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(48, weight: .black),
+            YoseOutlinedText(text: AppInfo.displayName, font: YoseFont.gothic(40, weight: .black),
                              fill: YoseColor.kinari, outlineColor: YoseColor.sumi, outlineWidth: 2.5, dropShadowY: 3)
             Text("――漫才師、育成。").font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinBright)
         }
@@ -491,6 +505,8 @@ struct NameEntryView: View {
     var onDecide: (String, String?, String?, MeetingKind) -> Void   // コンビ名・自分の名前・相方の名前（空欄＝nil）・出会い方
     @State private var name = ""
     @State private var meeting: MeetingKind = .highSchool   // 出会い方（既定＝①高校の同級生・表示専用）
+    @State private var meetingAuto = false   // 「おまかせ」＝決める時に4つから1つ選ぶ（表示専用・ゲームの乱数は使わない）
+    private var meetingLabel: String { meetingAuto ? "おまかせ" : meeting.label }
     @State private var myName = ""
     @State private var partnerName = ""
     @State private var inkWet = false
@@ -535,6 +551,7 @@ struct NameEntryView: View {
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
                 Button {
+                    focused = false   // キーボードを閉じつつ同じタップで進める
                     var pick = Self.candidates.randomElement() ?? "なんば亭"
                     if pick == name { pick = Self.candidates.randomElement() ?? pick }
                     withAnimation(Theme.Motion.r(.easeOut(duration: 0.15))) { name = pick }
@@ -641,18 +658,21 @@ struct NameEntryView: View {
     /// 出会い方の選択（結成届の1行・押すと4つから選べる。決めた後の回想がこの型で流れる）
     private var meetingMenu: some View {
         Menu {
-            Picker("出会い方", selection: $meeting) {
-                ForEach(MeetingKind.allCases, id: \.self) { m in Text(m.label).tag(m) }
+            Picker("出会い方", selection: Binding<Int>(
+                get: { meetingAuto ? -1 : (MeetingKind.allCases.firstIndex(of: meeting) ?? 0) },
+                set: { i in if i < 0 { meetingAuto = true } else { meetingAuto = false; meeting = MeetingKind.allCases[i] } })) {
+                ForEach(Array(MeetingKind.allCases.enumerated()), id: \.offset) { i, m in Text(m.label).tag(i) }
+                Text("おまかせ").tag(-1)
             }
         } label: {
             HStack(spacing: 6) {
-                Text(meeting.label).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                Text(meetingLabel).font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
                     .lineLimit(1).minimumScaleFactor(0.6)
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: Font.mzScaled(11), weight: .bold))
                     .foregroundStyle(YoseColor.haiSumi)
             }
         }
-        .accessibilityLabel("出会い方、\(meeting.label)")
+        .accessibilityLabel("出会い方、\(meetingLabel)")
         .accessibilityHint("押すと出会い方を選べる")   // a11y_check_1026 低5
     }
 
@@ -662,13 +682,14 @@ struct NameEntryView: View {
     }
 
     private func decide() {
+        focused = false   // キーボードを閉じつつ同じタップで進める
         guard !decided else { return }
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         decided = true
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.4))) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meeting) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meetingAuto ? (MeetingKind.allCases.randomElement() ?? .highSchool) : meeting) }
     }
 }
 
@@ -749,7 +770,7 @@ struct IntroFlowView: View {
     @State private var partnerName: String? = nil
     @State private var kind: ComboKind = IntroFlowView.initialKind
     @State private var meeting: MeetingKind = IntroFlowView.initialMeeting
-    private enum Stage { case title, comboKind, nameEntry, reminiscence, notif }
+    private enum Stage { case title, comboKind, nameEntry, reminiscence, firstStage, notif }
 
     private func finish() { onComplete(name, myName, partnerName, kind, meeting) }
 
@@ -780,6 +801,10 @@ struct IntroFlowView: View {
             return .nameEntry
         }
         if ProcessInfo.processInfo.environment["MZ_UI"] == "combokind" { return .comboKind }   // 目視用: コンビの形を選ぶ画面へ直行
+        if let n = ProcessInfo.processInfo.environment["MZ_NAMES"] {   // 目視用: MZ_NAMES=自分,相方 で長い名前の札を見る（long_name_layout_audit_1108_v0）
+            let p = n.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+            Names.set(me: p.first, partner: p.count > 1 ? p[1] : nil)
+        }
         if MeetingKind.debugForced != nil { return .reminiscence }   // 目視用: MZ_MEET=1〜4 で回想をその型で直接流す
         #endif
         return .title
@@ -813,8 +838,16 @@ struct IntroFlowView: View {
             case .reminiscence:
                 ReminiscencePlayer(
                     cards: meeting.cards,
-                    onComplete: { Self.markIntroSeen(); finish() },
+                    onComplete: {
+                        // 1周目だけ初舞台へ（2周目以降は回想の「とばす」と同じく飛ばす）
+                        let first = !Self.hasSeenIntro
+                        Self.markIntroSeen()
+                        if first { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = .firstStage } } else { finish() }
+                    },
                     onSkip: Self.hasSeenIntro ? { finish() } : nil)
+                    .transition(.opacity)
+            case .firstStage:
+                FirstStageView(combiName: name) { finish() }
                     .transition(.opacity)
             case .notif:
                 // 通知機能が1本も実装されていない間は許諾を求めない（初週前の摩擦だけが残るため導線から外す）。
