@@ -67,7 +67,7 @@ extension ChoiceEventTable {
                 ChoiceEventChoice(id: "A", effects: [.ability(.メンタル, 1), .ability(.発想, 1), .stamina(-10), .money(-2_000)], gate: { $0.money >= 2_000 }),
                 ChoiceEventChoice(id: "B", effects: [.ability(.センス, 1), .ability(.メンタル, -1)]),
             ]
-        case .lateE08:  // E8 同期のコンビ再結成
+        case .lateE08:  // E8 同期の新しいコンビ
             return [
                 ChoiceEventChoice(id: "A", effects: [.fame(1), .stamina(-10)]),
                 ChoiceEventChoice(id: "B", effects: [.stamina(5), .ability(.メンタル, 1)]),

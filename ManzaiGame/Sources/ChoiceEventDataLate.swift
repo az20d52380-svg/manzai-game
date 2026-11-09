@@ -83,7 +83,7 @@ extension ChoiceEventData {
         title: "後輩に抜かれる",
         setup: [
             Advice(name: nil, text: "楽屋の廊下。夜。"),
-            Advice(name: "谷口", text: "村瀬たち、今日の大会で決勝に進んだって"),
+            Advice(name: "谷口", text: "村瀬たち、決勝に進んだって。今夜、配信があるみたい"),
             Advice(name: "俺", text: "そっか。早いね"),
             Advice(name: "谷口", text: "連絡、してみる？"),
             Advice(name: "俺", text: "どうしようか"),
@@ -135,9 +135,9 @@ extension ChoiceEventData {
         title: "先輩が辞める",
         setup: [
             Advice(name: nil, text: "事務所の応接室。昼。"),
-            Advice(name: "野々村", text: "来月で、芸人を辞めます"),
+            Advice(name: "野々村", text: "来月で、芸人を辞める"),
             Advice(name: "俺", text: "そうなんですか。突然ですね"),
-            Advice(name: "野々村", text: "家族のことで、決めました"),
+            Advice(name: "野々村", text: "家族のことで、決めた"),
             Advice(name: "野々村", text: "最後に、一言だけ言っておく"),
         ],
         choiceLabels: [
@@ -163,7 +163,7 @@ extension ChoiceEventData {
             Advice(name: nil, text: "アパート。夜。"),
             Advice(name: "母", text: "元気にしてる？ ご飯、食べてる？"),
             Advice(name: "俺", text: "食べてるよ。大丈夫"),
-            Advice(name: "母", text: "たまには帰っておいで。父さんも会いたがってる"),
+            Advice(name: "母", text: "来月、お父さんの誕生日なの。みんなで集まるから帰っておいで"),
             Advice(name: "俺", text: "分かった。考えてみる"),
         ],
         choiceLabels: [
@@ -189,7 +189,7 @@ extension ChoiceEventData {
             Advice(name: nil, text: "病院の待合室。朝。"),
             Advice(name: "父", text: "わざわざ来なくてよかったのに"),
             Advice(name: "俺", text: "近くまで来たから。具合はどう"),
-            Advice(name: "父", text: "検査は問題なかった。心配をかけたな"),
+            Advice(name: "父", text: "たぶん大丈夫だ。あとは結果を聞くだけだ"),
             Advice(name: "俺", text: "それならよかった"),
         ],
         choiceLabels: [
@@ -234,9 +234,9 @@ extension ChoiceEventData {
         ]
     )
 
-    // MARK: E8 同期のコンビ再結成
+    // MARK: E8 同期の新しいコンビ
     private static let lateE08 = ChoiceEventText(
-        title: "同期のコンビ再結成",
+        title: "同期の新しいコンビ",
         setup: [
             Advice(name: nil, text: "劇場のロビー。昼。"),
             Advice(name: "石黒", text: "新しい相方が見つかった。来月から出る"),
@@ -268,7 +268,7 @@ extension ChoiceEventData {
             Advice(name: "岡部", text: "番組のコーナーに出てもらえませんか。三分です"),
             Advice(name: "俺", text: "ありがとうございます。何をすればいいですか"),
             Advice(name: "岡部", text: "紹介VTRの後に、一言だけです"),
-            Advice(name: "谷口", text: "一言でも、出られるなら"),
+            Advice(name: "谷口", text: "一言でも出たいね。その日、劇場のライブと重なってるけど"),
         ],
         choiceLabels: [
             "A": "引き受ける",
@@ -424,7 +424,7 @@ extension ChoiceEventData {
             Advice(name: "白井", text: "今日もよかったよ。いつも見てる"),
             Advice(name: "俺", text: "ありがとうございます。いつも来てくれますね"),
             Advice(name: "白井", text: "最近は若い人が増えたね。みんなスマホで撮ってる"),
-            Advice(name: "谷口", text: "覚えてもらえているなら、嬉しいね"),
+            Advice(name: "谷口", text: "若い人にも見てもらえてるなら、嬉しいね"),
         ],
         choiceLabels: [
             "A": "若い客にも声をかける",
@@ -447,9 +447,9 @@ extension ChoiceEventData {
         title: "中堅の肩書き",
         setup: [
             Advice(name: nil, text: "事務所の事務室。昼。"),
-            Advice(name: "中条", text: "今月から、二人は『中堅』の扱いになる"),
+            Advice(name: "中条", text: "今月から、二人は中堅の扱いになるの"),
             Advice(name: "俺", text: "そうですか。自分ではまだ実感がないです"),
-            Advice(name: "中条", text: "後輩に教える仕事も増える。覚えておいてくれ"),
+            Advice(name: "中条", text: "後輩の勉強会もお願いしたいの。少しだけど手当も出るよ"),
             Advice(name: "谷口", text: "責任が重くなるね"),
         ],
         choiceLabels: [
@@ -458,11 +458,11 @@ extension ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "中条", text: "助かる。月に一度だけだ"),
+                Advice(name: "中条", text: "助かる。月に一度だけだからね"),
                 Advice(name: "俺", text: "分かりました"),
             ],
             "B": [
-                Advice(name: "中条", text: "分かった。無理は言わない"),
+                Advice(name: "中条", text: "分かった。無理には頼まないよ"),
                 Advice(name: "俺", text: "すみません"),
             ],
         ]
@@ -473,7 +473,7 @@ extension ChoiceEventData {
         title: "長い休みの提案",
         setup: [
             Advice(name: nil, text: "稽古場。朝。"),
-            Advice(name: "谷口", text: "ずっと走ってきたよね。三日だけ休まない？"),
+            Advice(name: "谷口", text: "三日だけ休まない？ 近くの温泉に行こう"),
             Advice(name: "俺", text: "休むの？ 大会が近いんじゃない？"),
             Advice(name: "谷口", text: "次まで時間はある。体を戻したい"),
             Advice(name: "俺", text: "そうだね。考えておく"),
@@ -484,7 +484,7 @@ extension ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "谷口", text: "ありがとう。体を戻すよ"),
+                Advice(name: "谷口", text: "ありがとう。宿、取っておくね"),
                 Advice(name: "俺", text: "分かった。稽古場は閉めておく"),
             ],
             "B": [
@@ -499,9 +499,9 @@ extension ChoiceEventData {
         title: "事務所の新しい契約",
         setup: [
             Advice(name: nil, text: "事務所の応接室。昼。"),
-            Advice(name: "中条", text: "契約の更新があります。条件が少し変わります"),
+            Advice(name: "中条", text: "契約の更新があるの。条件が少し変わるよ"),
             Advice(name: "俺", text: "どう変わるんですか"),
-            Advice(name: "中条", text: "ギャラの割合が上がる代わりに、営業の本数が増えます"),
+            Advice(name: "中条", text: "ギャラの割合が上がる代わりに、営業の本数が増えるの"),
             Advice(name: "谷口", text: "悪くない話だね"),
         ],
         choiceLabels: [
@@ -510,11 +510,11 @@ extension ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "中条", text: "ありがとう。来月から始めます"),
+                Advice(name: "中条", text: "ありがとう。来月からお願いね"),
                 Advice(name: "俺", text: "お願いします"),
             ],
             "B": [
-                Advice(name: "中条", text: "分かった。そのまま続けよう"),
+                Advice(name: "中条", text: "分かった。今のままにしておくね"),
                 Advice(name: "俺", text: "ありがとうございます"),
             ],
         ]
