@@ -356,18 +356,19 @@ struct WeekMainView: View {
                 if openCat == nil, let o = offerCard {
                     VStack(spacing: 4) {
                         if offers.count > 1 { offerPicker }   // キュー96：知名度が上がると札が増える＝横に並べて1つ選ぶ（選ばなければ他の行動＝断る）
-                        #if DEBUG
-                        if ProcessInfo.processInfo.environment["MZ_TVTIRED"] != nil {   // キュー112 の見本：テレビ慣れを状態名で小さく出す（数字・％なし）。本編には出さない
+                        // 【候補・判断のまとめ #5 案A】テレビ慣れを状態名で小さく出す（数字・％なし）。慣れていない時は出さない
+                        if session.offerFatigueLevel > 0 {
                             HStack(spacing: 6) {
-                                Text("テレビ慣れ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                                Text(session.offerFatigueLevel >= 2 ? "テレビ慣れ・強い" : "テレビ慣れ・すこし").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                                     .padding(.horizontal, 6).padding(.vertical, 2).background(YoseColor.shu)
-                                Text(session.offerFatigued ? "続けて受けると、センスと表現が少し鈍る" : "（今は平気）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                                Text(session.offerFatigueLevel >= 2 ? "受けると、センスと表現が少し鈍る" : "続けて受けると、センスと表現が鈍りはじめる").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
+                                    .lineLimit(2).minimumScaleFactor(0.8)
                                 Spacer(minLength: 0)
                             }
                             .padding(.horizontal, 8).padding(.vertical, 4).background(YoseColor.kinari)
                             .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1))
+                            .accessibilityElement(children: .combine)
                         }
-                        #endif
                         actionCard(o, compact: true, dashed: false, row: true)   // 全幅の2段（名前／効果と収入を1行）＝帯を低くして声と人物を押し上げない
                     }
                         .fixedSize(horizontal: false, vertical: true)

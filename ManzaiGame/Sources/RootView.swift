@@ -164,6 +164,8 @@ struct RootView: View {
                 // オファーの札の目視（C-24 の「体力0になる」・キュー137 の説明の二重）: 知名度60（札3枚）で、標準のバイトを続けて体力を減らしながらオファーの来る週まで進める。
                 // MZ_STAMINA=<n>：その体力以下でオファーが来た週で止める（既定 25・100 なら最初のオファーで止める）。体力は年初に100へ戻るので開始状態では決めない。RNG は通常の週送りと同じ（golden 非対象）
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 60
+                // MZ_OFFERWEEKS=<n>：テレビ慣れの目視用に、受けたオファーの週を n 個積む（先の週＝窓から落ちない・3＝すこし／4＝強い）
+                if let n = Int(ProcessInfo.processInfo.environment["MZ_OFFERWEEKS"] ?? "") { st.offerWeeks = Array(repeating: 9_999, count: n) }
                 session = GameSession(startState: st)
                 let limit = Double(ProcessInfo.processInfo.environment["MZ_STAMINA"] ?? "") ?? 25
                 for _ in 0..<30 {
