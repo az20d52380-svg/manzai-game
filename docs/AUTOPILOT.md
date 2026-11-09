@@ -159,6 +159,7 @@
 253. [済 11/09 夜 定期・9428a854] B・C のまとめの枝が足した文50行を独立採点（opus・docs/bc_bundle_text_independent_score_1109_v0.md）＝○46△4×0。△（yearly-goal の「◯回戦を突破」に大会名なし・youth-notice-y10 の谷口「今年が最後だ」が硬い＝本体の5年目の一言と同じ形・gacha-entry の「今日の札」が何の札か分かりにくい）は直し案だけ。
 254. [済 11/09 夜 定期・2f005558] late-events 候補の文の長い10本を目視（sonnet・docs/visual_late_events_1109_v0.md）＝高0中0低10・切れ/はみ出しなし（最初の画面のみ・選択肢の画面はタップが要るので未）。低の「背景がト書きとずれる」は候補で直した：裏口 E01・出口 E15＝theaterOutside、劇場の事務室・応接室 N01/N03/N09/N16/N17＝楽屋の絵、会場の控室 N04・衣装部屋 N13＝楽屋の絵（全40本を表で照合）。※途中の 8a70e256・ae728914 は office にしてアプリのテスト EventScene1108Tests（ト書きの「劇場」は劇場/外/楽屋の絵だけ許す）で赤＝85301ed9 で直して 403 green。劇場の受付 N20 は受付の絵の札が「稽古場受付」になるので据え置き。病院の待合室 E06 は合う絵が無く office のまま。
 255. [済 11/09 夜 定期・候補 f9da882a・79645e85] invite-variants の△11行を直した（opus・15本書き換え＝A の同じ文5本・B の完全一致3組・SlowMorning の食い違い・「どうする？」締め 11→8。Payday の A は5,000円と合う「割り勘でお願いします」）。GameCore 469・アプリ green。まとめの枝へ反映：text 611ff46f（作り直し）・both 42fe579a・all f692aefc（追い merge・全部 TEST SUCCEEDED を確かめて push）。
+256. [済 11/10 未明 定期・候補 c6bcdbef・6197d177・095450e3・本体 654b7dea] fanreport-plus の△29本を直した（opus・重なり・意味の取りにくさ＋長さ超えの2本を縮めた・古参の前提の件は触らず）。積んだ試し版 fanreport-veteran に取り込み、書き換わった9本を veteranOnly でも新しい文へ（095450e3・469・アプリ green）。再発防止に本体へテスト FanReportKnownOnly1109Tests（knownOnly の写しがどの配列にも無いと赤）。まとめ：text b0a6e881（本体の新テスト込み 404 green）・both b647d3a9・all a2f7981c。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
