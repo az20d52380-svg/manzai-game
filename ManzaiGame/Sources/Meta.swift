@@ -84,6 +84,18 @@ struct CareerRecords: Codable, Equatable {
     var hanaWins: Int? = nil    // THE HANA の通算優勝回数（女コンビだけ・nil＝旧データ）
 }
 
+extension CareerRecords {
+    /// 鍵ごとに読む：欠けた鍵・型の合わない鍵だけ既定値にする（合成の init だと1つ欠けただけで全部が 0 に戻る＝save_compat_audit_1108 案5）
+    init(from decoder: Decoder) throws {
+        enum K: String, CodingKey { case bestStreak, fastestWinYear, totalWins, hanaWins }
+        let c = try decoder.container(keyedBy: K.self)
+        self.init(bestStreak: (try? c.decode(Int.self, forKey: .bestStreak)) ?? 0,
+                  fastestWinYear: (try? c.decodeIfPresent(Int.self, forKey: .fastestWinYear)) ?? nil,
+                  totalWins: (try? c.decode(Int.self, forKey: .totalWins)) ?? 0,
+                  hanaWins: (try? c.decodeIfPresent(Int.self, forKey: .hanaWins)) ?? nil)
+    }
+}
+
 enum TrophyBook {
     static let key = "mz.trophies"
     static let counterKey = "mz.trophyCounters"

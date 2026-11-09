@@ -180,6 +180,12 @@ struct EndingRecord: Codable, Equatable {
     var lastPartnerName: String
 }
 
+/// 1件の読み込みに失敗しても辞書全体は読めるようにする包み（失敗した件は nil）
+private struct LenientRecord: Decodable {
+    let value: EndingRecord?
+    init(from decoder: Decoder) throws { value = try? EndingRecord(from: decoder) }
+}
+
 enum EndingBook {
     static let key = "mz.endingsSeen"
 
@@ -195,9 +201,10 @@ enum EndingBook {
         }
         #endif
         guard let data = GameSession.store.data(forKey: key),
-              let raw = try? JSONDecoder().decode([String: EndingRecord].self, from: data) else { return [:] }
+              let raw = try? JSONDecoder().decode([String: LenientRecord].self, from: data) else { return [:] }
+        // 1件ずつ読む：型の合わない1件だけ捨てる（丸ごと空にすると、次の record() で他の記録を上書きして消す＝save_compat_audit_1108 案5）
         var out: [EndingID: EndingRecord] = [:]
-        for (k, v) in raw { if let id = EndingID(rawValue: k) { out[id] = v } }
+        for (k, v) in raw { if let id = EndingID(rawValue: k), let r = v.value { out[id] = r } }
         return out
     }
 
