@@ -200,6 +200,8 @@
 294. [済 11/10 昼 定期・候補 claude/finals-mc-tri-cand 76cc5ba7→本体取り込み bde37e8f（finals-mc-fix の上）] 決勝の司会の△（「暫定席へどうぞ」→「こちらの席へどうぞ」＝テスト SessionGap1025bTests も）と講評の共有語「オチの締め」→「話の締め」（opus）。469・402 green・golden 80/80。本体を取り込んだ時の採点文書の add/add 衝突は候補側（§5 入り）を残した。残し＝M18/M19・M9・§4。
 295. [済 11/10 昼 定期・まとめの枝 claude/text-all-1110-bundle-cand a3e57030] 今日の文の候補を×も△も全部1本に（11本：text-fix-1110-bundle の10本の中身＋judge-final-tri・finals-mc-tri・text-tri-1110）。make_bundle は finals-mc-tri を JudgeTalk の締めの語で見送り→親が手で解いた（両方の直しを合わせ「話の締め」「元の話に帰る締め」）。GameCore 472・アプリ 402 TEST SUCCEEDED・golden/config 80/80。×だけなら text-fix-1110-bundle、△も入れるならこちら。
 296. [済 11/10 昼 定期] 本体（9adddd8a・目視フック入り）の selftest 29行 DONE。check_candidates＝候補65本すべて本体と衝突なし。
+297. [済 11/10 昼 定期・7080145f・2f3c6c68] 台詞の配列ごとの採点状況（sonnet・docs/dialogue_arrays_score_coverage_1110_v0.md＝記録なし29配列・うち ChoiceEvent 25＝ID で採点済みの物を拾えていない可能性）→ 最大の banterPools（405行）を抜き取り採点（opus・seed=1110 の80行＋10/28 以降の新しい24行・docs/banter_pools_sample_score_1110_v0.md）＝○88△16×0（×率の上限は約3.7%）。全405行の機械点検でも35字超・関西弁・古参前提・ボケの語は0。△は C-20（「ネタ合わせ」等の言葉・候補 outing-v3）が大半。
+298. [ ] （297 の続き）配列の採点状況の次点（senpaiMeishi・stageCrewChairs・writerPostcards・doukiJointLive 各28）を、ChoiceEvent の ID 採点の記録（dialogue_score_events_*）と照らしてから、未採点の物だけ採点。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
