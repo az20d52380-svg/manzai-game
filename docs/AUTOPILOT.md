@@ -15,6 +15,7 @@
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
 - 自己点検（10/19 夜・10/27 から `tools/run_selftest.sh [dd]` の1本でビルド→起動→DONE 待ち→行数と失敗行だけ出す）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
+- 網羅の測り直し（11/09〜）：`tools/run_coverage.sh <dd> [下限%=90]`＝GameCore の行の網羅と0回の領域・アプリの画面以外で下限未満のファイルを要約3行（書き換えなし）。11/09 時点の既知：GameCore の0回5か所は届かない既定値だけ／アプリの一覧は描画の部品（Juice・Stage*・FinalsBroadcastIntro・ChoiceEventOverlay・RadarChart・CharacterAvatars・WaIcons・TalkParts・ShareCard・Theme・NetaStage・IntroFlow・SoundManager・MZSpeed・FontLoader）と、StoreKit／iCloud が要る StoreManager・GachaStore の同期、DEBUG フックが大半の GameSession（80%）・RentStatement（式の部分はテスト済み・残りは画面）。この一覧に無いファイルが出たら中身を見る。
 - 点検の1本（10/27 深夜〜・11/08 拡張）：`tools/run_checks.sh [dd]`＝GameCore swift test・golden/定数の同期（大会・THE HANA を含む80項目）・イベント効果と発火条件の Python 鏡像の突き合わせ・アプリのテストを回して要約5行（赤なら終了コード1）。
 - アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 276本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
@@ -159,6 +160,7 @@
 214. [済 11/09 定期] 点検 run_checks 全 green（GameCore 469・アプリ 391・同期80/80・効果62/発火26 一致）。網羅の測り直し：GameCore 行 99.76%（未通過5か所は届かない ?? の既定値・precondition の文・閉じ括弧だけ＝足すテストなし）。アプリ側を初めて測った（xcodebuild -enableCodeCoverage）：非画面の GameSession.swift 80%＝未通過の大半は DEBUG フック（selftest で別に回る）。本物の穴は旧セーブ互換の枝（保留中の「正社員の話」）だけ→テスト2本を足した（AppSaveFixtureTests）。残る未通過の .namelessReservationSlip は「発火時に済ませる＝呼ばれない」と注記のある枝。
 215. [済 11/09 定期] 混合コンビのエンディング2画面目以降の一人称（playtest_mixed_late_1109 §3 の未確認）を文字で確認＝直書きなし・全部 {me}/{partner1}／話者の札。アプリ全体の直書きも先輩2人・説明文・ファンレポの客だけ（同 doc 末尾）。
 216. [済 11/09 定期] 女×男のエンディング場面の目視22枚（sonnet・docs/ending_mixed_visual_1109_v0.md＝高0中0低0）。フックで範囲外の場面番号を渡すと「2 / 1」になるのを直した（表示の番号を丸める・本編は不変）。残り＝各カードの2行目以降の台詞（台詞送り）は未撮影。
+217. [済 11/09 定期] 網羅の測り直しを1本にした tools/run_coverage.sh（常設に登録・既知の一覧つき）。アプリのテスト 393 green（回想カードの番号の丸めの後）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -191,4 +193,4 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 217（193〜202 は 11/09 の済で移した）。
+- （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 218（193〜202 は 11/09 の済で移した）。
