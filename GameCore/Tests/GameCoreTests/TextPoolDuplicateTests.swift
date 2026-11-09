@@ -81,4 +81,23 @@ final class TextPoolDuplicateTests: XCTestCase {
         XCTAssertGreaterThan(checkedLines, 800, "文が読めていない")
         XCTAssertTrue(bad.isEmpty, "同じ塊に同じ文が二重:\n" + bad.joined(separator: "\n"))
     }
+
+    /// 文の長さの見張り（11/09 定期・キュー182 の文字数点検を常設化）。週頭の声・ファンレポの在庫は候補ブランチで増補が続くため、
+    /// 1文が既存の最長（11/09 時点：DialogueData 33字・FanReportData 42字）を大きく超えて吹き出し・カードからはみ出さないかを見る。
+    /// 上限は既存の最長＋2字（見張りであって表示の仕様ではない。長い文を意図して足す時は目視してから上げる）。
+    func testLinesStayWithinKnownMaxLength() throws {
+        let caps: [String: Int] = ["DialogueData.swift": 35, "FanReportData.swift": 44]
+        var over: [String] = [], counted = 0
+        for (name, cap) in caps.sorted(by: { $0.key < $1.key }) {
+            let src = try String(contentsOf: sourcesDir().appendingPathComponent(name), encoding: .utf8)
+            for (i, raw) in src.components(separatedBy: "\n").enumerated() {
+                for s in scan(stripComment(raw)).literals where isJapaneseSentence(s) {
+                    counted += 1
+                    if s.count > cap { over.append("\(name) \(i + 1)行（\(s.count)字＞\(cap)）: \(s)") }
+                }
+            }
+        }
+        XCTAssertGreaterThan(counted, 800, "文が読めていない")
+        XCTAssertTrue(over.isEmpty, "既存の最長を超える文（目視してから上限を上げる）:\n" + over.joined(separator: "\n"))
+    }
 }
