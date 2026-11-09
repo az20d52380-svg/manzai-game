@@ -198,6 +198,7 @@
 292. [済 11/10 昼 定期・20f77331] 観戦の帯の目視＝既存の `MZ_UI=finals_spectator MZ_FIN=board` で帯の場面から始まる（新しいフック不要）。本体の帯とまとめの枝の直した帯（「今年は決勝に進めなかったため、客席から観戦しています」）は iPhone 17 で1行に収まる・崩れなし。288 の「未」はこれで全部済。
 293. [済 11/10 昼 定期・候補 claude/judge-final-tri-cand 08271128（judge-final-highonly の上に積んだ）] 決勝の審査員コメントの△4行を直した（opus・目白の体力フック・音羽の場面行とD帯・花園C「早口」の言い換え＝関西弁は本数を増やさず）。GameCore 472 green・400通りで4行とも出ることを確認。残し＝語彙「オチの締め」（紙講評と共有の8語）。本体の網羅＝GameCore 99.76%・0回5か所・アプリの一覧は既知どおり。
 294. [済 11/10 昼 定期・候補 claude/finals-mc-tri-cand 76cc5ba7→本体取り込み bde37e8f（finals-mc-fix の上）] 決勝の司会の△（「暫定席へどうぞ」→「こちらの席へどうぞ」＝テスト SessionGap1025bTests も）と講評の共有語「オチの締め」→「話の締め」（opus）。469・402 green・golden 80/80。本体を取り込んだ時の採点文書の add/add 衝突は候補側（§5 入り）を残した。残し＝M18/M19・M9・§4。
+295. [済 11/10 昼 定期・まとめの枝 claude/text-all-1110-bundle-cand a3e57030] 今日の文の候補を×も△も全部1本に（11本：text-fix-1110-bundle の10本の中身＋judge-final-tri・finals-mc-tri・text-tri-1110）。make_bundle は finals-mc-tri を JudgeTalk の締めの語で見送り→親が手で解いた（両方の直しを合わせ「話の締め」「元の話に帰る締め」）。GameCore 472・アプリ 402 TEST SUCCEEDED・golden/config 80/80。×だけなら text-fix-1110-bundle、△も入れるならこちら。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
