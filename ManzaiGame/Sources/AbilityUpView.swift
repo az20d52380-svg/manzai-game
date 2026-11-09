@@ -437,6 +437,7 @@ struct AbilityUpView: View {
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 72, height: 48)
             Button { confirm() } label: { Text("確定").padding(.trailing, active ? 34 : 0) }
                 .buttonStyle(YoseButtonStyle(.primary, badgeText: active ? "+\(taps.count)段階" : nil)).frame(maxWidth: .infinity, minHeight: 48)
+                .disabled(!active).opacity(active ? 1 : 0.4)   // 振り分け0の時は確定を薄くして押せなくする
                 .overlay { Rectangle().stroke(YoseColor.kinBright, lineWidth: 4).opacity(confirmGlow ? 1 : 0).allowsHitTesting(false) }   // 山吹の枠が0.2秒光る
         }
         .font(YoseFont.gothic(14, weight: .heavy))
