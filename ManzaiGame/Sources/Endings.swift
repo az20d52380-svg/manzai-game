@@ -129,8 +129,8 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         case .gaveUp:
             return [
                 c("十二月の終わり。{me}のアパート。", bg: EventBackdrop(.apartment,.evening), [("谷口", "来年のグランプリの申し込み、締め切り来週だよ"), ("俺", "出さない。今年で終わりにする"), ("谷口", "……そっか。十五年だもんね")]),
-                c("年明け。バイト先の休憩室。", mood: .noon, bg: EventBackdrop(.famires,.day), [("布施店長", "……昼のシフト、一人辞めたんだよ。お前、来月から入れるか"),
-                                                    ("俺", "入ります。夜はもう空けなくていいので"), ("布施店長", "……じゃあ名札、作り直しとく。遅れんなよ")]),
+                c("年明け。バイト先の休憩室。", mood: .noon, bg: EventBackdrop(.famires,.day), [("矢島", "……昼のシフト、一人辞めちゃってね。来月から、入れないかな"),
+                                                    ("俺", "入ります。夜はもう空けなくていいので"), ("矢島", "……じゃあ名札、作り直しておくね。これからよろしく")]),
                 c("三月。駅の改札前。", mood: .after, together: false, bg: EventBackdrop(.stationGate,.day), [("谷口", "{partner1}、地元の役所の試験、受かったんだ。来週帰る"),
                                                           ("俺", "よかったね。向こうでも体に気をつけて"), ("谷口", "そっちもね。たまには電話してね")]),
             ]
