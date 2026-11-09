@@ -41,7 +41,7 @@ enum CommandCatalog {
     static func mainCards(config: GameConfig, money: Int) -> [CommandVariant] {
         let trains: [(Training, String, String, String)] = [
             (.ネタ作り, "ネタを書く", "机に向かって書く", "pencil"),
-            (.ネタ合わせ, "相方と合わせる", "二人で合わせる", "arrow.left.arrow.right"),
+            (.ネタ合わせ, "相方と合わせる", "二人で何度もやってみる", "arrow.left.arrow.right"),
             (.フリーライブ, "舞台に立つ", "客前で場数を踏む", "mic.fill"),
         ]
         var cards: [CommandVariant] = trains.compactMap { t, name, desc, glyph in
@@ -59,7 +59,7 @@ enum CommandCatalog {
         switch cat {
         case .練習:
             let trains: [(Training, String, String, String)] = [
-                (.ネタ合わせ, "相方と合わせる", "二人で合わせる", "arrow.left.arrow.right"),
+                (.ネタ合わせ, "相方と合わせる", "二人で何度もやってみる", "arrow.left.arrow.right"),
                 (.フリーライブ, "舞台に立つ", "客前で場数を踏む", "mic.fill"),
                 (.ネタ見せ会, "ネタ見せ会", "作家の前で試す", "theatermasks.fill"),
                 (.ランニング・サウナ, "エントリーライブに出る", "出演料を払って小さなライブに出る", "person.wave.2.fill"),
@@ -86,7 +86,7 @@ enum CommandCatalog {
                 (.完全休養, "家で寝る", "しっかり回復", "house.fill"),
                 (.気分転換, "気分転換", "少し回復", "cup.and.saucer.fill"),
                 (.相方と過ごす, "相方と過ごす", "少しだけ回復・相性", "figure.2"),
-                (.サウナ, "サウナ", "家よりよく休める", "thermometer.sun.fill"),
+                (.サウナ, "サウナ", "しっかり休める（有料）", "thermometer.sun.fill"),
                 (.温泉に一泊, "温泉に一泊", "ほぼ全回復", "mountain.2.fill"),
             ]
             return rests.compactMap { r, name, desc, glyph in

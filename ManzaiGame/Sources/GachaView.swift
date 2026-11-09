@@ -61,7 +61,7 @@ struct GachaView: View {
                     Button("かけら\(r.shardCost)個と交換") { _ = gacha.exchangeShards(for: o) }
                 }
                 if s.canExchangePity(for: o) {
-                    Button("天井ポイント\(GachaCatalog.pityGoal)と交換") { _ = gacha.exchangePity(for: o) }
+                    Button("\(GachaCatalog.pityGoal)ポイントと交換") { _ = gacha.exchangePity(for: o) }
                 }
                 Button("やめる", role: .cancel) {}
             }
@@ -167,7 +167,7 @@ struct GachaView: View {
                     Text("天井").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                     Spacer()
                     Text("\(min(s.pity, GachaCatalog.pityGoal)) / \(GachaCatalog.pityGoal)").font(YoseFont.number(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-                        .accessibilityLabel("\(min(s.pity, GachaCatalog.pityGoal))回、\(GachaCatalog.pityGoal)回で交換")
+                        .accessibilityLabel("\(min(s.pity, GachaCatalog.pityGoal))ポイント、\(GachaCatalog.pityGoal)ポイントで交換")
                 }
                 YoseGauge(value: Double(s.pity), total: Double(GachaCatalog.pityGoal), fill: YoseColor.kin)
                 Text(s.pity >= GachaCatalog.pityGoal ? "好きな衣装を1着えらべます。下の「持っていない衣装」を押してください。" : "回すたびに1たまります。\(GachaCatalog.pityGoal)で好きな衣装と交換できます。")
