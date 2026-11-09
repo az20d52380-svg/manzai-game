@@ -832,6 +832,7 @@ struct IntroFlowView: View {
                     name = n.isEmpty ? "あなたのコンビ" : n
                     myName = me; partnerName = partner; meeting = m
                     Names.set(me: me, partner: partner)
+                    Names.setCombi(name)
                     withAnimation(Theme.Motion.r(.easeInOut(duration: 0.4))) { stage = .reminiscence }
                 }
                 .transition(.opacity)
