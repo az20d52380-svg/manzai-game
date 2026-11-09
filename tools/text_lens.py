@@ -63,6 +63,11 @@ def main():
     ap.add_argument("--head", help="作業ツリーの代わりに読む版（候補ブランチ等）")
     ap.add_argument("--all", action="store_true", help="配列の一覧を全部出す")
     a = ap.parse_args()
+    # remote.origin.fetch は本体ブランチだけ＝origin/claude/<候補> の追跡参照は古いことがある（11/09）。読む前に取り直す
+    if a.head and a.head.startswith("origin/"):
+        b = a.head[len("origin/"):]
+        subprocess.run(["git", "fetch", "-q", "origin", f"+refs/heads/{b}:refs/remotes/origin/{b}"],
+                       capture_output=True, env={**__import__("os").environ, "GIT_TERMINAL_PROMPT": "0"})
 
     over, added_n, rows = [], 0, []
     for path in a.files:
