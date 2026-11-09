@@ -6,7 +6,7 @@ import GameCore
 final class TalkWrappers1026Tests: XCTestCase {
     func testAskJudgeUsesFamilyNameAndTone() {
         XCTAssertEqual(FinalsMC.askJudge("鳴海 一郎", score: 95, high: true), "鳴海さん、95点。いかがでしたか？")
-        XCTAssertEqual(FinalsMC.askJudge("鳴海 一郎", score: 88, high: false), "鳴海さんは88点と、少し辛めでした。いかがでしたか？")
+        XCTAssertEqual(FinalsMC.askJudge("鳴海 一郎", score: 88, high: false), "鳴海さんは88点。こちらはいかがでしたか？")
         XCTAssertEqual(FinalsMC.askJudge("ひとり", score: 90, high: true), "ひとりさん、90点。いかがでしたか？", "空白が無い名前はそのまま")
     }
 
