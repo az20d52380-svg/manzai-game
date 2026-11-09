@@ -621,3 +621,7 @@ cd GameCore && swift test
 - `allbundles_late_visual_1109_v0.md` — 全部入りの枝の後半の年の目視15枚（高0中0低3・候補の重なりの崩れなし）
 - `main_late_visual_y12_14_1109_v0.md` — 本体の12〜14年目の目視13枚（高0中0低2）
 - `ending_mixed_visual_1109_v0.md` — 女×男のエンディング場面22枚（一人称「私／俺」どおり・記号残りなし・高0中0低0）
+- `visual_largetext_1109_v0.md` — 大きい文字の目視 11/09 本体12枚（オファー札が舞台を覆う＝中1・AUTOPILOT 137）
+- `visual_largetext_1109b_v0.md` — 大きい文字の目視 11/09 後半12枚＋敗者復活の山場（フック MZ_UI=stage_result・MZ_CLIMAX）
+- `visual_largetext_allbundles_1109_v0.md` — 大きい文字の目視 11/09 全部入りの枝10枚（テレビ慣れ帯で舞台がさらに狭まる）
+- `voiceover_audit_1109_v0.md` — 読み上げの札のコード点検 11/09（タップで進む画面13・候補 a11y-tap-next に抜け3つを追加）
