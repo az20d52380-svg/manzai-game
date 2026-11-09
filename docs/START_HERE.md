@@ -475,6 +475,7 @@ cd GameCore && swift test
 - `soak_playthrough_1026_v0.md` — 女主人公で自動走行の点検 10/26（7種・年末総決算の空に見える瞬間を直した）
 - `default_partner_name_options_1026_v0.md` — 相方の既定名「谷口」と女性の形の選択肢（2026-10-26・キュー126 の材料・推奨は今のまま）
 - `autopilot_report_1026.md` — 10/25 深夜〜10/26 未明の自走のまとめ（オーナー向け・見た目の直しと点検だけ・数値不変）
+- `autopilot_report_1109.md` — 11/09 の自走のまとめ（オーナー向け・候補ブランチを全部本体に入る状態に・混合コンビの後半の点検・道具3本）
 - `a11y_check_1026_v0.md` — 読み上げ（VoiceOver）の点検 10/26（読むだけ・対応は各コミット）
 - `ax3_hooks_audit_1026_v0.md` — 最大の文字サイズで20画面の目視 10/26
 - `code_review_2026-10-26.md` — コード点検 10/26（d8d2063 より後・低2件＝観戦の二重記録は直し済み）
@@ -614,3 +615,9 @@ cd GameCore && swift test
 - `offer_low_stamina_measure_1108_v0.md` — 体力不足の週のオファー頻度の実測（判断の一覧 C-24・候補 offer-stamina-note）
 - `calendar_ineligible_paint_1108_v0.md` — 日程表で出られない大会が赤くなる頻度（食い違いは GP で落ちた後の週だけ・C-25・候補 calendar-gp-paint）
 - `playtest_mixed_late_1108.md` — 実プレイ点検 男女コンビ後半の年（femaleMale 6年目・maleFemale 11年目・高0中0低1）
+- `text_repeat_15y_yearend_1108_v0.md` — 結成15年通しの文の読み返し率（年末の独白・ファンレポ・選択イベントの回る文面・判断の一覧 B-15 の続き）
+- `playtest_mixed_late_1109_v0.md` — 実プレイ点検 混合コンビの11・15年目・年末・エンディング#4/#7（高0中0低0・1108 版の続き）
+- `allbundles_visual_1109_v0.md` — 候補を全部まとめた試しの枝（all-bundles-1109-cand）の1〜2年目の目視15枚（高0中0低2・重なりの崩れなし）
+- `allbundles_late_visual_1109_v0.md` — 全部入りの枝の後半の年の目視15枚（高0中0低3・候補の重なりの崩れなし）
+- `main_late_visual_y12_14_1109_v0.md` — 本体の12〜14年目の目視13枚（高0中0低2）
+- `ending_mixed_visual_1109_v0.md` — 女×男のエンディング場面22枚（一人称「私／俺」どおり・記号残りなし・高0中0低0）
