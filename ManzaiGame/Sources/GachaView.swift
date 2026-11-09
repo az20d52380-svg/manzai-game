@@ -170,7 +170,7 @@ struct GachaView: View {
                         .accessibilityLabel("\(min(s.pity, GachaCatalog.pityGoal))回、\(GachaCatalog.pityGoal)回で交換")
                 }
                 YoseGauge(value: Double(s.pity), total: Double(GachaCatalog.pityGoal), fill: YoseColor.kin)
-                Text(s.pity >= GachaCatalog.pityGoal ? "好きな衣装を1着えらべます。下の「持っていない衣装」を押してください。" : "回すたびに1たまります。\(GachaCatalog.pityGoal)で好きな衣装と交換できます。")
+                Text(s.pity >= GachaCatalog.pityGoal ? "好きな衣装を1着えらべます。下の衣装一覧で、持っていない衣装を押してください。" : "回すたびに1ポイントたまります。\(GachaCatalog.pityGoal)ポイントで好きな衣装と交換できます。")
                     .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 Text("かけら \(s.shards) 個（同じ衣装が出ると増えます）").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.sumi)
             }
