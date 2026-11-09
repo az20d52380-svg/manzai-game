@@ -615,3 +615,5 @@ cd GameCore && swift test
 - `offer_low_stamina_measure_1108_v0.md` — 体力不足の週のオファー頻度の実測（判断の一覧 C-24・候補 offer-stamina-note）
 - `calendar_ineligible_paint_1108_v0.md` — 日程表で出られない大会が赤くなる頻度（食い違いは GP で落ちた後の週だけ・C-25・候補 calendar-gp-paint）
 - `playtest_mixed_late_1108.md` — 実プレイ点検 男女コンビ後半の年（femaleMale 6年目・maleFemale 11年目・高0中0低1）
+- `text_repeat_15y_yearend_1108_v0.md` — 結成15年通しの文の読み返し率（年末の独白・ファンレポ・選択イベントの回る文面・判断の一覧 B-15 の続き）
+- `playtest_mixed_late_1109_v0.md` — 実プレイ点検 混合コンビの11・15年目・年末・エンディング#4/#7（高0中0低0・1108 版の続き）
