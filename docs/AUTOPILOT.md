@@ -152,6 +152,7 @@
 247. [済 11/09 夜 定期・49ec5231] 増補候補3本の独立採点（opus・docs/dialogue_plus3_independent_score_1109_v0.md）＝lull ○34△13×1・次点群 ○29△18×1・独白 ○50△7×1（自己採点は全部○）。×3は各候補で直した（lull 45890863・minor-pools 5df66a28・monologue 1bf77465・469 green）。△の多くは「1年目にも出るのに長い付き合い前提」と別配列との重なり＝直し案だけ文書に。
 248. [済 11/09 夜 定期・6d356246] 道具：text_lens.py が `--head origin/claude/<候補>` を読む前に取り直すようにした（remote.origin.fetch が本体だけ＝追跡参照が古いと古い版を測っていた）。本体の selftest 29行 DONE。
 249. [済 11/09 夜 定期] 本体（6d356246）の soak 6分＝310〜320MB 横ばい・落ちず・クラッシュログ 1→1。
+250. [済 11/09 夜 定期・候補 claude/fanreport-veteran-cand 50c1f5dd（fanreport-plus の上に積んだ）] 判断一覧 C 追記の「古参の前提の文」案②の試し版：veteranOnly 50本（knownOnly 73本の部分集合・親が全部目で確認＝どれも古参前提）は4年目以降かつ知名度15以上でだけ出る（2〜3年目の A帯 165→140・B帯 120→96）。GameCore 469・アプリ 405 green・材料 docs/fanreport_veteran_cand_1109_v0.md（候補側）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
