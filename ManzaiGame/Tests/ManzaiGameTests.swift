@@ -1133,7 +1133,7 @@ final class NextGoalTests: XCTestCase {
     }
     func testNextGoal() {
         XCTAssertNil(YearResultView.nextGoal(nil, names: names))
-        XCTAssertEqual(YearResultView.nextGoal(rec(0), names: names), names[0].replacingOccurrences(of: "GP", with: "") + "を突破")
+        XCTAssertEqual(YearResultView.nextGoal(rec(0), names: names), "頂グランプリ " + names[0].replacingOccurrences(of: "GP", with: "") + "を突破")
         XCTAssertEqual(YearResultView.nextGoal(rec(names.count), names: names), "頂グランプリ 決勝に進む")
         XCTAssertEqual(YearResultView.nextGoal(rec(names.count, final: true), names: names), "頂グランプリ 決勝で優勝")
         XCTAssertEqual(YearResultView.nextGoal(rec(names.count, final: true, champ: true), names: names), "もう一度、頂グランプリで優勝")
