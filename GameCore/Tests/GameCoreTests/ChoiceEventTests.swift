@@ -396,8 +396,8 @@ final class ChoiceEventTests: XCTestCase {
         XCTAssertTrue(ChoiceEventTable.weeklyFireable(.kouhaiInvite, state: s, week: 30, config: config))
         s.stamina = 30
         XCTAssertFalse(ChoiceEventTable.weeklyFireable(.senpaiAllNight, state: s, week: 30, config: config))
-        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.homecomingCall, state: s, week: 37, config: config))
-        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.homecomingCall, state: s, week: 38, config: config))
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.homecomingCall, state: s, week: 40, config: config))
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.homecomingCall, state: s, week: 41, config: config))
     }
 
     // MARK: 0051〜0057 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md）
@@ -469,16 +469,16 @@ final class ChoiceEventTests: XCTestCase {
     func testMore_weeklyGates() {
         let config = GameConfig()
         var s = GameState(config: config); s.stamina = 60; s.money = 50_000
-        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 13, config: config))
-        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 14, config: config))
-        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 21, config: config))
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 25, config: config))
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 26, config: config))
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 33, config: config))
         XCTAssertFalse(ChoiceEventTable.weeklyFireable(.partnerFever, state: s, week: 20, config: config), "元気な時は出ない")
         s.stamina = 39
         XCTAssertFalse(ChoiceEventTable.weeklyFireable(.summerFestivalGig, state: s, week: 16, config: config), "炎天下に立てない体力では出ない")
         XCTAssertTrue(ChoiceEventTable.weeklyFireable(.partnerFever, state: s, week: 20, config: config))
         XCTAssertFalse(ChoiceEventTable.weeklyFireable(.partnerFever, state: s, week: 5, config: config))
-        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 32, config: config))
-        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 36, config: config))
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 44, config: config))
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 48, config: config))
         s.netas = []
         XCTAssertFalse(ChoiceEventTable.weeklyFireable(.lostNotebook, state: s, week: 20, config: config), "ノートに書く物が無い時は出ない")
         s.fame = 30
@@ -503,8 +503,8 @@ final class ChoiceEventTests: XCTestCase {
         }
         // 年末のライブ: 所持金1500未満では窓の中でも出ない／1500あれば出る
         s.money = 1499
-        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 34, config: config))
+        XCTAssertFalse(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 46, config: config))
         s.money = 1500
-        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 34, config: config))
+        XCTAssertTrue(ChoiceEventTable.weeklyFireable(.yearEndLive, state: s, week: 46, config: config))
     }
 }

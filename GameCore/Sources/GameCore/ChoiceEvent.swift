@@ -418,17 +418,17 @@ public enum ChoiceEventTable {
         case .writerPostcards:   return state.fame >= 10 && state.money < 200_000
         case .doukiJointLive:    return week >= 16 && state.fame < 40 && state.money >= 20_000
         case .baitoInventory:    return state.money < 150_000
-        case .homecomingCall:    return week >= 38                     // 年末（正月の帰省の話）
+        case .homecomingCall:    return week >= 41                     // 11月〜（正月の帰省の話・第1週=1月）
         case .regularFanOranges: return state.fame >= 15               // 常連がつき始めた帯
         case .officeTicketQuota: return state.fame < 30                // 手売りが要る帯
-        // 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md §2）。第1週=4月・4週で1か月
-        case .summerFestivalGig:   return (14...20).contains(week) && state.stamina >= 40   // 7〜8月・炎天下に立てる体力
+        // 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md §2）。第1週=1月・4週で1か月
+        case .summerFestivalGig:   return (26...32).contains(week) && state.stamina >= 40   // 7〜8月・炎天下に立てる体力
         case .doukiOnTV:           return week >= 20 && state.fame < 30   // まだテレビに縁がない帯
         case .theaterRenovation:   return week >= 12 && state.fame < 40   // いつもの劇場に出ている帯
         case .classmateInAudience: return week >= 10 && state.fame >= 5   // 噂が地元に届き始めた頃
         case .partnerFever:        return week >= 6 && state.stamina < 50 // 疲れがたまった頃
         case .lostNotebook:        return week >= 10 && !state.netas.isEmpty
-        case .yearEndLive:         return (33...36).contains(week)        // 12月
+        case .yearEndLive:         return (45...48).contains(week)        // 12月
         default:
             return false
         }

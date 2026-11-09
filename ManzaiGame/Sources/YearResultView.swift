@@ -1,6 +1,6 @@
 // YearResultView.swift
 // S6 年次リザルト（正本: uiux_vision_reply_part2 §S6）。縦1カラムの紙面（年表の1ページ様式・e3）。
-// 上から: 年目バッジ → 到達段階の判 → レーダー重ね(4月線+現在面) → 48週行動内訳色帯 → 出来事3行(大会結果のみ) → 賞金/知名度年計。
+// 上から: 年目バッジ → 到達段階の判 → レーダー重ね(年初線+現在面) → 48週行動内訳色帯 → 出来事3行(大会結果のみ) → 賞金/知名度年計。
 // トランジション: 紙面が下から0.4s・要素は上から0.15s間隔の時間差表示。判押印0.25s+hConfirm。レーダーモーフ0.8s・行動内訳帯左から0.6s。
 // 複数年キャリア（2026-10-10）: 区切りでない年末は「◯年目へ」で翌年へ。優勝年は勇退エンディングへ、
 // 夜逃げ・結成の最終年（config.careerYears）の年末は「もう一度」で新しいキャリアへ。締めは年次独白(voice_corpus yearEnd.*)。
@@ -13,6 +13,7 @@ struct YearResultView: View {
     var onRestart: () -> Void
     var onEnding: (() -> Void)? = nil   // キャリアの区切り（全エンド）: エンディングへ
     var onNextYear: (() -> Void)? = nil // キャリアが続く年末のみ: 翌年へ
+    @State private var confirmRetire = false
     var onRetire: (() -> Void)? = nil   // 優勝の年末のみ: 勇退してエンディングへ
 
     private var s: GameState { session.state }
@@ -30,6 +31,7 @@ struct YearResultView: View {
                 // 最初の1画面＝判＋等級の段（1年で何がどれだけ育ったか・G5）。レーダーや内訳は下へ
                 VStack(spacing: 12) {
                     reachStamp.stagger(1, appear)
+                    if onNextYear != nil, let g = Self.nextGoal(session.yearHistory.last(where: { $0.year == session.year }), names: session.config.calendar.gpRoundNames) { nextGoalLine(g).stagger(1, appear) }   // 来年の狙い（候補・キュー132 案B・yearly_goal_display_research_1027_v0）
                     if session.hasYearStart { gradeLadder.stagger(2, appear) }
                     let lastYear = onNextYear == nil && onEnding != nil   // 最終年（エンディングへ のボタンが出る年末）
                     if lastYear { historyBlock.stagger(3, appear).id("history") }   // 最終年は10年の歩みを上へ（スクロールしなくても全年が見える・キュー136②）
@@ -107,9 +109,9 @@ struct YearResultView: View {
             .background(YoseColor.kuroUrushi)
     }
 
-    // MARK: 等級の段（4月→いま・G5）
+    // MARK: 等級の段（年初→いま・G5）
 
-    /// 5能力の 4月の等級 → いまの等級 と、次の等級までの進み。上がった能力は金の縁と「↑」。等級は表示写像だけ（Theme.rank）
+    /// 5能力の 年初の等級 → いまの等級 と、次の等級までの進み。上がった能力は金の縁と「↑」。等級は表示写像だけ（Theme.rank）
     private var gradeLadder: some View {
         let base = session.yearStartState
         let order: [Ability] = [.センス, .発想, .表現, .華, .メンタル]
@@ -181,6 +183,30 @@ struct YearResultView: View {
     }
 
     /// 1年の到達の短い呼び名（年表・これまで共用）。敗れた回戦を言う（監査C-07 と同じ規則）
+    /// 来年の狙い（候補・キュー132 案B）：今年の到達の「次の段」を1つだけ。％・見込みは出さない。キャリアが終わる年（夜逃げ・解散）は出さない
+    static func nextGoal(_ r: GameSession.YearRecord?, names: [String]) -> String? {
+        guard let r, !r.bankrupt, r.dissolved != true else { return nil }
+        if r.champion { return "もう一度、頂グランプリで優勝" }
+        if r.reachedFinal { return "頂グランプリ 決勝で優勝" }
+        if r.enteredGP == false { return "頂グランプリに出る" }
+        if r.roundsPassed < names.count { return names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "を突破" }
+        return "頂グランプリ 決勝に進む"
+    }
+
+    private func nextGoalLine(_ g: String) -> some View {
+        HStack(spacing: 10) {
+            Text("来年の狙い").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                .padding(.horizontal, 8).padding(.vertical, 3).background(YoseColor.enji)
+            Text(g).font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(2).minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .yoseKifuda()
+        .accessibilityElement(children: .combine)
+    }
+
     static func reachLabel(_ r: GameSession.YearRecord, names: [String]) -> String {
         if r.champion { return "優勝" }
         if r.bankrupt { return "夜逃げ" }
@@ -495,11 +521,18 @@ struct YearResultView: View {
             // 主ボタンの位置は「続ける」＝連打しても勇退にならない
             VStack(spacing: 6) {
                 Text("ここで勇退するか、連覇を狙うか").font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
-                let retire = Button(action: onRetire) { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
+                let retire = Button { confirmRetire = true } label: { Text("勇退する").lineLimit(1) }.buttonStyle(YoseButtonStyle(.secondary))
                 let goOn = Button(action: onNextYear) { Text("続ける（\(session.year + 1)年目へ）▶").lineLimit(1) }.buttonStyle(YoseButtonStyle(.primary))
                 ViewThatFits(in: .horizontal) {   // 大きい文字で横に収まらない時は縦に積む（code_review_1107f #4）
                     HStack(spacing: 10) { retire; goOn }
                     VStack(spacing: 8) { retire; goOn }
+                }
+                // 【候補・code_review_1107f #1】押し間違いでこの周が終わらないように1段確かめる
+                .confirmationDialog("ここで勇退しますか？", isPresented: $confirmRetire, titleVisibility: .visible) {
+                    Button("勇退する", role: .destructive, action: onRetire)
+                    Button("もどる", role: .cancel) {}
+                } message: {
+                    Text("ここで終わります。このコンビの続きは遊べません。")
                 }
             }
         } else { singleButton }

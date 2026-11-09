@@ -164,6 +164,8 @@ struct RootView: View {
                 // オファーの札の目視（C-24 の「体力0になる」・キュー137 の説明の二重）: 知名度60（札3枚）で、標準のバイトを続けて体力を減らしながらオファーの来る週まで進める。
                 // MZ_STAMINA=<n>：その体力以下でオファーが来た週で止める（既定 25・100 なら最初のオファーで止める）。体力は年初に100へ戻るので開始状態では決めない。RNG は通常の週送りと同じ（golden 非対象）
                 var st = GameState(config: session.config); st.compat = 10; st.money = 500_000; st.fame = 60
+                // MZ_OFFERWEEKS=<n>：テレビ慣れの目視用に、受けたオファーの週を n 個積む（先の週＝窓から落ちない・3＝すこし／4＝強い）
+                if let n = Int(ProcessInfo.processInfo.environment["MZ_OFFERWEEKS"] ?? "") { st.offerWeeks = Array(repeating: 9_999, count: n) }
                 session = GameSession(startState: st)
                 let limit = Double(ProcessInfo.processInfo.environment["MZ_STAMINA"] ?? "") ?? 25
                 for _ in 0..<30 {
@@ -356,6 +358,7 @@ struct RootView: View {
 
     /// エンディング／夜逃げ・解散のあと：タイトルへ戻る（「はじめる」→導入→名前決めからやり直す）
     private func returnToTitle() {
+        if session.finished && session.careerOver { session.closeCareer() }   // 【候補・キュー117】エンディング無しの出口（夜逃げ等の「もう一度」）でも消す
         Sound.stopBGM()   // 決勝・緊張の曲をタイトルへ持ち越さない（code_review_2026-10-19f §6）
         NetaStage.lastSeen = [:]   // ネタ札の光り方の記憶を前の周から持ち越さない（code_review_2026-10-19i §2）
         showEnding = false
@@ -413,7 +416,7 @@ struct RootView: View {
             } else {
                 YearResultView(session: session,
                                onRestart: { returnToTitle() },
-                               onEnding: session.endingID != nil ? { showEnding = true } : nil,
+                               onEnding: session.endingID != nil ? { session.closeCareer(); showEnding = true } : nil,   // 【候補・キュー117】エンディングに入る時にセーブを消す
                                onNextYear: session.careerOver ? nil : { beginYearTurn() },
                                onRetire: session.canChooseRetire ? { session.retireAfterWin(); showEnding = true } : nil)
             }

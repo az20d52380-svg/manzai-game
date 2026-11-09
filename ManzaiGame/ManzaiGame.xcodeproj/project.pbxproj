@@ -54,6 +54,7 @@
 		4671A140B09142E5B42D60D7 /* CharacterAvatars.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D03A44FF76B790D71E2681 /* CharacterAvatars.swift */; };
 		46CF8359E9EE6440505DC20E /* EndingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16007007DF00D086ECC94A4C /* EndingViews.swift */; };
 		47D12D77D92D87BBA4D04FCA /* YoseGameParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59C630B4C41CD6FADA83431 /* YoseGameParts.swift */; };
+		4D8B4E3C25B68A617AC784F3 /* FirstPassShare1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB3555525DEF0D5AA818F14 /* FirstPassShare1108Tests.swift */; };
 		4F1A708C4340C7CFE93D4F28 /* MZSpeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C425563187AB800E3E3CAF9 /* MZSpeed.swift */; };
 		503ABBC496CD986CDC932884 /* DialogueData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1F100811789DF64591C427 /* DialogueData.swift */; };
 		5179064A2B5912376290FD3B /* AbilityUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6B90BFC5A4AED3BFE09913 /* AbilityUpView.swift */; };
@@ -110,6 +111,7 @@
 		A7F7AD0B63218B226448BFAB /* LoadsTheme1109Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADF63CFDC2C3AC6F53F3AD4 /* LoadsTheme1109Tests.swift */; };
 		A8FF5567E87E89520907F182 /* FirstStageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B661217CF9AAE526E8E6A97A /* FirstStageView.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
+		AB99BD95E14AF47FA7139A4C /* FirstPassShare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86D99874036FFFEC52A26068 /* FirstPassShare.swift */; };
 		AC8082ECD71EB2B651C7148D /* se_cheer_big.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */; };
 		AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */; };
 		B0F5B9FCA317BB4218FC62A4 /* se_fanfare.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 32A860D27554F188BD2E3F64 /* se_fanfare.mp3 */; };
@@ -139,6 +141,7 @@
 		D77894E998538F74B1007C23 /* MetaWireTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */; };
 		D782B299A77D14F37CE5CAA1 /* SoundInterruption1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A9DEDD228736371D634684 /* SoundInterruption1108Tests.swift */; };
 		DAB52067D4FD957E786AFA78 /* NotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6F88FDDEC06B2068F2343 /* NotebookView.swift */; };
+		DBE8FE2D5E2D8E258CD442D6 /* GachaEntry1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B646A6F3BC57F2135F6AB0 /* GachaEntry1107Tests.swift */; };
 		E090A17DEBCCD958D563E909 /* ResultExpRow1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D43F98004DD415C0C5FDB72 /* ResultExpRow1107Tests.swift */; };
 		E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */; };
 		E3E35D82D4543EB755B3040D /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CF56C81524C671B5D1EB4C /* TournamentResultView.swift */; };
@@ -225,6 +228,7 @@
 		6083AAF4C14A5E6DFED2E5DF /* se_kira.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_kira.mp3; sourceTree = "<group>"; };
 		61D8FA3ECAAAD197A1C553E9 /* CalendarGPPaint1109Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarGPPaint1109Tests.swift; sourceTree = "<group>"; };
 		62ED400B84054F70C3BA1883 /* se_tap.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_tap.mp3; sourceTree = "<group>"; };
+		63B646A6F3BC57F2135F6AB0 /* GachaEntry1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaEntry1107Tests.swift; sourceTree = "<group>"; };
 		64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageRAppTests.swift; sourceTree = "<group>"; };
 		66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaSelectionView.swift; sourceTree = "<group>"; };
 		6D634556BD3C91BB6B807E91 /* PastWeekPaint1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastWeekPaint1108Tests.swift; sourceTree = "<group>"; };
@@ -241,6 +245,7 @@
 		830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_big.mp3; sourceTree = "<group>"; };
 		858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventPairing1027Tests.swift; sourceTree = "<group>"; };
 		86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_finals.mp3; sourceTree = "<group>"; };
+		86D99874036FFFEC52A26068 /* FirstPassShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPassShare.swift; sourceTree = "<group>"; };
 		8A020307F3B3C34947A00DD3 /* YoseMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseMotion.swift; sourceTree = "<group>"; };
 		8C5D276DECEEE4107DB45AF1 /* se_applause_hall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_applause_hall.mp3; sourceTree = "<group>"; };
 		8E107DFFE29351633A0776D9 /* StageFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageFrame.swift; sourceTree = "<group>"; };
@@ -267,6 +272,7 @@
 		A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageOutfit.swift; sourceTree = "<group>"; };
 		ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventData.swift; sourceTree = "<group>"; };
 		AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_drumroll.mp3; sourceTree = "<group>"; };
+		AEB3555525DEF0D5AA818F14 /* FirstPassShare1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPassShare1108Tests.swift; sourceTree = "<group>"; };
 		AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cheer_mid.mp3; sourceTree = "<group>"; };
 		AF01714778A9BF473BC1BA07 /* se_cancel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_cancel.mp3; sourceTree = "<group>"; };
 		AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endings.swift; sourceTree = "<group>"; };
@@ -399,6 +405,7 @@
 				117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */,
 				599065030751D5F2DB350459 /* FinalsPresentationView.swift */,
 				5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */,
+				86D99874036FFFEC52A26068 /* FirstPassShare.swift */,
 				B661217CF9AAE526E8E6A97A /* FirstStageView.swift */,
 				D47D421441D548D881226B2E /* FontLoader.swift */,
 				2695E7E001A8EE7BD016C094 /* GachaRatesView.swift */,
@@ -510,6 +517,8 @@
 				F6CDAEF7EEFB5FED882FF2B3 /* EventScene1108Tests.swift */,
 				17DB9778EF13E155A068361C /* ExpDisplay1107Tests.swift */,
 				DDA3F978F5BBF0205DAF2742 /* FanReportPlaceholder1108Tests.swift */,
+				AEB3555525DEF0D5AA818F14 /* FirstPassShare1108Tests.swift */,
+				63B646A6F3BC57F2135F6AB0 /* GachaEntry1107Tests.swift */,
 				9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */,
 				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
 				E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */,
@@ -723,6 +732,7 @@
 				25EF8ED4FC7376A54D93FB3C /* FinalsBroadcastIntro.swift in Sources */,
 				B5FF297729B861895AB02480 /* FinalsPresentationView.swift in Sources */,
 				877FEE08C0242E99A7B05695 /* FinalsTalk.swift in Sources */,
+				AB99BD95E14AF47FA7139A4C /* FirstPassShare.swift in Sources */,
 				A8FF5567E87E89520907F182 /* FirstStageView.swift in Sources */,
 				53DD57D26963633913018B7A /* FontLoader.swift in Sources */,
 				72BCEBE06BA5A11C7484D762 /* GachaRatesView.swift in Sources */,
@@ -796,6 +806,8 @@
 				CD03DC71FC6F945B75424040 /* EventScene1108Tests.swift in Sources */,
 				741FA79F0A0E44D0CDA6DD26 /* ExpDisplay1107Tests.swift in Sources */,
 				B5EB5015E1C22829A333B281 /* FanReportPlaceholder1108Tests.swift in Sources */,
+				4D8B4E3C25B68A617AC784F3 /* FirstPassShare1108Tests.swift in Sources */,
+				DBE8FE2D5E2D8E258CD442D6 /* GachaEntry1107Tests.swift in Sources */,
 				237774A82CCB356B070CD9A7 /* GachaRatesPage1107Tests.swift in Sources */,
 				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
 				90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */,

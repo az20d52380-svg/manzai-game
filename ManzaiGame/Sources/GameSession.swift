@@ -181,7 +181,7 @@ final class GameSession {
     let config: GameConfig
     /// 結成何年目か（WeekRunner が持つ値をそのまま読む＝セーブ・復元も runner のスナップショットに乗る）
     var year: Int { runner.year }
-    /// この年の4月（年初）の状態。年末の「この1年で育ったもの」とレーダーの4月線の基準（表示専用・golden非対象）
+    /// この年の1月（年初）の状態。年末の「この1年で育ったもの」とレーダーの年初線の基準（表示専用・golden非対象）
     private(set) var yearStartState: GameState
     /// 年初の状態が実際に分かっているか。旧セーブ(yearStartState なし・2年目以降)の復元後は false＝「育ったもの」の差分を出さない（A-5）
     private(set) var hasYearStart = true
@@ -249,7 +249,7 @@ final class GameSession {
         let start = startState ?? GameState(config: cfg, metaPoints: MetaBook.points, femaleCombo: comboKind == .femaleFemale)   // 周回の点（点0＝1周目は今と同じ）・女コンビだけ THE HANA
         self.state = start
         var r = WeekRunner(state: start, year: 1, config: cfg, rng: SplitMix64(seed: seed), inviteSeed: seed)
-        self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の4月の状態
+        self.yearStartState = r.state   // 年初処理（体力全回復・成長予算）後の1月（年初）の状態
         let firstPhase = r.begin()   // r を消費してから確定させる（値型なので順序が重要）
         self.runner = r
         self.phase = firstPhase
@@ -437,6 +437,14 @@ final class GameSession {
     /// キュー96：次にオファーを受けると腕が落ちる（テレビ慣れ）か。乱数非消費
     var offerFatigued: Bool {
         GameEngine.offerFatigued(state: state, atWeek: (runner.year - 1) * config.weeks + runner.week, config: config)
+    }
+
+    /// 【候補・判断のまとめ #5 案A】テレビ慣れの段階（0＝なし／1＝すこし＝次の次から鈍る手前／2＝強い＝今受けると鈍る）。数字は画面に出さない。表示専用
+    var offerFatigueLevel: Int {
+        if offerFatigued { return 2 }
+        let wk = (runner.year - 1) * config.weeks + runner.week
+        let n = (state.offerWeeks ?? []).filter { wk - $0 < config.offerFatigueWindow }.count
+        return n >= config.offerFatigueK - 1 ? 1 : 0
     }
 
     /// キュー96：今週の札の一覧（2枚以上ある時だけ・先頭＝本編の乱数の札）。知名度で増える
@@ -803,6 +811,13 @@ final class GameSession {
         return ChoiceEventTable.choices(for: kind, config: config).filter { $0.gate(state) }
     }
 
+    /// 【候補・判断のまとめ #7 案A】お金だけが理由で選べない選択肢（所持金を十分にすると条件を満たす物）。灰色で残して「お金が足りない」と添える用。表示専用
+    func moneyBlockedEventChoices() -> [ChoiceEventChoice] {
+        guard let kind = pendingChoiceEvent else { return [] }
+        var rich = state; rich.money = max(state.money, 100_000_000)
+        return ChoiceEventTable.choices(for: kind, config: config).filter { !$0.gate(state) && $0.gate(rich) }
+    }
+
     // MARK: 持ちネタ（正典: docs/neta_system_redesign_v2.md Phase 0）
     //
     // ⚠️ このセクションは runner.applyNeta*（RandomSource 非依存の純適用・WeekRunner.swift）だけを呼ぶ＝
@@ -1020,6 +1035,13 @@ final class GameSession {
         saveNow()
     }
 
+    /// 【候補・キュー117 案A】この周を閉じる（エンディングに入る時・年末から「もう一度」でタイトルへ戻る時）。以後 saveNow は書かずに消す（background の書き直し防止）。非保存
+    private(set) var careerClosed = false
+    func closeCareer() {
+        careerClosed = true
+        Self.store.removeObject(forKey: Self.saveKey)
+    }
+
     /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
     func abandonRun() {
         Self.store.removeObject(forKey: Self.saveKey)
@@ -1158,7 +1180,7 @@ final class GameSession {
     func retireAfterWin() {
         guard canChooseRetire else { return }
         retiredAfterWin = true
-        saveNow()
+        closeCareer()   // 【候補・キュー117】勇退はそのままエンディングへ入る＝ここでセーブを消す
     }
 
     /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
@@ -1276,6 +1298,12 @@ final class GameSession {
         let tier = GameSession.debtTier(money: money)
         return tier > debtWarnTier ? tier : nil
     }
+    /// 【候補・判断のまとめ #4 後半】借金を返し終えたら（所持金0以上）段を戻す＝また借金になった時にもう一度知らせる。表示のみ
+    func resetDebtWarnIfRepaid(money: Int) {
+        guard money >= 0, debtWarnTier != 0 else { return }
+        debtWarnTier = 0
+        saveNow()
+    }
     /// 借金の知らせを出した段を記録（深い方へだけ進む）
     func markDebtWarned(_ tier: Int) {
         guard tier > debtWarnTier else { return }
@@ -1310,7 +1338,8 @@ final class GameSession {
         // QA自動走行で実プレイのセーブを潰さない（MZ_ALLOWSAVE=1 は中断→再開の目視用に、あえて書く）
         if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil || env["MZ_ENDING"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
-        guard !abandoned, !(finished && careerOver) else {   // A-3: 勝利演出中(winFinale)も保存する。acknowledgeWin(finished=true)で消える
+        // 【候補・キュー117 案A】区切りの年末もセーブを残し、エンディングに入った時（closeCareer）に消す＝年末で落ちても周と図鑑が消えない
+        guard !abandoned, !careerClosed else {
             Self.store.removeObject(forKey: Self.saveKey)
             return
         }

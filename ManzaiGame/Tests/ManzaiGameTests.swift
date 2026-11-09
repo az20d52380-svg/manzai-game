@@ -398,7 +398,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testNone() { XCTAssertNil(WeekHint.line(base())) }
     func testDebtWeekIsNarration() {
-        var i = base(); i.money = -1; i.stamina = 40
+        var i = base(); i.money = -1; i.stamina = 80   // 【候補 #4 案B】体力の警告が先に出るので、借金の文は体力が足りている週で確かめる
         XCTAssertEqual(WeekHint.line(i), "所持金はマイナス。今月の家賃のめどが立っていない。")
     }
     func testInjuryWarn() {
@@ -440,10 +440,10 @@ final class WeekHintTests: IsolatedStoreTestCase {
         var i = base()
         i.netaCount = 0; i.stageWeeksLeft = 2; i.netaFitsStage = false; i.stamina = 10
         i.livingThisWeek = true; i.money = 0; i.weeksWithoutPartner = 9; i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
-        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")
+        XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")   // 【候補 #4 案B】お金と体力が先
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
-        i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
+        i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "まだネタがない。まずはネタを書こう。")
+        i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
         i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
     }
 }
@@ -836,6 +836,20 @@ final class ShopUndoRoomTests: IsolatedStoreTestCase {
     }
 }
 
+/// 【候補・判断のまとめ #4 後半】返済後にまた借金したら、借金の知らせをもう一度出す
+final class DebtNoticeAgainCandidateTests: IsolatedStoreTestCase {
+    func testDebtNoticeRearmsAfterRepay() {
+        let s = GameSession(startState: GameState(config: GameConfig()))
+        XCTAssertEqual(s.debtNoticeTierToShow(money: -1), 1)
+        s.markDebtWarned(1)
+        XCTAssertNil(s.debtNoticeTierToShow(money: -1))
+        s.resetDebtWarnIfRepaid(money: -1)                 // まだ借金中は戻さない
+        XCTAssertNil(s.debtNoticeTierToShow(money: -1))
+        s.resetDebtWarnIfRepaid(money: 10_000)             // 返し終えた
+        XCTAssertEqual(s.debtNoticeTierToShow(money: -1), 1)
+    }
+}
+
 /// 年末の「不出場（エントリー費が払えず）」の判定：週の記録は表示名で書く（summarize＝GPName.display）。1回戦で負けた年を不出場と出していた（10/26 定期の目視）
 final class GPEntryLogTests: XCTestCase {
     func testFirstRoundLossCountsAsEntered() {
@@ -1122,5 +1136,86 @@ final class StorePurchaseGuard1027Tests: XCTestCase {
         XCTAssertFalse(ok)
         XCTAssertEqual(StoreManager.shared.lastMessage, "商品が見つかりません")
         XCTAssertFalse(StoreManager.shared.owns("com.manzaigame.mvp.nope"))
+    }
+}
+
+/// 【候補・キュー117 案A】区切りの年末でもセーブが残り、エンディングに入る時（closeCareer）に消える
+final class CareerEndSaveCandidateTests: IsolatedStoreTestCase {
+    private let key = "manzai.save.v1"
+    func testCareerOverYearEndKeepsSaveUntilClosed() {
+        var c = GameConfig(); c.careerYears = 1   // 最終年の優勝＝勇退の選択なしで区切りの年末へ
+        let s = GameSession(config: c, startState: GameSession.debugMaxedState())
+        s.debugAdvanceToChampionFinale()
+        s.acknowledgeWin()
+        XCTAssertTrue(s.finished && s.careerOver)
+        s.saveNow()
+        XCTAssertNotNil(GameSession.store.data(forKey: key))          // 年末で落ちても残る
+        let back = GameSession.loadedOrNew(config: c)
+        XCTAssertFalse(back.winFinale)                                  // 本体の 11/07 の形：確認済みの年末は年末の画面から
+        XCTAssertTrue(back.finished && back.careerOver)
+        XCTAssertEqual(back.endingID, s.endingID)                       // 同じ結末へ進める
+        s.closeCareer()
+        XCTAssertNil(GameSession.store.data(forKey: key))
+        s.saveNow()                                                     // 閉じた後は書き戻さない（background の保険）
+        XCTAssertNil(GameSession.store.data(forKey: key))
+    }
+}
+
+/// 【候補・判断のまとめ #5 案A】テレビ慣れの段階：なし→すこし（K-1回）→強い（K回＝今受けると鈍る）
+final class TvFatigueLevelCandidateTests: IsolatedStoreTestCase {
+    private func level(_ weeks: [Int]) -> Int {
+        var st = GameState(config: GameConfig()); st.offerWeeks = weeks
+        return GameSession(startState: st).offerFatigueLevel
+    }
+    func testLevels() {
+        let k = GameConfig().offerFatigueK
+        XCTAssertEqual(level([]), 0)
+        XCTAssertEqual(level(Array(repeating: 0, count: k - 1)), 1)
+        XCTAssertEqual(level(Array(repeating: 0, count: k)), 2)
+    }
+}
+
+/// 【候補・判断のまとめ #7 案A】お金だけが理由の選択肢は「選べない」として残す（お金以外の条件で消える物は対象外）
+final class MoneyBlockedChoiceCandidateTests: IsolatedStoreTestCase {
+    func testMoneyBlockedChoiceListedOnlyWhenShort() {
+        var st = GameState(config: GameConfig()); st.money = 1000
+        let poor = GameSession(startState: st)
+        poor.debugForceEvent(.justLostRehearsal)
+        XCTAssertEqual(poor.moneyBlockedEventChoices().map(\.id), ["C"])          // ラーメン（1,500円）
+        XCTAssertFalse(poor.availableEventChoices().contains { $0.id == "C" })
+        st.money = 50_000
+        let rich = GameSession(startState: st)
+        rich.debugForceEvent(.justLostRehearsal)
+        XCTAssertTrue(rich.moneyBlockedEventChoices().isEmpty)
+    }
+}
+
+/// 【候補・キュー127 案②】2回目以降の敗者復活の負けは短い版（元の文の抜き出し・最終年の「来年」外しとも両立）
+final class RevivalShortCandidateTests: XCTestCase {
+    func testShortVersionIsSubsetAndFinalYearSafe() {
+        let r = StageResult(name: "敗者復活", passed: false, prize: 0)
+        let full = ClimaxData.pages(for: r).map(\.text)
+        let short = ClimaxData.pages(for: r, repeatSeen: true).map(\.text)
+        XCTAssertEqual(short.count, 4)
+        XCTAssertTrue(short.allSatisfy { full.contains($0) })
+        XCTAssertFalse(ClimaxData.pages(for: r, finalYear: true, repeatSeen: true).contains { $0.text.contains("来年") })
+    }
+}
+
+/// 年末の「来年の狙い」（候補・キュー132 案B）：今年の到達の次の段を1つ。夜逃げ・解散は出さない
+final class NextGoalTests: XCTestCase {
+    private let names = GameConfig().calendar.gpRoundNames
+    private func rec(_ passed: Int, final: Bool = false, champ: Bool = false, bank: Bool = false, entered: Bool? = true, diss: Bool? = nil) -> GameSession.YearRecord {
+        GameSession.YearRecord(year: 1, roundsPassed: passed, reachedFinal: final, champion: champ, bankrupt: bank, prize: 0, enteredGP: entered, dissolved: diss)
+    }
+    func testNextGoal() {
+        XCTAssertNil(YearResultView.nextGoal(nil, names: names))
+        XCTAssertEqual(YearResultView.nextGoal(rec(0), names: names), names[0].replacingOccurrences(of: "GP", with: "") + "を突破")
+        XCTAssertEqual(YearResultView.nextGoal(rec(names.count), names: names), "頂グランプリ 決勝に進む")
+        XCTAssertEqual(YearResultView.nextGoal(rec(names.count, final: true), names: names), "頂グランプリ 決勝で優勝")
+        XCTAssertEqual(YearResultView.nextGoal(rec(names.count, final: true, champ: true), names: names), "もう一度、頂グランプリで優勝")
+        XCTAssertEqual(YearResultView.nextGoal(rec(0, entered: false), names: names), "頂グランプリに出る")
+        XCTAssertNil(YearResultView.nextGoal(rec(1, bank: true), names: names))
+        XCTAssertNil(YearResultView.nextGoal(rec(1, diss: true), names: names))
     }
 }
