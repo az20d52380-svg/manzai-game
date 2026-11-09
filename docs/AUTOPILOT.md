@@ -148,6 +148,7 @@
 243. [済 11/09 定期] 全部入りの点検より後の候補4本（a11y-tap-next・burst-cost-scaled・gacha-paid-first・yose-sound-wire）のコード点検 code_review_cands4_1109_v0（sonnet・親の照合後 高0中3低4）＝落ちる所・セーブ・golden への影響なし。中は寄席の音の重なり2件（158 と一緒に判断）と読み上げの「次へ」の名前（実機の VoiceOver で確認）。低 #8 の境界のテストは候補 gacha-paid-first に 9cc48386 で足した（GachaTests 19 green）。
 244. [済 11/09 夜 定期] 点検の1本（run_checks）＝GameCore 469・同期 3/3・config 80/80・効果62/発火26 一致・アプリ 401 green。網羅（run_coverage）＝GameCore 99.76%・0回5か所／アプリの一覧とも既知どおり。
 245. [済 11/09 夜 定期・dd6a21a2・候補 8df22dc6] invite-variants 候補の誘いの文を独立採点（opus）＝○25△11×1（docs/invite_variants_independent_score_1109_v0.md・自己採点は全部○＝食い違い12行）。×（Eating の A＝奢りに読めて所持金−5,000）は候補で直した（俺「行きます。お腹すいてたんです」／先輩「よし。量の多い店にしよう」・GameCore 469 green・ビルド OK）。△11（既存版と同じ文の重なり・SlowMorning の A/B の食い違い）は直し案が文書にある＝候補を入れると決まった時に直す。
+246. [済 11/09 夜 定期・候補 0fe5841a] fanreport-plus 候補のファンの声を独立採点（opus）＝175本中 ○143△29×3（docs/fanreport_plus_independent_score_1109_v0.md・自己採点と32本食い違い）。×3（意味が取れない2本・無名でも出る「お目当て」前提1本）は候補で直した（469 green・ビルド OK）。△は同じ型の重なり17本が最多。共通の論点＝knownOnly の条件が「2年目以降」なので「何年も・長年」の声が2年目から出る（古参の声を別の条件に分ける／文を弱める）＝判断待ちとして文書に並べてある。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
