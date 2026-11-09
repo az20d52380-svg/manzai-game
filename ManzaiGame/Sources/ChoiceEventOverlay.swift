@@ -18,7 +18,12 @@ struct ChoiceEventOverlay: View {
     var onClose: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var text: ChoiceEventText { ChoiceEventData.text(for: kind, year: session.year, week: session.week) }
+    private var text: ChoiceEventText {
+        let key = session.year &* 48 &+ session.week   // 同じ週の再描画は同じ文面（pickIndex の key）
+        return ChoiceEventData.text(for: kind, year: session.year, week: session.week) { scene, count, salt in
+            session.pickIndex(scene: scene, count: count, salt: salt, key: key)
+        }
+    }
     private var backdrop: EventBackdrop { EventBackdrop.forEvent(kind) }
 
     /// セットアップの何行目まで表示済みか。setup.count に達したら選択肢ボタンを出す。
