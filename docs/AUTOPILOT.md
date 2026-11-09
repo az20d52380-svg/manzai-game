@@ -38,6 +38,7 @@
 - 候補のまとめの枝（11/09〜）：`[PUSH=1] tools/make_bundle.sh claude/<まとめの名前>-cand <dd> <候補…>`＝本体の上に順に merge（pbxproj・テスト末尾は自動で解く）→ GameCore・アプリ・golden/定数の同期 → green の時だけ push。今のまとめ＝c-bundle（C 表16本）・b-bundle（B 表12本）・text-bundle（文の量5本）・both-bundles（C＋文の量）・all-bundles（全部）の各 -1109-cand。判断で外す物が出たら作り直す。
 - 候補の漏れ点検（11/09〜）：`tools/soak_candidate.sh claude/<候補> [dd] [分=10] [ms=10]`＝origin の候補を一時作業場所でビルド→soak→毎分の常駐メモリとクラッシュログの増減を1行で出す（push なし・iPhone 17 を使うので同時に1本だけ）。
 - 候補ブランチの取り込み直し（11/08〜）：`bash tools/refresh_candidates.sh <dd> [遅れの下限=50]`＝衝突しない候補に本体を取り込み、GameCore とアプリが green の時だけ push（pbxproj だけの衝突は xcodegen で作り直す・1本約2分・iPhone 17 を使う）。
+- 背景・文を変えたら（11/09 反省）：アプリのテストも必ず回し、`TEST SUCCEEDED` を確かめてからコミットする（`… | grep … && git commit` は grep が当たれば赤でもコミットされる＝11/09 に late-events 候補を2コミット赤にした）。背景の表 EventBackdropTable は EventScene1108Tests がト書きと照合する。
 - テストの足し方（10/27 深夜〜）：候補ブランチでも本体でも、新しいテストは ManzaiGame/Tests/ に**新しいファイル**（例 `Foo1028Tests.swift`）で足し `cd ManzaiGame && xcodegen generate`。ManzaiGameTests.swift の末尾に足すと、候補どうし・本体と毎回末尾で衝突する（10/27 は2回取り込み直した）。
 - 候補ブランチを本体へ入れる時（10/27〜）：テストは全部 ManzaiGame/Tests/ManzaiGameTests.swift の末尾に足しているので、末尾で衝突しやすい＝「本体の版＋候補が足したクラス」で解く（union は括弧が崩れる）。道具＝`python3 tools/merge_candidate_tests.py <本体のブランチ>`（merge が止まった状態で実行→ git add → commit）。
 - アプリの画面の文字（「俺」を含む説明文など）を変えた時も `cd GameCore && swift test` を回す（FirstPersonLiteralTests がアプリのソースを読み、例外の文を完全一致で持つ＝10/27 に形の選択の説明を言い換えて赤にした・d0661a6 で直した）。
@@ -156,7 +157,7 @@
 251. [済 11/09 夜 定期・b541a209・候補 955ce42b] late-events 候補の E1〜E20（6年目〜）を独立採点（opus・docs/late_events_e_independent_score_1109_v0.md）＝○38△14×8。×（主人公と谷口の語尾・E3/E4 と E19 の話の順序の食い違い・題・E15 の A の後の会話・E3 の出費が文に無い）は文字列だけ候補で直した（GameCore 477・アプリ 403 green）。△（中条の口調・既存との重なり・E17 のお金の理由）は直し案だけ。
 252. [済 11/09 夜 定期] 独立採点の×の直し（文の候補5本）をまとめの枝へ反映：text-bundle は make_bundle で作り直し da12dd7a（469・403 green・golden 一致）、both-bundles fe7a27e7・all-bundles f311af8f は5本を追い merge（衝突なし・GameCore 469・アプリ green・ビルド OK・force push なし）。late-events は どのまとめにも入っていない。
 253. [済 11/09 夜 定期・9428a854] B・C のまとめの枝が足した文50行を独立採点（opus・docs/bc_bundle_text_independent_score_1109_v0.md）＝○46△4×0。△（yearly-goal の「◯回戦を突破」に大会名なし・youth-notice-y10 の谷口「今年が最後だ」が硬い＝本体の5年目の一言と同じ形・gacha-entry の「今日の札」が何の札か分かりにくい）は直し案だけ。
-254. [済 11/09 夜 定期・2f005558] late-events 候補の文の長い10本を目視（sonnet・docs/visual_late_events_1109_v0.md）＝高0中0低10・切れ/はみ出しなし（最初の画面のみ・選択肢の画面はタップが要るので未）。低の「背景がト書きとずれる」は候補で直した：裏口 E01・出口 E15＝theaterOutside、劇場の事務室 N03/N09/N16＝office（エンディングの事務室と同じ）。N03 を撮って確認・GameCore 477・アプリ green。
+254. [済 11/09 夜 定期・2f005558] late-events 候補の文の長い10本を目視（sonnet・docs/visual_late_events_1109_v0.md）＝高0中0低10・切れ/はみ出しなし（最初の画面のみ・選択肢の画面はタップが要るので未）。低の「背景がト書きとずれる」は候補で直した：裏口 E01・出口 E15＝theaterOutside、劇場の事務室・応接室 N01/N03/N09/N16/N17＝楽屋の絵、会場の控室 N04・衣装部屋 N13＝楽屋の絵（全40本を表で照合）。※途中の 8a70e256・ae728914 は office にしてアプリのテスト EventScene1108Tests（ト書きの「劇場」は劇場/外/楽屋の絵だけ許す）で赤＝85301ed9 で直して 403 green。劇場の受付 N20 は受付の絵の札が「稽古場受付」になるので据え置き。病院の待合室 E06 は合う絵が無く office のまま。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
