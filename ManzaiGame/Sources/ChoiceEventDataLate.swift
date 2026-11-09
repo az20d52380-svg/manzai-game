@@ -109,18 +109,18 @@ extension ChoiceEventData {
         title: "先輩が売れる",
         setup: [
             Advice(name: nil, text: "駅前のビジョン。夕方。"),
-            Advice(name: "谷口", text: "あそこに映っているの、野々村さんだ"),
+            Advice(name: "谷口", text: "あそこに映っているの、宇佐美さんだ"),
             Advice(name: "俺", text: "本当だ。番組が決まったんだね"),
             Advice(name: "谷口", text: "知らなかった。すごい"),
-            Advice(name: "俺", text: "声、かけてみるか"),
+            Advice(name: "俺", text: "お祝い、何か送る？"),
         ],
         choiceLabels: [
-            "A": "野々村に祝いの連絡",
+            "A": "宇佐美さんにお祝いを送る",
             "B": "見なかったことにして帰る",
         ],
         afterChoice: [
             "A": [
-                Advice(name: "野々村", text: "ありがとう。今度、ご飯でも行こう"),
+                Advice(name: "宇佐美", text: "ありがとう。今度、ご飯でも行こう"),
                 Advice(name: "俺", text: "ぜひお願いします"),
             ],
             "B": [
@@ -294,7 +294,7 @@ extension ChoiceEventData {
             Advice(name: "谷口", text: "今日の放送、見た？"),
             Advice(name: "俺", text: "見た。ほとんど映らなかったね"),
             Advice(name: "谷口", text: "でも、名前は出ていたよ"),
-            Advice(name: "俺", text: "そうか。次に出る時は、短くても集中しよう"),
+            Advice(name: "俺", text: "そっか。次に出る時は、短くても集中しよう"),
         ],
         choiceLabels: [
             "A": "録画を見返して反省する",
@@ -338,13 +338,13 @@ extension ChoiceEventData {
         ]
     )
 
-    // MARK: E12 ネタ帳が一冊分たまった
+    // MARK: E12 押し入れのノート
     private static let lateE12 = ChoiceEventText(
-        title: "ネタ帳が一冊分たまった",
+        title: "押し入れのノート",
         setup: [
             Advice(name: nil, text: "アパートの押し入れ。夜。"),
             Advice(name: "谷口", text: "押し入れから古いノートが出てきた"),
-            Advice(name: "俺", text: "そんなにあったの？"),
+            Advice(name: "俺", text: "どれくらいある？"),
             Advice(name: "谷口", text: "全部で十冊くらい。捨てる？"),
             Advice(name: "俺", text: "中を少し見てからにしよう"),
         ],
@@ -370,8 +370,8 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "劇場の階段。夕方。"),
             Advice(name: "谷口", text: "ちょっと待って。息が上がった"),
-            Advice(name: "俺", text: "大丈夫か。座ろう"),
-            Advice(name: "谷口", text: "昔はこの階段、平気だったのにな"),
+            Advice(name: "俺", text: "大丈夫？ 座ろう"),
+            Advice(name: "谷口", text: "昔はこの階段、平気だったのにね"),
             Advice(name: "俺", text: "無理はよくない。少し休もう"),
         ],
         choiceLabels: [
@@ -432,8 +432,8 @@ extension ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "白井", text: "ええ、いいね"),
-                Advice(name: "俺", text: "今日はありがとう"),
+                Advice(name: "俺", text: "若いお客さんにも、帰りに声をかけてみます"),
+                Advice(name: "白井", text: "いいね。きっと喜ぶよ"),
             ],
             "B": [
                 Advice(name: "白井", text: "ありがとう。また来るよ"),
@@ -520,15 +520,15 @@ extension ChoiceEventData {
         ]
     )
 
-    // MARK: E19 同じ劇場の閉館
+    // MARK: E19 最初の劇場の閉館
     private static let lateE19 = ChoiceEventText(
-        title: "同じ劇場の閉館",
+        title: "最初の劇場の閉館",
         setup: [
-            Advice(name: nil, text: "古い劇場の前。夕方。"),
-            Advice(name: "大塚", text: "この劇場は、今月で閉めることになりました"),
-            Advice(name: "俺", text: "そうですか。長くお世話になりました"),
-            Advice(name: "大塚", text: "最後の舞台に、二人にも出てほしいです"),
-            Advice(name: "谷口", text: "ぜひ、出させてください"),
+            Advice(name: nil, text: "最初に出た劇場の前。夕方。"),
+            Advice(name: "大塚", text: "二人が最初に出たこの劇場、今月で閉まるそうです"),
+            Advice(name: "俺", text: "そうですか。ここから始まったんですよね"),
+            Advice(name: "大塚", text: "最後の舞台に、二人を呼びたいそうです"),
+            Advice(name: "谷口", text: "出られるなら、出たいね"),
         ],
         choiceLabels: [
             "A": "最後の舞台に出る",
@@ -536,23 +536,23 @@ extension ChoiceEventData {
         ],
         afterChoice: [
             "A": [
-                Advice(name: "大塚", text: "ありがとう。いい舞台にしましょう"),
+                Advice(name: "大塚", text: "ありがとう。向こうに伝えておきます"),
                 Advice(name: "俺", text: "精一杯やります"),
             ],
             "B": [
-                Advice(name: "大塚", text: "分かりました。来てくれて嬉しい"),
+                Advice(name: "大塚", text: "分かりました。席を取っておきます"),
                 Advice(name: "俺", text: "最後まで見届けます"),
             ],
         ]
     )
 
-    // MARK: E20 十年目の写真
+    // MARK: E20 結成の年の写真
     private static let lateE20 = ChoiceEventText(
-        title: "十年目の写真",
+        title: "結成の年の写真",
         setup: [
             Advice(name: nil, text: "アパートの廊下。夜。"),
             Advice(name: "谷口", text: "前に撮った写真、見つけた。結成の年のやつ"),
-            Advice(name: "俺", text: "若いな。やせてる"),
+            Advice(name: "俺", text: "若いね。やせてる"),
             Advice(name: "谷口", text: "今も、同じ劇場で舞台に立ってる"),
             Advice(name: "俺", text: "そうだね。続けてきたね"),
         ],
