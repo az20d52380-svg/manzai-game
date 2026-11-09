@@ -874,6 +874,11 @@ struct WeekMainView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
+    /// 受けると体力が0まで減るか（表示専用・純関数）
+    static func offerDrainsStamina(stamina: Double, offer: OfferSpec) -> Bool {
+        offer.stamina < 0 && stamina + offer.stamina <= 0
+    }
+
     private func offerPickCard(_ i: Int, _ o: OfferSpec) -> some View {
         let on = i == offerPick
         return Button {
@@ -886,6 +891,9 @@ struct WeekMainView: View {
                 Text("+¥" + Yen.short(o.income)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinText)
                 Text(CommandCatalog.offerBlurb(o.name)).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                     .lineLimit(3).fixedSize(horizontal: false, vertical: true)
+                if Self.offerDrainsStamina(stamina: s.stamina, offer: o) {   // 【候補 C-24 案②】受けると体力0で週を終える時だけ一言（offer_low_stamina_measure_1108_v0）
+                    Text("体力0になる").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.enji).lineLimit(1)
+                }
             }
             .padding(6).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)   // 3枚の背丈をそろえる（ui_audit_1019 §3）
             .background(YoseColor.kinari)
