@@ -170,6 +170,8 @@
 227. [済 11/09 夜 定期] 候補 first-pass-share（B-6）だけ本体との衝突（TournamentResultView の DEBUG フック行＝MZ_FIRSTPASS と本体の MZ_UI=stage_result）→両方残して取り込み（27feb120・GameCore 469／アプリ 395 green・`MZ_UI=result_done MZ_PASSFX=1 MZ_FIRSTPASS=1` で「共有」ボタン OK）。注意：xcodebuild test の直後に simctl install すると試験の入れ替えと競って古い画面になることがある＝もう一度 install してから撮る。
 228. [済 11/09 夜 定期] refresh_candidates（遅れ70以上）＝rift-trophy（466b8fc9）・tv-fatigue-display（6f99894d）・yose-sound-wire（1d9b2c5d）に本体を取り込み green で push。first-pass-share は道具が古い手元の枝を見て「衝突」と出した（origin は 227 で解消済み）→手元の枝を origin（27feb120）に合わせた。`git fetch origin <枝>` だけでは追跡の参照が動かない＝`+refs/heads/X:refs/remotes/origin/X` で取る。
 229. [ ] （11/09 夜 定期）候補 yose-sound-wire（1d9b2c5d）の soak 6分が2分目で「落ちた」と出たが、同時刻（16:10）に別のセッションが同じ iPhone 17 で xcodebuild test を始めていた（試験で本体のアプリが入れ替わる）＝無効。クラッシュログは増えず（1→1）。iPhone 17 が空いた回で測り直す。
+227. [済 11/09 夜 定期] refresh_candidates（遅れ50以上）で候補26本に本体を取り込み直し＝23本 green で push・赤3本は回し直しで season-sure（6ba080c0）・retire-confirm（016772fd）が green（一時的な失敗）・unused-parts は本体の新しいテストが消した部品を確かめていた所を外した版（99b958d8）で green。衝突1本＝first-pass-share（TournamentResultView.swift）は未処理。注意：zsh では `"+refs/heads/$b:refs/..."` の `$b:r` が拡張子を消す修飾子になる＝必ず `${b}` と書く。体力の減りの札の位置の直しを候補 burst-cost-scaled-cand に。
+
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
 - （10/25 自走）THE HANA の難しさ：「難」（10年で優勝 約8%・決勝 約55%）か「極」（約1.5%・約27%）か。推奨＝難。女性コンビは GP 決勝が約2pt 下がるだけで有利にはならない（docs/the_hana_measure_1025_v0.md）。あわせて時期：今の案だとゲームの暦で決勝が2月第4週（「12月上旬」にするなら週を前へ・§7）
