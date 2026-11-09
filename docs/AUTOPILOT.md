@@ -151,6 +151,7 @@
 211. [済 11/09 定期] B 表の推奨候補12本をまとめた claude/b-bundle-1109-cand（dde7edbd・テスト末尾の衝突4本は scratchpad の tail_resolve.py＝相手が末尾に足した分をこちらの版に付け足す）＝GameCore 469・アプリ 400 green。B＋C＋文の量の全部入り claude/all-bundles-1109-cand ＝GameCore 469・アプリ 419 green。全部入りの soak 10分＝落ちず・318〜336MB 横ばい。全部入りのオファー画面を文字サイズ拡大 AX1 で目視＝札の「体力0になる」・短い下の札・週の一言（体力が少ない…＝week-hint-priority の並び）とも切れ・重なりなし。全部入りの自己点検 selftest も 29行 DONE（本体と同じ）。注意：最初の版の bundle.sh は merge_candidate_tests.py が失敗しても衝突の印ごと git add していた（push 前に赤で気づいて作り直し）。
 212. [済 11/09 定期] まとめの手順を道具 tools/make_bundle.sh に（push は PUSH=1 の時だけ）。B 表12本で作り直して（push なし）b-bundle と同じ結果＝GameCore 469・アプリ 400 green・golden 一致・見送りなし。目視：B のまとめの3年目第13週（MZ_YEARS=2 MZ_STOPWEEK=12 MZ_CARE=1）＝目標の帯・谷口の一言・オファーの札（効果の札＋¥・体力）・未振分の印が重ならず収まる。
 213. [済 11/09 定期] 全部入りの枝（all-bundles）で1〜2年目の主な画面15枚の目視 allbundles_visual_1109_v0（sonnet・親の照合後 高0 中0 低2）＝候補どうしの重なりによる切れ・はみ出し・二重説明なし。中に見えた「優勝（見本）」は目視フックの仮の優勝コンビ名。
+214. [済 11/09 定期] 本体（48ea1c89）の点検 run_checks＝GameCore 469・アプリ 391 green・同期3項目・config 80/80・イベント効果 62 一致・発火条件 26 一致（不一致0）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
