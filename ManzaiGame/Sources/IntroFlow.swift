@@ -45,11 +45,12 @@ struct ReminiscencePlayer: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        let card = cards[safe: index] ?? cards[0]
+        let shown = min(max(0, index), cards.count - 1)   // 目視フックで範囲外の番号を渡されても「2 / 1」にしない（本編は常に範囲内）
+        let card = cards[shown]
         let lines: [Advice] = !card.talk.isEmpty ? card.talk
             : (card.line.map { [Advice(name: card.speaker, text: $0)] } ?? [])
         VStack(spacing: 0) {
-            YoseHeaderBar(title: title, subtitle: "\(index + 1) / \(cards.count)",
+            YoseHeaderBar(title: title, subtitle: "\(shown + 1) / \(cards.count)",
                           closeTitle: "とばす ▶", closeAction: onSkip.map { skip in { Sound.play(.cursor); skip() } })
             ZStack(alignment: .topLeading) {
                 RecallPicture(mood: card.mood, together: card.together, backdrop: card.backdrop)
@@ -248,7 +249,7 @@ private struct RecallNameBoard: View {
     /// 名前が長いと縦の札からはみ出す（6字×26pt≒200pt＞枠150）ので、字数で縮める（long_name_layout_audit_1108_v0）。3字までは今のまま26pt（枠150なら4字は約22pt＝code_review_1108h 低1）
     private var charSize: CGFloat {
         let n = CGFloat(max(1, Names.show(name).count))
-        return min(26, ((height - 14 - 12) / n - 2) / 1.3)
+        return max(8, min(26, ((height - 14 - 12) / n - 2) / 1.3))   // 札が低く名前が極端に長くても0や負にしない（code_review_2026-11-09 #7）
     }
     var body: some View {
         VStack(spacing: 0) {
