@@ -44,7 +44,7 @@ struct CalendarView: View {
     private var summary: some View {
         VStack(spacing: 3) {
             Text("\(session.combiName)").font(YoseFont.gothic(17, weight: .heavy)).foregroundStyle(YoseColor.kinari)
-            Text("\(session.year)年目　第\(session.week)週 ・ 今年の賞金 ¥\(session.totalPrize.formatted())")
+            Text("\(session.year)年目　\(weekLabel(session.week)) ・ 今年の賞金 ¥\(session.totalPrize.formatted())")
                 .font(YoseFont.number(12, weight: .bold)).foregroundStyle(YoseColor.kinBright)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 7)
@@ -115,7 +115,7 @@ struct CalendarView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onLongPressGesture(minimumDuration: 0.3) {
-            if isPast { showToast("第\(w)週 \(session.categoryLog[w]?.label ?? "——")。") }
+            if isPast { showToast("\(weekLabel(w)) \(session.categoryLog[w]?.label ?? "——")。") }
         }
     }
 
@@ -141,7 +141,7 @@ struct CalendarView: View {
             HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
         }
             // 「頂GP」が何か初見で分からなかった（visual_check_1027d #1・表示だけ）
-            Text("頂GP＝頂グランプリ（1回戦から勝ち上がり、第\(cal.gpFinalWeek)週が決勝）")
+            Text("頂GP＝頂グランプリ（1回戦から勝ち上がり、\(weekLabel(cal.gpFinalWeek))が決勝）")
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).multilineTextAlignment(.center)
             // 去年まで朱だった週が判子に変わる理由が画面に無かった（code_review_1108 指摘2・表示だけ）
@@ -204,6 +204,11 @@ struct CalendarView: View {
         }
         if cal.gpRounds.contains(where: { $0.week == w }) { return true }
         return w == cal.gpFinalWeek
+    }
+
+    /// 通算週 → 「◯月 第◯週」（表示専用・表の行/列と同じ換算）
+    private func weekLabel(_ w: Int) -> String {
+        "\(monthLabel((w - 1) / 4)) 第\(((w - 1) % 4) + 1)週"
     }
 
     // 第1週=4月。4週で1ヶ月。
