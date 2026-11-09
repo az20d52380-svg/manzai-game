@@ -1469,6 +1469,14 @@ struct WeekMainView: View {
         ], note: "上の黒い帯は、次の大会までの週数。左上の「？」でいつでも読み返せる。")
     }
 
+    /// 初めて遊ぶ人に自動で出す短い版（キュー144 案③・tutorial_term_pacing_research_1110）：最初の画面で目に入る2語と、最初にやること。
+    /// 実力・相性・経験点は左上の「？」（firstWeekHint＝5語）で読める。経験点は能力アップの画面でも初回に説明が出る。
+    static var firstWeekShortHint: HintSpec {
+        let full = firstWeekHint
+        return HintSpec(key: full.key, title: full.title, rows: full.rows.filter { ["体力", "知名度"].contains($0.term) },
+                        note: "上の黒い帯は、次の大会までの週数。まずはネタを書こう。ほかの言葉は、左上の「？」でいつでも読める。")
+    }
+
     private func livingHint() -> HintSpec {
         let c = session.config
         let living = GameEngine.livingCostDue(session.state, config: c)
@@ -1485,7 +1493,7 @@ struct WeekMainView: View {
               !showAllocation, !showShop, !showNotebook, !showCalendar, !showSettings,
               case .freeAction = session.phase, session.year == 1 else { return }
         if !OneTimeHint.isDone("firstWeek"), session.week <= 1 {
-            hint = Self.firstWeekHint
+            hint = Self.firstWeekShortHint   // 初回は2語だけ（キュー144 案③・残りは「？」と各画面の初回の説明で）
         } else if !OneTimeHint.isDone("living"), session.week >= session.config.livingInterval,
                   session.week % session.config.livingInterval == 0 {
             hint = livingHint()
