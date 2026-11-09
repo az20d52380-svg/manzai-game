@@ -157,10 +157,10 @@
 216. [済 11/09 定期] refresh_candidates（遅れ65以上）で候補11本に本体を取り込み直し＝全部 GameCore・アプリ green で push（final-neta-notice・final-year-history・gacha-entry・hana-loss-line・lost-notebook-neta・notebook-entries-label・offer-desc-short・partner-action-name・qual-long-list・shop-manager-name・yearly-goal）。注意：origin/claude/<候補> の参照は fetch の設定で古いままのことがある＝遅れは手元の枝で数える（check_candidates の「遅れ」は15ほど大きく出る）。
 217. [済 11/09 定期] 本体の12・13・14年目の目視 main_late_visual_y12_14_1109_v0（sonnet・13枚・高0 中0 低2）＝文字切れ・重なり・後半年の不自然な文言なし。14年目の日程表は新人系（結成10年以内）が塗られず careerYearAtMost が効いている。低＝オファー札の説明の二重（既知 137）・MZ_UI=event は MZ_EV 無しだと固定の画面（フックの都合）。
 218. [済 11/09 定期] 本体の selftest（run_selftest.sh・MZ_ALLOWSAVE=1）＝29行・DONE・失敗行なし。全部入りの枝（02556305）の soak 10分＝落ちず・320〜329MB で横ばい・クラッシュログ増えず（単独で soak していない候補約30本もこの枝でまとめて確認した扱い）。
-214. [済 11/09 定期] 点検 run_checks 全 green（GameCore 469・アプリ 391・同期80/80・効果62/発火26 一致）。網羅の測り直し：GameCore 行 99.76%（未通過5か所は届かない ?? の既定値・precondition の文・閉じ括弧だけ＝足すテストなし）。アプリ側を初めて測った（xcodebuild -enableCodeCoverage）：非画面の GameSession.swift 80%＝未通過の大半は DEBUG フック（selftest で別に回る）。本物の穴は旧セーブ互換の枝（保留中の「正社員の話」）だけ→テスト2本を足した（AppSaveFixtureTests）。残る未通過の .namelessReservationSlip は「発火時に済ませる＝呼ばれない」と注記のある枝。
-215. [済 11/09 定期] 混合コンビのエンディング2画面目以降の一人称（playtest_mixed_late_1109 §3 の未確認）を文字で確認＝直書きなし・全部 {me}/{partner1}／話者の札。アプリ全体の直書きも先輩2人・説明文・ファンレポの客だけ（同 doc 末尾）。
-216. [済 11/09 定期] 女×男のエンディング場面の目視22枚（sonnet・docs/ending_mixed_visual_1109_v0.md＝高0中0低0）。フックで範囲外の場面番号を渡すと「2 / 1」になるのを直した（表示の番号を丸める・本編は不変）。残り＝各カードの2行目以降の台詞（台詞送り）は未撮影。
-217. [済 11/09 定期] 網羅の測り直しを1本にした tools/run_coverage.sh（常設に登録・既知の一覧つき）。アプリのテスト 393 green・selftest 29行 DONE 失敗なし（回想カードの番号の丸めの後）。
+219. [済 11/09 定期] 点検 run_checks 全 green（GameCore 469・アプリ 391・同期80/80・効果62/発火26 一致）。網羅の測り直し：GameCore 行 99.76%（未通過5か所は届かない ?? の既定値・precondition の文・閉じ括弧だけ＝足すテストなし）。アプリ側を初めて測った（xcodebuild -enableCodeCoverage）：非画面の GameSession.swift 80%＝未通過の大半は DEBUG フック（selftest で別に回る）。本物の穴は旧セーブ互換の枝（保留中の「正社員の話」）だけ→テスト2本を足した（AppSaveFixtureTests）。残る未通過の .namelessReservationSlip は「発火時に済ませる＝呼ばれない」と注記のある枝。
+220. [済 11/09 定期] 混合コンビのエンディング2画面目以降の一人称（playtest_mixed_late_1109 §3 の未確認）を文字で確認＝直書きなし・全部 {me}/{partner1}／話者の札。アプリ全体の直書きも先輩2人・説明文・ファンレポの客だけ（同 doc 末尾）。
+221. [済 11/09 定期] 女×男のエンディング場面の目視22枚（sonnet・docs/ending_mixed_visual_1109_v0.md＝高0中0低0）。フックで範囲外の場面番号を渡すと「2 / 1」になるのを直した（表示の番号を丸める・本編は不変）。残り＝各カードの2行目以降の台詞（台詞送り）は未撮影。
+222. [済 11/09 定期] 網羅の測り直しを1本にした tools/run_coverage.sh（常設に登録・既知の一覧つき）。アプリのテスト 393 green・selftest 29行 DONE 失敗なし（回想カードの番号の丸めの後）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
