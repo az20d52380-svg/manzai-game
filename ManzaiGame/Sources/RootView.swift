@@ -100,6 +100,8 @@ struct RootView: View {
             if let n = Int(yearsEnv), n >= 0, session.year == 1 {
                 session.debugAdvanceYears(n)
             }
+            // MZ_GPLOST=1：頂GP の予選で落ちた扱いにする（日程表の塗りの目視＝C-25。DEBUG のみ・乱数は消費しない）
+            if ProcessInfo.processInfo.environment["MZ_GPLOST"] != nil { session.debugMarkGPLost() }
             // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
             if let mk = ProcessInfo.processInfo.environment["MZ_SAVEMAKE"] {
                 var st = mk == "champ" ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
