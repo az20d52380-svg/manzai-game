@@ -12,10 +12,10 @@
 | C-4b | claude/money-format-cprime-cand | MZ_UI=shop | c4_shop_before.png | c4b_shop_after.png | 写る | C-4a と同じお店画面。a との違いは右上の所持金の帯が「¥30万」になる所（11/09 親が確認） |
 | C-15 | claude/lost-notebook-neta-candidate | MZ_UI=event MZ_EV=0056 | c15_lostnote_before.png | c15_lostnote_after.png | 写る | 「二人のノート」→「二人のネタ帳」、「書いてるノート」→「書いてるネタ帳」（谷口と俺の2行を見る） |
 | C-17 | claude/final-neta-notice-cand | MZ_UI=prelude_final MZ_NOTICE=1 | c17_final_notice_before.png | c17_final_notice_after.png | 写る | 2本目カードの下に赤字「1本目を2本目と同じネタにしたので、2本目の選択が外れました。選び直してください。」が増える |
-| C-18 | claude/announce-order-cand | MZ_UI=finalist_announce | - | - | 写らない | 呼ばれる順の差は漢字名の位置だけで、発表の動きの途中の並びにしか出ず、静止画では前後が同じに見える（カタカナ名・谷口バンドで確認） |
+| C-18 | claude/announce-order-cand | MZ_UI=finalist_announce | - | - | 写らない | 呼ばれる順の差は漢字名の位置だけで、発表の動きの途中の並びにしか出ず、静止画では前後が同じに見える（カタカナ名・谷口バンドで確認） |（11/09 定期：MZ_COMBI=炭火ブラザーズ で発表の途中 3・6・9・14秒を本体と候補で撮っても同じ絵＝フックは year: 1 固定で、1年目は候補でも呼ばれる位置が同じになる。差を見せるならフックに年を渡す必要あり）
 | C-22 | claude/youth-notice-y10-cand | MZ_UI=week MZ_YEARS=9 MZ_STOPWEEK=1 MZ_CARE=1 | c22_youth_before.png | c22_youth_after.png | 写る | 10年目1週の下に谷口の一言の札が出る（後のみ・起動7秒後に撮らないと消える）。前は札なし |
-| C-24 | （既存） | - | c24_offer_stamina_note.png | - | - | 既存 |
-| C-25 | （既存） | - | c25_calendar_gp_paint.png | - | - | 既存 |
+| C-24 | claude/offer-stamina-note-cand | MZ_UI=offers MZ_NOCHIP=1 | c24_offer_stamina_before.png | c24_offer_stamina_note.png | 写る | 体力0の週のオファーの札3枚：前は何も出ない、後は各札の下に赤字「体力0になる」（11/09 定期で前を足した） |
+| C-25 | claude/calendar-gp-paint-cand | MZ_UI=calendar MZ_STOPWEEK=33 MZ_GPLOST=1 | c25_calendar_gp_before.png | c25_calendar_gp_after.png | 写る | 頂GP の予選で落ちた後：前は GP2回戦〜決勝の5マスが赤いまま、後は白（出られる大会だけ赤）。MZ_GPLOST は 11/09 定期で足した目視フック（旧 c25_calendar_gp_paint.png も残す） |
 | C-5 | claude/notebook-entries-label-cand | MZ_UI=notebook MZ_YEARS=2 MZ_TAB=kiroku | q5_notebook_before.png | q5_notebook_after.png | 写る | 手帳「戦績」上段の見出し：「優勝」→「通算の優勝」、「獲得賞金」→「通算の賞金」（右2つの枠を見る） |
 | C-21 | claude/shop-manager-name-cand | MZ_UI=event MZ_EV=0023 MZ_EVSTEP=99 MZ_EVPICK=1 | q21_manager_before.png | q21_manager_after.png | 写る | 「正社員の話」の返事の話者名：「店長」→「矢島」（中ほどの吹き出しの名札。エンディングの布施店長→矢島は別場面で未撮影） |
 | Q141 | claude/gacha-entry-cand | MZ_UI=shop | q141_gacha_before.png | q141_gacha_after.png | 写る | お店の一番上（部屋の上）に「衣装ガチャ」の帯と「今日の札」ボタンが増える（前は無し） |
