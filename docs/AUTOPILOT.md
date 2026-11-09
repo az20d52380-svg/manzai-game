@@ -161,6 +161,7 @@
 255. [済 11/09 夜 定期・候補 f9da882a・79645e85] invite-variants の△11行を直した（opus・15本書き換え＝A の同じ文5本・B の完全一致3組・SlowMorning の食い違い・「どうする？」締め 11→8。Payday の A は5,000円と合う「割り勘でお願いします」）。GameCore 469・アプリ green。まとめの枝へ反映：text 611ff46f（作り直し）・both 42fe579a・all f692aefc（追い merge・全部 TEST SUCCEEDED を確かめて push）。
 256. [済 11/10 未明 定期・候補 c6bcdbef・6197d177・095450e3・本体 654b7dea] fanreport-plus の△29本を直した（opus・重なり・意味の取りにくさ＋長さ超えの2本を縮めた・古参の前提の件は触らず）。積んだ試し版 fanreport-veteran に取り込み、書き換わった9本を veteranOnly でも新しい文へ（095450e3・469・アプリ green）。再発防止に本体へテスト FanReportKnownOnly1109Tests（knownOnly の写しがどの配列にも無いと赤）。まとめ：text b0a6e881（本体の新テスト込み 404 green）・both b647d3a9・all a2f7981c。
 257. [済 11/10 未明 定期・b8db445a・候補 fb202b1f／b4389dab／f371b1c1] 文の候補3本の△を直した（opus・lull 8・次点群 13・独白 4＋長さ超えの2本を縮めた・直し案が他と重なる物は別の話題に）。残した△11本は年数・古参の前提（判断一覧 C 追記と同じ論点）。469・アプリ green。まとめ：text 5133a4cd・both 6e9baf73・all 4bf399f6（全部 TEST SUCCEEDED）。
+258. [済 11/10 未明 定期・be1ca8a0・候補 c3f69c38] late-events E1〜E20 の△14のうち13を直した（opus・中条の敬語を揃える・E2/E6/E17 は台詞で意味を通す・E8 は題だけ）。残り＝E11（直し案が選択肢のラベルを変える）と E8 を E7 の後に出す条件＝判断として採点文書に。469・アプリ TEST SUCCEEDED。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
