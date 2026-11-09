@@ -179,6 +179,7 @@
 273. [済 11/10 朝 定期・a08ec935] 未採点の文の置き場を洗い出し（sonnet・docs/unscored_text_inventory_1110_v0.md）＝上位：WeekMainView 98・FinalsPresentationView 86（司会は 271 で済）・SettingsView 73・Meta 63（称号）・GachaView 40・TournamentResultView／NotebookView／AbilityUpView／StageViews。
 274. [ ] （273 の続き・上から1本ずつ opus で採点→×は候補で文字列だけ直す）WeekMainView（11/10 朝 着手）→ SettingsView → Meta（称号）→ GachaView → TournamentResultView → NotebookView → AbilityUpView → FinalsPresentationView の司会以外。
 275. [済 11/10 朝 定期・a5291f81・候補 claude/weekmain-text-fix-cand 18e17331] 週メイン画面の文の採点（opus・docs/weekmain_text_score_1110_v0.md）＝58行 ○39△12×5。×は候補で直した（「越える」→「超える」3・すれ違いの「ネタ合わせ」→ボタン名「相方と合わせる」・体力切れ「今日は休もう」→「今週は休もう」2）＝GameCore 469・アプリ 402 TEST SUCCEEDED。判断の論点：飽きの「新しいネタを書くと元どおり」が見飽きたネタ自体が戻ると読める（設定の用語集も同じ）／撮影の週の呼び方のゆれと判子「休演」／借金の額が文に直書き。
+276. [済 11/10 朝 定期・f6b2c537・候補 claude/settings-text-fix-cand 1c9afb15] 設定画面の文の採点（opus・docs/settings_text_score_1110_v0.md）＝73 ○61△10×2・用語集と仕組みの照合で食い違い0。×（用語集の「ネタ合わせ」→「相方と合わせる」・解散の注記「いまの」→「今の」）は候補で直した（469・402 green）。論点：飽き・「稽古」の呼び方は 275 と同じ／用語集の長い2項目を2文に割るか（推奨＝割る）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
