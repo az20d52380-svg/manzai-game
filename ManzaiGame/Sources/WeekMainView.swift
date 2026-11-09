@@ -1437,6 +1437,7 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
+        session.resetDebtWarnIfRepaid(money: s.money)   // 【候補 #4 後半】返し終えたら次の借金でまた知らせる（ほかの知らせの週でも戻すよう先頭で＝candidate_review_1026_v0 §2）
         if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
             session.clearInjuryNotice()
             injuryNotice = GameSession.injuryNoticeText
