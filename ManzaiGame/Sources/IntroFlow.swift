@@ -45,11 +45,12 @@ struct ReminiscencePlayer: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        let card = cards[safe: index] ?? cards[0]
+        let shown = min(max(0, index), cards.count - 1)   // 目視フックで範囲外の番号を渡されても「2 / 1」にしない（本編は常に範囲内）
+        let card = cards[shown]
         let lines: [Advice] = !card.talk.isEmpty ? card.talk
             : (card.line.map { [Advice(name: card.speaker, text: $0)] } ?? [])
         VStack(spacing: 0) {
-            YoseHeaderBar(title: title, subtitle: "\(index + 1) / \(cards.count)",
+            YoseHeaderBar(title: title, subtitle: "\(shown + 1) / \(cards.count)",
                           closeTitle: "とばす ▶", closeAction: onSkip.map { skip in { Sound.play(.cursor); skip() } })
             ZStack(alignment: .topLeading) {
                 RecallPicture(mood: card.mood, together: card.together, backdrop: card.backdrop)
