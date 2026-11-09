@@ -618,3 +618,5 @@ cd GameCore && swift test
 - `text_repeat_15y_yearend_1108_v0.md` — 結成15年通しの文の読み返し率（年末の独白・ファンレポ・選択イベントの回る文面・判断の一覧 B-15 の続き）
 - `playtest_mixed_late_1109_v0.md` — 実プレイ点検 混合コンビの11・15年目・年末・エンディング#4/#7（高0中0低0・1108 版の続き）
 - `allbundles_visual_1109_v0.md` — 候補を全部まとめた試しの枝（all-bundles-1109-cand）の1〜2年目の目視15枚（高0中0低2・重なりの崩れなし）
+- `allbundles_late_visual_1109_v0.md` — 全部入りの枝の後半の年の目視15枚（高0中0低3・候補の重なりの崩れなし）
+- `main_late_visual_y12_14_1109_v0.md` — 本体の12〜14年目の目視13枚（高0中0低2）
