@@ -155,6 +155,7 @@
 215. [済 11/09 定期] 全部入りの枝（all-bundles）で後半の年（3・6・10・11・15年目の週・15年目の年末総決算・日程表・エンディング）15枚の目視 allbundles_late_visual_1109_v0（sonnet・親の照合後 高0 中0 低3）＝候補どうしの重なりによる切れ・はみ出し・二重説明なし。MZ_UI=offers は後半年だと別のイベントで止まる（フックの都合）。
 216. [済 11/09 定期] refresh_candidates（遅れ65以上）で候補11本に本体を取り込み直し＝全部 GameCore・アプリ green で push（final-neta-notice・final-year-history・gacha-entry・hana-loss-line・lost-notebook-neta・notebook-entries-label・offer-desc-short・partner-action-name・qual-long-list・shop-manager-name・yearly-goal）。注意：origin/claude/<候補> の参照は fetch の設定で古いままのことがある＝遅れは手元の枝で数える（check_candidates の「遅れ」は15ほど大きく出る）。
 217. [済 11/09 定期] 本体の12・13・14年目の目視 main_late_visual_y12_14_1109_v0（sonnet・13枚・高0 中0 低2）＝文字切れ・重なり・後半年の不自然な文言なし。14年目の日程表は新人系（結成10年以内）が塗られず careerYearAtMost が効いている。低＝オファー札の説明の二重（既知 137）・MZ_UI=event は MZ_EV 無しだと固定の画面（フックの都合）。
+218. [済 11/09 定期] 本体の selftest（run_selftest.sh・MZ_ALLOWSAVE=1）＝29行・DONE・失敗行なし。全部入りの枝（02556305）の soak 10分＝落ちず・320〜329MB で横ばい・クラッシュログ増えず（単独で soak していない候補約30本もこの枝でまとめて確認した扱い）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
