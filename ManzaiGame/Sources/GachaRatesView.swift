@@ -65,7 +65,7 @@ struct GachaRatesView: View {
                     row("\(r.label)　\(o.displayName)", GachaCatalog.display(GachaCatalog.percent(of: o)), "")
                 }
             }
-            Text("小数第3位以下は切り捨てて表示しています。割合は1回ごとに独立で、前の結果や回数で変わりません（天井の交換を除く）。")
+            Text("小数第3位以下は切り捨てて表示しています。割合は1回ごとに独立で、前の結果や回数で変わりません（初回の1回と、天井の交換を除く）。")
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
         }
         .padding(YoseMetrics.padH).frame(maxWidth: .infinity, alignment: .leading).yoseKifuda()
