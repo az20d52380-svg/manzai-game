@@ -480,14 +480,14 @@ enum ChoiceEventData {
     private static let weekendInviteYakitori = ChoiceEventText(
         title: "先輩から誘い",
         setup: [
-            Advice(name: nil, text: "劇場の裏口。先輩が上着を羽織っていた。"),
+            Advice(name: nil, text: "劇場の裏口。先輩が店のチラシを持っていた。"),
             Advice(name: "先輩", text: "新しくできた焼き鳥の店、行ってみないか。軽く飲もう"),
-            Advice(name: "谷口", text: "焼き鳥、いいね。どうする？"),
+            Advice(name: "谷口", text: "焼き鳥、いいね。行きたいな"),
         ],
         choiceLabels: weekendInviteLabels,
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "行きます。お願いします"),
+                Advice(name: "俺", text: "行きます。焼き鳥、久しぶりです"),
                 Advice(name: "谷口", text: "楽しみだね。行こう"),
             ],
             "B": [
@@ -521,17 +521,17 @@ enum ChoiceEventData {
         title: "先輩から誘い",
         setup: [
             Advice(name: nil, text: "劇場の裏口。先輩が財布をのぞいていた。"),
-            Advice(name: "先輩", text: "バイト代が入ったんだ。今夜は割り勘で飲まないか"),
-            Advice(name: "谷口", text: "割り勘なら行きやすいね。どうする？"),
+            Advice(name: "先輩", text: "やっとバイト代が入ってさ。今夜、飲みに行かないか"),
+            Advice(name: "谷口", text: "割り勘なら、こっちも行けるね。どうする？"),
         ],
         choiceLabels: weekendInviteLabels,
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "行きます。お願いします"),
+                Advice(name: "俺", text: "行きます。割り勘でお願いします"),
                 Advice(name: "谷口", text: "何を頼もうか"),
             ],
             "B": [
-                Advice(name: "俺", text: "今夜はやめておきます。また誘ってください"),
+                Advice(name: "俺", text: "今夜は節約します。また誘ってください"),
                 Advice(name: "先輩", text: "おう。次は来いよ"),
             ],
         ]
@@ -542,7 +542,7 @@ enum ChoiceEventData {
         setup: [
             Advice(name: nil, text: "劇場の裏口。先輩が腕時計を見ていた。"),
             Advice(name: "先輩", text: "まだ店が開いてる時間だな。少しだけ飲んでいかないか"),
-            Advice(name: "谷口", text: "終電まではまだあるね。どうする？"),
+            Advice(name: "谷口", text: "終電まではまだあるね"),
         ],
         choiceLabels: weekendInviteLabels,
         afterChoice: [
@@ -587,8 +587,8 @@ enum ChoiceEventData {
         choiceLabels: weekendInviteLabels,
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "行きます。お願いします"),
-                Advice(name: "谷口", text: "楽しみだね"),
+                Advice(name: "俺", text: "行きます。あの店、また行きたかったんです"),
+                Advice(name: "谷口", text: "また唐揚げ食べたいな"),
             ],
             "B": [
                 Advice(name: "俺", text: "今夜は帰ります。また今度お願いします"),
@@ -631,7 +631,7 @@ enum ChoiceEventData {
                 Advice(name: "先輩", text: "最終は遅いから大丈夫だよ"),
             ],
             "B": [
-                Advice(name: "俺", text: "今夜は帰ります。また今度お願いします"),
+                Advice(name: "俺", text: "今夜は帰ります。遠いので、また今度で"),
                 Advice(name: "先輩", text: "おう。またな"),
             ],
         ]
@@ -642,7 +642,7 @@ enum ChoiceEventData {
         setup: [
             Advice(name: nil, text: "劇場の裏口。先輩が紙袋を提げていた。"),
             Advice(name: "先輩", text: "実家に帰ってきたんだ。土産を渡したいし、少し飲まないか"),
-            Advice(name: "谷口", text: "お土産だって。どうする？"),
+            Advice(name: "谷口", text: "お土産だって。行こうか？"),
         ],
         choiceLabels: weekendInviteLabels,
         afterChoice: [
@@ -651,7 +651,7 @@ enum ChoiceEventData {
                 Advice(name: "先輩", text: "大した物じゃないよ。行こう"),
             ],
             "B": [
-                Advice(name: "俺", text: "今夜は帰ります。また誘ってください"),
+                Advice(name: "俺", text: "今夜は帰ります。せっかくなのに、すみません"),
                 Advice(name: "先輩", text: "じゃあ、土産だけ持っていけ"),
             ],
         ]
@@ -702,12 +702,12 @@ enum ChoiceEventData {
         setup: [
             Advice(name: nil, text: "劇場の裏口。先輩が鞄を肩にかけていた。"),
             Advice(name: "先輩", text: "明日は朝がゆっくりなんだ。落ち着いて飲める店に行かないか"),
-            Advice(name: "谷口", text: "明日の朝、こっちは早かったっけ。どうする？"),
+            Advice(name: "谷口", text: "こっちは明日、朝からバイトだよね。どうする？"),
         ],
         choiceLabels: weekendInviteLabels,
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "行きます。少しだけお願いします"),
+                Advice(name: "俺", text: "行きます。早めに切り上げます"),
                 Advice(name: "谷口", text: "うん、たまにはいいね"),
             ],
             "B": [
