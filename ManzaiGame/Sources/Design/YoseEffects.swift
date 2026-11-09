@@ -44,9 +44,10 @@ enum YoseFX {
     /// 効果音再生フック（後から AVAudioPlayer / AudioServices を1箇所に繋ぐだけで全画面鳴る）
     /// 候補（キュー158 ②）：口ごとの音のファイルが無いので、今ある SE に当てて鳴らす。当てが無い口は鳴らさない。
     static var onPlaySound: ((YoseSoundEffect) -> Void)? = { se in
-        let map: [YoseSoundEffect: SE] = [.championImpact: .taiko, .stampHeavy: .don, .prizeGet: .money]
-        if let s = map[se] { Sound.play(s) }
+        if let s = soundMap[se] { Sound.play(s) }
     }
+    /// 口→今ある SE の対応表（呼ぶたびに作らない・code_review_cands4_1109 #3）。ここに無い口は鳴らさない。
+    static let soundMap: [YoseSoundEffect: SE] = [.championImpact: .taiko, .stampHeavy: .don, .prizeGet: .money]
 
     static func sound(_ se: YoseSoundEffect) {
         onPlaySound?(se)
