@@ -27,3 +27,4 @@
 ## 親の照合（11/09）
 - エンディング#4 の最初の画面が「来年の出番表」なのは意図どおり（Endings.swift:33 `.keptGoing: "来年の出番表"`・EndingViews.swift:193）＝所見から外す。残りは低1。
 - #4 の「来年の」も意図どおり（#4＝keptGoing＝最終年の後も二人で続ける結末＝ゲームの外の来年の話）。よって高0 中0 低0。
+- §3 の未確認（11/09 定期・文字で確認）：エンディングの場面カード（Endings.swift cards・EndingViews・S6bView・MeetingKind）の台詞に一人称の直書きは無い＝主人公・相方は全部 {me}/{partner1} と話者の札「俺」（Names.show が形ごとに俺／私へ）。アプリ全体でも「俺」「僕」「私たち」「俺ら」の直書きは先輩2人（堀口・野々村）と形の説明文だけ、「私」はファンレポの客の声だけ。「俺」の直書きは GameCore の FirstPersonLiteralTests が既に赤で止める。画面での見た目（ENDSTEP=art）は未撮影のまま。
