@@ -13,6 +13,7 @@ struct ShopView: View {
     @State private var visitStart: GameState?
     @State private var purchases: [ShopItem] = []
     @State private var showGacha = false
+    @ObservedObject private var gacha = GachaStore.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,24 +21,10 @@ struct ShopView: View {
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money)
             ScrollView {
                 VStack(spacing: 10) {
+                    gachaEntry   // 入口は一番上（最下部だと見つからない・playtest_v17 §5 D/F）
                     roomSection
                     noren   // 品書きは買う品の見出し＝部屋の下に（上にあると部屋も品書きの中に見えた・visual_check_1027d #3）
                     ForEach(session.config.shopLineup, id: \.self) { row($0) }   // 能力に効く品は売らない（原則 2026-10-12）
-                    Button { showGacha = true } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("衣装ガチャ").font(YoseFont.gothic(16, weight: .heavy))
-                                Text("舞台の衣装（見た目だけ）。毎日のログインで無料でも回せます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
-                            }
-                            Spacer()
-                            YoseTag(text: "新", style: .solidEnji)
-                        }
-                        .foregroundStyle(YoseColor.sumi)
-                        .padding(.horizontal, YoseMetrics.padH).padding(.vertical, 12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .yoseHarigami(isFeatured: true)
-                    }
-                    .buttonStyle(.plain).padding(.top, 8)
                     Text("お店をとじるまでは「戻す」で取り消せます。\n回数に限りがあるものは、年が明けると戻ります。")
                         .multilineTextAlignment(.leading)
                         .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.sumi)
@@ -50,8 +37,38 @@ struct ShopView: View {
             }
         }
         .background(YoseColor.kinari.ignoresSafeArea())
-        .onAppear { if visitStart == nil { visitStart = session.state } }
+        .onAppear {
+            if visitStart == nil { visitStart = session.state }
+            #if DEBUG
+            // 目視用：MZ_UI=shop と MZ_GACHA=claimed で「今日の札を受取済み」の見た目へ（タップ不要）
+            let env = ProcessInfo.processInfo.environment
+            if env["MZ_UI"] == "shop", env["MZ_GACHA"] == "claimed" { _ = gacha.claimLogin() }
+            #endif
+        }
         .fullScreenCover(isPresented: $showGacha) { GachaView { showGacha = false } }
+    }
+
+    /// 衣装ガチャの札（お店の一番上）。今日のログインの札を未受取なら「今日の札」の印を添える（表示だけ・保存や数値には触らない）
+    static func gachaBadge(canClaimToday: Bool) -> String { canClaimToday ? "今日の札" : "新" }
+
+    private var gachaEntry: some View {
+        let canClaim = gacha.state.canClaimLogin(today: GachaState.dayKey())
+        return Button { showGacha = true } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("衣装ガチャ").font(YoseFont.gothic(16, weight: .heavy))
+                    Text("舞台の衣装（見た目だけ）。毎日のログインで無料でも回せます").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                }
+                Spacer()
+                YoseTag(text: Self.gachaBadge(canClaimToday: canClaim), style: canClaim ? .outlineShu : .solidEnji)
+            }
+            .foregroundStyle(YoseColor.sumi)
+            .padding(.horizontal, YoseMetrics.padH).padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .yoseHarigami(isFeatured: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(canClaim ? "衣装ガチャ。今日のログインの札がもらえます" : "衣装ガチャ")
     }
 
     /// 品書き見出し（左に見出し・右に操作の説明・下に墨線）
