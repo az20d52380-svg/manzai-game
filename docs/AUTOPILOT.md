@@ -10,7 +10,7 @@
 - （2026-10-14 昼・絶対厳守）作業を止めるのはオーナーの「止めて」だけ。質問は止めての後にまとめる。UI/UX改善・リサーチ含めできること全部。上限は背景sleepでリセット後に自動再開（~/.claude/CLAUDE.md ルール15〜18）。
 
 ## 常設の作業（キューが空の時にここから足す・上ほど先）
-- 目視：直近の自走で入った画面（iPhone 17・MZ_UI フック・各1枚 scale 0.5）→崩れは直す　新フック（11/10）：MZ_SCROLL=career|credits（設定の下側）・MZ_UI=trophies（MZ_TROPHIES=15,16,22）・MZ_UI=finals_spectator（観戦・帯は未）
+- 目視：直近の自走で入った画面（iPhone 17・MZ_UI フック・各1枚 scale 0.5）→崩れは直す　新フック（11/10）：MZ_SCROLL=career|credits（設定の下側）・MZ_UI=trophies（MZ_TROPHIES=15,16,22）・MZ_UI=finals_spectator（観戦・帯は `MZ_FIN=board` を足すと出る）
 - テスト：GameCore の未カバーの所に swift test を足す（式・golden は触らない）
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
