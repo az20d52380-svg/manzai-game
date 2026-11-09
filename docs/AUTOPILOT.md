@@ -213,7 +213,7 @@
 307. [済 11/10 昼 定期・候補 claude/pass-banner-cand 91c1d646] 通過演出の上帯（論点の推奨形・判断待ち）：「◆ 漫 才 の 頂 、 こ こ に 決 ま る ◆」→「◆ 次 の 舞 台 へ ◆」（YoseMilestoneFX:162 の1行・優勝演出と決勝イントロは据え置き）。469・402 green。撮影は未＝MZ_UI=pass は結果の看板の前で止まる（看板まで進めるフックが要る）。
 308. [済 11/10 昼 定期・15a59ef3・3afc2da2＝`MZ_UI=pass MZ_PASS=board` で通過の看板から始まる・本体の帯も候補「次の舞台へ」も崩れなし（docs/visual_pass_banner_1110_v0.md）・469・402 green］（307 の続き・道具）通過演出の結果の看板まで進める目視フック（MZ_UI=pass に段の指定を足す）→ pass-banner 候補を撮る。
 309. [済 11/10 昼 定期・まとめの枝 claude/rec-1110-bundle-cand d3c4ef92] 論点の推奨形の候補5本（intro-15y-note・fatigue-wording・small-wording-1110・calendar-week-label・pass-banner）を1本に＝衝突なし・GameCore 469・アプリ 402 TEST SUCCEEDED・golden 一致。text-all-1110-bundle と重ねるかは未確認（weekmain/settings の同じファイルを触る＝次の回で make_bundle で試す）。
-310. [ ] （309 の続き）text-all-1110-bundle の中身＋rec-1110-bundle の5本を1本に重ねられるか make_bundle で試す（衝突は手で解く）→ 全部入りの soak。
+310. [済 11/10 昼 定期・claude/all-1110-bundle-cand 66ab96ff＝text-all-1110-bundle＋推奨形5本が衝突なしで重なる・GameCore 472・アプリ 402 TEST SUCCEEDED・golden 一致・soak 6分 317〜332MB 落ちず・クラッシュログ 1→1。今日の文の候補は全部この1本］（309 の続き）text-all-1110-bundle の中身＋rec-1110-bundle の5本を1本に重ねられるか make_bundle で試す（衝突は手で解く）→ 全部入りの soak。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
