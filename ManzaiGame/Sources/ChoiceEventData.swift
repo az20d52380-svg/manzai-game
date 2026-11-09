@@ -25,14 +25,9 @@ enum ChoiceEventData {
     }
 
     /// year/week を渡すと、何度も来るイベント（§102 先輩の誘い＝1キャリア約19回）は週ごとに文面を替える（同じ週の再描画は同じ文面）。
+    /// 11/09：本編は下の pick 版＝この版は「週だけで回す」選び方を pick 版に渡すだけ（テストが本編の経路を通るように・code_review_allbundles_1109 #10）
     static func text(for kind: ChoiceEventKind, year: Int, week: Int) -> ChoiceEventText {
-        let v: [ChoiceEventText]
-        switch kind {
-        case .weekendInvite: v = weekendInviteVariants
-        case .styleTalk:     v = styleTalkVariants   // 0019 連敗の相談（1キャリア約6回）
-        default:             return text(for: kind)
-        }
-        return v[((year &* 48 &+ week) % v.count + v.count) % v.count]
+        text(for: kind, year: year, week: week) { _, count, salt in (salt % count + count) % count }
     }
 
     /// 文面の種類があるイベントは、このキャリアで出した文面を避けて選ぶ（pick＝GameSession.pickIndex。乱数なし・同じ週の再描画は同じ文面）。
