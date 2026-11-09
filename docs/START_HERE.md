@@ -627,3 +627,4 @@ cd GameCore && swift test
 - `voiceover_audit_1109_v0.md` — 読み上げの札のコード点検 11/09（タップで進む画面13・候補 a11y-tap-next に抜け3つを追加）
 - `code_review_2026-11-09_v0.md` — コード点検 11/09（10/28 以降の本体のソース52ファイル・高0中2低6・ガチャの無料券の順番＝AUTOPILOT 229）
 - `code_review_allbundles_1109_v0.md` — 全部入りの枝と本体の差分のコード点検 11/09（高0中2低8・calendar-jan の帰省の電話の出にくさ＝推測）
+- `calendar_jan_week_gates_1109_v0.md` — 候補 calendar-jan（1月始まり）の週の条件の一覧 11/09（4月始まり前提の取りこぼし0・未直しは文面のずれ等4）
