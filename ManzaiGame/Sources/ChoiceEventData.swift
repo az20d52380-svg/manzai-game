@@ -588,8 +588,8 @@ enum ChoiceEventData {
         choiceLabels: weekendInviteLabels,
         afterChoice: [
             "A": [
-                Advice(name: "俺", text: "行きます。ありがとうございます"),
-                Advice(name: "先輩", text: "よし。好きな物を頼めよ"),
+                Advice(name: "俺", text: "行きます。お腹すいてたんです"),
+                Advice(name: "先輩", text: "よし。量の多い店にしよう"),
             ],
             "B": [
                 Advice(name: "俺", text: "今夜は帰ります。ちゃんと食べます"),
