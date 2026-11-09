@@ -34,3 +34,4 @@
 - 中の calendar-jan（帰省の電話を週41以降へ）は「推測・未実測」。入れると決まったら、Python 側の発火条件の鏡像（check_event_trigger_parity）と出会う率の実測で確かめる。
 - calendar-jan の実測（n=300・exp_event_reach_relax_v0 の base・ボット4種）：帰省の電話／キャリア＝本体 0.21〜0.26 → 候補 0.14〜0.22（約2〜4割減）。年末ライブも 0.13〜0.33 → 0.08〜0.24。0にはならない＝「GP に残る人には出ない」ほどではなく、出にくくなる程度。入れるなら帰省の発火の週の幅を合わせ直すかを一緒に決める（AUTOPILOT 129 の論点と同じ所）。
 - #2（career-end-save）取り下げ：夜逃げ・解散の年末でセーブが残るのは候補の狙い（案A＝年末で落ちても周と図鑑を消さない）どおり。復元すると同じ年末の画面に戻り、「もう一度」（returnToTitle→closeCareer）で消える。
+- #4 直した（候補 final-neta-notice-cand・startNextYear で印を戻す・391 green）。#5 直した（候補 calendar-jan-candidate のコメント 7554d8c8）。まとめの枝には次の取り込み直しで入る。
