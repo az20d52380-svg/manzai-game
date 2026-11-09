@@ -202,8 +202,17 @@ struct CalendarView: View {
             if w >= session.week { return spec.isEligible(year: session.year, state: session.state) }
             return Self.paintsPastTournamentWeek(spec, year: session.year, category: session.categoryLog[w])
         }
-        if cal.gpRounds.contains(where: { $0.week == w }) { return true }
-        return w == cal.gpFinalWeek
+        if cal.gpRounds.contains(where: { $0.week == w }) || w == cal.gpFinalWeek {
+            // 【候補 C-25 案②】来週以降の頂GP は、まだ出られる段（upcomingStages に残る回戦・決勝・敗者復活）だけ塗る。予選で落ちた後の週は道中の大会と同じく塗らない（calendar_ineligible_paint_1108_v0）
+            if w > session.week { return Self.paintsFutureGPWeek(w, upcoming: session.upcomingStages()) }
+            return true
+        }
+        return false
+    }
+
+    /// 来週以降の頂GP の週を塗るか（表示専用・純関数）
+    static func paintsFutureGPWeek(_ w: Int, upcoming: [GameSession.StageInfo]) -> Bool {
+        upcoming.contains { $0.isGP && $0.week == w }
     }
 
     // 第1週=4月。4週で1ヶ月。

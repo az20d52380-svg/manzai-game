@@ -154,6 +154,7 @@
 		F444AA5447FAEA7A8EBF0C76 /* YoseChampionCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5077E6524DE17A958E0227F5 /* YoseChampionCelebrationView.swift */; };
 		F4567396EAA4FCEB182730F2 /* RepeatWinLine1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F4D8F68EE6CC0866FE3347D /* RepeatWinLine1108Tests.swift */; };
 		F5C20BF8C4688D372B1CDAD2 /* se_cheer_mid.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AEC6B5215F2367DEB6EBD6B7 /* se_cheer_mid.mp3 */; };
+		F61C95794E366AB2BFB959FC /* CalendarGPPaint1109Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D8FA3ECAAAD197A1C553E9 /* CalendarGPPaint1109Tests.swift */; };
 		F67F427099D30DD5F0C83E3F /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3508320D6170D988482A068 /* ShareCard.swift */; };
 		F967A1905142AE45BD662184 /* PastWeekPaint1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D634556BD3C91BB6B807E91 /* PastWeekPaint1108Tests.swift */; };
 		FA2BF3AD44DE33658099B2B2 /* RankBar1027Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BE5CA7BB955F597941B4CD /* RankBar1027Tests.swift */; };
@@ -221,6 +222,7 @@
 		5E7F1FD060FF17083911E1AD /* FinalsTalk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalsTalk.swift; sourceTree = "<group>"; };
 		5F49ED139642FC2518E962F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		6083AAF4C14A5E6DFED2E5DF /* se_kira.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_kira.mp3; sourceTree = "<group>"; };
+		61D8FA3ECAAAD197A1C553E9 /* CalendarGPPaint1109Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarGPPaint1109Tests.swift; sourceTree = "<group>"; };
 		62ED400B84054F70C3BA1883 /* se_tap.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_tap.mp3; sourceTree = "<group>"; };
 		64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageRAppTests.swift; sourceTree = "<group>"; };
 		66E27924EC74E9F3BDF71C17 /* NetaSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetaSelectionView.swift; sourceTree = "<group>"; };
@@ -495,6 +497,7 @@
 				E271E3EB3BF64D4F08ABCC74 /* AppCoverage1025Tests.swift */,
 				340E4B0117C5AF8BBEC2AC57 /* AppSaveFixtureTests.swift */,
 				9104A4D1D6023F30CCB420FA /* BankruptStageWeek1109Tests.swift */,
+				61D8FA3ECAAAD197A1C553E9 /* CalendarGPPaint1109Tests.swift */,
 				858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */,
 				9F615A70F2E3CF773141D2EF /* ComboNameVerbatim1108Tests.swift */,
 				C0FD8C5D4F11D970B78D68B9 /* CommandCatalogTests.swift */,
@@ -779,6 +782,7 @@
 				A04542CD185A20BC467338C6 /* AppCoverage1025Tests.swift in Sources */,
 				E58B538509C7357838D5078F /* AppSaveFixtureTests.swift in Sources */,
 				1D14CB5C98BE6BAAC3FF5D27 /* BankruptStageWeek1109Tests.swift in Sources */,
+				F61C95794E366AB2BFB959FC /* CalendarGPPaint1109Tests.swift in Sources */,
 				91723692D04B2F63B7FBD319 /* ChoiceEventPairing1027Tests.swift in Sources */,
 				7160CB6276B001F1606E28E7 /* ComboNameVerbatim1108Tests.swift in Sources */,
 				CDB07DD7D5C98BA8BB44BD2E /* CommandCatalogTests.swift in Sources */,
