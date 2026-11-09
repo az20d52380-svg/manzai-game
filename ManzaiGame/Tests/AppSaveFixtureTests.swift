@@ -59,4 +59,34 @@ final class AppSaveFixtureTests: XCTestCase {
         let save2 = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: obj2))
         XCTAssertEqual(save2.categoryLog.count, n, "知らない印の週だけ捨てる")
     }
+
+    /// 廃止した「正社員の話」（0023・抽選外）が保留中のまま残った旧セーブでも、開いて札を選べる（GameSession.applyEventChoice の互換の枝）。
+    private func legacyRegularEmploymentSession() throws -> GameSession {
+        var obj = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any])
+        obj["pendingChoiceEvent"] = "regularEmployment"
+        let save = try JSONDecoder().decode(GameSession.SaveData.self, from: JSONSerialization.data(withJSONObject: obj))
+        XCTAssertEqual(save.pendingChoiceEvent, .regularEmployment)
+        return GameSession(restoring: save)
+    }
+    func testLegacyRegularEmploymentAcceptAppliesEffects() throws {
+        let s = try legacyRegularEmploymentSession()
+        XCTAssertEqual(s.pendingChoiceEvent, .regularEmployment)
+        XCTAssertEqual(Set(s.availableEventChoices().map(\.id)), ["A", "B"])
+        let money = s.state.money, stamina = s.state.stamina, budget = s.state.growthBudget
+        s.applyEventChoice("A")
+        XCTAssertEqual(s.state.money, money + 30_000)
+        XCTAssertEqual(s.state.stamina, max(0, stamina - 10))
+        if let b = budget {
+            XCTAssertEqual(s.state.growthBudget ?? -1, max(0, b - s.config.regularJobCeilingCost), accuracy: 1e-9)
+        }
+        s.dismissChoiceEvent()
+        XCTAssertNil(s.pendingChoiceEvent)
+    }
+    func testLegacyRegularEmploymentDeclineKeepsMoney() throws {
+        let s = try legacyRegularEmploymentSession()
+        let money = s.state.money, budget = s.state.growthBudget
+        s.applyEventChoice("B")
+        XCTAssertEqual(s.state.money, money)
+        XCTAssertEqual(s.state.growthBudget, budget, "断ると成長天井は縮まない")
+    }
 }
