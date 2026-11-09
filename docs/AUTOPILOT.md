@@ -167,6 +167,11 @@
 225. [済 11/09 夜 定期] 本体の大きい文字の目視・後半12枚 visual_largetext_1109b_v0（sonnet・親の照合後 高0 中0 低1）＝低はバイト結果の一時の数字「体力 -10」が知名度の札に少しかかる（消えるまでの間だけ）。敗者復活は目視フック MZ_UI=stage_result（MZ_STAGE・MZ_PASS）を足して最初の画面＝崩れなし。山場のページも MZ_CLIMAX=<n> を足して1・7ページ目＝崩れなし。二人で出かける場面は本体に無い（候補 outing-v3 側の場面）＝本体の目視の対象外。一時の数字の位置は固定の余白（WeekMainView burstCostOverlay の leading 172・bottom 80）だった→候補 claude/burst-cost-scaled-cand（1f38cf50・アプリ 393 green）で帯の上の目印に下端をそろえる形に＝通常・大きい文字とも帯のすぐ上・知名度が見える（feedback_shots/largetext_1109b/autojob_after_crop.png）。通常の大きさでも位置が少し上に動くため候補止まり（表示だけ・判断不要なら本体へ入れてよい）。
 226. [済 11/09 夜 定期] 読み上げ（VoiceOver）の札のコード点検 voiceover_audit_1109_v0（sonnet）＝画像だけのボタン・数字の札の抜け0・タップで進むのに操作の無い画面13（候補 a11y-tap-next-cand が9画面を用意済み）。抜け3つを候補に足した（131）。目視フック MZ_UI=stage_result／MZ_CLIMAX を本体に（f11d45d6・16cfa21a・アプリ 393 green）。
 
+227. [済 11/09 夜 定期] 候補 first-pass-share（B-6）だけ本体との衝突（TournamentResultView の DEBUG フック行＝MZ_FIRSTPASS と本体の MZ_UI=stage_result）→両方残して取り込み（27feb120・GameCore 469／アプリ 395 green・`MZ_UI=result_done MZ_PASSFX=1 MZ_FIRSTPASS=1` で「共有」ボタン OK）。注意：xcodebuild test の直後に simctl install すると試験の入れ替えと競って古い画面になることがある＝もう一度 install してから撮る。
+228. [済 11/09 夜 定期] refresh_candidates（遅れ70以上）＝rift-trophy（466b8fc9）・tv-fatigue-display（6f99894d）・yose-sound-wire（1d9b2c5d）に本体を取り込み green で push。first-pass-share は道具が古い手元の枝を見て「衝突」と出した（origin は 227 で解消済み）→手元の枝を origin（27feb120）に合わせた。`git fetch origin <枝>` だけでは追跡の参照が動かない＝`+refs/heads/X:refs/remotes/origin/X` で取る。
+229. [ ] （11/09 夜 定期）候補 yose-sound-wire（1d9b2c5d）の soak 6分が2分目で「落ちた」と出たが、同時刻（16:10）に別のセッションが同じ iPhone 17 で xcodebuild test を始めていた（試験で本体のアプリが入れ替わる）＝無効。クラッシュログは増えず（1→1）。iPhone 17 が空いた回で測り直す。
+227. [済 11/09 夜 定期] refresh_candidates（遅れ50以上）で候補26本に本体を取り込み直し＝23本 green で push・赤3本は回し直しで season-sure（6ba080c0）・retire-confirm（016772fd）が green（一時的な失敗）・unused-parts は本体の新しいテストが消した部品を確かめていた所を外した版（99b958d8）で green。衝突1本＝first-pass-share（TournamentResultView.swift）は未処理。注意：zsh では `"+refs/heads/$b:refs/..."` の `$b:r` が拡張子を消す修飾子になる＝必ず `${b}` と書く。体力の減りの札の位置の直しを候補 burst-cost-scaled-cand に。
+
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
 - （10/25 自走）THE HANA の難しさ：「難」（10年で優勝 約8%・決勝 約55%）か「極」（約1.5%・約27%）か。推奨＝難。女性コンビは GP 決勝が約2pt 下がるだけで有利にはならない（docs/the_hana_measure_1025_v0.md）。あわせて時期：今の案だとゲームの暦で決勝が2月第4週（「12月上旬」にするなら週を前へ・§7）
