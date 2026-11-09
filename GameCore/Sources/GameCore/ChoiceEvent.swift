@@ -40,13 +40,13 @@ public enum ChoiceEventKind: String, CaseIterable, Codable {   // Codable=中断
     case regularFanOranges   // 0048: いつものお客さん（知名度15+）
     case officeTicketQuota   // 0049: ライブのチケット（知名度<30）
     // --- 芸人の暮らしのイベント 第2束（docs/choice_events_more_v1.md・2026-10-16。週次抽選プール・各1回制） ---
-    case summerFestivalGig   // 0051: 夏祭りの営業（7〜8月=週14-20・体力40+・本番の前週でない）
+    case summerFestivalGig   // 0051: 夏祭りの営業（7〜8月=週26-32・体力40+・本番の前週でない）
     case doukiOnTV           // 0052: 同期がテレビに出た夜（週20以降・知名度<30）
     case theaterRenovation   // 0053: いつもの劇場の改装（週12以降・知名度<40）
     case classmateInAudience // 0054: 同級生が客席に（週10以降・知名度5+）
     case partnerFever        // 0055: 相方の熱（週6以降・体力<50）
     case lostNotebook        // 0056: なくしたノート（週10以降・持ちネタあり）
-    case yearEndLive         // 0057: 年末のライブ（12月=週33-36）
+    case yearEndLive         // 0057: 年末のライブ（12月=週45-48）
 
     /// 週次抽選プールに属するか（false=上の確定発火群）。GameSession の週次抽選が allCases から拾う。
     public var isWeeklyRandom: Bool {
