@@ -64,9 +64,9 @@ final class GachaStore: ObservableObject {
     }
 
     // 画面から使う操作
-    func pull(count: Int) -> [PullResult] {
+    func pull(count: Int, preferPaid: Bool = false) -> [PullResult] {
         var g = SystemRandomNumberGenerator()
-        return mutate { s in (0..<count).compactMap { _ in s.pullOne(&g) } }
+        return mutate { s in (0..<count).compactMap { _ in s.pullOne(&g, preferPaid: preferPaid) } }
     }
     func credit(txID: String, count: Int) { mutate { $0.credit(txID: txID, count: count) } }
     func claimLogin(today: String = GachaState.dayKey()) -> Bool { mutate { $0.claimLogin(today: today) } }

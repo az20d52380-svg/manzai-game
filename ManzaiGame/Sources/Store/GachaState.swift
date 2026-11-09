@@ -101,8 +101,10 @@ struct GachaState: Codable, Equatable {
 
     // MARK: 抽選
     /// 1回分を引く（券は無料→有料の順に使う）。券が無ければ nil
-    mutating func pullOne<G: RandomNumberGenerator>(_ g: inout G) -> PullResult? {
-        if freeTickets > 0 { freeTickets -= 1 } else if paidPending > 0 { paidOpened += 1 } else { return nil }
+    /// preferPaid＝買った直後・未開封を回す時は購入分から開ける（無料券を持ったまま買うと購入分が未開封に残っていた＝code_review_2026-11-09 #1）
+    mutating func pullOne<G: RandomNumberGenerator>(_ g: inout G, preferPaid: Bool = false) -> PullResult? {
+        if preferPaid && paidPending > 0 { paidOpened += 1 }
+        else if freeTickets > 0 { freeTickets -= 1 } else if paidPending > 0 { paidOpened += 1 } else { return nil }
         let outfit = (totalPulls == 0) ? Self.drawFirst(&g) : Self.draw(&g)   // 初回ガチャ【仮】：最初の1回は特別が必ず出る
         totalPulls += 1
         pity += 1

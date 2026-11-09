@@ -151,9 +151,9 @@ struct GachaView: View {
             case .paid1, .paid10:
                 let id = plan == .paid1 ? StoreIDs.ticket1 : StoreIDs.ticket10
                 guard await store.purchase(id) else { return }
-                results = gacha.pull(count: gacha.state.availableTickets > 0 ? plan!.count : 0)
+                results = gacha.pull(count: gacha.state.availableTickets > 0 ? plan!.count : 0, preferPaid: true)
             case nil:
-                results = gacha.pull(count: gacha.state.paidPending)
+                results = gacha.pull(count: gacha.state.paidPending, preferPaid: true)
             }
             if !results.isEmpty { Sound.play(.tap) }
         }

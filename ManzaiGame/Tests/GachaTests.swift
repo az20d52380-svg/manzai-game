@@ -200,4 +200,16 @@ final class GachaTests: XCTestCase {
         XCTAssertEqual(b.state.owned.count, 1)
         XCTAssertTrue(b.owns(.standard))
     }
+
+    /// 無料券を持ったまま10回を買って、買った直後に開ける＝購入分から10回開け、無料券は残る（code_review_2026-11-09 #1）
+    func testPaidFirstKeepsFreeTicket() {
+        var s = GachaState(); s.freeTickets = 1
+        XCTAssertTrue(s.credit(txID: "t-paid10", count: 10))
+        var g = SeededGen(s: 7)
+        for _ in 0..<10 { XCTAssertNotNil(s.pullOne(&g, preferPaid: true)) }
+        XCTAssertEqual(s.paidPending, 0)
+        XCTAssertEqual(s.freeTickets, 1)
+        // 既定（無料券の「はじめての1回」等）は今までどおり無料券から
+        XCTAssertNotNil(s.pullOne(&g)); XCTAssertEqual(s.freeTickets, 0)
+    }
 }
