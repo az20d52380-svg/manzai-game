@@ -28,10 +28,10 @@ enum FinalsMC {
     static func pickup(after comment: String, scene: JudgeTalk.Scene = .init(), salt: Int = 0) -> JudgeTalk.Pickup? {
         JudgeTalk.pickup(after: comment, scene: scene, salt: salt)
     }
-    /// 審査員に講評を振る（高い点の人には点を言い、低い点の人には「辛め」と添える）
+    /// 審査員に講評を振る（高い点の人・低い点の人とも点だけを言う。司会は点の良し悪しを言わない＝finals_mc_lines_score_1110_v0 §3）
     static func askJudge(_ judge: String, score: Int, high: Bool) -> String {
         let family = String(judge.split(separator: " ").first ?? Substring(judge))
-        return high ? "\(family)さん、\(score)点。いかがでしたか？" : "\(family)さんは\(score)点と、少し辛めでした。いかがでしたか？"
+        return high ? "\(family)さん、\(score)点。いかがでしたか？" : "\(family)さんは\(score)点。こちらはいかがでしたか？"
     }
     static func seated(name: String, rank: Int) -> String { "\(name)、暫定\(rank)位！ 暫定席へどうぞ！" }
     static func eliminated(name: String, rank: Int) -> String { "\(name)、暫定\(rank)位。ここで敗退です。ありがとうございました！" }

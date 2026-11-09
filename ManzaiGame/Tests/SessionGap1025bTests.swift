@@ -123,7 +123,7 @@ final class FinalsTalkGapTests: XCTestCase {
     }
     func testAskJudgeUsesFamilyNameAndHighLow() {
         XCTAssertEqual(FinalsMC.askJudge("音羽 ルリ", score: 95, high: true), "音羽さん、95点。いかがでしたか？")
-        XCTAssertEqual(FinalsMC.askJudge("音羽 ルリ", score: 80, high: false), "音羽さんは80点と、少し辛めでした。いかがでしたか？")
+        XCTAssertEqual(FinalsMC.askJudge("音羽 ルリ", score: 80, high: false), "音羽さんは80点。こちらはいかがでしたか？")
         XCTAssertEqual(FinalsMC.askJudge("単名", score: 80, high: true), "単名さん、80点。いかがでしたか？")
     }
     func testBandThresholds() {
