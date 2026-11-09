@@ -1172,6 +1172,7 @@ final class GameSession {
         finished = false
         outcome = nil
         didRecordChampion = false   // 連覇＝次の年の優勝も記録する
+        neta2DroppedNotice = false   // 2本目が外れた一言は、その年の決勝の入口だけ（翌年に持ち越すと外していないのに出る・code_review_allbundles_1109 #4）
         pendingResult = nil
         log = []
         categoryLog = [:]
