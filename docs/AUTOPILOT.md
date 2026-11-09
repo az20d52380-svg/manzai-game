@@ -146,6 +146,7 @@
 207. [済 11/09 定期] 本体（f61990c7）の soak を iPhone 17 に絞って10分＝落ちず・317〜332MB で横ばい・クラッシュログ増えず（11/08・11/09 未明の値は取り違えの恐れがあったが、結果は同じ帯）。soak_candidate.sh に SOAK_ENV（例 `SOAK_ENV="MZ_KIND=femaleFemale"`）を足した。続けて女女・男女（MZ_KIND・各6分）も 310〜330MB で横ばい・落ちず。
 208. [済 11/09 定期] 画面の流れに触る候補10本にも soak 6分（iPhone 17 に絞った版）：final-silence・career-end-save・retire-confirm・revival-short・outing-v3・pour-skip-zero・mob-roster-per-run・rift-trophy・meta-smooth-exp16・week-hint-priority＝どれも落ちず・312〜334MB で横ばい・クラッシュログ増えず。これで実行時に触る候補18本は soak 済み。
 209. [済 11/09 定期] C 表の推奨候補16本を本体の上にまとめた試しの枝 claude/c-bundle-1109-cand（0eb5a774・99コミット）：衝突は offer-stamina-note の pbxproj だけ（xcodegen で解決）・GameCore 469・アプリ 408 green・golden/config sync 一致。作り方は scratchpad の bundle.sh（候補を順に merge・pbxproj は ours＋xcodegen・テスト末尾は merge_candidate_tests.py）。soak 10分＝落ちず・315〜325MB で横ばい・クラッシュログ増えず。目視（MZ_UI=offers）：offer-stamina-note の「体力0になる」と offer-desc-short の短い下の札が同じ画面で重ならず収まる。日程表（MZ_UI=calendar MZ_STOPWEEK=33 MZ_GPLOST=1）も GP の残りが白・凡例の文も収まる。15年目の第1週（MZ_YEARS=14）はイベント「地元の友だち」で止まり崩れなし（年末総決算は撮れていない）。含めない物：C-6（台詞と食い違い）・C-14（実機で聞いてから）・C-4 の cprime 案・判断の要る C-7/8/10/12/13/20/23。
+210. [済 11/09 定期] 文の量の候補5本（lull-plus・monologue-plus・minor-pools-plus・fanreport-plus・invite-variants）をまとめた試しの枝 claude/text-bundle-1109-cand：衝突なし・GameCore 469・アプリ 393 green・golden/config sync 一致。182/183 の答えが「足す」ならこの1本で済む。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -178,4 +179,4 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 210（193〜202 は 11/09 の済で移した）。
+- （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 211（193〜202 は 11/09 の済で移した）。
