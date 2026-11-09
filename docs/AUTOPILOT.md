@@ -176,6 +176,8 @@
 270. [済 11/10 朝 定期・f1c6ecde] 269 の起きる割合を実測（sonnet・docs/judge_final_lowside_band_measure_1110_v0.md・審査員の点は FinalsPresentationView の式の写し）＝決勝全体では1.6%だが**優勝した回では36〜39%**（n=44）＝優勝の山場で噛み合わない文が出やすい。案C（稀なので放置）は当たらない。
 271. [済 11/10 朝 定期・84478133] 決勝の司会の台詞の初採点（opus・docs/finals_mc_lines_score_1110_v0.md）＝19本 ○12△5×2。×＝最低点の審査員への「少し辛めでした」（A帯・同点でも言う）と花園の拾いの「割れましたねえ」（差1〜2点でも出る）。△は直し案だけ（「暫定」の重なり・準決勝の発表の吹き出しにト書き）。
 272. [済 11/10 朝 定期・候補 claude/finals-mc-fix-cand b3a6c742] 271 の×2を文字列だけ直した（「{姓}さんは{点}点。こちらはいかがでしたか？」・「割れましたねえ」を外す）。GameCore 469・アプリ 402 TEST SUCCEEDED（親が候補で再確認）。269 の候補（JudgeTalk 側）と別ファイル＝両方入れられる。本体へはオーナーの OK 待ち。
+273. [済 11/10 朝 定期・a08ec935] 未採点の文の置き場を洗い出し（sonnet・docs/unscored_text_inventory_1110_v0.md）＝上位：WeekMainView 98・FinalsPresentationView 86（司会は 271 で済）・SettingsView 73・Meta 63（称号）・GachaView 40・TournamentResultView／NotebookView／AbilityUpView／StageViews。
+274. [ ] （273 の続き・上から1本ずつ opus で採点→×は候補で文字列だけ直す）WeekMainView（11/10 朝 着手）→ SettingsView → Meta（称号）→ GachaView → TournamentResultView → NotebookView → AbilityUpView → FinalsPresentationView の司会以外。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
