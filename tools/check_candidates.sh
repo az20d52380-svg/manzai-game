@@ -5,7 +5,12 @@
 set -u
 cd "$(dirname "$0")/.."
 BASE=${1:-$(git rev-parse --abbrev-ref HEAD)}
-C=$(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -v '^claude/q-candidate$')
+# 11/09：手元の枝は古いことがある（別の作業場所に出しっぱなし・refresh が分離 HEAD で push）＝ origin の候補を取り直し、origin に在ればそちらを見る。
+# 本体に別の形で入った3本（vitalbar-numberpop・the-hana 2本）は外す（refresh_candidates.sh と同じ）。
+SKIP='^claude/(q-candidate|vitalbar-numberpop-cand|the-hana-candidate|the-hana-candidate-r1027)$'
+GIT_TERMINAL_PROMPT=0 git fetch -q origin '+refs/heads/claude/*:refs/remotes/origin/claude/*' 2>/dev/null
+C=$(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -vE "$SKIP" | while read -r b; do
+  if git rev-parse -q --verify "refs/remotes/origin/$b" >/dev/null; then echo "origin/$b"; else echo "$b"; fi; done)
 files() { git merge-tree --write-tree --name-only "$1" "$2" 2>/dev/null | sed -n '2,/^$/p' | grep -v '^$' | sed 's#.*/##' | tr '\n' ' '; }
 echo "== 本体 $BASE と"
 for b in $C; do
