@@ -10,7 +10,7 @@
 - （2026-10-14 昼・絶対厳守）作業を止めるのはオーナーの「止めて」だけ。質問は止めての後にまとめる。UI/UX改善・リサーチ含めできること全部。上限は背景sleepでリセット後に自動再開（~/.claude/CLAUDE.md ルール15〜18）。
 
 ## 常設の作業（キューが空の時にここから足す・上ほど先）
-- 目視：直近の自走で入った画面（iPhone 17・MZ_UI フック・各1枚 scale 0.5）→崩れは直す
+- 目視：直近の自走で入った画面（iPhone 17・MZ_UI フック・各1枚 scale 0.5）→崩れは直す　新フック（11/10）：MZ_SCROLL=career|credits（設定の下側）・MZ_UI=trophies（MZ_TROPHIES=15,16,22）・MZ_UI=finals_spectator（観戦・帯は `MZ_FIN=board` を足すと出る）
 - テスト：GameCore の未カバーの所に swift test を足す（式・golden は触らない）
 - 実プレイ点検：debugAdvanceUntilStage で1年通し→分かりにくい所を記録→表示だけ直す
 - 実測の決まり（2026-10-19 追記2）：並列で回す時は `Pool(maxtasksperchild=1)` ＋ `map(..., chunksize=1)`（案ごとの上書きが次の案に漏れる＝measure_harness_fix_v0）。
@@ -174,6 +174,29 @@
 268. [済 11/10 朝 定期・05bce929] 決勝の審査員コメントの初採点（opus・docs/judge_final_comment_score_v1.md）＝63本 ○57△6×0＋仕組みの×1（最低点の審査員がB帯の時、司会の「少し辛めでした」の直後に全褒めの行）。拾いは約2.9%。置き換え残り・性別語・「笑」・丸写しは0。
 269. [済 11/10 朝 定期・候補 claude/judge-final-highonly-cand c3beccff] 268 の×を案A で候補に：全褒め11行を「高い側だけ」に・惜しさ入りB行4本（天堂寺1・白波2・音羽1）・テスト JudgeFinalHighOnly1110Tests（GameCore 472 green）。※天堂寺の1行は関西弁＝SKILL の「関西弁の講評を増やさない（判断待ち）」に当たる＝判断次第で差し替え。本体へ入れるかはオーナーの OK 待ち。
 270. [済 11/10 朝 定期・f1c6ecde] 269 の起きる割合を実測（sonnet・docs/judge_final_lowside_band_measure_1110_v0.md・審査員の点は FinalsPresentationView の式の写し）＝決勝全体では1.6%だが**優勝した回では36〜39%**（n=44）＝優勝の山場で噛み合わない文が出やすい。案C（稀なので放置）は当たらない。
+271. [済 11/10 朝 定期・84478133] 決勝の司会の台詞の初採点（opus・docs/finals_mc_lines_score_1110_v0.md）＝19本 ○12△5×2。×＝最低点の審査員への「少し辛めでした」（A帯・同点でも言う）と花園の拾いの「割れましたねえ」（差1〜2点でも出る）。△は直し案だけ（「暫定」の重なり・準決勝の発表の吹き出しにト書き）。
+272. [済 11/10 朝 定期・候補 claude/finals-mc-fix-cand b3a6c742] 271 の×2を文字列だけ直した（「{姓}さんは{点}点。こちらはいかがでしたか？」・「割れましたねえ」を外す）。GameCore 469・アプリ 402 TEST SUCCEEDED（親が候補で再確認）。269 の候補（JudgeTalk 側）と別ファイル＝両方入れられる。本体へはオーナーの OK 待ち。
+273. [済 11/10 朝 定期・a08ec935] 未採点の文の置き場を洗い出し（sonnet・docs/unscored_text_inventory_1110_v0.md）＝上位：WeekMainView 98・FinalsPresentationView 86（司会は 271 で済）・SettingsView 73・Meta 63（称号）・GachaView 40・TournamentResultView／NotebookView／AbilityUpView／StageViews。
+274. [済 11/10 朝 定期＝275〜281] （273 の続き・上から1本ずつ opus で採点→×は候補で文字列だけ直す）WeekMainView（11/10 朝 着手）→ SettingsView → Meta（称号）→ GachaView → TournamentResultView → NotebookView → AbilityUpView → FinalsPresentationView の司会以外。
+275. [済 11/10 朝 定期・a5291f81・候補 claude/weekmain-text-fix-cand 18e17331] 週メイン画面の文の採点（opus・docs/weekmain_text_score_1110_v0.md）＝58行 ○39△12×5。×は候補で直した（「越える」→「超える」3・すれ違いの「ネタ合わせ」→ボタン名「相方と合わせる」・体力切れ「今日は休もう」→「今週は休もう」2）＝GameCore 469・アプリ 402 TEST SUCCEEDED。判断の論点：飽きの「新しいネタを書くと元どおり」が見飽きたネタ自体が戻ると読める（設定の用語集も同じ）／撮影の週の呼び方のゆれと判子「休演」／借金の額が文に直書き。
+276. [済 11/10 朝 定期・f6b2c537・候補 claude/settings-text-fix-cand 1c9afb15] 設定画面の文の採点（opus・docs/settings_text_score_1110_v0.md）＝73 ○61△10×2・用語集と仕組みの照合で食い違い0。×（用語集の「ネタ合わせ」→「相方と合わせる」・解散の注記「いまの」→「今の」）は候補で直した（469・402 green）。論点：飽き・「稽古」の呼び方は 275 と同じ／用語集の長い2項目を2文に割るか（推奨＝割る）。
+277. [済 11/10 朝 定期・eb6729a6・候補 claude/meta-text-fix-cand e47c8cf0] 称号・トロフィーの文の採点（opus・docs/meta_text_score_1110_v0.md）＝47項目 ○29△15×3。×（t15/t16 の説明に「GPの回戦」・t22 に「大会へ5つ以上出て」）は候補で直した（469・402 green）。名前の論点8つは §4（t18 十年選手・t10 五年目の全力＝1〜5年目のどこでも取れる・t22 六冠＝道中の大会は今7つ・季節名と暦のずれ t03/t08 ※calendar-jan 候補が入ると暦が変わる＝一緒に判断）。
+278. [済 11/10 朝 定期・a167d3ad・候補 claude/gacha-text-fix-cand 93c6ee9e] ガチャ画面の文の採点（sonnet・docs/gacha_text_score_1110_v0.md）＝約40 ○31△8×1。×（「下の『持っていない衣装』」が見出しと合わない＋「40で」に単位）は候補で直した（GameCore 469 は親が確認・アプリ 402 green）。論点：無料券が先に使われる件（229）・画面に出ている【仮】・有料ボタンの近くに割合の要約を出すか。
+279. [済 11/10 朝 定期・f7337a5a] 大会結果画面の文の採点（sonnet・docs/tournament_result_text_score_1110_v0.md）＝約49 ○42△7×0（大会名・回戦名は GameCore と一致・最終年の「来年は」は15年で切れている）。△＝敗者復活の山場が毎回同じ（127）・「今夜は早く寝よう」と決勝の間隔・「通過／突破」・「頂グランプリ／頂GP」のゆれ等＝直し案だけ。
+280. [済 11/10 朝 定期・74e5188b・候補 claude/notebook-abilityup-text-fix-cand 74f8d77c] 手帳と能力アップ画面の文の採点（sonnet・docs/notebook_abilityup_text_score_1110_v0.md）＝約83 ○69△13×1。×（ヒント「「Fまで5」は…」＝画面にその表示が無い）を「上がる能力には ↑ の印が付く」に（↑ は AbilityUpView:235 に実在＝親が確認・469・402 green）。論点：確定ボタン（138）・「戦績」の見出しのゆれ・「持ち分／経験点」の混在。
+281. [済 11/10 朝 定期・77576b7b・候補 claude/finals-screen-text-fix-cand beca93ab] 決勝画面の文（司会以外）の採点（sonnet・docs/finals_screen_text_score_1110_v0.md）＝約72 ○62△9×1。×（観戦の帯「予選敗退のため」が出場しない年・準決勝敗退にも出る）→「今年は決勝に進めなかったため、客席から観戦しています」（469・402 green）。△＝番手の数え方3通り・「ファーストラウンド／1本目」・「開票」の二通りの使い方・頂グランプリ／頂GP・字幕「漫才師の頂点」が実在番組の売り文句に近い。
+282. [済 11/10 朝 定期・まとめの枝 claude/text-fix-1110-bundle-cand a07cd6e6] 今日の文の直しの候補9本（judge-v8-fix・judge-final-highonly・finals-mc-fix・finals-screen-text-fix・weekmain/settings/meta/gacha/notebook-abilityup の text-fix）を make_bundle で1本に＝衝突なし・見送りなし・GameCore 472・アプリ 402 TEST SUCCEEDED・golden/定数一致。オーナーが「推奨どおり」なら、この枝1本を本体へ入れれば済む（天堂寺の関西弁の1行だけ判断と一緒に）。
+283. [済 11/10 朝 定期・44abc5d9] 予選の知らせ・お店・カレンダー・導入の文の採点（sonnet・docs/qualifier_shop_calendar_intro_text_score_1110_v0.md）＝約116 ○105△11×0（値段・家賃・暦＝第1週4月・回戦名は仕組みと一致）。論点：カレンダーの「第N週」が通算と月内の2通り（推奨＝月＋月内の週）・導入に「結成15年が期限」の説明が無い・予選の知らせ（110）。
+284. [済 11/10 朝 定期・6892fa91] 場面・エンディング・節目／年変わり／優勝の演出・部品の文の採点（sonnet・docs/scene_ending_fx_text_score_1110_v0.md）＝約115 ○106△9×0（15年の年表・大会名・読み上げ文は一致）。論点：「新春の備え」と4月始まり（案「新年度の備え」・calendar-jan 候補と一緒に）／朱印「日本一」が THE HANA 決勝にも出る／通過演出の上帯「漫才の頂、ここに決まる」が優勝演出と同じ文。
+285. [済 11/10 昼 定期・e8ce4ddc・候補 claude/session-command-text-fix-cand 2a91f0c9] お知らせ・コマンド・ネタ・提供割合の文の採点（sonnet・docs/session_command_neta_rates_text_score_1110_v0.md）＝約95 ○82△12×1。×（提供割合の注記「前の結果や回数で変わりません」が初回1回の特別確定＝GachaState:106 と食い違う）に「初回の1回と」の例外を足した（GameCore 469 は親が確認・アプリ 402 green）。まとめの枝 text-fix-1110-bundle を10本で作り直した（56d59b77・472・402 green・golden 一致）。論点：ボイトレ「安い部屋」なのに8万円・サウナ「家よりよく休める」が最上の部屋で成り立たない・ネタの型の表示名（画面未使用・テストが固定）・【仮】の外し方・THE HANA 優勝の「日本一」。
+286. [済 11/10 昼 定期・ccb4b339] 残りの小さな文の置き場の採点（sonnet・docs/small_text_places_score_1110_v0.md）＝約92 ○87△5×0（能力の略称・衣装名・足元の札は一致）。論点：衣装「ジャージ」が柄の段・看板「寄　席」の空白・「日本一」。→ 一巡のまとめ docs/text_score_sweep_1110_summary_v0.md（14の採点・×14件は全部まとめの枝・オーナー判断の論点を5つに束ねた）。
+287. [済 11/10 昼 定期] まとめの枝 text-fix-1110-bundle（56d59b77）の soak 6分＝317〜326MB 横ばい・落ちず・クラッシュログ 1→1。
+288. [済 11/10 昼 定期・aab77d28] まとめの枝 text-fix-1110-bundle の目視（sonnet・docs/visual_text_fix_bundle_1110_v0.md・shots_1110/）＝8画面 崩れなし。未＝称号一覧・体力切れのトースト・決勝の点の発表と観戦の帯・用語集／設定の下側（フックが無い・スクロールが要る）。直した文はどれも元と同じか短い長さ＝崩れの心配は小さい。
+289. [済 11/10 昼 定期・2bb714bf・0d1f3388＝MZ_SCROLL=career|credits（設定）・MZ_UI=trophies（図鑑の先頭＋MZ_TROPHIES=15,16,22）・MZ_UI=finals_spectator（審査員席から＝観戦の帯の場面までは進まない＝帯は未）。まとめの枝の称号 t15/t16/t22・用語集の解散の注記は崩れなし・469・402 green］（288 の続き・道具）目視フックを足す：設定／用語集の MZ_SCROLL（下側）・称号一覧（MZ_UI=trophies 等）・決勝の観戦の帯。足したら 288 の未を撮る。
+290. [済 11/10 昼 定期・候補 claude/text-tri-1110-cand 69987d65] 今日の採点の△のうち判断の要らない直し10か所（sonnet・docs/text_tri_fix_1110_v0.md＝句点・「未振り分け」・読み上げ「あなた」・「題名」・ガチャのポイント表記・サウナ「しっかり休める（有料）」・合わせるの説明）。入れなかった△約25件は理由付き（§4 の論点・谷口の台詞・直し済み）。GameCore 469（親）・アプリ 402 green・text_lens 超え0。
+291. [済 11/10 昼 定期・1c5b450e] 決勝の形式が実在番組に似る件の材料（sonnet・Web 6回・docs/finals_format_resemblance_research_1110_v0.md）＝形式そのものは守られにくい（一般論）・問題は連想の強さ・推奨②言葉だけ言い換え（該当語：暫定27・最終決戦30・敗者復活33・日本一9・頂点4・大トリ2）。他作品の事例は2件しか確かめられず。
+292. [済 11/10 昼 定期・20f77331] 観戦の帯の目視＝既存の `MZ_UI=finals_spectator MZ_FIN=board` で帯の場面から始まる（新しいフック不要）。本体の帯とまとめの枝の直した帯（「今年は決勝に進めなかったため、客席から観戦しています」）は iPhone 17 で1行に収まる・崩れなし。288 の「未」はこれで全部済。
+293. [済 11/10 昼 定期・候補 claude/judge-final-tri-cand 08271128（judge-final-highonly の上に積んだ）] 決勝の審査員コメントの△4行を直した（opus・目白の体力フック・音羽の場面行とD帯・花園C「早口」の言い換え＝関西弁は本数を増やさず）。GameCore 472 green・400通りで4行とも出ることを確認。残し＝語彙「オチの締め」（紙講評と共有の8語）。本体の網羅＝GameCore 99.76%・0回5か所・アプリの一覧は既知どおり。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
