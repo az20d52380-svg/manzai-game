@@ -628,3 +628,4 @@ cd GameCore && swift test
 - `code_review_2026-11-09_v0.md` — コード点検 11/09（10/28 以降の本体のソース52ファイル・高0中2低6・ガチャの無料券の順番＝AUTOPILOT 229）
 - `code_review_allbundles_1109_v0.md` — 全部入りの枝と本体の差分のコード点検 11/09（高0中2低8・calendar-jan の帰省の電話の出にくさ＝推測）
 - `calendar_jan_week_gates_1109_v0.md` — 候補 calendar-jan（1月始まり）の週の条件の一覧 11/09（4月始まり前提の取りこぼし0・未直しは文面のずれ等4）
+- `session_tests_1109_v0.md` — GameSession の未通過の処理にテスト8本（DEBUG 以外の0回の行は防御コード4行だけ・不具合なし）
