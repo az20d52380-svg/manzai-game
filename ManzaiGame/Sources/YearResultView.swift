@@ -507,6 +507,14 @@ struct YearResultView: View {
                 } message: {
                     Text("ここで終わります。このコンビの続きは遊べません。")
                 }
+                #if DEBUG
+                .task {   // 目視フック MZ_RETIRE=confirm：確かめの文を開いた状態で撮る（定期の回はタップ不可）
+                    if ProcessInfo.processInfo.environment["MZ_RETIRE"] == "confirm" {
+                        try? await MZSpeed.sleep(nanoseconds: 1_500_000_000)
+                        confirmRetire = true
+                    }
+                }
+                #endif
             }
         } else { singleButton }
     }
