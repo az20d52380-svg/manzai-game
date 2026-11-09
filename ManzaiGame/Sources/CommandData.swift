@@ -133,11 +133,11 @@ enum CommandCatalog {
         }
     }
 
-    static func extraCards(config: GameConfig, offer: OfferSpec?, money: Int, fatigued: Bool = false) -> [CommandVariant] {
+    static func extraCards(config: GameConfig, offer: OfferSpec?, money: Int, fatigued: Bool = false, showDesc: Bool = true) -> [CommandVariant] {
         var cards: [CommandVariant] = []
         if let offer {
             let blurb = offerBlurb(offer.name)
-            cards.append(CommandVariant(id: "offer", name: "オファー：\(offer.name)", desc: blurb,
+            cards.append(CommandVariant(id: "offer", name: "オファー：\(offer.name)", desc: showDesc ? blurb : "",
                                         glyph: "star.circle.fill", action: .acceptOffer, isTrain: false))
         }
         return cards   // バイトは4ボタンの1つへ移した（2026-10-12）
