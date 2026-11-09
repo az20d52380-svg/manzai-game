@@ -187,6 +187,7 @@
 281. [済 11/10 朝 定期・77576b7b・候補 claude/finals-screen-text-fix-cand beca93ab] 決勝画面の文（司会以外）の採点（sonnet・docs/finals_screen_text_score_1110_v0.md）＝約72 ○62△9×1。×（観戦の帯「予選敗退のため」が出場しない年・準決勝敗退にも出る）→「今年は決勝に進めなかったため、客席から観戦しています」（469・402 green）。△＝番手の数え方3通り・「ファーストラウンド／1本目」・「開票」の二通りの使い方・頂グランプリ／頂GP・字幕「漫才師の頂点」が実在番組の売り文句に近い。
 282. [済 11/10 朝 定期・まとめの枝 claude/text-fix-1110-bundle-cand a07cd6e6] 今日の文の直しの候補9本（judge-v8-fix・judge-final-highonly・finals-mc-fix・finals-screen-text-fix・weekmain/settings/meta/gacha/notebook-abilityup の text-fix）を make_bundle で1本に＝衝突なし・見送りなし・GameCore 472・アプリ 402 TEST SUCCEEDED・golden/定数一致。オーナーが「推奨どおり」なら、この枝1本を本体へ入れれば済む（天堂寺の関西弁の1行だけ判断と一緒に）。
 283. [済 11/10 朝 定期・44abc5d9] 予選の知らせ・お店・カレンダー・導入の文の採点（sonnet・docs/qualifier_shop_calendar_intro_text_score_1110_v0.md）＝約116 ○105△11×0（値段・家賃・暦＝第1週4月・回戦名は仕組みと一致）。論点：カレンダーの「第N週」が通算と月内の2通り（推奨＝月＋月内の週）・導入に「結成15年が期限」の説明が無い・予選の知らせ（110）。
+284. [済 11/10 朝 定期・6892fa91] 場面・エンディング・節目／年変わり／優勝の演出・部品の文の採点（sonnet・docs/scene_ending_fx_text_score_1110_v0.md）＝約115 ○106△9×0（15年の年表・大会名・読み上げ文は一致）。論点：「新春の備え」と4月始まり（案「新年度の備え」・calendar-jan 候補と一緒に）／朱印「日本一」が THE HANA 決勝にも出る／通過演出の上帯「漫才の頂、ここに決まる」が優勝演出と同じ文。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
