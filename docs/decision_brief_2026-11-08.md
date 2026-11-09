@@ -12,6 +12,7 @@
    - （11/09 追記）文の量の候補5本（週頭の声の lull・独白・次点群、ファンレポの通過側、先輩の誘いの文面＝B-15 の続き・AUTOPILOT 182/183）も1本にまとめた枝 `claude/text-bundle-1109-cand` を作った＝green・golden 一致（数値は不変・文の在庫だけ増える）。
    - 2本とも入れる時の重なり（ChoiceEventOverlay の1か所）を解いた版 `claude/both-bundles-1109-cand` もある＝GameCore 469・アプリ 410 green。
    - （11/09 追記）B 表の推奨どおりの候補12本（B-1〜6・8〜13。B-7＝実機で・B-14＝A-4 と一緒・B-15＝A-1 の後は含めない）も `claude/b-bundle-1109-cand` に＝GameCore 469・アプリ 400 green。B・C・文の量を**全部推奨どおり**入れた版は `claude/all-bundles-1109-cand`＝GameCore 469・アプリ 419 green。
+   - （11/10 追記）画面の文と講評の採点を一巡した（約1,000個・×14件）。直しは全部 `claude/text-fix-1110-bundle-cand`（×だけ）／`claude/text-all-1110-bundle-cand`（×＋判断の要らない△）に入っていて、テスト green・6分動かしても落ちない。まとめ＝docs/text_score_sweep_1110_summary_v0.md。
 
 ---
 
