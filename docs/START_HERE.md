@@ -620,3 +620,4 @@ cd GameCore && swift test
 - `allbundles_visual_1109_v0.md` — 候補を全部まとめた試しの枝（all-bundles-1109-cand）の1〜2年目の目視15枚（高0中0低2・重なりの崩れなし）
 - `allbundles_late_visual_1109_v0.md` — 全部入りの枝の後半の年の目視15枚（高0中0低3・候補の重なりの崩れなし）
 - `main_late_visual_y12_14_1109_v0.md` — 本体の12〜14年目の目視13枚（高0中0低2）
+- `ending_mixed_visual_1109_v0.md` — 女×男のエンディング場面22枚（一人称「私／俺」どおり・記号残りなし・高0中0低0）
