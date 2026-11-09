@@ -303,7 +303,7 @@ struct FinalsPresentationView: View {
             StageSign(title: "頂グランプリ", subtitle: spectator ? "客席から観戦中" : nil, tag: "決勝", outlined: true)
                 .padding(.horizontal, -4)
             if spectator {
-                Text("※ 予選敗退のため、客席から決勝を観戦しています")
+                Text("※ 今年は決勝に進めなかったため、客席から観戦しています")
                     .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                     .frame(maxWidth: .infinity).frame(height: 26).background(YoseColor.enji)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
