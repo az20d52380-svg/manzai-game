@@ -26,3 +26,8 @@
 - 画面の状態：FirstStageView（task の取り消し・二度押しガード・VoiceOver 時は自動で押さない）、AbilityUpView の確定（`confirmFinished` で反映は1回）、FinalsPresentationView の `voteTailTask` の取り消し、WeekMainView のオファー札を `enumerated` に変えた範囲外の修正は問題なし。
 - 課金：`handle` は付与→finish の順で取引ID重複を台帳で防ぎ、払い戻しは付与しない。`Transaction.updates` の再配信でも二重にならない。ガチャの提供割合表示は切り捨てで合計100%を超えない。
 - 文言：新規・変更の文に実名・ゲーム外の固有名なし。一人称の直書きは話者ラベル（`name: "俺"`・既存の作法）だけで、本文は `{me}`／`Names.partner` を通している（NotebookView の「相方」も Names.partner に直っている）。
+
+## 親の照合（11/09 夜）
+- #1 確認：GachaState.pullOne:105 は無料券を先に使う＝指摘どおり（AUTOPILOT 229・判断待ち）。
+- #3 取り下げ：年末（finished）の間は RootView:403 で YearResultView に替わり、NotebookView は WeekMainView:167 からしか開けない＝本編では二重に数えない。
+- #7・#8 は直した（0bcb6286 の1つ前のコミット）。
