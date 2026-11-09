@@ -159,7 +159,7 @@ struct YosePassCelebrationView: View {
                 ctx.stroke(p, with: .color(YoseColor.enji.opacity(0.35)), lineWidth: 1)
             }.accessibilityHidden(true)
             VStack(spacing: 2) {
-                Text("◆ 漫 才 の 頂 、 こ こ に 決 ま る ◆").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
+                Text("◆ 次 の 舞 台 へ ◆").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
                     .foregroundStyle(YoseColor.kin.opacity(revealed ? 1 : 0.25))
                 ZStack {
                     Text("判 定 中").font(YoseFont.mincho(30)).tracking(10).foregroundStyle(YoseColor.kin.opacity(0.35))
