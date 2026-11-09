@@ -34,12 +34,12 @@ for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | 
   fi
   cd "$W"
   if ! git merge -q --no-edit "$MAIN" >/dev/null 2>&1; then
-    U=$(git diff --name-only --diff-filter=U)
-    if [ "$U" = "ManzaiGame/ManzaiGame.xcodeproj/project.pbxproj" ]; then
+    UF=$(git diff --name-only --diff-filter=U)
+    if [ "$UF" = "ManzaiGame/ManzaiGame.xcodeproj/project.pbxproj" ]; then
       git checkout --theirs ManzaiGame/ManzaiGame.xcodeproj/project.pbxproj
-    elif [ -n "$U" ] && ! grep -l '^<<<<<<<' $U >/dev/null 2>&1; then
+    elif [ -n "$UF" ] && ! grep -l '^<<<<<<<' $UF >/dev/null 2>&1; then
       # 11/09 夜：rerere（記録した解き方）で印なしに解けている＝確定して続ける（テストが green の時だけ push されるのは同じ）
-      git add $U && git commit -q --no-edit
+      git add $UF && git commit -q --no-edit
     else
       echo "$b: 衝突（push せず）$(git diff --name-only --diff-filter=U | sed 's#.*/##' | tr '\n' ' ')"
       git merge --abort; cd "$R"; git worktree remove --force "$W"; continue
