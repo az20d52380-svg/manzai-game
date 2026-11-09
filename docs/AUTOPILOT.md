@@ -146,6 +146,8 @@
 231. [ ] （同 #3〜#6・低）年末に手帳を開くと今年の優勝が二重に数えられうる（NotebookView.kirokuWins）／didRecordChampion がセーブに無い（今の復元経路では起きない）／決勝ラインの表示が別計算（今は一致）／旧の衣装課金の ID 削除（未出荷なら無関係）。#3 は親が確認＝年末（session.finished）の間は RootView が YearResultView に替わり、手帳（NotebookView）は週の画面からしか開けない＝本編では起きない（DEBUG の MZ_UI=notebook でのみ）。直さない。
 242. [済 11/09 定期・候補 late-events に 1b20c128（opus・文字列だけ18件＝中6・低12・ビルド OK）。独り言の「〜いな／〜からな」止め9件と谷口のつぶやき2件は残した＝独り言は許すかがオーナー判断（同文書・decision_brief C 追記に1行）。本体の「俺」の台詞は grep で同じ型0件] （11/09 定期）新しい文の形の点検 docs/combo_kind_new_lines_1109_v0.md（sonnet・高0中6低約22）＝text-bundle は問題なし。late-events の後半イベントで、全形共通の主人公の台詞に男言葉の語尾（「無理はするな」「いい話じゃないか」等）が6件＝本体の言い方（〜ね・です/ます）と食い違う。
 243. [済 11/09 定期] 全部入りの点検より後の候補4本（a11y-tap-next・burst-cost-scaled・gacha-paid-first・yose-sound-wire）のコード点検 code_review_cands4_1109_v0（sonnet・親の照合後 高0中3低4）＝落ちる所・セーブ・golden への影響なし。中は寄席の音の重なり2件（158 と一緒に判断）と読み上げの「次へ」の名前（実機の VoiceOver で確認）。低 #8 の境界のテストは候補 gacha-paid-first に 9cc48386 で足した（GachaTests 19 green）。
+244. [済 11/09 夜 定期] 点検の1本（run_checks）＝GameCore 469・同期 3/3・config 80/80・効果62/発火26 一致・アプリ 401 green。網羅（run_coverage）＝GameCore 99.76%・0回5か所／アプリの一覧とも既知どおり。
+245. [済 11/09 夜 定期・dd6a21a2・候補 8df22dc6] invite-variants 候補の誘いの文を独立採点（opus）＝○25△11×1（docs/invite_variants_independent_score_1109_v0.md・自己採点は全部○＝食い違い12行）。×（Eating の A＝奢りに読めて所持金−5,000）は候補で直した（俺「行きます。お腹すいてたんです」／先輩「よし。量の多い店にしよう」・GameCore 469 green・ビルド OK）。△11（既存版と同じ文の重なり・SlowMorning の A/B の食い違い）は直し案が文書にある＝候補を入れると決まった時に直す。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
