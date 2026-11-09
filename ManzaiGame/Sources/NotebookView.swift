@@ -384,7 +384,7 @@ struct NotebookView: View {
     @ViewBuilder private func nameLabel(_ neta: Neta) -> some View {
         if renamingID == neta.id {
             HStack(spacing: 6) {
-                TextField("題材名", text: $renameDraft)
+                TextField("題名", text: $renameDraft)
                     .onChange(of: renameDraft) { _, v in if v.count > 16 { renameDraft = String(v.prefix(16)) } }   // 新しく書く時の題名と同じ上限（長い名前で題名の行が崩れる）
                     .font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
                     .textFieldStyle(.plain)
