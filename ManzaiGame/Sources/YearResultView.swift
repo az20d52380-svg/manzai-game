@@ -189,7 +189,7 @@ struct YearResultView: View {
         if r.champion { return "もう一度、頂グランプリで優勝" }
         if r.reachedFinal { return "頂グランプリ 決勝で優勝" }
         if r.enteredGP == false { return "頂グランプリに出る" }
-        if r.roundsPassed < names.count { return names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "を突破" }
+        if r.roundsPassed < names.count { return "頂グランプリ " + names[r.roundsPassed].replacingOccurrences(of: "GP", with: "") + "を突破" }   // 大会名を付ける（他の段と揃える＝bc_bundle_text_independent_score_1109 △）
         return "頂グランプリ 決勝に進む"
     }
 
