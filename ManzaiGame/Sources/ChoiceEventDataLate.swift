@@ -73,7 +73,7 @@ extension ChoiceEventData {
             ],
             "B": [
                 Advice(name: "村瀬", text: "分かりました。中条さんに話します"),
-                Advice(name: "俺", text: "頼んだ。無理はするな"),
+                Advice(name: "俺", text: "お願いね。無理しないでね"),
             ],
         ]
     )
@@ -84,7 +84,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "楽屋の廊下。夜。"),
             Advice(name: "谷口", text: "村瀬たち、今日の大会で決勝に進んだって"),
-            Advice(name: "俺", text: "そうか。早いな"),
+            Advice(name: "俺", text: "そっか。早いね"),
             Advice(name: "谷口", text: "連絡、してみる？"),
             Advice(name: "俺", text: "どうしようか"),
         ],
@@ -110,7 +110,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "駅前のビジョン。夕方。"),
             Advice(name: "谷口", text: "あそこに映っているの、野々村さんだ"),
-            Advice(name: "俺", text: "本当だ。番組が決まったんだな"),
+            Advice(name: "俺", text: "本当だ。番組が決まったんだね"),
             Advice(name: "谷口", text: "知らなかった。すごい"),
             Advice(name: "俺", text: "声、かけてみるか"),
         ],
@@ -214,7 +214,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "居酒屋の前。夜。"),
             Advice(name: "石黒", text: "俺たち、今月で解散する"),
-            Advice(name: "俺", text: "そうか。決めたんだな"),
+            Advice(name: "俺", text: "そっか。決めたんだね"),
             Advice(name: "石黒", text: "後悔はしてない。ただ、少し寂しい"),
             Advice(name: "谷口", text: "最後のライブ、行ってもいい？"),
         ],
@@ -229,7 +229,7 @@ extension ChoiceEventData {
             ],
             "B": [
                 Advice(name: "石黒", text: "読んだ。ありがとう"),
-                Advice(name: "俺", text: "元気でな"),
+                Advice(name: "俺", text: "元気でね"),
             ],
         ]
     )
@@ -240,7 +240,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "劇場のロビー。昼。"),
             Advice(name: "石黒", text: "新しい相方が見つかった。来月から出る"),
-            Advice(name: "俺", text: "そうか。よかったな"),
+            Advice(name: "俺", text: "そっか。よかったね"),
             Advice(name: "石黒", text: "見に来てほしい。一度でいいから"),
             Advice(name: "谷口", text: "行ってみよう。同じ日に出るみたいだし"),
         ],
@@ -292,7 +292,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "アパート。深夜。"),
             Advice(name: "谷口", text: "今日の放送、見た？"),
-            Advice(name: "俺", text: "見た。ほとんど映らなかったな"),
+            Advice(name: "俺", text: "見た。ほとんど映らなかったね"),
             Advice(name: "谷口", text: "でも、名前は出ていたよ"),
             Advice(name: "俺", text: "そうか。次に出る時は、短くても集中しよう"),
         ],
@@ -344,7 +344,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "アパートの押し入れ。夜。"),
             Advice(name: "谷口", text: "押し入れから古いノートが出てきた"),
-            Advice(name: "俺", text: "そんなにあったか"),
+            Advice(name: "俺", text: "そんなにあったの？"),
             Advice(name: "谷口", text: "全部で十冊くらい。捨てる？"),
             Advice(name: "俺", text: "中を少し見てからにしよう"),
         ],
@@ -385,7 +385,7 @@ extension ChoiceEventData {
             ],
             "B": [
                 Advice(name: "谷口", text: "続けよう。体は後で戻す"),
-                Advice(name: "俺", text: "無理だと思ったら言ってくれ"),
+                Advice(name: "俺", text: "無理だと思ったら言って"),
             ],
         ]
     )
@@ -474,9 +474,9 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "稽古場。朝。"),
             Advice(name: "谷口", text: "ずっと走ってきたよね。三日だけ休まない？"),
-            Advice(name: "俺", text: "休むのか。大会が近いんじゃないか"),
+            Advice(name: "俺", text: "休むの？ 大会が近いんじゃない？"),
             Advice(name: "谷口", text: "次まで時間はある。体を戻したい"),
-            Advice(name: "俺", text: "そうだな。考えておく"),
+            Advice(name: "俺", text: "そうだね。考えておく"),
         ],
         choiceLabels: [
             "A": "三日休む",
@@ -554,7 +554,7 @@ extension ChoiceEventData {
             Advice(name: "谷口", text: "前に撮った写真、見つけた。結成の年のやつ"),
             Advice(name: "俺", text: "若いな。やせてる"),
             Advice(name: "谷口", text: "今も、同じ劇場で舞台に立ってる"),
-            Advice(name: "俺", text: "そうだな。続けてきたな"),
+            Advice(name: "俺", text: "そうだね。続けてきたね"),
         ],
         choiceLabels: [
             "A": "写真を部屋に飾る",
@@ -604,7 +604,7 @@ extension ChoiceEventData {
             Advice(name: nil, text: "事務所の電話口。夕方。"),
             Advice(name: "中条", text: "隣の県の局で、桐山さんの番組の代役を探しているんです"),
             Advice(name: "谷口", text: "一時間なら、できると思う"),
-            Advice(name: "俺", text: "明日の朝だと、今夜のうちに移動だな"),
+            Advice(name: "俺", text: "明日の朝だと、今夜のうちに移動だね"),
         ],
         choiceLabels: [
             "A": "今夜のうちに電車で向かう",
@@ -730,7 +730,7 @@ extension ChoiceEventData {
             Advice(name: nil, text: "劇場の客席。昼。"),
             Advice(name: "大塚", text: "今日は平日で、昼の客席があまり埋まっていません"),
             Advice(name: "谷口", text: "それでも、来てくれた人にはちゃんと見せたいな"),
-            Advice(name: "俺", text: "でも夜の回もあるし、少し疲れてるんだよな"),
+            Advice(name: "俺", text: "でも夜の回もあるし、少し疲れてるんだよね"),
         ],
         choiceLabels: [
             "A": "昼の回もいつもどおり出る",
@@ -754,7 +754,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "稽古場。昼。"),
             Advice(name: "谷口", text: "前に会った制作会社から、ナレーションの話があったんだ"),
-            Advice(name: "俺", text: "いい話じゃないか"),
+            Advice(name: "俺", text: "いい話じゃない？"),
             Advice(name: "谷口", text: "コンビの稽古と重なる日があるんだ"),
         ],
         choiceLabels: [
@@ -904,7 +904,7 @@ extension ChoiceEventData {
         setup: [
             Advice(name: nil, text: "事務所の受付。昼。"),
             Advice(name: "中条", text: "取引先の新人研修で、話をしてもらえませんか"),
-            Advice(name: "谷口", text: "会社の人の前で話すのか"),
+            Advice(name: "谷口", text: "会社の人の前で話すの？"),
             Advice(name: "俺", text: "平日なら空いてるよ"),
         ],
         choiceLabels: [
@@ -992,7 +992,7 @@ extension ChoiceEventData {
                 Advice(name: "谷口", text: "うん。付き合うよ"),
             ],
             "B": [
-                Advice(name: "谷口", text: "いつもの舞台と思えばいいか"),
+                Advice(name: "谷口", text: "いつもの舞台と思えばいいかな"),
                 Advice(name: "俺", text: "そう思うことにするよ"),
             ],
         ]
@@ -1018,7 +1018,7 @@ extension ChoiceEventData {
             ],
             "B": [
                 Advice(name: "谷口", text: "今年は肩の力を抜いてやろう"),
-                Advice(name: "俺", text: "そうだな。無理はしないでいこう"),
+                Advice(name: "俺", text: "そうだね。無理はしないでいこう"),
             ],
         ]
     )
