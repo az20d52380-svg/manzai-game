@@ -541,7 +541,7 @@ enum FanReportData {
         "めちゃくちゃウケてたのに、この時間の回って通過率低いんだよな…。〈名〉頼む。",
         "会場うわーってなってた〈名〉。でもこの熱量、審査基準とはズレる年もあるからな…。",
         "〈名〉、今日いちばんウケてた自信ある。これで落ちてたら納得いかない。",
-        "隣の席の人が声出して〈名〉にウケてた。会場人気と合否は別って、毎年学んでるのに。",
+        "隣の席の人が声出して〈名〉にウケてた。会場人気と合否は別って、分かってはいるのに。",
         "〈名〉、今日いちばん拍手が大きかった。通ってますように。",
         "〈名〉、会場の空気を全部持っていってた。通過確実でしょ。",
         "〈名〉、手を叩く音がずっと鳴りやまなかった。この組が落ちる予選なら、何が通るの。",
@@ -570,6 +570,11 @@ enum FanReportData {
 
     static let knownOnlyForTest = knownOnly
     static let veteranOnlyForTest = veteranOnly
+    /// knownOnly（と試し版の制限の集合）の文が、どの配列にも無い（書き換えで写しが外れた）ものの一覧＝テスト用。外れると無名の時も出てしまう
+    static var knownOnlyOrphans: [String] {
+        let all = Set(bandA + bandB + bandC + bandD + burstLines)
+        return knownOnly.union(veteranOnly).filter { !all.contains($0) }.sorted()
+    }
     private static let knownOnly: Set<String> = [
         "常連のおじさんが「今日は〈名〉だな」とつぶやいてた。",
         "〈名〉、言い終わりが毎回少し弱くて、客席が笑いどころに気づきにくかった。",
