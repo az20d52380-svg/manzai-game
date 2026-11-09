@@ -629,3 +629,4 @@ cd GameCore && swift test
 - `code_review_allbundles_1109_v0.md` — 全部入りの枝と本体の差分のコード点検 11/09（高0中2低8・calendar-jan の帰省の電話の出にくさ＝推測）
 - `calendar_jan_week_gates_1109_v0.md` — 候補 calendar-jan（1月始まり）の週の条件の一覧 11/09（4月始まり前提の取りこぼし0・未直しは文面のずれ等4）
 - `session_tests_1109_v0.md` — GameSession の未通過の処理にテスト8本（DEBUG 以外の0回の行は防御コード4行だけ・不具合なし）
+- `visual_dark_allbundles_1109_v0.md` — 全部入りの枝のダークモード目視 11/09（9画面・崩れ0・退団の確認文と決勝の一言は未撮影）
