@@ -66,9 +66,8 @@ struct GachaView: View {
                 Button("やめる", role: .cancel) {}
             }
         }
-        .task { store.clearMessage(); await store.refresh(); if s.paidPending > 0 { pendingNote = true } }
+        .task { store.clearMessage(); await store.refresh()}
     }
-    @State private var pendingNote = false
 
     // MARK: ログインボーナス
     private var loginCard: some View {
