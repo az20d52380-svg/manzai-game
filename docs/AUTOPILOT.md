@@ -33,6 +33,7 @@
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
 - 候補ブランチの確認（10/27 深夜〜）：`bash tools/check_candidates.sh` で本体に入るか・候補どうしの衝突を一覧（書き換えなし）。
+- 候補のまとめの枝（11/09〜）：`[PUSH=1] tools/make_bundle.sh claude/<まとめの名前>-cand <dd> <候補…>`＝本体の上に順に merge（pbxproj・テスト末尾は自動で解く）→ GameCore・アプリ・golden/定数の同期 → green の時だけ push。今のまとめ＝c-bundle（C 表16本）・b-bundle（B 表12本）・text-bundle（文の量5本）・both-bundles（C＋文の量）・all-bundles（全部）の各 -1109-cand。判断で外す物が出たら作り直す。
 - 候補の漏れ点検（11/09〜）：`tools/soak_candidate.sh claude/<候補> [dd] [分=10] [ms=10]`＝origin の候補を一時作業場所でビルド→soak→毎分の常駐メモリとクラッシュログの増減を1行で出す（push なし・iPhone 17 を使うので同時に1本だけ）。
 - 候補ブランチの取り込み直し（11/08〜）：`bash tools/refresh_candidates.sh <dd> [遅れの下限=50]`＝衝突しない候補に本体を取り込み、GameCore とアプリが green の時だけ push（pbxproj だけの衝突は xcodegen で作り直す・1本約2分・iPhone 17 を使う）。
 - テストの足し方（10/27 深夜〜）：候補ブランチでも本体でも、新しいテストは ManzaiGame/Tests/ に**新しいファイル**（例 `Foo1028Tests.swift`）で足し `cd ManzaiGame && xcodegen generate`。ManzaiGameTests.swift の末尾に足すと、候補どうし・本体と毎回末尾で衝突する（10/27 は2回取り込み直した）。
@@ -148,6 +149,7 @@
 209. [済 11/09 定期] C 表の推奨候補16本を本体の上にまとめた試しの枝 claude/c-bundle-1109-cand（0eb5a774・99コミット）：衝突は offer-stamina-note の pbxproj だけ（xcodegen で解決）・GameCore 469・アプリ 408 green・golden/config sync 一致。作り方は scratchpad の bundle.sh（候補を順に merge・pbxproj は ours＋xcodegen・テスト末尾は merge_candidate_tests.py）。soak 10分＝落ちず・315〜325MB で横ばい・クラッシュログ増えず。目視（MZ_UI=offers）：offer-stamina-note の「体力0になる」と offer-desc-short の短い下の札が同じ画面で重ならず収まる。日程表（MZ_UI=calendar MZ_STOPWEEK=33 MZ_GPLOST=1）も GP の残りが白・凡例の文も収まる。15年目の第1週（MZ_YEARS=14）はイベント「地元の友だち」で止まり崩れなし（年末総決算は撮れていない）。含めない物：C-6（台詞と食い違い）・C-14（実機で聞いてから）・C-4 の cprime 案・判断の要る C-7/8/10/12/13/20/23。
 210. [済 11/09 定期] 文の量の候補5本（lull-plus・monologue-plus・minor-pools-plus・fanreport-plus・invite-variants）をまとめた試しの枝 claude/text-bundle-1109-cand：衝突なし・GameCore 469・アプリ 393 green・golden/config sync 一致。182/183 の答えが「足す」ならこの1本で済む。c-bundle と合わせた版 claude/both-bundles-1109-cand（ChoiceEventOverlay の重なりを 202 の解き方で解消・GameCore 469・アプリ 410 green）。soak 10分＝落ちず・312〜332MB 横ばい。
 211. [済 11/09 定期] B 表の推奨候補12本をまとめた claude/b-bundle-1109-cand（dde7edbd・テスト末尾の衝突4本は scratchpad の tail_resolve.py＝相手が末尾に足した分をこちらの版に付け足す）＝GameCore 469・アプリ 400 green。B＋C＋文の量の全部入り claude/all-bundles-1109-cand ＝GameCore 469・アプリ 419 green。全部入りの soak 10分＝落ちず・318〜336MB 横ばい。注意：最初の版の bundle.sh は merge_candidate_tests.py が失敗しても衝突の印ごと git add していた（push 前に赤で気づいて作り直し）。
+212. [済 11/09 定期] まとめの手順を道具 tools/make_bundle.sh に（push は PUSH=1 の時だけ）。B 表12本で作り直して（push なし）b-bundle と同じ結果＝GameCore 469・アプリ 400 green・golden 一致・見送りなし。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -180,4 +182,4 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
-- （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 212（193〜202 は 11/09 の済で移した）。
+- （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 213（193〜202 は 11/09 の済で移した）。
