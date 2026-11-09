@@ -68,7 +68,7 @@ public struct CalendarConfig {
         TournamentSpec(name: "大阪戎コンクール", week: 29, line: 22, prize: 100_000, fame: 5,  osaka: true,  eligibility: .always),
         TournamentSpec(name: "若手限定賞",       week: 35, line: 28, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(5)),
         TournamentSpec(name: "推薦制中堅賞",     week: 38, line: 33, prize: 500_000, fame: 10, osaka: false, eligibility: .fameAtLeast(30)),
-        // 1〜3月の小さな大会（GP準決勝の翌週）【仮】キュー98 §98。Python: TOURNAMENTS[46]
+        // 12月の小さな大会（GP準決勝の翌週・第1週=1月の暦で第46週＝12月第2週）【仮】キュー98 §98。Python: TOURNAMENTS[46]
         TournamentSpec(name: "寒梅漫才杯",       week: 46, line: 34, prize: 250_000, fame: 5,  osaka: false, eligibility: .careerYearAtMost(10)),
     ]
 
