@@ -17,3 +17,8 @@
 | エンディング図鑑 | MZ_UI=endingbook | 崩れ無し（称号一覧ではない） | shots_1110/endingbook.png |
 | 称号一覧 t15/t16/t22 | 無し | 未 | - |
 | 体力切れトースト | 無し | 未 | - |
+
+## §追記（フック追加後・キュー289）
+- 新フック: `MZ_SCROLL=career|credits`（MZ_UI=settings）・`MZ_UI=trophies`（図鑑の先頭に称号。MZ_TROPHIES=15,16,22）・`MZ_UI=finals_spectator`（観戦。開始は審査員席の場面＝「客席から観戦」の帯の場面までは進まず、帯は未）。用語集は既存の MZ_GLOSS=<n>。
+- まとめの枝（本体フック取り込み）で撮影: 称号 t15/t16/t22＝折り返し・はみ出しなし（`shots_1110/v2_trophies.png`）、用語集「すれ違い」の注記＝崩れなし（`v2_glossary.png`）。観戦の帯は `v2_spectator.png` で審査員席まで（帯の場面は未）。
+- 本体: `hook_settings_career.png`・`hook_trophies.png`・`hook_finals_spectator.png`。
