@@ -197,7 +197,6 @@ struct WeekMainView: View {
                     .zIndex(10)
             }
         }
-        .overlay { burstCostOverlay }
         .overlay {
             if let r = rent { RentStatementView(statement: r) { rent = nil }.transition(.opacity) }
         }
@@ -1234,8 +1233,8 @@ struct WeekMainView: View {
                 .opacity(burstVisible ? 1 : 0)
                 .offset(y: burstVisible ? 0 : 10)
                 .animation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.7)), value: burstVisible)
-                .padding(.leading, 172).padding(.bottom, 80)   // 体力ゲージの右隣＝ボタンに被らない黒帯の空き
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                .padding(.leading, 172)
+                .padding(.bottom, 2)
                 .allowsHitTesting(false)
         }
     }
@@ -1375,6 +1374,8 @@ struct WeekMainView: View {
     /// 大会までの週は上の目標バナーと重複するので外した。
     private var botbar: some View {
         VStack(spacing: 0) {
+            // 体力の減りの札：高さ0の目印の下端＝体力の帯の上端に、札の下端をそろえる（大きい文字で帯が高くなっても知名度に重ならない・visual_largetext_1109b）
+            Color.clear.frame(height: 0).overlay(alignment: .bottomLeading) { burstCostOverlay }.zIndex(1)
             YoseVitalMoneyBar(stamina: Int(s.stamina.rounded()), maxStamina: 100, money: s.money,
                               fame: Int(s.fame.rounded()),
                               staminaColor: s.stamina <= 40 ? YoseColor.shu : Color(hex: 0x3B7A4E))
