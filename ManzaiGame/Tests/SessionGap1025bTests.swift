@@ -118,12 +118,12 @@ final class FinalsTalkGapTests: XCTestCase {
         XCTAssertEqual(FinalsMC.call(order: 1, name: "X"), "トップバッターは、X！")
         XCTAssertEqual(FinalsMC.call(order: 10, name: "X"), "いよいよ大トリです。X！")
         XCTAssertEqual(FinalsMC.call(order: 4, name: "X"), "4番目は……X！")
-        XCTAssertEqual(FinalsMC.seated(name: "X", rank: 2), "X、暫定2位！ 暫定席へどうぞ！")
+        XCTAssertEqual(FinalsMC.seated(name: "X", rank: 2), "X、暫定2位！ こちらの席へどうぞ！")
         XCTAssertEqual(FinalsMC.eliminated(name: "X", rank: 5), "X、暫定5位。ここで敗退です。ありがとうございました！")
     }
     func testAskJudgeUsesFamilyNameAndHighLow() {
         XCTAssertEqual(FinalsMC.askJudge("音羽 ルリ", score: 95, high: true), "音羽さん、95点。いかがでしたか？")
-        XCTAssertEqual(FinalsMC.askJudge("音羽 ルリ", score: 80, high: false), "音羽さんは80点と、少し辛めでした。いかがでしたか？")
+        XCTAssertEqual(FinalsMC.askJudge("音羽 ルリ", score: 80, high: false), "音羽さんは80点。こちらはいかがでしたか？")
         XCTAssertEqual(FinalsMC.askJudge("単名", score: 80, high: true), "単名さん、80点。いかがでしたか？")
     }
     func testBandThresholds() {
