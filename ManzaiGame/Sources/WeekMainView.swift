@@ -469,7 +469,7 @@ struct WeekMainView: View {
                     }
                     if m.weeksLeft <= 2 && unspentBeforeStage {
                         // 大会前の振り忘れ（オーナー判断 2026-10-12：知らせるだけ・自動では振らない）
-                        Text("経験点が残ってる。能力アップで使おう")
+                        Text("経験点が残ってる。能力アップで使おう。")
                             .font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                             .frame(maxWidth: .infinity).padding(.vertical, 3)
                             .background(YoseColor.shu)
@@ -904,7 +904,7 @@ struct WeekMainView: View {
                 // 沈まず横ブレ＝「押せない」の触感文法（§3-1）。振動は付けない（閲覧扱い）。
                 Sound.play(.deny)
                 if !reduceMotion { withAnimation(Theme.Motion.r(.linear(duration: 0.15))) { shakeSeed[v.id, default: 0] += 1 } }
-                showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今日は休もう。" : "お金が足りない。")
+                showToast(preoccupied ? "今週は撮影。稽古の時間がない。" : gated ? "体力が足りない。今週は休もう。" : "お金が足りない。")
                 return
             }
             if case .acceptOffer = v.action, !offerArmed {
@@ -984,7 +984,7 @@ struct WeekMainView: View {
             guard pulledID == nil, !burstHold, session.pendingChoiceEvent == nil else { syncEventPresentation(); return }
             if gated {
                 Sound.play(.deny)
-                showToast(s.preoccupiedWeeks > 0 ? "今週は撮影。稽古の時間がない。" : "体力が足りない。今日は休もう。")
+                showToast(s.preoccupiedWeeks > 0 ? "今週は撮影。稽古の時間がない。" : "体力が足りない。今週は休もう。")
                 return
             }
             Sound.play(.tap)
@@ -1032,7 +1032,7 @@ struct WeekMainView: View {
                 }
             }
         }
-        .buttonStyle(YoseButtonStyle(.command, badgeText: c == .能力アップ && unspentBeforeStage ? "未振分あり" : nil,
+        .buttonStyle(YoseButtonStyle(.command, badgeText: c == .能力アップ && unspentBeforeStage ? "未振り分け" : nil,
                                        highlight: c == .能力アップ && unspentBeforeStage, silent: true))
     }
 
@@ -1445,15 +1445,15 @@ struct WeekMainView: View {
         guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
-            riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"
+            riftNotice = "「相方と過ごす」「相方と合わせる」をした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"
             return
         }
         guard let tier = session.debtNoticeTierToShow(money: s.money) else { return }
         session.markDebtWarned(tier)
         switch tier {
-        case 1: debtNotice = "生活費が払えず、借金になった。借金が100万を越えると、芸人を続けられない。"
-        case 2: debtNotice = "借金が50万を越えた。あと50万で、芸人を続けられなくなる。バイトに専念すれば、まだ立て直せる。"
-        default: debtNotice = "借金が80万を越えた。あと20万で終わりだ。今すぐバイトに専念すれば、まだ間に合う。"
+        case 1: debtNotice = "生活費が払えず、借金になった。借金が100万を超えると、芸人を続けられない。"
+        case 2: debtNotice = "借金が50万を超えた。あと50万で、芸人を続けられなくなる。バイトに専念すれば、まだ立て直せる。"
+        default: debtNotice = "借金が80万を超えた。あと20万で終わりだ。今すぐバイトに専念すれば、まだ間に合う。"
         }
     }
 

@@ -81,7 +81,7 @@ struct TournamentResultView: View {
 
     /// 敗退の一言（距離3段）。margin が無い旧データは従来の一言
     private func missLine(_ r: StageResult) -> String {
-        guard let m = r.margin else { return "——固い空気…" }
+        guard let m = r.margin else { return "——固い空気。" }
         if m >= -3 { return "——あと一歩。" }
         if m >= -10 { return "——届かず。" }
         return "——遠い。"

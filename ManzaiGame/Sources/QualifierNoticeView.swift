@@ -126,7 +126,7 @@ struct QualifierNoticeView: View {
                         .overlay(RoundedRectangle(cornerRadius: 6).stroke(YoseColor.kinBright.opacity(me && scanned ? 0.9 : 0), lineWidth: 1.5))
                         .shadow(color: YoseColor.kinBright.opacity(me && scanned ? 0.7 : 0), radius: 10)
                         .accessibilityElement(children: .combine)
-                        .accessibilityLabel(me ? "\(n)、あなたたち" : n)
+                        .accessibilityLabel(me ? "\(n)、あなた" : n)
                         .accessibilityAddTraits(me && scanned ? .isSelected : [])
                         Divider().background(.white.opacity(0.12)).accessibilityHidden(true)
                     }
