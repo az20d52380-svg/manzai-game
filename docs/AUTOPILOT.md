@@ -215,6 +215,7 @@
 309. [済 11/10 昼 定期・まとめの枝 claude/rec-1110-bundle-cand d3c4ef92] 論点の推奨形の候補5本（intro-15y-note・fatigue-wording・small-wording-1110・calendar-week-label・pass-banner）を1本に＝衝突なし・GameCore 469・アプリ 402 TEST SUCCEEDED・golden 一致。text-all-1110-bundle と重ねるかは未確認（weekmain/settings の同じファイルを触る＝次の回で make_bundle で試す）。
 310. [済 11/10 昼 定期・claude/all-1110-bundle-cand 66ab96ff＝text-all-1110-bundle＋推奨形5本が衝突なしで重なる・GameCore 472・アプリ 402 TEST SUCCEEDED・golden 一致・soak 6分 317〜332MB 落ちず・クラッシュログ 1→1。今日の文の候補は全部この1本］（309 の続き）text-all-1110-bundle の中身＋rec-1110-bundle の5本を1本に重ねられるか make_bundle で試す（衝突は手で解く）→ 全部入りの soak。
 311. [済 11/10 夕 定期] 点検：run_checks 全 green（GameCore 469・アプリ 402・同期 80/80）・網羅 GameCore 99.76%（アプリの未通過はビュー・デバッグ用・StoreKit だけ＝足す価値のあるロジックの穴なし）。セーブ互換の点検案6（save_compat_audit_1108 §足すべきテストの案）＝保存に載る enum の rawValue を固定するテストを足した（GameCore：ChoiceEventKind・Skill・NetaKata・NetaLength・ShopItem／アプリ：EndingID・TrophyID・ComboKind・MeetingKind・BandCategory。消す・改名で赤・足すのは可）。GameCore 470・アプリ 404 TEST SUCCEEDED。
+312. [済 11/10 夕 定期] 大きい文字でオファー札が舞台を覆う件（visual_largetext_1109 a/b）の候補を試作→シミュレータの文字サイズ設定がアプリに効かず（普通の文字と同じ見た目）、覆うのは普通の文字でも同じ＝キュー137 の論点と同じと判明。候補は作らず追記だけ（visual_largetext_1109_v0 §追記）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
