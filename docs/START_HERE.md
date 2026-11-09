@@ -630,3 +630,5 @@ cd GameCore && swift test
 - `calendar_jan_week_gates_1109_v0.md` — 候補 calendar-jan（1月始まり）の週の条件の一覧 11/09（4月始まり前提の取りこぼし0・未直しは文面のずれ等4）
 - `session_tests_1109_v0.md` — GameSession の未通過の処理にテスト8本（DEBUG 以外の0回の行は防御コード4行だけ・不具合なし）
 - `visual_dark_allbundles_1109_v0.md` — 全部入りの枝のダークモード目視 11/09（9画面・崩れ0・退団の確認文と決勝の一言は未撮影）
+- `invite_variants_independent_score_1109_v0.md`・`fanreport_plus_independent_score_1109_v0.md`・`dialogue_plus3_independent_score_1109_v0.md`・`late_events_e_independent_score_1109_v0.md`・`bc_bundle_text_independent_score_1109_v0.md` — 文を足す候補の独立採点 11/09（自己採点は全部○だったのに別の目で×15・△多数。×は各候補で直し済み・△は直し案だけ）
+- `visual_late_events_1109_v0.md` — 候補 late-events の長い10本の目視 11/09（切れ0・背景のずれは候補で直した）
