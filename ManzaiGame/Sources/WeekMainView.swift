@@ -87,7 +87,7 @@ struct WeekMainView: View {
     @State private var showAllocation = false
 
     #if DEBUG
-    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar/farewell）
+    /// 目視用: MZ_WEEK で週メインの下位画面へ直行（practice/baito/rest/netawrite/newneta/shop/allocate/settings/notebook/calendar/farewell/burst）
     private func debugWeekHook() {
         guard let w = ProcessInfo.processInfo.environment["MZ_WEEK"] else { return }
         switch w {
@@ -102,6 +102,10 @@ struct WeekMainView: View {
         case "settings": showSettings = true
         case "farewell": showFarewell = true   // 解散の後の別れの場面へ直行（MZ_UI=week MZ_WEEK=farewell・タップできない定期の回の目視用・tap_check_1025_v0 A-2）
         case "notebook": showNotebook = true
+        case "burst":   // 体力の減りの札の目視：伸び1枚＋減り1枚を出したまま止める（一時表示で撮れないため・code_review_cands4_1109 #7）
+            burstChips = [BurstChip(id: 0, text: "実力 ↑", fg: .white, bg: Theme.senseDeep),
+                          BurstChip(id: 1, text: "体力 -10", fg: Theme.inkSub, bg: .white, up: false)]
+            burstVisible = true
         case "calendar": showCalendar = true
         case "rent":   // 月末の支払いの目視: 休むカードを1回実行（MZ_UI=rent と併用）
             Task {
