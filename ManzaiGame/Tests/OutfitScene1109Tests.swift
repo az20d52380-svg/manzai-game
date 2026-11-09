@@ -3,31 +3,9 @@ import GameCore
 @testable import ManzaiGame
 
 /// 未カバー分（11/09 定期・カバレッジで拾った）：
-/// ①ChoiceEventData.scene(for:) の場所の割り当て（ト書きの場所が絵に出る）
+/// （①ChoiceEventData.scene(for:) の節は、この候補で scene(for:) を消すので外した＝場面の絵は EventBackdropTable 側のテストが見る）
 /// ②StageOutfit.current の戻し方（未所有・壊れた値・未保存は standard）と wear の保存
 final class OutfitScene1109Tests: XCTestCase {
-
-    // MARK: ① 場面
-    func testSceneForPlacesInStageDirections() {
-        XCTAssertEqual(ChoiceEventData.scene(for: .lineupTop), .gakuya)
-        XCTAssertEqual(ChoiceEventData.scene(for: .greenroomSilentTen), .gakuya)
-        XCTAssertEqual(ChoiceEventData.scene(for: .senpaiMeishi), .yakiniku)
-        XCTAssertEqual(ChoiceEventData.scene(for: .lastTrainReview), .station)
-        XCTAssertEqual(ChoiceEventData.scene(for: .wroteOneTonight), .famires)
-        XCTAssertEqual(ChoiceEventData.scene(for: .photoShootOffer), .office)
-        for k in [ChoiceEventKind.preTournamentEve, .brokeDrinkingInvite, .justLostRehearsal, .weekendInvite] {
-            XCTAssertEqual(ChoiceEventData.scene(for: k), .dusk, "\(k)")
-        }
-    }
-
-    func testSceneDefaultIsKeikoForTheRest() {
-        let special: Set<ChoiceEventKind> = [.lineupTop, .greenroomSilentTen, .senpaiMeishi, .lastTrainReview,
-                                             .wroteOneTonight, .photoShootOffer, .preTournamentEve,
-                                             .brokeDrinkingInvite, .justLostRehearsal, .weekendInvite]
-        let rest = ChoiceEventKind.allCases.filter { !special.contains($0) }
-        XCTAssertFalse(rest.isEmpty)
-        for k in rest { XCTAssertEqual(ChoiceEventData.scene(for: k), .keiko, "\(k)") }
-    }
 
     // MARK: ② 着ている衣装
     private var savedOutfit: Any?

@@ -364,24 +364,6 @@ struct YTelop: View {
     }
 }
 
-/// 送りの合図 ▼（朱・上下に弾む。演出ひかえめでは止まる）
-struct YoseAdvanceCue: View {
-    var color: Color = YoseColor.kinBright
-    @State private var bob = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    var body: some View {
-        Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
-            .font(.system(size: Font.mzScaled(12), weight: .black)).foregroundStyle(color)
-            .shadow(color: YoseColor.sumi, radius: 0, x: 0, y: 1)
-            .offset(y: bob ? 3 : 0)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.55).repeatForever(autoreverses: true))) { bob = true }
-            }
-            .accessibilityHidden(true)
-    }
-}
-
 /// 地の文の貼り紙（明朝・左に臙脂の綴じ）。旧 NarrationCard の置き換え。
 struct YoseNarration: View {
     let text: String

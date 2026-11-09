@@ -57,12 +57,9 @@ enum YoseMetrics {
     static let screenMargin: CGFloat = 14
     static let radius: CGFloat = 2          // 木札・貼り紙・ボタン
     static let borderMain: CGFloat = 2      // 基本枠
-    static let borderSub: CGFloat = 1.5
-    static let borderHair: CGFloat = 1
     static let shadowCard: CGFloat = 2      // y:2 ブラー0
     static let shadowCommand: CGFloat = 3
     static let gridGap: CGFloat = 10
-    static let listGap: CGFloat = 8
     static let padV: CGFloat = 10
     static let padH: CGFloat = 12
 }
