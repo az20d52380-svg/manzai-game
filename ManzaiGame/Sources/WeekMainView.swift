@@ -601,7 +601,8 @@ struct WeekMainView: View {
                                           justPassed: session.justPassedStage, justLost: session.justLostStage,
                                           nextMilestone: nextMilestone(), weakAbility: weakAbility(),
                                           week: session.year &* 131 &+ session.week,
-                                          picker: session.picker(key: session.year &* 131 &+ session.week)))   // 年も混ぜる／直近の行は避ける＝毎年同じ週に同じ行にしない
+                                          picker: session.picker(key: session.year &* 131 &+ session.week),   // 年も混ぜる／直近の行は避ける＝毎年同じ週に同じ行にしない
+                                          staminaSaidElsewhere: WeekHint.isStaminaLine(weekHintText)))
     }
 
     /// 週頭の掛け合い: 1行ずつタップ送り（ChoiceEventOverlay.advance と同じ読み口）。最終行で止まる。
