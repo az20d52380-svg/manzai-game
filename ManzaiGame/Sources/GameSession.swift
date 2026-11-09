@@ -160,6 +160,8 @@ final class GameSession {
     private(set) var categoryLog: [Int: BandCategory] = [:]
     /// 相方と過ごす／ネタ合わせをしていない自由週の連続数（週メインの一行案内用・表示専用・golden非対象・セーブはOptional）
     private(set) var weeksWithoutPartner = 0
+    /// 決勝で1本目を2本目と同じネタに替えて、2本目が外れた直後だけ true（一言を出す表示専用・保存しない・C-17）
+    private(set) var neta2DroppedNotice = false
     /// S6 年計用: その年の獲得賞金合計（UI層の記録のみ・golden非対象）
     private(set) var totalPrize = 0
     /// 進行中に「この年をやめてタイトルへ」が選ばれた（RootView がタイトルへ戻す・監査G-04）
@@ -880,7 +882,8 @@ final class GameSession {
     /// 「今かけるネタ」を選ぶ（大会入口・持ちネタ帳から。保管庫のネタでも可＝自動でアクティブへ呼び戻さない・
     /// 呼び戻しは recallNeta を先に呼ぶ設計。ここはアクティブ枠内のIDのみ有効）。
     func selectNeta(_ id: Int?) {
-        if let id, id == state.selectedNetaID2 { runner.applyNetaSelect2(id: nil) }   // 1本目に2本目と同じネタ＝2本目を外す（同じネタ2本で減点を免れない・code_review_2026-10-19f §2）
+        neta2DroppedNotice = false
+        if let id, id == state.selectedNetaID2 { runner.applyNetaSelect2(id: nil); neta2DroppedNotice = true }   // 1本目に2本目と同じネタ＝2本目を外す（code_review_2026-10-19f §2）＋一言を出す
         runner.applyNetaSelect(id: id)
         state = runner.state
         saveNow()
@@ -889,6 +892,7 @@ final class GameSession {
     /// 決勝の2本目を選ぶ（v2 §4-2）
     func selectNeta2(_ id: Int?) {
         if let id, id == state.selectedNetaID { return }   // 1本目と同じネタは2本目にできない（§2）
+        neta2DroppedNotice = false
         runner.applyNetaSelect2(id: id)
         state = runner.state
         saveNow()
