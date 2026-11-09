@@ -185,6 +185,7 @@
 238. [済 11/09 定期] 候補 text-bundle-1109（12b60ee8）に soak 8分＝318〜333MB（終盤やや上がるが全部入りの 318〜336MB の幅の内）・落ちず・クラッシュログ 1→1。同じ回で yose-sound-wire（229）・gacha-paid-first・calendar-jan（128）も 8分 soak＝全部横ばい。候補23本とも本体に衝突なし（check_candidates）。
 239. [済 11/09 定期] 本体の点検3本：run_checks＝GameCore 469・同期 80/80・イベント効果 62 一致・発火条件 26 一致・アプリ 401 green／selftest 29行 DONE（ALLOWSAVE=1）／網羅＝GameCore 99.76%・0回5か所とアプリの一覧は既知どおり（新しいファイルなし）。
 240. [済 11/09 定期] refresh_candidates（MIN=50）で遅れ61の候補7本（lost-notebook-neta・notebook-entries-label・offer-desc-short・partner-action-name・qual-long-list・shop-manager-name・yearly-goal）に本体を取り込み＝全部 green で push。
+241. [済 11/09 定期] refresh_candidates（MIN=25）で残りの候補38本に本体を取り込み＝全部 green で push（retire-confirm だけ1回目が push 失敗→単独で回し直して 77dd03dd で push）。これで候補は全部本体の最新を含む。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
