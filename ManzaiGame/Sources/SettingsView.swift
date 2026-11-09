@@ -150,7 +150,7 @@ struct SettingsView: View {
                 Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)
                 Text("このキャリア").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
             }
-            Text("※解散すると、いまのコンビの記録は消えて最初からになります（図鑑・衣装・購入は残ります）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+            Text("※解散すると、今のコンビの記録は消えて最初からになります（図鑑・衣装・購入は残ります）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             restartBlock(onQuitRun)
         }
     }
@@ -261,7 +261,7 @@ struct GlossaryView: View {
             ("オファー", "知名度が上がると届く仕事の誘い（ひな壇・ラジオ・ロケ・営業）。受けるとお金と知名度が入り、体力が減る。知名度が高いほど、選べる札が増える。"),
         ]),
         Group(title: "コンビ", rows: [
-            ("すれ違い", "相性が上がらない週が続くとたまる。途中で予告が出る。相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、たまらない。たまりきるとコンビは解散する。"),
+            ("すれ違い", "相性が上がらない週が続くとたまる。途中で予告が出る。「相方と過ごす」「相方と合わせる」をした週は、すれ違いが減る。二人で舞台に立つ週は、たまらない。たまりきるとコンビは解散する。"),
         ]),
         Group(title: "大会", rows: [
             ("戦績", "「コンビ」の画面のタブ。今年の大会の結果と、これまでの頂グランプリの到達が並ぶ。"),
