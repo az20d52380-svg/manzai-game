@@ -17,6 +17,7 @@ struct TournamentResultView: View {
     @State private var climaxIndex: Int? = nil // ⑪ 山場（敗者復活で散る）のタップ送りページ。nil=通常
     @State private var ctaPulse = false
     @State private var showHanaChamp = false   // THE HANA 優勝の瞬間（頂GP 決勝と同じ優勝演出を使い回す）
+    @State private var offerFirstPassShare = false   // 初めての通過の祝いにだけ共有ボタン（B-6・端末で1回きり）
     @State private var showPass = false        // 回戦突破の祝い（次へ 押下で1度だけ・GPの通過のみ）
     @State private var showBurstCutIn = false  // ハマった夜の斜めカットイン（判の叩きつけと同時に1度だけ）
     @State private var signIn = false          // 番組アイキャッチ：大会看板がドンと打ち出される
@@ -178,7 +179,10 @@ struct TournamentResultView: View {
                                     Sound.play(.fanfare); Sound.play(.cheerBig)   // 頂GP 決勝の優勝と同じ音（優勝演出の画面は音を鳴らさない・code_review_1107e #1）
                                     withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true }
                                 }
-                                else if r.passed && !isMidTournament && climaxPages.isEmpty { withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true } }
+                                else if r.passed && !isMidTournament && climaxPages.isEmpty {
+                                    if FirstPassShare.shouldOffer() { offerFirstPassShare = true; FirstPassShare.markOffered() }
+                                    withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showPass = true }
+                                }
                                 else if climaxPages.isEmpty { session.acknowledgeResult() }
                                 else { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.5))) { climaxIndex = 0 } }   // ⑪ 山場へ
                             } label: {
@@ -269,7 +273,7 @@ struct TournamentResultView: View {
         .onDisappear { revealTask?.cancel() }
         #if DEBUG
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
-            if ["result_done", "lose_done", "hana_result"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
+            if ["result_done", "lose_done", "hana_result"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { offerFirstPassShare = ProcessInfo.processInfo.environment["MZ_FIRSTPASS"] != nil; showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
         }
         #endif
         .overlay {
@@ -308,6 +312,17 @@ struct TournamentResultView: View {
                                         threshold: 0, power: Int(GameEngine.jitsuryoku(summary.state, config: session.config).rounded()),   // 手帳と同じ実力（画面には出ない・19l §1-1 と同型）
                                         judgeComment: "") { showPass = false; session.acknowledgeResult() }
                     .transition(.opacity)
+                    .overlay(alignment: .bottom) {   // 初めての通過だけ：共有（タップ送りの面より手前・下の案内文の上）
+                        if offerFirstPassShare {
+                            ShareCardButton(combiName: session.combiName, headline: FirstPassShare.headline,
+                                            detail: FirstPassShare.detail(roundName: GPName.display(r.name), year: session.year))
+                                .foregroundStyle(YoseColor.kinBright)
+                                .padding(.horizontal, 18).padding(.vertical, 8)
+                                .background(Color.black.opacity(0.55))
+                                .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1))
+                                .padding(.bottom, 64)
+                        }
+                    }
             }
         }
         .overlay {
