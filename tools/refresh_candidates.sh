@@ -16,6 +16,13 @@ TMP=$(mktemp -d)
 for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -vE '^claude/(q-candidate|vitalbar-numberpop-cand|the-hana-candidate|the-hana-candidate-r1027)$' | grep -E "${3:-.}"); do
   behind=$(git rev-list --count "$b..$MAIN")
   [ "$behind" -ge "$MIN" ] || continue
+  # 11/09 夜：手元の候補の枝が遠隔より古いと、古い版で取り込んで偽の衝突になる（first-pass-share）＝先に遠隔を取り、手元が祖先なら進める
+  if GIT_TERMINAL_PROMPT=0 git fetch -q origin "+refs/heads/${b}:refs/remotes/origin/${b}" 2>/dev/null \
+     && [ "$(git rev-parse "$b")" != "$(git rev-parse "origin/${b}")" ] \
+     && git merge-base --is-ancestor "$b" "origin/${b}"; then
+    git branch -f "$b" "origin/${b}" 2>/dev/null && behind=$(git rev-list --count "$b..$MAIN")
+    [ "$behind" -ge "$MIN" ] || continue
+  fi
   W=$TMP/${b//\//_}
   if ! git worktree add -q "$W" "$b" 2>/dev/null; then
     # 11/09：古いエージェントの作業場所に候補が出しっぱなしだと add できない＝origin の版を分離 HEAD で取り込み、HEAD:$b で push（その作業場所には触らない）
@@ -27,8 +34,12 @@ for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | 
   fi
   cd "$W"
   if ! git merge -q --no-edit "$MAIN" >/dev/null 2>&1; then
-    if [ "$(git diff --name-only --diff-filter=U)" = "ManzaiGame/ManzaiGame.xcodeproj/project.pbxproj" ]; then
+    U=$(git diff --name-only --diff-filter=U)
+    if [ "$U" = "ManzaiGame/ManzaiGame.xcodeproj/project.pbxproj" ]; then
       git checkout --theirs ManzaiGame/ManzaiGame.xcodeproj/project.pbxproj
+    elif [ -n "$U" ] && ! grep -l '^<<<<<<<' $U >/dev/null 2>&1; then
+      # 11/09 夜：rerere（記録した解き方）で印なしに解けている＝確定して続ける（テストが green の時だけ push されるのは同じ）
+      git add $U && git commit -q --no-edit
     else
       echo "$b: 衝突（push せず）$(git diff --name-only --diff-filter=U | sed 's#.*/##' | tr '\n' ' ')"
       git merge --abort; cd "$R"; git worktree remove --force "$W"; continue
