@@ -6,6 +6,7 @@
 // ReminiscencePlayer は §依頼6 の共用部品①（S6b年表・優勝エピローグでも使う）。KV/立ち絵は【仮】プレースホルダ。
 
 import SwiftUI
+import GameCore
 import UserNotifications
 
 // MARK: 回想紙芝居プレイヤー（共用部品・夕景の3段階＋紙の地の文＋吹き出し・クロスフェード0.18s）
@@ -602,6 +603,9 @@ struct NameEntryView: View {
                         Spacer()
                         Text("頂グランプリ 優勝").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
                     }.padding(.horizontal, 14)
+                    Text("コンビの物語は結成から\(GameConfig().careerYears)年。")   // 期限の案内（地の文・数字は GameConfig.careerYears）
+                        .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
+                        .frame(maxWidth: .infinity, alignment: .trailing).padding(.horizontal, 14)
                     // 判子欄：名前を書くと朱印『結成』が押される（空の間は点線の枠だけ）
                     HStack {
                         Spacer()
