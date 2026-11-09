@@ -106,6 +106,7 @@ struct FinalistAnnounceView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { tapAdvance() }
+        .accessibilityAction { tapAdvance() }   // 読み上げ中の二度押しでも同じく進む（voiceover_audit_1109_v0・a11y_check_1026_voiceover_v0 #1 と同形）
         .onAppear { start() }
         .onDisappear { task?.cancel() }
         .onChange(of: called) { _, _ in UIAccessibility.post(notification: .announcement, argument: caption) }   // 読み上げた組名を VoiceOver にも伝える（a11y_check_1019）

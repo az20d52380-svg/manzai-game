@@ -134,6 +134,7 @@ struct YoseYearTurnCurtainView: View {
         .onTapGesture {
             triggerStart()
         }
+        .accessibilityAction { triggerStart() }   // 読み上げ中の二度押しでも同じく進む（voiceover_audit_1109_v0・a11y_check_1026_voiceover_v0 #1 と同形）
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)   // 背面の年末リザルトを読ませない（19l §1-4）
         .task {

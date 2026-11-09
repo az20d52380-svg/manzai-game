@@ -75,6 +75,7 @@ struct CharacterFace: View {
         }
         .frame(width: size, height: size)
         .background(Circle().fill(.white).frame(width: size * 1.0, height: size * 1.0))
+        .accessibilityHidden(true)   // 図形だけの顔＝読み上げの雑音にしない（voiceover_audit_1109_v0 #14）
         .clipShape(Circle())
     }
 
