@@ -156,6 +156,7 @@
 251. [済 11/09 夜 定期・b541a209・候補 955ce42b] late-events 候補の E1〜E20（6年目〜）を独立採点（opus・docs/late_events_e_independent_score_1109_v0.md）＝○38△14×8。×（主人公と谷口の語尾・E3/E4 と E19 の話の順序の食い違い・題・E15 の A の後の会話・E3 の出費が文に無い）は文字列だけ候補で直した（GameCore 477・アプリ 403 green）。△（中条の口調・既存との重なり・E17 のお金の理由）は直し案だけ。
 252. [済 11/09 夜 定期] 独立採点の×の直し（文の候補5本）をまとめの枝へ反映：text-bundle は make_bundle で作り直し da12dd7a（469・403 green・golden 一致）、both-bundles fe7a27e7・all-bundles f311af8f は5本を追い merge（衝突なし・GameCore 469・アプリ green・ビルド OK・force push なし）。late-events は どのまとめにも入っていない。
 253. [済 11/09 夜 定期・9428a854] B・C のまとめの枝が足した文50行を独立採点（opus・docs/bc_bundle_text_independent_score_1109_v0.md）＝○46△4×0。△（yearly-goal の「◯回戦を突破」に大会名なし・youth-notice-y10 の谷口「今年が最後だ」が硬い＝本体の5年目の一言と同じ形・gacha-entry の「今日の札」が何の札か分かりにくい）は直し案だけ。
+254. [済 11/09 夜 定期・2f005558] late-events 候補の文の長い10本を目視（sonnet・docs/visual_late_events_1109_v0.md）＝高0中0低10・切れ/はみ出しなし（最初の画面のみ・選択肢の画面はタップが要るので未）。低の「背景がト書きとずれる」は候補で直した：裏口 E01・出口 E15＝theaterOutside、劇場の事務室 N03/N09/N16＝office（エンディングの事務室と同じ）。N03 を撮って確認・GameCore 477・アプリ green。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
