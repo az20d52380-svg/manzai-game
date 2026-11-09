@@ -212,4 +212,16 @@ final class GachaTests: XCTestCase {
         // 既定（無料券の「はじめての1回」等）は今までどおり無料券から
         XCTAssertNotNil(s.pullOne(&g)); XCTAssertEqual(s.freeTickets, 0)
     }
+
+    /// 購入分より多く回す境界：購入3回＋無料券1で preferPaid を5回＝購入3→無料券1→尽きて nil（code_review_cands4_1109 #8）
+    func testPaidFirstFallsBackToFreeThenStops() {
+        var s = GachaState(); s.freeTickets = 1
+        XCTAssertTrue(s.credit(txID: "t-paid3", count: 3))
+        var g = SeededGen(s: 11)
+        for _ in 0..<3 { XCTAssertNotNil(s.pullOne(&g, preferPaid: true)) }
+        XCTAssertEqual(s.paidPending, 0); XCTAssertEqual(s.freeTickets, 1)
+        XCTAssertNotNil(s.pullOne(&g, preferPaid: true)); XCTAssertEqual(s.freeTickets, 0)
+        XCTAssertNil(s.pullOne(&g, preferPaid: true))
+        XCTAssertEqual(s.availableTickets, 0)
+    }
 }
