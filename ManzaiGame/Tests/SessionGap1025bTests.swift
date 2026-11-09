@@ -118,7 +118,7 @@ final class FinalsTalkGapTests: XCTestCase {
         XCTAssertEqual(FinalsMC.call(order: 1, name: "X"), "トップバッターは、X！")
         XCTAssertEqual(FinalsMC.call(order: 10, name: "X"), "いよいよ大トリです。X！")
         XCTAssertEqual(FinalsMC.call(order: 4, name: "X"), "4番目は……X！")
-        XCTAssertEqual(FinalsMC.seated(name: "X", rank: 2), "X、暫定2位！ 暫定席へどうぞ！")
+        XCTAssertEqual(FinalsMC.seated(name: "X", rank: 2), "X、暫定2位！ こちらの席へどうぞ！")
         XCTAssertEqual(FinalsMC.eliminated(name: "X", rank: 5), "X、暫定5位。ここで敗退です。ありがとうございました！")
     }
     func testAskJudgeUsesFamilyNameAndHighLow() {

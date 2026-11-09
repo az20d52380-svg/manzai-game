@@ -33,7 +33,7 @@ enum FinalsMC {
         let family = String(judge.split(separator: " ").first ?? Substring(judge))
         return high ? "\(family)さん、\(score)点。いかがでしたか？" : "\(family)さんは\(score)点。こちらはいかがでしたか？"
     }
-    static func seated(name: String, rank: Int) -> String { "\(name)、暫定\(rank)位！ 暫定席へどうぞ！" }
+    static func seated(name: String, rank: Int) -> String { "\(name)、暫定\(rank)位！ こちらの席へどうぞ！" }
     static func eliminated(name: String, rank: Int) -> String { "\(name)、暫定\(rank)位。ここで敗退です。ありがとうございました！" }
     static let firstRoundEnd = "最終決戦に進むのは、この3組です！"
     static let startVoting = "審査員のみなさん、いちばん面白かった1組に投票をお願いします！"
