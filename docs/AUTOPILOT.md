@@ -186,6 +186,7 @@
 280. [済 11/10 朝 定期・74e5188b・候補 claude/notebook-abilityup-text-fix-cand 74f8d77c] 手帳と能力アップ画面の文の採点（sonnet・docs/notebook_abilityup_text_score_1110_v0.md）＝約83 ○69△13×1。×（ヒント「「Fまで5」は…」＝画面にその表示が無い）を「上がる能力には ↑ の印が付く」に（↑ は AbilityUpView:235 に実在＝親が確認・469・402 green）。論点：確定ボタン（138）・「戦績」の見出しのゆれ・「持ち分／経験点」の混在。
 281. [済 11/10 朝 定期・77576b7b・候補 claude/finals-screen-text-fix-cand beca93ab] 決勝画面の文（司会以外）の採点（sonnet・docs/finals_screen_text_score_1110_v0.md）＝約72 ○62△9×1。×（観戦の帯「予選敗退のため」が出場しない年・準決勝敗退にも出る）→「今年は決勝に進めなかったため、客席から観戦しています」（469・402 green）。△＝番手の数え方3通り・「ファーストラウンド／1本目」・「開票」の二通りの使い方・頂グランプリ／頂GP・字幕「漫才師の頂点」が実在番組の売り文句に近い。
 282. [済 11/10 朝 定期・まとめの枝 claude/text-fix-1110-bundle-cand a07cd6e6] 今日の文の直しの候補9本（judge-v8-fix・judge-final-highonly・finals-mc-fix・finals-screen-text-fix・weekmain/settings/meta/gacha/notebook-abilityup の text-fix）を make_bundle で1本に＝衝突なし・見送りなし・GameCore 472・アプリ 402 TEST SUCCEEDED・golden/定数一致。オーナーが「推奨どおり」なら、この枝1本を本体へ入れれば済む（天堂寺の関西弁の1行だけ判断と一緒に）。
+283. [済 11/10 朝 定期・44abc5d9] 予選の知らせ・お店・カレンダー・導入の文の採点（sonnet・docs/qualifier_shop_calendar_intro_text_score_1110_v0.md）＝約116 ○105△11×0（値段・家賃・暦＝第1週4月・回戦名は仕組みと一致）。論点：カレンダーの「第N週」が通算と月内の2通り（推奨＝月＋月内の週）・導入に「結成15年が期限」の説明が無い・予選の知らせ（110）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
