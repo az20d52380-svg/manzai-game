@@ -625,3 +625,4 @@ cd GameCore && swift test
 - `visual_largetext_1109b_v0.md` — 大きい文字の目視 11/09 後半12枚＋敗者復活の山場（フック MZ_UI=stage_result・MZ_CLIMAX）
 - `visual_largetext_allbundles_1109_v0.md` — 大きい文字の目視 11/09 全部入りの枝10枚（テレビ慣れ帯で舞台がさらに狭まる）
 - `voiceover_audit_1109_v0.md` — 読み上げの札のコード点検 11/09（タップで進む画面13・候補 a11y-tap-next に抜け3つを追加）
+- `code_review_2026-11-09_v0.md` — コード点検 11/09（10/28 以降の本体のソース52ファイル・高0中2低6・ガチャの無料券の順番＝AUTOPILOT 229）
