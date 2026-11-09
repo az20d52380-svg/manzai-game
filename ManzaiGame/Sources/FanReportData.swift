@@ -52,8 +52,8 @@ enum FanReportData {
     ]
 
     /// ハマった夜の一言。選び方は salt 剰余＝乱数非消費（紙講評と同じ）
-    static func burst(name: String, salt: Int, known: Bool = false) -> String {
-        let pool = known ? burstLines : burstLinesUnknown
+    static func burst(name: String, salt: Int, known: Bool = false, veteran: Bool = false) -> String {
+        let pool = known ? (veteran ? burstLines : burstLinesNonVet) : burstLinesUnknown
         let n = pool.count
         return pool[((salt % n) + n) % n].replacingOccurrences(of: "〈名〉", with: name)
     }
@@ -561,7 +561,15 @@ enum FanReportData {
     private static let bandCUnknown = bandC.filter { !knownOnly.contains($0) }
     private static let bandDUnknown = bandD.filter { !knownOnly.contains($0) }
     private static let burstLinesUnknown = burstLines.filter { !knownOnly.contains($0) }
+    // 古参の前提の文を除いた版（知られてはいるが3年目まで＝veteran でない時）。事前に絞る
+    private static let bandANonVet = bandA.filter { !veteranOnly.contains($0) }
+    private static let bandBNonVet = bandB.filter { !veteranOnly.contains($0) }
+    private static let bandCNonVet = bandC.filter { !veteranOnly.contains($0) }
+    private static let bandDNonVet = bandD.filter { !veteranOnly.contains($0) }
+    private static let burstLinesNonVet = burstLines.filter { !veteranOnly.contains($0) }
 
+    static let knownOnlyForTest = knownOnly
+    static let veteranOnlyForTest = veteranOnly
     private static let knownOnly: Set<String> = [
         "常連のおじさんが「今日は〈名〉だな」とつぶやいてた。",
         "〈名〉、言い終わりが毎回少し弱くて、客席が笑いどころに気づきにくかった。",
@@ -639,8 +647,63 @@ enum FanReportData {
         "〈名〉、何年たっても初心を忘れてない。今日も丁寧に頭を下げてた。",
         "〈名〉を長く見てる兄が、今日の帰りは珍しく「いい日だった」と言った。",
     ]
+    /// 古参の前提の文（何年も・長年・ずっと・昔から・初舞台…）＝4年目以降かつ知名度15以上でだけ出す（試し版：fanreport_veteran_cand_1109）。knownOnly の部分集合
+    private static let veteranOnly: Set<String> = [
+        "〈名〉、ずっと応援してる。今日の分は次で取り返してくれると信じてる。",
+        "何年も〈名〉を見てきたけど、今日がいちばん大きく沸いてた。",
+        "〈名〉を小さい劇場の頃から知ってる。今日の客席の広さが、なんだかうれしい。",
+        "昔からの〈名〉のファン。今日は周りの初めての人まで巻き込んでて、誇らしかった。",
+        "〈名〉、ずいぶん長く追いかけてきた。今日の拍手で全部報われた気がする。",
+        "何年も通ってる身として言う。今日の〈名〉は、これまでで一番の出来。",
+        "〈名〉、昔は客席が半分も埋まらなかったのに。今日は後ろまでぎっしりだった。",
+        "古くからのファン仲間と並んで見た。〈名〉の時、全員で黙ってうなずいた。",
+        "〈名〉の昔のライブの話を隣の人にしたら、相手も同じ頃から見てた。",
+        "〈名〉、昔より落ち着いたのに、勢いはむしろ増してる。不思議な組。",
+        "最初に〈名〉を見た日のことを思い出した。あの頃の倍は笑い声が大きかった。",
+        "何年見ても〈名〉の舞台は飽きない。今日も新しい顔を見せてくれた。",
+        "〈名〉、ずっと見てきた中で、今日の二人がいちばん楽しそうだった。",
+        "長年〈名〉を推してる友だちが、終わったあと黙って手を握ってきた。",
+        "何年も見てきた〈名〉。今日は肩の力が抜けてて、いい意味で大人になった。",
+        "〈名〉、昔から知ってるけど、こんなに落ち着いて見られたのは初めて。",
+        "長く応援してると分かる。今日の〈名〉は、いい時の〈名〉だった。",
+        "〈名〉、昔は勢いだけだったのに、今は聞かせる場面もある。",
+        "〈名〉、昔の舞台を知ってる人ほど、今日の丁寧さに驚いたと思う。",
+        "何年も追いかけてきて、〈名〉の調子は出てきた時の顔で分かる。今日はいい顔だった。",
+        "〈名〉、古いファン仲間と見て、帰りの店で今日の出来を褒め合った。",
+        "〈名〉、長く見てきて、今日みたいに崩れない日が増えたのがうれしい。",
+        "〈名〉を初めて見た頃は、こんなに安心して見られる組になるとは思わなかった。",
+        "何年も通ってる劇場で、今日の〈名〉がいちばん自然体だった。",
+        "〈名〉、ずっと見てきたから分かる。今日は二人とも楽しんでやってた。",
+        "昔からのファンの友だちが、〈名〉の後で「うまくなったね」とだけ言った。",
+        "〈名〉の初舞台を見た一人として、今日の大きな拍手は胸にきた。",
+        "〈名〉、昔は袖に戻る足が速かった。今日はゆっくり客席に手を振ってた。",
+        "長く通ってると、〈名〉の沸かせ方が変わったのが分かる。今日は客席ごと動かしてた。",
+        "〈名〉を追いかけて何年たったか。今日の沸き方は、その中でも特別だった。",
+        "昔の〈名〉を知ってる友だちと来た。帰り道、あの頃の話が止まらなかった。",
+        "〈名〉、昔から見てるけど、今日ほど客席の声が揃った日は知らない。",
+        "〈名〉を見始めた頃の半券を、今日も財布に入れてきた。最高の夜になった。",
+        "〈名〉、昔は二人とも下を向きがちだった。今日は顔を上げて客席を見渡してた。",
+        "〈名〉と一緒に年を重ねてきた気がする。今日は自分のことみたいにうれしい。",
+        "〈名〉を長年見てきた母が、今日は珍しく立ち上がって手を叩いてた。",
+        "昔、〈名〉の出番で寝てた友だちを連れてきた。今日は最後まで笑い通しだった。",
+        "〈名〉の舞台を見続けてきた身には、今日の歓声が少し照れくさいくらい。",
+        "〈名〉、昔は早口で聞き取れなかった。今日は一言ずつ客席に届いてた。",
+        "〈名〉、昔の二人より、今の二人の方が相手の話をよく聞いてる。",
+        "〈名〉の舞台を長く見てきて、今日は二人の服の着こなしまで垢抜けて見えた。",
+        "〈名〉、昔は片方ばかり目立ってた。今日は二人とも同じくらい印象に残った。",
+        "何年も前に〈名〉を勧めてくれた友だちに、今日の出来を報告した。",
+        "〈名〉、昔なら焦ってた場面で、今日は笑って受け流してた。",
+        "長年のファンとしては、今日の〈名〉は地味でも中身の詰まった出来だった。",
+        "〈名〉、昔より声が落ち着いて、客席が聞く姿勢になってた。",
+        "〈名〉の昔の舞台を思い出しながら見た。二人の立ち位置まで自然になってた。",
+        "古いファン同士で〈名〉を見た。誰も心配そうな顔をしてなかった。",
+        "〈名〉、何年たっても初心を忘れてない。今日も丁寧に頭を下げてた。",
+        "〈名〉を長く見てる兄が、今日の帰りは珍しく「いい日だった」と言った。",
+    ]
     /// 客に知られているか（2年目以降かつ知名度が育ってから）。表示だけの判定・乱数非消費
     static func isKnown(year: Int, fame: Double) -> Bool { year >= 2 && fame >= 15 }
+    /// 古参の前提の文（何年も・長年・昔から…）を出してよいか（4年目以降かつ知名度15以上）。表示だけの判定・乱数非消費
+    static func isVeteran(year: Int, fame: Double) -> Bool { year >= 4 && fame >= 15 }
 
     /// salt の位置から回した並びで、このキャリアで出していない文を先に・使い済みは古い順に後ろへ並べる（used＝名前を入れた後の文・古い順）。
     /// used が空なら salt から順に回すだけ（従来と同じ）。乱数は使わない。
@@ -656,18 +719,19 @@ enum FanReportData {
         return fresh + old
     }
 
-    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false, used: [String] = []) -> [String] {
+    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false, veteran: Bool = false, used: [String] = []) -> [String] {
         let count = 2 + ((salt / 7) % 3 + 3) % 3 + (burst ? 1 : 0)   // 2〜4
         // 無名の時の絞り込みは事前に済ませた版を使う（呼ぶたびに絞り直すと、全体のテストで実行機が落ちるほど重かった＝11/08）
-        let A = known ? bandA : bandAUnknown, B = known ? bandB : bandBUnknown
-        let C = known ? bandC : bandCUnknown, D = known ? bandD : bandDUnknown
+        let vet = known && veteran
+        let A = vet ? bandA : (known ? bandANonVet : bandAUnknown), B = vet ? bandB : (known ? bandBNonVet : bandBUnknown)
+        let C = vet ? bandC : (known ? bandCNonVet : bandCUnknown), D = vet ? bandD : (known ? bandDNonVet : bandDUnknown)
         let band: [String]
         let isA: Bool, isC: Bool
         if passed { isA = (margin ?? 0) >= 8; isC = false; band = isA ? A : B }
         else if let m = margin, m >= -3 { isA = false; isC = true; band = C }
         else if let m = margin, m >= -10 { isA = false; isC = ((salt % 2) + 2) % 2 == 0; band = isC ? C : D }
         else { isA = false; isC = false; band = D }
-        let bursts = known ? burstLines : burstLinesUnknown
+        let bursts = vet ? burstLines : (known ? burstLinesNonVet : burstLinesUnknown)
         var lines: [String] = []
         if burst, let b = ordered(bursts, salt: salt, name: name, used: used).first { lines.append(b) }
         // このキャリアで未使用の声を、同じ帯→隣の帯（A↔B・C↔D）の順で先に使い、それも尽きたら使い済みを古い順に戻す

@@ -60,7 +60,8 @@ struct TournamentResultView: View {
             FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
                                  burst: r.burst == true || debugForceFanReport,
                                  salt: salt,
-                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used)
+                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame),
+                                 veteran: FanReportData.isVeteran(year: summary.year, fame: session.state.fame), used: used)
         }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
