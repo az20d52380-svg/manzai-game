@@ -1014,6 +1014,13 @@ final class GameSession {
         saveNow()
     }
 
+    /// 【候補・キュー117 案A】この周を閉じる（エンディングに入る時・年末から「もう一度」でタイトルへ戻る時）。以後 saveNow は書かずに消す（background の書き直し防止）。非保存
+    private(set) var careerClosed = false
+    func closeCareer() {
+        careerClosed = true
+        Self.store.removeObject(forKey: Self.saveKey)
+    }
+
     /// 「この年をやめてタイトルへ」（監査G-04）。セーブを消し、RootView がタイトルへ戻す。
     func abandonRun() {
         Self.store.removeObject(forKey: Self.saveKey)
@@ -1152,7 +1159,7 @@ final class GameSession {
     func retireAfterWin() {
         guard canChooseRetire else { return }
         retiredAfterWin = true
-        saveNow()
+        closeCareer()   // 【候補・キュー117】勇退はそのままエンディングへ入る＝ここでセーブを消す
     }
 
     /// 年末（S6）の「◯年目へ」。GameCareer.runCareer と同じ形で翌年の WeekRunner を立てる＝
@@ -1310,7 +1317,8 @@ final class GameSession {
         // QA自動走行で実プレイのセーブを潰さない（MZ_ALLOWSAVE=1 は中断→再開の目視用に、あえて書く）
         if (env["MZ_SMOKE"] != nil || env["MZ_UI"] != nil || env["MZ_ENDING"] != nil), env["MZ_ALLOWSAVE"] == nil { return }
         #endif
-        guard !abandoned, !(finished && careerOver) else {   // A-3: 勝利演出中(winFinale)も保存する。acknowledgeWin(finished=true)で消える
+        // 【候補・キュー117 案A】区切りの年末もセーブを残し、エンディングに入った時（closeCareer）に消す＝年末で落ちても周と図鑑が消えない
+        guard !abandoned, !careerClosed else {
             Self.store.removeObject(forKey: Self.saveKey)
             return
         }
