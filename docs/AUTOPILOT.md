@@ -9,6 +9,8 @@
 - （2026-10-14 追加）線の手前で区切らない：区切るのは「5時間枠60%以上」「週70%以上」「止めて」だけ。自走1回も線まで続け、1〜2件で終えない。キューが空なら §常設の作業 から足す。
 - （2026-10-14 昼・絶対厳守）作業を止めるのはオーナーの「止めて」だけ。質問は止めての後にまとめる。UI/UX改善・リサーチ含めできること全部。上限は背景sleepでリセット後に自動再開（~/.claude/CLAUDE.md ルール15〜18）。
 
+370. [済 11/11 定期] 点検と取り込み直し：run_checks＝GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0。check_candidates＝全候補が本体と ok（候補どうしの衝突はテスト末尾・pbxproj など既知の型のみ）。refresh_candidates（遅れ50以上）＝62本すべて green で push（赤0）。
+
 ## 常設の作業（キューが空の時にここから足す・上ほど先）
 - 目視：直近の自走で入った画面（iPhone 17・MZ_UI フック・各1枚 scale 0.5）→崩れは直す　新フック（11/10）：MZ_SCROLL=career|credits（設定の下側）・MZ_UI=trophies（MZ_TROPHIES=15,16,22）・MZ_UI=finals_spectator（観戦・帯は `MZ_FIN=board` を足すと出る）・MZ_UI=pass MZ_PASS=board（通過の看板の場面から）
 - テスト：GameCore の未カバーの所に swift test を足す（式・golden は触らない）
