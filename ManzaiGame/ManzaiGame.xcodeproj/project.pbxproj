@@ -24,6 +24,7 @@
 		13CF3903497473CA2044C27A /* Meta.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E3F060B3BD1C022EB88F6C /* Meta.swift */; };
 		15D990101F298A4DE2CC6010 /* WeekHint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9906C18C1D125D16D6DEA7D0 /* WeekHint.swift */; };
 		1628D2B16D283865780789BF /* StoreMeta1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4492DE4A3DD4D05998D96B2B /* StoreMeta1107Tests.swift */; };
+		1754A68E95CA0433A21AF49B /* GameSessionCoverage1111Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B4CF30B342B9B5FE0EFF6B2 /* GameSessionCoverage1111Tests.swift */; };
 		1AF6138DFD7BF866327A2154 /* se_kira.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6083AAF4C14A5E6DFED2E5DF /* se_kira.mp3 */; };
 		1CD9067C8E549F3017A17AC5 /* bgm_finals.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 86AB4FEAD0E02B0CCD31ABD4 /* bgm_finals.mp3 */; };
 		1D14CB5C98BE6BAAC3FF5D27 /* BankruptStageWeek1109Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9104A4D1D6023F30CCB420FA /* BankruptStageWeek1109Tests.swift */; };
@@ -187,6 +188,7 @@
 		16007007DF00D086ECC94A4C /* EndingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndingViews.swift; sourceTree = "<group>"; };
 		170249E13DCADAC83FC08CF5 /* SessionGap1025eTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGap1025eTests.swift; sourceTree = "<group>"; };
 		17DB9778EF13E155A068361C /* ExpDisplay1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpDisplay1107Tests.swift; sourceTree = "<group>"; };
+		1B4CF30B342B9B5FE0EFF6B2 /* GameSessionCoverage1111Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSessionCoverage1111Tests.swift; sourceTree = "<group>"; };
 		1B5B0AD382326CD111BFDE10 /* TalkParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalkParts.swift; sourceTree = "<group>"; };
 		1BB6759204D40D8E2D08075C /* EndingJudge15Years1108Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndingJudge15Years1108Tests.swift; sourceTree = "<group>"; };
 		1D43F98004DD415C0C5FDB72 /* ResultExpRow1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultExpRow1107Tests.swift; sourceTree = "<group>"; };
@@ -513,6 +515,7 @@
 				DDA3F978F5BBF0205DAF2742 /* FanReportPlaceholder1108Tests.swift */,
 				9553B9FAC5990B038E2417AA /* GachaRatesPage1107Tests.swift */,
 				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
+				1B4CF30B342B9B5FE0EFF6B2 /* GameSessionCoverage1111Tests.swift */,
 				A02E1BAB40A594195AA99941 /* GateStaminaMono1110Tests.swift */,
 				E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */,
 				95B96675CA30EB03A4395279 /* KirokuCalendarHana1107Tests.swift */,
@@ -799,6 +802,7 @@
 				B5EB5015E1C22829A333B281 /* FanReportPlaceholder1108Tests.swift in Sources */,
 				237774A82CCB356B070CD9A7 /* GachaRatesPage1107Tests.swift in Sources */,
 				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
+				1754A68E95CA0433A21AF49B /* GameSessionCoverage1111Tests.swift in Sources */,
 				BBD524ACA1B7C76AE84EDA18 /* GateStaminaMono1110Tests.swift in Sources */,
 				90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */,
 				91739408737C3DF915CFEF2D /* KirokuCalendarHana1107Tests.swift in Sources */,
