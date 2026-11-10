@@ -267,6 +267,7 @@ struct WeekMainView: View {
         .task(id: session.week) {
             // 初回だけの説明（初週／最初の生活費の前の週）。獲得バースト・イベントが落ち着いてから。
             try? await MZSpeed.sleep(nanoseconds: 2_200_000_000)
+            guard !Task.isCancelled else { return }   // 週が替わって取り消された時は前の週の続きをしない（toast の直しと同じ型・11/10 深夜）
             maybeShowFirstHints()
         }
         .task(id: session.week) {
@@ -274,7 +275,7 @@ struct WeekMainView: View {
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
                 gainsVisible = true
                 try? await MZSpeed.sleep(nanoseconds: 1_200_000_000)
-                gainsVisible = false
+                if !Task.isCancelled { gainsVisible = false }   // 取り消し時に消すと、次の週の伸びの色を消してしまう
             }
         }
         .task(id: session.week) {
@@ -313,7 +314,7 @@ struct WeekMainView: View {
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
             withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
-            withAnimation(Theme.Motion.exit) { weekStampVisible = false }
+            if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
         .onChange(of: session.year) { _, _ in maybeShowTiredNotice(); maybeShowLastYouthNotice() }
