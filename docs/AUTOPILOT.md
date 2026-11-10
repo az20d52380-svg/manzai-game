@@ -17,6 +17,7 @@
 - 自己点検（10/19 夜・10/27 から `tools/run_selftest.sh [dd]` の1本でビルド→起動→DONE 待ち→行数と失敗行だけ出す）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
 - 文の長さ（11/09〜）：`python3 tools/text_lens.py --base HEAD --head origin/claude/<候補>`＝文を足す候補で、配列の元の最長を超えた文だけ列挙（超えたら終了コード1）。
 - 網羅の測り直し（11/09〜）：`tools/run_coverage.sh <dd> [下限%=90]`＝GameCore の行の網羅と0回の領域・アプリの画面以外で下限未満のファイルを要約3行（書き換えなし）。11/09 時点の既知：GameCore の0回5か所は届かない既定値だけ／アプリの一覧は描画の部品（Juice・Stage*・FinalsBroadcastIntro・ChoiceEventOverlay・RadarChart・CharacterAvatars・WaIcons・TalkParts・ShareCard・Theme・NetaStage・IntroFlow・SoundManager・MZSpeed・FontLoader）と、StoreKit／iCloud が要る StoreManager・GachaStore の同期、DEBUG フックが大半の GameSession（80%）・RentStatement（式の部分はテスト済み・残りは画面）。この一覧に無いファイルが出たら中身を見る。
+- 文書に行を書き戻す時（11/10 事故）：mac の `cut -c`・`head -c` はバイト単位で日本語を途中で切る＝その出力を文書に書き戻さない（START_HERE に不正バイトが2か所入った）。`tools/check_utf8.py`（run_checks に組み込み済み）で検出できる。
 - 点検の1本（10/27 深夜〜・11/08 拡張）：`tools/run_checks.sh [dd]`＝GameCore swift test・golden/定数の同期（大会・THE HANA を含む80項目）・イベント効果と発火条件の Python 鏡像の突き合わせ・アプリのテストを回して要約5行（赤なら終了コード1）。
 - アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 276本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
@@ -33,6 +34,7 @@
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
 - sim の設定を外から書く時（11/10 事故）：`xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …` だけを使う。mac 側の defaults で容器の plist を触ると sim の設定の書き込みが全部失敗する（直すには iPhone 17 を shutdown→boot）。
 - 候補の点検をサブエージェントに頼む時（11/10）：`git fetch` だけでは origin/claude/<候補> が古いまま（remote.origin.fetch は本体だけ）＝指示に `git fetch -q origin '+refs/heads/claude/*:refs/remotes/origin/claude/*'` を必ず書く（1110c で旧版を読んで誤指摘）。
+- 年初のイベントの後の画面（11/10 深夜〜・候補 yearstart-notice-after-event のみ）：`MZ_EVCLOSE=<秒>` でイベントを自動で閉じる。
 - 撮影の数値の再現（11/10 深夜〜）：新しいゲームは sim に残った周回の点（トロフィー・図鑑）で初期の経験点・所持金が変わる＝撮影どうしの数値（知名度・所持金）を比べる時は `MZ_META=0` を付ける（DEBUG のみ・357）。
 - 撮影の注意（11/10）：右上の「🏆優勝」「💪無双」は DEBUG ビルドだけの札（遊ぶ人には出ない）＝重なりを指摘しない・撮る時は `MZ_NOCHIP=1` で隠す。
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 14＝15年目＝11/10 深夜に確認。結成10年の頃は 9 まで・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
@@ -155,8 +157,35 @@
 349. [ ] （11/10 夜 定期・候補 claude/banter-v3-fix-cand 20a1ec7b・**outing-v3-cand の上に作り直し**）×4行は既存の候補 outing-v3-cand が同じ行をもう直していた（重複に気づいて作り直した）。この候補は outing-v3 で残った2行だけ＝460「楽屋で」を外す・804 関西弁「買おかな」→「買おうかな」。GameCore 470／アプリ TEST SUCCEEDED。outing-v3 と一緒にオーナーの OK で本体へ。
 353. [ ] （11/10 夜 定期・候補 claude/banter-dedup-cand 737e1f0c＝banter-v3-fix-cand（その下は outing-v3-cand）の上）雑談の話題の重複3組を別の日常の話題に＝lull「傘を電車に置き忘れ」→銭湯の値上がり／streak「実家からお米」→大家さんに野菜／streak「傘を置き忘れ」→スマホの画面が割れた。他の候補に同じ行の直しなし（確認済み）・text_lens 超え0・GameCore 470／アプリ TEST SUCCEEDED。バイトの話題の多さ（10回超）は帯の主題に近いので触っていない。
 355. [済 11/10 深夜 定期・sonnet・docs/playtest_y11_15_1110_v0.md] 11〜15年目の通し目視（各年 週3・20・40・46＋15年目の年末）＝`MZ_YEARS=14`（15年目）まで解散・年末停止なしで届く。高0／中2／低4。「あと◯週」は全年一致。中＝①15年目の週画面に「最後の一年」の案内が無く年末で急に「エンディングへ ▶」（本体のコードにも最終年の週の案内は無い＝実力の伸びのトースト以外）②知名度が 11/08 版より低い（11年目 41→27・15年目 42→31・自動台本 debugFreeWeek は 11/08 以降不変＝本体側の変更による）。年末を MZ_CARE なしで撮ると13年目で解散（台本の癖・CARE=1 なら15年目の年末総決算）。
-356. [ ] （11/10 深夜 定期・判断が要る軽微＝文言・355 ①・候補 claude/final-year-notice-cand dae9a0e9＝案②・GameCore 470／アプリ 407 green・目視済＝15年目第1週に飽きの知らせの後に出る）最終年（15年目）の週画面に「最後の一年」の案内が無い。①今のまま ②年初（week≤1）に相方の一言「谷口「結成して15年目か。今年の年末で、ひと区切りだね」」（推奨・v3＋話し方バナーで○＝標準語・男女どちらでも・お笑い要素なし・5年目の一言と同じ型）。注：年初に日常イベントが出ると、その間の一言はイベントの下に隠れる（5年目の一言と同じ既存の作り）。
+356. [ ] （11/10 深夜 定期・判断が要る軽微＝文言・355 ①・候補 claude/final-year-notice-cand dae9a0e9＝案②・GameCore 470／アプリ 407 green・目視済＝15年目第1週に飽きの知らせの後に出る）最終年（15年目）の週画面に「最後の一年」の案内が無い。①今のまま ②年初（week≤1）に相方の一言「谷口「結成して15年目か。今年の年末で、ひと区切りだね」」（推奨・v3＋話し方バナーで○＝標準語・男女どちらでも・お笑い要素なし・5年目の一言と同じ型）。注：年初に日常イベントが出ると、その間の一言はイベントの下に隠れる（5年目の一言と同じ既存の作り）。（check_candidates：本体には ok。youth-notice-y10-cand と、それを含む c/both/all-bundles と WeekMainView.swift で衝突＝同じ場所に関数と呼び出しを足しているだけ＝両方残せば解ける。358 の gate-stamina-mono は pbxproj の衝突のみ＝xcodegen で解ける）
 357. [済 11/10 深夜 定期] 知名度の差の原因＝新しいゲームの初期状態が sim に保存された周回の点（MetaBook.points＝トロフィー＋図鑑）を使うため。式の変更ではない（11/07 以降の本体に知名度に触る変更なし）。DEBUG だけの `MZ_META=<n>` を足して確かめた＝11年目第3週 MZ_META=0 で知名度41・¥278,000（11/08 版と完全一致）／MZ_META=30 で知名度29・¥272,000。
+358. [ ] （11/10 深夜 定期・判断が要る軽微＝338 と同じ型・候補 claude/gate-stamina-mono-cand f54c9317・GameCore 470／アプリ 409 green）体力20未満で練習・ネタが「休演」で押せない週に、独白「疲れが抜けてない。稽古は軽めにしておくか。」が出る（9・11・13・14年目の目視で体力0の週）。案②＝その週だけ次の行へ送る（配列・頻度は不変・テスト GateStaminaMono1110Tests）。①今のまま ②候補を入れる（推奨）。体力0の行の温度が軽い件（342）は文言の判断のまま。（追記：案③＝体力0の行の温度差（342 の低）も一緒に＝休演の週は既存の行のうち「休む」がはっきりした10行だけから選ぶ。候補 claude/gate-stamina-strong-cand d74800ab（358 の上・新しい文なし・GameCore 470／アプリ 411 green）。②だけ入れるか③まで入れるかを選ぶ）
+359. [済 11/10 深夜 定期] 最終年の「来年」の点検（本体の文20か所）：年末総決算の独白（YearResultView）・敗者復活の一言（TournamentResultView）・実力の伸びのトーストは最終年に外し済み。残りは思い出の場面（S6b・過去の会話）・ファンの声（ファンが来年も通う＝ファン側の話）・相方の弟の話＝最終年でも矛盾しない。注1件：イベント0057 年末のライブの野々村「来年の話も、そこで出るかもしれないな」は、今は週のイベント枠が5年目までに尽きるので最終年には出ない。**late-events-cand（枠を年ごと）を入れると15年目にも出うる**＝入れる時に最終年だけ外すか、言い換えが要る（A-1 と一緒に）。
+360. [済 11/10 深夜 定期] 本体（MZ_META 追加後）の点検：run_checks（GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致）・selftest 29行 DONE＝異常なし。
+361. [ ] （11/10 深夜 定期・判断が要る軽微＝見せ方・候補 claude/yearstart-notice-after-event-cand ecb53fc7・GameCore 470／アプリ 407 green・目視済）年初に日常イベントが出ると、年初の一言（飽きの知らせ・5年目の「若手限定の大会は今年が最後」）と「今年の実力の伸びは、ここまで」がイベントの下で出て、閉じた時には消えている（15年目第1週で確認）。案②＝イベントが立っている間は出さず、閉じた後に出す。DEBUG の目視フック `MZ_EVCLOSE=<秒>`（イベントを秒数の後に閉じる）も同じ候補に。①今のまま ②候補を入れる（推奨）。356 の最終年の一言と一緒に入れる時は、その関数にも同じ guard を足す（WeekMainView の同じ場所で衝突）。
+362. [済 11/10 深夜 定期・sonnet・docs/code_review_cands_1110night_v0.md] 今夜の候補4本（356 final-year-notice・358 gate-stamina-mono／strong・361 yearstart-notice-after-event）の点検＝高0／中5／低12。直した：①最終年の一言もイベントが出ている間は出さず閉じた後に出す（年初にイベントが立つ年は一度も見えなかった）②実力の伸びの toast はイベントで保留した時だけ出し直す（View 作り直しで年の途中に再表示しうる）③独白の休演の線を session.config.staminaGate から渡す ④strong は mono を含む（2本は排他＝入れるならどちらか1本）・届かなくなった稽古の行の送りを外した。全部 GameCore 470・アプリ green で push。356×361 は WeekMainView の同じ行（onChange(of: year) と nil 側）で衝突＝両方の呼び出しを残せば解ける。残りの低は記録だけ。
+363. [済 11/10 深夜 定期・本体の直し] toast が次の toast に替わった直後に消える不具合＝`.task(id: toast)` の待ちが取り消されても `try?` で握って `toast = nil` していた（WeekMainView の toast・YoseGameParts の通知の2か所）。取り消し時は消さないように直した（表示のみ・GameCore 470／アプリ 407 green）。見つけた経路＝361 の候補で5年目に飽きの知らせ→「若手限定の大会は今年が最後」が続く時、2つ目が出なかった（直した後は出る＝iPhone 17・MZ_YEARS=4 MZ_EVCLOSE=4 で確認）。本体でも、休演のボタンの説明の直後にオファーの「もう一度押すと受ける」が出ると即消えていたはず（タップでの確認は定期の回では不可＝【タップ確認待ち】）。
+364. [済 11/10 深夜 定期・本体の直し・4d6a6253] 363 と同じ型（`.task(id: session.week)` の中で try? の待ちの後に後始末）を週の変わり目の3か所（伸びの色 gainsVisible・第N週の札・初回の説明）で、取り消し時は何もしないように。GameCore 470／アプリ 407 green・selftest DONE・soak 6分（322〜334MB・クラッシュログ 1→1＝落ちず）。他の .task(id:)（決勝の進行・年末の数え上げ・共有カード）は取り消しを見ているか、最後に正しい値で終わる＝直す必要なし。
+
+365. [済 11/10 昼 定期] 点検3つ＝異常なし：①363/364 と同じ型（取り消された待ちの後の後始末）を `.cancel()` する Task 全部（予選の知らせ・決勝進出者の発表・初舞台・大会結果・決勝の残り札・週の発話の一拍）で確認＝どれも取り消しを見ている／一拍はタップで間を飛ばす設計＝直す所なし ②check_candidates＝候補82本すべて本体と衝突なし（363/364 の後も merge するだけで入る）③run_coverage＝GameCore 99.76%（0回5か所＝既知の届かない既定値）・アプリの一覧も既知どおり。
+
+366. [済 11/10 昼 定期] 点検と取り込み直し：①run_checks＝GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致 ②START_HERE.md に不正な UTF-8 が2か所（索引の行が途中で切れていた）＝直して漏れの4本も追補（56fca242a）③再発防止に tools/check_utf8.py を run_checks に組み込み（ada59ce39・追跡中1256本＝壊れ0）④refresh_candidates（遅れ50以上）＝14本すべて green で push。
+
+367. [済 11/10 夕 定期・docs/yearstart_notices_bundle_1110_v0.md] ①網羅の測り直し＝GameCore 99.76%（既知5行）・アプリの画面以外の未通過は DEBUG フック・防御用・iCloud の経路だけ＝足すテストなし ②候補の衝突一覧（本体とは全部 ok）から、年初の一言3本（356・361・youth-notice-y10）の WeekMainView の衝突を解いたまとめの枝 claude/yearstart-notices-bundle-cand（2d2232a5）を用意＝run_checks 全 green（アプリ 411）・目視 10年目／15年目の年初で知らせが順に出る。3本とも採るならこれを merge するだけ。
+368. [済 11/10 夕 定期・同 doc §追記] 体力の一言の候補2本（358 gate-stamina-mono × 146 stamina-dedup）の衝突を解いたまとめの枝 claude/stamina-lines-bundle-cand を用意＝run_checks 全 green・目視 15年目第40週 体力0 で二重なし。
+
+369. [済 11/10 夕 定期・sonnet・docs/judge_score_vocab_1110_v0.md] 講評の語彙（型なしの35語・11/02 の統一後は初の採点）＝○19／△15／×1。×の「オチの締め」は既に候補 claude/finals-mc-tri-cand（と all-1110・text-all-1110 のまとめ）で「話の締め」に直し済み＝重複の候補は作って消した（反省：文の直しの前の git grep を先に）。△15 は直さず並べるだけ（「振り出しの締め」は all-1110 で「元の話に帰る締め」に直し済み）。
+
+370. [済 11/11 定期] 点検と取り込み直し：run_checks＝GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0。check_candidates＝全候補が本体と ok（候補どうしの衝突はテスト末尾・pbxproj など既知の型のみ）。refresh_candidates（遅れ50以上）＝62本すべて green で push（赤0）。
+
+371. [済 11/11 定期] 本体 9fe4f8b4c の selftest 29行 DONE・soak 6分（328〜339MB 横ばい・クラッシュログ 1→1）＝toast 直し（363/364）後も異常なし。
+
+372. [済 11/11 定期] 全候補の文の長さ（text_lens）＝超えは古い q-candidate（3週前・名前に cand を含む別系統）の2本だけ（「そろそろ\(m.name)か。」＝補間を含む文の数え方で、見た目の問題ではない）＝直す所なし。
+
+373. [済 11/11 定期] 網羅の測り直し（本体・run_coverage）＝GameCore 99.76%（未通過5行＝既知の届かない既定値のみ）・アプリの画面以外で90%未満は既知の一覧どおり（GameSession 81%）＝新しく出たファイルなし。キューの残りは全部判断待ち（新しい作業なし）。
+374. [済 11/11 定期・sonnet] GameSession 網羅の穴埋め（領域単位の本番分岐8本・GameSessionCoverage1111Tests・81%→81%、+13行）。残りは DEBUG／防御用。docs/gamesession_coverage_1111_v0.md
+
+375. [済 11/11 定期] 点検＝run_checks（GameCore 470・アプリ 415 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0）。未採点の棚卸し・大きい文字・暗い画面の目視・decision_brief（11/10 深夜の 356/358/361 まで載っている）も済みを確認＝キューの残りは全部判断待ち。週の使用量94%のため埋め草の作業は足さずに終了。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
