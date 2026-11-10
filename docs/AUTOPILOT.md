@@ -31,6 +31,7 @@
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
+- sim の設定を外から書く時（11/10 事故）：`xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …` だけを使う。mac 側の defaults で容器の plist を触ると sim の設定の書き込みが全部失敗する（直すには iPhone 17 を shutdown→boot）。
 - 撮影の注意（11/10）：右上の「🏆優勝」「💪無双」は DEBUG ビルドだけの札（遊ぶ人には出ない）＝重なりを指摘しない・撮る時は `MZ_NOCHIP=1` で隠す。
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
@@ -232,6 +233,8 @@
 324. [済 11/10 夕 定期・sonnet・docs/broken_save_handling_research_1110_v0.md] キュー154 の材料（他の作品の壊れたセーブの扱い・Web 4回）＝よくある型は「数世代退避＋本人に一言」。推奨＝②一言出す＋退避を2枠に（0.5日未満）・③戻すボタンは後回し。出典はブログ・フォーラム中心（公式の指針は見つからず）。
 325. [済 11/10 夕 定期・候補 claude/broken-save-notice-cand 870c8f6f] キュー154 の推奨形（判断待ち）：中断セーブが読めない時、タイトルに一言「前のセーブを読み込めませんでした／データは消さずに残してあります…」（OK だけ）＋退避を2枠（.broken／.broken2）。戻すボタンは無し。アプリ 410・GameCore 470 green・試験用 sim に壊れたセーブを置いて撮影＝docs/shots_1110_broken_save_notice.png（崩れなし）。注：sim のセーブを外から書くのは `xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …`（mac 側の defaults では反映されない）。
 326. [済 11/10 夕 定期・候補 claude/meta-lenient-load-cand 689c90d7] 点検の低（candidate_review_1110b）：図鑑の record() が書き戻しで知らない番号（新しい版の終わり）・読めない1件を消していた＝今回の1件だけ差し替える形に。アプリ 408 green（1回目は sim の取り合いで TEST FAILED・失敗0→回し直しで green）。check_candidates＝broken-save-notice・gacha-broken-backup とも本体に ok。判断一覧（decision_brief_2026-11-08 §C 追記）に 11/10 夕の試し版6本を足した（c5604c3f）。
+327. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110c_v0.md] 自作の候補3本の点検＝broken-save-notice 問題なし（低2）／gacha-broken-backup 中1（退避が1度きり＝先のゴミで後の本物を救えない）→ 退避を2枠に直した（アプリ 411 green）／meta-lenient の指摘は手元の追跡参照が古く旧版を読んだもの＝対象外（ls-remote で先端 689c90d7 を確認）。
+328. [済 11/10 夕 定期] 事故と直し：mac 側の `defaults write <sim の容器の plist>` の後、iPhone 17 の設定の書き込みが全部「Path not accessible」になり、アプリのテストが落ち（再起動ループ）・selftest が DONE に届かなかった。iPhone 17 を shutdown→boot で復旧（411 green・selftest 29行 DONE）。**sim のセーブは必ず `xcrun simctl spawn` 経由で書く（mac 側の defaults で容器の plist を触らない）**。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
