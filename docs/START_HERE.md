@@ -667,3 +667,18 @@ cd GameCore && swift test
 - `weekmain_text_score_1110_v0.md` — 週メイン画面の文 採点 v0（2026-11-10・WeekMainView.swift・初回）
 - `playtest_y3_1110_v0.md` — 実プレイ点検 3年目（2026-11-10・記録のみ・中1＝バッジが実力札に重なる）
 - `broken_save_handling_research_1110_v0.md` — セーブが読めない時の扱いの他社事例（11/10・キュー154 の材料・推奨＝一言＋退避2枠）
+
+## その他の文書（追補・2026-11-10 夜の定期の回＝1行目の見出しから）
+- `candidate_review_1110c_v0.md` — 候補3本の点検（正しさのバグ観点・1110c）
+- `dialogue_score_0017_0018_1110_v0.md` — 採点：0017 負けた次の週（justLostRehearsal）・0018 通った週の誘い（jus
+- `dialogue_score_banter_a_1110_v0.md` — banter A（.plain／.lull）独立採点 2026-11-10 v0
+- `dialogue_score_banter_b_1110_v0.md` — 週の掛け合い .eve/.streak/.broke/.afterPass 採点（2026-11-10・v3ゲート・独�
+- `dialogue_score_monologue3_1110_v0.md` — 採点：週頭の独白 3配列（採点の記録が無かった分）2026-11-10 定期
+- `dialogue_score_variants_1110_v0.md` — 台詞の独立採点：言い換え8配列（2026-11-10・v0）
+- `playtest_y2_1110_v0.md` — 実プレイ点検 2年目 目視（2026-11-10・記録のみ／直していない）
+- `playtest_y4_1110_v0.md` — 実プレイ点検 4年目（2026-11-10・記録のみ／直していない）
+- `playtest_y5_1110_v0.md` — 実プレイ点検 5年目（2026-11-10・記録のみ／直していない）
+- `playtest_y6_1110_v0.md` — 実プレイ点検 6年目（2026-11-10・記録のみ／直していない）
+- `playtest_y7_1110_v0.md` — 実プレイ点検 7年目（2026-11-10・記録のみ／直していない）
+- `playtest_y8_10_1110_v0.md` — 実プレイ点検 8・9・10年目（2026-11-10・記録のみ／直していない）
+- `weekly_money_line_research_1110_v0.md` — 週ごとの所持金増減の見せ方：事例調べ（2026-11-10 v0・材料のみ・�
