@@ -231,6 +231,7 @@
 323. [済 11/10 夕 定期・sonnet＋親の撮り直し・docs/playtest_y3_1110_v0.md] 抜けていた3年目の実プレイ点検（週3〜46・6枚）＝高0／中0／低4（「優勝」「無双」の重なりは DEBUG だけのデバッグ用の札＝指摘から外した）。注：MZ_YEARS 付きのフックは起動から約25秒待って撮る（早いと早送り中のタイトル画面が写る）。
 324. [済 11/10 夕 定期・sonnet・docs/broken_save_handling_research_1110_v0.md] キュー154 の材料（他の作品の壊れたセーブの扱い・Web 4回）＝よくある型は「数世代退避＋本人に一言」。推奨＝②一言出す＋退避を2枠に（0.5日未満）・③戻すボタンは後回し。出典はブログ・フォーラム中心（公式の指針は見つからず）。
 325. [済 11/10 夕 定期・候補 claude/broken-save-notice-cand 870c8f6f] キュー154 の推奨形（判断待ち）：中断セーブが読めない時、タイトルに一言「前のセーブを読み込めませんでした／データは消さずに残してあります…」（OK だけ）＋退避を2枠（.broken／.broken2）。戻すボタンは無し。アプリ 410・GameCore 470 green・試験用 sim に壊れたセーブを置いて撮影＝docs/shots_1110_broken_save_notice.png（崩れなし）。注：sim のセーブを外から書くのは `xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …`（mac 側の defaults では反映されない）。
+326. [済 11/10 夕 定期・候補 claude/meta-lenient-load-cand 689c90d7] 点検の低（candidate_review_1110b）：図鑑の record() が書き戻しで知らない番号（新しい版の終わり）・読めない1件を消していた＝今回の1件だけ差し替える形に。アプリ 408 green（1回目は sim の取り合いで TEST FAILED・失敗0→回し直しで green）。check_candidates＝broken-save-notice・gacha-broken-backup とも本体に ok。判断一覧（decision_brief_2026-11-08 §C 追記）に 11/10 夕の試し版6本を足した（c5604c3f）。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
