@@ -14,14 +14,15 @@ U=E5D11233-FE99-429F-A55C-8B0FA5793568
 MAIN=$(git rev-parse --abbrev-ref HEAD)
 TMP=$(mktemp -d)
 for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -vE '^claude/(q-candidate|vitalbar-numberpop-cand|the-hana-candidate|the-hana-candidate-r1027)$' | grep -E "${3:-.}"); do
-  behind=$(git rev-list --count "$b..$MAIN")
+  # 11/10：遅れは遠隔の枝で数える（手元にだけ取り込み済み・未 push の枝を飛ばさない＝AUTOPILOT 312）
+  GIT_TERMINAL_PROMPT=0 git fetch -q origin "+refs/heads/${b}:refs/remotes/origin/${b}" 2>/dev/null
+  if git rev-parse -q --verify "origin/${b}" >/dev/null; then behind=$(git rev-list --count "origin/${b}..$MAIN"); else behind=$(git rev-list --count "$b..$MAIN"); fi
   [ "$behind" -ge "$MIN" ] || continue
   # 11/09 夜：手元の候補の枝が遠隔より古いと、古い版で取り込んで偽の衝突になる（first-pass-share）＝先に遠隔を取り、手元が祖先なら進める
   if GIT_TERMINAL_PROMPT=0 git fetch -q origin "+refs/heads/${b}:refs/remotes/origin/${b}" 2>/dev/null \
      && [ "$(git rev-parse "$b")" != "$(git rev-parse "origin/${b}")" ] \
      && git merge-base --is-ancestor "$b" "origin/${b}"; then
-    git branch -f "$b" "origin/${b}" 2>/dev/null && behind=$(git rev-list --count "$b..$MAIN")
-    [ "$behind" -ge "$MIN" ] || continue
+    git branch -f "$b" "origin/${b}" 2>/dev/null
   fi
   W=$TMP/${b//\//_}
   if ! git worktree add -q "$W" "$b" 2>/dev/null; then
