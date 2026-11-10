@@ -1,5 +1,5 @@
 #!/bin/bash
-# 定期の点検を1本で：GameCore swift test・golden/定数の同期・アプリのテスト（iPhone 17）。要約の行だけ出す。
+# 定期の点検を1本で：GameCore swift test・golden/定数の同期・文字ファイルの UTF-8・アプリのテスト（iPhone 17）。要約の行だけ出す。
 # 使い方: tools/run_checks.sh [derivedDataPath]（既定 /tmp/mz_dd）。どれかが赤なら終了コード1。
 set -u
 cd "$(dirname "$0")/.."
@@ -18,6 +18,8 @@ echo "イベント効果: $(echo "$e" | grep -m1 '^一致' | sed 's/（.*//')"
 t=$(cd tools && python3 check_event_trigger_parity.py 2>&1); trc=$?
 echo "発火条件: $(echo "$t" | grep -m1 '^一致' | sed 's/（.*//')"
 [ $trc -ne 0 ] && { echo "$t" | grep -E '不一致|読めない:' | head -3; rc=1; }
+u=$(python3 tools/check_utf8.py 2>&1) || rc=1
+echo "$u"
 a=$(xcodebuild test -project ManzaiGame/ManzaiGame.xcodeproj -scheme ManzaiGame \
   -destination "platform=iOS Simulator,id=$SIM" -derivedDataPath "$DD" 2>&1 \
   | grep -E 'Executed [0-9]+ tests|error:|TEST (SUCCEEDED|FAILED)' | tail -2 | sed 's/^[[:space:]]*//;s/ in [0-9.]* ([0-9.]*) seconds//' | tr '\n' ' ')
