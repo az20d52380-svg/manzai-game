@@ -17,6 +17,7 @@
 - 自己点検（10/19 夜・10/27 から `tools/run_selftest.sh [dd]` の1本でビルド→起動→DONE 待ち→行数と失敗行だけ出す）：`SIMCTL_CHILD_MZ_SMOKE=selftest SIMCTL_CHILD_MZ_ALLOWSAVE=1` で回す（ALLOWSAVE が無いと古いセーブ・選択直後の保存の2項目が空振り＝iPhone 17 の試験用 sim のセーブは消える）。
 - 文の長さ（11/09〜）：`python3 tools/text_lens.py --base HEAD --head origin/claude/<候補>`＝文を足す候補で、配列の元の最長を超えた文だけ列挙（超えたら終了コード1）。
 - 網羅の測り直し（11/09〜）：`tools/run_coverage.sh <dd> [下限%=90]`＝GameCore の行の網羅と0回の領域・アプリの画面以外で下限未満のファイルを要約3行（書き換えなし）。11/09 時点の既知：GameCore の0回5か所は届かない既定値だけ／アプリの一覧は描画の部品（Juice・Stage*・FinalsBroadcastIntro・ChoiceEventOverlay・RadarChart・CharacterAvatars・WaIcons・TalkParts・ShareCard・Theme・NetaStage・IntroFlow・SoundManager・MZSpeed・FontLoader）と、StoreKit／iCloud が要る StoreManager・GachaStore の同期、DEBUG フックが大半の GameSession（80%）・RentStatement（式の部分はテスト済み・残りは画面）。この一覧に無いファイルが出たら中身を見る。
+- 文書に行を書き戻す時（11/10 事故）：mac の `cut -c`・`head -c` はバイト単位で日本語を途中で切る＝その出力を文書に書き戻さない（START_HERE に不正バイトが2か所入った）。`tools/check_utf8.py`（run_checks に組み込み済み）で検出できる。
 - 点検の1本（10/27 深夜〜・11/08 拡張）：`tools/run_checks.sh [dd]`＝GameCore swift test・golden/定数の同期（大会・THE HANA を含む80項目）・イベント効果と発火条件の Python 鏡像の突き合わせ・アプリのテストを回して要約5行（赤なら終了コード1）。
 - アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 276本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
