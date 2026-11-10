@@ -252,6 +252,7 @@
 342. [済 11/10 夕 定期・sonnet・docs/playtest_y8_10_1110_v0.md] 8〜10年目の通し目視（各4枚）＝8年目 低0・9年目 低1・10年目 低0。「あと◯週」は全12枚で一致。低＝体力0の週の独白「背中が張っている。寝る前に体を伸ばしておこう。」が休演の状態より軽い（低体力の行の温度の幅＝文言の判断・直していない）。これで1〜10年目の 11/10 版の通し目視が揃った。
 343. [済 11/10 夕 定期・docs/dialogue_score_monologue3_1110_v0.md] 採点の記録が無かった独白3配列（justLostSingle・justLostRepeat・stageNearPlain＝14行）を採点＝○13／△1／×0。△＝「相方と反省会をしよう」が芸の話に寄る（言い換え案つき・文言の判断なので直していない）。これで dialogue_arrays_score_coverage_1110 表1 は全部記録あり。
 344. [済 11/10 夕 定期] 候補ブランチの確認（check_candidates）＝76本とも本体に入る（ok）・遅れは最大27（broken-save-notice）で取り込み直しの線50未満＝refresh 不要。候補どうしの衝突は pbxproj・テスト末尾など既知の型だけ（新しい tired-monologue は pbxproj の衝突のみ）。
+345. [済 11/10 夕 定期] 点検：selftest 29行・DONE／run_checks 全 green（GameCore 470・アプリ 407・同期 3/3・config 80/80・効果 62・発火 26 一致）。
 
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
