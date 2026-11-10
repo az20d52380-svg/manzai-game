@@ -457,7 +457,7 @@ enum DialogueData {
             [Advice(name: "谷口", text: "しばらく本番なしだって。長いね"),
              Advice(name: "俺", text: "そうだね。バイトを多めに入れておこうかな")],
             [Advice(name: "谷口", text: "今度会った日、帰る前に少し残らない？"),
-             Advice(name: "俺", text: "いいね。たまには、楽屋でゆっくりしよう")],
+             Advice(name: "俺", text: "いいね。たまには、ゆっくり話そう")],
             [Advice(name: "谷口", text: "静かな週だね"),
              Advice(name: "俺", text: "そうだね。たまには早く帰って寝ようかな")],
             [Advice(name: "谷口", text: "時間あるうちに、免許の更新に行っとくよ"),
@@ -801,7 +801,7 @@ enum DialogueData {
              Advice(name: "谷口", text: "そうだね。いつも通りいこう")],
             [Advice(name: "谷口", text: "今日は寄り道しないで、まっすぐ帰ろうか"),
              Advice(name: "俺", text: "そうしよう。疲れが出る前に休もう")],
-            [Advice(name: "谷口", text: "次の本番用に、シャツ一枚買おかな"),
+            [Advice(name: "谷口", text: "次の本番用に、シャツ一枚買おうかな"),
              Advice(name: "俺", text: "いいと思う。安いので十分")],
             // 増補（懸念の台帳 L40・読み返しの多い薄いプールへの対処。表示のみ・選び方と数値は不変）
             [Advice(name: "谷口", text: "地元の友だちが、次は見に来るって"),
