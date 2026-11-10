@@ -605,6 +605,7 @@ struct WeekMainView: View {
                                           justPassed: session.justPassedStage, justLost: session.justLostStage,
                                           nextMilestone: nextMilestone(), weakAbility: weakAbility(),
                                           week: session.year &* 131 &+ session.week,
+                                          staminaGate: session.config.staminaGate,
                                           picker: session.picker(key: session.year &* 131 &+ session.week),   // 年も混ぜる／直近の行は避ける＝毎年同じ週に同じ行にしない
                                           staminaSaidElsewhere: WeekHint.isStaminaLine(weekHintText)))
     }

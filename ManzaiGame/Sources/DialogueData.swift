@@ -40,12 +40,18 @@ enum DialogueData {
     /// week: 選択の salt（呼び出し側は 年×131＋週）。選択は週で回す＝同じ状態で週を迎えても連続で同じ行にならない（監査D-03）。
     static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
                            nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String,
-                           week: Int = 0, picker: Picker? = nil, staminaSaidElsewhere: Bool = false) -> Advice {
+                           week: Int = 0, staminaGate: Double = GameConfig().staminaGate, picker: Picker? = nil, staminaSaidElsewhere: Bool = false) -> Advice {
         if state.recoveryWeeks > 0 {   // 療養中は全てに優先（体の異常＝Fable13§2）
             return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks, scene: "mono.recovering", picker))
         }
         if state.stamina < 25, !staminaSaidElsewhere {   // 一言行が体力の注意を出している週は、独白で同じ話をしない（下の分岐へ譲る）
-            return Advice(name: "俺", text: pick(lowStamina, salt: week, scene: "mono.lowStamina", picker))
+            // 練習・ネタが「休演」で押せない週（staminaGate 未満）は、稽古をする前提の行を外す（表示のみ・playtest_y11_15_1110）
+            // 直近を避ける記録は番号で持つので、配列は変えずに「選ばれたのが稽古の行なら次の行」にする
+            let line = pick(lowStamina, salt: week, scene: "mono.lowStamina", picker)
+            if state.stamina < staminaGate, line.contains("稽古"), let i = lowStamina.firstIndex(of: line) {
+                return Advice(name: "俺", text: lowStamina[(i + 1) % lowStamina.count])
+            }
+            return Advice(name: "俺", text: line)
         }
         if state.money < 30_000 {
             return Advice(name: "俺", text: pick(lowMoney, salt: week, scene: "mono.lowMoney", picker))
