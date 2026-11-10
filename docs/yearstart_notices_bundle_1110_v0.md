@@ -20,3 +20,8 @@
 
 ## 網羅の測り直し（同じ回）
 - GameCore 99.76%（未通過5行＝既知の届かない既定値）。アプリの画面以外：GameSession 81% の未通過は DEBUG フックと防御用の3行（暴走ガード・呼ばれない分岐・保存失敗）だけ、GachaStore は iCloud の経路だけ＝足すテストなし。
+
+## 追記：体力の一言の候補2本のまとめ（同じ回）
+- キュー358 gate-stamina-mono（休演の週に「稽古」の独白を出さない）× キュー146 stamina-dedup（帯の一言が体力の注意を出す週は独白で同じ話をしない）が DialogueData・WeekMainView で衝突＝補い合う直しなので両方の引数を残して解いた枝 **claude/stamina-lines-bundle-cand（20061763）**。
+- run_checks 全 green（GameCore 470・アプリ 411）。目視 15年目第40週・体力0（docs/shots_1110_stamina_bundle_y15w40.png）＝帯「体力が少ない。今週は休むのも手だ。」・独白は連敗の行に譲る・二重なし・稽古の行なし。
+- 2本とも採るならこの枝を merge するだけ（358 の strong 版を選ぶ場合は対象外）。

@@ -172,6 +172,7 @@
 366. [済 11/10 昼 定期] 点検と取り込み直し：①run_checks＝GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致 ②START_HERE.md に不正な UTF-8 が2か所（索引の行が途中で切れていた）＝直して漏れの4本も追補（56fca242a）③再発防止に tools/check_utf8.py を run_checks に組み込み（ada59ce39・追跡中1256本＝壊れ0）④refresh_candidates（遅れ50以上）＝14本すべて green で push。
 
 367. [済 11/10 夕 定期・docs/yearstart_notices_bundle_1110_v0.md] ①網羅の測り直し＝GameCore 99.76%（既知5行）・アプリの画面以外の未通過は DEBUG フック・防御用・iCloud の経路だけ＝足すテストなし ②候補の衝突一覧（本体とは全部 ok）から、年初の一言3本（356・361・youth-notice-y10）の WeekMainView の衝突を解いたまとめの枝 claude/yearstart-notices-bundle-cand（2d2232a5）を用意＝run_checks 全 green（アプリ 411）・目視 10年目／15年目の年初で知らせが順に出る。3本とも採るならこれを merge するだけ。
+368. [済 11/10 夕 定期・同 doc §追記] 体力の一言の候補2本（358 gate-stamina-mono × 146 stamina-dedup）の衝突を解いたまとめの枝 claude/stamina-lines-bundle-cand を用意＝run_checks 全 green・目視 15年目第40週 体力0 で二重なし。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
