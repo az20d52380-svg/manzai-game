@@ -261,7 +261,7 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
+            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowVesselFullToast(vesselIsFull); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
         .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await MZSpeed.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
@@ -1518,7 +1518,7 @@ struct WeekMainView: View {
 
     /// §4 満了トーストを「この年1回だけ」出す（onChange の二経路から呼ばれても多重発火しない）。
     private func maybeShowVesselFullToast(_ full: Bool) {
-        guard full, !vesselFullToastShown else { return }
+        guard full, !vesselFullToastShown, session.pendingChoiceEvent == nil, !showEvent else { return }   // イベントの下で出て消えないよう、閉じた後に出し直す
         vesselFullToastShown = true
         showToast(session.year >= session.config.careerYears ? "今年の実力の伸びは、ここまで。" : "今年の実力の伸びは、ここまで。来年また伸びる。")   // 最終年に「来年」を言わない（year10_visual_1026_v0 §2-2）
     }
