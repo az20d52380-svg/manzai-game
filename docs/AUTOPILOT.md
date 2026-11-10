@@ -31,6 +31,9 @@
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
+- sim の設定を外から書く時（11/10 事故）：`xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …` だけを使う。mac 側の defaults で容器の plist を触ると sim の設定の書き込みが全部失敗する（直すには iPhone 17 を shutdown→boot）。
+- 候補の点検をサブエージェントに頼む時（11/10）：`git fetch` だけでは origin/claude/<候補> が古いまま（remote.origin.fetch は本体だけ）＝指示に `git fetch -q origin '+refs/heads/claude/*:refs/remotes/origin/claude/*'` を必ず書く（1110c で旧版を読んで誤指摘）。
+- 撮影の注意（11/10）：右上の「🏆優勝」「💪無双」は DEBUG ビルドだけの札（遊ぶ人には出ない）＝重なりを指摘しない・撮る時は `MZ_NOCHIP=1` で隠す。
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
@@ -215,6 +218,8 @@
 309. [済 11/10 昼 定期・まとめの枝 claude/rec-1110-bundle-cand d3c4ef92] 論点の推奨形の候補5本（intro-15y-note・fatigue-wording・small-wording-1110・calendar-week-label・pass-banner）を1本に＝衝突なし・GameCore 469・アプリ 402 TEST SUCCEEDED・golden 一致。text-all-1110-bundle と重ねるかは未確認（weekmain/settings の同じファイルを触る＝次の回で make_bundle で試す）。
 310. [済 11/10 昼 定期・claude/all-1110-bundle-cand 66ab96ff＝text-all-1110-bundle＋推奨形5本が衝突なしで重なる・GameCore 472・アプリ 402 TEST SUCCEEDED・golden 一致・soak 6分 317〜332MB 落ちず・クラッシュログ 1→1。今日の文の候補は全部この1本］（309 の続き）text-all-1110-bundle の中身＋rec-1110-bundle の5本を1本に重ねられるか make_bundle で試す（衝突は手で解く）→ 全部入りの soak。
 311. [済 11/10 午後 定期・c9d033d2] 道具の直し：refresh_candidates.sh で衝突一覧の変数が UDID（U）を上書き＝自動で解けた候補はアプリのテストが必ず赤だった（UF に分けた）。取り込み直し＝invite-variants・lull-plus・minor-pools-plus・monologue-plus・week-hint-priority・weekmain-text-fix・yearly-goal・yose-sound-wire・youth-notice-y10 を green で push、first-pass-share は TournamentResultView の目視フック行を両方残して手で解いた（470・アプリ green・push）。
+312. [済 11/10 午後 定期] 311 の続き：不具合の回が取り込みだけして push しなかった候補49本を、1本ずつテストして green の物を push（44本＋回し直しで5本＝49本すべて。赤はシミュレータの一時的な失敗で、回し直しで全部 green）。all-bundles-1109 は TournamentResultView の目視フック行（本体の MZ_PASS 行＋候補の MZ_FIRSTPASS 付きの行）を残して手で解いた（470・アプリ green・config 80/80）。※ refresh_candidates は手元の枝の遅れで数える＝手元に取り込み済み・未 push の枝は飛ばす（次に直すなら、遠隔の枝の遅れで数える）。
+313. [済 11/10 午後 定期・6f2bc291・3e83fd0d] 道具：refresh_candidates の遅れを遠隔の枝で数える（手元だけ取り込み済みの枝を飛ばしていた）／手元と遠隔が分かれた枝（作り直したまとめの枝）は遠隔に合わせる（text-bundle-1109 の非 fast-forward）。回し直しで text-tri-1110・text-bundle-1109 ほか今日の候補を green で push。
 311. [済 11/10 夕 定期] 点検：run_checks 全 green（GameCore 469・アプリ 402・同期 80/80）・網羅 GameCore 99.76%（アプリの未通過はビュー・デバッグ用・StoreKit だけ＝足す価値のあるロジックの穴なし）。セーブ互換の点検案6（save_compat_audit_1108 §足すべきテストの案）＝保存に載る enum の rawValue を固定するテストを足した（GameCore：ChoiceEventKind・Skill・NetaKata・NetaLength・ShopItem／アプリ：EndingID・TrophyID・ComboKind・MeetingKind・BandCategory。消す・改名で赤・足すのは可）。GameCore 470・アプリ 404 TEST SUCCEEDED。
 312. [済 11/10 夕 定期] 大きい文字でオファー札が舞台を覆う件（visual_largetext_1109 a/b）の候補を試作→シミュレータの文字サイズ設定がアプリに効かず（普通の文字と同じ見た目）、覆うのは普通の文字でも同じ＝キュー137 の論点と同じと判明。候補は作らず追記だけ（visual_largetext_1109_v0 §追記）。
 313. [済 11/10 夕 定期・候補 claude/meta-lenient-load-cand 75c8a10f] 周回メタの読み込みの穴：エンディング図鑑は1件でも型が合わないと丸ごと空として読み、次のエンディングの記録でほかの記録を上書きして消す。通算記録（CareerRecords）は鍵が1つ欠けただけで全部0に戻る。1件・1鍵ずつ読む形に直した候補＋テスト2本（アプリ 406・GameCore 470 green・セーブの形式は不変）。キュー154（セーブが読めなかった時）と一緒に聞く。
@@ -226,6 +231,15 @@
 319. [済 11/10 夕 定期] セーブ互換の点検案4：壊れたセーブが2回続いた時の退避を固定するテスト BrokenSaveTwice1110Tests（退避は1枠・2回目で上書き／正常に読めれば退避に触らない）。案1〜6 はこれで全部テストあり（案1＝AppSaveFixtureTests・案5＝候補 meta-lenient-load）。挙動を変えるかはキュー154。
 320. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110b_v0.md] 候補3本（meta-lenient-load・first-week-two-terms・stamina-dedup）の差分点検＝高・中なし（低6件＝文書参照）。
 321. [済 11/10 夕 定期・候補 claude/gacha-broken-backup-cand 72bb121b] ガチャの保存が読めない時（型違い等）、今は新規に戻して次の保存で端末・iCloud を上書き＝購入の台帳ごと消える（iCloud が無いと救えない）。読めない元データを `gacha_state_v1.broken` に1度だけ退避（先に壊れた方を残す・画面は変えない）。アプリ 410 TEST SUCCEEDED。戻す処理・一言の表示はキュー154 と同じ判断。
+322. [済 11/10 夕 定期] 点検：text_lens（all-1110-bundle）＝超え0本／check_golden_sync・check_config_sync 80/80・GameCore 470 green。START_HERE の索引に漏れていた30本を追補（bb07bae2）。
+323. [済 11/10 夕 定期・sonnet＋親の撮り直し・docs/playtest_y3_1110_v0.md] 抜けていた3年目の実プレイ点検（週3〜46・6枚）＝高0／中0／低4（「優勝」「無双」の重なりは DEBUG だけのデバッグ用の札＝指摘から外した）。注：MZ_YEARS 付きのフックは起動から約25秒待って撮る（早いと早送り中のタイトル画面が写る）。
+324. [済 11/10 夕 定期・sonnet・docs/broken_save_handling_research_1110_v0.md] キュー154 の材料（他の作品の壊れたセーブの扱い・Web 4回）＝よくある型は「数世代退避＋本人に一言」。推奨＝②一言出す＋退避を2枠に（0.5日未満）・③戻すボタンは後回し。出典はブログ・フォーラム中心（公式の指針は見つからず）。
+325. [済 11/10 夕 定期・候補 claude/broken-save-notice-cand 870c8f6f] キュー154 の推奨形（判断待ち）：中断セーブが読めない時、タイトルに一言「前のセーブを読み込めませんでした／データは消さずに残してあります…」（OK だけ）＋退避を2枠（.broken／.broken2）。戻すボタンは無し。アプリ 410・GameCore 470 green・試験用 sim に壊れたセーブを置いて撮影＝docs/shots_1110_broken_save_notice.png（崩れなし）。注：sim のセーブを外から書くのは `xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …`（mac 側の defaults では反映されない）。
+326. [済 11/10 夕 定期・候補 claude/meta-lenient-load-cand 689c90d7] 点検の低（candidate_review_1110b）：図鑑の record() が書き戻しで知らない番号（新しい版の終わり）・読めない1件を消していた＝今回の1件だけ差し替える形に。アプリ 408 green（1回目は sim の取り合いで TEST FAILED・失敗0→回し直しで green）。check_candidates＝broken-save-notice・gacha-broken-backup とも本体に ok。判断一覧（decision_brief_2026-11-08 §C 追記）に 11/10 夕の試し版6本を足した（c5604c3f）。
+327. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110c_v0.md] 自作の候補3本の点検＝broken-save-notice 問題なし（低2）／gacha-broken-backup 中1（退避が1度きり＝先のゴミで後の本物を救えない）→ 退避を2枠に直した（アプリ 411 green）／meta-lenient の指摘は手元の追跡参照が古く旧版を読んだもの＝対象外（ls-remote で先端 689c90d7 を確認）。
+328. [済 11/10 夕 定期] 事故と直し：mac 側の `defaults write <sim の容器の plist>` の後、iPhone 17 の設定の書き込みが全部「Path not accessible」になり、アプリのテストが落ち（再起動ループ）・selftest が DONE に届かなかった。iPhone 17 を shutdown→boot で復旧（411 green・selftest 29行 DONE）。**sim のセーブは必ず `xcrun simctl spawn` 経由で書く（mac 側の defaults で容器の plist を触らない）**。
+329. [済 11/10 夕 定期・まとめの枝 claude/save-safety-1110-bundle-cand 637b383a] データを消さない系の候補3本（meta-lenient-load・gacha-broken-backup・broken-save-notice）を1本に＝衝突なし（pbxproj は自動）・GameCore 470・アプリ 418 TEST SUCCEEDED・golden/定数一致。
+330. [ ] （11/10 夕 定期・判定不能）まとめの枝 save-safety-1110-bundle（637b383a）の soak が2回とも途中で「落ちた」（6分目・3分目・クラッシュログ 1→1 増えず・sim のログは「workspace client connection invalidated」）。同じ時刻に別のセッション（作業場所 scratchpad/wt-st2・claude/settings-text-fix-cand）が iPhone 17 で xcodebuild test を回していた＝取り合いの可能性が高い。本体との比べは途中で止めた。**次：iPhone 17 を他が使っていない時に、本体と枝を各6分 soak して比べる。**
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
