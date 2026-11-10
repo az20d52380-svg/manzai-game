@@ -262,6 +262,8 @@
 351. [済 11/10 夜 定期・sonnet・docs/judge_arrays_score_coverage_1110_v0.md] 講評の配列の採点状況＝記録なしは paperNetaLines（6行）だけ。10/25 の紙講評の増補（22→42本）より前の採点のままなのは Paper.fail・pass・passChemistryHigh・failStaminaLow 等。
 352. [済 11/10 夜 定期・sonnet・docs/judge_score_paper_1110_v0.md] 紙講評5配列を採点＝○91／△12／×0。△の主なもの＝pass と fail にほぼ同じ文が3組（514/547・519/552・520/553＝通過でも落選でも同じ指摘は起こりうる＝低）・passChemistryHigh の書き出し「{一言}、」の偏り。直さず並べるだけ。
 353. [ ] （11/10 夜 定期・候補 claude/banter-dedup-cand 737e1f0c＝banter-v3-fix-cand（その下は outing-v3-cand）の上）雑談の話題の重複3組を別の日常の話題に＝lull「傘を電車に置き忘れ」→銭湯の値上がり／streak「実家からお米」→大家さんに野菜／streak「傘を置き忘れ」→スマホの画面が割れた。他の候補に同じ行の直しなし（確認済み）・text_lens 超え0・GameCore 470／アプリ TEST SUCCEEDED。バイトの話題の多さ（10回超）は帯の主題に近いので触っていない。
+354. [済 11/10 深夜 定期] 採点の残りの確認：dialogue_arrays_score_coverage_1110 表1 の ChoiceEventData 25配列は、配列名ではなくイベントID（#0012〜#0057・#0020/#0021 を含む）で dialogue_score_events_0012_0029・_0041_0057・1019 系に全部採点がある＝未採点0（choice_arrays_score_1110 と同じ取り違え）。paperNetaLines は 352 に含まれる。表2 の古い配列は10/28以降の新行なし（banterPools・justLostRehearsal・justPassedFork は 348・350 で採点済み）。会話・講評の配列は全部採点済み。
+355. [ ] （11/10 深夜 定期・sonnet）11〜15年目の通し目視（今日の 2〜10年目 の続き・`MZ_YEARS=10〜14`）。常設の「最大 9＝10年目」の記述は結成10年の頃の物＝15年なら 14 まで届くかも合わせて確かめる。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
