@@ -324,8 +324,11 @@ struct WeekMainView: View {
         }   // 掛け合いの読み位置は週頭でリセット
         .task(id: toast) {
             if let t = toast {
-                try? await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)   // 読む時間＝演出の速さで縮めない
-                toast = nil
+                // 次の toast に替わるとこの待ちは取り消される。取り消された時は消さない（try? で握ると新しい toast を即座に消していた＝11/10 深夜）
+                do {
+                    try await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)   // 読む時間＝演出の速さで縮めない
+                    toast = nil
+                } catch {}
             }
         }
         .onChange(of: vesselIsFull) { _, full in
