@@ -256,7 +256,7 @@
 346. [済 11/10 夜 定期] 網羅の測り直し（run_coverage）＝GameCore 99.76%（未通過5行は `?? .表現`・`?? "{入り}、要確認。"`・precondition の文言など到達しない既定値＝テスト不要）／アプリの画面以外で90%未満は GameSession 81%（未通過の大半は DEBUG フック。非 DEBUG の関数は init の既定値クロージャ・costOfNextStep 1行・applyEventChoice 1行・saveNow 1行だけ）・StoreManager 41%・SoundManager 52%（端末の課金・音＝単体テスト向きでない）。足すべき穴なし。
 347. [済 11/10 夜 定期・sonnet・docs/dialogue_score_variants_1110_v0.md] styleTalk 3本・weekendInvite 5本の変種を独立採点＝○69／△6／×0。△＝選択肢B「毎日いっしょに稽古する」と afterChoice（毎日ここで会う）のずれ（選択の意味に関わる＝直さず並べるだけ）・「行きます。お願いします」「また誘ってください」が元の文面と同じ（低・言い換え案は文書に）。
 348. [済 11/10 夜 定期・sonnet×2・docs/dialogue_score_banter_a_1110_v0.md・_b_] banterPools（192組）を独立採点＝前半 ○81△4×3／後半 ○98△5×1。×4（459・470・472＝ネタ合わせ・楽屋・衣装／658＝稽古のあとにネタを見る）と関西弁1（804「買おかな」＝話し方バナー違反）は候補で直した。△（稽古・本番・練習の言及）と話題の重複（バイト10回超・傘・米・自転車 各3回）は文書に並べるだけ。
-349. [ ] （11/10 夜 定期・候補 claude/banter-v3-fix-cand cac7dbd2＝×4行・関西弁1行を日常会話に・GameCore 470／アプリ 407 TEST SUCCEEDED・text_lens 超え0）オーナーの OK で本体へ。
+349. [ ] （11/10 夜 定期・候補 claude/banter-v3-fix-cand 20a1ec7b・**outing-v3-cand の上に作り直し**）×4行は既存の候補 outing-v3-cand が同じ行をもう直していた（重複に気づいて作り直した）。この候補は outing-v3 で残った2行だけ＝460「楽屋で」を外す・804 関西弁「買おかな」→「買おうかな」。GameCore 470／アプリ TEST SUCCEEDED。outing-v3 と一緒にオーナーの OK で本体へ。
 350. [済 11/10 夜 定期・docs/dialogue_score_0017_0018_1110_v0.md] 記録が古いまま新しい行が増えた 0017・0018 を採点＝○18／△3／×0。△は「稽古する」「ネタを見直す」が選択肢そのもの（効果の理由）＝直さず並べるだけ。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
