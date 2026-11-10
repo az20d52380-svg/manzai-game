@@ -25,3 +25,7 @@
 - キュー358 gate-stamina-mono（休演の週に「稽古」の独白を出さない）× キュー146 stamina-dedup（帯の一言が体力の注意を出す週は独白で同じ話をしない）が DialogueData・WeekMainView で衝突＝補い合う直しなので両方の引数を残して解いた枝 **claude/stamina-lines-bundle-cand（20061763）**。
 - run_checks 全 green（GameCore 470・アプリ 411）。目視 15年目第40週・体力0（docs/shots_1110_stamina_bundle_y15w40.png）＝帯「体力が少ない。今週は休むのも手だ。」・独白は連敗の行に譲る・二重なし・稽古の行なし。
 - 2本とも採るならこの枝を merge するだけ（358 の strong 版を選ぶ場合は対象外）。
+
+## 追記2：解かずに残した衝突（文言の選択＝オーナー判断）
+- partner-action-name × text-tri-1110（CommandData の休む札）：「相方とネタの話をする」vs「相方と過ごす」、サウナの説明「家よりよく休める」vs「しっかり休める（有料）」。どちらの文を採るかが決まれば機械的に解ける。settings-text-fix・weekmain-text-fix との衝突も同じ型（未確認）。
+- banter-dedup × banter-v3-fix／outing-v3（DialogueData）：同じ行の直し合い＝同上。
