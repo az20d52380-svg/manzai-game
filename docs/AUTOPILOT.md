@@ -237,6 +237,7 @@
 327. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110c_v0.md] 自作の候補3本の点検＝broken-save-notice 問題なし（低2）／gacha-broken-backup 中1（退避が1度きり＝先のゴミで後の本物を救えない）→ 退避を2枠に直した（アプリ 411 green）／meta-lenient の指摘は手元の追跡参照が古く旧版を読んだもの＝対象外（ls-remote で先端 689c90d7 を確認）。
 328. [済 11/10 夕 定期] 事故と直し：mac 側の `defaults write <sim の容器の plist>` の後、iPhone 17 の設定の書き込みが全部「Path not accessible」になり、アプリのテストが落ち（再起動ループ）・selftest が DONE に届かなかった。iPhone 17 を shutdown→boot で復旧（411 green・selftest 29行 DONE）。**sim のセーブは必ず `xcrun simctl spawn` 経由で書く（mac 側の defaults で容器の plist を触らない）**。
 329. [済 11/10 夕 定期・まとめの枝 claude/save-safety-1110-bundle-cand 637b383a] データを消さない系の候補3本（meta-lenient-load・gacha-broken-backup・broken-save-notice）を1本に＝衝突なし（pbxproj は自動）・GameCore 470・アプリ 418 TEST SUCCEEDED・golden/定数一致。
+330. [ ] （11/10 夕 定期・判定不能）まとめの枝 save-safety-1110-bundle（637b383a）の soak が2回とも途中で「落ちた」（6分目・3分目・クラッシュログ 1→1 増えず・sim のログは「workspace client connection invalidated」）。同じ時刻に別のセッション（作業場所 scratchpad/wt-st2・claude/settings-text-fix-cand）が iPhone 17 で xcodebuild test を回していた＝取り合いの可能性が高い。本体との比べは途中で止めた。**次：iPhone 17 を他が使っていない時に、本体と枝を各6分 soak して比べる。**
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
