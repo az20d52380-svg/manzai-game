@@ -53,4 +53,10 @@ enum WeekHint {
         if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
         return nil
     }
+
+    /// 一言行が体力の注意を言っているか（言っている週は独白の低体力の文を出さない＝同じ話の二重を消す・week_prompts_inventory_1108 案②の③）
+    static func isStaminaLine(_ line: String?) -> Bool {
+        guard let l = line else { return false }
+        return l.hasPrefix("体力が少ない") || l.hasSuffix("無理すると倒れるよ。")
+    }
 }

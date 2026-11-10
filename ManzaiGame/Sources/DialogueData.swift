@@ -40,11 +40,11 @@ enum DialogueData {
     /// week: 選択の salt（呼び出し側は 年×131＋週）。選択は週で回す＝同じ状態で週を迎えても連続で同じ行にならない（監査D-03）。
     static func innerVoice(state: GameState, lossStreak: Int, justPassed: Bool, justLost: Bool,
                            nextMilestone: (name: String, weeksLeft: Int)?, weakAbility: String,
-                           week: Int = 0, picker: Picker? = nil) -> Advice {
+                           week: Int = 0, picker: Picker? = nil, staminaSaidElsewhere: Bool = false) -> Advice {
         if state.recoveryWeeks > 0 {   // 療養中は全てに優先（体の異常＝Fable13§2）
             return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks, scene: "mono.recovering", picker))
         }
-        if state.stamina < 25 {
+        if state.stamina < 25, !staminaSaidElsewhere {   // 一言行が体力の注意を出している週は、独白で同じ話をしない（下の分岐へ譲る）
             return Advice(name: "俺", text: pick(lowStamina, salt: week, scene: "mono.lowStamina", picker))
         }
         if state.money < 30_000 {

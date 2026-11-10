@@ -63,6 +63,7 @@
 		557A44DC9CC271F9216143B1 /* EventBackgrounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EE7F6B8DDE4970A034B1FDA /* EventBackgrounds.swift */; };
 		5603895BB7959D5D16C8CC79 /* EndingJudge15Years1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BB6759204D40D8E2D08075C /* EndingJudge15Years1108Tests.swift */; };
 		59987E59328228E8608387EF /* WaIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E034762E4A6192639CA2DCF /* WaIcons.swift */; };
+		59F70C127DB57EFCE27B4CBF /* StaminaDedup1110Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097A1CBA7AE215CE6C166E1B /* StaminaDedup1110Tests.swift */; };
 		5BADE503B455BBE21D888C20 /* IntroFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915FB4D3357203506A4F5A67 /* IntroFlow.swift */; };
 		5DB922218F668B8CC8DDF60E /* se_taiko2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E30DB8F2C4B99487E0C5DCFD /* se_taiko2.mp3 */; };
 		5EA1A814CA2CFA7DF978D4CA /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B3D0E4892F3438C35FA663 /* StoreManager.swift */; };
@@ -180,6 +181,7 @@
 		0419DEBBB5870F13F4CCB037 /* ManzaiGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameApp.swift; sourceTree = "<group>"; };
 		08B86D882DE6689C655ADD0C /* FanReportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanReportData.swift; sourceTree = "<group>"; };
 		095D2F1E44B7AE4090BC3A7E /* StateSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateSyncTests.swift; sourceTree = "<group>"; };
+		097A1CBA7AE215CE6C166E1B /* StaminaDedup1110Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaminaDedup1110Tests.swift; sourceTree = "<group>"; };
 		0B56CF2CC9552602E05AC67B /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		0C98BD6BC72E2B74518DD33B /* YoseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoseCatalog.swift; sourceTree = "<group>"; };
 		117A684500F20F43E1885BB1 /* FinalsBroadcastIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalsBroadcastIntro.swift; sourceTree = "<group>"; };
@@ -536,6 +538,7 @@
 				B4D4D421A24B3889D5B6DF8B /* SessionGap1026Tests.swift */,
 				54B0571B153FA12FD6EAB8D5 /* SmallCountSave1107Tests.swift */,
 				56A9DEDD228736371D634684 /* SoundInterruption1108Tests.swift */,
+				097A1CBA7AE215CE6C166E1B /* StaminaDedup1110Tests.swift */,
 				095D2F1E44B7AE4090BC3A7E /* StateSyncTests.swift */,
 				4492DE4A3DD4D05998D96B2B /* StoreMeta1107Tests.swift */,
 				533031C1E08D04233861C488 /* TalkWrappers1026Tests.swift */,
@@ -821,6 +824,7 @@
 				12971BC9899A2622FD79B09E /* SessionGap1026Tests.swift in Sources */,
 				BCB4203ADB23680A3BB77E36 /* SmallCountSave1107Tests.swift in Sources */,
 				D782B299A77D14F37CE5CAA1 /* SoundInterruption1108Tests.swift in Sources */,
+				59F70C127DB57EFCE27B4CBF /* StaminaDedup1110Tests.swift in Sources */,
 				10A9A8CCD569A717FA3ED50A /* StateSyncTests.swift in Sources */,
 				1628D2B16D283865780789BF /* StoreMeta1107Tests.swift in Sources */,
 				ED74EC5E7AD9D64C25162156 /* TalkWrappers1026Tests.swift in Sources */,
