@@ -665,3 +665,5 @@ cd GameCore && swift test
 - `visual_pass_banner_1110_v0.md` — 通過の看板（上帯）の目視 1110 v0（キュー308）
 - `visual_text_fix_bundle_1110_v0.md` — 文の直しのまとめの枝（56d59b77）の目視 v0（11/10）
 - `weekmain_text_score_1110_v0.md` — 週メイン画面の文 採点 v0（2026-11-10・WeekMainView.swift・初回）
+- `playtest_y3_1110_v0.md` — 実プレイ点検 3年目（2026-11-10・記録のみ・中1＝バッジが実力札に重なる）
+- `broken_save_handling_research_1110_v0.md` — セーブが読めない時の扱いの他社事例（11/10・キュー154 の材料・推奨＝一言＋退避2枠）
