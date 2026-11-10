@@ -15,14 +15,24 @@ final class GachaBrokenBackup1110Tests: XCTestCase {
         XCTAssertEqual(d.data(forKey: GachaStore.brokenKey), junk)
     }
 
-    @MainActor func testFirstBackupIsNotOverwrittenBySecondFailure() {
+    @MainActor func testSecondFailureKeepsBothBackups() {
         let d = suite()
-        let first = Data("first".utf8)
+        let first = Data("first".utf8), second = Data("second".utf8)
         d.set(first, forKey: GachaStore.key)
         _ = GachaStore(defaults: d, useCloud: false)
-        d.set(Data("second".utf8), forKey: GachaStore.key)
+        d.set(second, forKey: GachaStore.key)
         _ = GachaStore(defaults: d, useCloud: false)
-        XCTAssertEqual(d.data(forKey: GachaStore.brokenKey), first)   // 先に壊れた方（購入の台帳が残っている見込みが高い）を残す
+        XCTAssertEqual(d.data(forKey: GachaStore.brokenKey), second)
+        XCTAssertEqual(d.data(forKey: GachaStore.brokenKey2), first)   // 先に壊れた方も残る
+    }
+
+    @MainActor func testSameBrokenDataTwiceDoesNotPushOutOlderBackup() {
+        let d = suite()
+        let old = Data("old".utf8), junk = Data("junk".utf8)
+        d.set(old, forKey: GachaStore.key); _ = GachaStore(defaults: d, useCloud: false)
+        d.set(junk, forKey: GachaStore.key); _ = GachaStore(defaults: d, useCloud: false)
+        d.set(junk, forKey: GachaStore.key); _ = GachaStore(defaults: d, useCloud: false)   // 同じ壊れ方が続いても
+        XCTAssertEqual(d.data(forKey: GachaStore.brokenKey2), old)                       // 1つ前は押し出されない
     }
 
     @MainActor func testReadableDataMakesNoBackup() throws {
