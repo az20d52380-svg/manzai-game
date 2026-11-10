@@ -22,3 +22,20 @@ final class GateStaminaMono1110Tests: XCTestCase {
         XCTAssertTrue(texts.contains { $0.contains("稽古") })
     }
 }
+
+/// 休演の週は「休む」がはっきりした10行（lowStaminaGated）だけ・全部 lowStamina に既にある文（新しい文なし）
+final class GateStaminaStrong1110Tests: XCTestCase {
+    func testGatedWeeksUseStrongLinesOnly() {
+        var st = GameState(config: GameConfig()); st.stamina = 0
+        let all = Set((0..<300).map { DialogueData.innerVoice(state: st, lossStreak: 0, justPassed: false, justLost: false,
+                                                             nextMilestone: nil, weakAbility: "", week: $0).text })
+        XCTAssertTrue(all.isSubset(of: Set(DialogueData.lowStaminaGated)))
+        XCTAssertEqual(all.count, DialogueData.lowStaminaGated.count)
+    }
+    func testStrongLinesAreExistingLowStaminaLines() {
+        var st = GameState(config: GameConfig()); st.stamina = 22
+        let low = Set((0..<400).map { DialogueData.innerVoice(state: st, lossStreak: 0, justPassed: false, justLost: false,
+                                                             nextMilestone: nil, weakAbility: "", week: $0).text })
+        for l in DialogueData.lowStaminaGated { XCTAssertTrue(low.contains(l), l) }
+    }
+}

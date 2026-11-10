@@ -44,6 +44,10 @@ enum DialogueData {
         if state.recoveryWeeks > 0 {   // 療養中は全てに優先（体の異常＝Fable13§2）
             return Advice(name: "俺", text: pick(recovering, salt: state.recoveryWeeks, scene: "mono.recovering", picker))
         }
+        if state.stamina < GameConfig().staminaGate {
+            // 休演の週（練習・ネタが押せない）は、休むことがはっきりした行だけから選ぶ（既存の行の中から・新しい文なし・キュー342／358）
+            return Advice(name: "俺", text: pick(lowStaminaGated, salt: week, scene: "mono.lowStaminaGated", picker))
+        }
         if state.stamina < 25 {
             // 練習・ネタが「休演」で押せない週（staminaGate 未満）は、稽古をする前提の行を外す（表示のみ・playtest_y11_15_1110）
             // 直近を避ける記録は番号で持つので、配列は変えずに「選ばれたのが稽古の行なら次の行」にする
@@ -143,6 +147,19 @@ enum DialogueData {
         "昼過ぎになると急に眠くなる。バイトを短めにしよう。",
         "体の節々が痛い。今週は湿布を貼って休もう。",
         "集中が続かない。今週は用事を一つずつ片づけよう。",
+        "体に力が入らない。出かける用事は一つだけにしよう。",
+    ]
+    /// 休演の週（体力 < staminaGate）用：lowStamina のうち「休む」がはっきりした行（同じ文・選び直しだけ）
+    static let lowStaminaGated = [
+        "体がもたない。今週は休みを先に入れよう。",
+        "階段を上がるだけで息が切れる。今週は休もう。",
+        "今週は無理しない。まず寝る。",
+        "朝起きるのがつらい。少し休んでおかないとまずい。",
+        "寝ても疲れが取れない。一日、何もしない日を作ろう。",
+        "顔色が悪いと言われた。今週は休みを多めにとろう。",
+        "体がふらつく。水分をとって、今日は早く帰ろう。",
+        "体が熱っぽい。熱を測って、今日は家にいよう。",
+        "体の節々が痛い。今週は湿布を貼って休もう。",
         "体に力が入らない。出かける用事は一つだけにしよう。",
     ]
     private static let lowMoney = [
