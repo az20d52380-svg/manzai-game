@@ -31,6 +31,9 @@
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
+- sim の設定を外から書く時（11/10 事故）：`xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …` だけを使う。mac 側の defaults で容器の plist を触ると sim の設定の書き込みが全部失敗する（直すには iPhone 17 を shutdown→boot）。
+- 候補の点検をサブエージェントに頼む時（11/10）：`git fetch` だけでは origin/claude/<候補> が古いまま（remote.origin.fetch は本体だけ）＝指示に `git fetch -q origin '+refs/heads/claude/*:refs/remotes/origin/claude/*'` を必ず書く（1110c で旧版を読んで誤指摘）。
+- 撮影の注意（11/10）：右上の「🏆優勝」「💪無双」は DEBUG ビルドだけの札（遊ぶ人には出ない）＝重なりを指摘しない・撮る時は `MZ_NOCHIP=1` で隠す。
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
@@ -124,7 +127,7 @@
 143. [ ] （材料 docs/entry_share_research_1108_v0.md §3）（同 §5 G・判断が要る軽微）共有カードの出口が年末とエンディングだけ＝最初の大会の通過では共有できない。①今のまま ②初めての通過の祝いに足す。
 144. [ ] （材料 11/10：docs/tutorial_term_pacing_research_1110_v0.md＝推奨③ 第1週は2語に絞る・候補 claude/first-week-two-terms-cand 06b23797）（同 §5 B・C・H・判断が要る軽微）第1週の「はじめに」が用語5つを一度に出す／初舞台の余韻の直後に説明が出る（実機の体感は未確認）／大会前に助言が3方向に分かれる（人工状態での確認＝頻度は未確認）。§5 A（第1週の「ネタを書こう」が3か所）はキュー111（上の一言と重なる問題）と同じ論点。
 145. [ ] （材料 docs/app_icon_drafts_1107_v0.md＝下書き3案）（11/07 夜の定期・発売に必須・判断が要る）アプリのアイコンの画像がまだ無い（Resources/Assets.xcassets/AppIcon.appiconset は枠だけ＝Release ビルドにアイコンが入らない。Release ビルド自体は通り、MZ_ の目視フックの文字は実行ファイルに残っていない）。絵をどうするかはオーナー判断。
-146. [ ] （材料 11/08：docs/week_prompts_inventory_1108_v0.md＝出所12・二重7組・推奨②二重だけ消す＋③の役割1文・聞く1問「赤帯と札、残すのはどちらか」）（11/07 夜・playtest_mid_1107・判断が要る軽微）5年目第10週のように、促しと注意が週の画面に5か所同時に出ることがある（帯・吹き出し・赤帯・札・谷口）。キュー123（週の一言の優先順位）と一緒に決める。8年目のオファーの札と舞台の重なりはキュー111・137 の現物例（y8w10）。
+146. [ ] （11/10：案②の③体力の二重消しを候補 claude/stamina-dedup-cand fb4e7cc8）（材料 11/08：docs/week_prompts_inventory_1108_v0.md＝出所12・二重7組・推奨②二重だけ消す＋③の役割1文・聞く1問「赤帯と札、残すのはどちらか」）（11/07 夜・playtest_mid_1107・判断が要る軽微）5年目第10週のように、促しと注意が週の画面に5か所同時に出ることがある（帯・吹き出し・赤帯・札・谷口）。キュー123（週の一言の優先順位）と一緒に決める。8年目のオファーの札と舞台の重なりはキュー111・137 の現物例（y8w10）。
 
 149. [ ] （11/08 定期・実機確認待ち）電話やアラームの割り込みの後に、決勝や結果画面の BGM が戻るか／イヤホンを抜いた時に音が大きく出ないか／優勝演出の直後にホームへ行って戻った時に音が重ならないか（code_review_1108b #1・#2・#4）。シミュレータでは確かめられない。
 
@@ -214,12 +217,26 @@
 308. [済 11/10 昼 定期・15a59ef3・3afc2da2＝`MZ_UI=pass MZ_PASS=board` で通過の看板から始まる・本体の帯も候補「次の舞台へ」も崩れなし（docs/visual_pass_banner_1110_v0.md）・469・402 green］（307 の続き・道具）通過演出の結果の看板まで進める目視フック（MZ_UI=pass に段の指定を足す）→ pass-banner 候補を撮る。
 309. [済 11/10 昼 定期・まとめの枝 claude/rec-1110-bundle-cand d3c4ef92] 論点の推奨形の候補5本（intro-15y-note・fatigue-wording・small-wording-1110・calendar-week-label・pass-banner）を1本に＝衝突なし・GameCore 469・アプリ 402 TEST SUCCEEDED・golden 一致。text-all-1110-bundle と重ねるかは未確認（weekmain/settings の同じファイルを触る＝次の回で make_bundle で試す）。
 310. [済 11/10 昼 定期・claude/all-1110-bundle-cand 66ab96ff＝text-all-1110-bundle＋推奨形5本が衝突なしで重なる・GameCore 472・アプリ 402 TEST SUCCEEDED・golden 一致・soak 6分 317〜332MB 落ちず・クラッシュログ 1→1。今日の文の候補は全部この1本］（309 の続き）text-all-1110-bundle の中身＋rec-1110-bundle の5本を1本に重ねられるか make_bundle で試す（衝突は手で解く）→ 全部入りの soak。
+311. [済 11/10 午後 定期・c9d033d2] 道具の直し：refresh_candidates.sh で衝突一覧の変数が UDID（U）を上書き＝自動で解けた候補はアプリのテストが必ず赤だった（UF に分けた）。取り込み直し＝invite-variants・lull-plus・minor-pools-plus・monologue-plus・week-hint-priority・weekmain-text-fix・yearly-goal・yose-sound-wire・youth-notice-y10 を green で push、first-pass-share は TournamentResultView の目視フック行を両方残して手で解いた（470・アプリ green・push）。
 311. [済 11/10 夕 定期] 点検：run_checks 全 green（GameCore 469・アプリ 402・同期 80/80）・網羅 GameCore 99.76%（アプリの未通過はビュー・デバッグ用・StoreKit だけ＝足す価値のあるロジックの穴なし）。セーブ互換の点検案6（save_compat_audit_1108 §足すべきテストの案）＝保存に載る enum の rawValue を固定するテストを足した（GameCore：ChoiceEventKind・Skill・NetaKata・NetaLength・ShopItem／アプリ：EndingID・TrophyID・ComboKind・MeetingKind・BandCategory。消す・改名で赤・足すのは可）。GameCore 470・アプリ 404 TEST SUCCEEDED。
 312. [済 11/10 夕 定期] 大きい文字でオファー札が舞台を覆う件（visual_largetext_1109 a/b）の候補を試作→シミュレータの文字サイズ設定がアプリに効かず（普通の文字と同じ見た目）、覆うのは普通の文字でも同じ＝キュー137 の論点と同じと判明。候補は作らず追記だけ（visual_largetext_1109_v0 §追記）。
 313. [済 11/10 夕 定期・候補 claude/meta-lenient-load-cand 75c8a10f] 周回メタの読み込みの穴：エンディング図鑑は1件でも型が合わないと丸ごと空として読み、次のエンディングの記録でほかの記録を上書きして消す。通算記録（CareerRecords）は鍵が1つ欠けただけで全部0に戻る。1件・1鍵ずつ読む形に直した候補＋テスト2本（アプリ 406・GameCore 470 green・セーブの形式は不変）。キュー154（セーブが読めなかった時）と一緒に聞く。
 314. [済 11/10 夕 定期] セーブ互換の点検案3：中断セーブの固定 JSON の2世代目 save_1110.json（10/25 より後に足した Optional 24項目を値ありで固定・鍵の読み落としで赤）＋テスト AppSaveFixture1110Tests（アプリ 405 green）。
 315. [済 11/10 夕 定期・sonnet] キュー144 の材料：docs/tutorial_term_pacing_research_1110_v0.md（推奨＝案③ 第1週は2語＋「まずネタを書く」に絞り、残りは出会った時に。能力アップ・大会エントリー・生活費は既に出会った時の説明がある＝第1週の5語と二重。手間 約20〜50行・数値不変）。
 316. [済 11/10 夕 定期・候補 claude/first-week-two-terms-cand 06b23797] キュー144 案③の推奨形：初回に自動で出す「はじめに」は体力・知名度の2語＋「上の黒い帯は次の大会までの週数。まずはネタを書こう。ほかの言葉は左上の「？」で」。「？」の読み返しは5語のまま・既読の鍵は同じ。アプリ 406・GameCore 470 green・目視 崩れなし（docs/shots_1110_first_week_two_terms.png は候補の枝にだけある）。相性は後で出す場面が無い（「？」だけ）＝足すかは判断。
+317. [済 11/10 夕 定期・候補 claude/stamina-dedup-cand fb4e7cc8] キュー146 の推奨（week_prompts_inventory 案②の③）：一言行が「体力が少ない」「無理すると倒れるよ」を出す週は、独白の低体力の文を出さず次の優先（お金など）へ譲る。アプリ 407・GameCore 470 green・目視 MZ_UI=weekhint MZ_WH=stamina 崩れなし（この週は掛け合いが出て独白は出ない＝独白側はテスト）。①残り週・⑤ネタ無しは未着手（①は独白の文の差し替え＝文の判断、⑤はキュー111 の選択待ち）。
+318. [済 11/10 夕 定期・候補 claude/yose-sound-wire-cand 69494f73] 寄席の音の候補の点検指摘#3：口→SE の対応表を static let に（呼ぶたび作らない）・対応表のテスト1本（アプリ 403 green）。#1（優勝演出でファンファーレと重なる）・#2（don が年越し・家賃の判にも鳴る）は耳での確認と演出の判断が要る＝キュー158 のまま。
+319. [済 11/10 夕 定期] セーブ互換の点検案4：壊れたセーブが2回続いた時の退避を固定するテスト BrokenSaveTwice1110Tests（退避は1枠・2回目で上書き／正常に読めれば退避に触らない）。案1〜6 はこれで全部テストあり（案1＝AppSaveFixtureTests・案5＝候補 meta-lenient-load）。挙動を変えるかはキュー154。
+320. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110b_v0.md] 候補3本（meta-lenient-load・first-week-two-terms・stamina-dedup）の差分点検＝高・中なし（低6件＝文書参照）。
+321. [済 11/10 夕 定期・候補 claude/gacha-broken-backup-cand 72bb121b] ガチャの保存が読めない時（型違い等）、今は新規に戻して次の保存で端末・iCloud を上書き＝購入の台帳ごと消える（iCloud が無いと救えない）。読めない元データを `gacha_state_v1.broken` に1度だけ退避（先に壊れた方を残す・画面は変えない）。アプリ 410 TEST SUCCEEDED。戻す処理・一言の表示はキュー154 と同じ判断。
+322. [済 11/10 夕 定期] 点検：text_lens（all-1110-bundle）＝超え0本／check_golden_sync・check_config_sync 80/80・GameCore 470 green。START_HERE の索引に漏れていた30本を追補（bb07bae2）。
+323. [済 11/10 夕 定期・sonnet＋親の撮り直し・docs/playtest_y3_1110_v0.md] 抜けていた3年目の実プレイ点検（週3〜46・6枚）＝高0／中0／低4（「優勝」「無双」の重なりは DEBUG だけのデバッグ用の札＝指摘から外した）。注：MZ_YEARS 付きのフックは起動から約25秒待って撮る（早いと早送り中のタイトル画面が写る）。
+324. [済 11/10 夕 定期・sonnet・docs/broken_save_handling_research_1110_v0.md] キュー154 の材料（他の作品の壊れたセーブの扱い・Web 4回）＝よくある型は「数世代退避＋本人に一言」。推奨＝②一言出す＋退避を2枠に（0.5日未満）・③戻すボタンは後回し。出典はブログ・フォーラム中心（公式の指針は見つからず）。
+325. [済 11/10 夕 定期・候補 claude/broken-save-notice-cand 870c8f6f] キュー154 の推奨形（判断待ち）：中断セーブが読めない時、タイトルに一言「前のセーブを読み込めませんでした／データは消さずに残してあります…」（OK だけ）＋退避を2枠（.broken／.broken2）。戻すボタンは無し。アプリ 410・GameCore 470 green・試験用 sim に壊れたセーブを置いて撮影＝docs/shots_1110_broken_save_notice.png（崩れなし）。注：sim のセーブを外から書くのは `xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …`（mac 側の defaults では反映されない）。
+326. [済 11/10 夕 定期・候補 claude/meta-lenient-load-cand 689c90d7] 点検の低（candidate_review_1110b）：図鑑の record() が書き戻しで知らない番号（新しい版の終わり）・読めない1件を消していた＝今回の1件だけ差し替える形に。アプリ 408 green（1回目は sim の取り合いで TEST FAILED・失敗0→回し直しで green）。check_candidates＝broken-save-notice・gacha-broken-backup とも本体に ok。判断一覧（decision_brief_2026-11-08 §C 追記）に 11/10 夕の試し版6本を足した（c5604c3f）。
+327. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110c_v0.md] 自作の候補3本の点検＝broken-save-notice 問題なし（低2）／gacha-broken-backup 中1（退避が1度きり＝先のゴミで後の本物を救えない）→ 退避を2枠に直した（アプリ 411 green）／meta-lenient の指摘は手元の追跡参照が古く旧版を読んだもの＝対象外（ls-remote で先端 689c90d7 を確認）。
+328. [済 11/10 夕 定期] 事故と直し：mac 側の `defaults write <sim の容器の plist>` の後、iPhone 17 の設定の書き込みが全部「Path not accessible」になり、アプリのテストが落ち（再起動ループ）・selftest が DONE に届かなかった。iPhone 17 を shutdown→boot で復旧（411 green・selftest 29行 DONE）。**sim のセーブは必ず `xcrun simctl spawn` 経由で書く（mac 側の defaults で容器の plist を触らない）**。
+329. [済 11/10 夕 定期・まとめの枝 claude/save-safety-1110-bundle-cand 637b383a] データを消さない系の候補3本（meta-lenient-load・gacha-broken-backup・broken-save-notice）を1本に＝衝突なし（pbxproj は自動）・GameCore 470・アプリ 418 TEST SUCCEEDED・golden/定数一致。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
