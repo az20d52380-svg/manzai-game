@@ -75,7 +75,7 @@
 | B-4 | 最後の年末で「エンディングへ」の前に落ちると、その周と図鑑の記録が消える | 保存の消し方を遅らせるか | 遅らせる（候補 `career-end-save`） | `career_end_save_options_v0.md` |
 | B-5 | ガチャとログインボーナスの入口がお店の一番下だけ | 入口を前に出すか | お店の上に出す（候補 `gacha-entry`）。足りなければ週の画面に小さな印 | `entry_share_research_1108_v0.md` §3 |
 | B-6 | 共有カードの出口が年末とエンディングだけ | 初めての通過でも共有できるようにするか | 初めての通過の祝いにだけ足す（候補 `first-pass-share`） | 同上 |
-| B-7 | 第1週の説明で用語が5つ一度に出る。初舞台の余韻の直後に説明が出る | 説明を後ろへ分けるか | 実機で一度触ってから | `playtest_v17_first_hour_1107.md` §5 |
+| B-7 | 第1週の説明で用語が5つ一度に出る。初舞台の余韻の直後に説明が出る | 説明を後ろへ分けるか | 実機で一度触ってから（11/10：最初は2語だけにした試し版 `first-week-two-terms` あり） | `playtest_v17_first_hour_1107.md` §5・`tutorial_term_pacing_research_1110_v0.md` |
 | B-8 | テレビに出すぎると能力が少し下がるが、画面に出ない | 状態名で見せるか | 見せる（候補 `tv-fatigue-display`） | `hidden_penalty_display_research_v0.md` |
 | B-9 | お金が足りない選択肢は消えるのに、飲みの誘いだけは押せて借金になる | 灰色で残すか | 灰色（候補 `money-short-choice`） | `playtest_v10.md` |
 | B-10 | 予選の知らせの通過者が9組だけで小さく見える | 序盤ほど長い一覧にするか | する（候補 `qual-long-list`） | `qualifier_list_research_v0.md` |
