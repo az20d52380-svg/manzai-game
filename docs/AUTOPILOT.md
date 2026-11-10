@@ -254,7 +254,8 @@
 344. [済 11/10 夕 定期] 候補ブランチの確認（check_candidates）＝76本とも本体に入る（ok）・遅れは最大27（broken-save-notice）で取り込み直しの線50未満＝refresh 不要。候補どうしの衝突は pbxproj・テスト末尾など既知の型だけ（新しい tired-monologue は pbxproj の衝突のみ）。
 345. [済 11/10 夕 定期] 点検：selftest 29行・DONE／run_checks 全 green（GameCore 470・アプリ 407・同期 3/3・config 80/80・効果 62・発火 26 一致）。
 346. [済 11/10 夜 定期] 網羅の測り直し（run_coverage）＝GameCore 99.76%（未通過5行は `?? .表現`・`?? "{入り}、要確認。"`・precondition の文言など到達しない既定値＝テスト不要）／アプリの画面以外で90%未満は GameSession 81%（未通過の大半は DEBUG フック。非 DEBUG の関数は init の既定値クロージャ・costOfNextStep 1行・applyEventChoice 1行・saveNow 1行だけ）・StoreManager 41%・SoundManager 52%（端末の課金・音＝単体テスト向きでない）。足すべき穴なし。
-347. [ ] （11/10 夜 定期・sonnet）styleTalk 3本・weekendInvite 5本の変種（10/26 に opus が書き自己採点のみ）を独立採点→docs/dialogue_score_variants_1110_v0.md。×があれば候補ブランチで直す。
+347. [済 11/10 夜 定期・sonnet・docs/dialogue_score_variants_1110_v0.md] styleTalk 3本・weekendInvite 5本の変種を独立採点＝○69／△6／×0。△＝選択肢B「毎日いっしょに稽古する」と afterChoice（毎日ここで会う）のずれ（選択の意味に関わる＝直さず並べるだけ）・「行きます。お願いします」「また誘ってください」が元の文面と同じ（低・言い換え案は文書に）。
+348. [ ] （11/10 夜 定期・sonnet）banterPools（810行・10/19 以降の採点記録なし）の独立採点を前半（plain・lull）／後半（eve・streak・broke・afterPass）に分けて→docs/dialogue_score_banter_a|b_1110_v0.md。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
