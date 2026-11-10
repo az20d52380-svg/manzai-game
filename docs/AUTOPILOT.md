@@ -186,6 +186,7 @@
 374. [済 11/11 定期・sonnet] GameSession 網羅の穴埋め（領域単位の本番分岐8本・GameSessionCoverage1111Tests・81%→81%、+13行）。残りは DEBUG／防御用。docs/gamesession_coverage_1111_v0.md
 
 375. [済 11/11 定期] 点検＝run_checks（GameCore 470・アプリ 415 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0）。未採点の棚卸し・大きい文字・暗い画面の目視・decision_brief（11/10 深夜の 356/358/361 まで載っている）も済みを確認＝キューの残りは全部判断待ち。週の使用量94%のため埋め草の作業は足さずに終了。
+376. [済 11/11 定期] check_candidates で本体と衝突する候補3本（gate-stamina-mono／gate-stamina-strong／stamina-lines-bundle＝本体の GameSessionCoverage1111Tests 追加で pbxproj が衝突）を発見→本体を取り込み、pbxproj は xcodegen で作り直し→GameCore 470・アプリ 417/419/419 TEST SUCCEEDED を確かめて push。残りの候補は本体と ok。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -219,5 +220,3 @@
 
 ## 済
 - （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 242（193〜202 は 11/09 の済で、他の [済 40本も 11/09 定期の2回目で移した）。（11/10 深夜：キューの済110行を「11/10 深夜 定期に移した分」へ移した）
-
-376. [済 11/11 定期] check_candidates で本体と衝突する候補3本（gate-stamina-mono／gate-stamina-strong／stamina-lines-bundle＝本体の GameSessionCoverage1111Tests 追加で pbxproj が衝突）を発見→本体を取り込み、pbxproj は xcodegen で作り直し→GameCore 470・アプリ 417/419/419 TEST SUCCEEDED を確かめて push。残りの候補は本体と ok。
