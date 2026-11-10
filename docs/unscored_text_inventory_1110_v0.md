@@ -61,3 +61,6 @@
 ## 次の一手（決めなくて進められる）
 - 区分B・Cの上位（WeekMainView・SettingsView・FinalsPresentationView・Meta・GachaView・TournamentResultView・NotebookView）の文面を抜き出し、他の採点と同じ○△×の様式で独立採点する。
 - 区分A?（名前が1件だけ出る）は、その文書で本当に文面を見ているかを確認してから区分を確定する。
+
+## 追記（11/10 夕の定期）区分A? の確定
+- 7件（NetaCatalog・CommandData・GachaRatesView・GameConfig・FirstStageView・RootView・GameSession）とも、11/10 の採点文書（session_command_neta_rates／gacha_text／small_text_places／weekmain ほか）で文面を見ている＝区分A に確定。この棚卸しの「次の一手」は全部済み。
