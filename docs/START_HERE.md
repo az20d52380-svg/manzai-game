@@ -633,3 +633,37 @@ cd GameCore && swift test
 - `invite_variants_independent_score_1109_v0.md`・`fanreport_plus_independent_score_1109_v0.md`・`dialogue_plus3_independent_score_1109_v0.md`・`late_events_e_independent_score_1109_v0.md`・`bc_bundle_text_independent_score_1109_v0.md` — 文を足す候補の独立採点 11/09（自己採点は全部○だったのに別の目で×15・△多数。×は各候補で直し済み・△は直し案だけ）
 - `visual_late_events_1109_v0.md` — 候補 late-events の長い10本の目視 11/09（切れ0・背景のずれは候補で直した）
 - `tutorial_term_pacing_research_1110_v0.md` — 第1週の用語の出し方の材料 11/10（推奨③ 2語に絞る・候補 first-week-two-terms・キュー144）
+
+## その他の文書（追補・2026-11-10 夕の定期の回で索引から漏れていた分＝1行目の見出しから）
+- `banter_pools_sample_score_1110_v0.md` — 掛け合い（banterPools）の抜き取り採点 v0（2026-11-10・定期の回）
+- `candidate_review_1110b_v0.md` — 候補ブランチ3本の点検（1110b・正しさのバグ観点）
+- `choice_arrays_score_1110_v0.md` — 選択イベントの配列 4本の採点（照合のみ）v0（2026-11-10・キュー298）
+- `code_review_cands4_1109_v0.md` — 候補4本の点検（2026-11-09・読み取りのみ・ビルド/実機は未実施）
+- `combo_kind_new_lines_1109_v0.md` — 候補ブランチの新台詞：コンビの形で食い違う言い方 点検 v0（2026-11-09）
+- `dialogue_arrays_score_coverage_1110_v0.md` — 台詞の配列ごとの採点済み状況（2026-11-10）
+- `finals_format_resemblance_research_1110_v0.md` — 決勝の形式が実在番組に似る件：調査材料（1110・v0）
+- `finals_mc_lines_score_1110_v0.md` — 決勝の司会（鳴海 ジョー）の台詞の採点 v0（2026-11-10・自走）
+- `finals_screen_text_score_1110_v0.md` — 決勝画面の文（司会・審査員講評以外）採点 v0（2026-11-10・自走）
+- `gacha_text_score_1110_v0.md` — ガチャ画面の文 採点 v0（2026-11-10・GachaView.swift・初回）
+- `judge_comment_score_v8.md` — 予選の紙講評 採点 v8（結成15年化・型の撤去 48122f68 以降）
+- `judge_final_comment_score_v1.md` — 決勝の審査員コメント 採点 v1（JudgeTalk.finalComment）
+- `judge_final_lowside_band_measure_1110_v0.md` — 決勝の最低点の審査員がB帯（91〜94点）になる割合の実測（11/10・v0）
+- `meta_text_score_1110_v0.md` — 称号・トロフィーの文の採点 v0（2026-11-10・自走）
+- `notebook_abilityup_text_score_1110_v0.md` — 手帳・能力アップ画面の文 採点 v0（2026-11-10・NotebookView.swift／AbilityUpView.swift・初回）
+- `playtest_y1_visual_1110_v0.md` — 1年目の通しの目視点検（11/10・iPhone 17・MZ_UI=week MZ_STOPWEEK=n MZ_CARE=1）
+- `qualifier_shop_calendar_intro_text_score_1110_v0.md` — 予選の知らせ・お店・カレンダー・導入の文 採点 v0（2026-11-10・自走）
+- `scene_ending_fx_text_score_1110_v0.md` — 場面・エンディング・演出の文 採点 v0（2026-11-10・自走）
+- `session_command_neta_rates_text_score_1110_v0.md` — お知らせ・コマンド・ネタ・提供割合の文 採点 v0（2026-11-10・自走）
+- `settings_text_score_1110_v0.md` — 設定画面の文 採点 v0（2026-11-10・SettingsView.swift・初回）
+- `small_text_places_score_1110_v0.md` — 残りの小さな文の置き場 採点 v0（2026-11-10・自走）
+- `text_score_sweep_1110_summary_v0.md` — 文の採点の一巡（11/10 朝〜昼の定期）まとめ v0
+- `tournament_result_text_score_1110_v0.md` — 大会結果画面の文 採点 v0（2026-11-10・TournamentResultView.swift・初回）
+- `unscored_text_inventory_1110_v0.md` — 未採点の文の置き場の洗い出し v0（2026-11-10・静的・コード未変更）
+- `veteran_lines_main_sweep_1110_v0.md` — 古参の前提の文：本体（claude/manzai-slg-foundation-wprqlu）の洗い出し 2026-11-10 v0
+- `visual_dark_textall_1110_v0.md` — ダークモード目視：まとめの枝 text-all-1110-bundle-cand（a3e57030）2026-11-10 v0
+- `visual_largetext_textall_1110_v0.md` — 大文字（accessibility-large）目視：まとめの枝 text-all-1110-bundle-cand（a3e57030）2026-11-10 v0
+- `visual_pass_banner_1110_v0.md` — 通過の看板（上帯）の目視 1110 v0（キュー308）
+- `visual_text_fix_bundle_1110_v0.md` — 文の直しのまとめの枝（56d59b77）の目視 v0（11/10）
+- `weekmain_text_score_1110_v0.md` — 週メイン画面の文 採点 v0（2026-11-10・WeekMainView.swift・初回）
+- `playtest_y3_1110_v0.md` — 実プレイ点検 3年目（2026-11-10・記録のみ・中1＝バッジが実力札に重なる）
+- `broken_save_handling_research_1110_v0.md` — セーブが読めない時の扱いの他社事例（11/10・キュー154 の材料・推奨＝一言＋退避2枠）
