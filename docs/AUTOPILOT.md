@@ -260,7 +260,7 @@
 349. [ ] （11/10 夜 定期・候補 claude/banter-v3-fix-cand 20a1ec7b・**outing-v3-cand の上に作り直し**）×4行は既存の候補 outing-v3-cand が同じ行をもう直していた（重複に気づいて作り直した）。この候補は outing-v3 で残った2行だけ＝460「楽屋で」を外す・804 関西弁「買おかな」→「買おうかな」。GameCore 470／アプリ TEST SUCCEEDED。outing-v3 と一緒にオーナーの OK で本体へ。
 350. [済 11/10 夜 定期・docs/dialogue_score_0017_0018_1110_v0.md] 記録が古いまま新しい行が増えた 0017・0018 を採点＝○18／△3／×0。△は「稽古する」「ネタを見直す」が選択肢そのもの（効果の理由）＝直さず並べるだけ。
 351. [済 11/10 夜 定期・sonnet・docs/judge_arrays_score_coverage_1110_v0.md] 講評の配列の採点状況＝記録なしは paperNetaLines（6行）だけ。10/25 の紙講評の増補（22→42本）より前の採点のままなのは Paper.fail・pass・passChemistryHigh・failStaminaLow 等。
-352. [ ] （11/10 夜 定期・sonnet）紙講評 Paper.fail・pass・passChemistryHigh・failStaminaLow・paperNetaLines を judge-comments の基準で採点→docs/judge_score_paper_1110_v0.md。
+352. [済 11/10 夜 定期・sonnet・docs/judge_score_paper_1110_v0.md] 紙講評5配列を採点＝○91／△12／×0。△の主なもの＝pass と fail にほぼ同じ文が3組（514/547・519/552・520/553＝通過でも落選でも同じ指摘は起こりうる＝低）・passChemistryHigh の書き出し「{一言}、」の偏り。直さず並べるだけ。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
