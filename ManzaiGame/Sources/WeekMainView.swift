@@ -31,6 +31,7 @@ struct WeekMainView: View {
     @State private var injuryNotice: String?   // §97 体調ダウンの知らせ（倒れた直後の週メインで1回・タップで閉じる）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
     @State private var youthNoticeYear = 0   // 「若手の大会は今年が最後」を出した年（年初に1回だけ）
+    @State private var finalYearNoticeYear = 0   // 最終年（careerYears 年目）の年初の一言を出した年（キュー356）
     @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
@@ -262,9 +263,9 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); if vesselFullToastDeferred { vesselFullToastDeferred = false; maybeShowVesselFullToast(vesselIsFull) }; maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
+            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowFinalYearNotice(); if vesselFullToastDeferred { vesselFullToastDeferred = false; maybeShowVesselFullToast(vesselIsFull) }; maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
-        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await MZSpeed.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
+        .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowFinalYearNotice(); maybeShowDebtNotice(); try? await MZSpeed.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
             // 初回だけの説明（初週／最初の生活費の前の週）。獲得バースト・イベントが落ち着いてから。
             try? await MZSpeed.sleep(nanoseconds: 2_200_000_000)
@@ -318,7 +319,7 @@ struct WeekMainView: View {
             if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
-        .onChange(of: session.year) { _, _ in Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice() } }   // 年初のイベントが立つのを待ってから（onAppear と同じ間）
+        .onChange(of: session.year) { _, _ in Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowFinalYearNotice() } }   // 年初のイベントが立つのを待ってから（onAppear と同じ間）
         .onChange(of: session.week) { _, _ in
             offerPick = 0   // キュー96：週が変わったら札の選びを先頭に戻す
             banterIndex = 0
@@ -1509,6 +1510,18 @@ struct WeekMainView: View {
         Task {
             if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
             showToast("谷口「若手限定の大会に出られるのは、今年が最後だ」")
+        }
+    }
+
+    /// 最終年（careerYears 年目）の年初に1回だけ、相方が一言知らせる（表示のみ・判定は不変・キュー356）。
+    /// 他の年初の toast と重なる時は、それが消えるのを待ってから出す。
+    private func maybeShowFinalYearNotice() {
+        guard session.year == session.config.careerYears, session.week <= 1, finalYearNoticeYear != session.year,
+              session.pendingChoiceEvent == nil, !showEvent else { return }   // イベントの下で出て消えないよう、閉じた後に出し直す（code_review_cands_1110night §1）
+        finalYearNoticeYear = session.year
+        Task {
+            if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
+            showToast("谷口「結成して\(session.config.careerYears)年目か。今年の年末で、ひと区切りだね」")
         }
     }
 
