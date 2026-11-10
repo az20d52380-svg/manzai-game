@@ -213,7 +213,12 @@ enum EndingBook {
         var all = load()
         if var r = all[id] { r.count += 1; r.lastPartnerName = partner; all[id] = r }
         else { all[id] = EndingRecord(count: 1, firstSeenAt: Date(), lastPartnerName: partner) }
-        let raw = Dictionary(uniqueKeysWithValues: all.map { ($0.key.rawValue, $0.value) })
-        if let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
+        // 書き戻しは今回の1件だけ差し替える：知らない番号（新しい版で増えた終わり）や読めない1件も、そのまま残す（candidate_review_1110b 低）
+        var obj = GameSession.store.data(forKey: key)
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
+        guard let one = all[id], let oneData = try? JSONEncoder().encode(one),
+              let oneObj = try? JSONSerialization.jsonObject(with: oneData) else { return }
+        obj[id.rawValue] = oneObj
+        if let data = try? JSONSerialization.data(withJSONObject: obj) { GameSession.store.set(data, forKey: key) }
     }
 }
