@@ -115,6 +115,10 @@ struct ChoiceEventOverlay: View {
             if ProcessInfo.processInfo.environment["MZ_EVPICK"] != nil, let c = session.availableEventChoices().first {
                 choose(c.id); afterShown = text.afterChoice[c.id]?.count ?? 0
             }
+            // 目視フック: MZ_EVCLOSE=<秒> でその秒数の後にイベントを閉じる（タップできない定期の回で、閉じた後の画面を撮るため）
+            if let v = ProcessInfo.processInfo.environment["MZ_EVCLOSE"], let sec = Double(v) {
+                Task { try? await Task.sleep(nanoseconds: UInt64(sec * 1_000_000_000)); session.dismissChoiceEvent(); onClose() }
+            }
             #endif
             armFooterIfNeeded()
         }

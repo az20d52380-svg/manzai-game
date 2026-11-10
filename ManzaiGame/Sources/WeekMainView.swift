@@ -64,6 +64,7 @@ struct WeekMainView: View {
     @State private var showEvent = false
     /// 満了成立後の週メイン初回トースト（この年1回だけ）用フラグ。
     @State private var vesselFullToastShown = false
+    @State private var vesselFullToastDeferred = false   // イベントが出ていて保留した時だけ、閉じた後に出し直す（code_review_cands_1110night §4）
     /// 週送りスタンプ「第N週」（週が明けた瞬間に中央で0.7sフラッシュ・触れない）。
     @State private var weekStampVisible = false
     /// Beat2 と同時に爆ぜる獲得パーティクル（+1で一回・Juice.swift）。
@@ -261,7 +262,7 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
+            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); if vesselFullToastDeferred { vesselFullToastDeferred = false; maybeShowVesselFullToast(vesselIsFull) }; maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
         .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await MZSpeed.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
@@ -317,7 +318,7 @@ struct WeekMainView: View {
             if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
-        .onChange(of: session.year) { _, _ in maybeShowTiredNotice(); maybeShowLastYouthNotice() }
+        .onChange(of: session.year) { _, _ in Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice() } }   // 年初のイベントが立つのを待ってから（onAppear と同じ間）
         .onChange(of: session.week) { _, _ in
             offerPick = 0   // キュー96：週が変わったら札の選びを先頭に戻す
             banterIndex = 0
@@ -1502,7 +1503,8 @@ struct WeekMainView: View {
         let caps = session.config.calendar.tournaments.compactMap { t -> Int? in
             if case .careerYearAtMost(let n) = t.eligibility, n < session.config.careerYears { return n } else { return nil }
         }
-        guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
+        guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year,
+              session.pendingChoiceEvent == nil, !showEvent else { return }   // イベントの下で出て消えないよう、閉じた後に出し直す
         youthNoticeYear = session.year
         Task {
             if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
@@ -1513,6 +1515,7 @@ struct WeekMainView: View {
     /// 年初の週に1回だけ：前の年の大会で使って飽きが進んだネタを事実だけ知らせる（表示のみ）。
     private func maybeShowTiredNotice() {
         guard session.year >= 2, session.week <= 1, tiredNoticeYear != session.year,
+              session.pendingChoiceEvent == nil, !showEvent,   // イベントの下で出て消えないよう、閉じた後に出し直す
               let n = session.activeNetas.first(where: { ($0.tiredYears ?? 0) >= 1 }) else { return }
         tiredNoticeYear = session.year
         showToast("『\(n.name)』は客に見飽きられてきた。新しいネタを書くと元どおり。")
@@ -1521,6 +1524,7 @@ struct WeekMainView: View {
     /// §4 満了トーストを「この年1回だけ」出す（onChange の二経路から呼ばれても多重発火しない）。
     private func maybeShowVesselFullToast(_ full: Bool) {
         guard full, !vesselFullToastShown else { return }
+        if session.pendingChoiceEvent != nil || showEvent { vesselFullToastDeferred = true; return }   // イベントの下で出て消えないよう、閉じた後に出し直す
         vesselFullToastShown = true
         showToast(session.year >= session.config.careerYears ? "今年の実力の伸びは、ここまで。" : "今年の実力の伸びは、ここまで。来年また伸びる。")   // 最終年に「来年」を言わない（year10_visual_1026_v0 §2-2）
     }
