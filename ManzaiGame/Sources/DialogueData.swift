@@ -47,6 +47,7 @@ enum DialogueData {
         if state.stamina < 25 {
             return Advice(name: "俺", text: pick(lowStamina, salt: week, scene: "mono.lowStamina", picker))
         }
+        let tired = state.stamina < WeekHint.injuryWarn   // 谷口の注意と同じ線
         if state.money < 30_000 {
             return Advice(name: "俺", text: pick(lowMoney, salt: week, scene: "mono.lowMoney", picker))
         }
@@ -56,10 +57,10 @@ enum DialogueData {
                                                 scene: lossStreak >= 2 ? "mono.justLostRepeat" : "mono.justLostSingle", picker))
         }
         if lossStreak >= 2 {
-            return Advice(name: "俺", text: pick(losing, salt: lossStreak &+ week, scene: "mono.losing", picker))
+            return Advice(name: "俺", text: pickT(losing, tired: tired, salt: lossStreak &+ week, scene: "mono.losing", picker))
         }
         if justPassed {
-            return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame.isFinite ? state.fame : 0) &+ week, scene: "mono.passed", picker))
+            return Advice(name: "俺", text: pickT(passedLines, tired: tired, salt: Int(state.fame.isFinite ? state.fame : 0) &+ week, scene: "mono.passed", picker))
         }
         if let m = nextMilestone, m.weeksLeft == 2 {   // 1週前は掛け合い/平常に譲る（最頻出の単一行の間引き・監査D-04）
             // 弱点が無い（全能力ほぼ同値）週は弱点句を省く（監査B-03）
@@ -70,7 +71,7 @@ enum DialogueData {
                                                 .replacingOccurrences(of: "〈弱点〉", with: weakAbility))
         }
         if let m = nextMilestone, m.weeksLeft >= 6 {   // 本番が遠い週（週16-26の空白帯等）は仕込みの声
-            return Advice(name: "俺", text: pick(midseason, salt: week, scene: "mono.midseason", picker))
+            return Advice(name: "俺", text: pickT(midseason, tired: tired, salt: week, scene: "mono.midseason", picker))
         }
         return Advice(name: "俺", text: pick(平常, salt: week, scene: "mono.plain", picker))
     }
@@ -965,6 +966,23 @@ enum DialogueData {
         ],
     ]
 
+    /// 体力が体調ダウンの線（WeekHint.injuryWarn）未満の週に、谷口の「無理すると倒れるよ」と逆向きになる独白
+    /// （活動を足す・外へ出る）。その週だけ候補から外す（playtest_y4_1110 中2・表示のみ・行の中身は変えない）。
+    static let tiredUnfit: Set<String> = [
+        "通った。今週もバイトに出よう。",
+        "続けて落ちてる。稽古の日を一日増やそう。",
+        "しばらく大会がない。バイトの日を一日増やそう。",
+        "空いてる週だ。区の体育館で、少し汗を流そう。",
+        "まだ本番は先だ。今週は、近くの川まで走ってみよう。",
+        "大会のない週は、一日が長い。昼に何か予定を入れよう。",
+    ]
+    /// tired のときは tiredUnfit を外した候補から選ぶ。直近避けの記録は別の場面名（.tired）で持つ＝通常の番号と混ざらない。
+    private static func pickT(_ pool: [String], tired: Bool, salt: Int, scene: String, _ picker: Picker?) -> String {
+        guard tired else { return pick(pool, salt: salt, scene: scene, picker) }
+        let kept = pool.filter { !tiredUnfit.contains($0) }
+        if kept.count == pool.count { return pick(pool, salt: salt, scene: scene, picker) }
+        return pick(kept.isEmpty ? pool : kept, salt: salt, scene: scene + ".tired", picker)
+    }
     private static func pick(_ pool: [String], salt: Int, scene: String? = nil, _ picker: Picker? = nil) -> String {
         guard !pool.isEmpty else { return "" }
         if let scene, let picker { return pool[picker(scene, pool.count, salt)] }
