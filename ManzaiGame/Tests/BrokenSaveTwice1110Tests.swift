@@ -1,5 +1,5 @@
 // セーブ互換の点検 案4（save_compat_audit_1108）：壊れたセーブが2回続いた時の退避の中身を固定する。
-// 今の挙動＝退避は1枠（manzai.save.v1.broken）で、2回目は上書き（1回目の中身は残らない）。
+// 退避の最新は manzai.save.v1.broken（候補 broken-save-notice では1つ前を .broken2 に残す＝BrokenSaveNotice1110Tests）。
 // 直す／一言出す／戻すボタンはオーナー判断（キュー154）。挙動を変えたらこのテストを直す。
 import XCTest
 import GameCore

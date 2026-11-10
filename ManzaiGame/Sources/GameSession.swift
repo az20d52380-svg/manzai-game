@@ -1290,6 +1290,10 @@ final class GameSession {
     private static let saveKey = "manzai.save.v1"
     /// 読めなかったセーブの退避先（黙って消さない・監査G-03）
     private static let brokenSaveKey = "manzai.save.v1.broken"
+    /// 1つ前の退避（2回続けて読めなかった時に、最初の退避を上書きで失わない・キュー154 推奨形）
+    private static let brokenSaveKey2 = "manzai.save.v1.broken2"
+    /// 直近の起動でセーブが読めず新規に戻したか（タイトルで一言出す・キュー154 推奨形）
+    static var lastLoadFailed = false
     /// セーブ形式の版数（フィールドを足したら上げる。足すフィールドは必ず Optional）
     static let saveVersion = 3
 
@@ -1340,6 +1344,7 @@ final class GameSession {
     /// 起動時のエントリポイント: セーブがあれば復元、無ければ新規（IntroFlow 前のプレースホルダ）。
     static func loadedOrNew(config: GameConfig = GameConfig()) -> GameSession {
         let defaults = store
+        lastLoadFailed = false
         if let data = defaults.data(forKey: saveKey) {
             do {
                 let save = try JSONDecoder().decode(SaveData.self, from: data)
@@ -1347,8 +1352,12 @@ final class GameSession {
             } catch {
                 // 形式が合わず読めない＝黙って捨てずに退避してから新規へ（後の版で救出できるように）
                 print("[save] decode failed, moved to \(brokenSaveKey): \(error)")
+                if let prev = defaults.data(forKey: brokenSaveKey), prev != data {
+                    defaults.set(prev, forKey: brokenSaveKey2)   // 前の退避は1つ後ろへ（2枠）
+                }
                 defaults.set(data, forKey: brokenSaveKey)
                 defaults.removeObject(forKey: saveKey)
+                lastLoadFailed = true
             }
         }
         return GameSession()

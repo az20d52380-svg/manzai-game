@@ -8,6 +8,7 @@ struct RootView: View {
     @State private var session: GameSession
     @State private var started: Bool     // S1初回フロー完了で true（本編開始）
     @State private var yearTurn: YearTurnSummary? = nil   // 年が変わる時の幕間（年末リザルト→「◯年目へ」の間に1度だけ重ねる）
+    @State private var showLoadFailedNotice = false   // セーブが読めず新規に戻した時の一言（キュー154 推奨形）
     @State private var showEnding = false // キャリアの区切り→エンディング（8種・endings_spec）
     @Environment(\.scenePhase) private var scenePhase
 
@@ -26,6 +27,7 @@ struct RootView: View {
         let loaded = GameSession.loadedOrNew()
         _session = State(initialValue: loaded)
         _started = State(initialValue: loaded.isRestored)
+        _showLoadFailedNotice = State(initialValue: GameSession.lastLoadFailed)
     }
 
     var body: some View {
@@ -339,6 +341,11 @@ struct RootView: View {
                 session.debugForceEvent(kind)
             }
             #endif
+        }
+        .alert("前のセーブを読み込めませんでした", isPresented: $showLoadFailedNotice) {
+            Button("はじめから遊ぶ", role: .cancel) {}
+        } message: {
+            Text("データは消さずに残してあります。新しい版で読み込めるようになる場合があります。")
         }
         .onChange(of: session.abandoned) { _, quit in
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
