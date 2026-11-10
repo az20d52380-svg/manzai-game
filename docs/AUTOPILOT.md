@@ -219,3 +219,5 @@
 
 ## 済
 - （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 242（193〜202 は 11/09 の済で、他の [済 40本も 11/09 定期の2回目で移した）。（11/10 深夜：キューの済110行を「11/10 深夜 定期に移した分」へ移した）
+
+376. [済 11/11 定期] check_candidates で本体と衝突する候補3本（gate-stamina-mono／gate-stamina-strong／stamina-lines-bundle＝本体の GameSessionCoverage1111Tests 追加で pbxproj が衝突）を発見→本体を取り込み、pbxproj は xcodegen で作り直し→GameCore 470・アプリ 417/419/419 TEST SUCCEEDED を確かめて push。残りの候補は本体と ok。
