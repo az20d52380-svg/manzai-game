@@ -37,6 +37,7 @@
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
+- 文を直す候補を作る前（11/10 夜 反省＝banter の×4行が outing-v3-cand と重複）：`git fetch -q origin 'refs/heads/claude/*:refs/remotes/origin/claude/*'` の後、直す文字列で `git grep -l '<元の文>' $(git branch -r | grep 'origin/claude/.*cand')` を見る＝出てこない候補は既に直している。直っている候補があればその上に作る。
 - 候補ブランチの確認（10/27 深夜〜）：`bash tools/check_candidates.sh` で本体に入るか・候補どうしの衝突を一覧（書き換えなし）。
 - 候補のまとめの枝（11/09〜）：`[PUSH=1] tools/make_bundle.sh claude/<まとめの名前>-cand <dd> <候補…>`＝本体の上に順に merge（pbxproj・テスト末尾は自動で解く）→ GameCore・アプリ・golden/定数の同期 → green の時だけ push。今のまとめ＝c-bundle（C 表16本）・b-bundle（B 表12本）・text-bundle（文の量5本）・both-bundles（C＋文の量）・all-bundles（全部）の各 -1109-cand。判断で外す物が出たら作り直す。
 - 候補の漏れ点検（11/09〜）：`tools/soak_candidate.sh claude/<候補> [dd] [分=10] [ms=10]`＝origin の候補を一時作業場所でビルド→soak→毎分の常駐メモリとクラッシュログの増減を1行で出す（push なし・iPhone 17 を使うので同時に1本だけ）。
