@@ -172,6 +172,20 @@
 366. [済 11/10 昼 定期] 点検と取り込み直し：①run_checks＝GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致 ②START_HERE.md に不正な UTF-8 が2か所（索引の行が途中で切れていた）＝直して漏れの4本も追補（56fca242a）③再発防止に tools/check_utf8.py を run_checks に組み込み（ada59ce39・追跡中1256本＝壊れ0）④refresh_candidates（遅れ50以上）＝14本すべて green で push。
 
 367. [済 11/10 夕 定期・docs/yearstart_notices_bundle_1110_v0.md] ①網羅の測り直し＝GameCore 99.76%（既知5行）・アプリの画面以外の未通過は DEBUG フック・防御用・iCloud の経路だけ＝足すテストなし ②候補の衝突一覧（本体とは全部 ok）から、年初の一言3本（356・361・youth-notice-y10）の WeekMainView の衝突を解いたまとめの枝 claude/yearstart-notices-bundle-cand（2d2232a5）を用意＝run_checks 全 green（アプリ 411）・目視 10年目／15年目の年初で知らせが順に出る。3本とも採るならこれを merge するだけ。
+368. [済 11/10 夕 定期・同 doc §追記] 体力の一言の候補2本（358 gate-stamina-mono × 146 stamina-dedup）の衝突を解いたまとめの枝 claude/stamina-lines-bundle-cand を用意＝run_checks 全 green・目視 15年目第40週 体力0 で二重なし。
+
+369. [済 11/10 夕 定期・sonnet・docs/judge_score_vocab_1110_v0.md] 講評の語彙（型なしの35語・11/02 の統一後は初の採点）＝○19／△15／×1。×の「オチの締め」は既に候補 claude/finals-mc-tri-cand（と all-1110・text-all-1110 のまとめ）で「話の締め」に直し済み＝重複の候補は作って消した（反省：文の直しの前の git grep を先に）。△15 は直さず並べるだけ（「振り出しの締め」は all-1110 で「元の話に帰る締め」に直し済み）。
+
+370. [済 11/11 定期] 点検と取り込み直し：run_checks＝GameCore 470・アプリ 407 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0。check_candidates＝全候補が本体と ok（候補どうしの衝突はテスト末尾・pbxproj など既知の型のみ）。refresh_candidates（遅れ50以上）＝62本すべて green で push（赤0）。
+
+371. [済 11/11 定期] 本体 9fe4f8b4c の selftest 29行 DONE・soak 6分（328〜339MB 横ばい・クラッシュログ 1→1）＝toast 直し（363/364）後も異常なし。
+
+372. [済 11/11 定期] 全候補の文の長さ（text_lens）＝超えは古い q-candidate（3週前・名前に cand を含む別系統）の2本だけ（「そろそろ\(m.name)か。」＝補間を含む文の数え方で、見た目の問題ではない）＝直す所なし。
+
+373. [済 11/11 定期] 網羅の測り直し（本体・run_coverage）＝GameCore 99.76%（未通過5行＝既知の届かない既定値のみ）・アプリの画面以外で90%未満は既知の一覧どおり（GameSession 81%）＝新しく出たファイルなし。キューの残りは全部判断待ち（新しい作業なし）。
+374. [済 11/11 定期・sonnet] GameSession 網羅の穴埋め（領域単位の本番分岐8本・GameSessionCoverage1111Tests・81%→81%、+13行）。残りは DEBUG／防御用。docs/gamesession_coverage_1111_v0.md
+
+375. [済 11/11 定期] 点検＝run_checks（GameCore 470・アプリ 415 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0）。未採点の棚卸し・大きい文字・暗い画面の目視・decision_brief（11/10 深夜の 356/358/361 まで載っている）も済みを確認＝キューの残りは全部判断待ち。週の使用量94%のため埋め草の作業は足さずに終了。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
