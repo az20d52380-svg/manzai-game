@@ -31,6 +31,7 @@
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
+- 撮影の注意（11/10）：右上の「🏆優勝」「💪無双」は DEBUG ビルドだけの札（遊ぶ人には出ない）＝重なりを指摘しない・撮る時は `MZ_NOCHIP=1` で隠す。
 - 年の途中の目視（10/25 夜〜）：`MZ_UI=week MZ_STOPWEEK=<週>`（1年目）／`MZ_YEARS=<n>` を足すと n+1 年目（最大 9＝10年目。10 以上は年末総決算で止まる・STOPWEEK は次の週で止まることがある）。長い年数は `MZ_CARE=1` を足さないと自動台本が途中で解散する。定期の回は sim のタップ・MCP の撮影が使えない＝simctl の起動と撮影だけ。
 - リサーチ：判断待ちの各論点の材料（他社事例・実測）を sonnet サブエージェントで集めて文書へ
 - 採点：会話・講評を drama-voice / judge-comments のゲートで採点→×の行を直す
@@ -227,7 +228,7 @@
 320. [済 11/10 夕 定期・sonnet・docs/candidate_review_1110b_v0.md] 候補3本（meta-lenient-load・first-week-two-terms・stamina-dedup）の差分点検＝高・中なし（低6件＝文書参照）。
 321. [済 11/10 夕 定期・候補 claude/gacha-broken-backup-cand 72bb121b] ガチャの保存が読めない時（型違い等）、今は新規に戻して次の保存で端末・iCloud を上書き＝購入の台帳ごと消える（iCloud が無いと救えない）。読めない元データを `gacha_state_v1.broken` に1度だけ退避（先に壊れた方を残す・画面は変えない）。アプリ 410 TEST SUCCEEDED。戻す処理・一言の表示はキュー154 と同じ判断。
 322. [済 11/10 夕 定期] 点検：text_lens（all-1110-bundle）＝超え0本／check_golden_sync・check_config_sync 80/80・GameCore 470 green。START_HERE の索引に漏れていた30本を追補（bb07bae2）。
-323. [済 11/10 夕 定期・sonnet＋親の撮り直し・docs/playtest_y3_1110_v0.md] 抜けていた3年目の実プレイ点検（週3〜46・6枚）＝高0／中1（「優勝」「無双」バッジが実力札の数字に重なる＝4年目と同じ・137 の舞台の狭さと同じ論点）／低4。注：MZ_YEARS 付きのフックは起動から約25秒待って撮る（早いと早送り中のタイトル画面が写る）。
+323. [済 11/10 夕 定期・sonnet＋親の撮り直し・docs/playtest_y3_1110_v0.md] 抜けていた3年目の実プレイ点検（週3〜46・6枚）＝高0／中0／低4（「優勝」「無双」の重なりは DEBUG だけのデバッグ用の札＝指摘から外した）。注：MZ_YEARS 付きのフックは起動から約25秒待って撮る（早いと早送り中のタイトル画面が写る）。
 324. [済 11/10 夕 定期・sonnet・docs/broken_save_handling_research_1110_v0.md] キュー154 の材料（他の作品の壊れたセーブの扱い・Web 4回）＝よくある型は「数世代退避＋本人に一言」。推奨＝②一言出す＋退避を2枠に（0.5日未満）・③戻すボタンは後回し。出典はブログ・フォーラム中心（公式の指針は見つからず）。
 325. [済 11/10 夕 定期・候補 claude/broken-save-notice-cand 870c8f6f] キュー154 の推奨形（判断待ち）：中断セーブが読めない時、タイトルに一言「前のセーブを読み込めませんでした／データは消さずに残してあります…」（OK だけ）＋退避を2枠（.broken／.broken2）。戻すボタンは無し。アプリ 410・GameCore 470 green・試験用 sim に壊れたセーブを置いて撮影＝docs/shots_1110_broken_save_notice.png（崩れなし）。注：sim のセーブを外から書くのは `xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …`（mac 側の defaults では反映されない）。
 
