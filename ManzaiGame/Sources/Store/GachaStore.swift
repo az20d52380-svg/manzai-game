@@ -8,6 +8,7 @@ import Foundation
 final class GachaStore: ObservableObject {
     static let shared = GachaStore()
     static let key = "gacha_state_v1"
+    static let brokenKey = "gacha_state_v1.broken"
 
     @Published private(set) var state: GachaState
     private let defaults: UserDefaults
@@ -16,7 +17,13 @@ final class GachaStore: ObservableObject {
     init(defaults: UserDefaults = .standard, useCloud: Bool = true) {
         self.defaults = defaults
         self.cloud = useCloud ? NSUbiquitousKeyValueStore.default : nil
-        var s = Self.decode(defaults.data(forKey: Self.key))
+        let local = defaults.data(forKey: Self.key)
+        // 端末の保存が読めない時は、次の persist で上書きして購入の台帳ごと消さないよう、元のデータを別キーへ1度だけ退避する（save_compat_audit_1108）
+        if let local, (try? JSONDecoder().decode(GachaState.self, from: local)) == nil,
+           defaults.data(forKey: Self.brokenKey) == nil {
+            defaults.set(local, forKey: Self.brokenKey)
+        }
+        var s = Self.decode(local)
         if let c = cloud, let d = c.data(forKey: Self.key) { s = s.merged(with: Self.decode(d)) }
         state = s
         if let c = cloud {
