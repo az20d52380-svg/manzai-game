@@ -632,3 +632,4 @@ cd GameCore && swift test
 - `visual_dark_allbundles_1109_v0.md` — 全部入りの枝のダークモード目視 11/09（9画面・崩れ0・退団の確認文と決勝の一言は未撮影）
 - `invite_variants_independent_score_1109_v0.md`・`fanreport_plus_independent_score_1109_v0.md`・`dialogue_plus3_independent_score_1109_v0.md`・`late_events_e_independent_score_1109_v0.md`・`bc_bundle_text_independent_score_1109_v0.md` — 文を足す候補の独立採点 11/09（自己採点は全部○だったのに別の目で×15・△多数。×は各候補で直し済み・△は直し案だけ）
 - `visual_late_events_1109_v0.md` — 候補 late-events の長い10本の目視 11/09（切れ0・背景のずれは候補で直した）
+- `tutorial_term_pacing_research_1110_v0.md` — 第1週の用語の出し方の材料 11/10（推奨③ 2語に絞る・候補 first-week-two-terms・キュー144）
