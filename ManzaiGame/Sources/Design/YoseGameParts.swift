@@ -262,8 +262,11 @@ private struct YoseToastModifier: ViewModifier {
                 YoseToast(message: m).padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .task(id: m) {
-                        try? await Task.sleep(nanoseconds: 1_800_000_000)
-                        withAnimation(Theme.Motion.r(.easeOut(duration: 0.18))) { message = nil }
+                        // 次の文に替わって取り消された時は消さない（try? だと新しい文を即座に消す＝WeekMainView の toast と同じ直し・11/10 深夜）
+                        do {
+                            try await Task.sleep(nanoseconds: 1_800_000_000)
+                            withAnimation(Theme.Motion.r(.easeOut(duration: 0.18))) { message = nil }
+                        } catch {}
                     }
             }
         }
