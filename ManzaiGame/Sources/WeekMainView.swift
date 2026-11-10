@@ -261,7 +261,7 @@ struct WeekMainView: View {
             }
         }
         .onChange(of: session.pendingChoiceEvent) { _, kind in
-            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
+            if kind == nil { instant { showEvent = false }; Task { try? await MZSpeed.sleep(nanoseconds: 500_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); maybeShowFirstHints() } } else { syncEventPresentation() }
         }
         .onAppear { debugWeekHook(); syncEventPresentation(); Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice(); maybeShowDebtNotice(); try? await MZSpeed.sleep(nanoseconds: 600_000_000); maybeShowFirstHints() } }   // 中断セーブ復帰・MZ_UI=event など、最初から立っている時
         .task(id: session.week) {
@@ -316,7 +316,7 @@ struct WeekMainView: View {
             withAnimation(Theme.Motion.exit) { weekStampVisible = false }
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
-        .onChange(of: session.year) { _, _ in maybeShowTiredNotice(); maybeShowLastYouthNotice() }
+        .onChange(of: session.year) { _, _ in Task { try? await MZSpeed.sleep(nanoseconds: 700_000_000); maybeShowTiredNotice(); maybeShowLastYouthNotice() } }   // 年初のイベントが立つのを待ってから（onAppear と同じ間）
         .onChange(of: session.week) { _, _ in
             offerPick = 0   // キュー96：週が変わったら札の選びを先頭に戻す
             banterIndex = 0
@@ -1498,7 +1498,8 @@ struct WeekMainView: View {
         let caps = session.config.calendar.tournaments.compactMap { t -> Int? in
             if case .careerYearAtMost(let n) = t.eligibility, n < session.config.careerYears { return n } else { return nil }
         }
-        guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
+        guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year,
+              session.pendingChoiceEvent == nil, !showEvent else { return }   // イベントの下で出て消えないよう、閉じた後に出し直す
         youthNoticeYear = session.year
         Task {
             if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
@@ -1509,6 +1510,7 @@ struct WeekMainView: View {
     /// 年初の週に1回だけ：前の年の大会で使って飽きが進んだネタを事実だけ知らせる（表示のみ）。
     private func maybeShowTiredNotice() {
         guard session.year >= 2, session.week <= 1, tiredNoticeYear != session.year,
+              session.pendingChoiceEvent == nil, !showEvent,   // イベントの下で出て消えないよう、閉じた後に出し直す
               let n = session.activeNetas.first(where: { ($0.tiredYears ?? 0) >= 1 }) else { return }
         tiredNoticeYear = session.year
         showToast("『\(n.name)』は客に見飽きられてきた。新しいネタを書くと元どおり。")
