@@ -180,6 +180,12 @@ struct EndingRecord: Codable, Equatable {
     var lastPartnerName: String
 }
 
+/// 1件の読み込みに失敗しても辞書全体は読めるようにする包み（失敗した件は nil）
+private struct LenientRecord: Decodable {
+    let value: EndingRecord?
+    init(from decoder: Decoder) throws { value = try? EndingRecord(from: decoder) }
+}
+
 enum EndingBook {
     static let key = "mz.endingsSeen"
 
@@ -195,9 +201,10 @@ enum EndingBook {
         }
         #endif
         guard let data = GameSession.store.data(forKey: key),
-              let raw = try? JSONDecoder().decode([String: EndingRecord].self, from: data) else { return [:] }
+              let raw = try? JSONDecoder().decode([String: LenientRecord].self, from: data) else { return [:] }
+        // 1件ずつ読む：型の合わない1件だけ捨てる（丸ごと空にすると、次の record() で他の記録を上書きして消す＝save_compat_audit_1108 案5）
         var out: [EndingID: EndingRecord] = [:]
-        for (k, v) in raw { if let id = EndingID(rawValue: k) { out[id] = v } }
+        for (k, v) in raw { if let id = EndingID(rawValue: k), let r = v.value { out[id] = r } }
         return out
     }
 
@@ -206,7 +213,12 @@ enum EndingBook {
         var all = load()
         if var r = all[id] { r.count += 1; r.lastPartnerName = partner; all[id] = r }
         else { all[id] = EndingRecord(count: 1, firstSeenAt: Date(), lastPartnerName: partner) }
-        let raw = Dictionary(uniqueKeysWithValues: all.map { ($0.key.rawValue, $0.value) })
-        if let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
+        // 書き戻しは今回の1件だけ差し替える：知らない番号（新しい版で増えた終わり）や読めない1件も、そのまま残す（candidate_review_1110b 低）
+        var obj = GameSession.store.data(forKey: key)
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
+        guard let one = all[id], let oneData = try? JSONEncoder().encode(one),
+              let oneObj = try? JSONSerialization.jsonObject(with: oneData) else { return }
+        obj[id.rawValue] = oneObj
+        if let data = try? JSONSerialization.data(withJSONObject: obj) { GameSession.store.set(data, forKey: key) }
     }
 }
