@@ -70,6 +70,8 @@ struct RootView: View {
             case "notif": NotificationPromptView(onDecide: {})             // S1c目視
             case "intro": ReminiscencePlayer(cards: (MeetingKind.debugForced ?? .highSchool).cards, onComplete: {}) // 導入の回想カード目視（MZ_MEET=1〜4 で型）
             case "ending": S6bView(session: session, onFinish: {})         // S6b目視（.taskで優勝させる）
+            case "trophies": EndingGalleryView(onClose: {})                 // 称号（トロフィー）一覧の目視（MZ_TROPHIES=15,16,22 で取得済み扱い・図鑑の先頭に出る）
+            case "finals_spectator": FinalsPresentationView(session: session, spectator: true)   // 決勝の観戦（予選敗退の年・客席の帯）の目視
             case "finals": FinalsPresentationView(session: session)        // 決勝演出の目視（.taskで優勝の夜を用意・審査員点の和と合計の確認用）
             case "allocate": AbilityUpView(session: session, onClose: {}) // 割り振り目視（.taskで粒を積む）
             case "neta", "neta_list": NotebookView(session: session, onClose: {})       // ネタ帳タブ目視（.taskで持ちネタを積む）
