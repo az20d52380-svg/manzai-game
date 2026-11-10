@@ -270,6 +270,7 @@ struct WeekMainView: View {
         .task(id: session.week) {
             // 初回だけの説明（初週／最初の生活費の前の週）。獲得バースト・イベントが落ち着いてから。
             try? await MZSpeed.sleep(nanoseconds: 2_200_000_000)
+            guard !Task.isCancelled else { return }   // 週が替わって取り消された時は前の週の続きをしない（toast の直しと同じ型・11/10 深夜）
             maybeShowFirstHints()
         }
         .task(id: session.week) {
@@ -277,7 +278,7 @@ struct WeekMainView: View {
             if !session.lastGains.isEmpty || session.lastCompatGain > 0.001 {
                 gainsVisible = true
                 try? await MZSpeed.sleep(nanoseconds: 1_200_000_000)
-                gainsVisible = false
+                if !Task.isCancelled { gainsVisible = false }   // 取り消し時に消すと、次の週の伸びの色を消してしまう
             }
         }
         .task(id: session.week) {
@@ -316,7 +317,7 @@ struct WeekMainView: View {
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
             withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
-            withAnimation(Theme.Motion.exit) { weekStampVisible = false }
+            if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
         .onAppear { Sound.bgm(.daily) }   // 育成パートのBGM（大会系画面から戻った時も復帰）
         .onChange(of: session.year) { _, _ in maybeShowTiredNotice(); maybeShowLastYouthNotice() }
@@ -327,8 +328,11 @@ struct WeekMainView: View {
         }   // 掛け合いの読み位置は週頭でリセット
         .task(id: toast) {
             if let t = toast {
-                try? await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)   // 読む時間＝演出の速さで縮めない
-                toast = nil
+                // 次の toast に替わるとこの待ちは取り消される。取り消された時は消さない（try? で握ると新しい toast を即座に消していた＝11/10 深夜）
+                do {
+                    try await Task.sleep(nanoseconds: t.count > 30 ? 4_500_000_000 : t.count > 20 ? 2_600_000_000 : 1_400_000_000)   // 読む時間＝演出の速さで縮めない
+                    toast = nil
+                } catch {}
             }
         }
         .onChange(of: vesselIsFull) { _, full in
