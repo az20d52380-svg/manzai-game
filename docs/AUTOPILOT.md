@@ -250,3 +250,5 @@
 390. [済 11/11 定期] 漏れ点検：yearstart-notices-bundle（2d2232a59）328〜340MB・stamina-lines-bundle（0a7153a08）325〜345MB＝どちらも soak 8分で横ばい・落ちず・クラッシュログ 1→1。
 
 391. [済 11/11 定期] 点検の1本（run_checks.sh・本体 c6fbae800）：GameCore 470 green・同期 3項目／定数 80/80・イベント効果 62 一致・発火条件 26 一致・UTF-8 壊れ0・アプリ 415 green（TEST SUCCEEDED）。週の使用量 96%。
+
+392. [済 11/11 定期] 網羅の測り直し（run_coverage.sh）：GameCore 99.76%（未通過5行）。うち Allocation.pourStep の「伸びしろ0」ガードに PourAtCap1111Tests を足した（上限の能力は経験点を消費せず0）＝471 green。残り4行は既定値の受け皿・precondition 等で実質到達しない。
