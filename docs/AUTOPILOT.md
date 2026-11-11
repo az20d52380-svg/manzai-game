@@ -232,3 +232,5 @@
 381. [済 11/11 定期] check_candidates（本体 c4ff609d3）＝全候補が本体にそのまま入る（衝突0）。候補どうしの衝突は既知の型（pbxproj・テスト末尾・同じ画面の文）だけ。
 
 382. [済 11/11 昼 定期] 点検＝run_checks（GameCore 470・アプリ 415 TEST SUCCEEDED・同期 3/3・config 80/80・効果 62・発火 26 一致・UTF-8 壊れ0）。網羅＝GameCore 99.76%（既知5行）・アプリの GameSession 81% の未通過は全部 #if DEBUG の目視フックと自己点検（1465〜1941行）＝遊ぶ人の経路の穴は無い（テストを足す所なし）。未採点の棚卸し（unscored_text_inventory_1110）の上位も 11/10 の採点の一巡で全部済みと確認。
+
+383. [済 11/11 昼 定期] 候補の取り込み直し：まとめの候補6本（all／text-all／text-fix／rec／save-safety の 1110-bundle と finals-mc-tri）は本体から77〜141遅れていたが、手元に枝が無く refresh_candidates の対象から漏れていた＝手元の枝を作って回し、6本とも green で push（42e65d34a・2a63ef196・757e9fa29・2fdac8bf7・0e85ee774・1b85bb3e9）。道具も直した（遠隔にしか無い候補は先に手元の枝を作る）。
