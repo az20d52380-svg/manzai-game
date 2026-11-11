@@ -246,3 +246,5 @@
 388. [済 11/11 定期] 漏れ点検：text-fix-1110-bundle（757e9fa29）を soak 8分＝329〜343MB 横ばい・落ちず・クラッシュログ 1→1。まとめの候補5本の soak はこれで finals-mc-tri 以外済。
 
 389. [済 11/11 定期] 漏れ点検：finals-mc-tri（1b85bb3e9）を soak 8分＝329〜339MB 横ばい・落ちず・クラッシュログ 1→1。まとめの候補6本すべて soak 済＝漏れなし。
+
+390. [済 11/11 定期] 漏れ点検：yearstart-notices-bundle（2d2232a59）328〜340MB・stamina-lines-bundle（0a7153a08）325〜345MB＝どちらも soak 8分で横ばい・落ちず・クラッシュログ 1→1。
