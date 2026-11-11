@@ -258,3 +258,5 @@
 394. [済 11/11 定期] 自己点検（run_selftest.sh・本体 0d41bc8ec・iPhone 17）：29行・DONE・失敗行0。
 
 395. [済 11/11 定期] 候補の取り込み直し（refresh_candidates.sh・遅れ50以上）：banter-dedup（遅れ64→6f7e62ac8）・final-year-notice（51→e12c83195）・tired-monologue（76→d1421b3c3）の3本に本体を取り込み、GameCore・アプリ green で push。
+
+396. [済 11/11 定期] 漏れ点検：tired-monologue（取り込み直し後 d1421b3c3）を soak 8分＝325〜339MB 横ばい・落ちず・クラッシュログ 1→1。
