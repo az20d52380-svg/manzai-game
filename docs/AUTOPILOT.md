@@ -248,3 +248,5 @@
 389. [済 11/11 定期] 漏れ点検：finals-mc-tri（1b85bb3e9）を soak 8分＝329〜339MB 横ばい・落ちず・クラッシュログ 1→1。まとめの候補6本すべて soak 済＝漏れなし。
 
 390. [済 11/11 定期] 漏れ点検：yearstart-notices-bundle（2d2232a59）328〜340MB・stamina-lines-bundle（0a7153a08）325〜345MB＝どちらも soak 8分で横ばい・落ちず・クラッシュログ 1→1。
+
+391. [済 11/11 定期] 点検の1本（run_checks.sh・本体 c6fbae800）：GameCore 470 green・同期 3項目／定数 80/80・イベント効果 62 一致・発火条件 26 一致・UTF-8 壊れ0・アプリ 415 green（TEST SUCCEEDED）。週の使用量 96
