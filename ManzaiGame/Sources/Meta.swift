@@ -210,7 +210,13 @@ enum TrophyBook {
 /// 周回の点と、それで増える物
 enum MetaBook {
     /// 周回の点＝トロフィーpt＋図鑑の数（最大38）
-    static var points: Int { TrophyBook.points + EndingBook.load().count }
+    static var points: Int {
+        #if DEBUG
+        // 目視の再現用：MZ_META=<n> で周回の点を固定（sim に残った図鑑・トロフィーで撮影の数値が変わるため・キュー357）
+        if let v = ProcessInfo.processInfo.environment["MZ_META"], let n = Int(v) { return n }
+        #endif
+        return TrophyBook.points + EndingBook.load().count
+    }
 
     /// 次の周の初期ボーナスの見せ方（式は GameState.init と同じ。数だけ読む）
     struct Preview: Equatable {
