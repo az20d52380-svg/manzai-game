@@ -37,6 +37,7 @@ struct SettingsView: View {
                         #endif
                     }
                 GeometryReader { geo in
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         section("音量") {
@@ -81,7 +82,7 @@ struct SettingsView: View {
                             }
                         }
                         if let onQuitRun {
-                            careerSection(onQuitRun)
+                            careerSection(onQuitRun).id("career")
                         }
             // 音楽クレジット（魔王魂の利用規約＝表記必須。削除しないこと・Resources/Audio/CREDITS.md 参照）
             Spacer(minLength: 16).frame(maxHeight: 40)   // 権利表記は中身の直下に近く置く（上に大きな空白を作らない）
@@ -97,9 +98,20 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity).padding(12).frame(minHeight: 64)
             .yoseKifuda(showNail: true)
             .padding(.top, 14)
+            .id("credits")
                     }
                     .padding(.horizontal, YoseMetrics.screenMargin).padding(.vertical, 16)
                     .frame(minHeight: geo.size.height)
+                }
+                #if DEBUG
+                // 目視用：MZ_SCROLL=career|credits でその段を上にして開く（設定の下側・スワイプできない定期の回の確認）
+                .task {
+                    if let id = ProcessInfo.processInfo.environment["MZ_SCROLL"] {
+                        try? await MZSpeed.sleep(nanoseconds: 800_000_000)
+                        proxy.scrollTo(id, anchor: .top)
+                    }
+                }
+                #endif
                 }
                 }
             }
