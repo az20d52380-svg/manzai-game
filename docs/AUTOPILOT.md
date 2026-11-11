@@ -252,3 +252,5 @@
 391. [済 11/11 定期] 点検の1本（run_checks.sh・本体 c6fbae800）：GameCore 470 green・同期 3項目／定数 80/80・イベント効果 62 一致・発火条件 26 一致・UTF-8 壊れ0・アプリ 415 green（TEST SUCCEEDED）。週の使用量 96%。
 
 392. [済 11/11 定期] 網羅の測り直し（run_coverage.sh）：GameCore 99.76%（未通過5行）。うち Allocation.pourStep の「伸びしろ0」ガードに PourAtCap1111Tests を足した（上限の能力は経験点を消費せず0）＝471 green。残り4行は既定値の受け皿・precondition 等で実質到達しない。
+
+393. [済 11/11 定期] 候補ブランチの確認（check_candidates.sh・本体 c2f1afd81）：候補90本すべて本体に衝突なしで入る（遅れ最大62＝banter-dedup）。候補どうしの衝突は pbxproj・テスト末尾・WeekMainView／ChoiceEventOverlay の既知の組だけ。
