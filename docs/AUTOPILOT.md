@@ -324,5 +324,6 @@
 437. [済 11/13 定期] 判定のみ＝436 以降の本体の変更なし。キューの残りは全部判断待ち／実機・窓出し待ち。週99%（5時間枠2%）＝100%目前のため埋め草は足さず終了。
 438. [済 11/15 定期] 週がリセット（週0%・5時間枠1%）。健康診断＝GameCore 471 green・自己点検 29行 DONE（失敗0）・網羅 GameCore 99.76%（0回5か所は既知の届かない既定値）・アプリの90%未満は既知の一覧どおり（新顔なし）。続けて、レビュー文書に一度も出ていないファイル12本の点検を sonnet に出した（→ docs/code_review_unreviewed_1115_v0.md）。
 440. [済 11/15 定期] 未レビュー12本の点検＝指摘5件・落ちる物0（docs/code_review_unreviewed_1115_v0.md）。#1 合流の開封回数・#2 未来日付は自分でコードを確かめて 439 に判断待ちで追加（課金は作らない）。
-441. [済 11/15 定期] code_review_unreviewed_1115 #4：AdGate が provider の completion を二重に呼ばれても先へ進むのは1回だけにした（テスト testDoubleCompletionFromProviderFiresOnce・AdGateTests 3 green）。呼ばれない時の時間切れは秒数が場面ごとの判断なので、つなぐ時に足す（画面には未接続＝目視なし）。
+442. [済 11/15 定期] code_review_unreviewed_1115 #4：AdGate が provider の completion を二重に呼ばれても先へ進むのは1回だけにした（テスト testDoubleCompletionFromProviderFiresOnce・AdGateTests 3 green）。呼ばれない時の時間切れは秒数が場面ごとの判断なので、つなぐ時に足す（画面には未接続＝目視なし）。
 441. [済 11/15 定期] code_review_unreviewed_1115 #5：決勝の扉の拍でタップ送りの後に扉のハプティクスが1回余計に鳴るのを止めた（FinalsPresentationView・扉の開閉は今のまま）。ビルド OK・自己点検 29行 DONE（触覚は目視できない）。
+443. [済 11/15 定期・sonnet・docs/cancelled_sleep_audit_1115_v0.md] 取り消し後に sleep の続きが走る所の全点検＝6件（中0・低6）。直した：#1 StageCeremony（結果・決勝の幕開け）が儀の最中に画面ごと消えると onDone→開示列の音が裏で鳴る→取り消し時は絞った BGM だけ戻して onDone を走らせない／#3 出番くじの心拍で取り消し後に1拍余計に震える。残り（#4 扉フラグ・#5 ヒント2か所・#6 DEBUG 専用）は見た目のフラグだけ＝据え置き。ビルド OK・selftest 29行 DONE（取り消しの瞬間は手で作れないため目視なし）。候補ブランチ全部が本体と ok（check_candidates・候補どうしの衝突は既知の6組）。

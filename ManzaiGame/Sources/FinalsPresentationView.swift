@@ -588,6 +588,7 @@ struct FinalsPresentationView: View {
             Haptics.confirm()                         // se_heartbeat_low（ドクン）
             try? await MZSpeed.sleep(nanoseconds: 170_000_000)
             withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { lotPulse = false }
+            guard !Task.isCancelled, !lotRevealed else { return }   // 取り消し後の余計な1拍を鳴らさない（cancelled_sleep_audit_1115 #3）
             Haptics.tick()                            // （ドクッ）
             try? await MZSpeed.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
         }
