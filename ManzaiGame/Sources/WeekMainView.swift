@@ -76,6 +76,7 @@ struct WeekMainView: View {
     @State private var yearEndArmed = false
     /// オファーを受ける前の二度押し確認（誤タップ事故＝playtest_v6 W31〜W34）
     @State private var offerArmed = false
+    @State private var offerArmGen = 0   // 古い3秒の時計が、選び直して押し直した後の「もう一度」を早く消さないための番号
     /// オファーの帯の実際の高さ（声の席をこの分だけ上げる＝固定値だと帯に吹き出しが重なった）
     @State private var offerBandH: CGFloat = 0
     /// 進行中の設定（監査G-04）
@@ -913,8 +914,10 @@ struct WeekMainView: View {
             }
             if case .acceptOffer = v.action, !offerArmed {
                 offerArmed = true
+                offerArmGen += 1
+                let gen = offerArmGen
                 showToast("もう一度押すと、このオファーを受ける。")
-                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); offerArmed = false }
+                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); if offerArmGen == gen { offerArmed = false } }
                 return
             }
             offerArmed = false
