@@ -1456,7 +1456,10 @@ struct WeekMainView: View {
         }
     }
 
-    private func showToast(_ t: String) { toast = t; toastSeq += 1 }
+    private func showToast(_ t: String) {
+        toast = t; toastSeq += 1
+        if UIAccessibility.isVoiceOverRunning { UIAccessibility.post(notification: .announcement, argument: t) }   // すぐ消える知らせを読み上げにも伝える（voiceover_audit_1115 N3）
+    }
 
     /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
     /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
