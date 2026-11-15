@@ -154,6 +154,10 @@ struct NotebookView: View {
 
     // MARK: きろく（大会履歴＋称号）
 
+    /// 空白で区切った短い語（8字以下）の中では折らない（字の間に U+2060 を挟む）。長い語（「優勝「◯◯」（客席から）」）は今までどおり途中で折れる＝行が増えない
+    static func breakAtSpaces(_ s: String) -> String {
+        s.split(separator: " ", omittingEmptySubsequences: false).map { $0.count <= 8 ? $0.map(String.init).joined(separator: "\u{2060}") : String($0) }.joined(separator: " ")
+    }
     private struct LogEntry: Hashable { let week: String; let title: String; let mark: String; let prize: Int }
 
     private var logEntries: [LogEntry] {
@@ -233,7 +237,7 @@ struct NotebookView: View {
                             .font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
                         Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 24)
-                        Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        Text(Self.breakAtSpaces(e.title)).font(YoseFont.gothic(14, weight: .heavy))   // 大きい文字で「THE HANA 決／勝 優勝」と語の途中で折れた＝空白でだけ折る.foregroundStyle(YoseColor.sumi)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
                             Text("+\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)

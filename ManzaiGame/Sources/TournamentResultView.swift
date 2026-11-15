@@ -279,7 +279,8 @@ struct TournamentResultView: View {
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
             if ProcessInfo.processInfo.environment["MZ_UI"] == "pass", ProcessInfo.processInfo.environment["MZ_PASS"] == "board" { qualDone = true; ceremonyDone = true; finishReveal(); showPass = true }   // MZ_UI=pass MZ_PASS=board で回戦突破の看板の場面から始める（キュー308）
             if ["result_done", "lose_done", "hana_result"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { offerFirstPassShare = ProcessInfo.processInfo.environment["MZ_FIRSTPASS"] != nil; showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "stage_result" { qualDone = true; ceremonyDone = true; finishReveal(); if let n = Int(ProcessInfo.processInfo.environment["MZ_CLIMAX"] ?? ""), !climaxPages.isEmpty { climaxIndex = min(n, climaxPages.count - 1) } }   // MZ_CLIMAX=<n> で山場の n ページ目を直接開く
+            if ProcessInfo.processInfo.environment["MZ_UI"] == "stage_result" { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil, result.passed, isHanaFinal { showHanaChamp = true }   // MZ_STAGE=HANA決勝 MZ_PASS=1 MZ_PASSFX=1 で THE HANA 優勝演出
+            if let n = Int(ProcessInfo.processInfo.environment["MZ_CLIMAX"] ?? ""), !climaxPages.isEmpty { climaxIndex = min(n, climaxPages.count - 1) } }   // MZ_CLIMAX=<n> で山場の n ページ目を直接開く
         }
         #endif
         .overlay {
@@ -305,7 +306,8 @@ struct TournamentResultView: View {
             if showHanaChamp {   // 決勝の通過＝優勝。タップで先へ
                 YoseChampionCelebrationView(tournamentName: "THE HANA 決勝", generationText: "結成\(summary.year)年目",
                                             duoName: session.combiName, prizeAmountYen: r.prize,
-                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」") {
+                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」",
+                                            proceedLabel: "次へ 進む") {   // HANA の後は番組エンディングもキャリアの終わりも無い＝週へ戻る
                     showHanaChamp = false; session.acknowledgeResult()
                 }
                 .transition(.opacity)

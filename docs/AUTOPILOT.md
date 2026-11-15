@@ -30,6 +30,7 @@
 - 後半の年の目視（10/26〜）：`MZ_YEARS` が 5 以上だと素の台本は途中で解散する＝`MZ_CARE=1` を足す（331535b から MZ_CARE もネタが無い週はネタを書く。能力は器で止まり G のままになりがち＝台本の癖）。撮影は `MZ_NOCHIP=1`（DEBUG の🏆/💪チップが実力カードに被る）。MZ_STOPWEEK を付けると週が2以上になり、作り直し型のフック（calendar・shop・allocate 等）もその年のまま開く（later_years_visual_1026_v0）。
 - 年末の目視の注意（10/27〜）：`MZ_UI=yearend` は debugPlayToEnd（バイトと休みの交互）で走り MZ_CARE は効かない＝週の画面（debugFreeWeek）と数値が合わないのは別走行のため（docs/fame_gap_y7_1027_v0.md）。年末の「G▶G」もこの台本の癖。
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
+- THE HANA の目視（11/16〜）：HANA に出るのは女女だけ＝`MZ_KIND=femaleFemale`（femaleMale は男女コンビで出ない）。結果画面は `MZ_UI=hana_result`（MZ_PASS=0 で敗退）・`hana_video`・`hana_entry`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
 - sim の設定を外から書く時（11/10 事故）：`xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …` だけを使う。mac 側の defaults で容器の plist を触ると sim の設定の書き込みが全部失敗する（直すには iPhone 17 を shutdown→boot）。
@@ -57,6 +58,7 @@
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
+- 【済 11/15 夜の定期：7e2bd9314 でアプリ 436 TEST SUCCEEDED】11/15 夕の定期の回：d7878b45f（大きい文字で日程表の凡例を2行に折る・表示のみ・ビルド OK・目視済・GameCore 474 green）。アプリのテストは同時に動いた別のセッションの xcodebuild に3回切られ「失敗0のまま TEST FAILED」＝次の回が `xcodebuild test` で green を確かめる（赤なら CalendarView の ViewThatFits を疑う）。この回は 513〜530（直し9・候補3〔calendar-gp-paint に中-2・notebook-full-exp・week-hint-priority 取り込み直し〕・点検4本・実測1本・候補80本の取り込み直し）。
 - なし（11/15 昼の定期の回の終わり時点＝5時間枠96%。途中の作業なし・本体 626b01d16 で GameCore 474／アプリ 420 green・候補は全部本体と ok。この回は 474〜512＝点検18本・直し19本・試し版4本〔debt-next-pay-warn・fame-floor-display・choice-money-chip・practice-outfit〕＋calendar-gp-paint に追加・定数の同期 80→103・判断待ちは decision_brief_2026-11-08 の「11/15 定期」の行）。
 
 - 【タップ確認待ち】お店で「引っ越し→何か買う→戻す」で部屋が戻らないこと（code_review_2026-10-19 §1-1 の修正・定期の回はタップ不可）。10/26：同じ手順を session で再現するテスト ShopUndoRoomTests を足した（理屈は green・残りはボタンを押しての見た目だけ）。
@@ -191,7 +193,7 @@
 
 378. [済 11/11 定期] オファーの札の目視（MZ_UI=offers MZ_STAMINA=100 MZ_META=0・1年目第3週・知名度60で札3枚）＝崩れ0（札の文は3行で収まる・選んだ札の下に詳細と効果の小札）。並べるだけ（低）：ネタ0の週は上の帯「まずはネタを書こう」と直下の一行「まだネタがない。まずはネタを書こう。」とネタの釦の説明「まだネタがない。まず一本」の3か所で同じことを言う。
 
-439. [ ] （11/15 定期・材料 docs/code_review_unreviewed_1115_v0.md・公開前・判断が要る＝課金）①iCloud 合流で開封回数を max で取るため、同じ購入分を2台でオフラインに回すと残りが多く戻る（例：10回分を A で3・B で2 回す→合流後の残り7＝正しくは5。GachaState.swift:194・確認済み）。直すなら端末ごとの開封数を持つ形（セーブの形が変わる）。②端末の日付を未来へ一度進めて札を取ると、以後ログインの札が取れない（:159 の文字列比較・合流も後の日を採る）。上限（実時刻+1日超は無視など）を付けるか。#3〜#5 は低。
+439. [ ] （11/15 定期・材料 docs/code_review_unreviewed_1115_v0.md・公開前・判断が要る＝課金）①iCloud 合流で開封回数を max で取るため、同じ購入分を2台でオフラインに回すと残りが多く戻る（例：10回分を A で3・B で2 回す→合流後の残り7＝正しくは5。GachaState.swift:194・確認済み）。直すなら端末ごとの開封数を持つ形（セーブの形が変わる）。②端末の日付を未来へ一度進めて札を取ると、以後ログインの札が取れない（:159 の文字列比較・合流も後の日を採る）。上限（実時刻+1日超は無視など）を付けるか。【11/16 定期：①は候補 gacha-opened-per-device-cand・②は候補 gacha-login-future-day-cand を作った＝decision_brief 11/16 定期】#3〜#5 は低。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
@@ -430,9 +432,81 @@
 523. [済 11/15 夕 定期・sonnet・docs/finals_stage_audit_1115_v0.md] 決勝の見せ方と舞台の部品の点検＝3件（全部低）・落ちる所／閉じた後の遅延／透明で押せるボタン0。直した：低-1（大トリ＝出順10番の年、自組がボードに入った直後の主ボタンが「後の組を見る ▶」→後の組がいなければ「最終決戦へ 進む ▶」）・低-2（7人目の前・決着札の溜め・自動開票の間は主ボタンと最終決戦のボタンを無効の見た目に＝押しても無反応の窓を見せる）。アプリ 423／GameCore 474 green・目視済（フック MZ_UI=finals MZ_FIN=hold／board10 を足した＝溜めの間は灰色・大トリは「最終決戦へ 進む ▶」）。低-3（優勝の夜は結果画面を通らず .winner 等が使われていない・推奨はコメントだけ）は判断待ち。ほかの画面の「透明なのに押せる」形も grep＝害のある所なし。
 524. [済 11/15 夕 定期] 網羅の測り直し：GameCore 99.76%（未通過5行はどれも届かない予備の枝）。アプリの GameSession の未通過はほぼ DEBUG の目視フック＝その補助11個と SpeakerStyle.tagColor をテスト Coverage1115Tests（13本・sonnet）で固定（多くは「止まる・落ちない」の確認）。アプリ 436 green。残り：debugSelfTest（119行）は未。
 525. [済 11/15 夕 定期] 本体 9c22b70cd の漏れ点検 soak 8分＝313〜326MB 横ばい・落ちず・クラッシュログ 1→1。
-526. [済 11/15 夕 定期] 同じく女コンビ（MZ_KIND=femaleMale・THE HANA の経路）で soak 6分＝317〜330MB 横ばい・落ちず。
+526. [済 11/15 夕 定期] 同じく自分が女の男女コンビ（MZ_KIND=femaleMale・※THE HANA は女女だけ＝この soak は HANA の経路を通っていない・11/16 訂正）で soak 6分＝317〜330MB 横ばい・落ちず。
 527. [済 11/15 夕 定期・sonnet・docs/visual_y15_1115_v0.md] 15年目の画面の目視＝9枚（週2/20/47・日程・手帳・年末×3・エンディング入口）・文字切れ／重なり／「10年」「来年」の古い文言なし。軽4件：①年末の「優勝『（見本）』」は DEBUG のフック（RootView:145）だけの文字＝遊ぶ人には出ない ②年末の下段でレーダーの凡例が「▼下にも続きます」のぼかしに少しかかる＝スクロールで見える・据え置き ③最終年の年末のひとこと「今度、飯でもおごってやろう」の未来形（台詞＝判断待ち・軽）④年末を撮る時は MZ_CARE=1 も付ける（無いと6年目で解散）。
 528. [済 11/15 夕 定期] notebook_intro_ending_audit_1115 低-1 の材料：相性14.5〜15未満で終わる完走は n=1000 で 0〜7.6%（やり込み 7.6・必要充足 4.7・のんびり 2.0・ローテ 0）＝手帳は「15」なのに相性15以上の終わりにならない人が少なくない。道具 tools/exp_compat_round_edge_1115_v0.py・文書 §追記。判断待ち（①今のまま②判定を四捨五入③手帳を切り捨て）。
 529. [済 11/15 夜 定期] 点検の1本（run_checks）＝GameCore 474・同期 3/3・config 103/103・効果 62・発火 26・UTF-8 壊れ0。アプリは別セッションの refresh_candidates と iPhone 17 を取り合って141本で打ち切り→単独で回し直して 436 TEST SUCCEEDED。check_candidates＝本体と衝突する候補なし（候補どうしの衝突のみ）。注意：待ち合わせに `pgrep -f <名前>` を使うと自分のコマンド行に当たって終わらない＝`pgrep -f "bash tools/<名前>"` のように絞る。
 530. [済 11/15 夜 定期・sonnet・docs/event_backgrounds_audit_1115_v0.md] 背景の絵（EventBackgrounds・表・WaIcons）のコード点検＝高中0・低3。低-3（幅から作った値を ForEach の id）を直した（90768d5d2・位置は不変・目視 styleTalk 崩れなし）。低-1（銭湯が参照0）・低-2（WaIcons 一式が参照0）はキュー118 と同じ論点（判断待ち）。
 531. [済 11/15 夜 定期・sonnet・docs/voiceover_audit_1115_v0.md] 11/09 以降に変わった画面の読み上げ点検＝新規 中1・低4。N1〜N4 を直した（b5819050d：千秋楽の透明ボタンを読み上げからも隠す・日程表の凡例「「稽」は稽古の週」・すぐ消える知らせを読み上げる・未入手の衣装の札の字を読む）。N5（決勝の溜めの間の送り）は実機の VoiceOver での確認待ち。1109 の残り #1〜#12・#14 は候補 claude/a11y-tap-next-cand のまま（キュー131＝実機で確かめてから）。
+529. [済 11/15 夕 定期] 候補の取り込み直し refresh_candidates（遅れ100以上）＝80本を green で push。赤2本：session-command-text-fix は取り込み直して再試験で green（アプリ 436／GameCore 474）＝push 6bb0c081c（前の赤は一時的）。vocab-ochi は本体が後から講評の語彙で「決め」を禁止語にした（JudgeTalkTests.testVocabShape）ため、候補の新しい語「決め台詞の締め」が赤＝語の選び直しが要る（文の判断・候補は取り込まずに残す）。
+530. [済 11/15 夕 定期] 大きい文字（accessibility-large）で日程表の凡例が「稽…」「バ…」、GP の説明が「第47…」と切れていた（凡例に「仕」を足して4つになった後）→凡例は収まらなければ判子4つ／大会・今週の2行に折る・GP の説明は縦に伸びる。目視済（標準＝1行のまま・大きい文字＝2行で全部読める）。
+532. [済 11/15 夜 定期] 本体と衝突していた候補のまとめ3本（all-bundles／both-bundles／c-bundle-1109）に本体を取り込み直して push（pbxproj は xcodegen・all は WeekMainView の借金の知らせ＝候補の「返し終えたら戻す」＋本体の「週が進む途中は出さない」の両方を残す）＝GameCore 474・アプリ 464／455／453 TEST SUCCEEDED。残る衝突は除外済みの古い3本（the-hana 2本・vitalbar）だけ。注意：アプリのテストが「失敗0なのに TEST FAILED」でログに `Couldn't write values … Path not accessible` が出る時は iPhone 17 の設定の書き込み先が壊れている＝`xcrun simctl shutdown`→`boot` で直る（11/15 夜に再起動で 455 green）。
+533. [済 11/15 深夜 定期] 点検＝run_checks（GameCore 474・アプリ 436 TEST SUCCEEDED・同期 3/3・config 103/103・効果 62・発火 26 一致・UTF-8 1316 本壊れ0）。check_candidates＝全候補が本体にそのまま入る（候補どうしの衝突は既知の型＝pbxproj・テスト末尾・同じ画面）。
+534. [済 11/15 深夜 定期] 目視：日程表（MZ_UI=calendar・標準の文字の大きさ）＝凡例は1行のまま・崩れなし（d7878b45f の2行折りは大きい文字の時だけ）。90768d5d2 の衣装の札・凡例は読み上げの文だけの変更＝見た目は不変。
+535. [済 11/15 深夜 定期] 網羅の測り直し＝GameCore 99.76%（未通過5行はどれも ?? の受け皿・precondition 等の通らない所＝11/09 から変わらず）。アプリの画面以外では GameSession 89% が最大の残り＝sonnet にテストを足させる（結果は次の行）。
+536. [済 11/15 深夜 定期・sonnet] GameSession の未通過（11%）を関数ごとに見た＝画面以外の論理は3行だけ（costOfNextStep の60段の暴走ガード・applyEventChoice の旧セーブ互換 break・saveNow の encode 失敗 catch）で、どれも到達しない or 既存テスト（SessionGap1025e・Coverage1111・AppSaveFixture）で通し済み。残りは DEBUG 専用と MZ_* の環境変数＝足すテストなし・コミットなし。
+537. [済 11/15 深夜 定期・sonnet・docs/release_research_gaps_1115_v0.md] 判断待ち A-3 の「未確認」2点を一次資料で埋めた（前払式＝施行令4条2項の6か月除外・6条の1,000万円／日本の広告単価の目安／2025年の年齢区分＝ガチャありで最低 9+）。decision_brief の A-3 に1行足した。残り＝ガチャ券を名指しした公式見解は無し（§4）。
+538. [済 11/15 深夜 定期] 判断待ち A-1 の推奨形（late-events の新40本の能力アップを外す＝案1）の候補を作れるか見た＝作らない。late_events_tuning_1108 §各案で失うもの のとおり、外すと二択の「選ぶ理由」と文面の作り直しが要る＝設計判断（オーナー）。A-1 の答えが来てから。
+539. [済 11/15 深夜 定期] 漏れ点検：本体 2c7f1e4d2（背景の絵の ForEach id の直し b5819050d・日程表の凡例 d7878b45f を含む）を soak 8分＝315〜334MB 横ばい・落ちず・クラッシュログ 1→1。
+
+540. [済 11/16 定期] 11/11 以降に本体へ入った日本語の文（39行・画面の文は12本）を○△×で見た＝○12・△0・×0（能力アップの確認文・決勝の板の「後の組を見る／次の組を見る／最終決戦へ 進む」・お店の引っ越しの説明・衣装の読み上げ・日程表の凡例・下の帯の「日程／コンビ／設定」）。直しなし。未採点の棚卸し unscored_text_inventory_1110 の「次の一手」は全部済みのまま。
+
+541. [済 11/16 定期・sonnet・docs/review_fixes_1115c_v0.md] 11/15 午後〜夜の直し（4a5aef29f〜90768d5d2・約11本）の見直し＝高中0・低2。1115b の高（ネタの伸び）は直ったまま。GameCore の2本（体調ダウン確率・netaWork）は式・乱数消費・Python 正典と一致。低-1（拘束中にバイトを選んでも「仕」）は calendar_audit 低-3 ② の意図どおりでテストが固定＝直さない。低-2（共有ボタンの空白）は実害がほぼ無い＝直さない。
+
+542. [済 11/16 定期] 自己点検 run_selftest（本体 HEAD・iPhone 17）＝29行・DONE・失敗行なし。
+
+543. [済 11/16 定期] 落ちる型の点検（11/08 の ForEach(0..<xs.count)＋xs[i]）：アプリ本体の該当5か所（ShopView の部屋名・IntroFlow の台詞/客席・YoseGameParts のタブ/下の札）はどれも固定の配列か増えるだけの配列＝範囲外にならない・直す所なし。
+
+544. [済 11/16 定期・sonnet・docs/visual_y1_1116_v0.md] 本体 HEAD の1年目の目視9枚＝崩れ・文字切れ0。中3件を確かめた＝「（見本）」は DEBUG フックだけ・第40週の重複は設計どおり・オファー札は既出（#137/#167）＝直す所なし。低4件は並べるだけ。
+
+545. [済 11/16 定期・sonnet・docs/visual_y5f_1116_v0.md] 5年目・femaleMale の目視＝崩れ・文字切れ・年数の食い違い0。中「THE HANA が出ない」は女女だけが対象の仕様（526 の「HANA の経路」は誤りと訂正）・年初の一言は第1週だけのトースト＝直す所なし。次：THE HANA の経路は MZ_KIND=femaleFemale で soak と目視をやり直す。
+
+546. [済 11/16 定期・sonnet・docs/hana_visual_soak_1116_v0.md] 女女（THE HANA の経路）1年目の目視7枚＋本体 soak 7分（317〜335MB 横ばい・落ちず・クラッシュログ 1→1）＝高0／中1／低5。中＝1年目の年末に HANA の成績が出ない→候補 claude/yearend-hana-line-cand（d10e10dfe）を作って判断待ちへ（decision_brief 11/16 定期）。
+
+547. [済 11/16 定期] THE HANA の結果画面（MZ_UI=hana_result・本体）を1枚＝崩れなし。常設の作業に HANA の目視の注意（女女だけ・フック名）を足した。
+
+548. [済 11/16 定期・sonnet・docs/visual_dark_1116_v0.md] 11/15 に変わった画面8枚をダークモードで目視＝読めない所・消える色0。sim は light に戻した。
+
+549. [済 11/16 定期] キュー439①の候補 claude/gacha-opened-per-device-cand（a5ba65de3）＝購入分の開封数を端末ごとに持ち合流は端末ごとの max（アプリ 440／GameCore 474 green・新テスト GachaOpenedPerDevice1116Tests 4本）。前の版との混在で引きすぎる恐れを decision_brief 11/16 定期に添えた。
+
+550. [済 11/16 定期] キュー439②の候補 claude/gacha-login-future-day-cand（60077e4aa）＝未来の日で取った後も札が取れる（アプリ green・GameCore 474・新テスト GachaLoginFutureDay1116Tests 3本）。decision_brief 11/16 定期に載せた。
+
+551. [済 11/16 定期] code_review_unreviewed_1115 の低 #3〜#5 の現状：#3 は候補 gacha-broken-backup-cand で対応済み・#4 は広告をつなぐ時の話（今は無害）・#5 は FinalsPresentationView:283 の Haptics が既に取り消しを見ていて、扉が開くのは先へ送られた時にも正しい状態＝直す所なし。
+
+552. [済 11/16 定期] check_candidates：新しい候補3本（yearend-hana-line・gacha-opened-per-device・gacha-login-future-day）は本体と ok・候補どうしの衝突は pbxproj だけ（既知の型）。
+
+553. [済 11/16 定期] 候補 yearend-hana-line を大きい文字で目視＝収まる。
+
+554. [済 11/16 定期・sonnet・docs/code_review_unaudited_1116_v0.md] 11/09 以降の点検で触れていないファイル（YoseComponents・WaIcons・EventBackdropTable・StoreIDs 等）のコード点検＝高中0・低4。WaIcon が未使用（並べるだけ）・ほかは直す所なし。
+
+555. [済 11/16 定期] 判断待ちの一覧（45本）とキューの未済の行に出てくる候補ブランチ＝どれも存在し、本体に入った物なし＝一覧の書き直し不要。
+
+556. [済 11/16 定期] visual_y1_1116 の低（第3週の経験点の二重）の候補 claude/exp-card-sub-dedup-cand（aa4552119）＝green・目視済・decision_brief 11/16 定期へ。
+
+557. [済 11/16 定期] 女女の2年目の年表に HANA の行が出ることを本体で目視＝1年目だけ出ない（候補 yearend-hana-line の理由を確認）。
+
+558. [済 11/16 定期・sonnet・docs/gender_text_check_1116_v0.md] 11/09 以降に入った日本語83行（画面の文 約12行）の性別の点検＝女女・男女で不自然な文0・FirstPersonLiteralTests を壊す追加なし。
+
+559. [済 11/16 定期] 候補の取り込み直し（遅れ50以上）＝10本中9本 green で push（calendar-gp-paint・choice-money-chip・combi-name-verbatim・debt-next-pay-warn・fame-floor-display・final-year-notice・practice-outfit・yearstart-notices-bundle・youth-notice-y10）。赤は vocab-ochi（GameCore 1本・本体の禁止語「決め」）＝同じ「オチの締め」を「話の締め」に直した finals-mc-tri-cand／text-all-1110-bundle-cand に置き換わった古い候補（判断待ちの一覧にも載っていない）。消さずに置く＝今後の取り込み直しで赤になるのは既知。
+
+560. [済 11/16 定期・sonnet・docs/visual_misc_1116_v0.md] あまり見ない画面8枚の目視＝崩れ0。所見20件を親が仕分け＝高2件は誤り（色は分かれている・「かけら」の読み違い）、残りは見せ方の判断＝decision_brief 11/16 定期に1行で並べた。
+
+561. [済 11/16 定期] 推奨どおり全部入れた枝 all-bundles-1109-cand（2aa098265・11/15 の取り込み直し後）の soak 8分＝317〜332MB 横ばい・落ちず・クラッシュログ 1→1。
+
+562. [済 11/16 定期] 文の直しのまとめ text-all-1110-bundle-cand（34b950968）の soak 8分＝316〜327MB 横ばい・落ちず・クラッシュログ 1→1。
+
+563. [済 11/16 定期] 称号の未取得が見えない件＝「まだの物は伏せて数だけ」の意図した作り（EndingViews.swift:334・見出しに数）と判断待ちの行に添えた。
+
+564. [済 11/16 定期・sonnet・docs/fame_rounding_measure_1116_v0.md] 知名度の四捨五入の食い違いの頻度を実測（n=1000）＝推薦制は1キャリア0.03〜0.04回とまれ・オファー札の1枚少ない週は約1.1〜1.3回（約65パーセントのキャリア）。decision_brief の行に数字を足した。
+
+565. [済 11/16 定期] 相性の尺度の候補 claude/compat-cap-display-cand（c96bcf6c6）＝相性の横に「/ 20」（アプリ green・GameCore 474・目視済）。decision_brief の行に添えた。
+
+566. [済 11/16 定期] 設定の「このキャリア」は直下の説明とモーダルで中身が分かる＝低に下げた（visual_misc_1116 追記）。
+
+567. [済 11/16 夜 定期] 点検 run_checks＝GameCore 474・アプリ 436・同期 3/3・config 103/103・効果 62・発火 26・UTF-8 壊れ0。
+
+568. [済 11/16 夜 定期] THE HANA 決勝の優勝演出を初めて目視（新フック `MZ_UI=stage_result MZ_STAGE=HANA決勝 MZ_PASS=1 MZ_PASSFX=1 MZ_KIND=femaleFemale`）。ボタンが「表彰式・エンディングへ進む」なのに HANA の後は週へ戻る＝「次へ 進む」に直した（表示のみ・頂GP は今のまま）。結果の札・決勝の入口（MZ_UI=hana_entry MZ_HANAIDX=3）・準決勝の敗退は崩れなし。朱印「日本一」と上帯「漫才の頂、ここに決まる」が HANA でも出る件は scene_ending_fx_text_score_1110 §4-1 の判断待ち＝decision_brief 11/16 夜 定期に1行足した。低：決勝の入口の上の札「THE HANA」と題名「THE HANA 決勝」が重なる（並べるだけ）。
+
+569. [済 11/16 夜 定期] 手帳の大会の記録に THE HANA の行が並んだ時の見た目を初めて目視（新フック `MZ_UI=notebook MZ_TAB=kiroku MZ_KIROKU=hana`）。標準の文字は崩れなし。大きい文字（accessibility-large）で「THE HANA 決／勝 優勝」と語の途中で折れた＝8字以下の語は空白でだけ折るように直した（表示のみ・テスト KirokuBreakAtSpaces1116Tests 2本・客席からの長い行は今までどおり2行）。sim の文字の大きさは large に戻した。
+
+570. [済 11/16 夜 定期・sonnet・docs/hana_large_text_1116_v0.md] THE HANA まわり14枚を大きい文字で目視＝高0・中3・低3。親の仕分け：入口の説明の「エントリ／ー費」を直した（最後の「・」で改行・標準は1行）／敗退の札の賞金は親のフックの誤り（直した）／「（見／本）」は仮の名前＝低。この回の直しで候補 all-bundles-1109-cand・b-bundle-1109-cand が TournamentResultView.swift で本体と衝突（ボタンの文の行）＝次の取り込み直しで解く。

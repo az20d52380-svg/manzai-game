@@ -252,15 +252,24 @@ struct TournamentEntryView: View {
     }
 
     /// 出場ボタン（物理ボタン。費用は交通費＋エントリー費の合計・B13）。払えない時は押せない表示で理由を出す
+    /// 最後の「・」を改行に（無ければそのまま）
+    static func breakAtLastDot(_ s: String) -> String {
+        guard let r = s.range(of: "・", options: .backwards) else { return s }
+        return s.replacingCharacters(in: r, with: "\n")
+    }
     private func entryButton(_ title: String, glyph: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: { if enabled { action() } }) {
             HStack(spacing: 12) {
                 Image(systemName: glyph).font(.system(size: Font.mzScaled(17), weight: .bold)).accessibilityHidden(true)   // 飾りの記号＝読み上げは横の文字だけ（a11y_check_1026_voiceover_v0 #6）
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(YoseFont.buttonMain)
-                    Text(enabled ? sub : "残高不足で出られない").font(YoseFont.captionBold)
-                        .foregroundStyle(enabled ? YoseColor.haiSumi : YoseColor.shu)
-                        .lineLimit(2).minimumScaleFactor(0.85)
+                    let line = enabled ? sub : "残高不足で出られない"
+                    ViewThatFits(in: .horizontal) {   // 1行に収まらない時は最後の「・」で改行（大きい文字で「エントリ／ー費」と語の途中で折れた・hana_large_text_1116 中1）
+                        Text(line).lineLimit(1)
+                        Text(Self.breakAtLastDot(line)).lineLimit(2).minimumScaleFactor(0.85)
+                    }
+                    .font(YoseFont.captionBold)
+                    .foregroundStyle(enabled ? YoseColor.haiSumi : YoseColor.shu)
                 }
                 Spacer(minLength: 0)
             }
