@@ -390,12 +390,16 @@ final class GameSession {
         default: weeksWithoutPartner += 1
         }
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
-        if case .job = action { jobCount += 1 }     // 0023 発火条件用のバイト実行回数（UI層・golden非対象）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
         weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
+        // 0023 発火条件用のバイト実行回数（UI層・golden非対象）。倒れて休みに差し替わった週は働いていないので数えない（stamina_audit_1115 N5＝稽古側の lastTrainingDone と同じ扱い）
+        if case .job = action {
+            let collapsed: Bool = { if case .weekDone(let sm) = phase { return sm.results.contains { $0.name == "体調ダウン" } }; return false }()
+            if !collapsed { jobCount += 1 }
+        }
         if case .train = action, runner.lastTrainingDone != nil, TrophyBook.bump("train") >= 100 { TrophyBook.award(.t13) }
         // 練習が休みに差し替わった週（体力ゲート・体調ダウン・お金不足）は、日程の印も「回復」で残す（稽古の印が付いていた）
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
