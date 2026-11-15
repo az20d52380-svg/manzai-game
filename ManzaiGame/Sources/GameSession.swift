@@ -973,6 +973,7 @@ final class GameSession {
         guard state.netas.count < config.netaActiveSlots else { return }
         runner.applyNetaRecall(id: id)
         state = runner.state
+        if state.netas.count >= config.netaActiveSlots { writeNewNeta = false }   // 枠が埋まったら「新しく書く」は書けない＝画面の「新ネタ」と実際（末尾の改稿）を食い違わせない（neta_audit_1115 N3 ②）
         saveNow()
     }
 
