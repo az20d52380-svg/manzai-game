@@ -202,6 +202,10 @@ struct YearResultView: View {
                     .foregroundStyle(passed ? YoseColor.kin : YoseColor.ginNezu)
                 Text(reachSub()).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinari)
                     .lineLimit(2).minimumScaleFactor(0.7).fixedSize(horizontal: false, vertical: true)
+                if let h = GameSession.hanaReach(log: session.log) {   // 女女コンビの THE HANA の成績（年表は2年目からなので、1年目はここにしか出ない・表示のみ・hana_visual_soak_1116_v0）
+                    Text(h).font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.8))
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                }
             }
             Spacer(minLength: 0)
         }
