@@ -33,6 +33,13 @@ final class AdGate {
     func showInterstitial(at placement: AdPlacement, completion: @escaping () -> Void) {
         guard !isAdFree() else { completion(); return }
         shownCount += 1
-        provider.showInterstitial(at: placement, completion: completion)
+        // 実 SDK が completion を二重に呼んでも先へ進むのは1回だけ（code_review_unreviewed_1115 #4）。
+        // 呼ばれない場合の時間切れは、つなぐ時に秒数を決めて足す（場面ごとの判断）。
+        var fired = false
+        provider.showInterstitial(at: placement) {
+            guard !fired else { return }
+            fired = true
+            completion()
+        }
     }
 }
