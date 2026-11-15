@@ -52,10 +52,27 @@ struct FinalistAnnounceView: View {
     }
     /// 読み上げ順（五十音順）。自組は名前を読みに直せない＝先頭の仮名で置く（読みは名前そのものに近い仮名と見なす）
     private var readOrder: [Slot] {
-        let selfYomi = combiName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? combiName
-        return slots.filter { $0.finalist }
-            .map { $0.isSelf ? Slot(id: $0.id, name: $0.name, yomi: selfYomi, isSelf: true, finalist: true) : $0 }
-            .sorted { $0.yomi < $1.yomi }
+        Self.ordered(slots.filter { $0.finalist }, isSelf: { $0.isSelf }, yomi: { $0.yomi }, selfName: combiName, seed: year)
+    }
+
+    /// 自組を読みの並びに入れる（候補 self-order・decision_brief 11/15 夕・qualifier_finals_intro_audit_1115 低-2）。
+    /// かなの名前は読みの位置。漢字・英字の名前は読みが分からない＝文字コードで必ず末尾／先頭になっていた → 名前と年で決まる位置に置く（表示専用・ゲームの乱数は使わない）
+    static func ordered<T>(_ items: [T], isSelf: (T) -> Bool, yomi: (T) -> String, selfName: String, seed: Int) -> [T] {
+        let others = items.filter { !isSelf($0) }.sorted { yomi($0) < yomi($1) }
+        guard let me = items.first(where: isSelf) else { return others }
+        let y = selfName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? selfName
+        let isKana = !y.isEmpty && y.unicodeScalars.allSatisfy { (0x3041...0x309F).contains($0.value) || $0.value == 0x30FC }
+        let idx: Int
+        if isKana {
+            idx = others.firstIndex { yomi($0) > y } ?? others.count
+        } else {
+            var h: UInt64 = 1_469_598_103_934_665_603   // FNV-1a（起動ごとに変わる hashValue は使わない）
+            for b in "\(selfName)#\(seed)".utf8 { h ^= UInt64(b); h &*= 1_099_511_628_211 }
+            idx = Int(h % UInt64(others.count + 1))
+        }
+        var out = others
+        out.insert(me, at: idx)
+        return out
     }
     private func isCalled(_ s: Slot) -> Bool { readOrder.prefix(called).contains { $0.id == s.id } }
     private var selfCalled: Bool { passed && readOrder.prefix(called).contains { $0.isSelf } }
