@@ -466,3 +466,5 @@
 547. [済 11/16 定期] THE HANA の結果画面（MZ_UI=hana_result・本体）を1枚＝崩れなし。常設の作業に HANA の目視の注意（女女だけ・フック名）を足した。
 
 548. [済 11/16 定期・sonnet・docs/visual_dark_1116_v0.md] 11/15 に変わった画面8枚をダークモードで目視＝読めない所・消える色0。sim は light に戻した。
+
+549. [済 11/16 定期] キュー439①の候補 claude/gacha-opened-per-device-cand（a5ba65de3）＝購入分の開封数を端末ごとに持ち合流は端末ごとの max（アプリ 440／GameCore 474 green・新テスト GachaOpenedPerDevice1116Tests 4本）。前の版との混在で引きすぎる恐れを decision_brief 11/16 定期に添えた。
