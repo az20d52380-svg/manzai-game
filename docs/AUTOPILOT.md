@@ -563,3 +563,5 @@
 597. [済 11/16 夜 定期] decision_brief 11/15「飽きの知らせ『新しいネタを書くと元どおり』が点と合わない」の推奨①の候補 claude/tired-notice-text-cand（761f23b14）＝年初の知らせと用語の説明の2か所（アプリ green・知らせの目視は未）。
 
 598. [済 11/16 夜 定期] この回の候補9本（hana-video-review・exp-hint-dedup・rest-cap-preview・short-money-price・venue-heading・self-order・hana-seal・second-neta-note・tired-notice-text）をまとめの枝 claude/eve-1116-bundle-cand（3c376f641）に＝衝突なし・GameCore 478／アプリ 443 green・golden/定数 一致。オーナーが一度に触って見る用（決定は各行で）。
+
+599. [済 11/16 夜 定期] decision_brief 11/15「選択肢イベントが重なると下の方が二度と出ない」の推奨①の候補 claude/rift-defer-cand（bf8172993）＝GameSession の発火の鎖で予告（riftWarning）を前夜の後ろへ（riftWarned は一度立つと戻らない＝次の週に出る）。アプリ 439 green・GameCore 475。単体テストは無し（鎖が private）。
