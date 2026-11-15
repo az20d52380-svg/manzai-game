@@ -559,3 +559,5 @@
 
 595. [済 11/16 夜 定期] decision_brief 11/15「決勝の2本目を選ばないと一律減点なのに一言が軽い」の推奨②の候補 claude/second-neta-note-cand（0cd20de9b）＝StageViews の goNote（アプリ green・目視は未＝決勝の入口へ直行するフックが無い）。
 596. [済 11/16 夜 定期] 決勝の入口へ直行する目視フック `MZ_UI=final_entry`（ネタを持たせるには `MZ_STOPWEEK=12 MZ_CARE=1`）を本体に足した（9beb534da）。候補 second-neta-note にも取り込み、本番ボタンの下「2本目を選ばないと減点」を目視＝収まる。
+
+597. [済 11/16 夜 定期] decision_brief 11/15「飽きの知らせ『新しいネタを書くと元どおり』が点と合わない」の推奨①の候補 claude/tired-notice-text-cand（761f23b14）＝年初の知らせと用語の説明の2か所（アプリ green・知らせの目視は未）。
