@@ -773,7 +773,13 @@ struct IntroFlowView: View {
     @State private var meeting: MeetingKind = IntroFlowView.initialMeeting
     private enum Stage { case title, comboKind, nameEntry, reminiscence, firstStage, notif }
 
-    private func finish() { onComplete(name, myName, partnerName, kind, meeting) }
+    @State private var finished = false
+    /// 二度押しでゲームが2回作られないよう1回だけ（double_tap_audit_1115 #1）
+    private func finish() {
+        guard !finished else { return }
+        finished = true
+        onComplete(name, myName, partnerName, kind, meeting)
+    }
 
     private static var initialMeeting: MeetingKind {
         #if DEBUG
@@ -840,6 +846,7 @@ struct IntroFlowView: View {
                 ReminiscencePlayer(
                     cards: meeting.cards,
                     onComplete: {
+                        guard stage == .reminiscence else { return }   // 最後のカードの二度押しで初舞台を飛ばさない（double_tap_audit_1115 #1）
                         // 1周目だけ初舞台へ（2周目以降は回想の「とばす」と同じく飛ばす）
                         let first = !Self.hasSeenIntro
                         Self.markIntroSeen()

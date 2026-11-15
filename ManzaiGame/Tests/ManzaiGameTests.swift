@@ -992,6 +992,17 @@ final class AdGateTests: XCTestCase {
         gate.showInterstitial(at: .tournament) { done += 1 }
         XCTAssertEqual(spy.calls, 1); XCTAssertEqual(done, 2); XCTAssertEqual(gate.shownCount, 1)
     }
+    func testDoubleCompletionFromProviderFiresOnce() {
+        final class DoubleProvider: AdProvider {
+            func showInterstitial(at placement: AdPlacement, completion: @escaping () -> Void) { completion(); completion() }
+        }
+        let gate = AdGate(); gate.provider = DoubleProvider(); gate.isAdFree = { false }
+        var done = 0
+        gate.showInterstitial(at: .yearEnd) { done += 1 }
+        XCTAssertEqual(done, 1)
+        gate.showInterstitial(at: .tournament) { done += 1 }
+        XCTAssertEqual(done, 2)
+    }
     func testNoAdProviderCompletesImmediately() {
         var done = false
         NoAdProvider().showInterstitial(at: .yearEnd) { done = true }

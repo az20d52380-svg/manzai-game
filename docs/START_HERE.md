@@ -686,3 +686,4 @@ cd GameCore && swift test
 - `judge_arrays_score_coverage_1110_v0.md` — 審査員の講評・司会の文の配列ごとの採点済み状況（2026-11-10）
 - `judge_score_paper_1110_v0.md` — 紙講評5配列の採点（2026-11-10・○91／△12／×0）
 - `playtest_y11_15_1110_v0.md` — 実プレイ点検 11〜15年目（2026-11-10・記録のみ／直していない）
+- `yearstart_notices_bundle_1110_v0.md` — 年初の一言の候補3本（356・361・youth-notice-y10）を重ねたまとめの枝と網羅の測り直し（2026-11-10 夕・記録）
