@@ -545,3 +545,6 @@
 587. [済 11/16 夜 定期・sonnet・docs/playtest_late_years_1116_v0.md] 後半の年の週の画面5枚（5年目40週・10年目20/44週・15年目8/46週）の実プレイ点検＝新しい所見なし（体力の一言の二重＝146／123、オファー札が二人を隠す＝137 の再現）。年の表示・数字の桁の崩れなし。1回目は待ち20秒で届かず空振り→待ちを延ばして撮り直した（常設の作業に注意を足した）。
 
 588. [済 11/16 夜 定期] 583 の7本（all-bundles-1109・b-bundle-1109・both-bundles-1109・first-pass-share・invite-variants・text-bundle-1109・tired-monologue）に本体を取り込み直し＝全部 green で push（修飾子の飲み込みが消えたことを走査で確認）。残る3本（q6-save-until-ending・q9-rent-peak・the-hana-candidate）は10/27 以前の古い候補で本体に別の形で入った物＝記録のみ。注意：refresh_candidates.sh の3つ目の名前の正規表現は `claude/` を含む名前に当てる（`^claude/(…)-cand$`）。
+
+589. [済 11/16 夜 定期] 本体の selftest＝29行・DONE・失敗なし。
+590. [済 11/16 夜 定期] decision_brief 11/15「休みの札の体力 +n が上限を考えない」の推奨①の候補 claude/rest-cap-preview-cand（341af3117）＝上限100までの量・満タンなら「体力は満タン」（目視 ＝体力80で全札 +20・アプリ 439 green）。
