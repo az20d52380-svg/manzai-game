@@ -1558,7 +1558,7 @@ struct WeekMainView: View {
         guard session.year >= 2, session.week <= 1, tiredNoticeYear != session.year,
               let n = session.activeNetas.first(where: { ($0.tiredYears ?? 0) >= 1 }) else { return }
         tiredNoticeYear = session.year
-        showToast("『\(n.name)』は客に見飽きられてきた。新しいネタを書くと元どおり。")
+        showToast("『\(n.name)』は客に見飽きられてきた。寝かせても戻らない。新しいネタなら飽きの減点は付かない。")   // 候補 tired-notice-text（neta_audit_1115 N2）
     }
 
     /// §4 満了トーストを「この年1回だけ」出す（onChange の二経路から呼ばれても多重発火しない）。
