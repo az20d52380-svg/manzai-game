@@ -1294,7 +1294,9 @@ final class GameSession {
     static func debtTier(money: Int) -> Int { money < -800_000 ? 3 : money < -500_000 ? 2 : money < 0 ? 1 : 0 }
     /// 今の所持金で新しく知らせるべき段（まだ出していない深い段があれば、その段。なければ nil）。表示専用
     func debtNoticeTierToShow(money: Int) -> Int? {
+        // 段4＝次の生活費を払うと夜逃げの線を割る（部屋の上乗せ込み）。固定の段（−80万）を飛ばして夜逃げする穴を塞ぐ（money_audit_1115 M1）
         let tier = GameSession.debtTier(money: money)
+        if money < 0, tier < 3, money - GameEngine.livingCostDue(state, config: config) < config.bankruptLine, debtWarnTier < 4 { return 4 }   // 段3の手前で次の支払いが線を割る時だけ（段3の範囲は今の知らせのまま）
         return tier > debtWarnTier ? tier : nil
     }
     /// 借金の知らせを出した段を記録（深い方へだけ進む）
