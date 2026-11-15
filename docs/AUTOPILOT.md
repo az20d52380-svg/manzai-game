@@ -400,5 +400,5 @@
 
 497. [済 11/15 定期・sonnet・docs/test_formula_copies_1115_v0.md] テスト側に式を写して比べている所の洗い出し＝golden 系は体調ダウン（496 で済）の他に写し0。非 golden に5件・golden 経路外の穴1件。直した：#6 稽古→ネタ（書く＝改稿の伸び／披露＝ネタ見せ会は hard）の対応を GameConfig.netaWork に出し、アプリの applyNetaWork と golden（testNetaGrowGolden）の両方が呼ぶ＝アプリ側の取り違えも golden で落ちる。式・乱数は不変＝gen_golden 差分0・GameCore 472／アプリ 420 green。#1〜#3 は単体テストの独立な期待値（オラクル）なので直さない（golden は本体の関数を呼ぶ＝追記）。
 
-498. [済 11/15 定期・sonnet・docs/choice_effect_audit_1115_v0.md] 選択肢イベントの効果の札と実際の点検＝6件（中1・低5）・効果の食い違い／二重適用／取りこぼし0。判断が要る中：効果の札が最大3枚で切れ、所持金の増減が出ない選択肢が新たに2つ（0057 年末のライブ A・§102 先輩の誘い A の発想付き）＝既出 0017C・0014B・0022A と同じ型（ChoiceEventOverlay.swift:322 の prefix(3)）。①所持金だけは必ず出す（候補 claude/choice-money-chip-cand ・GameCore 472／アプリ 420 green・目視は未）②4枚まで ③今のまま。低5件は材料のみ。
+498. [済 11/15 定期・sonnet・docs/choice_effect_audit_1115_v0.md] 選択肢イベントの効果の札と実際の点検＝6件（中1・低5）・効果の食い違い／二重適用／取りこぼし0。判断が要る中：効果の札が最大3枚で切れ、所持金の増減が出ない選択肢が新たに2つ（0057 年末のライブ A・§102 先輩の誘い A の発想付き）＝既出 0017C・0014B・0022A と同じ型（ChoiceEventOverlay.swift:322 の prefix(3)）。①所持金だけは必ず出す（候補 claude/choice-money-chip-cand ea62709fa・GameCore 472／アプリ 420 green・目視は未）②4枚まで ③今のまま。低5件は材料のみ。
 499. [済 11/15 定期] 本体 fcfd812e5（今日の GameCore の整理2本の後）の soak 8分＝307〜324MB 横ばい・クラッシュログ 1→1＝異常なし。
