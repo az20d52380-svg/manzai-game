@@ -510,3 +510,7 @@
 569. [済 11/16 夜 定期] 手帳の大会の記録に THE HANA の行が並んだ時の見た目を初めて目視（新フック `MZ_UI=notebook MZ_TAB=kiroku MZ_KIROKU=hana`）。標準の文字は崩れなし。大きい文字（accessibility-large）で「THE HANA 決／勝 優勝」と語の途中で折れた＝8字以下の語は空白でだけ折るように直した（表示のみ・テスト KirokuBreakAtSpaces1116Tests 2本・客席からの長い行は今までどおり2行）。sim の文字の大きさは large に戻した。
 
 570. [済 11/16 夜 定期・sonnet・docs/hana_large_text_1116_v0.md] THE HANA まわり14枚を大きい文字で目視＝高0・中3・低3。親の仕分け：入口の説明の「エントリ／ー費」を直した（最後の「・」で改行・標準は1行）／敗退の札の賞金は親のフックの誤り（直した）／「（見／本）」は仮の名前＝低。この回の直しで候補 all-bundles-1109-cand・b-bundle-1109-cand が TournamentResultView.swift で本体と衝突（ボタンの文の行）＝次の取り込み直しで解く。
+
+571. [済 11/16 夜 定期] 候補の取り込み直し（この回の直しで衝突した7本）＝all-bundles-1109・b-bundle-1109・first-pass-share（TournamentResultView のフックの行＝本体の HANA の行＋候補の祝いの行で解いた）と both-bundles-1109・invite-variants・text-bundle-1109・tired-monologue（pbxproj だけ）＝全部 GameCore 474・アプリ green で push。check_candidates の本体との衝突0。
+
+572. [済 11/16 夜 定期] 年末総決算の出来事の行にも 569 の折り方を使い、「「」「（」の前でも折れるように改良＝大きい文字で「（見／本）」と名前の途中で折れていたのが「優勝／「名前」／（客席から）」に。大会の記録の客席からの行も「優勝「ひだまり座」／（客席から）」で折れる（標準の文字は今までどおり）。
