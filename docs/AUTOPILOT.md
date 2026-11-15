@@ -459,3 +459,5 @@
 544. [済 11/16 定期・sonnet・docs/visual_y1_1116_v0.md] 本体 HEAD の1年目の目視9枚＝崩れ・文字切れ0。中3件を確かめた＝「（見本）」は DEBUG フックだけ・第40週の重複は設計どおり・オファー札は既出（#137/#167）＝直す所なし。低4件は並べるだけ。
 
 545. [済 11/16 定期・sonnet・docs/visual_y5f_1116_v0.md] 5年目・femaleMale の目視＝崩れ・文字切れ・年数の食い違い0。中「THE HANA が出ない」は女女だけが対象の仕様（526 の「HANA の経路」は誤りと訂正）・年初の一言は第1週だけのトースト＝直す所なし。次：THE HANA の経路は MZ_KIND=femaleFemale で soak と目視をやり直す。
+
+546. [済 11/16 定期・sonnet・docs/hana_visual_soak_1116_v0.md] 女女（THE HANA の経路）1年目の目視7枚＋本体 soak 7分（317〜335MB 横ばい・落ちず・クラッシュログ 1→1）＝高0／中1／低5。中＝1年目の年末に HANA の成績が出ない→候補 claude/yearend-hana-line-cand（d10e10dfe）を作って判断待ちへ（decision_brief 11/16 定期）。
