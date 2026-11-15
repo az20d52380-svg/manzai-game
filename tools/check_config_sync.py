@@ -11,7 +11,7 @@ import balance_sim as B
 import sim_career as C
 
 _SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "GameCore", "Sources", "GameCore")
-SWIFT = [os.path.join(_SRC, f) for f in ("GameConfig.swift", "Calendar.swift")]  # 大会の定数は Calendar.swift
+SWIFT = [os.path.join(_SRC, f) for f in ("GameConfig.swift", "Calendar.swift", "Skill.swift")]  # Skill.swift＝特技の倍率（skill_item_audit_1115 #4）  # 大会の定数は Calendar.swift
 
 # Swift の名前 → Python の値
 PAIRS = {
@@ -25,6 +25,23 @@ PAIRS = {
     "debtLifeMental":       C.DEBT_LIFE_PEN[1],
     "riftHeal":             C.RIFT_HEAL,
     "riftJointStill":       C.RIFT_JOINT_STILL,
+    "riftGain":             C.RIFT_GAIN,          # 11/15 partner_audit_1115 §4 で追加
+    "riftWarn":             C.RIFT_WARN,
+    "inviteRate":           C.INVITE_P,
+    "inviteIdeaP":          C.INVITE_IDEA_P,
+    "compatInit":           B.COMPAT_INIT,
+    "compatCap":            B.COMPAT_CAP,
+    "bankruptLine":         C.BANKRUPT_LINE,      # 11/15 money_audit_1115 M7
+    "initFame":             B.INIT_FAME,          # 11/15 fame_audit_1115 §6
+    "fameOtherMult":        B.FAME_OTHER_MULT,
+    "fameOtherCap":         B.FAME_OTHER_CAP,
+    "injuryMult":           B.SKILL_INJURY_MULT,  # 11/15 skill_item_audit_1115 #4（Skill.swift の static）
+    "fameMult":             B.SKILL_FAME_MULT,
+    "livingMult":           B.SKILL_LIVING_MULT,
+    "riftMult":             B.SKILL_RIFT_MULT,
+    "itemSentoRecovery":    B.ITEM_SENTO_RECOVERY,
+    "itemRecorderBonus":    B.ITEM_RECORDER_BONUS,
+    "itemStudioBonus":      B.ITEM_STUDIO_BONUS,
     "inviteMoney":          C.INVITE_MONEY,
     "inviteStamina":        C.INVITE_STAMINA,
     "inviteMental":         C.INVITE_MENTAL,
@@ -174,6 +191,55 @@ def check_tournaments():
         print(f"NG GP の回戦: Swift {gp} / Python {py_gp}"); bad += 1
     return bad, 2 + len(C.TOURNAMENTS)
 
+def check_gp_loss_compat():
+    """配列の定数 gpLossCompat（型注釈付きで _defaults の正規表現に掛からない）を別に突き合わせる（partner_audit_1115 §4）"""
+    pat = re.compile(r"public var gpLossCompat:\s*\[Double\]\s*=\s*\[([^\]]*)\]")
+    for path in SWIFT:
+        for line in open(path, encoding="utf-8"):
+            m = pat.search(line)
+            if m:
+                sw = [float(x) for x in m.group(1).split(",")]
+                if len(sw) != len(C.GP_LOSS_COMPAT) or any(abs(a - b) > 1e-12 for a, b in zip(sw, C.GP_LOSS_COMPAT)):
+                    print(f"NG gpLossCompat: Swift {sw} / Python {list(C.GP_LOSS_COMPAT)}"); return 1, 1
+                return 0, 1
+    print("?? gpLossCompat: Swift 側で既定値を読めない"); return 1, 1
+
+def check_meta_split_and_salt():
+    """型注釈付きで _defaults に掛からない2個（metaStartExpSplit・offerCardSalt）を別に突き合わせる（11/15 の棚卸し）"""
+    names = {"閃き": "hirameki", "間合い": "maai", "語彙": "goi", "存在感": "sonzaikan", "胆力": "tanryoku"}
+    bad = 0
+    text = "".join(open(p, encoding="utf-8").read() for p in SWIFT)
+    m = re.search(r"public var metaStartExpSplit:[^=]*=\s*\[(.*?)\]\s*$", text, re.M)
+    if not m:
+        print("?? metaStartExpSplit: Swift 側で既定値を読めない"); bad += 1
+    else:
+        sw = {names[k]: float(v) for k, v in re.findall(r"\(\.(\w+),\s*([\d.]+)\)", m.group(1))}
+        if set(sw) != set(C.META_START_EXP_SPLIT) or any(abs(sw[k] - C.META_START_EXP_SPLIT[k]) > 1e-12 for k in sw):
+            print(f"NG metaStartExpSplit: Swift {sw} / Python {C.META_START_EXP_SPLIT}"); bad += 1
+    m = re.search(r"public var offerCardSalt:\s*UInt64\s*=\s*(0x[0-9A-Fa-f_]+)", text)
+    if not m:
+        print("?? offerCardSalt: Swift 側で既定値を読めない"); bad += 1
+    elif int(m.group(1).replace("_", ""), 16) != C.OFFER_CARD_SALT:
+        print(f"NG offerCardSalt: Swift {m.group(1)} / Python {hex(C.OFFER_CARD_SALT)}"); bad += 1
+    m = re.search(r"public var roomRents\s*=\s*\[([^\]]*)\]", text)   # money_audit_1115 M7
+    if not m:
+        print("?? roomRents: Swift 側で既定値を読めない"); bad += 1
+    elif [int(x.replace("_", "")) for x in m.group(1).split(",")] != list(B.ROOM_RENT):
+        print(f"NG roomRents: Swift [{m.group(1)}] / Python {list(B.ROOM_RENT)}"); bad += 1
+    m = re.search(r"public var offerCardFames:\s*\[Double\]\s*=\s*\[([^\]]*)\]", text)   # fame_audit_1115 §6
+    if not m:
+        print("?? offerCardFames: Swift 側で既定値を読めない"); bad += 1
+    elif [float(x) for x in m.group(1).split(",")] != [float(x) for x in C.OFFER_CARD_FAMES]:
+        print(f"NG offerCardFames: Swift [{m.group(1)}] / Python {C.OFFER_CARD_FAMES}"); bad += 1
+    m = re.search(r"public var offerRates:[^=]*=\s*\[(.*?)\]\s*(//|$)", text, re.M)
+    if not m:
+        print("?? offerRates: Swift 側で既定値を読めない"); bad += 1
+    else:
+        sw = [(float(a), float(b)) for a, b in re.findall(r"\(([\d.]+),\s*([\d.]+)\)", m.group(1))]
+        if sw != [(float(a), float(b)) for a, b in B.OFFER_RATES]:
+            print(f"NG offerRates: Swift {sw} / Python {B.OFFER_RATES}"); bad += 1
+    return bad, 5
+
 def main():
     sw = swift_defaults(SWIFT)
     bad = 0
@@ -191,6 +257,10 @@ def main():
     bad += bad_h
     bad_t, n_t = check_tournaments()
     bad += bad_t; n_h += n_t
+    bad_g, n_g = check_gp_loss_compat()
+    bad += bad_g; n_h += n_g
+    bad_m, n_m = check_meta_split_and_salt()
+    bad += bad_m; n_h += n_m
     print(f"config sync: {len(PAIRS) + n_h - bad}/{len(PAIRS) + n_h} 一致")
     return 1 if bad else 0
 
