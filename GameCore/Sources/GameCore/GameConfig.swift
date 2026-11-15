@@ -223,7 +223,7 @@ public struct GameConfig {
         .喉のケア用品: ItemSpec(price: 20_000, yearlyLimit: 1, summary: "今年は体調を崩しにくくなる"),
         .銭湯の回数券: ItemSpec(price: 10_000, yearlyLimit: 99, summary: "休む4回ぶん、回復が増える"),
         .中古のICレコーダー: ItemSpec(price: 30_000, yearlyLimit: nil, summary: "ネタ作りでネタ種が少し多く出る（ずっと）"),
-        .新幹線回数券: ItemSpec(price: 200_000, yearlyLimit: 1, summary: "今年の大阪遠征で疲れない（交通費もなし）"),   // 候補 ticket-stamina-text（skill_item_audit_1115 #1 案②：お金では元が取れない＝体力を温存する品と先に書く）
+        .新幹線回数券: ItemSpec(price: 200_000, yearlyLimit: 1, summary: "今年の大阪遠征は疲れない・交通費なし"),   // 候補 ticket-stamina-text（skill_item_audit_1115 #1 案②：お金では元が取れない＝体力を温存する品と先に書く・元と同じ18字＝括弧付きは2行目に折れた）
         .ネタ作家の勉強会: ItemSpec(price: 150_000, yearlyLimit: 2, summary: "ネタ種とことば帳の経験点"),
         .ボイトレ短期集中: ItemSpec(price: 250_000, yearlyLimit: 1, summary: "間（ま）とことば帳の経験点"),
         .稽古場の年契約: ItemSpec(price: 2_400_000, yearlyLimit: 1, summary: "今年の稽古がすべて少し効く"),
