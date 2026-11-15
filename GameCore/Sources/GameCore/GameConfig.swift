@@ -44,6 +44,12 @@ public enum StatKey {
     case 知名度
 }
 
+/// 稽古がネタに効く形（GameConfig.netaWork）
+public enum NetaWork: Equatable {
+    case write(gain: Double?)   // 改稿・新しく書く（gain=nil は家で書く＝netaReviseGain）
+    case live(hard: Bool)       // 披露（ネタ見せ会＝hard）
+}
+
 public enum Training: CaseIterable, Hashable, Codable {
     case ネタ作り
     case ネタ見せ会
@@ -302,6 +308,15 @@ public struct GameConfig {
     public var netaPlaceGain: [Training: Double] = [.喫茶店で書く: 10, .ファミレスで書く: 12]
     /// ネタを書く行動か（家・喫茶店・ファミレス）
     public static let netaWriteTrainings: Set<Training> = [.ネタ作り, .喫茶店で書く, .ファミレスで書く]
+    /// 稽古→ネタへの効き方（書く＝改稿の伸び／披露＝ネタ見せ会は hard）。アプリの GameSession.applyNetaWork と golden の突き合わせが同じ対応を使う（test_formula_copies_1115 #6）
+    public func netaWork(for t: Training) -> NetaWork? {
+        if Self.netaWriteTrainings.contains(t) { return .write(gain: netaPlaceGain[t]) }
+        switch t {
+        case .ネタ見せ会: return .live(hard: true)
+        case .フリーライブ: return .live(hard: false)
+        default: return nil
+        }
+    }
 
     // --- バイト（Python: JOBS） ---
     public var jobs: [Job: (income: Int, stamina: Double)] = [

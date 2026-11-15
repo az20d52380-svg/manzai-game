@@ -153,6 +153,11 @@ struct RootView: View {
                 }
             }
             if ui == "calendar", session.week <= 1 {
+                // MZ_PREOCC=<週>：撮影・出張で拘束された状態から始める＝拘束週の判子「仕」の目視（calendar_audit_1115 低-3 ②）
+                if let p = ProcessInfo.processInfo.environment["MZ_PREOCC"].flatMap(Int.init) {
+                    var st = GameState(config: session.config); st.preoccupiedWeeks = p
+                    session = GameSession(startState: st)
+                }
                 session.debugAdvanceToFirstResult()   // 数週バイトで進める（過去週の色ドット＋大会週の目視）
             }
             if ui == "ending" || ui == "finals", session.week <= 1 {
@@ -343,13 +348,16 @@ struct RootView: View {
         .onChange(of: session.abandoned) { _, quit in
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
             if quit {
+                Sound.stopBGM()   // タイトル戻し（returnToTitle）と同じく育成の曲を止める（sound_state_audit_1115 #2）
+                NetaStage.lastSeen = [:]   // returnToTitle と同じくネタ札の光り方の記憶を持ち越さない（newcycle_audit_1115 #1）
                 session = GameSession()
                 withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）
-            if phase == .background, started { session.saveNow() }
+            // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）。
+            // .inactive（アプリの切替画面・着信）でも保存＝そこから強制終了される経路を拾う（lifecycle_audit_1115 #3・1回 約0.6ms）
+            if phase == .background || phase == .inactive, started { session.saveNow() }
         }
     }
 
