@@ -73,6 +73,11 @@ extension GameEngine {
         return true
     }
 
+    /// 体調ダウンの確率（体力が閾値未満の時・乱数なし）。WeekRunner.resolveAction と golden の突き合わせが同じ式を呼ぶ（skill_item_audit_1115 #4 ②・式と掛ける順は従来どおり）
+    public static func injuryProbability(state: GameState, config: GameConfig) -> Double {
+        (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint * injuryProbMultiplier(state: state, config: config) * (state.has(.体が資本) ? Skill.injuryMult : 1.0)
+    }
+
     /// 体調ダウン確率の係数。喉のケア用品をその年持っていれば半分、なければ恒等（乱数は引かない）。
     public static func injuryProbMultiplier(state s: GameState, config: GameConfig) -> Double {
         (s.itemCounts?[ShopItem.喉のケア用品.rawValue] ?? 0) > 0 ? config.itemThroatInjuryMult : 1.0
