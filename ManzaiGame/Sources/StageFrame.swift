@@ -470,7 +470,7 @@ struct StageMakuri: View {
         return VStack(spacing: 0) {
             VStack(spacing: 1) {
                 ForEach(Array(name.enumerated()), id: \.offset) { _, c in
-                    Text(String(c)).font(YoseFont.mincho(fs)).foregroundStyle(YoseColor.sumi)
+                    Text(verbatim: String(c)).font(YoseFont.mincho(fs)).foregroundStyle(YoseColor.sumi)   // 名前の1字＝「俺」の字を差し替えない（name_substitution_audit_1115 #1）
                 }
             }
             .padding(.vertical, big ? 14 : 8).frame(width: big ? 64 : 34)

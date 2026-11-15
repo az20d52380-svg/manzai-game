@@ -22,7 +22,11 @@ enum Names {
     static var kind: ComboKind = .maleMale
     static func setKind(_ k: ComboKind) { kind = k }
 
-    static func set(me: String?, partner: String?) {
+    /// コンビ名（入力そのまま）。文の中のコンビ名は差し替えない＝「俺たち谷口」が「俺たち田中」に化けない（name_substitution_audit_1115 #1）
+    static var combo = ""
+
+    static func set(me: String?, partner: String?, combo: String? = nil) {
+        if let combo { self.combo = combo }
         self.me = clean(me)
         let p = clean(partner)
         self.partner = p.isEmpty ? defaultPartner : p
@@ -35,6 +39,13 @@ enum Names {
     /// 画面に出す文字列へ。差し替えが無ければそのまま返す
     static func show(_ s: String) -> String {
         if s == defaultMe { return me.isEmpty ? kind.meFirstPerson : me }
+        if !combo.isEmpty, s.contains(combo), combo.contains(defaultPartner) || combo.contains(defaultMe) || combo.contains("{") {
+            return s.components(separatedBy: combo).map(substitute).joined(separator: combo)
+        }
+        return substitute(s)
+    }
+
+    private static func substitute(_ s: String) -> String {
         var t = s
         if t.contains("{") {   // 一人称の差し込み記号（{me}＝自分・{partner1}＝相方）
             // 「{me}ら」だけを「私たち」に（文中の「私らしい」等を巻き込まない・code_review_2026-10-25 §6）

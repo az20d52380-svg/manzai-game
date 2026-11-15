@@ -285,7 +285,7 @@ public struct YoseChampionCelebrationView: View {
                                 .tracking(2.0)
                                 .foregroundStyle(YoseColor.shu)
 
-                            Text(duoName)
+                            Text(verbatim: duoName)
                                 .font(YoseFont.mincho(30))
                                 .foregroundStyle(YoseColor.sumi)
                                 .lineLimit(1)
@@ -389,7 +389,7 @@ public struct YoseChampionCelebrationView: View {
     private var partnerEmotionBox: some View {
         HStack(alignment: .top, spacing: 10) {
             // 相方名縦札風ラベル
-            Text(partnerName)
+            Text(verbatim: partnerName)
                 .font(YoseFont.gothic(13, weight: .heavy))
                 .foregroundStyle(YoseColor.kinari)
                 .padding(.horizontal, 8)

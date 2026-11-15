@@ -158,7 +158,7 @@ struct QualifierNoticeView: View {
     // MARK: 相方とのトーク
     private var chatScreen: some View {
         VStack(spacing: 0) {
-            Text(partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).padding(.top, 96).padding(.bottom, 12)
+            Text(verbatim: partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).padding(.top, 96).padding(.bottom, 12)
             ScrollView {
                 VStack(spacing: 10) {
                     bubble(false, "見た？")
