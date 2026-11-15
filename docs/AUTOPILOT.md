@@ -468,3 +468,5 @@
 548. [済 11/16 定期・sonnet・docs/visual_dark_1116_v0.md] 11/15 に変わった画面8枚をダークモードで目視＝読めない所・消える色0。sim は light に戻した。
 
 549. [済 11/16 定期] キュー439①の候補 claude/gacha-opened-per-device-cand（a5ba65de3）＝購入分の開封数を端末ごとに持ち合流は端末ごとの max（アプリ 440／GameCore 474 green・新テスト GachaOpenedPerDevice1116Tests 4本）。前の版との混在で引きすぎる恐れを decision_brief 11/16 定期に添えた。
+
+550. [済 11/16 定期] キュー439②の候補 claude/gacha-login-future-day-cand（60077e4aa）＝未来の日で取った後も札が取れる（アプリ green・GameCore 474・新テスト GachaLoginFutureDay1116Tests 3本）。decision_brief 11/16 定期に載せた。
