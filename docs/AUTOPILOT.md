@@ -522,3 +522,5 @@
 575. [済 11/16 夜 定期] THE HANA の2回目以降の優勝でも相方の一言が同じ件の候補 claude/hana-repeat-win-line-cand（83464b367）＝頂GP の repeatWinLine と同じ型で3通り（アプリ 442 green・テスト3本）。decision_brief 11/16 夜 定期に1行。
 
 576. [済 11/16 夜 定期] decision_brief 11/15「HANA の見送るで今年が終わる説明が無い」の推奨②の候補 claude/hana-skip-note-cand（4c99cee13）＝見送るの下に1行（アプリ green・目視済）。判断待ちの行に添えた。
+
+577. [済 11/16 夜 定期] 網羅の測り直し＝GameCore 99.76%（既知の0回5か所のまま）・アプリの90%未満は画面の部品ばかり（RentStatement 7% も計算部分は既存テストで通過・画面が未通過）＝足すテストなし。
