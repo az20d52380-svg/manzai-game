@@ -37,6 +37,9 @@ final class GameSession {
     private(set) var lastMoneyDelta = 0   // 行動による差のみ（生活費は lastLivingPaid に分けた）
     /// この週の週末に引かれた生活費（引かれない週は 0・表示専用）。
     private(set) var lastLivingPaid = 0
+    /// choose の pump で最初に受けた weekDone の状態（押した週の末）。療養週の自動送りを行動の差に混ぜない（stamina_audit_1115 N1・表示専用）
+    private var actedWeekEndState: GameState?
+    private var capturingActedWeek = false
     private(set) var lastStaminaDelta = 0
     /// Beat2 獲得チップ用の知名度の増分（表示専用・golden非対象）。舞台に立つ週の「押した→残った」を見せる（G1）
     private(set) var lastFameDelta: Double = 0
@@ -398,30 +401,34 @@ final class GameSession {
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
         if case .train(.ネタ合わせ) = action, runner.lastTrainingDone == nil { weeksWithoutPartner = prevWithoutPartner + 1 }   // 休みに差し替わった週は相方と合わせていない（code_review_2026-10-19j §3）
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
+        actedWeekEndState = nil; capturingActedWeek = true
         pump()
+        capturingActedWeek = false
+        // 差はすべて「押した週の末」まで（体調ダウン後の療養週が pump で続けて進んでも混ぜない＝stamina_audit_1115 N1）
+        let st = actedWeekEndState ?? self.state
         lastGains = Ability.allCases.compactMap { a in
-            let d = state[a] - before[a]
+            let d = st[a] - before[a]
             return d > 0.001 ? (a, d) : nil
         }
-        lastCompatGain = state.compat - before.compat
+        lastCompatGain = st.compat - before.compat
         // 正典v3: 稽古は能力を直接伸ばさず経験点通貨を稼ぐ＝この週に入った通貨の増分（§1-3 受け取りの一拍）。
         lastGrainGains = ExpCurrency.allCases.compactMap { c in
-            let d = state[currency: c] - before[currency: c]
+            let d = st[currency: c] - before[currency: c]
             return d > 0.001 ? (c, d) : nil
         }
         // Beat2 獲得バースト用のネタの伸び（applyNetaWork の結果の差分・RNG非消費・golden非対象）
-        if state.nextNetaID > before.nextNetaID {
+        if st.nextNetaID > before.nextNetaID {
             lastNetaGain = (true, 0)
         } else {
-            let d = state.netas.compactMap { n in before.netas.first { $0.id == n.id }.map { n.polish - $0.polish } }.max() ?? 0
+            let d = st.netas.compactMap { n in before.netas.first { $0.id == n.id }.map { n.polish - $0.polish } }.max() ?? 0
             lastNetaGain = d > 0.001 ? (false, d) : nil
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         // 生活費（livingInterval 週ごとの週末処理）は行動の差と分けて持つ（GameEngine.applyWeekEnd と同条件・表示専用）。
-        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? GameEngine.livingCostDue(state, config: config) : 0   // 部屋の上乗せ込み
-        lastMoneyDelta = state.money - before.money + lastLivingPaid
-        lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
-        lastFameDelta = state.fame - before.fame
+        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? GameEngine.livingCostDue(st, config: config) : 0   // 部屋の上乗せ込み
+        lastMoneyDelta = st.money - before.money + lastLivingPaid
+        lastStaminaDelta = Int(st.stamina.rounded()) - Int(before.stamina.rounded())
+        lastFameDelta = st.fame - before.fame
         lastDeltaWeek = week
         // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
         if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }
@@ -1383,6 +1390,7 @@ final class GameSession {
             switch phase {
             case .weekDone(let summary):
                 state = summary.state
+                if capturingActedWeek, actedWeekEndState == nil { actedWeekEndState = summary.state }
                 for r in summary.results where r.isStage {
                     TrophyBook.onStage(r, state: summary.state, config: config)
                     let c = TrophyBook.smallTournamentCount(r); smallEntered += c.entered; smallWon += c.won
