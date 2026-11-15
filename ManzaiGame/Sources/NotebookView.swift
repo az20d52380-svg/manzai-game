@@ -134,6 +134,7 @@ struct NotebookView: View {
                 .padding(.horizontal, 4).padding(.vertical, 1)
                 .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1))
             Text("\(Int(s.compat.rounded()))").font(YoseFont.number(24, weight: .black)).foregroundStyle(YoseColor.sumi)   // 朱は「足りない」の色と紛れる（ui_sweep_2026-10-18 notebook）
+            Text("/ \(Int(session.config.compatCap))").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)   // 相性の上限を添える（実力の数字と尺度が違う＝visual_misc_1116・表示のみ）
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 10).padding(.vertical, 6)
