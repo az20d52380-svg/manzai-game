@@ -243,7 +243,7 @@ struct NotebookView: View {
                             .font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
                         Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 24)
-                        Text(Self.breakAtSpaces(e.title)).font(YoseFont.gothic(14, weight: .heavy))   // 大きい文字で「THE HANA 決／勝 優勝」と語の途中で折れた＝空白でだけ折る.foregroundStyle(YoseColor.sumi)
+                        Text(Self.breakAtSpaces(e.title)).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)   // 大きい文字で「THE HANA 決／勝 優勝」と語の途中で折れた＝空白でだけ折る
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
                             Text("+\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)
