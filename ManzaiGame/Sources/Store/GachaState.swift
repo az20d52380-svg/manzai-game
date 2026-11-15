@@ -50,7 +50,23 @@ struct GachaState: Codable, Equatable {
     var ledger: [String: Int] = [:]    // 購入の台帳：取引ID→付与した回数（合流は和集合＝別端末の購入が消えない・同じIDは二重に付かない）。旧データの分は固定ID "legacy" 1件
     static let legacyID = "legacy"
     var paidCredited: Int { ledger.values.reduce(0, +) }   // 付与の累計＝台帳の合計
-    var paidOpened = 0                 // 購入分を開封（回した）回数の累計（増えるだけ）
+    /// 購入分を開封（回した）回数＝端末ごとの累計（増えるだけ）。合流は端末ごとに大きい方を採る＝2台でオフラインに回しても両方の分が引かれる
+    /// （1つの数を max で合わせると、A で3・B で2 回した時に3しか引かれず残りが多く戻った＝code_review_unreviewed_1115 #1）。旧データの分は "_legacy"
+    var openedBy: [String: Int] = [:]
+    static let legacyOpenedKey = "_legacy"
+    /// この端末の印（UserDefaults だけに持つ＝iCloud で同期しない）
+    static var deviceKey: String = {
+        let k = "gachaDeviceKey"
+        if let v = UserDefaults.standard.string(forKey: k) { return v }
+        let v = UUID().uuidString
+        UserDefaults.standard.set(v, forKey: k)
+        return v
+    }()
+    /// 開封の累計（全端末の合計）。代入はこの端末の行で差を合わせる
+    var paidOpened: Int {
+        get { openedBy.values.reduce(0, +) }
+        set { openedBy[Self.deviceKey, default: 0] += newValue - paidOpened }
+    }
     /// 買ったが、まだ回していない回数＝付与−開封（旧データは付与＝旧の未開封・開封＝0 に移す）。代入は付与側で合わせる
     var paidPending: Int {
         get { max(0, paidCredited - paidOpened) }
@@ -67,12 +83,13 @@ struct GachaState: Codable, Equatable {
 
     init() {}
     private enum CodingKeys: String, CodingKey {
-        case owned, freeTickets, paidPending, paidCredited, paidOpened, ledger, shards, pity, totalPulls, loginStamps, lastLoginDay, creditedTx
+        case owned, freeTickets, paidPending, paidCredited, paidOpened, openedBy, ledger, shards, pity, totalPulls, loginStamps, lastLoginDay, creditedTx
     }
     func encode(to e: Encoder) throws {
         var c = e.container(keyedBy: CodingKeys.self)
         try c.encode(owned, forKey: .owned); try c.encode(freeTickets, forKey: .freeTickets)
-        try c.encode(ledger, forKey: .ledger); try c.encode(paidOpened, forKey: .paidOpened)
+        try c.encode(ledger, forKey: .ledger); try c.encode(paidOpened, forKey: .paidOpened)   // 合計も書く＝前の版のアプリが読んでも開封数が合う
+        try c.encode(openedBy, forKey: .openedBy)
         try c.encode(shards, forKey: .shards); try c.encode(pity, forKey: .pity); try c.encode(totalPulls, forKey: .totalPulls)
         try c.encode(loginStamps, forKey: .loginStamps); try c.encode(lastLoginDay, forKey: .lastLoginDay)
     }
@@ -85,7 +102,12 @@ struct GachaState: Codable, Equatable {
         totalPulls = try c.decodeIfPresent(Int.self, forKey: .totalPulls) ?? 0
         loginStamps = try c.decodeIfPresent(Int.self, forKey: .loginStamps) ?? 0
         lastLoginDay = try c.decodeIfPresent(String.self, forKey: .lastLoginDay) ?? ""
-        paidOpened = try c.decodeIfPresent(Int.self, forKey: .paidOpened) ?? 0
+        if let b = try c.decodeIfPresent([String: Int].self, forKey: .openedBy) {
+            openedBy = b
+        } else {   // 旧形式：開封の合計だけ → 固定の行へ
+            let n = try c.decodeIfPresent(Int.self, forKey: .paidOpened) ?? 0
+            if n > 0 { openedBy[Self.legacyOpenedKey] = n }
+        }
         if let l = try c.decodeIfPresent([String: Int].self, forKey: .ledger) {
             ledger = l
         } else {   // 旧形式：未開封の数（または付与の累計）と取引IDの一覧 → 台帳へ（旧の分は固定ID 1件）
@@ -191,7 +213,7 @@ struct GachaState: Codable, Equatable {
         // 回数は古いが札は新しい側が7枚目を取っていたら（札が減っている）、その無料1回は newer の残高に入っていないので足す
         if login.lastLoginDay > newer.lastLoginDay, login.loginStamps < newer.loginStamps { m.freeTickets += 1 }
         for (k, v) in o.ledger { m.ledger[k] = max(m.ledger[k] ?? 0, v) }   // 台帳は和集合
-        m.paidOpened = max(paidOpened, o.paidOpened)
+        for (k, v) in o.openedBy { m.openedBy[k] = max(m.openedBy[k] ?? 0, v) }   // 開封は端末ごとに大きい方（両方の端末で回した分が両方引かれる）
         return m
     }
 }
