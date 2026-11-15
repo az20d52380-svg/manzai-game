@@ -31,6 +31,7 @@ PAIRS = {
     "inviteIdeaP":          C.INVITE_IDEA_P,
     "compatInit":           B.COMPAT_INIT,
     "compatCap":            B.COMPAT_CAP,
+    "bankruptLine":         C.BANKRUPT_LINE,      # 11/15 money_audit_1115 M7
     "inviteMoney":          C.INVITE_MONEY,
     "inviteStamina":        C.INVITE_STAMINA,
     "inviteMental":         C.INVITE_MENTAL,
@@ -210,7 +211,12 @@ def check_meta_split_and_salt():
         print("?? offerCardSalt: Swift 側で既定値を読めない"); bad += 1
     elif int(m.group(1).replace("_", ""), 16) != C.OFFER_CARD_SALT:
         print(f"NG offerCardSalt: Swift {m.group(1)} / Python {hex(C.OFFER_CARD_SALT)}"); bad += 1
-    return bad, 2
+    m = re.search(r"public var roomRents\s*=\s*\[([^\]]*)\]", text)   # money_audit_1115 M7
+    if not m:
+        print("?? roomRents: Swift 側で既定値を読めない"); bad += 1
+    elif [int(x.replace("_", "")) for x in m.group(1).split(",")] != list(B.ROOM_RENT):
+        print(f"NG roomRents: Swift [{m.group(1)}] / Python {list(B.ROOM_RENT)}"); bad += 1
+    return bad, 3
 
 def main():
     sw = swift_defaults(SWIFT)
