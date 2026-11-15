@@ -298,7 +298,7 @@ struct TournamentResultView: View {
             if showHanaChamp {   // 決勝の通過＝優勝。タップで先へ
                 YoseChampionCelebrationView(tournamentName: "THE HANA 決勝", generationText: "結成\(summary.year)年目",
                                             duoName: session.combiName, prizeAmountYen: r.prize,
-                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」",
+                                            partnerName: Names.partner, partnerLine: "「\(session.hanaWinLine)」",
                                             proceedLabel: "次へ 進む") {   // HANA の後は番組エンディングもキャリアの終わりも無い＝週へ戻る
                     showHanaChamp = false; session.acknowledgeResult()
                 }

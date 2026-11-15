@@ -1177,6 +1177,13 @@ final class GameSession {
         return past.contains { $0.year == year - 1 } ? "やったね。今年も、日本一だよ" : "やったね。もう一度、日本一だよ"
     }
 
+    /// THE HANA 優勝の夜の相方の一言（初優勝・連覇・返り咲きで変える。頂GP の repeatWinLine と同じ型・「日本一」は使わない。表示専用）
+    var hanaWinLine: String {
+        let past = yearHistory.filter { $0.hanaReach == "THE HANA 優勝" && $0.year != year }
+        if past.isEmpty { return "やったね。本当に、やったね" }
+        return past.contains { $0.year == year - 1 } ? "やったね。今年も、優勝だよ" : "やったね。もう一度、優勝だよ"
+    }
+
     /// 優勝の年末の「勇退する」。ここでキャリアが終わる（セーブは消える）
     func retireAfterWin() {
         guard canChooseRetire else { return }
