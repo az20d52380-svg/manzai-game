@@ -193,6 +193,25 @@ def check_gp_loss_compat():
                 return 0, 1
     print("?? gpLossCompat: Swift 側で既定値を読めない"); return 1, 1
 
+def check_meta_split_and_salt():
+    """型注釈付きで _defaults に掛からない2個（metaStartExpSplit・offerCardSalt）を別に突き合わせる（11/15 の棚卸し）"""
+    names = {"閃き": "hirameki", "間合い": "maai", "語彙": "goi", "存在感": "sonzaikan", "胆力": "tanryoku"}
+    bad = 0
+    text = "".join(open(p, encoding="utf-8").read() for p in SWIFT)
+    m = re.search(r"public var metaStartExpSplit:[^=]*=\s*\[(.*?)\]\s*$", text, re.M)
+    if not m:
+        print("?? metaStartExpSplit: Swift 側で既定値を読めない"); bad += 1
+    else:
+        sw = {names[k]: float(v) for k, v in re.findall(r"\(\.(\w+),\s*([\d.]+)\)", m.group(1))}
+        if set(sw) != set(C.META_START_EXP_SPLIT) or any(abs(sw[k] - C.META_START_EXP_SPLIT[k]) > 1e-12 for k in sw):
+            print(f"NG metaStartExpSplit: Swift {sw} / Python {C.META_START_EXP_SPLIT}"); bad += 1
+    m = re.search(r"public var offerCardSalt:\s*UInt64\s*=\s*(0x[0-9A-Fa-f_]+)", text)
+    if not m:
+        print("?? offerCardSalt: Swift 側で既定値を読めない"); bad += 1
+    elif int(m.group(1).replace("_", ""), 16) != C.OFFER_CARD_SALT:
+        print(f"NG offerCardSalt: Swift {m.group(1)} / Python {hex(C.OFFER_CARD_SALT)}"); bad += 1
+    return bad, 2
+
 def main():
     sw = swift_defaults(SWIFT)
     bad = 0
@@ -212,6 +231,8 @@ def main():
     bad += bad_t; n_h += n_t
     bad_g, n_g = check_gp_loss_compat()
     bad += bad_g; n_h += n_g
+    bad_m, n_m = check_meta_split_and_salt()
+    bad += bad_m; n_h += n_m
     print(f"config sync: {len(PAIRS) + n_h - bad}/{len(PAIRS) + n_h} 一致")
     return 1 if bad else 0
 

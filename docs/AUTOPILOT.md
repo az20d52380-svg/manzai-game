@@ -376,3 +376,5 @@
 483. [済 11/15 定期・sonnet・docs/hana_audit_1115_v0.md] THE HANA の流れの点検＝新規2件・全部低・正典とのずれ0。①「見送る」でその年の HANA が終わる説明が入口に無い（1行足す案＝文言の判断）②カレンダーが年初に1回戦の週しか塗らない（表示のみ）。材料のみ。
 
 484. [済 11/15 定期・sonnet・docs/partner_audit_1115_v0.md] 相方との関係（相性・すれ違い・解散・先輩の誘い）の点検＝新規8件（中1・低7）・予告なしの突然の解散0・正典とのずれ0。中：すれ違いの予告は1キャリア1回だけ＝「向き合う」で下げた後は再び解散直前まで知らせが無い（案＝80を越えた週に2回目の短い知らせ・UI のみ＝文言の判断が要るので材料のみ）。直した：低の「定数の同期が7個を見ていない」→ check_config_sync に riftGain・riftWarn・inviteRate・inviteIdeaP・compatInit・compatCap と配列の gpLossCompat を足した（80→87・わざとずらして NG を出すのを確かめた）。
+
+485. [済 11/15 定期] GameConfig の定数149個の棚卸し＝定数の同期・GameCore のテスト・golden のどれにも掛からないのは3個だけ（metaStartExpSplit・offerCardSalt・netaActiveSlots）。前2個は Python 側に同じ値があるので check_config_sync に足した（87→89・ずらすと NG を確認）。netaActiveSlots は Python に対応が無い（実測機はネタの枠を数えない）＝そのまま。
