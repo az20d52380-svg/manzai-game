@@ -86,9 +86,8 @@ final class FeatureGoldenTests: XCTestCase {
                     s.riftJointWeek = (op["joint"] as? Bool) ?? false
                     _ = GameEngine.applyRiftWeekEnd(year: op["year"] as! Int, to: &s, config: config)
                 case "injury_prob":
-                    // WeekRunner.resolveAction の式と同じ部品（閾値・1点あたり・喉のケア係数・体が資本）
-                    val = (config.injuryThreshold - s.stamina) * config.injuryProbPerPoint
-                        * GameEngine.injuryProbMultiplier(state: s, config: config) * (s.has(.体が資本) ? Skill.injuryMult : 1.0)
+                    // WeekRunner.resolveAction が呼ぶのと同じ関数（テスト側に式を写さない＝skill_item_audit_1115 #4）
+                    val = GameEngine.injuryProbability(state: s, config: config)
                 default: XCTFail("unknown op \(o)")
                 }
                 let tag = "[\(name) step\(i) \(o)]"
