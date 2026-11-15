@@ -11,7 +11,7 @@ import balance_sim as B
 import sim_career as C
 
 _SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "GameCore", "Sources", "GameCore")
-SWIFT = [os.path.join(_SRC, f) for f in ("GameConfig.swift", "Calendar.swift")]  # 大会の定数は Calendar.swift
+SWIFT = [os.path.join(_SRC, f) for f in ("GameConfig.swift", "Calendar.swift", "Skill.swift")]  # Skill.swift＝特技の倍率（skill_item_audit_1115 #4）  # 大会の定数は Calendar.swift
 
 # Swift の名前 → Python の値
 PAIRS = {
@@ -35,6 +35,13 @@ PAIRS = {
     "initFame":             B.INIT_FAME,          # 11/15 fame_audit_1115 §6
     "fameOtherMult":        B.FAME_OTHER_MULT,
     "fameOtherCap":         B.FAME_OTHER_CAP,
+    "injuryMult":           B.SKILL_INJURY_MULT,  # 11/15 skill_item_audit_1115 #4（Skill.swift の static）
+    "fameMult":             B.SKILL_FAME_MULT,
+    "livingMult":           B.SKILL_LIVING_MULT,
+    "riftMult":             B.SKILL_RIFT_MULT,
+    "itemSentoRecovery":    B.ITEM_SENTO_RECOVERY,
+    "itemRecorderBonus":    B.ITEM_RECORDER_BONUS,
+    "itemStudioBonus":      B.ITEM_STUDIO_BONUS,
     "inviteMoney":          C.INVITE_MONEY,
     "inviteStamina":        C.INVITE_STAMINA,
     "inviteMental":         C.INVITE_MENTAL,
