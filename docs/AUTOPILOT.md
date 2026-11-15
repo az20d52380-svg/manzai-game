@@ -30,6 +30,7 @@
 - 後半の年の目視（10/26〜）：`MZ_YEARS` が 5 以上だと素の台本は途中で解散する＝`MZ_CARE=1` を足す（331535b から MZ_CARE もネタが無い週はネタを書く。能力は器で止まり G のままになりがち＝台本の癖）。撮影は `MZ_NOCHIP=1`（DEBUG の🏆/💪チップが実力カードに被る）。MZ_STOPWEEK を付けると週が2以上になり、作り直し型のフック（calendar・shop・allocate 等）もその年のまま開く（later_years_visual_1026_v0）。
 - 年末の目視の注意（10/27〜）：`MZ_UI=yearend` は debugPlayToEnd（バイトと休みの交互）で走り MZ_CARE は効かない＝週の画面（debugFreeWeek）と数値が合わないのは別走行のため（docs/fame_gap_y7_1027_v0.md）。年末の「G▶G」もこの台本の癖。
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
+- THE HANA の目視（11/16〜）：HANA に出るのは女女だけ＝`MZ_KIND=femaleFemale`（femaleMale は男女コンビで出ない）。結果画面は `MZ_UI=hana_result`（MZ_PASS=0 で敗退）・`hana_video`・`hana_entry`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
 - sim の設定を外から書く時（11/10 事故）：`xcrun simctl spawn <UDID> defaults write <データ容器>/Library/Preferences/<bundle> …` だけを使う。mac 側の defaults で容器の plist を触ると sim の設定の書き込みが全部失敗する（直すには iPhone 17 を shutdown→boot）。
@@ -461,3 +462,5 @@
 545. [済 11/16 定期・sonnet・docs/visual_y5f_1116_v0.md] 5年目・femaleMale の目視＝崩れ・文字切れ・年数の食い違い0。中「THE HANA が出ない」は女女だけが対象の仕様（526 の「HANA の経路」は誤りと訂正）・年初の一言は第1週だけのトースト＝直す所なし。次：THE HANA の経路は MZ_KIND=femaleFemale で soak と目視をやり直す。
 
 546. [済 11/16 定期・sonnet・docs/hana_visual_soak_1116_v0.md] 女女（THE HANA の経路）1年目の目視7枚＋本体 soak 7分（317〜335MB 横ばい・落ちず・クラッシュログ 1→1）＝高0／中1／低5。中＝1年目の年末に HANA の成績が出ない→候補 claude/yearend-hana-line-cand（d10e10dfe）を作って判断待ちへ（decision_brief 11/16 定期）。
+
+547. [済 11/16 定期] THE HANA の結果画面（MZ_UI=hana_result・本体）を1枚＝崩れなし。常設の作業に HANA の目視の注意（女女だけ・フック名）を足した。
