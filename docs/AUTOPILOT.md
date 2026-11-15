@@ -476,3 +476,5 @@
 552. [済 11/16 定期] check_candidates：新しい候補3本（yearend-hana-line・gacha-opened-per-device・gacha-login-future-day）は本体と ok・候補どうしの衝突は pbxproj だけ（既知の型）。
 
 553. [済 11/16 定期] 候補 yearend-hana-line を大きい文字で目視＝収まる。
+
+554. [済 11/16 定期・sonnet・docs/code_review_unaudited_1116_v0.md] 11/09 以降の点検で触れていないファイル（YoseComponents・WaIcons・EventBackdropTable・StoreIDs 等）のコード点検＝高中0・低4。WaIcon が未使用（並べるだけ）・ほかは直す所なし。
