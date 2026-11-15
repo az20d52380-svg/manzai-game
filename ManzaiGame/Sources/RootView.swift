@@ -393,7 +393,7 @@ struct RootView: View {
         let st = session.state
         let power = Int(GameEngine.jitsuryoku(st, config: session.config).rounded())   // 手帳・週メインと同じ「実力」（19l §1-1）
         yearTurn = YearTurnSummary(combiName: session.combiName, previousYear: session.year, newYear: session.year + 1,
-                                   power: power, fame: Int(st.fame.rounded()), money: st.money, netaCount: st.netas.count,
+                                   power: power, fame: Int(st.fame.rounded(.down)), money: st.money, netaCount: st.netas.count,
                                    maxStamina: Int(session.config.initStamina))
     }
 

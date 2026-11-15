@@ -1406,7 +1406,7 @@ struct WeekMainView: View {
     private var botbar: some View {
         VStack(spacing: 0) {
             YoseVitalMoneyBar(stamina: Int(s.stamina.rounded()), maxStamina: 100, money: s.money,
-                              fame: Int(s.fame.rounded()),
+                              fame: Int(s.fame.rounded(.down)),
                               staminaColor: s.stamina <= 40 ? YoseColor.shu : Color(hex: 0x3B7A4E))
                 .opacity(gaugeFlash ? 0.5 : 1)
                 .onChange(of: staminaZone) { old, new in

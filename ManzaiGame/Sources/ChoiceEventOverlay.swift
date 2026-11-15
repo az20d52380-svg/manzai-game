@@ -99,7 +99,7 @@ struct ChoiceEventOverlay: View {
             footer
             // 体力・知名度・所持金の黒帯（選んだ結果がどこに効くかの基準を常に見せる）
             YoseVitalMoneyBar(stamina: Int(session.state.stamina.rounded()), maxStamina: 100, money: session.state.money,
-                              fame: Int(session.state.fame.rounded()))
+                              fame: Int(session.state.fame.rounded(.down)))
                 .background(YoseColor.kuroUrushi.ignoresSafeArea(edges: .bottom))
         }
         .background(YoseColor.kinari.ignoresSafeArea())

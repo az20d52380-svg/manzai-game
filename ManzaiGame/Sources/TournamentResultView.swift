@@ -530,7 +530,7 @@ struct TournamentResultView: View {
                             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
                     }
                     if hasFame {
-                        Text("知名度 \(Int(summary.state.fame.rounded()))").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
+                        Text("知名度 \(Int(summary.state.fame.rounded(.down)))").font(YoseFont.numMedium).foregroundStyle(YoseColor.sumi)
                         YoseTag(text: "↑ +\(Int(session.lastResultFameDelta.rounded()))", style: .outlineShu)
                     }
                 }
