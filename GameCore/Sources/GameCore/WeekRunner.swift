@@ -339,7 +339,7 @@ public struct WeekRunner<R: RandomSource> {
         default: risky = false
         }
         if risky, state.stamina < config.injuryThreshold,
-           rng.nextUniform() < (config.injuryThreshold - state.stamina) * config.injuryProbPerPoint * GameEngine.injuryProbMultiplier(state: state, config: config) * (state.has(.体が資本) ? Skill.injuryMult : 1.0) {
+           rng.nextUniform() < GameEngine.injuryProbability(state: state, config: config) {
             action = .rest(.完全休養)                    // 体調ダウン発生（「喉をやられた」等）
             state.recoveryWeeks = config.injuryRestWeeks - 1
             GameEngine.add(.ability(.メンタル), config.injuryMentalHit, to: &state, config: config)
@@ -565,6 +565,7 @@ public struct WeekRunner<R: RandomSource> {
         guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
         state.archivedNetas.append(state.netas.remove(at: i))
         if state.selectedNetaID == id { state.selectedNetaID = nil }
+        if state.selectedNetaID2 == id { state.selectedNetaID2 = nil }   // 決勝の2本目も外す（しまったネタの id が残って、呼び戻すと選択が復活していた・gamecore_boundary_audit_1115 1-2本目）。点数は同じ（無い id は2本目なし扱いだった）
     }
 
     /// 保管庫→アクティブ枠へ呼び戻す（古いネタの再演・v2 §2-2/§4-2）。
