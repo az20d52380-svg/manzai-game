@@ -75,6 +75,8 @@ struct WeekMainView: View {
     @State private var lastBeatWeek: [String: Int] = [:]
     /// 「年末へ」の二度押し確認（監査A-03）
     @State private var yearEndArmed = false
+    @State private var yearEndArmedAt = Date.distantPast   // 確認を読まずのダブルタップで素通りしない（double_tap_audit_1115 #3）
+    @State private var offerArmedAt = Date.distantPast      // 同 #4
     /// オファーを受ける前の二度押し確認（誤タップ事故＝playtest_v6 W31〜W34）
     @State private var offerArmed = false
     @State private var offerArmGen = 0   // 古い3秒の時計が、選び直して押し直した後の「もう一度」を早く消さないための番号
@@ -915,12 +917,14 @@ struct WeekMainView: View {
             }
             if case .acceptOffer = v.action, !offerArmed {
                 offerArmed = true
+                offerArmedAt = Date()
                 offerArmGen += 1
                 let gen = offerArmGen
                 showToast("もう一度押すと、このオファーを受ける。")
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); if offerArmGen == gen { offerArmed = false } }
                 return
             }
+            if case .acceptOffer = v.action, Date().timeIntervalSince(offerArmedAt) < 0.4 { return }
             offerArmed = false
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
@@ -1602,10 +1606,12 @@ struct WeekMainView: View {
         Button { tapOrQueue {
             if burstHold || session.pendingChoiceEvent != nil { return }
             if yearEndArmed {
+                guard Date().timeIntervalSince(yearEndArmedAt) >= 0.4 else { return }
                 yearEndArmed = false
                 session.fastForwardToYearEnd()
             } else {
                 yearEndArmed = true
+                yearEndArmedAt = Date()
                 showToast("もう一度押すと、残りの週を休んで年末の結果へ進む。")
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
             }
