@@ -251,12 +251,12 @@ struct TournamentEntryView: View {
         }
     }
 
-    /// 出場ボタン（物理ボタン。費用は交通費＋エントリー費の合計・B13）。払えない時は押せない表示で理由を出す
     /// 最後の「・」を改行に（無ければそのまま）
     static func breakAtLastDot(_ s: String) -> String {
         guard let r = s.range(of: "・", options: .backwards) else { return s }
         return s.replacingCharacters(in: r, with: "\n")
     }
+    /// 出場ボタン（物理ボタン。費用は交通費＋エントリー費の合計・B13）。払えない時は押せない表示で理由を出す
     private func entryButton(_ title: String, glyph: String, sub: String, enabled: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: { if enabled { action() } }) {
             HStack(spacing: 12) {
