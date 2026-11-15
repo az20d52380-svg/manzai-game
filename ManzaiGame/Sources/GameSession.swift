@@ -1429,6 +1429,8 @@ final class GameSession {
                     if outcome.bankrupt || outcome.dissolved {
                         let rs = runner.snapshot().weekResults
                         if !rs.isEmpty {
+                            // 同じ週のトロフィーも weekDone と同じく渡す（trophy_meta_audit_1115 #3・年末の再入はこの guard で1回だけ）
+                            for r in rs where r.isStage { TrophyBook.onStage(r, state: runner.state, config: config) }
                             log.append(summarize(WeekSummary(year: runner.year, week: runner.week, results: rs, state: runner.state)))
                             totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
                         }
