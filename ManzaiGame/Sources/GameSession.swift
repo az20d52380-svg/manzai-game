@@ -295,7 +295,8 @@ final class GameSession {
                 self.finished = true
             }
         }
-        self.pendingResult = save.pendingResult
+        // 結果画面は results の最後を必ず読む＝壊れた・空の結果がセーブから来たら出さない（crash_audit_1115 #1）
+        self.pendingResult = (save.pendingResult?.results.isEmpty ?? true) ? nil : save.pendingResult
         self.log = save.log
         self.lossStreak = save.lossStreak
         self.justPassedStage = save.justPassedStage
