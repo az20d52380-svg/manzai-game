@@ -390,6 +390,7 @@ final class GameSession {
         default: weeksWithoutPartner += 1
         }
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
+        if state.preoccupiedWeeks > 0 { categoryLog[week] = .offer }   // 撮影・出張で拘束された週は日程表の判子を「仕」に（表示のみ・calendar_audit_1115 低-3 ②）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
