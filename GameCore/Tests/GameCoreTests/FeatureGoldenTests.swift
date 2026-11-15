@@ -86,9 +86,8 @@ final class FeatureGoldenTests: XCTestCase {
                     s.riftJointWeek = (op["joint"] as? Bool) ?? false
                     _ = GameEngine.applyRiftWeekEnd(year: op["year"] as! Int, to: &s, config: config)
                 case "injury_prob":
-                    // WeekRunner.resolveAction の式と同じ部品（閾値・1点あたり・喉のケア係数・体が資本）
-                    val = (config.injuryThreshold - s.stamina) * config.injuryProbPerPoint
-                        * GameEngine.injuryProbMultiplier(state: s, config: config) * (s.has(.体が資本) ? Skill.injuryMult : 1.0)
+                    // WeekRunner.resolveAction が呼ぶのと同じ関数（テスト側に式を写さない＝skill_item_audit_1115 #4）
+                    val = GameEngine.injuryProbability(state: s, config: config)
                 default: XCTFail("unknown op \(o)")
                 }
                 let tag = "[\(name) step\(i) \(o)]"
@@ -152,7 +151,7 @@ final class FeatureGoldenTests: XCTestCase {
     func testNetaGrowGolden() throws {
         let scripts = try XCTUnwrap(try loadExt()["neta_grow"] as? [[String: Any]])
         let config = GameConfig()
-        let places: [String: Training] = ["喫茶店で書く": .喫茶店で書く, "ファミレスで書く": .ファミレスで書く]
+        let places: [String: Training] = ["ネタ作り": .ネタ作り, "喫茶店で書く": .喫茶店で書く, "ファミレスで書く": .ファミレスで書く, "ネタ見せ会": .ネタ見せ会, "フリーライブ": .フリーライブ]
         for sc in scripts {
             let name = sc["name"] as! String
             var s = GameState(config: config)
@@ -171,12 +170,13 @@ final class FeatureGoldenTests: XCTestCase {
                 let idx = (st["idx"] as! NSNumber).intValue
                 if st["ev"] as! String == "new" {
                     _ = r.applyNetaCreate(kata: .王道しゃべくり, lengthFit: [.中尺], name: "n")
-                } else if tr == "ネタ見せ会" || tr == "フリーライブ" {
-                    r.applyNetaLive(id: r.state.netas[idx].id, hard: tr == "ネタ見せ会")
-                } else if tr == "ネタ作り" {
-                    r.applyNetaRevise(id: r.state.netas[idx].id)
                 } else {
-                    r.applyNetaRevise(id: r.state.netas[idx].id, gain: config.netaPlaceGain[places[tr]!])
+                    // 稽古→ネタの対応はアプリと同じ GameConfig.netaWork を通す（テスト側に写さない＝test_formula_copies_1115 #6）
+                    switch config.netaWork(for: places[tr]!) {
+                    case .write(let gain)?: r.applyNetaRevise(id: r.state.netas[idx].id, gain: gain)
+                    case .live(let hard)?: r.applyNetaLive(id: r.state.netas[idx].id, hard: hard)
+                    case nil: XCTFail("ネタに効かない稽古 \(tr)")
+                    }
                 }
                 let tag = "[\(name) step\(i) \(tr)]"
                 let pol = (st["polish"] as! [NSNumber]).map { $0.doubleValue }
