@@ -1066,14 +1066,18 @@ struct WeekMainView: View {
         let effects = (gated || !v.affordable) ? [] : cardEffects(v, after: after)
         let moneyDelta = after.money - s.money
         var stamDelta = Int(after.stamina.rounded()) - Int(s.stamina.rounded())
-        if case .rest(let r) = v.action, let rec = session.config.rests[r]?.recovery {   // 回復量は体力が満タンでも数字で見せる
+        var restFull = false
+        if case .rest(let r) = v.action, let rec = session.config.rests[r]?.recovery {   // 回復量（候補 rest-cap-preview：上限で止まる分は下で削る）
             // 部屋の上乗せ・銭湯の回数券も GameEngine.applyRest と同じく足す（code_review_2026-10-19j §2）
             let room = s.room ?? 0
             let roomHeal = (room > 0 && (r == .完全休養 || r == .気分転換) && room < session.config.roomHeals.count) ? session.config.roomHeals[room] : 0
             let ticket = (s.sentoTickets ?? 0) > 0 ? session.config.itemSentoRecovery : 0
             stamDelta = Int((rec + roomHeal + ticket).rounded())
+            // 候補 rest-cap-preview（decision_brief 11/15・preview_audit_1115 N2）：上限100で止まる分は出さない＝実際に回復する量。満タンなら「体力は満タン」
+            stamDelta = min(stamDelta, max(0, 100 - Int(s.stamina.rounded())))
+            restFull = stamDelta == 0
         }
-        if !v.affordable { stamDelta = 0 }   // 払えない札は何も起きない＝休養に差し替えた見積もりの「体力 +」を出さない（§1）
+        if !v.affordable { stamDelta = 0; restFull = false }   // 払えない札は何も起きない＝休養に差し替えた見積もりの「体力 +」を出さない（§1）
         let tint = cardTint(v)
         let iconBox = Image(systemName: v.glyph)
             .font(.system(size: Font.mzScaled(compact ? 12 : 14), weight: .bold)).foregroundStyle(YoseColor.kinari)
@@ -1122,7 +1126,7 @@ struct WeekMainView: View {
                 Spacer(minLength: 0)   // 消費（お金・体力）はカードの最下段へ揃える（隣のカードと同じ高さに並ぶ）
                 HStack(spacing: 4) {
                     if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
-                    if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                    if stamDelta != 0 || restFull { staminaPill(stamDelta, insufficient: gated) }
                 }
             }
         }
@@ -1136,13 +1140,13 @@ struct WeekMainView: View {
                             ForEach(effects, id: \.text) { effectPill($0).fixedSize() }
                             Spacer(minLength: 4)
                             if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
-                            if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                            if stamDelta != 0 || restFull { staminaPill(stamDelta, insufficient: gated) }
                         }
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 4) { ForEach(effects, id: \.text) { effectPill($0).fixedSize() } }
                             HStack(spacing: 4) {
                                 if moneyDelta != 0 { costPill(money: moneyDelta, insufficient: !v.affordable) }
-                                if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                                if stamDelta != 0 || restFull { staminaPill(stamDelta, insufficient: gated) }
                             }
                         }
                     }
@@ -1165,7 +1169,7 @@ struct WeekMainView: View {
                                     .foregroundStyle(moneyDelta > 0 ? YoseColor.sumi : YoseColor.shu)
                             }
                         }
-                        if stamDelta != 0 { staminaPill(stamDelta, insufficient: gated) }
+                        if stamDelta != 0 || restFull { staminaPill(stamDelta, insufficient: gated) }
                     }
                 }
             } else {
@@ -1390,8 +1394,8 @@ struct WeekMainView: View {
     }
 
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {
-        let up = delta > 0
-        return Text("体力 \(up ? "+" : "")\(delta)")
+        let up = delta >= 0   // 0＝休みの札で満タン（rest-cap-preview）
+        return Text(delta == 0 ? "体力は満タン" : "体力 \(up ? "+" : "")\(delta)")
             .font(YoseFont.gothic(12, weight: .heavy)).lineLimit(1).fixedSize()
             .foregroundStyle(insufficient ? YoseColor.kinari : (up ? YoseColor.tokiwa : YoseColor.sumi))
             .padding(.horizontal, 5).padding(.vertical, 2)
