@@ -100,6 +100,19 @@ final class CoverageUTests: XCTestCase {
         XCTAssertTrue(r.state.archivedNetas.isEmpty)
     }
 
+    func testRetireClearsSecondSelection() {   // gamecore_boundary_audit_1115：しまった2本目の選択が残って呼び戻しで復活しない
+        var r = withNeta()
+        let id2 = r.applyNetaCreate(kata: .瞬発, lengthFit: [.短尺], name: "m")
+        r.applyNetaSelect(id: 0)
+        r.applyNetaSelect2(id: id2)
+        XCTAssertEqual(r.state.selectedNetaID2, id2)
+        r.applyNetaRetire(id: id2)
+        XCTAssertNil(r.state.selectedNetaID2)
+        XCTAssertEqual(r.state.selectedNetaID, 0)
+        r.applyNetaRecall(id: id2)
+        XCTAssertNil(r.state.selectedNetaID2)
+    }
+
     func testRetireClearsOnlyMatchingSelection() {
         var r = withNeta()
         let id2 = r.applyNetaCreate(kata: .瞬発, lengthFit: [.短尺], name: "m")
