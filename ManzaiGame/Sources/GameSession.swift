@@ -599,11 +599,7 @@ final class GameSession {
         // 目視用：MZ_NOEVENT=1 で選択イベントを発火させない（MZ_UI=grown が起動直後にイベントで隠れた）。本導線は不変
         if ProcessInfo.processInfo.environment["MZ_NOEVENT"] != nil { return }
         #endif
-        if state.riftWarned == true, !didFireRiftWarn {
-            // 0050: 週末に riftWarned が初めて true になった週の次の週頭（決定的フラグ・抽選なし・キャリア1回）
-            pendingChoiceEvent = .riftWarning
-            didFireRiftWarn = true
-        } else if justLostStage, !didFireLostRehearsal {
+        if justLostStage, !didFireLostRehearsal {
             pendingChoiceEvent = .justLostRehearsal
             didFireLostRehearsal = true
         } else if lossStreak >= 3, !styleTalkDone {
@@ -615,6 +611,11 @@ final class GameSession {
         } else if !didFireEve, let m = nextMilestoneForEvent(), m.week - week == 1, m.highStakes, !(state.femaleCombo == true && m.week == config.calendar.hanaTournaments.first?.week) {   // 動画審査は舞台に立たない＝「明日、駅で」の前夜は出さない
             pendingChoiceEvent = .preTournamentEve
             didFireEve = true
+        } else if state.riftWarned == true, !didFireRiftWarn {
+            // 0050: 週末に riftWarned が初めて true になった週の次の週頭（決定的フラグ・抽選なし・キャリア1回）。
+            // 候補 rift-defer（notice_priority_audit_1115 N1）：その週しか出せない負けた後・通過の分かれ道・前夜を先に＝予告は印が消えないので次の週に出る
+            pendingChoiceEvent = .riftWarning
+            didFireRiftWarn = true
         } else if !didFireEarlyFormality, year == 1, week >= 3, week < 15, state.compat <= 7 {   // 結成初期＝1年目だけ
             pendingChoiceEvent = .earlyFormality
         } else if !didFireTsuukaChoice, state.compat >= 15 {
