@@ -326,7 +326,7 @@ struct WeekMainView: View {
             guard stampPlayedKey != stampKey else { weekStampVisible = false; return }   // 札の途中で覆いを開いて取り消された時も、戻ったら札を消す（review_fixes_1115 1-1）
             stampPlayedKey = stampKey
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
-            withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
+            withAnimation(Theme.Motion.r(Theme.Motion.emphSpring)) { weekStampVisible = true }   // 視差を減らす時は跳ねない（settings_leak_audit_1115）
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
             if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
@@ -1225,7 +1225,7 @@ struct WeekMainView: View {
                     .opacity(burstVisible ? 1 : 0)
                     .offset(y: burstVisible ? 0 : 16)
                     .scaleEffect(burstVisible ? 1 : 0.7, anchor: .bottomTrailing)
-                    .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.07), value: burstVisible)
+                    .animation(Theme.Motion.r(Theme.Motion.emphSpring.delay(Double(i) * 0.07)), value: burstVisible)
             }
         }
     }
