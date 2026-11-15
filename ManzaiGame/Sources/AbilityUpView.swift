@@ -118,6 +118,8 @@ struct AbilityUpView: View {
                 skillToLearn = nil
             }
             Button("やめる", role: .cancel) { skillToLearn = nil }
+        } message: {
+            if !taps.isEmpty { Text("押した能力アップも、ここで一緒に確定する。") }   // 黙って確定しない（abilityup_audit_1115 #1）
         }
     }
 

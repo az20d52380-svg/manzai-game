@@ -130,12 +130,13 @@ struct CalendarView: View {
     private var legend: some View {
         VStack(spacing: 6) {
         HStack(spacing: 12) {
-            ForEach([BandCategory.keiko, .baito, .kaifuku], id: \.label) { cat in
+            ForEach([BandCategory.keiko, .baito, .kaifuku, .offer], id: \.label) { cat in   // 「仕」（オファーを受けた週）も凡例に（calendar_audit_1115 低-3 ①）
                 HStack(spacing: 4) {
                     Text(cat.label.prefix(1)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                         .frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                     Text(cat.label)
                 }
+                .accessibilityElement(children: .ignore).accessibilityLabel("「\(cat.label.prefix(1))」は\(cat.label)の週")   // 記号と名前を2回読まない（voiceover_audit_1115 N2）
             }
             HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
             HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
