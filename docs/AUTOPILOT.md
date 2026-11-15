@@ -358,3 +358,4 @@
 605. [済 11/16 夜 定期] decision_brief 11/15「すれ違いの予告が1回だけ」の推奨②の候補 claude/rift-again-hint-cand（8fef48331）＝週の上の一言（すれ違いは相方と会わない週だけでなく相性が伸びない週にも増える＝既存の「最近、相方とゆっくり話していない」では拾い切れない）。テスト3本・アプリ 442 green。
 606. [済 11/16 夜 定期] まとめの枝 claude/eve-1116-bundle-cand を11本で作り直し（87f9852ae・rift-defer と rift-again-hint を足した・衝突なし・GameCore 479／アプリ 446 green）。
 607. [済 11/16 夜 定期] まとめの枝 eve-1116-bundle（87f9852ae）の soak 8分＝312〜332MB 横ばい・落ちず・クラッシュログ 0→0。文の長さ（text_lens）＝元の最長を超えた文 0。
+608. [済 11/16 夜 定期] decision_brief 11/15「新幹線回数券は元が取れない」の案②の候補 claude/ticket-stamina-text-cand（3ee63da2c）＝札の文だけ（GameConfig の summary・数値不変・config sync 一致）。お店の下の方＝目視は未（お店の下へ送るフックが無い）。
