@@ -155,8 +155,22 @@ struct GachaState: Codable, Equatable {
         let c = calendar.dateComponents([.year, .month, .day], from: d)
         return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
     }
-    /// 今日の札をもらえるか（日付が戻された時はもらえない）
-    func canClaimLogin(today: String) -> Bool { today > lastLoginDay }
+    /// 今日の札をもらえるか（日付が戻された時はもらえない）。
+    /// ただし最後の日が今日の翌日より先（端末の日付を一度未来へ進めて取った・その端末と合流した）なら、その日は無かったものとしてもらえる
+    /// （前は以後ずっと取れなくなった＝code_review_unreviewed_1115 #2。時差の1日は許す）
+    func canClaimLogin(today: String) -> Bool {
+        if today > lastLoginDay { return true }
+        guard let tomorrow = Self.nextDayKey(today) else { return false }
+        return lastLoginDay > tomorrow
+    }
+    /// "yyyy-MM-dd" の翌日（グレゴリオ暦・UTC で数える＝端末の暦に左右されない）
+    static func nextDayKey(_ key: String) -> String? {
+        var cal = Calendar(identifier: .gregorian); cal.timeZone = TimeZone(identifier: "UTC")!
+        let p = key.split(separator: "-").compactMap { Int($0) }
+        guard p.count == 3, let d = cal.date(from: DateComponents(year: p[0], month: p[1], day: p[2])),
+              let n = cal.date(byAdding: .day, value: 1, to: d) else { return nil }
+        return dayKey(n, calendar: cal)
+    }
     /// 札を1枚もらう。もらえたら true。札がたまったら無料1回に替わる
     @discardableResult
     mutating func claimLogin(today: String) -> Bool {
