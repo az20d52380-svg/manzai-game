@@ -49,7 +49,11 @@ struct ShareCardButton: View {
                         .font(YoseFont.gothic(14, weight: .heavy))
                 }
             } else {
-                Color.clear.frame(width: 1, height: 1)
+                // 画像ができるまでも同じ大きさの枠を取っておく（後から出て下のボタンがずれていた＝share_card_audit_1115 中）
+                Label("共有", systemImage: "square.and.arrow.up")
+                    .font(YoseFont.gothic(14, weight: .heavy))
+                    .hidden()
+                    .accessibilityHidden(true)
             }
         }
         .task(id: "\(combiName)|\(headline)|\(detail ?? "")") {
