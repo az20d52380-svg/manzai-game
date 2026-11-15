@@ -565,6 +565,7 @@ public struct WeekRunner<R: RandomSource> {
         guard let i = state.netas.firstIndex(where: { $0.id == id }) else { return }
         state.archivedNetas.append(state.netas.remove(at: i))
         if state.selectedNetaID == id { state.selectedNetaID = nil }
+        if state.selectedNetaID2 == id { state.selectedNetaID2 = nil }   // 決勝の2本目も外す（しまったネタの id が残って、呼び戻すと選択が復活していた・gamecore_boundary_audit_1115 1-2本目）。点数は同じ（無い id は2本目なし扱いだった）
     }
 
     /// 保管庫→アクティブ枠へ呼び戻す（古いネタの再演・v2 §2-2/§4-2）。
