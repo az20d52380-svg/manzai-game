@@ -533,3 +533,5 @@
 581. [済 11/16 夜 定期] 最大の文字（accessibility-XXXL）で `MZ_UI=hana_entry` を目視＝「動画を送る／舞台には立たない・結果は後日／エントリー費 ¥2,000」は3行で切れず収まる（「…」なし）＝直す所なし。（元の文）（580 の中）大会の入口の説明（b141e9759 の「・」改行）を accessibility-large より大きい文字で1枚目視＝「…」で切れるなら lineLimit を外すか縮小を足す（表示のみ）。
 
 582. [済 11/16 夜 定期] 580 の再発止め：GameCore に SwallowedModifierTests（アプリのソースの行末コメントの中に「語.foregroundStyle(」等の修飾子が続く形を検出）。3df73f32a の版で YearResultView.swift:293 を検出することを確認・今の本体は0件・GameCore 475 green。
+
+583. [済 11/16 夜 定期] 582 の検査を全候補ブランチにも当てた＝本物の新規は claude/notebook-full-exp-cand の NotebookView.swift:75（経験点の説明の文字色が消えていた）＝候補で直した（3be813489・ビルド OK）。all-bundles-1109 など7本の NotebookView:240 は 055f3f667 の取り込み分＝本体を取り込めば直る。q6-save-until-ending／q9-rent-peak／the-hana-candidate の S6bView:190 は本体で 10/27 に直した古い版（3週間前の候補）＝記録のみ。
