@@ -693,6 +693,7 @@ cd GameCore && swift test
 - `abilityup_audit_1115_v0.md` — 能力アップ画面 振り分け点検（11/15・コード読みのみ・実行なし）
 - `calendar_audit_1115_v0.md` — 日程表・カレンダーの表示のコード点検（11/15・読むだけ・コードは直していない）
 - `notebook_intro_ending_audit_1115_v0.md` — 手帳・導入・エンディングのコード点検（11/15・7件全部低・落ちる所なし）
+- `qualifier_finals_intro_audit_1115_v0.md` — 予選の知らせ・初舞台・決勝進出の発表・決勝の導入のコード点検（11/15・4件全部低）
 - `cancelled_sleep_audit_1115_v0.md` — 取り消された sleep の後の副作用 点検（2026-11-15・読むだけ・コード未変更）
 - `choice_effect_audit_1115_v0.md` — 選択肢イベントの「札・文」と実際の効果の食い違い点検（11/15・読むだけ）
 - `choice_gate_audit_1115_v0.md` — 選択肢イベントの「押せる選択肢が0」点検（11/15・読むだけ）
