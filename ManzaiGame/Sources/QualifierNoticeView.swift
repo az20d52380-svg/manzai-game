@@ -36,8 +36,8 @@ struct QualifierNoticeView: View {
         let mobs = FinalsData.yearRoster(year: Self.rosterSeed(year: year, roundName: roundName), selfName: combiName, count: passed ? n - 1 : n)
         var arr = mobs
         if passed { arr.append(combiName) }
-        let selfY = combiName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? combiName
-        return arr.sorted { (FinalistAnnounceView.yomi[$0] ?? selfY) < (FinalistAnnounceView.yomi[$1] ?? selfY) }
+        return FinalistAnnounceView.ordered(arr, isSelf: { passed && $0 == combiName }, yomi: { FinalistAnnounceView.yomi[$0] ?? $0 },
+                                            selfName: combiName, seed: Self.rosterSeed(year: year, roundName: roundName))   // 候補 self-order
     }
 
     /// 一覧の顔ぶれの種（表示専用・ゲームの乱数は使わない）。回戦の名前の文字コードの和で分ける＝「GP1回戦」「GP2回戦」「GP3回戦」（どれも5文字）が同じ顔ぶれにならない（qualifier_finals_intro_audit_1115 低-1）
