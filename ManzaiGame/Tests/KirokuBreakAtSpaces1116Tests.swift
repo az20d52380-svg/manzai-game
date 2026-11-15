@@ -12,4 +12,8 @@ final class KirokuBreakAtSpaces1116Tests: XCTestCase {
         let long = "優勝「ひだまり座」（客席から）"
         XCTAssertEqual(NotebookView.breakAtSpaces("頂GP 決勝 " + long), "頂\u{2060}G\u{2060}P 決\u{2060}勝 " + long)
     }
+    func testEntrySubBreaksAtLastDot() {
+        XCTAssertEqual(TournamentEntryView.breakAtLastDot("舞台には立たない・結果は後日・エントリー費 ¥2,000"), "舞台には立たない・結果は後日\nエントリー費 ¥2,000")
+        XCTAssertEqual(TournamentEntryView.breakAtLastDot("残高不足で出られない"), "残高不足で出られない")
+    }
 }
