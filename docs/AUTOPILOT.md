@@ -57,7 +57,7 @@
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
-- 【アプリのテスト確認待ち】11/15 夕の定期の回：d7878b45f（大きい文字で日程表の凡例を2行に折る・表示のみ・ビルド OK・目視済・GameCore 474 green）。アプリのテストは同時に動いた別のセッションの xcodebuild に3回切られ「失敗0のまま TEST FAILED」＝次の回が `xcodebuild test` で green を確かめる（赤なら CalendarView の ViewThatFits を疑う）。この回は 513〜530（直し9・候補3〔calendar-gp-paint に中-2・notebook-full-exp・week-hint-priority 取り込み直し〕・点検4本・実測1本・候補80本の取り込み直し）。
+- 【済 11/15 夜の定期：7e2bd9314 でアプリ 436 TEST SUCCEEDED】11/15 夕の定期の回：d7878b45f（大きい文字で日程表の凡例を2行に折る・表示のみ・ビルド OK・目視済・GameCore 474 green）。アプリのテストは同時に動いた別のセッションの xcodebuild に3回切られ「失敗0のまま TEST FAILED」＝次の回が `xcodebuild test` で green を確かめる（赤なら CalendarView の ViewThatFits を疑う）。この回は 513〜530（直し9・候補3〔calendar-gp-paint に中-2・notebook-full-exp・week-hint-priority 取り込み直し〕・点検4本・実測1本・候補80本の取り込み直し）。
 - なし（11/15 昼の定期の回の終わり時点＝5時間枠96%。途中の作業なし・本体 626b01d16 で GameCore 474／アプリ 420 green・候補は全部本体と ok。この回は 474〜512＝点検18本・直し19本・試し版4本〔debt-next-pay-warn・fame-floor-display・choice-money-chip・practice-outfit〕＋calendar-gp-paint に追加・定数の同期 80→103・判断待ちは decision_brief_2026-11-08 の「11/15 定期」の行）。
 
 - 【タップ確認待ち】お店で「引っ越し→何か買う→戻す」で部屋が戻らないこと（code_review_2026-10-19 §1-1 の修正・定期の回はタップ不可）。10/26：同じ手順を session で再現するテスト ShopUndoRoomTests を足した（理屈は green・残りはボタンを押しての見た目だけ）。
