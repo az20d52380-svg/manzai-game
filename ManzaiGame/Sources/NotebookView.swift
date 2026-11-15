@@ -154,9 +154,15 @@ struct NotebookView: View {
 
     // MARK: きろく（大会履歴＋称号）
 
-    /// 空白で区切った短い語（8字以下）の中では折らない（字の間に U+2060 を挟む）。長い語（「優勝「◯◯」（客席から）」）は今までどおり途中で折れる＝行が増えない
+    /// 空白・「「」「（」の前でだけ折る（区切りの間の8字以下のかたまりは字の間に U+2060 を挟む）。
+    /// 例「頂GP 決勝 優勝「ひだまり座」（客席から）」は「優勝」「「ひだまり座」」「（客席から）」の間で折れ、名前の途中では折れない
     static func breakAtSpaces(_ s: String) -> String {
-        s.split(separator: " ", omittingEmptySubsequences: false).map { $0.count <= 8 ? $0.map(String.init).joined(separator: "\u{2060}") : String($0) }.joined(separator: " ")
+        s.split(separator: " ", omittingEmptySubsequences: false).map { word -> String in
+            var pieces: [String] = [], cur = ""
+            for c in word { if (c == "「" || c == "（") && !cur.isEmpty && cur != "「" { pieces.append(cur); cur = "" }; cur.append(c) }
+            pieces.append(cur)
+            return pieces.map { $0.count <= 8 ? $0.map(String.init).joined(separator: "\u{2060}") : $0 }.joined()
+        }.joined(separator: " ")
     }
     private struct LogEntry: Hashable { let week: String; let title: String; let mark: String; let prize: Int }
 
