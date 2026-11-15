@@ -71,9 +71,9 @@ struct StageScene: View {
                     Group {
                         CenterMic(height: figH * 0.78)
                             .position(x: micX, y: footY - figH * 0.39)
-                        ManzaiFigure(height: figH * 0.90, tilt: 2.2, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
+                        ManzaiFigure(height: figH * 0.90, tilt: 2.2, breathe: 3.1, colors: StageOutfit.current.ore(rival: false))
                             .position(x: micX - figH * 0.52, y: footY - figH * 0.45)
-                        ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
+                        ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.current.taniguchi(rival: false))
                             .position(x: micX + figH * 0.54, y: footY - figH * 0.50)
                         if !compact {
                         StageFootTag(name: "俺", band: YoseColor.kuroUrushi)

@@ -383,9 +383,9 @@ struct DuskScene: View {
                     .frame(height: h - horizon)
                     .position(x: w / 2, y: horizon + (h - horizon) / 2)
                 // 二人（色付き・夕方の光で少し温める）
-                ManzaiFigure(height: figH * 0.9, tilt: 2.2, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
+                ManzaiFigure(height: figH * 0.9, tilt: 2.2, breathe: 3.1, colors: StageOutfit.current.ore(rival: false))
                     .position(x: w * 0.40, y: h - h * 0.06 - figH * 0.45)
-                ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
+                ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.current.taniguchi(rival: false))
                     .position(x: w * 0.66, y: h - h * 0.06 - figH * 0.50)
                 // 夕方の色かぶり
                 LinearGradient(colors: [Color(hex: 0xFFB27A).opacity(0.18), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -431,9 +431,9 @@ struct PlaceScene: View {
                     .frame(height: h - horizon)
                     .position(x: w / 2, y: horizon + (h - horizon) / 2)
                 props(w: w, h: h, horizon: horizon)
-                ManzaiFigure(height: figH * 0.9, tilt: 2.2, breathe: 3.1, colors: StageOutfit.standard.ore(rival: false))
+                ManzaiFigure(height: figH * 0.9, tilt: 2.2, breathe: 3.1, colors: StageOutfit.current.ore(rival: false))
                     .position(x: w * 0.40, y: h - h * 0.07 - figH * 0.45)
-                ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.standard.taniguchi(rival: false))
+                ManzaiFigure(height: figH, tilt: -2.6, breathe: 2.4, colors: StageOutfit.current.taniguchi(rival: false))
                     .position(x: w * 0.66, y: h - h * 0.07 - figH * 0.50)
                 foreground(w: w, h: h)
             }
