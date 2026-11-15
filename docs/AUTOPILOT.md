@@ -57,7 +57,7 @@
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
-- なし（11/15 昼の定期の回の終わり時点＝5時間枠 約90%。途中の作業なし・本体 GameCore 474／アプリ 420 green・候補は全部本体と ok。この回は 474〜509＝点検16本・直し15本・試し版4本〔debt-next-pay-warn・fame-floor-display・choice-money-chip・practice-outfit〕＋calendar-gp-paint に追加・定数の同期 80→103）。
+- なし（11/15 昼の定期の回の終わり時点＝5時間枠96%。途中の作業なし・本体 626b01d16 で GameCore 474／アプリ 420 green・候補は全部本体と ok。この回は 474〜512＝点検18本・直し19本・試し版4本〔debt-next-pay-warn・fame-floor-display・choice-money-chip・practice-outfit〕＋calendar-gp-paint に追加・定数の同期 80→103・判断待ちは decision_brief_2026-11-08 の「11/15 定期」の行）。
 
 - 【タップ確認待ち】お店で「引っ越し→何か買う→戻す」で部屋が戻らないこと（code_review_2026-10-19 §1-1 の修正・定期の回はタップ不可）。10/26：同じ手順を session で再現するテスト ShopUndoRoomTests を足した（理屈は green・残りはボタンを押しての見た目だけ）。
 - 【タップ確認待ち・10/19 朝の直し】①支払い画面を途中でタップして閉じても音が後から鳴らない ②（済：selftest double ack ok）③（済：selftest MZ_ALLOWSAVE=1 で choice-applied save ok） ④コンビ名を空白だけにすると「結成する！」が押せない ⑤決勝の2本目の候補に1本目が出ない（MZ_NETA_OPEN で目視済み）・ネタ1本の時は一言が出る ⑦（済：selftest で80通り一致・MZ_UI=finals でくじが導入の後を目視）⑥実機 VoiceOver で支払い画面・決勝の終幕を閉じられる／組名が読み上げられる（review_today_fixes_1019 §4・§7）。
