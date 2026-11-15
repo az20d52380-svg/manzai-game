@@ -488,3 +488,5 @@
 558. [済 11/16 定期・sonnet・docs/gender_text_check_1116_v0.md] 11/09 以降に入った日本語83行（画面の文 約12行）の性別の点検＝女女・男女で不自然な文0・FirstPersonLiteralTests を壊す追加なし。
 
 559. [済 11/16 定期] 候補の取り込み直し（遅れ50以上）＝10本中9本 green で push（calendar-gp-paint・choice-money-chip・combi-name-verbatim・debt-next-pay-warn・fame-floor-display・final-year-notice・practice-outfit・yearstart-notices-bundle・youth-notice-y10）。赤は vocab-ochi（GameCore 1本・本体の禁止語「決め」）＝同じ「オチの締め」を「話の締め」に直した finals-mc-tri-cand／text-all-1110-bundle-cand に置き換わった古い候補（判断待ちの一覧にも載っていない）。消さずに置く＝今後の取り込み直しで赤になるのは既知。
+
+560. [済 11/16 定期・sonnet・docs/visual_misc_1116_v0.md] あまり見ない画面8枚の目視＝崩れ0。所見20件を親が仕分け＝高2件は誤り（色は分かれている・「かけら」の読み違い）、残りは見せ方の判断＝decision_brief 11/16 定期に1行で並べた。
