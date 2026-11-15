@@ -72,7 +72,7 @@ struct NotebookView: View {
             if exp > 0 && !cfg.autoPourAllocation {
                 HStack {
                     YoseTag(text: "経験点 \(exp) 未使用", style: .outlineShu)
-                    Text(full ? "年が明けてから使うと伸びる" : "週の画面の能力アップで使う").font(YoseFont.gothic(12))   // 【候補 notebook_intro_ending_audit_1115 低-2 案①】器が満ちた年は下の「伸びにくい」と言うことをそろえる.foregroundStyle(YoseColor.haiSumi)
+                    Text(full ? "年が明けてから使うと伸びる" : "週の画面の能力アップで使う").font(YoseFont.gothic(12)).foregroundStyle(YoseColor.haiSumi)   // 【候補 notebook_intro_ending_audit_1115 低-2 案①】器が満ちた年は下の「伸びにくい」と言うことをそろえる
                     Spacer()
                 }
             }
