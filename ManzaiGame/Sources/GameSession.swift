@@ -390,12 +390,17 @@ final class GameSession {
         default: weeksWithoutPartner += 1
         }
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
-        if case .job = action { jobCount += 1 }     // 0023 発火条件用のバイト実行回数（UI層・golden非対象）
+        if state.preoccupiedWeeks > 0 { categoryLog[week] = .offer }   // 撮影・出張で拘束された週は日程表の判子を「仕」に（表示のみ・calendar_audit_1115 低-3 ②）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
         weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
+        // 0023 発火条件用のバイト実行回数（UI層・golden非対象）。倒れて休みに差し替わった週は働いていないので数えない（stamina_audit_1115 N5＝稽古側の lastTrainingDone と同じ扱い）
+        if case .job = action {
+            let collapsed: Bool = { if case .weekDone(let sm) = phase { return sm.results.contains { $0.name == "体調ダウン" } }; return false }()
+            if !collapsed { jobCount += 1 }
+        }
         if case .train = action, runner.lastTrainingDone != nil, TrophyBook.bump("train") >= 100 { TrophyBook.award(.t13) }
         // 練習が休みに差し替わった週（体力ゲート・体調ダウン・お金不足）は、日程の印も「回復」で残す（稽古の印が付いていた）
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
@@ -1430,6 +1435,7 @@ final class GameSession {
                 TrophyBook.onYearEnd(outcome: outcome, year: runner.year, careerYears: config.careerYears,
                                      smallEntered: smallEntered, smallWon: smallWon,
                                      wonBefore: yearHistory.contains { $0.champion && $0.year != runner.year })
+                if state.compat >= config.compatCap { TrophyBook.award(.t14) }   // 相性が上限の称号は大会の週だけでなく年末にも見る（最後の大会の後に上限へ着くと取り逃していた＝trophy_meta_audit_1115 #6・award は冪等）
                 smallEntered = 0; smallWon = 0
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
@@ -1443,6 +1449,13 @@ final class GameSession {
                             for r in rs where r.isStage { TrophyBook.onStage(r, state: runner.state, config: config) }
                             log.append(summarize(WeekSummary(year: runner.year, week: runner.week, results: rs, state: runner.state)))
                             totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
+                        }
+                    }
+                    // 優勝の週も weekDone を経ない＝同じ週の敗者復活の通過（t21）が付かなかった（gp_final_audit_1115）。
+                    // 決勝そのものを称号の判定に入れるかは判断待ち（trophy_meta_audit_1115 #4）なので、決勝以外だけ渡す
+                    if outcome.champion {
+                        for r in runner.snapshot().weekResults where r.isStage && r.name != "GP決勝" {
+                            TrophyBook.onStage(r, state: runner.state, config: config)
                         }
                     }
                     yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
