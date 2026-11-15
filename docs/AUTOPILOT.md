@@ -502,3 +502,7 @@
 565. [済 11/16 定期] 相性の尺度の候補 claude/compat-cap-display-cand（c96bcf6c6）＝相性の横に「/ 20」（アプリ green・GameCore 474・目視済）。decision_brief の行に添えた。
 
 566. [済 11/16 定期] 設定の「このキャリア」は直下の説明とモーダルで中身が分かる＝低に下げた（visual_misc_1116 追記）。
+
+567. [済 11/16 夜 定期] 点検 run_checks＝GameCore 474・アプリ 436・同期 3/3・config 103/103・効果 62・発火 26・UTF-8 壊れ0。
+
+568. [済 11/16 夜 定期] THE HANA 決勝の優勝演出を初めて目視（新フック `MZ_UI=stage_result MZ_STAGE=HANA決勝 MZ_PASS=1 MZ_PASSFX=1 MZ_KIND=femaleFemale`）。ボタンが「表彰式・エンディングへ進む」なのに HANA の後は週へ戻る＝「次へ 進む」に直した（表示のみ・頂GP は今のまま）。結果の札・決勝の入口（MZ_UI=hana_entry MZ_HANAIDX=3）・準決勝の敗退は崩れなし。朱印「日本一」と上帯「漫才の頂、ここに決まる」が HANA でも出る件は scene_ending_fx_text_score_1110 §4-1 の判断待ち（decision_brief に行が無ければ足す）。
