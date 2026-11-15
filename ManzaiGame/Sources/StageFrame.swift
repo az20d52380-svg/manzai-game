@@ -300,10 +300,19 @@ struct StageCeremony: View {
         Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
         try? await Task.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)
         guard !done else { return }
+        if Task.isCancelled { abandon(); return }
         withAnimation(Theme.Motion.r(.easeOut(duration: short ? 0.25 : 0.6))) { spot = 1.4 }   // スポットイン
         try? await Task.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
         guard !done else { return }
+        if Task.isCancelled { abandon(); return }
         finish()
+    }
+
+    /// 儀の最中に画面ごと消えた時：絞った BGM だけ戻し、onDone（開示列の音など）は走らせない（cancelled_sleep_audit_1115 #1）
+    private func abandon() {
+        guard !done else { return }
+        done = true
+        Sound.duck(1, over: 0.4)
     }
 
     private func finish() {

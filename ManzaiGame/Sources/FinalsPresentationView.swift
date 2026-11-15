@@ -278,7 +278,7 @@ struct FinalsPresentationView: View {
                 if entranceFull && !reduceMotion {   // 扉が割れる→紹介テロップ→ネタ（初回は長め）
                     try? await MZSpeed.sleep(nanoseconds: 350_000_000)
                     withAnimation { doorsOpen = true }
-                    Haptics.confirm()          // se_door_open_heavy（大扉が割れる）
+                    if !Task.isCancelled { Haptics.confirm() }   // se_door_open_heavy（大扉が割れる）・タップで先へ送られた後は鳴らさない
                     try? await MZSpeed.sleep(nanoseconds: 3_000_000_000)
                 } else {
                     doorsOpen = true
@@ -588,6 +588,7 @@ struct FinalsPresentationView: View {
             Haptics.confirm()                         // se_heartbeat_low（ドクン）
             try? await MZSpeed.sleep(nanoseconds: 170_000_000)
             withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { lotPulse = false }
+            guard !Task.isCancelled, !lotRevealed else { return }   // 取り消し後の余計な1拍を鳴らさない（cancelled_sleep_audit_1115 #3）
             Haptics.tick()                            // （ドクッ）
             try? await MZSpeed.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
         }

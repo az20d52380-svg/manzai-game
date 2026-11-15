@@ -24,6 +24,7 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    @State private var toastSeq = 0   // 同じ文をもう一度出した時も読む時間を測り直す（stale_timer_audit_1115 #3）
     @State private var hint: HintSpec?       // 初回だけの短い説明（初週・生活費の前の週。`？` からも開く）
     @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
     @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
@@ -74,8 +75,11 @@ struct WeekMainView: View {
     @State private var lastBeatWeek: [String: Int] = [:]
     /// 「年末へ」の二度押し確認（監査A-03）
     @State private var yearEndArmed = false
+    @State private var yearEndArmedAt = Date.distantPast   // 確認を読まずのダブルタップで素通りしない（double_tap_audit_1115 #3）
+    @State private var offerArmedAt = Date.distantPast      // 同 #4
     /// オファーを受ける前の二度押し確認（誤タップ事故＝playtest_v6 W31〜W34）
     @State private var offerArmed = false
+    @State private var offerArmGen = 0   // 古い3秒の時計が、選び直して押し直した後の「もう一度」を早く消さないための番号
     /// オファーの帯の実際の高さ（声の席をこの分だけ上げる＝固定値だと帯に吹き出しが重なった）
     @State private var offerBandH: CGFloat = 0
     /// 進行中の設定（監査G-04）
@@ -323,7 +327,7 @@ struct WeekMainView: View {
             banterIndex = 0
             Task { try? await MZSpeed.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
         }   // 掛け合いの読み位置は週頭でリセット
-        .task(id: toast) {
+        .task(id: toastSeq) {
             if let t = toast {
                 // 次の toast に替わるとこの待ちは取り消される。取り消された時は消さない（try? で握ると新しい toast を即座に消していた＝11/10 深夜）
                 do {
@@ -913,10 +917,14 @@ struct WeekMainView: View {
             }
             if case .acceptOffer = v.action, !offerArmed {
                 offerArmed = true
+                offerArmedAt = Date()
+                offerArmGen += 1
+                let gen = offerArmGen
                 showToast("もう一度押すと、このオファーを受ける。")
-                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); offerArmed = false }
+                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); if offerArmGen == gen { offerArmed = false } }
                 return
             }
+            if case .acceptOffer = v.action, Date().timeIntervalSince(offerArmedAt) < 0.4 { return }
             offerArmed = false
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
@@ -1429,7 +1437,7 @@ struct WeekMainView: View {
         }
     }
 
-    private func showToast(_ t: String) { toast = t }
+    private func showToast(_ t: String) { toast = t; toastSeq += 1 }
 
     /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
     /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
@@ -1503,7 +1511,9 @@ struct WeekMainView: View {
               session.week <= 1, youthNoticeYear != session.year else { return }
         youthNoticeYear = session.year
         Task {
-            if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
+            // 前の toast が消えるまで待つ（決め打ちの4.5秒だと、その間に出た別の toast を上書きしていた＝stale_timer_audit_1115 #4）。上限 約15秒で必ず出す
+            var waited = 0
+            while toast != nil, waited < 50 { try? await Task.sleep(nanoseconds: 300_000_000); waited += 1 }   // 読む時間を待つので演出の速さで縮めない
             showToast(text)
         }
     }
@@ -1610,10 +1620,12 @@ struct WeekMainView: View {
         Button { tapOrQueue {
             if burstHold || session.pendingChoiceEvent != nil { return }
             if yearEndArmed {
+                guard Date().timeIntervalSince(yearEndArmedAt) >= 0.4 else { return }
                 yearEndArmed = false
                 session.fastForwardToYearEnd()
             } else {
                 yearEndArmed = true
+                yearEndArmedAt = Date()
                 showToast("もう一度押すと、残りの週を休んで年末の結果へ進む。")
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
             }
