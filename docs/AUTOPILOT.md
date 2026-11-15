@@ -464,3 +464,5 @@
 546. [済 11/16 定期・sonnet・docs/hana_visual_soak_1116_v0.md] 女女（THE HANA の経路）1年目の目視7枚＋本体 soak 7分（317〜335MB 横ばい・落ちず・クラッシュログ 1→1）＝高0／中1／低5。中＝1年目の年末に HANA の成績が出ない→候補 claude/yearend-hana-line-cand（d10e10dfe）を作って判断待ちへ（decision_brief 11/16 定期）。
 
 547. [済 11/16 定期] THE HANA の結果画面（MZ_UI=hana_result・本体）を1枚＝崩れなし。常設の作業に HANA の目視の注意（女女だけ・フック名）を足した。
+
+548. [済 11/16 定期・sonnet・docs/visual_dark_1116_v0.md] 11/15 に変わった画面8枚をダークモードで目視＝読めない所・消える色0。sim は light に戻した。
