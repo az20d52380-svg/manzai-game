@@ -324,10 +324,10 @@ struct WeekMainView: View {
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
             let stampKey = session.year * 1000 + session.week
-            guard stampPlayedKey != stampKey else { return }
+            guard stampPlayedKey != stampKey else { weekStampVisible = false; return }   // 札の途中で覆いを開いて取り消された時も、戻ったら札を消す（review_fixes_1115 1-1）
             stampPlayedKey = stampKey
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
-            withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
+            withAnimation(Theme.Motion.r(Theme.Motion.emphSpring)) { weekStampVisible = true }   // 視差を減らす時は跳ねない（settings_leak_audit_1115）
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
             if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
@@ -466,7 +466,7 @@ struct WeekMainView: View {
         // 今年の大会が全部終わった後は、帯だけ年末までの週を出す（playtest_v11 #4。独白・経験点の注意は大会基準のまま）
         if let m = bannerMilestone() {
             let hot = m.weeksLeft <= 3
-            Button { instant { showCalendar = true } } label: {
+            Button { openOverlay { instant { showCalendar = true } } } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
@@ -1226,7 +1226,7 @@ struct WeekMainView: View {
                     .opacity(burstVisible ? 1 : 0)
                     .offset(y: burstVisible ? 0 : 16)
                     .scaleEffect(burstVisible ? 1 : 0.7, anchor: .bottomTrailing)
-                    .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.07), value: burstVisible)
+                    .animation(Theme.Motion.r(Theme.Motion.emphSpring.delay(Double(i) * 0.07)), value: burstVisible)
             }
         }
     }
@@ -1294,6 +1294,13 @@ struct WeekMainView: View {
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
+    /// 下の帯・目標帯から覆いを開く。獲得の一拍の最中に選択肢イベントが控えている時は開かない＝イベントの覆いと重なって
+    /// 出せず、行動カードが全部無反応になるのを防ぐ（softlock_audit_1115 #1）。それ以外の一拍中は行動カードと同じく畳んでから開く。
+    private func openOverlay(_ open: @escaping () -> Void) {
+        if session.pendingChoiceEvent != nil, burstHold || pulledID != nil { burstSkip = true; syncEventPresentation(); return }   // 一拍を畳んでイベントを先に出す（押した帯は黙らせない＝review_fixes_1115 1-3）
+        tapOrQueue(open)
+    }
+
     private func syncEventPresentation() {
         if session.pendingChoiceEvent != nil, !burstHold, pulledID == nil { instant { showEvent = true } }
     }
@@ -1331,7 +1338,8 @@ struct WeekMainView: View {
             // 実力は1週で整数が動かない週が多い＝数字でなく「↑」（バーのオレンジと対）
             chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.senseDeep))
         }
-        let cd = Int(session.lastCompatGain.rounded())
+        // 前後それぞれ丸めて引く＝相性の整数表示と行動カードの予告（:1565）と同じ数え方（number_display_audit_1115 #1：0.6 の伸びで「+1」なのに整数が動かなかった）
+        let cd = Int(s.compat.rounded()) - Int((s.compat - session.lastCompatGain).rounded())
         if cd > 0 {
             chips.append(BurstChip(id: chips.count, text: "相性 +\(cd)", fg: .white, bg: Theme.vermD))
         }
@@ -1414,9 +1422,9 @@ struct WeekMainView: View {
                     }
                 }
             YoseFooterTabBar(items: [
-                YoseFooterItem(title: "日程", symbol: "calendar") { instant { showCalendar = true } },              // S4 カレンダー
-                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { instant { showNotebook = true } },       // S5 コンビの情報（旧ネタ帳）
-                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { showSettings = true },        // 音量・この年をやめる（監査G-04）
+                YoseFooterItem(title: "日程", symbol: "calendar") { openOverlay { instant { showCalendar = true } } },              // S4 カレンダー
+                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { openOverlay { instant { showNotebook = true } } },       // S5 コンビの情報（旧ネタ帳）
+                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { openOverlay { showSettings = true } },        // 音量・この年をやめる（監査G-04）
             ])
         }
         .background(YoseColor.kuroUrushi.ignoresSafeArea(edges: .bottom))
@@ -1448,7 +1456,10 @@ struct WeekMainView: View {
         }
     }
 
-    private func showToast(_ t: String) { toast = t; toastSeq += 1 }
+    private func showToast(_ t: String) {
+        toast = t; toastSeq += 1
+        if UIAccessibility.isVoiceOverRunning { UIAccessibility.post(notification: .announcement, argument: t) }   // すぐ消える知らせを読み上げにも伝える（voiceover_audit_1115 N3）
+    }
 
     /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
     /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
@@ -1460,12 +1471,13 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
-        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
+        // 行動を押して週が進む途中（pulledID）は出さない＝モーダルの下で週が進み、文と数字がずれていた（notice_priority_audit_1115 N2）。週が進んだ後の呼び出しで出る
+        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase {
             session.clearInjuryNotice()
             injuryNotice = GameSession.injuryNoticeText
             return
         }
-        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
             riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"

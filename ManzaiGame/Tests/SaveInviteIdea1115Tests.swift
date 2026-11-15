@@ -54,4 +54,28 @@ final class SaveInviteIdea1115Tests: XCTestCase {
         let r = GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: data))
         XCTAssertEqual(r.youthNoticeYear, s.year); XCTAssertEqual(r.tiredNoticeYear, s.year)
     }
+
+    /// 空の結果がセーブから来ても結果画面に渡さない（crash_audit_1115 #1＝results.last! で落ちる）
+    func testEmptyPendingResultDroppedOnRestore() throws {
+        let s = GameSession(seed: 2)
+        s.saveNow()
+        let data = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var save = try JSONDecoder().decode(GameSession.SaveData.self, from: data)
+        save.pendingResult = WeekSummary(year: 1, week: 1, results: [], state: s.state)
+        XCTAssertNil(GameSession(restoring: save).pendingResult)
+    }
+
+    /// 結果を見せる段（weekDone）で結果が空のセーブ＝読み込み中で止まらず次の段へ進む（softlock_audit_1115 #3）
+    func testWeekDoneWithEmptyResultAdvancesOnRestore() throws {
+        let s = GameSession(seed: 2)
+        s.debugAdvanceToFirstResult()
+        guard case .weekDone = s.phase, s.pendingResult != nil else { throw XCTSkip("結果の段に届かなかった") }
+        s.saveNow()
+        let data = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        var save = try JSONDecoder().decode(GameSession.SaveData.self, from: data)
+        save.pendingResult = WeekSummary(year: save.pendingResult!.year, week: save.pendingResult!.week, results: [], state: s.state)
+        let r = GameSession(restoring: save)
+        XCTAssertNil(r.pendingResult)
+        if case .weekDone = r.phase { XCTFail("weekDone のまま＝画面が出ない") }
+    }
 }
