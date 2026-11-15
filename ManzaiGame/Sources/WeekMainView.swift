@@ -1330,7 +1330,8 @@ struct WeekMainView: View {
             // 実力は1週で整数が動かない週が多い＝数字でなく「↑」（バーのオレンジと対）
             chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.senseDeep))
         }
-        let cd = Int(session.lastCompatGain.rounded())
+        // 前後それぞれ丸めて引く＝相性の整数表示と行動カードの予告（:1565）と同じ数え方（number_display_audit_1115 #1：0.6 の伸びで「+1」なのに整数が動かなかった）
+        let cd = Int(s.compat.rounded()) - Int((s.compat - session.lastCompatGain).rounded())
         if cd > 0 {
             chips.append(BurstChip(id: chips.count, text: "相性 +\(cd)", fg: .white, bg: Theme.vermD))
         }
