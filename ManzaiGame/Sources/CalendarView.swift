@@ -130,7 +130,7 @@ struct CalendarView: View {
     private var legend: some View {
         VStack(spacing: 6) {
         HStack(spacing: 12) {
-            ForEach([BandCategory.keiko, .baito, .kaifuku], id: \.label) { cat in
+            ForEach([BandCategory.keiko, .baito, .kaifuku, .offer], id: \.label) { cat in   // 「仕」（オファーを受けた週）も凡例に（calendar_audit_1115 低-3 ①）
                 HStack(spacing: 4) {
                     Text(cat.label.prefix(1)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                         .frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
