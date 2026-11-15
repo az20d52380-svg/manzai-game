@@ -308,10 +308,10 @@ struct StageCeremony: View {
         finish()
     }
 
-    /// 儀の最中に画面ごと消えた時：絞った BGM だけ戻し、onDone（開示列の音など）は走らせない（cancelled_sleep_audit_1115 #1）
+    /// 儀の最中に画面ごと消えた時：絞った BGM だけ戻し、onDone（開示列の音など）は走らせない（cancelled_sleep_audit_1115 #1）。
+    /// done は立てない＝同じ画面がまた出たら儀を最初からやり直せる（黒い幕のまま止まらない・review_fixes_1115 1-2）
     private func abandon() {
         guard !done else { return }
-        done = true
         Sound.duck(1, over: 0.4)
     }
 

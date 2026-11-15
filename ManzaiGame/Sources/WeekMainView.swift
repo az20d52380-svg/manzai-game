@@ -323,7 +323,7 @@ struct WeekMainView: View {
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
             let stampKey = session.year * 1000 + session.week
-            guard stampPlayedKey != stampKey else { return }
+            guard stampPlayedKey != stampKey else { weekStampVisible = false; return }   // 札の途中で覆いを開いて取り消された時も、戻ったら札を消す（review_fixes_1115 1-1）
             stampPlayedKey = stampKey
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
             withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
@@ -1296,7 +1296,7 @@ struct WeekMainView: View {
     /// 下の帯・目標帯から覆いを開く。獲得の一拍の最中に選択肢イベントが控えている時は開かない＝イベントの覆いと重なって
     /// 出せず、行動カードが全部無反応になるのを防ぐ（softlock_audit_1115 #1）。それ以外の一拍中は行動カードと同じく畳んでから開く。
     private func openOverlay(_ open: @escaping () -> Void) {
-        if session.pendingChoiceEvent != nil, burstHold || pulledID != nil { syncEventPresentation(); return }
+        if session.pendingChoiceEvent != nil, burstHold || pulledID != nil { burstSkip = true; syncEventPresentation(); return }   // 一拍を畳んでイベントを先に出す（押した帯は黙らせない＝review_fixes_1115 1-3）
         tapOrQueue(open)
     }
 
