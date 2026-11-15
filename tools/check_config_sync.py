@@ -25,6 +25,12 @@ PAIRS = {
     "debtLifeMental":       C.DEBT_LIFE_PEN[1],
     "riftHeal":             C.RIFT_HEAL,
     "riftJointStill":       C.RIFT_JOINT_STILL,
+    "riftGain":             C.RIFT_GAIN,          # 11/15 partner_audit_1115 §4 で追加
+    "riftWarn":             C.RIFT_WARN,
+    "inviteRate":           C.INVITE_P,
+    "inviteIdeaP":          C.INVITE_IDEA_P,
+    "compatInit":           B.COMPAT_INIT,
+    "compatCap":            B.COMPAT_CAP,
     "inviteMoney":          C.INVITE_MONEY,
     "inviteStamina":        C.INVITE_STAMINA,
     "inviteMental":         C.INVITE_MENTAL,
@@ -174,6 +180,19 @@ def check_tournaments():
         print(f"NG GP の回戦: Swift {gp} / Python {py_gp}"); bad += 1
     return bad, 2 + len(C.TOURNAMENTS)
 
+def check_gp_loss_compat():
+    """配列の定数 gpLossCompat（型注釈付きで _defaults の正規表現に掛からない）を別に突き合わせる（partner_audit_1115 §4）"""
+    pat = re.compile(r"public var gpLossCompat:\s*\[Double\]\s*=\s*\[([^\]]*)\]")
+    for path in SWIFT:
+        for line in open(path, encoding="utf-8"):
+            m = pat.search(line)
+            if m:
+                sw = [float(x) for x in m.group(1).split(",")]
+                if len(sw) != len(C.GP_LOSS_COMPAT) or any(abs(a - b) > 1e-12 for a, b in zip(sw, C.GP_LOSS_COMPAT)):
+                    print(f"NG gpLossCompat: Swift {sw} / Python {list(C.GP_LOSS_COMPAT)}"); return 1, 1
+                return 0, 1
+    print("?? gpLossCompat: Swift 側で既定値を読めない"); return 1, 1
+
 def main():
     sw = swift_defaults(SWIFT)
     bad = 0
@@ -191,6 +210,8 @@ def main():
     bad += bad_h
     bad_t, n_t = check_tournaments()
     bad += bad_t; n_h += n_t
+    bad_g, n_g = check_gp_loss_compat()
+    bad += bad_g; n_h += n_g
     print(f"config sync: {len(PAIRS) + n_h - bad}/{len(PAIRS) + n_h} 一致")
     return 1 if bad else 0
 
