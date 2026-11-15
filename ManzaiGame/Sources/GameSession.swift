@@ -1430,6 +1430,7 @@ final class GameSession {
                 TrophyBook.onYearEnd(outcome: outcome, year: runner.year, careerYears: config.careerYears,
                                      smallEntered: smallEntered, smallWon: smallWon,
                                      wonBefore: yearHistory.contains { $0.champion && $0.year != runner.year })
+                if state.compat >= config.compatCap { TrophyBook.award(.t14) }   // 相性が上限の称号は大会の週だけでなく年末にも見る（最後の大会の後に上限へ着くと取り逃していた＝trophy_meta_audit_1115 #6・award は冪等）
                 smallEntered = 0; smallWon = 0
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
