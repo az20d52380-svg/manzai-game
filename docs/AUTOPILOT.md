@@ -486,3 +486,5 @@
 557. [済 11/16 定期] 女女の2年目の年表に HANA の行が出ることを本体で目視＝1年目だけ出ない（候補 yearend-hana-line の理由を確認）。
 
 558. [済 11/16 定期・sonnet・docs/gender_text_check_1116_v0.md] 11/09 以降に入った日本語83行（画面の文 約12行）の性別の点検＝女女・男女で不自然な文0・FirstPersonLiteralTests を壊す追加なし。
+
+559. [済 11/16 定期] 候補の取り込み直し（遅れ50以上）＝10本中9本 green で push（calendar-gp-paint・choice-money-chip・combi-name-verbatim・debt-next-pay-warn・fame-floor-display・final-year-notice・practice-outfit・yearstart-notices-bundle・youth-notice-y10）。赤は vocab-ochi（GameCore 1本・本体の禁止語「決め」）＝同じ「オチの締め」を「話の締め」に直した finals-mc-tri-cand／text-all-1110-bundle-cand に置き換わった古い候補（判断待ちの一覧にも載っていない）。消さずに置く＝今後の取り込み直しで赤になるのは既知。
