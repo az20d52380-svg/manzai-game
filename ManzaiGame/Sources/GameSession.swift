@@ -984,9 +984,11 @@ final class GameSession {
         case .gpRound, .gpRevival, .gpFinal: break
         default: return
         }
+        let fameBefore = state.fame
         let expBefore = expSnapshot()
         phase = runner.resolveAuto()
         pump()
+        lastResultFameDelta = state.fame - fameBefore   // GP の回戦・敗者復活・決勝の結果画面にも、この段の「知名度 +n」を出す（前の大会の値が残っていた＝result_screen_audit_1115）
         recordExpDelta(from: expBefore)
         saveNow()
     }
