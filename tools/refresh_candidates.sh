@@ -13,6 +13,11 @@ MIN=${2:-50}
 U=E5D11233-FE99-429F-A55C-8B0FA5793568
 MAIN=$(git rev-parse --abbrev-ref HEAD)
 TMP=$(mktemp -d)
+# 11/11：遠隔にしか無い候補（make_bundle で作った *-bundle-cand など）は手元の枝の一覧に出ず、遅れても拾われなかった＝先に手元の枝を作る
+GIT_TERMINAL_PROMPT=0 git fetch -q origin '+refs/heads/claude/*:refs/remotes/origin/claude/*' 2>/dev/null
+for rb in $(git branch -r --format='%(refname:short)' | grep -E '^origin/claude/.*(candidate|-cand)'); do
+  lb=${rb#origin/}; git rev-parse -q --verify "refs/heads/$lb" >/dev/null || git branch -q "$lb" "$rb" 2>/dev/null
+done
 for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -vE '^claude/(q-candidate|vitalbar-numberpop-cand|the-hana-candidate|the-hana-candidate-r1027)$' | grep -E "${3:-.}"); do
   # 11/10：遅れは遠隔の枝で数える（手元にだけ取り込み済み・未 push の枝を飛ばさない＝AUTOPILOT 312）
   GIT_TERMINAL_PROMPT=0 git fetch -q origin "+refs/heads/${b}:refs/remotes/origin/${b}" 2>/dev/null
