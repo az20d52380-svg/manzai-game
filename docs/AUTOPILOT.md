@@ -443,3 +443,4 @@
 533. [済 11/15 深夜 定期] 点検＝run_checks（GameCore 474・アプリ 436 TEST SUCCEEDED・同期 3/3・config 103/103・効果 62・発火 26 一致・UTF-8 1316 本壊れ0）。check_candidates＝全候補が本体にそのまま入る（候補どうしの衝突は既知の型＝pbxproj・テスト末尾・同じ画面）。
 534. [済 11/15 深夜 定期] 目視：日程表（MZ_UI=calendar・標準の文字の大きさ）＝凡例は1行のまま・崩れなし（d7878b45f の2行折りは大きい文字の時だけ）。90768d5d2 の衣装の札・凡例は読み上げの文だけの変更＝見た目は不変。
 535. [済 11/15 深夜 定期] 網羅の測り直し＝GameCore 99.76%（未通過5行はどれも ?? の受け皿・precondition 等の通らない所＝11/09 から変わらず）。アプリの画面以外では GameSession 89% が最大の残り＝sonnet にテストを足させる（結果は次の行）。
+536. [済 11/15 深夜 定期・sonnet] GameSession の未通過（11%）を関数ごとに見た＝画面以外の論理は3行だけ（costOfNextStep の60段の暴走ガード・applyEventChoice の旧セーブ互換 break・saveNow の encode 失敗 catch）で、どれも到達しない or 既存テスト（SessionGap1025e・Coverage1111・AppSaveFixture）で通し済み。残りは DEBUG 専用と MZ_* の環境変数＝足すテストなし・コミットなし。
