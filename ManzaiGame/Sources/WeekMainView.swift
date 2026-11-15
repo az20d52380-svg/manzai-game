@@ -326,7 +326,7 @@ struct WeekMainView: View {
             guard stampPlayedKey != stampKey else { weekStampVisible = false; return }   // 札の途中で覆いを開いて取り消された時も、戻ったら札を消す（review_fixes_1115 1-1）
             stampPlayedKey = stampKey
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
-            withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
+            withAnimation(Theme.Motion.r(Theme.Motion.emphSpring)) { weekStampVisible = true }   // 視差を減らす時は跳ねない（settings_leak_audit_1115）
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
             if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
@@ -1225,7 +1225,7 @@ struct WeekMainView: View {
                     .opacity(burstVisible ? 1 : 0)
                     .offset(y: burstVisible ? 0 : 16)
                     .scaleEffect(burstVisible ? 1 : 0.7, anchor: .bottomTrailing)
-                    .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.07), value: burstVisible)
+                    .animation(Theme.Motion.r(Theme.Motion.emphSpring.delay(Double(i) * 0.07)), value: burstVisible)
             }
         }
     }
@@ -1455,7 +1455,10 @@ struct WeekMainView: View {
         }
     }
 
-    private func showToast(_ t: String) { toast = t; toastSeq += 1 }
+    private func showToast(_ t: String) {
+        toast = t; toastSeq += 1
+        if UIAccessibility.isVoiceOverRunning { UIAccessibility.post(notification: .announcement, argument: t) }   // すぐ消える知らせを読み上げにも伝える（voiceover_audit_1115 N3）
+    }
 
     /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
     /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
@@ -1467,12 +1470,13 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
-        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
+        // 行動を押して週が進む途中（pulledID）は出さない＝モーダルの下で週が進み、文と数字がずれていた（notice_priority_audit_1115 N2）。週が進んだ後の呼び出しで出る
+        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase {
             session.clearInjuryNotice()
             injuryNotice = GameSession.injuryNoticeText
             return
         }
-        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
             riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"

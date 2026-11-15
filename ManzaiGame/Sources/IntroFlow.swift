@@ -567,6 +567,7 @@ struct NameEntryView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(YoseButtonStyle(.secondary))
+                .disabled(decided)   // 結成を押した後は名前を変えない（同 低-5 ②）
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
                 // コンビ結成届（書いた名前がそのまま写る）
@@ -690,7 +691,10 @@ struct NameEntryView: View {
         decided = true
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.4))) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meetingAuto ? (MeetingKind.allCases.randomElement() ?? .highSchool) : meeting) }
+        // 押した時点の値で決める＝0.45 秒の間に「おまかせで考える」等で札が変わっても、届に写った名前で結成する（notebook_intro_ending_audit_1115 低-5 ②）
+        let n = name, me = Names.clean(myName), pa = Names.clean(partnerName)
+        let mk = meetingAuto ? (MeetingKind.allCases.randomElement() ?? .highSchool) : meeting
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(n, me.isEmpty ? nil : me, pa.isEmpty ? nil : pa, mk) }
     }
 }
 
