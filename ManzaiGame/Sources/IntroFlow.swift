@@ -568,6 +568,7 @@ struct NameEntryView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(YoseButtonStyle(.secondary))
+                .disabled(decided)   // 結成を押した後は名前を変えない（同 低-5 ②）
                 .padding(.horizontal, YoseMetrics.screenMargin)
 
                 // コンビ結成届（書いた名前がそのまま写る）
@@ -694,7 +695,10 @@ struct NameEntryView: View {
         decided = true
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.4))) { inkWet = true }   // 札が一瞬ふくらむ（書いた名前が決まる手応え）
         Haptics.confirm()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(name, Names.clean(myName).isEmpty ? nil : Names.clean(myName), Names.clean(partnerName).isEmpty ? nil : Names.clean(partnerName), meetingAuto ? (MeetingKind.allCases.randomElement() ?? .highSchool) : meeting) }
+        // 押した時点の値で決める＝0.45 秒の間に「おまかせで考える」等で札が変わっても、届に写った名前で結成する（notebook_intro_ending_audit_1115 低-5 ②）
+        let n = name, me = Names.clean(myName), pa = Names.clean(partnerName)
+        let mk = meetingAuto ? (MeetingKind.allCases.randomElement() ?? .highSchool) : meeting
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { onDecide(n, me.isEmpty ? nil : me, pa.isEmpty ? nil : pa, mk) }
     }
 }
 
@@ -777,7 +781,13 @@ struct IntroFlowView: View {
     @State private var meeting: MeetingKind = IntroFlowView.initialMeeting
     private enum Stage { case title, comboKind, nameEntry, reminiscence, firstStage, notif }
 
-    private func finish() { onComplete(name, myName, partnerName, kind, meeting) }
+    @State private var finished = false
+    /// 二度押しでゲームが2回作られないよう1回だけ（double_tap_audit_1115 #1）
+    private func finish() {
+        guard !finished else { return }
+        finished = true
+        onComplete(name, myName, partnerName, kind, meeting)
+    }
 
     private static var initialMeeting: MeetingKind {
         #if DEBUG
@@ -844,6 +854,7 @@ struct IntroFlowView: View {
                 ReminiscencePlayer(
                     cards: meeting.cards,
                     onComplete: {
+                        guard stage == .reminiscence else { return }   // 最後のカードの二度押しで初舞台を飛ばさない（double_tap_audit_1115 #1）
                         // 1周目だけ初舞台へ（2周目以降は回想の「とばす」と同じく飛ばす）
                         let first = !Self.hasSeenIntro
                         Self.markIntroSeen()
