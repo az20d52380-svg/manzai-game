@@ -550,3 +550,5 @@
 590. [済 11/16 夜 定期] decision_brief 11/15「休みの札の体力 +n が上限を考えない」の推奨①の候補 claude/rest-cap-preview-cand（341af3117）＝上限100までの量・満タンなら「体力は満タン」（目視 ＝体力80で全札 +20・アプリ 439 green）。
 
 591. [済 11/16 夜 定期] decision_brief 11/15「お金が足りない札から値段が消える」の推奨①の候補 claude/short-money-price-cand（8bdf1b1b6）＝「¥1万・あと¥4,000不足」（「…足りない」は半分幅の札で「ない」が2行目に落ちた＝「不足」に）。目視フック MZ_EVSKIP=1（MZ_UI=debt の第1週のイベントを閉じる・候補のみ）。アプリ 440 green。
+
+592. [済 11/16 夜 定期] decision_brief 11/15 夕「千秋楽の最終到達舞台が所持金で決まり年表と食い違う」の推奨①の候補 claude/venue-heading-cand（879ffe4f9）＝見出し「千秋楽の会場」＋説明1行（GameCore 475・アプリ green・目視済）。
