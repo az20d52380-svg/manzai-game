@@ -312,7 +312,10 @@ struct StagePreludeView: View {
     private var goNote: String? {
         var notes: [String] = []
         if session.selectedNeta == nil { notes.append("ネタ無しで出る（上乗せなし）") }
-        else if isFinal && session.selectedNeta2 == nil { notes.append("2本目は選ばずに進む") }
+        else if isFinal {   // 候補 second-neta-note（decision_brief 11/15・neta_audit_1115 N1）：2本目が無い・仕上がり不足は減点＝軽く書かない
+            if session.selectedNeta2 == nil { notes.append("2本目を選ばないと減点") }
+            else if let n2 = session.selectedNeta2, n2.polish < session.config.netaSecondMinPolish { notes.append("2本目の仕上がりが足りず減点") }
+        }
         if session.state.stamina <= 0 { notes.append("体力が尽きた状態で出る") }   // 冬の大会などの出場カードと同じ注意（hooks_audit_1026）
         return notes.isEmpty ? nil : notes.joined(separator: "・")
     }
