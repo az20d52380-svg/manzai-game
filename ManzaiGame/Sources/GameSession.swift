@@ -339,6 +339,12 @@ final class GameSession {
         self.youthNoticeYear = save.youthNoticeYear ?? 0
         self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
+        // 週末の結果を見せる段なのに見せる結果が無い（壊れた・空の結果を捨てた）時は、結果を見たのと同じく次へ進める
+        // ＝どの画面の条件にも当たらず読み込み中のまま止まらない（softlock_audit_1115 #3・crash_audit_1115 #1 の続き）
+        if case .weekDone = phase, pendingResult == nil {
+            phase = runner.begin()
+            pump()
+        }
     }
 
     /// 2つの段が同じ種類で、中身を config から取り直せる段か（大会の決断・自由週・回戦）。

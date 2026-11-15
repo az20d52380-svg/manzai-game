@@ -465,7 +465,7 @@ struct WeekMainView: View {
         // 今年の大会が全部終わった後は、帯だけ年末までの週を出す（playtest_v11 #4。独白・経験点の注意は大会基準のまま）
         if let m = bannerMilestone() {
             let hot = m.weeksLeft <= 3
-            Button { instant { showCalendar = true } } label: {
+            Button { openOverlay { instant { showCalendar = true } } } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
@@ -1293,6 +1293,13 @@ struct WeekMainView: View {
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
+    /// 下の帯・目標帯から覆いを開く。獲得の一拍の最中に選択肢イベントが控えている時は開かない＝イベントの覆いと重なって
+    /// 出せず、行動カードが全部無反応になるのを防ぐ（softlock_audit_1115 #1）。それ以外の一拍中は行動カードと同じく畳んでから開く。
+    private func openOverlay(_ open: @escaping () -> Void) {
+        if session.pendingChoiceEvent != nil, burstHold || pulledID != nil { syncEventPresentation(); return }
+        tapOrQueue(open)
+    }
+
     private func syncEventPresentation() {
         if session.pendingChoiceEvent != nil, !burstHold, pulledID == nil { instant { showEvent = true } }
     }
@@ -1414,9 +1421,9 @@ struct WeekMainView: View {
                     }
                 }
             YoseFooterTabBar(items: [
-                YoseFooterItem(title: "日程", symbol: "calendar") { instant { showCalendar = true } },              // S4 カレンダー
-                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { instant { showNotebook = true } },       // S5 コンビの情報（旧ネタ帳）
-                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { showSettings = true },        // 音量・この年をやめる（監査G-04）
+                YoseFooterItem(title: "日程", symbol: "calendar") { openOverlay { instant { showCalendar = true } } },              // S4 カレンダー
+                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { openOverlay { instant { showNotebook = true } } },       // S5 コンビの情報（旧ネタ帳）
+                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { openOverlay { showSettings = true } },        // 音量・この年をやめる（監査G-04）
             ])
         }
         .background(YoseColor.kuroUrushi.ignoresSafeArea(edges: .bottom))
