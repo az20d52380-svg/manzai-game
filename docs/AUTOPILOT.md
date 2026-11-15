@@ -402,3 +402,4 @@
 
 498. [済 11/15 定期・sonnet・docs/choice_effect_audit_1115_v0.md] 選択肢イベントの効果の札と実際の点検＝6件（中1・低5）・効果の食い違い／二重適用／取りこぼし0。判断が要る中：効果の札が最大3枚で切れ、所持金の増減が出ない選択肢が新たに2つ（0057 年末のライブ A・§102 先輩の誘い A の発想付き）＝既出 0017C・0014B・0022A と同じ型（ChoiceEventOverlay.swift:322 の prefix(3)）。①所持金だけは必ず出す（候補 claude/choice-money-chip-cand ea62709fa・GameCore 472／アプリ 420 green・目視は未）②4枚まで ③今のまま。低5件は材料のみ。
 499. [済 11/15 定期] 本体 fcfd812e5（今日の GameCore の整理2本の後）の soak 8分＝307〜324MB 横ばい・クラッシュログ 1→1＝異常なし。
+500. [済 11/15 定期] GameConfig.netaWork の対応を直接押さえるテスト NetaWork1115Tests を足した（2本・GameCore 472→474 green）。
