@@ -360,3 +360,4 @@
 606. [済 11/16 夜 定期] まとめの枝 claude/eve-1116-bundle-cand を11本で作り直し（87f9852ae・rift-defer と rift-again-hint を足した・衝突なし・GameCore 479／アプリ 446 green）。
 607. [済 11/16 夜 定期] まとめの枝 eve-1116-bundle（87f9852ae）の soak 8分＝312〜332MB 横ばい・落ちず・クラッシュログ 0→0。文の長さ（text_lens）＝元の最長を超えた文 0。
 608. [済 11/16 夜 定期] decision_brief 11/15「新幹線回数券は元が取れない」の案②の候補 claude/ticket-stamina-text-cand（3ee63da2c）＝札の文だけ（GameConfig の summary・数値不変・config sync 一致）。お店を下から開くフック `MZ_SCROLL=bottom` を本体に足して（9be1a64e0）目視＝括弧付きの案は2行目に折れた→元と同じ18字「今年の大阪遠征は疲れない・交通費なし」に（9745042a1）＝1行。
+610. [済 11/16 夜 定期] オーナーが戻った時の1枚 docs/candidates_digest_1116_eve.md（この夜の試し版12本＝何が気になっていたか・何が変わるか・枝・画面 docs/shots_1116_eve/）。
