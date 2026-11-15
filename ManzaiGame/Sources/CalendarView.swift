@@ -205,9 +205,17 @@ struct CalendarView: View {
         if cal.gpRounds.contains(where: { $0.week == w }) || w == cal.gpFinalWeek {
             // 【候補 C-25 案②】来週以降の頂GP は、まだ出られる段（upcomingStages に残る回戦・決勝・敗者復活）だけ塗る。予選で落ちた後の週は道中の大会と同じく塗らない（calendar_ineligible_paint_1108_v0）
             if w > session.week { return Self.paintsFutureGPWeek(w, upcoming: session.upcomingStages()) }
+            if w < session.week { return Self.paintsPastGPWeek(category: session.categoryLog[w]) }
             return true
         }
         return false
+    }
+
+    /// 過ぎた頂GP の週を塗るか（表示専用・純関数）。出た週（大会の印）だけ塗る＝シードで免除された1回戦・落ちた後の週は、その週にした事の判を出す（calendar_audit_1115 中-1）。
+    /// 印の無い週（旧セーブで記録が無い）は従来どおり塗る
+    static func paintsPastGPWeek(category: BandCategory?) -> Bool {
+        guard let c = category else { return true }
+        return c == .taikai
     }
 
     /// 来週以降の頂GP の週を塗るか（表示専用・純関数）

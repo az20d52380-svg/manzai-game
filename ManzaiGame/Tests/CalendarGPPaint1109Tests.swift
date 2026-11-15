@@ -26,4 +26,11 @@ final class CalendarGPPaint1109Tests: XCTestCase {
         for r in cal.gpRounds { XCTAssertTrue(CalendarView.paintsFutureGPWeek(r.week, upcoming: s.upcomingStages()), "週\(r.week)") }
         XCTAssertTrue(CalendarView.paintsFutureGPWeek(cal.gpFinalWeek, upcoming: s.upcomingStages()))
     }
+
+    /// calendar_audit_1115 中-1：シードで免除された1回戦・落ちた後の過ぎた週は塗らない
+    func testPastGPWeekPaintsOnlyWhenEntered() {
+        XCTAssertTrue(CalendarView.paintsPastGPWeek(category: .taikai))
+        XCTAssertTrue(CalendarView.paintsPastGPWeek(category: nil), "記録の無い旧セーブは従来どおり")
+        XCTAssertFalse(CalendarView.paintsPastGPWeek(category: .kaifuku))
+    }
 }
