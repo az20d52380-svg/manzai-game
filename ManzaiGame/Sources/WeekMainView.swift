@@ -24,14 +24,19 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    @State private var toastSeq = 0   // 同じ文をもう一度出した時も読む時間を測り直す（stale_timer_audit_1115 #3）
     @State private var hint: HintSpec?       // 初回だけの短い説明（初週・生活費の前の週。`？` からも開く）
     @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
     @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
     @State private var rentShownKey = 0
+    // 覆い（イベント・ネタ帳・日程など）を閉じて戻ると .task(id: session.week) が張り直される＝同じ週の獲得の一拍・週めくりを2回目は出さない（onappear_audit_1115 #1 #2）
+    @State private var burstPlayedKey = 0
+    @State private var stampPlayedKey = 0
     @State private var injuryNotice: String?   // §97 体調ダウンの知らせ（倒れた直後の週メインで1回・タップで閉じる）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
-    @State private var youthNoticeYear = 0   // 「若手の大会は今年が最後」を出した年（年初に1回だけ）
-    @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
+    // 年初の知らせを出した年は session に持つ（画面の作り直し・中断→再開でもう一度出さない＝save_restore_audit_1115 #2）
+    private var youthNoticeYear: Int { get { session.youthNoticeYear } nonmutating set { session.markYouthNotice() } }   // 「若手の大会は今年が最後」
+    private var tiredNoticeYear: Int { get { session.tiredNoticeYear } nonmutating set { session.markTiredNotice() } }   // 飽きの知らせ
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
     /// 「引き抜き」実行中のカードid（(B)版: フェード0.12s→実行。多重タップ防止を兼ねる）。
@@ -74,8 +79,11 @@ struct WeekMainView: View {
     @State private var lastBeatWeek: [String: Int] = [:]
     /// 「年末へ」の二度押し確認（監査A-03）
     @State private var yearEndArmed = false
+    @State private var yearEndArmedAt = Date.distantPast   // 確認を読まずのダブルタップで素通りしない（double_tap_audit_1115 #3）
+    @State private var offerArmedAt = Date.distantPast      // 同 #4
     /// オファーを受ける前の二度押し確認（誤タップ事故＝playtest_v6 W31〜W34）
     @State private var offerArmed = false
+    @State private var offerArmGen = 0   // 古い3秒の時計が、選び直して押し直した後の「もう一度」を早く消さないための番号
     /// オファーの帯の実際の高さ（声の席をこの分だけ上げる＝固定値だと帯に吹き出しが重なった）
     @State private var offerBandH: CGFloat = 0
     /// 進行中の設定（監査G-04）
@@ -289,6 +297,9 @@ struct WeekMainView: View {
             // 後始末（一言を消す等）は世代が一致する時だけ＝旧週のタスクの続きが次週の Beat1 を消さない（X4-04）。
             @MainActor func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
             guard session.lastDeltaWeek == session.week else { resultName = nil; clearBeat(); return }
+            let playKey = session.year * 1000 + session.week
+            guard burstPlayedKey != playKey else { resultName = nil; clearBeat(); await presentRent(); return }   // 支払いの画面は自分のキーで1週1回
+            burstPlayedKey = playKey
             let chips = makeBurstChips()
             let line = makeResultLine()
             resultName = nil
@@ -311,8 +322,11 @@ struct WeekMainView: View {
         }
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
+            let stampKey = session.year * 1000 + session.week
+            guard stampPlayedKey != stampKey else { weekStampVisible = false; return }   // 札の途中で覆いを開いて取り消された時も、戻ったら札を消す（review_fixes_1115 1-1）
+            stampPlayedKey = stampKey
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
-            withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
+            withAnimation(Theme.Motion.r(Theme.Motion.emphSpring)) { weekStampVisible = true }   // 視差を減らす時は跳ねない（settings_leak_audit_1115）
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
             if !Task.isCancelled { withAnimation(Theme.Motion.exit) { weekStampVisible = false } }   // 取り消し時に消すと、次の週の札を消してしまう
         }
@@ -323,7 +337,7 @@ struct WeekMainView: View {
             banterIndex = 0
             Task { try? await MZSpeed.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
         }   // 掛け合いの読み位置は週頭でリセット
-        .task(id: toast) {
+        .task(id: toastSeq) {
             if let t = toast {
                 // 次の toast に替わるとこの待ちは取り消される。取り消された時は消さない（try? で握ると新しい toast を即座に消していた＝11/10 深夜）
                 do {
@@ -451,7 +465,7 @@ struct WeekMainView: View {
         // 今年の大会が全部終わった後は、帯だけ年末までの週を出す（playtest_v11 #4。独白・経験点の注意は大会基準のまま）
         if let m = bannerMilestone() {
             let hot = m.weeksLeft <= 3
-            Button { instant { showCalendar = true } } label: {
+            Button { openOverlay { instant { showCalendar = true } } } label: {
                 VStack(spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill").font(.system(size: Font.mzScaled(11))).accessibilityHidden(true)   // 12pt 未満の例外：アイコン記号（文字ではない）
@@ -913,10 +927,14 @@ struct WeekMainView: View {
             }
             if case .acceptOffer = v.action, !offerArmed {
                 offerArmed = true
+                offerArmedAt = Date()
+                offerArmGen += 1
+                let gen = offerArmGen
                 showToast("もう一度押すと、このオファーを受ける。")
-                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); offerArmed = false }
+                Task { try? await Task.sleep(nanoseconds: 3_000_000_000); if offerArmGen == gen { offerArmed = false } }
                 return
             }
+            if case .acceptOffer = v.action, Date().timeIntervalSince(offerArmedAt) < 0.4 { return }
             offerArmed = false
             if openCat == .ネタを書く { prepareNetaTarget() }
             perform(v)
@@ -1207,7 +1225,7 @@ struct WeekMainView: View {
                     .opacity(burstVisible ? 1 : 0)
                     .offset(y: burstVisible ? 0 : 16)
                     .scaleEffect(burstVisible ? 1 : 0.7, anchor: .bottomTrailing)
-                    .animation(Theme.Motion.emphSpring.delay(Double(i) * 0.07), value: burstVisible)
+                    .animation(Theme.Motion.r(Theme.Motion.emphSpring.delay(Double(i) * 0.07)), value: burstVisible)
             }
         }
     }
@@ -1275,6 +1293,13 @@ struct WeekMainView: View {
     }
 
     /// 立っている選択肢イベントを、今出してよければ出す（獲得の一拍・引き抜きの最中は待たせる）。
+    /// 下の帯・目標帯から覆いを開く。獲得の一拍の最中に選択肢イベントが控えている時は開かない＝イベントの覆いと重なって
+    /// 出せず、行動カードが全部無反応になるのを防ぐ（softlock_audit_1115 #1）。それ以外の一拍中は行動カードと同じく畳んでから開く。
+    private func openOverlay(_ open: @escaping () -> Void) {
+        if session.pendingChoiceEvent != nil, burstHold || pulledID != nil { burstSkip = true; syncEventPresentation(); return }   // 一拍を畳んでイベントを先に出す（押した帯は黙らせない＝review_fixes_1115 1-3）
+        tapOrQueue(open)
+    }
+
     private func syncEventPresentation() {
         if session.pendingChoiceEvent != nil, !burstHold, pulledID == nil { instant { showEvent = true } }
     }
@@ -1312,7 +1337,8 @@ struct WeekMainView: View {
             // 実力は1週で整数が動かない週が多い＝数字でなく「↑」（バーのオレンジと対）
             chips.append(BurstChip(id: chips.count, text: "実力 ↑", fg: .white, bg: Theme.senseDeep))
         }
-        let cd = Int(session.lastCompatGain.rounded())
+        // 前後それぞれ丸めて引く＝相性の整数表示と行動カードの予告（:1565）と同じ数え方（number_display_audit_1115 #1：0.6 の伸びで「+1」なのに整数が動かなかった）
+        let cd = Int(s.compat.rounded()) - Int((s.compat - session.lastCompatGain).rounded())
         if cd > 0 {
             chips.append(BurstChip(id: chips.count, text: "相性 +\(cd)", fg: .white, bg: Theme.vermD))
         }
@@ -1395,9 +1421,9 @@ struct WeekMainView: View {
                     }
                 }
             YoseFooterTabBar(items: [
-                YoseFooterItem(title: "日程", symbol: "calendar") { instant { showCalendar = true } },              // S4 カレンダー
-                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { instant { showNotebook = true } },       // S5 コンビの情報（旧ネタ帳）
-                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { showSettings = true },        // 音量・この年をやめる（監査G-04）
+                YoseFooterItem(title: "日程", symbol: "calendar") { openOverlay { instant { showCalendar = true } } },              // S4 カレンダー
+                YoseFooterItem(title: "コンビ", symbol: "person.2.fill") { openOverlay { instant { showNotebook = true } } },       // S5 コンビの情報（旧ネタ帳）
+                YoseFooterItem(title: "設定", symbol: "gearshape.fill") { openOverlay { showSettings = true } },        // 音量・この年をやめる（監査G-04）
             ])
         }
         .background(YoseColor.kuroUrushi.ignoresSafeArea(edges: .bottom))
@@ -1429,7 +1455,7 @@ struct WeekMainView: View {
         }
     }
 
-    private func showToast(_ t: String) { toast = t }
+    private func showToast(_ t: String) { toast = t; toastSeq += 1 }
 
     /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
     /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
@@ -1442,12 +1468,13 @@ struct WeekMainView: View {
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
         session.resetDebtWarnIfRepaid(money: s.money)   // 【候補 #4 後半】返し終えたら次の借金でまた知らせる（ほかの知らせの週でも戻すよう先頭で＝candidate_review_1026_v0 §2）
-        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
+        // 行動を押して週が進む途中（pulledID）は出さない＝モーダルの下で週が進み、文と数字がずれていた（notice_priority_audit_1115 N2）。週が進んだ後の呼び出しで出る
+        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase {
             session.clearInjuryNotice()
             injuryNotice = GameSession.injuryNoticeText
             return
         }
-        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
             riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"
@@ -1506,7 +1533,9 @@ struct WeekMainView: View {
         guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
         youthNoticeYear = session.year
         Task {
-            if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
+            // 前の toast が消えるまで待つ（決め打ちの4.5秒だと、その間に出た別の toast を上書きしていた＝stale_timer_audit_1115 #4）。上限 約15秒で必ず出す
+            var waited = 0
+            while toast != nil, waited < 50 { try? await Task.sleep(nanoseconds: 300_000_000); waited += 1 }   // 読む時間を待つので演出の速さで縮めない
             showToast("谷口「若手限定の大会に出られるのは、今年が最後だ」")
         }
     }
@@ -1597,10 +1626,12 @@ struct WeekMainView: View {
         Button { tapOrQueue {
             if burstHold || session.pendingChoiceEvent != nil { return }
             if yearEndArmed {
+                guard Date().timeIntervalSince(yearEndArmedAt) >= 0.4 else { return }
                 yearEndArmed = false
                 session.fastForwardToYearEnd()
             } else {
                 yearEndArmed = true
+                yearEndArmedAt = Date()
                 showToast("もう一度押すと、残りの週を休んで年末の結果へ進む。")
                 Task { try? await Task.sleep(nanoseconds: 3_000_000_000); yearEndArmed = false }
             }
