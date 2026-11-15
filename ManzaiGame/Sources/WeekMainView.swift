@@ -1099,7 +1099,7 @@ struct WeekMainView: View {
             if gated {
                 Text(preoccupied ? "今週は撮影で練習できない" : "体力が足りない ・ 休もう").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
             } else if !v.affordable {
-                Text("お金が足りない").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
+                Text(Self.shortMoneyLine(cost: v.cost, money: s.money)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.shu)
             }
             if v.isTrain, openCat == .練習, !gated, v.affordable {
                 let gains = ExpCurrency.allCases.map { ($0, ExpDisplay.value(after[currency: $0] - s[currency: $0])) }.filter { $0.1 > 0 }
@@ -1391,6 +1391,13 @@ struct WeekMainView: View {
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(insufficient ? YoseColor.shu : (up ? YoseColor.tokiwa : YoseColor.shu).opacity(0.1))
             .overlay(Rectangle().stroke(insufficient ? YoseColor.sumi : (up ? YoseColor.tokiwa : YoseColor.shu), lineWidth: 1.5))
+    }
+
+    /// 払えない札の一行（候補 short-money-price・decision_brief 11/15・preview_audit_1115 N1）：値段と不足を出す。値段が分からない札は今までどおり
+    static func shortMoneyLine(cost: Int, money: Int) -> String {
+        guard cost > 0 else { return "お金が足りない" }
+        func yen(_ v: Int) -> String { v < 10000 ? "¥\(v.formatted())" : "¥" + Yen.man(v) }
+        return "\(yen(cost))・あと\(yen(max(1, cost - money)))不足"   // 半分幅の札で1行に収める（「足りない」だと「ない」が2行目に落ちた）
     }
 
     private func staminaPill(_ delta: Int, insufficient: Bool = false) -> some View {

@@ -199,6 +199,7 @@ struct RootView: View {
                 var st = GameState(config: session.config); st.compat = 10
                 st.money = Int(ProcessInfo.processInfo.environment["MZ_MONEY"] ?? "") ?? -100_000
                 session = GameSession(startState: st)
+                if ProcessInfo.processInfo.environment["MZ_EVSKIP"] != nil, session.pendingChoiceEvent != nil { session.dismissChoiceEvent() }   // 第1週のイベントを閉じて札を見る（short-money-price の目視）
             }
             if ui == "rent", session.week <= 1, session.year == 1 {
                 // 月末の支払いの目視: MZ_MONEY=<円>（既定 200000＝払える／例 110000＝足りない）。第4週で休む行動を自動実行する（MZ_WEEK=rent）
