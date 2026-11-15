@@ -344,6 +344,7 @@ struct RootView: View {
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
             if quit {
                 Sound.stopBGM()   // タイトル戻し（returnToTitle）と同じく育成の曲を止める（sound_state_audit_1115 #2）
+                NetaStage.lastSeen = [:]   // returnToTitle と同じくネタ札の光り方の記憶を持ち越さない（newcycle_audit_1115 #1）
                 session = GameSession()
                 withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
             }
