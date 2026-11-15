@@ -472,3 +472,5 @@
 550. [済 11/16 定期] キュー439②の候補 claude/gacha-login-future-day-cand（60077e4aa）＝未来の日で取った後も札が取れる（アプリ green・GameCore 474・新テスト GachaLoginFutureDay1116Tests 3本）。decision_brief 11/16 定期に載せた。
 
 551. [済 11/16 定期] code_review_unreviewed_1115 の低 #3〜#5 の現状：#3 は候補 gacha-broken-backup-cand で対応済み・#4 は広告をつなぐ時の話（今は無害）・#5 は FinalsPresentationView:283 の Haptics が既に取り消しを見ていて、扉が開くのは先へ送られた時にも正しい状態＝直す所なし。
+
+552. [済 11/16 定期] check_candidates：新しい候補3本（yearend-hana-line・gacha-opened-per-device・gacha-login-future-day）は本体と ok・候補どうしの衝突は pbxproj だけ（既知の型）。
