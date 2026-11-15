@@ -13,9 +13,10 @@ enum JudgeData {
 
     /// 紙講評1件。その本番にかけたネタ（state.selectedNetaID）・点差・ハマった夜を差し込む。salt 剰余＝乱数非消費・golden不変。
     static func review(passed: Bool, state: GameState, salt: Int, config: GameConfig, year: Int,
-                       margin: Double?, burst: Bool) -> (text: String, judge: String) {
+                       margin: Double?, burst: Bool, video: Bool = false) -> (text: String, judge: String) {
         let neta = state.netas.first { $0.id == state.selectedNetaID }
-        let scene = JudgeTalk.Scene.from(state: state, neta: neta, config: config, year: year, burst: burst, margin: margin)
+        var scene = JudgeTalk.Scene.from(state: state, neta: neta, config: config, year: year, burst: burst, margin: margin)
+        scene.isVideo = video   // 動画審査（THE HANA 1回戦）は客席の語を含む行を除く
         return JudgeTalk.paperReview(passed: passed, scene: scene, salt: salt)
     }
 
