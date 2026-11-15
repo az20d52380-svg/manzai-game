@@ -343,13 +343,15 @@ struct RootView: View {
         .onChange(of: session.abandoned) { _, quit in
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
             if quit {
+                Sound.stopBGM()   // タイトル戻し（returnToTitle）と同じく育成の曲を止める（sound_state_audit_1115 #2）
                 session = GameSession()
                 withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）
-            if phase == .background, started { session.saveNow() }
+            // バックグラウンド移行時の保険保存（通常の保存は GameSession の各入力確定点で走る）。
+            // .inactive（アプリの切替画面・着信）でも保存＝そこから強制終了される経路を拾う（lifecycle_audit_1115 #3・1回 約0.6ms）
+            if phase == .background || phase == .inactive, started { session.saveNow() }
         }
     }
 

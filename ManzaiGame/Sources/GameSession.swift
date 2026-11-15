@@ -37,6 +37,9 @@ final class GameSession {
     private(set) var lastMoneyDelta = 0   // 行動による差のみ（生活費は lastLivingPaid に分けた）
     /// この週の週末に引かれた生活費（引かれない週は 0・表示専用）。
     private(set) var lastLivingPaid = 0
+    /// choose の pump で最初に受けた weekDone の状態（押した週の末）。療養週の自動送りを行動の差に混ぜない（stamina_audit_1115 N1・表示専用）
+    private var actedWeekEndState: GameState?
+    private var capturingActedWeek = false
     private(set) var lastStaminaDelta = 0
     /// Beat2 獲得チップ用の知名度の増分（表示専用・golden非対象）。舞台に立つ週の「押した→残った」を見せる（G1）
     private(set) var lastFameDelta: Double = 0
@@ -188,6 +191,11 @@ final class GameSession {
     /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。中断しても数え直さないよう保存する（code_review_1107g #1）
     @ObservationIgnored private(set) var smallEntered = 0
     @ObservationIgnored private(set) var smallWon = 0
+    /// 年初の知らせ（若手の大会は今年が最後／ネタの飽き）を出した年。画面の作り直し・中断→再開で同じ年にもう一度出さない（save_restore_audit_1115 #2・onappear_audit_1115 #4）
+    @ObservationIgnored private(set) var youthNoticeYear = 0
+    @ObservationIgnored private(set) var tiredNoticeYear = 0
+    func markYouthNotice() { youthNoticeYear = year; saveNow() }
+    func markTiredNotice() { tiredNoticeYear = year; saveNow() }
     @ObservationIgnored private var didRecordChampion = false   // その年の優勝を記録したか（年が替わると戻す）
     /// 優勝の年末で勇退を選んだ（選ぶと保存が消えるのでセーブには持たない）
     private(set) var retiredAfterWin = false
@@ -290,7 +298,8 @@ final class GameSession {
                 self.finished = true
             }
         }
-        self.pendingResult = save.pendingResult
+        // 結果画面は results の最後を必ず読む＝壊れた・空の結果がセーブから来たら出さない（crash_audit_1115 #1）
+        self.pendingResult = (save.pendingResult?.results.isEmpty ?? true) ? nil : save.pendingResult
         self.log = save.log
         self.lossStreak = save.lossStreak
         self.justPassedStage = save.justPassedStage
@@ -329,7 +338,16 @@ final class GameSession {
         self.totalPrize = save.totalPrize
         self.smallEntered = save.smallEntered ?? 0
         self.smallWon = save.smallWon ?? 0
+        self.inviteIdea = save.inviteIdea ?? false
+        self.youthNoticeYear = save.youthNoticeYear ?? 0
+        self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
+        // 週末の結果を見せる段なのに見せる結果が無い（壊れた・空の結果を捨てた）時は、結果を見たのと同じく次へ進める
+        // ＝どの画面の条件にも当たらず読み込み中のまま止まらない（softlock_audit_1115 #3・crash_audit_1115 #1 の続き）
+        if case .weekDone = phase, pendingResult == nil {
+            phase = runner.begin()
+            pump()
+        }
     }
 
     /// 2つの段が同じ種類で、中身を config から取り直せる段か（大会の決断・自由週・回戦）。
@@ -383,18 +401,23 @@ final class GameSession {
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
         if case .train(.ネタ合わせ) = action, runner.lastTrainingDone == nil { weeksWithoutPartner = prevWithoutPartner + 1 }   // 休みに差し替わった週は相方と合わせていない（code_review_2026-10-19j §3）
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
+        actedWeekEndState = nil; capturingActedWeek = true
         pump()
+        capturingActedWeek = false
+        // 差はすべて「押した週の末」まで（体調ダウン後の療養週が pump で続けて進んでも混ぜない＝stamina_audit_1115 N1）
+        let st = actedWeekEndState ?? self.state
         lastGains = Ability.allCases.compactMap { a in
-            let d = state[a] - before[a]
+            let d = st[a] - before[a]
             return d > 0.001 ? (a, d) : nil
         }
-        lastCompatGain = state.compat - before.compat
+        lastCompatGain = st.compat - before.compat
         // 正典v3: 稽古は能力を直接伸ばさず経験点通貨を稼ぐ＝この週に入った通貨の増分（§1-3 受け取りの一拍）。
         lastGrainGains = ExpCurrency.allCases.compactMap { c in
-            let d = state[currency: c] - before[currency: c]
+            let d = st[currency: c] - before[currency: c]
             return d > 0.001 ? (c, d) : nil
         }
         // Beat2 獲得バースト用のネタの伸び（applyNetaWork の結果の差分・RNG非消費・golden非対象）
+        // ネタの差だけは今の state で取る（summary.state は applyNetaWork より前の写し＝review_fixes_1115b §2）
         if state.nextNetaID > before.nextNetaID {
             lastNetaGain = (true, 0)
         } else {
@@ -403,10 +426,10 @@ final class GameSession {
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
         // 生活費（livingInterval 週ごとの週末処理）は行動の差と分けて持つ（GameEngine.applyWeekEnd と同条件・表示専用）。
-        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? GameEngine.livingCostDue(state, config: config) : 0   // 部屋の上乗せ込み
-        lastMoneyDelta = state.money - before.money + lastLivingPaid
-        lastStaminaDelta = Int(state.stamina.rounded()) - Int(before.stamina.rounded())
-        lastFameDelta = state.fame - before.fame
+        lastLivingPaid = (actedWeek % config.livingInterval == 0) ? GameEngine.livingCostDue(st, config: config) : 0   // 部屋の上乗せ込み
+        lastMoneyDelta = st.money - before.money + lastLivingPaid
+        lastStaminaDelta = Int(st.stamina.rounded()) - Int(before.stamina.rounded())
+        lastFameDelta = st.fame - before.fame
         lastDeltaWeek = week
         // 0012 相性凍結の週送り減算（UI層・golden非対象）。この週の行動は freeze 有効で処理され、週が明けて1減る。
         if state.compatFreezeWeeks > 0 { runner.tickCompatFreeze(); state = runner.state }
@@ -951,6 +974,7 @@ final class GameSession {
         guard state.netas.count < config.netaActiveSlots else { return }
         runner.applyNetaRecall(id: id)
         state = runner.state
+        if state.netas.count >= config.netaActiveSlots { writeNewNeta = false }   // 枠が埋まったら「新しく書く」は書けない＝画面の「新ネタ」と実際（末尾の改稿）を食い違わせない（neta_audit_1115 N3 ②）
         saveNow()
     }
 
@@ -1261,6 +1285,9 @@ final class GameSession {
         var smallEntered: Int?            // その年の道中大会に出た数（旧セーブ＝nil＝0）
         var smallWon: Int?                // その年の道中大会で優勝した数（旧セーブ＝nil＝0）
         var writeNetaID: Int?             // 書く対象のネタ（旧セーブ＝nil＝勝負ネタを磨く・queue108）
+        var inviteIdea: Bool?             // 出ている誘いの札が発想付きか（旧セーブ＝nil＝なし・save_restore_audit_1115 #1）
+        var youthNoticeYear: Int?         // 年初の知らせを出した年（旧セーブ＝nil＝0＝まだ）
+        var tiredNoticeYear: Int?
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1328,7 +1355,9 @@ final class GameSession {
                             didFireRiftWarn: didFireRiftWarn, riftWarnChoice: riftWarnChoice,
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
-                            injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID)
+                            injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID,
+                            inviteIdea: pendingChoiceEvent == .weekendInvite ? inviteIdea : nil,
+                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
@@ -1363,6 +1392,7 @@ final class GameSession {
             switch phase {
             case .weekDone(let summary):
                 state = summary.state
+                if capturingActedWeek, actedWeekEndState == nil { actedWeekEndState = summary.state }
                 for r in summary.results where r.isStage {
                     TrophyBook.onStage(r, state: summary.state, config: config)
                     let c = TrophyBook.smallTournamentCount(r); smallEntered += c.entered; smallWon += c.won
@@ -1409,6 +1439,8 @@ final class GameSession {
                     if outcome.bankrupt || outcome.dissolved {
                         let rs = runner.snapshot().weekResults
                         if !rs.isEmpty {
+                            // 同じ週のトロフィーも weekDone と同じく渡す（trophy_meta_audit_1115 #3・年末の再入はこの guard で1回だけ）
+                            for r in rs where r.isStage { TrophyBook.onStage(r, state: runner.state, config: config) }
                             log.append(summarize(WeekSummary(year: runner.year, week: runner.week, results: rs, state: runner.state)))
                             totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
                         }
