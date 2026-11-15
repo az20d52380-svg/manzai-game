@@ -84,7 +84,7 @@ struct RentStatementView: View {
                     HStack {
                         Text("所持金").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                         Spacer()
-                        Text((money < 0 ? "−" : "") + RentStatement.yen(Int(money)))
+                        Text((Int(money) < 0 ? "−" : "") + RentStatement.yen(Int(money)))   // 数え上げの途中の (−1, 0) で「−0」を出さない（number_display_audit_1115 #3）
                             .font(YoseFont.numLarge)
                             .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinText)
                             .contentTransition(.numericText(value: money))
