@@ -417,10 +417,11 @@ final class GameSession {
             return d > 0.001 ? (c, d) : nil
         }
         // Beat2 獲得バースト用のネタの伸び（applyNetaWork の結果の差分・RNG非消費・golden非対象）
-        if st.nextNetaID > before.nextNetaID {
+        // ネタの差だけは今の state で取る（summary.state は applyNetaWork より前の写し＝review_fixes_1115b §2）
+        if state.nextNetaID > before.nextNetaID {
             lastNetaGain = (true, 0)
         } else {
-            let d = st.netas.compactMap { n in before.netas.first { $0.id == n.id }.map { n.polish - $0.polish } }.max() ?? 0
+            let d = state.netas.compactMap { n in before.netas.first { $0.id == n.id }.map { n.polish - $0.polish } }.max() ?? 0
             lastNetaGain = d > 0.001 ? (false, d) : nil
         }
         // Beat2 獲得バースト用の収支（表示専用・golden非対象）。pump 後の state＝週末処理込みの実増減。
