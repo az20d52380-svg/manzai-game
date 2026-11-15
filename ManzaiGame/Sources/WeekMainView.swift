@@ -29,11 +29,15 @@ struct WeekMainView: View {
     @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
     @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
     @State private var rentShownKey = 0
+    // 覆い（イベント・ネタ帳・日程など）を閉じて戻ると .task(id: session.week) が張り直される＝同じ週の獲得の一拍・週めくりを2回目は出さない（onappear_audit_1115 #1 #2）
+    @State private var burstPlayedKey = 0
+    @State private var stampPlayedKey = 0
     @State private var injuryNotice: String?   // §97 体調ダウンの知らせ（倒れた直後の週メインで1回・タップで閉じる）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
-    @State private var youthNoticeYear = 0   // 「若手の大会は今年が最後」を出した年（年初に1回だけ）
+    // 年初の知らせを出した年は session に持つ（画面の作り直し・中断→再開でもう一度出さない＝save_restore_audit_1115 #2）
+    private var youthNoticeYear: Int { get { session.youthNoticeYear } nonmutating set { session.markYouthNotice() } }   // 「若手の大会は今年が最後」
+    private var tiredNoticeYear: Int { get { session.tiredNoticeYear } nonmutating set { session.markTiredNotice() } }   // 飽きの知らせ
     @State private var finalYearNoticeYear = 0   // 最終年（careerYears 年目）の年初の一言を出した年（キュー356）
-    @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
     /// 「引き抜き」実行中のカードid（(B)版: フェード0.12s→実行。多重タップ防止を兼ねる）。
@@ -295,6 +299,9 @@ struct WeekMainView: View {
             // 後始末（一言を消す等）は世代が一致する時だけ＝旧週のタスクの続きが次週の Beat1 を消さない（X4-04）。
             @MainActor func clearBeat() { if gen == burstGen { withAnimation(Theme.Motion.exit) { beatAdvice = nil } } }
             guard session.lastDeltaWeek == session.week else { resultName = nil; clearBeat(); return }
+            let playKey = session.year * 1000 + session.week
+            guard burstPlayedKey != playKey else { resultName = nil; clearBeat(); await presentRent(); return }   // 支払いの画面は自分のキーで1週1回
+            burstPlayedKey = playKey
             let chips = makeBurstChips()
             let line = makeResultLine()
             resultName = nil
@@ -317,6 +324,9 @@ struct WeekMainView: View {
         }
         .task(id: session.week) {
             // 週送りスタンプ: 週が明けたら「第N週」を一拍（出現spring→0.7s→退場）。入力は遮らない。
+            let stampKey = session.year * 1000 + session.week
+            guard stampPlayedKey != stampKey else { return }
+            stampPlayedKey = stampKey
             if session.week > 1 { Sound.play(.transition) }   // 週めくりの音（初週の起動時は鳴らさない）
             withAnimation(Theme.Motion.emphSpring) { weekStampVisible = true }
             try? await MZSpeed.sleep(nanoseconds: 700_000_000)
