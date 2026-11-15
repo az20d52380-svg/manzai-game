@@ -397,3 +397,5 @@
 
 495. [済 11/15 定期・sonnet・docs/skill_item_audit_1115_v0.md] 特技・道具の効果の点検＝4件（中1・低3）・正典とのずれ0・二重に効く／消える経路0。直した：#4 定数の同期に Skill.swift の4倍率（injuryMult・fameMult・livingMult・riftMult）と itemSentoRecovery・itemRecorderBonus・itemStudioBonus を足した（96→103・ずらすと NG を確認）。判断が要る中 #1：新幹線回数券（¥20万）は大阪4大会すべてに出ても交通費の節約は最大 ¥12万＝お金では元が取れない（体力だけが得）→ ①値段を下げる（式）②「体力を温存する品」と文面に出す ③今のまま。低：愛され芸人が決勝進出・優勝・イベントの知名度に効かない／銭湯の回数券が体調ダウンの週に減る／体調ダウン確率の golden がテスト側の写しの式を比べている（WeekRunner の式だけ変えても通る）＝材料のみ。
 496. [済 11/15 定期] skill_item_audit_1115 #4 ②：体調ダウンの確率の式を GameEngine.injuryProbability の1関数に出し、WeekRunner と golden の突き合わせ（FeatureGoldenTests）の両方が呼ぶ（テスト側の写しの式を消した）。式・掛ける順・乱数の消費は不変＝gen_golden の差分0・GameCore 472 green。
+
+497. [済 11/15 定期・sonnet・docs/test_formula_copies_1115_v0.md] テスト側に式を写して比べている所の洗い出し＝golden 系は体調ダウン（496 で済）の他に写し0。非 golden に5件・golden 経路外の穴1件。直した：#6 稽古→ネタ（書く＝改稿の伸び／披露＝ネタ見せ会は hard）の対応を GameConfig.netaWork に出し、アプリの applyNetaWork と golden（testNetaGrowGolden）の両方が呼ぶ＝アプリ側の取り違えも golden で落ちる。式・乱数は不変＝gen_golden 差分0・GameCore 472／アプリ 420 green。残り（#1 大会経験点の係数と各段の pw・#2/#3 知名度その他の伸び・すれ違いの増分の小関数化）は §3 の順で次に。

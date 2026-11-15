@@ -844,12 +844,11 @@ final class GameSession {
     ///  - ネタ見せ会/フリーライブ: 選択中ネタがあればそれを、無ければ直近のアクティブネタを客前にかける。
     ///    アクティブネタが1本も無ければ何もしない（まだ書いた ネタが無い＝最初の ネタ作り が先）。
     private func applyNetaWork(for action: WeekAction) {
-        guard case .train(let t) = action, GameConfig.netaWriteTrainings.contains(t) || t == .ネタ見せ会 || t == .フリーライブ else { return }
+        guard case .train(let t) = action, let work = config.netaWork(for: t) else { return }   // 対応は GameCore と golden で共有（test_formula_copies_1115 #6）
         // 体力ゲート・体調ダウン・お金不足で休みに差し替わった週はネタも進まない（休んだのに完成度が上がっていた）
         guard runner.lastTrainingDone == t else { return }
-        let placeGain = config.netaPlaceGain[t]   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
-        switch t {
-        case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
+        switch work {
+        case .write(let placeGain):   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
             if let id = writeTargetID {
                 runner.applyNetaRevise(id: id, gain: placeGain)
             } else if state.netas.count < config.netaActiveSlots {
@@ -863,18 +862,17 @@ final class GameSession {
                 runner.applyNetaRevise(id: last.id, gain: placeGain)
                 writeNewNeta = false   // 枠が満杯で新しく書けなかった週は「新しく書く」を下ろす（後で枠が空いた週に黙って新ネタが出ない・code_review_2026-10-25 §7a）
             }
-        case .ネタ見せ会, .フリーライブ:
+        case .live(let hard):
             let targetID = (state.selectedNetaID.flatMap { id in state.netas.contains { $0.id == id } ? id : nil })
                 ?? state.netas.last?.id
             if let id = targetID {
                 let wasDown = state.netas.first { $0.id == id }?.isDown ?? true
-                runner.applyNetaLive(id: id, hard: t == .ネタ見せ会)
+                runner.applyNetaLive(id: id, hard: hard)
                 let nowDown = runner.state.netas.first { $0.id == id }?.isDown ?? false
                 if !wasDown, nowDown {   // おろし（初披露）の瞬間だけ一言（v2 §3-2補2）
                     justOroshiNeta = (id, DialogueData.netaOroshi(salt: id &+ week))
                 }
             }
-        default: break
         }
         state = runner.state
     }

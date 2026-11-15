@@ -151,7 +151,7 @@ final class FeatureGoldenTests: XCTestCase {
     func testNetaGrowGolden() throws {
         let scripts = try XCTUnwrap(try loadExt()["neta_grow"] as? [[String: Any]])
         let config = GameConfig()
-        let places: [String: Training] = ["喫茶店で書く": .喫茶店で書く, "ファミレスで書く": .ファミレスで書く]
+        let places: [String: Training] = ["ネタ作り": .ネタ作り, "喫茶店で書く": .喫茶店で書く, "ファミレスで書く": .ファミレスで書く, "ネタ見せ会": .ネタ見せ会, "フリーライブ": .フリーライブ]
         for sc in scripts {
             let name = sc["name"] as! String
             var s = GameState(config: config)
@@ -170,12 +170,13 @@ final class FeatureGoldenTests: XCTestCase {
                 let idx = (st["idx"] as! NSNumber).intValue
                 if st["ev"] as! String == "new" {
                     _ = r.applyNetaCreate(kata: .王道しゃべくり, lengthFit: [.中尺], name: "n")
-                } else if tr == "ネタ見せ会" || tr == "フリーライブ" {
-                    r.applyNetaLive(id: r.state.netas[idx].id, hard: tr == "ネタ見せ会")
-                } else if tr == "ネタ作り" {
-                    r.applyNetaRevise(id: r.state.netas[idx].id)
                 } else {
-                    r.applyNetaRevise(id: r.state.netas[idx].id, gain: config.netaPlaceGain[places[tr]!])
+                    // 稽古→ネタの対応はアプリと同じ GameConfig.netaWork を通す（テスト側に写さない＝test_formula_copies_1115 #6）
+                    switch config.netaWork(for: places[tr]!) {
+                    case .write(let gain)?: r.applyNetaRevise(id: r.state.netas[idx].id, gain: gain)
+                    case .live(let hard)?: r.applyNetaLive(id: r.state.netas[idx].id, hard: hard)
+                    case nil: XCTFail("ネタに効かない稽古 \(tr)")
+                    }
                 }
                 let tag = "[\(name) step\(i) \(tr)]"
                 let pol = (st["polish"] as! [NSNumber]).map { $0.doubleValue }
