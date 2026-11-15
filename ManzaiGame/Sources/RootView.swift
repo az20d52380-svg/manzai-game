@@ -343,6 +343,7 @@ struct RootView: View {
         .onChange(of: session.abandoned) { _, quit in
             // 「この年をやめてタイトルへ」（監査G-04）: セーブは GameSession 側で削除済み
             if quit {
+                Sound.stopBGM()   // タイトル戻し（returnToTitle）と同じく育成の曲を止める（sound_state_audit_1115 #2）
                 session = GameSession()
                 withAnimation(Theme.Motion.r(.easeInOut(duration: 0.3))) { started = false }
             }
