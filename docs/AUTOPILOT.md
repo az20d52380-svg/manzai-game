@@ -531,3 +531,5 @@
 
 580. [済 11/16 夜 定期・sonnet・docs/code_review_1116_wrap.md] 今日の表示の直し4本のレビュー＝高1：055f3f667／3df73f32a で行末コメントの後ろに書いた `.foregroundStyle(sumi)`（年末は `.lineSpacing(3)` も）がコメントに飲まれて消えていた（コンパイルは通る）＝修飾子をコメントの前へ戻した（大会の記録を目視・GameCore 474／アプリ green）。同じ形の飲み込みを全ソースで grep＝他に無し。中1（入口の「・」改行は最大の文字で2行目が「…」で切れうる）は 581 で目視。
 581. [済 11/16 夜 定期] 最大の文字（accessibility-XXXL）で `MZ_UI=hana_entry` を目視＝「動画を送る／舞台には立たない・結果は後日／エントリー費 ¥2,000」は3行で切れず収まる（「…」なし）＝直す所なし。（元の文）（580 の中）大会の入口の説明（b141e9759 の「・」改行）を accessibility-large より大きい文字で1枚目視＝「…」で切れるなら lineLimit を外すか縮小を足す（表示のみ）。
+
+582. [済 11/16 夜 定期] 580 の再発止め：GameCore に SwallowedModifierTests（アプリのソースの行末コメントの中に「語.foregroundStyle(」等の修飾子が続く形を検出）。3df73f32a の版で YearResultView.swift:293 を検出することを確認・今の本体は0件・GameCore 475 green。
