@@ -535,3 +535,5 @@
 582. [済 11/16 夜 定期] 580 の再発止め：GameCore に SwallowedModifierTests（アプリのソースの行末コメントの中に「語.foregroundStyle(」等の修飾子が続く形を検出）。3df73f32a の版で YearResultView.swift:293 を検出することを確認・今の本体は0件・GameCore 475 green。
 
 583. [済 11/16 夜 定期] 582 の検査を全候補ブランチにも当てた＝本物の新規は claude/notebook-full-exp-cand の NotebookView.swift:75（経験点の説明の文字色が消えていた）＝候補で直した（3be813489・ビルド OK）。all-bundles-1109 など7本の NotebookView:240 は 055f3f667 の取り込み分＝本体を取り込めば直る。q6-save-until-ending／q9-rent-peak／the-hana-candidate の S6bView:190 は本体で 10/27 に直した古い版（3週間前の候補）＝記録のみ。
+
+584. [済 11/16 夜 定期・sonnet・docs/playtest_weeks_1116_v0.md] 1年目の週の画面7枚（1/6/14/22/30/38/47週）の実プレイ点検＝高0・中2・低3。中2と低2は既知（111/144・146・137）。新しい低1（第6週の一言とボタンの小さい字が同じ内容）は decision_brief 11/16 夜 定期に1行（111 と同じ型）。「第30週を指定して第31週」は MZ_STOPWEEK が「w 週以降の最初の自由行動」で止まる作り（30週は大会の決断の週）＝仕様どおり。切れ・重なりなし。
