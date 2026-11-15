@@ -565,3 +565,5 @@
 598. [済 11/16 夜 定期] この回の候補9本（hana-video-review・exp-hint-dedup・rest-cap-preview・short-money-price・venue-heading・self-order・hana-seal・second-neta-note・tired-notice-text）をまとめの枝 claude/eve-1116-bundle-cand（3c376f641）に＝衝突なし・GameCore 478／アプリ 443 green・golden/定数 一致。オーナーが一度に触って見る用（決定は各行で）。
 
 599. [済 11/16 夜 定期] decision_brief 11/15「選択肢イベントが重なると下の方が二度と出ない」の推奨①の候補 claude/rift-defer-cand（bf8172993）＝GameSession の発火の鎖で予告（riftWarning）を前夜の後ろへ（riftWarned は一度立つと戻らない＝次の週に出る）。アプリ 439 green・GameCore 475。単体テストは無し（鎖が private）。
+
+600. [済 11/16 夜 定期・sonnet・docs/code_review_1116_cands.md] この夜の候補10本のレビュー＝高0・中1・低8。中（rest-cap の「体力は満タン」が半分幅の札ではみ出す恐れ）は所持金50万・体力100で目視＝はみ出しなし（サウナも1行）。ただ満タンでは見出しの右の札と5枚が同じ文＝判断待ちの行に添えた。低8は候補の中の細部（帯の読み上げ・文の長さ等）＝決まった時に直す。rift-defer で予告が永久に出なくなる経路は無し。
