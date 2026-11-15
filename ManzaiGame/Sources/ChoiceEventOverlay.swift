@@ -319,7 +319,10 @@ struct ChoiceEventOverlay: View {
         add("知名度", a.fame - b.fame, Theme.goldDeep)
         add("体力", a.stamina - b.stamina, Theme.mentalDeep)
         add("所持金", Double(a.money - b.money), Theme.moneyDeep)
-        var all = Array((ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }).prefix(3))
+        var ordered = ups.map { ($0.0, true, $0.1) } + downs.map { ($0.0, false, $0.1) }
+        // 所持金の増減は3枚に収まらなくても必ず出す（能力が3つ上がる選択肢でお金の減りが隠れていた＝choice_effect_audit_1115 案①）
+        if let i = ordered.firstIndex(where: { $0.0.hasPrefix("所持金") }), i >= 3 { ordered.insert(ordered.remove(at: i), at: 2) }
+        var all = Array(ordered.prefix(3))
         // 数字に出ない効果（来週の効き・余力・拘束・空気）は一言の札で添える（効果自体は不変・数字なし）
         if let note = ChoiceEventData.hiddenEffectNote(for: kind, choice: choice) { all.append((note, false, Theme.mentalDeep)) }
         guard !all.isEmpty else { return }
