@@ -173,6 +173,7 @@ struct FinalsPresentationView: View {
                     // 送りは下部固定の朱の主ボタン1つ（画面のどこをタップしても進む仕様は不変・押し場所を見せるだけ）
                     Button { if ceremonyDone { advance() } } label: { Text(advanceLabel) }
                         .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
+                        .disabled(holdingSeventh)   // 溜めの間は効かないことを見せる（finals_stage_audit_1115 低-2）
                         .padding(.bottom, 6)
                 }
             }
@@ -319,7 +320,7 @@ struct FinalsPresentationView: View {
         case .perform: return ""
         case .open: return revealedJudges < 7 ? "審査員の得点をめくる（\(min(7, revealedJudges + 1))/7）▶" : "講評へ ▶"
         case .comments: return commentStep < commentPicks.count - 1 ? "次の講評へ ▶" : "順位ボードへ ▶"
-        case .board: return !boardAuto ? "後の組を見る ▶" : (shown < d.entries.count ? "次の組を見る ▶" : "最終決戦へ 進む ▶")
+        case .board: return !boardAuto && shown < d.entries.count ? "後の組を見る ▶" : (shown < d.entries.count ? "次の組を見る ▶" : "最終決戦へ 進む ▶")   // 大トリ（出順10番）は後の組がいない（finals_stage_audit_1115 低-1）
         case .duel: return "優勝発表へ ▶"
         case .result: return ""
         }
@@ -1013,6 +1014,7 @@ struct FinalsPresentationView: View {
             if revealVotes < 7 {
                 Button { advance() } label: { Text("次の審査員札をめくる（\(revealVotes)/7）▶") }
                     .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
+                    .disabled(holdingSeventh)   // 同 低-2
             } else {
                 YTelop(text: "——開票、出揃った。", size: 16, color: YoseColor.kinBright)
             }
