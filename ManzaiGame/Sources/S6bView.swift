@@ -77,9 +77,9 @@ struct S6bView: View {
                 .padding(.horizontal, 20)
                 Text("\(session.combiName)　最後の舞台").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
                     .lineLimit(1).minimumScaleFactor(0.6)
-                // 最終到達舞台（4段階のうち、どこまで来たか）
+                // 千秋楽の会場（所持金の帯4段階）
                 VStack(spacing: 6) {
-                    Text("最終到達舞台").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
+                    Text("千秋楽の会場").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)   // 候補 venue-heading（decision_brief 11/15 夕・s6b 低-3）：所持金の帯で決まる＝「到達」と書かない
                     Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
                     HStack(spacing: 4) {
                         ForEach(0..<4, id: \.self) { t in
@@ -88,6 +88,7 @@ struct S6bView: View {
                                 .opacity(t <= venueTier ? 1 : 0.5)
                         }
                     }
+                    Text("貯めたお金で借りられる会場が決まる").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 }
                 .padding(.vertical, 12).frame(maxWidth: .infinity)
                 .yoseKifuda()
