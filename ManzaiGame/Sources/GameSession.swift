@@ -188,6 +188,11 @@ final class GameSession {
     /// その年の道中大会（出た数・優勝した数）。六冠の年の判定用。中断しても数え直さないよう保存する（code_review_1107g #1）
     @ObservationIgnored private(set) var smallEntered = 0
     @ObservationIgnored private(set) var smallWon = 0
+    /// 年初の知らせ（若手の大会は今年が最後／ネタの飽き）を出した年。画面の作り直し・中断→再開で同じ年にもう一度出さない（save_restore_audit_1115 #2・onappear_audit_1115 #4）
+    @ObservationIgnored private(set) var youthNoticeYear = 0
+    @ObservationIgnored private(set) var tiredNoticeYear = 0
+    func markYouthNotice() { youthNoticeYear = year; saveNow() }
+    func markTiredNotice() { tiredNoticeYear = year; saveNow() }
     @ObservationIgnored private var didRecordChampion = false   // その年の優勝を記録したか（年が替わると戻す）
     /// 優勝の年末で勇退を選んだ（選ぶと保存が消えるのでセーブには持たない）
     private(set) var retiredAfterWin = false
@@ -330,6 +335,8 @@ final class GameSession {
         self.smallEntered = save.smallEntered ?? 0
         self.smallWon = save.smallWon ?? 0
         self.inviteIdea = save.inviteIdea ?? false
+        self.youthNoticeYear = save.youthNoticeYear ?? 0
+        self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
     }
 
@@ -1263,6 +1270,8 @@ final class GameSession {
         var smallWon: Int?                // その年の道中大会で優勝した数（旧セーブ＝nil＝0）
         var writeNetaID: Int?             // 書く対象のネタ（旧セーブ＝nil＝勝負ネタを磨く・queue108）
         var inviteIdea: Bool?             // 出ている誘いの札が発想付きか（旧セーブ＝nil＝なし・save_restore_audit_1115 #1）
+        var youthNoticeYear: Int?         // 年初の知らせを出した年（旧セーブ＝nil＝0＝まだ）
+        var tiredNoticeYear: Int?
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1331,7 +1340,8 @@ final class GameSession {
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
                             injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID,
-                            inviteIdea: pendingChoiceEvent == .weekendInvite ? inviteIdea : nil)
+                            inviteIdea: pendingChoiceEvent == .weekendInvite ? inviteIdea : nil,
+                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)

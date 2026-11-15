@@ -34,8 +34,9 @@ struct WeekMainView: View {
     @State private var stampPlayedKey = 0
     @State private var injuryNotice: String?   // §97 体調ダウンの知らせ（倒れた直後の週メインで1回・タップで閉じる）
     @State private var debtNotice: String?   // 借金の知らせ（週の頭・各段1回・タップで閉じる）
-    @State private var youthNoticeYear = 0   // 「若手の大会は今年が最後」を出した年（年初に1回だけ）
-    @State private var tiredNoticeYear = 0   // 飽きの知らせを出した年（年初に1回だけ）
+    // 年初の知らせを出した年は session に持つ（画面の作り直し・中断→再開でもう一度出さない＝save_restore_audit_1115 #2）
+    private var youthNoticeYear: Int { get { session.youthNoticeYear } nonmutating set { session.markYouthNotice() } }   // 「若手の大会は今年が最後」
+    private var tiredNoticeYear: Int { get { session.tiredNoticeYear } nonmutating set { session.markTiredNotice() } }   // 飽きの知らせ
     /// 実行不可カードの横ブレ（§3-1: 沈まず±3pt×2往復0.15s）。カードidごとに+1で1回震える。
     @State private var shakeSeed: [String: CGFloat] = [:]
     /// 「引き抜き」実行中のカードid（(B)版: フェード0.12s→実行。多重タップ防止を兼ねる）。

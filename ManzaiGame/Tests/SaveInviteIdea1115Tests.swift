@@ -44,4 +44,14 @@ final class SaveInviteIdea1115Tests: XCTestCase {
         }
         XCTAssertGreaterThan(checked, 0, "誘いの札が1度も出なかった（休むだけでは届かない）")
     }
+
+    /// 年初の知らせを出した年が中断→再開で残る（save_restore_audit_1115 #2）
+    func testYearNoticeMarkersSurviveRestore() throws {
+        let s = GameSession(seed: 3)
+        XCTAssertEqual(s.youthNoticeYear, 0); XCTAssertEqual(s.tiredNoticeYear, 0)
+        s.markYouthNotice(); s.markTiredNotice()
+        let data = try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1"))
+        let r = GameSession(restoring: try JSONDecoder().decode(GameSession.SaveData.self, from: data))
+        XCTAssertEqual(r.youthNoticeYear, s.year); XCTAssertEqual(r.tiredNoticeYear, s.year)
+    }
 }
