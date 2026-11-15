@@ -299,7 +299,7 @@ struct TournamentResultView: View {
                 YoseChampionCelebrationView(tournamentName: "THE HANA 決勝", generationText: "結成\(summary.year)年目",
                                             duoName: session.combiName, prizeAmountYen: r.prize,
                                             partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」",
-                                            proceedLabel: "次へ 進む") {   // HANA の後は番組エンディングもキャリアの終わりも無い＝週へ戻る
+                                            proceedLabel: "次へ 進む", sealText: "栄冠", ribbonText: "T H E   H A N A") {   // 候補 hana-seal（decision_brief 11/16 夜 176）：「日本一」「漫才の頂」は頂GP の肩書き   // HANA の後は番組エンディングもキャリアの終わりも無い＝週へ戻る
                     showHanaChamp = false; session.acknowledgeResult()
                 }
                 .transition(.opacity)

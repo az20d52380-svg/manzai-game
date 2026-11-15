@@ -19,6 +19,8 @@ public struct YoseChampionCelebrationView: View {
     public let partnerLine: String         // 例：「……なあ、腹減ったな。焼肉、特上頼んでいいか？」
     public let mcName: String              // 例：「司会・鳴海」
     public let mcComment: String           // 例：「見事4票獲得！今年の漫才日本一は『満月ロケット』です！！」
+    public let sealText: String            // 右肩の朱印（頂GP＝「日本一」／THE HANA＝「栄冠」・候補 hana-seal。「優勝」は看板の大きな字と重なった）
+    public let ribbonText: String          // 看板最上部の帯の文（頂GP＝「漫才の頂、ここに決まる」）
     public let proceedLabel: String        // 最下部の進行ボタン（頂GP＝番組エンディングへ続く／THE HANA＝キャリアの週へ戻る）
     public let onFinish: () -> Void
 
@@ -53,6 +55,8 @@ public struct YoseChampionCelebrationView: View {
         mcName: String = "司会・鳴海",
         mcComment: String = "「決まりました！！今夜、幾千組の頂点に立ったのは——この2人です！」",
         proceedLabel: String = "表彰式・エンディングへ進む",
+        sealText: String = "日本一",
+        ribbonText: String = "漫 才 の 頂 、 こ こ に 決 ま る",
         onFinish: @escaping () -> Void = {}
     ) {
         self.tournamentName = tournamentName
@@ -64,6 +68,8 @@ public struct YoseChampionCelebrationView: View {
         self.mcName = mcName
         self.mcComment = mcComment
         self.proceedLabel = proceedLabel
+        self.sealText = sealText
+        self.ribbonText = ribbonText
         self.onFinish = onFinish
     }
 
@@ -231,7 +237,7 @@ public struct YoseChampionCelebrationView: View {
             // 1. 看板最上部の金冠リボンバー
             HStack(spacing: 8) {
                 OrnamentDiamond()
-                Text("漫 才 の 頂 、 こ こ に 決 ま る")
+                Text(ribbonText)
                     .font(YoseFont.gothic(12, weight: .black))
                     .tracking(3)
                     .foregroundStyle(YoseColor.kuroUrushi)
@@ -317,7 +323,7 @@ public struct YoseChampionCelebrationView: View {
                     HStack {
                         Spacer()
                         YoseAnimatedHanko(
-                            text: "日本一",
+                            text: sealText,
                             isStamped: phase >= 4,
                             isSquare: true,
                             angle: -8,
