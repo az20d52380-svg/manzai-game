@@ -24,6 +24,7 @@ struct WeekMainView: View {
     @State private var gainsVisible = false
     /// 無効タップ（体力/お金不足）の一時トースト。
     @State private var toast: String?
+    @State private var toastSeq = 0   // 同じ文をもう一度出した時も読む時間を測り直す（stale_timer_audit_1115 #3）
     @State private var hint: HintSpec?       // 初回だけの短い説明（初週・生活費の前の週。`？` からも開く）
     @State private var riftNotice: String?   // 0050 の後の一言（キャリア1回）
     @State private var rent: RentStatement?   // 月末の支払い（生活費の週末・約2秒・タップで閉じる）
@@ -324,7 +325,7 @@ struct WeekMainView: View {
             banterIndex = 0
             Task { try? await MZSpeed.sleep(nanoseconds: 2_000_000_000); maybeShowDebtNotice() }   // 週メインへ戻った後（Beat演出のあと）
         }   // 掛け合いの読み位置は週頭でリセット
-        .task(id: toast) {
+        .task(id: toastSeq) {
             if let t = toast {
                 // 次の toast に替わるとこの待ちは取り消される。取り消された時は消さない（try? で握ると新しい toast を即座に消していた＝11/10 深夜）
                 do {
@@ -1432,7 +1433,7 @@ struct WeekMainView: View {
         }
     }
 
-    private func showToast(_ t: String) { toast = t }
+    private func showToast(_ t: String) { toast = t; toastSeq += 1 }
 
     /// 全画面の覆い（日程・コンビ・能力アップ・お店・イベント）の出し入れをシステムの遷移アニメ無しで行う。
     /// UIKit は覆いの提示/退場アニメの間、画面全体のタッチを止める＝閉じた直後・開いた直後の最初のタップが消えていた
