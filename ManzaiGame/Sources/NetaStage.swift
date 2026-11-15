@@ -18,6 +18,7 @@ struct NetaStageBadge: View {
     let netaID: Int
     let polish: Double
     @State private var glow = false
+    @State private var glowGen = 0   // 続けて上がった時に前の時計が次の光を早く消さない（stale_timer_audit_1115 #5）
 
     var body: some View {
         let idx = NetaStage.index(polish)
@@ -45,6 +46,8 @@ struct NetaStageBadge: View {
         NetaStage.lastSeen[netaID] = idx
         guard let prev, idx > prev else { return }
         withAnimation(Theme.Motion.r(.easeOut(duration: 0.2))) { glow = true }
-        Task { try? await Task.sleep(nanoseconds: 900_000_000); withAnimation(Theme.Motion.r(.easeIn(duration: 0.5))) { glow = false } }
+        glowGen += 1
+        let gen = glowGen
+        Task { try? await Task.sleep(nanoseconds: 900_000_000); guard glowGen == gen else { return }; withAnimation(Theme.Motion.r(.easeIn(duration: 0.5))) { glow = false } }
     }
 }
