@@ -1467,12 +1467,13 @@ struct WeekMainView: View {
 
     /// 週の頭（生活費を払った後に週メインへ戻った時）に、借金の段が新しく深くなっていたら1回だけ知らせる（表示のみ）。
     private func maybeShowDebtNotice() {
-        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase {
+        // 行動を押して週が進む途中（pulledID）は出さない＝モーダルの下で週が進み、文と数字がずれていた（notice_priority_audit_1115 N2）。週が進んだ後の呼び出しで出る
+        if session.injuryNoticeWeeks > 0, injuryNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase {
             session.clearInjuryNotice()
             injuryNotice = GameSession.injuryNoticeText
             return
         }
-        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, case .freeAction = session.phase else { return }
+        guard debtNotice == nil, riftNotice == nil, rent == nil, session.pendingChoiceEvent == nil, !showEvent, !burstHold, pulledID == nil, case .freeAction = session.phase else { return }
         if session.riftHintToShow {
             session.markRiftHintShown()
             riftNotice = "相方と過ごす・ネタ合わせをした週は、すれ違いが減る。二人で舞台に立つ週は、すれ違いが溜まらない。"
