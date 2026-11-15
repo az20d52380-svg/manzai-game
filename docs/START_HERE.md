@@ -672,7 +672,7 @@ cd GameCore && swift test
 - `candidate_review_1110c_v0.md` — 候補3本の点検（正しさのバグ観点・1110c）
 - `dialogue_score_0017_0018_1110_v0.md` — 採点：0017 負けた次の週（justLostRehearsal）・0018 通った週の誘い（jus
 - `dialogue_score_banter_a_1110_v0.md` — banter A（.plain／.lull）独立採点 2026-11-10 v0
-- `dialogue_score_banter_b_1110_v0.md` — 週の掛け合い .eve/.streak/.broke/.afterPass 採点（2026-11-10・v3ゲート・独�
+- `dialogue_score_banter_b_1110_v0.md` — 週の掛け合い .eve/.streak/.broke/.afterPass 採点（2026-11-10・v3ゲート・独立採点）＝○98／△5／×1
 - `dialogue_score_monologue3_1110_v0.md` — 採点：週頭の独白 3配列（採点の記録が無かった分）2026-11-10 定期
 - `dialogue_score_variants_1110_v0.md` — 台詞の独立採点：言い換え8配列（2026-11-10・v0）
 - `playtest_y2_1110_v0.md` — 実プレイ点検 2年目 目視（2026-11-10・記録のみ／直していない）
@@ -681,4 +681,58 @@ cd GameCore && swift test
 - `playtest_y6_1110_v0.md` — 実プレイ点検 6年目（2026-11-10・記録のみ／直していない）
 - `playtest_y7_1110_v0.md` — 実プレイ点検 7年目（2026-11-10・記録のみ／直していない）
 - `playtest_y8_10_1110_v0.md` — 実プレイ点検 8・9・10年目（2026-11-10・記録のみ／直していない）
-- `weekly_money_line_research_1110_v0.md` — 週ごとの所持金増減の見せ方：事例調べ（2026-11-10 v0・材料のみ・�
+- `weekly_money_line_research_1110_v0.md` — 週ごとの所持金増減の見せ方：事例調べ（2026-11-10 v0・材料のみ・決定ではない）
+- `code_review_cands_1110night_v0.md` — 候補ブランチ4本のコードレビュー（2026-11-10夜・読むだけ・高0／中5／低12）
+- `judge_arrays_score_coverage_1110_v0.md` — 審査員の講評・司会の文の配列ごとの採点済み状況（2026-11-10）
+- `judge_score_paper_1110_v0.md` — 紙講評5配列の採点（2026-11-10・○91／△12／×0）
+- `playtest_y11_15_1110_v0.md` — 実プレイ点検 11〜15年目（2026-11-10・記録のみ／直していない）
+- `yearstart_notices_bundle_1110_v0.md` — 年初の一言の候補3本（356・361・youth-notice-y10）を重ねたまとめの枝と網羅の測り直し（2026-11-10 夕・記録）
+
+## その他の文書（追補・2026-11-15 定期の回＝1行目の見出しから）
+- `START_HERE.md` — START HERE — CLI/新セッション向けの引き継ぎ（2026-07-05時点）
+- `abilityup_audit_1115_v0.md` — 能力アップ画面 振り分け点検（11/15・コード読みのみ・実行なし）
+- `calendar_audit_1115_v0.md` — 日程表・カレンダーの表示のコード点検（11/15・読むだけ・コードは直していない）
+- `notebook_intro_ending_audit_1115_v0.md` — 手帳・導入・エンディングのコード点検（11/15・7件全部低・落ちる所なし）
+- `qualifier_finals_intro_audit_1115_v0.md` — 予選の知らせ・初舞台・決勝進出の発表・決勝の導入のコード点検（11/15・4件全部低）
+- `s6b_combo_neta_select_audit_1115_v0.md` — 千秋楽（S6b）・コンビの型選び・ネタ選びのコード点検（11/15・3件全部低）
+- `finals_stage_audit_1115_v0.md` — 決勝の見せ方（FinalsPresentation・FinalsTalk）と舞台の部品のコード点検（11/15・3件全部低）
+- `visual_y15_1115_v0.md` — 結成15年目（最終年）の画面の目視（11/15・9枚・崩れなし・軽4件）
+- `cancelled_sleep_audit_1115_v0.md` — 取り消された sleep の後の副作用 点検（2026-11-15・読むだけ・コード未変更）
+- `choice_effect_audit_1115_v0.md` — 選択肢イベントの「札・文」と実際の効果の食い違い点検（11/15・読むだけ）
+- `choice_gate_audit_1115_v0.md` — 選択肢イベントの「押せる選択肢が0」点検（11/15・読むだけ）
+- `code_review_1111_fixes_v0.md` — コードレビュー：dde0ecdc2（toast 取り消し）／4d6a62537（週替わりの後始末3か所）v0 — 2026-11-11
+- `code_review_unreviewed_1115_v0.md` — 未レビュー12ファイルの正しさ点検（2026-11-15 v0）
+- `costume_audit_1115_v0.md` — 衣装（ガチャ・着せ替え・反映・ログインボーナス）の流れの点検（2026-11-15 v0）
+- `crash_audit_1115_v0.md` — クラッシュ監査 2026-11-15（v0）
+- `double_tap_audit_1115_v0.md` — 二度押し・同時タップ監査（2026-11-15・読み取りのみ）
+- `entry_audit_1115_v0.md` — 大会の入口 点検（2026-11-15・読み取りのみ・コード変更なし）
+- `fame_audit_1115_v0.md` — 知名度（fame）の流れのコード点検（2026-11-15・読むだけ）
+- `gamecore_boundary_audit_1115_v0.md` — GameCore 週送りの境目 点検（11/15・読み取りのみ・コード無変更）
+- `gamesession_coverage_1111_v0.md` — GameSession 網羅の穴埋め（11/11 定期・sonnet）
+- `hana_audit_1115_v0.md` — THE HANA（勝ち上がり戦）の流れのコード点検（11/15・読むだけ）
+- `judge_score_vocab_1110_v0.md` — 講評の語彙（vocab[nil]）採点 v0（11/10・48122f688 以降）
+- `lifecycle_audit_1115_v0.md` — アプリの寿命（バックグラウンド・強制終了・復帰）点検 v0（11/15・読むだけ）
+- `money_audit_1115_v0.md` — お金の流れの点検 v0（2026-11-15・読むだけ・コードは直していない）
+- `name_substitution_audit_1115_v0.md` — 名前差し替え漏れ監査（2026-11-15 v0）
+- `neta_audit_1115_v0.md` — ネタの仕組み コード点検（2026-11-15・読むだけ・コード無変更）
+- `newcycle_audit_1115_v0.md` — 「次の周（新しいゲーム）」の始まりの点検（11/15・読むだけ）
+- `number_display_audit_1115_v0.md` — 数字表示の不具合 静的点検 v0 / 2026-11-15
+- `offer_audit_1115_v0.md` — オファー（札）の流れのコード点検（2026-11-15・読むだけ）
+- `onappear_audit_1115_v0.md` — onAppear / .task 再実行の監査（2026-11-15・読むだけ・コード変更なし）
+- `partner_audit_1115_v0.md` — 相方との関係の流れの点検（2026-11-15・読むだけ）
+- `preview_audit_1115_v0.md` — 行動カードの「効果の見込み」と実際の食い違い 静的点検 v0 / 2026-11-15
+- `result_screen_audit_1115_v0.md` — 大会の結果画面の点検（11/15・読むだけ・コードは直していない）
+- `review_fixes_1115_v0.md` — 本体の直し レビュー（2026-11-15・正しさの観点）v0
+- `review_fixes_1115b_v0.md` — 直近3コミットの見直し（2026-11-15・読むだけ・コード未変更）
+- `save_restore_audit_1115_v0.md` — 中断セーブ：保存されない状態による食い違いの点検（v0・11/15）
+- `settings_leak_audit_1115_v0.md` — 設定・端末配慮の効き漏れ点検（2026-11-15・読むだけ・コード変更なし）
+- `share_card_audit_1115_v0.md` — 共有カード点検（コード読みのみ）v0 — 2026-11-15
+- `shop_audit_1115_v0.md` — お店の点検（買う・戻す・引っ越し）2026-11-15 v0
+- `skill_item_audit_1115_v0.md` — 特技（Skill）と道具（ShopItem）の効果の点検 2026-11-15 v0
+- `softlock_audit_1115_v0.md` — ソフトロック（操作を受け付けず先へ進めない）監査（2026-11-15・読み取りのみ）
+- `sound_state_audit_1115_v0.md` — 音の状態が戻らない不具合の監査（2026-11-15・読むだけ・v0）
+- `stale_timer_audit_1115_v0.md` — 古い時計の上書き監査（2026-11-15 v0）
+- `stamina_audit_1115_v0.md` — 体力・体調ダウン・療養の流れの点検（11/15・読むだけ・コードは変更なし）
+- `test_formula_copies_1115_v0.md` — テスト側の式の写し 洗い出し（2026-11-15・読むだけ・コード未変更）
+- `trophy_meta_audit_1115_v0.md` — トロフィー・図鑑・周回メタの解除/記録条件の点検（11/15・読むだけ）
+- `yearend_audit_1115_v0.md` — 年末総決算の数字の出所の点検（11/15・読むだけ・コード不変）
