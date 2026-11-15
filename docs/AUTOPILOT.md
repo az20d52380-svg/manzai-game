@@ -478,3 +478,5 @@
 553. [済 11/16 定期] 候補 yearend-hana-line を大きい文字で目視＝収まる。
 
 554. [済 11/16 定期・sonnet・docs/code_review_unaudited_1116_v0.md] 11/09 以降の点検で触れていないファイル（YoseComponents・WaIcons・EventBackdropTable・StoreIDs 等）のコード点検＝高中0・低4。WaIcon が未使用（並べるだけ）・ほかは直す所なし。
+
+555. [済 11/16 定期] 判断待ちの一覧（45本）とキューの未済の行に出てくる候補ブランチ＝どれも存在し、本体に入った物なし＝一覧の書き直し不要。
