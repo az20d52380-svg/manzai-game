@@ -13,6 +13,9 @@ struct GachaView: View {
     @State private var showRates = false
     @State private var busy = false
     @State private var wearing = StageOutfit.current
+    /// 今着ている衣装を描くたびに引く（払い戻し・所有の読み込みで current が標準へ戻った時も札が追いつく＝costume_audit_1115 #2）。
+    /// wearing は着替えた直後に描き直させるための印（値そのものは current と同じ）
+    private var wornNow: StageOutfit { _ = wearing; _ = store.ownedIDs; _ = gacha.state; return StageOutfit.current }
     @State private var exchangeTarget: StageOutfit?
     @State private var loginNote: String?
 
@@ -202,18 +205,18 @@ struct GachaView: View {
                 .overlay { if !owned { Text("？").font(YoseFont.gothic(24, weight: .black)).foregroundStyle(YoseColor.haiSumi) } }
                 Text(owned || o.rarity == nil ? o.displayName : (o.rarity?.label ?? "")).font(YoseFont.gothic(11, weight: .heavy))
                     .lineLimit(1).minimumScaleFactor(0.6).foregroundStyle(YoseColor.sumi)
-                if wearing == o && owned { YoseTag(text: "着用中", style: .solidEnji) }
+                if wornNow == o && owned { YoseTag(text: "着用中", style: .solidEnji) }
                 else if canX { YoseTag(text: "交換できる", style: .outlineShu) }
                 else if o == .kuromontsuki && !owned { YoseTag(text: "広告カット付き", style: .outlineHai) }
                 else { Color.clear.frame(height: 20) }
             }
             .frame(maxWidth: .infinity).padding(.vertical, 6)
-            .yoseHarigami(isFeatured: wearing == o && owned)
+            .yoseHarigami(isFeatured: wornNow == o && owned)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(owned ? "\(o.displayName)\(wearing == o ? "、着用中" : "")"
-                            : "未入手の衣装\(canX ? "、交換できる" : "")\(o == .kuromontsuki ? "、広告カット付き" : "")")
-        .accessibilityAddTraits(wearing == o && owned ? .isSelected : [])
+        .accessibilityLabel(owned ? "\(o.displayName)\(wornNow == o ? "、着用中" : "")"
+                            : "未入手の衣装、\(o.rarity == nil ? o.displayName : (o.rarity?.label ?? ""))\(canX ? "、交換できる" : "")\(o == .kuromontsuki ? "、広告カット付き" : "")")
+        .accessibilityAddTraits(wornNow == o && owned ? .isSelected : [])   // 未入手も札に出ている字（レア度か名前）を読む（voiceover_audit_1115 N4）
     }
 
     // MARK: 結果

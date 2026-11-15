@@ -390,12 +390,17 @@ final class GameSession {
         default: weeksWithoutPartner += 1
         }
         categoryLog[week] = BandCategory(action)   // S6 行動内訳帯（この自由週のカテゴリ）
-        if case .job = action { jobCount += 1 }     // 0023 発火条件用のバイト実行回数（UI層・golden非対象）
+        if state.preoccupiedWeeks > 0 { categoryLog[week] = .offer }   // 撮影・出張で拘束された週は日程表の判子を「仕」に（表示のみ・calendar_audit_1115 低-3 ②）
         justPassedStage = false   // 行動したら「先週通過」の余韻は失効
         justLostStage = false     // 「負けた翌週」の一言も行動で失効（justPassedと対称）
         justOroshiNeta = nil      // ネタおろしの一言も行動で失効（justPassedと同型）
         weekBanter = nil          // 週頭の掛け合いも行動で失効（次週の抽選は pump 側）
         phase = runner.resolveAction(action)
+        // 0023 発火条件用のバイト実行回数（UI層・golden非対象）。倒れて休みに差し替わった週は働いていないので数えない（stamina_audit_1115 N5＝稽古側の lastTrainingDone と同じ扱い）
+        if case .job = action {
+            let collapsed: Bool = { if case .weekDone(let sm) = phase { return sm.results.contains { $0.name == "体調ダウン" } }; return false }()
+            if !collapsed { jobCount += 1 }
+        }
         if case .train = action, runner.lastTrainingDone != nil, TrophyBook.bump("train") >= 100 { TrophyBook.award(.t13) }
         // 練習が休みに差し替わった週（体力ゲート・体調ダウン・お金不足）は、日程の印も「回復」で残す（稽古の印が付いていた）
         if case .train = action, runner.lastTrainingDone == nil { categoryLog[week] = .kaifuku }
@@ -844,12 +849,11 @@ final class GameSession {
     ///  - ネタ見せ会/フリーライブ: 選択中ネタがあればそれを、無ければ直近のアクティブネタを客前にかける。
     ///    アクティブネタが1本も無ければ何もしない（まだ書いた ネタが無い＝最初の ネタ作り が先）。
     private func applyNetaWork(for action: WeekAction) {
-        guard case .train(let t) = action, GameConfig.netaWriteTrainings.contains(t) || t == .ネタ見せ会 || t == .フリーライブ else { return }
+        guard case .train(let t) = action, let work = config.netaWork(for: t) else { return }   // 対応は GameCore と golden で共有（test_formula_copies_1115 #6）
         // 体力ゲート・体調ダウン・お金不足で休みに差し替わった週はネタも進まない（休んだのに完成度が上がっていた）
         guard runner.lastTrainingDone == t else { return }
-        let placeGain = config.netaPlaceGain[t]   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
-        switch t {
-        case .ネタ作り, .喫茶店で書く, .ファミレスで書く:
+        switch work {
+        case .write(let placeGain):   // 喫茶店・ファミレスで書くと完成度が多め（家＝nil）
             if let id = writeTargetID {
                 runner.applyNetaRevise(id: id, gain: placeGain)
             } else if state.netas.count < config.netaActiveSlots {
@@ -863,18 +867,17 @@ final class GameSession {
                 runner.applyNetaRevise(id: last.id, gain: placeGain)
                 writeNewNeta = false   // 枠が満杯で新しく書けなかった週は「新しく書く」を下ろす（後で枠が空いた週に黙って新ネタが出ない・code_review_2026-10-25 §7a）
             }
-        case .ネタ見せ会, .フリーライブ:
+        case .live(let hard):
             let targetID = (state.selectedNetaID.flatMap { id in state.netas.contains { $0.id == id } ? id : nil })
                 ?? state.netas.last?.id
             if let id = targetID {
                 let wasDown = state.netas.first { $0.id == id }?.isDown ?? true
-                runner.applyNetaLive(id: id, hard: t == .ネタ見せ会)
+                runner.applyNetaLive(id: id, hard: hard)
                 let nowDown = runner.state.netas.first { $0.id == id }?.isDown ?? false
                 if !wasDown, nowDown {   // おろし（初披露）の瞬間だけ一言（v2 §3-2補2）
                     justOroshiNeta = (id, DialogueData.netaOroshi(salt: id &+ week))
                 }
             }
-        default: break
         }
         state = runner.state
     }
@@ -984,9 +987,11 @@ final class GameSession {
         case .gpRound, .gpRevival, .gpFinal: break
         default: return
         }
+        let fameBefore = state.fame
         let expBefore = expSnapshot()
         phase = runner.resolveAuto()
         pump()
+        lastResultFameDelta = state.fame - fameBefore   // GP の回戦・敗者復活・決勝の結果画面にも、この段の「知名度 +n」を出す（前の大会の値が残っていた＝result_screen_audit_1115）
         recordExpDelta(from: expBefore)
         saveNow()
     }
@@ -1432,6 +1437,7 @@ final class GameSession {
                 TrophyBook.onYearEnd(outcome: outcome, year: runner.year, careerYears: config.careerYears,
                                      smallEntered: smallEntered, smallWon: smallWon,
                                      wonBefore: yearHistory.contains { $0.champion && $0.year != runner.year })
+                if state.compat >= config.compatCap { TrophyBook.award(.t14) }   // 相性が上限の称号は大会の週だけでなく年末にも見る（最後の大会の後に上限へ着くと取り逃していた＝trophy_meta_audit_1115 #6・award は冪等）
                 smallEntered = 0; smallWon = 0
                 // 1年＝1行の記録（優勝年の賞金は下で totalPrize に足すので、ここでは同じ式で先に数える）。
                 // pump が同じ年末に再入しても二重に積まない
@@ -1445,6 +1451,13 @@ final class GameSession {
                             for r in rs where r.isStage { TrophyBook.onStage(r, state: runner.state, config: config) }
                             log.append(summarize(WeekSummary(year: runner.year, week: runner.week, results: rs, state: runner.state)))
                             totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
+                        }
+                    }
+                    // 優勝の週も weekDone を経ない＝同じ週の敗者復活の通過（t21）が付かなかった（gp_final_audit_1115）。
+                    // 決勝そのものを称号の判定に入れるかは判断待ち（trophy_meta_audit_1115 #4）なので、決勝以外だけ渡す
+                    if outcome.champion {
+                        for r in runner.snapshot().weekResults where r.isStage && r.name != "GP決勝" {
+                            TrophyBook.onStage(r, state: runner.state, config: config)
                         }
                     }
                     yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
