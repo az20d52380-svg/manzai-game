@@ -16,13 +16,8 @@ final class GachaStore: ObservableObject {
     init(defaults: UserDefaults = .standard, useCloud: Bool = true) {
         self.defaults = defaults
         self.cloud = useCloud ? NSUbiquitousKeyValueStore.default : nil
-        let local = defaults.data(forKey: Self.key)
-        Self.keepIfUnreadable(local, as: Self.key + ".broken", in: defaults)
-        var s = Self.decode(local)
-        if let c = cloud, let d = c.data(forKey: Self.key) {
-            Self.keepIfUnreadable(d, as: Self.key + ".cloud.broken", in: defaults)
-            s = s.merged(with: Self.decode(d))
-        }
+        var s = Self.decode(defaults.data(forKey: Self.key))
+        if let c = cloud, let d = c.data(forKey: Self.key) { s = s.merged(with: Self.decode(d)) }
         state = s
         if let c = cloud {
             NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
@@ -31,14 +26,6 @@ final class GachaStore: ObservableObject {
             }
             c.synchronize()
         }
-    }
-
-    /// 読めないデータ（壊れた・先の版の形式）は、次の保存で上書きされる前に端末内の別キーへ残す（有料券の台帳を失わない・
-    /// 復旧の手掛かり。code_review_unreviewed_1115 #3）。既に残してあれば上書きしない＝最初の壊れ方を残す
-    static func keepIfUnreadable(_ data: Data?, as backupKey: String, in defaults: UserDefaults) {
-        guard let data, (try? JSONDecoder().decode(GachaState.self, from: data)) == nil, defaults.data(forKey: backupKey) == nil else { return }
-        defaults.set(data, forKey: backupKey)
-        print("[gacha] decode failed, kept as \(backupKey)")
     }
 
     private static func decode(_ data: Data?) -> GachaState {

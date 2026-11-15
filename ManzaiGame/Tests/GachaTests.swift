@@ -190,23 +190,6 @@ final class GachaTests: XCTestCase {
         XCTAssertEqual(back, s)
     }
 
-    /// 読めないデータは上書き前に別キーへ残す・2回目の壊れ方では最初の控えを上書きしない（code_review_unreviewed_1115 #3）
-    @MainActor func testUnreadableDataIsKeptBeforeOverwrite() {
-        let suite = UserDefaults(suiteName: "gacha-test-\(UUID().uuidString)")!
-        let bad = Data("{not json".utf8)
-        suite.set(bad, forKey: GachaStore.key)
-        let a = GachaStore(defaults: suite, useCloud: false)
-        a.credit(txID: "1", count: 1)   // ここで新しい状態が保存される
-        XCTAssertEqual(suite.data(forKey: GachaStore.key + ".broken"), bad)
-        XCTAssertNotEqual(suite.data(forKey: GachaStore.key), bad)
-        suite.set(Data("{other".utf8), forKey: GachaStore.key)
-        _ = GachaStore(defaults: suite, useCloud: false)
-        XCTAssertEqual(suite.data(forKey: GachaStore.key + ".broken"), bad)
-        let good = GachaStore(defaults: suite, useCloud: false); good.credit(txID: "2", count: 1)
-        _ = GachaStore(defaults: suite, useCloud: false)   // 読めるデータでは控えを作らない（既存の控えはそのまま）
-        XCTAssertEqual(suite.data(forKey: GachaStore.key + ".broken"), bad)
-    }
-
     @MainActor func testStorePersists() {
         let suite = UserDefaults(suiteName: "gacha-test-\(UUID().uuidString)")!
         let a = GachaStore(defaults: suite, useCloud: false)
