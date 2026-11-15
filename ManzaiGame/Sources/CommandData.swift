@@ -17,6 +17,7 @@ struct CommandVariant: Identifiable {
     let action: WeekAction    // タップ＝即実行の実体
     let isTrain: Bool         // 体力ゲート判定用（train かつ体力<staminaGate でグレー）
     var affordable: Bool = true
+    var cost: Int = 0         // 有料の札の値段（候補 short-money-price：払えない時も値段と不足を出す）
 }
 
 /// 週メインの4ボタン（パワプロのサクセス式・オーナー指示 2026-10-12）。押すと同じ場所が種類の一覧に切り替わる。
@@ -47,7 +48,7 @@ enum CommandCatalog {
         var cards: [CommandVariant] = trains.compactMap { t, name, desc, glyph in
             guard let spec = config.trainings[t] else { return nil }
             return CommandVariant(id: "t_\(t)", name: name, desc: desc, glyph: glyph,
-                                  action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost)
+                                  action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost, cost: spec.cost)
         }
         cards.append(CommandVariant(id: "rest_\(Rest.完全休養)", name: "休む", desc: "回復 大", glyph: "moon.zzz.fill",
                                     action: .rest(.完全休養), isTrain: false))
@@ -69,7 +70,7 @@ enum CommandCatalog {
             return trains.compactMap { t, name, desc, glyph in
                 guard let spec = config.trainings[t] else { return nil }
                 return CommandVariant(id: "t_\(t)", name: name, desc: desc, glyph: glyph,
-                                      action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost)
+                                      action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost, cost: spec.cost)
             }
         case .バイト:
             let jobs: [(Job, String, String, String)] = [
@@ -93,7 +94,7 @@ enum CommandCatalog {
                 guard config.rests[r] != nil else { return nil }
                 let cost = config.restCosts[r] ?? 0
                 return CommandVariant(id: "rest_\(r)", name: name, desc: desc, glyph: glyph, action: .rest(r), isTrain: false,
-                                      affordable: cost <= 0 || money >= cost)
+                                      affordable: cost <= 0 || money >= cost, cost: cost)
             }
         case .ネタを書く, .能力アップ, .お店:
             return []   // ネタを書く＝ネタの一覧（WeekMainView.netaWriteList）／能力アップ＝AbilityUpView
@@ -110,7 +111,7 @@ enum CommandCatalog {
         return places.compactMap { t, name, desc, glyph in
             guard let spec = config.trainings[t] else { return nil }
             return CommandVariant(id: "t_\(t)", name: name, desc: desc, glyph: glyph,
-                                  action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost)
+                                  action: .train(t), isTrain: true, affordable: spec.cost <= 0 || money >= spec.cost, cost: spec.cost)
         }
     }
 
