@@ -433,7 +433,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
     }
     func testPlusAndBannerMerge() {
         var i = base(); i.plusAvailable = true
-        XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+        XCTAssertNil(WeekHint.line(i))   // ボタンの小さい字と重ねない（exp-hint-dedup）
         i.expBannerShown = true; XCTAssertNil(WeekHint.line(i))   // 朱の帯と重ねない
     }
     func testPriorityOrder() {
@@ -444,7 +444,7 @@ final class WeekHintTests: IsolatedStoreTestCase {
         i.netaCount = 1; XCTAssertEqual(WeekHint.line(i), "今週末に生活費14万円。所持金が足りない。")
         i.money = 999_999; XCTAssertEqual(WeekHint.line(i), "体力が少ない。今週は休むのも手だ。")
         i.stamina = 80; XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
-        i.weeksWithoutPartner = 0; XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+        i.weeksWithoutPartner = 0; XCTAssertNil(WeekHint.line(i))   // 経験点の一言は出さない（exp-hint-dedup）
     }
 }
 

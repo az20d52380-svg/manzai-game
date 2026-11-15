@@ -50,7 +50,7 @@ enum WeekHint {
         if i.stamina < injuryWarn { return "谷口：無理すると倒れるよ。" }   // 男女どちらでも自然な語尾（combo_gender_v0）・名前は Names.show が差し替える
         if i.livingInTwoWeeks, i.money < i.livingCost * 2 { return "再来週は月末の支払い（家賃など）\(Yen.man(i.livingCost))円。" }   // 払っても1か月分以上残るなら予告しない（毎年同じ警告で緊急度が合わない＝playtest_v15 #5）
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
-        if i.plusAvailable, !i.expBannerShown { return "経験点で上げられる能力がある。" }
+        // 経験点の一言は出さない：能力アップのボタンの小さい字「振れる経験点あり」が経験点のある週は必ず出ている（playtest_weeks_1116 §2-4・111 と同じ型の重複）
         return nil
     }
 }

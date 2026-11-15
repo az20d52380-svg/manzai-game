@@ -125,7 +125,7 @@ final class WeekHintPriorityTests: XCTestCase {
         i.livingInTwoWeeks = false
         XCTAssertEqual(WeekHint.line(i), "最近、相方とゆっくり話していない。")
         i.weeksWithoutPartner = WeekHint.partnerGapWeeks - 1
-        XCTAssertEqual(WeekHint.line(i), "経験点で上げられる能力がある。")
+        XCTAssertNil(WeekHint.line(i))   // 経験点の一言は出さない（exp-hint-dedup）
         i.expBannerShown = true
         XCTAssertNil(WeekHint.line(i))
     }
