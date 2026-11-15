@@ -520,3 +520,5 @@
 574. [済 11/16 夜 定期] この回の直し（HANA の優勝ボタン・入口の改行・記録と年末の折り返し）を入れた本体 43f2f63b7 の soak 8分（女女）＝319〜329MB 横ばい・落ちず・クラッシュログ 1→1。
 
 575. [済 11/16 夜 定期] THE HANA の2回目以降の優勝でも相方の一言が同じ件の候補 claude/hana-repeat-win-line-cand（83464b367）＝頂GP の repeatWinLine と同じ型で3通り（アプリ 442 green・テスト3本）。decision_brief 11/16 夜 定期に1行。
+
+576. [済 11/16 夜 定期] decision_brief 11/15「HANA の見送るで今年が終わる説明が無い」の推奨②の候補 claude/hana-skip-note-cand（4c99cee13）＝見送るの下に1行（アプリ green・目視済）。判断待ちの行に添えた。
