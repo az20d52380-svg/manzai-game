@@ -474,3 +474,5 @@
 551. [済 11/16 定期] code_review_unreviewed_1115 の低 #3〜#5 の現状：#3 は候補 gacha-broken-backup-cand で対応済み・#4 は広告をつなぐ時の話（今は無害）・#5 は FinalsPresentationView:283 の Haptics が既に取り消しを見ていて、扉が開くのは先へ送られた時にも正しい状態＝直す所なし。
 
 552. [済 11/16 定期] check_candidates：新しい候補3本（yearend-hana-line・gacha-opened-per-device・gacha-login-future-day）は本体と ok・候補どうしの衝突は pbxproj だけ（既知の型）。
+
+553. [済 11/16 定期] 候補 yearend-hana-line を大きい文字で目視＝収まる。
