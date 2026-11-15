@@ -33,11 +33,16 @@ struct QualifierNoticeView: View {
 
     private var rowNames: [String] {
         let n = listLength
-        let mobs = FinalsData.yearRoster(year: year &+ roundName.count &* 31, selfName: combiName, count: passed ? n - 1 : n)
+        let mobs = FinalsData.yearRoster(year: Self.rosterSeed(year: year, roundName: roundName), selfName: combiName, count: passed ? n - 1 : n)
         var arr = mobs
         if passed { arr.append(combiName) }
         let selfY = combiName.applyingTransform(.hiraganaToKatakana, reverse: true) ?? combiName
         return arr.sorted { (FinalistAnnounceView.yomi[$0] ?? selfY) < (FinalistAnnounceView.yomi[$1] ?? selfY) }
+    }
+
+    /// 一覧の顔ぶれの種（表示専用・ゲームの乱数は使わない）。回戦の名前の文字コードの和で分ける＝「GP1回戦」「GP2回戦」「GP3回戦」（どれも5文字）が同じ顔ぶれにならない（qualifier_finals_intro_audit_1115 低-1）
+    static func rosterSeed(year: Int, roundName: String) -> Int {
+        year &+ roundName.unicodeScalars.reduce(0) { $0 &+ Int($1.value) } &* 31
     }
 
     /// 一覧の組数（本編は9）。DEBUG の MZ_QUAL_LONG=1 は判断待ち110の見せ物＝回戦が上がるほど短い長い一覧（1回戦45・2回戦35・3回戦25・qualifier_list_research_v0 §5）
@@ -211,7 +216,7 @@ struct QualifierNoticeView: View {
         }
         #endif
         task = Task {
-            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 1_200_000_000)   // 通知が出るまでの間＝演出（「はやい」に合わせる・settings_leak_audit_1115 #2）
             if Task.isCancelled { return }
             withAnimation(reduceMotion ? nil : .spring(duration: 0.5)) { noticeIn = true }
             Sound.play(.cursor); Haptics.rare()

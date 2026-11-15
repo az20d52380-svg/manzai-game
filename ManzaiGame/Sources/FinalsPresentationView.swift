@@ -173,6 +173,7 @@ struct FinalsPresentationView: View {
                     // 送りは下部固定の朱の主ボタン1つ（画面のどこをタップしても進む仕様は不変・押し場所を見せるだけ）
                     Button { if ceremonyDone { advance() } } label: { Text(advanceLabel) }
                         .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
+                        .disabled(holdingSeventh)   // 溜めの間は効かないことを見せる（finals_stage_audit_1115 低-2）
                         .padding(.bottom, 6)
                 }
             }
@@ -256,6 +257,8 @@ struct FinalsPresentationView: View {
             case "comments": beat = .comments; revealedJudges = 7
             case "comments2": beat = .comments; revealedJudges = 7; commentStep = 1   // 2人目（最低点の審査員）の講評（judge_comments_visual_1026_v0）
             case "board": beat = .board; shown = 10; boardAuto = true
+            case "board10": beat = .board; shown = d.entries.count; boardAuto = false   // 大トリの年の主ボタンの文言（finals_stage_audit_1115 低-1）
+            case "hold": beat = .open; revealedJudges = 6; holdingSeventh = true          // 7人目の前の溜め＝無効の見た目（同 低-2・解除されないので撮影専用）
             case "duel": beat = .duel; revealVotes = 5; duelFull = true
             case "win": beat = .result
             case "door": beat = .perform; entranceFull = true
@@ -278,7 +281,7 @@ struct FinalsPresentationView: View {
                 if entranceFull && !reduceMotion {   // 扉が割れる→紹介テロップ→ネタ（初回は長め）
                     try? await MZSpeed.sleep(nanoseconds: 350_000_000)
                     withAnimation { doorsOpen = true }
-                    Haptics.confirm()          // se_door_open_heavy（大扉が割れる）
+                    if !Task.isCancelled { Haptics.confirm() }   // se_door_open_heavy（大扉が割れる）・タップで先へ送られた後は鳴らさない
                     try? await MZSpeed.sleep(nanoseconds: 3_000_000_000)
                 } else {
                     doorsOpen = true
@@ -319,7 +322,7 @@ struct FinalsPresentationView: View {
         case .perform: return ""
         case .open: return revealedJudges < 7 ? "審査員の得点をめくる（\(min(7, revealedJudges + 1))/7）▶" : "講評へ ▶"
         case .comments: return commentStep < commentPicks.count - 1 ? "次の講評へ ▶" : "順位ボードへ ▶"
-        case .board: return !boardAuto ? "後の組を見る ▶" : (shown < d.entries.count ? "次の組を見る ▶" : "最終決戦へ 進む ▶")
+        case .board: return !boardAuto && shown < d.entries.count ? "後の組を見る ▶" : (shown < d.entries.count ? "次の組を見る ▶" : "最終決戦へ 進む ▶")   // 大トリ（出順10番）は後の組がいない（finals_stage_audit_1115 低-1）
         case .duel: return "優勝発表へ ▶"
         case .result: return ""
         }
@@ -588,6 +591,7 @@ struct FinalsPresentationView: View {
             Haptics.confirm()                         // se_heartbeat_low（ドクン）
             try? await MZSpeed.sleep(nanoseconds: 170_000_000)
             withAnimation(Theme.Motion.r(.easeIn(duration: 0.12))) { lotPulse = false }
+            guard !Task.isCancelled, !lotRevealed else { return }   // 取り消し後の余計な1拍を鳴らさない（cancelled_sleep_audit_1115 #3）
             Haptics.tick()                            // （ドクッ）
             try? await MZSpeed.sleep(nanoseconds: full ? 520_000_000 : 260_000_000)
         }
@@ -1012,6 +1016,7 @@ struct FinalsPresentationView: View {
             if revealVotes < 7 {
                 Button { advance() } label: { Text("次の審査員札をめくる（\(revealVotes)/7）▶") }
                     .buttonStyle(YoseButtonStyle(.primary, silent: true))   // advance() が音を管理（7人目の前の全SE断を押下音で破らない）
+                    .disabled(holdingSeventh)   // 同 低-2
             } else {
                 YTelop(text: "——開票、出揃った。", size: 16, color: YoseColor.kinBright)
             }
