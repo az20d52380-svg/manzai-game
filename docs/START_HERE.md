@@ -696,6 +696,7 @@ cd GameCore && swift test
 - `qualifier_finals_intro_audit_1115_v0.md` — 予選の知らせ・初舞台・決勝進出の発表・決勝の導入のコード点検（11/15・4件全部低）
 - `s6b_combo_neta_select_audit_1115_v0.md` — 千秋楽（S6b）・コンビの型選び・ネタ選びのコード点検（11/15・3件全部低）
 - `finals_stage_audit_1115_v0.md` — 決勝の見せ方（FinalsPresentation・FinalsTalk）と舞台の部品のコード点検（11/15・3件全部低）
+- `visual_y15_1115_v0.md` — 結成15年目（最終年）の画面の目視（11/15・9枚・崩れなし・軽4件）
 - `cancelled_sleep_audit_1115_v0.md` — 取り消された sleep の後の副作用 点検（2026-11-15・読むだけ・コード未変更）
 - `choice_effect_audit_1115_v0.md` — 選択肢イベントの「札・文」と実際の効果の食い違い点検（11/15・読むだけ）
 - `choice_gate_audit_1115_v0.md` — 選択肢イベントの「押せる選択肢が0」点検（11/15・読むだけ）
