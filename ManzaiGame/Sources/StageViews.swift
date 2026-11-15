@@ -227,6 +227,10 @@ struct TournamentEntryView: View {
                 }
                 Button { session.decideTournament(nil) } label: { Text("見送る") }
                     .buttonStyle(YoseButtonStyle(.secondary))
+                if spec.name.hasPrefix("HANA") && spec.name != "HANA決勝" {   // 見送ると次の段の入口が出ない（hana_audit_1115 低-1・decision_brief 11/15）
+                    Text("見送ると、今年の THE HANA はここまで").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
             }
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 12)
         }
