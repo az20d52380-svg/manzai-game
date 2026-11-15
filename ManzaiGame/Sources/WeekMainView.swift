@@ -1509,7 +1509,9 @@ struct WeekMainView: View {
         guard let cap = caps.min(), session.year == cap, session.week <= 1, youthNoticeYear != session.year else { return }
         youthNoticeYear = session.year
         Task {
-            if toast != nil { try? await MZSpeed.sleep(nanoseconds: 4_500_000_000) }
+            // 前の toast が消えるまで待つ（決め打ちの4.5秒だと、その間に出た別の toast を上書きしていた＝stale_timer_audit_1115 #4）。上限 約15秒で必ず出す
+            var waited = 0
+            while toast != nil, waited < 50 { try? await Task.sleep(nanoseconds: 300_000_000); waited += 1 }   // 読む時間を待つので演出の速さで縮めない
             showToast("谷口「若手限定の大会に出られるのは、今年が最後だ」")
         }
     }
