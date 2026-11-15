@@ -26,6 +26,8 @@ enum WeekHint {
         var plusAvailable: Bool
         /// 「経験点が残ってる」の朱の帯が出ている（出ているなら6は重ねない）
         var expBannerShown: Bool
+        /// すれ違いの予告（キャリア1回）を出した後、すれ違いがまた予告の線を超えている（候補 rift-again-hint・partner_audit_1115 §1-1）
+        var riftAgain: Bool = false
     }
 
     static let staminaLow = 30.0
@@ -48,6 +50,7 @@ enum WeekHint {
         if i.livingThisWeek, i.money < i.livingCost { return "今週末に生活費\(Yen.man(i.livingCost))円。所持金が足りない。" }
         if i.stamina <= staminaLow { return "体力が少ない。今週は休むのも手だ。" }
         if i.stamina < injuryWarn { return "谷口：無理すると倒れるよ。" }   // 男女どちらでも自然な語尾（combo_gender_v0）・名前は Names.show が差し替える
+        if i.riftAgain { return "相方との間に、また距離ができている。" }   // 予告は1回だけ＝その後は解散の直前まで知らせが無かった（partner_audit_1115 §1-1）
         if i.livingInTwoWeeks, i.money < i.livingCost * 2 { return "再来週は月末の支払い（家賃など）\(Yen.man(i.livingCost))円。" }   // 払っても1か月分以上残るなら予告しない（毎年同じ警告で緊急度が合わない＝playtest_v15 #5）
         if i.weeksWithoutPartner >= partnerGapWeeks { return "最近、相方とゆっくり話していない。" }
         // 経験点の一言は出さない：能力アップのボタンの小さい字「振れる経験点あり」が経験点のある週は必ず出ている（playtest_weeks_1116 §2-4・111 と同じ型の重複）

@@ -525,7 +525,8 @@ struct WeekMainView: View {
             money: s.money, livingCost: GameEngine.livingCostDue(s, config: session.config),   // 部屋の上乗せ込み（実際の引き落としと一致）
             weeksWithoutPartner: session.weeksWithoutPartner,
             plusAvailable: expGrains > 0 && AbilityUpView.anyPlusEnabled(session, state: s),
-            expBannerShown: bannerShown))
+            expBannerShown: bannerShown,
+            riftAgain: session.didFireRiftWarn && (s.rift ?? 0) >= session.config.riftWarn))
     }
 
     @ViewBuilder private var weekHintLine: some View {
