@@ -298,11 +298,11 @@ struct StageCeremony: View {
         UserDefaults.standard.set(true, forKey: Self.seenKey)
         let short = !first || reduceMotion
         Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
-        try? await Task.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)
+        try? await MZSpeed.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)   // 「はやい」に合わせる（settings_leak_audit_1115 #2）
         guard !done else { return }
         if Task.isCancelled { abandon(); return }
         withAnimation(Theme.Motion.r(.easeOut(duration: short ? 0.25 : 0.6))) { spot = 1.4 }   // スポットイン
-        try? await Task.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
+        try? await MZSpeed.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
         guard !done else { return }
         if Task.isCancelled { abandon(); return }
         finish()

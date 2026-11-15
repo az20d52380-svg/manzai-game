@@ -215,7 +215,7 @@ struct QualifierNoticeView: View {
         }
         #endif
         task = Task {
-            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            try? await MZSpeed.sleep(nanoseconds: 1_200_000_000)   // 通知が出るまでの間＝演出（「はやい」に合わせる・settings_leak_audit_1115 #2）
             if Task.isCancelled { return }
             withAnimation(reduceMotion ? nil : .spring(duration: 0.5)) { noticeIn = true }
             Sound.play(.cursor); Haptics.rare()
