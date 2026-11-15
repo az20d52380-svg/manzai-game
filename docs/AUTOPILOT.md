@@ -556,3 +556,6 @@
 593. [済 11/16 夜 定期] decision_brief 11/15 夕「漢字・英字のコンビ名が読みの並びで必ず末尾／先頭」の推奨②の候補 claude/self-order-cand（017da29df）＝FNV で名前と年から位置を決める（ゲームの乱数は使わない・テスト3本・アプリ 442 green・目視済）。
 
 594. [済 11/16 夜 定期] decision_brief 11/16 夜「THE HANA 優勝演出の朱印『日本一』」の推奨①の候補 claude/hana-seal-cand（67e0fbcc4）＝演出の部品に朱印と帯の文を引数で渡せるように（頂GP は既定値のまま）。朱印「優勝」は看板の字と重なった＝「栄冠」（仮）・帯「THE HANA」。目視済・アプリ green。
+
+595. [済 11/16 夜 定期] decision_brief 11/15「決勝の2本目を選ばないと一律減点なのに一言が軽い」の推奨②の候補 claude/second-neta-note-cand（0cd20de9b）＝StageViews の goNote（アプリ green・目視は未＝決勝の入口へ直行するフックが無い）。
+596. [ ] 決勝の入口（StageViews の isFinal）へ直行する目視フックを足す（MZ_UI=final_entry 等・DEBUG のみ）→ 595 の候補を目視。
