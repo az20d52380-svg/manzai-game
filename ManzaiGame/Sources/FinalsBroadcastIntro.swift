@@ -57,6 +57,7 @@ struct FinalsBroadcastIntro: View {
         .onTapGesture { advanceStage() }
         .accessibilityAction { advanceStage() }   // 読み上げ中の二度押しでも同じく進む（a11y_check_1026_voiceover_v0 #1・FinalsBroadcastIntro:596 と同形）
         .task(id: stage) { await run(stage) }
+        .onDisappear { if !done { Sound.duck(1, over: 0.2) } }   // finish を通らず消えた時も絞った BGM を戻す（sound_state_audit_1115 #1）
         .onAppear {
             let first = !UserDefaults.standard.bool(forKey: Self.seenKey)
             short = !first || reduceMotion

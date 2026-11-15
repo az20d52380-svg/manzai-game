@@ -211,6 +211,7 @@ struct S6bView: View {
     // MARK: ⑤ 壁写真焼き付き→緞帳→もう一度
 
     @State private var burned = false
+    @State private var finished = false
     private var wall: some View {
         VStack(spacing: Theme.Sp.s24) {
             Spacer()
@@ -232,12 +233,13 @@ struct S6bView: View {
             Text("楽屋の壁。最後の舞台の夜。")
                 .font(.system(size: Font.mzScaled(13), design: .serif)).foregroundStyle(.white.opacity(0.8)).opacity(burned ? 1 : 0)
             Spacer()
-            Button(action: onFinish) {
+            Button(action: { guard !finished else { return }; finished = true; onFinish() }) {   // 連打で onFinish が2回走らない（s6b_combo_neta_select_audit_1115 低-1 ②）
                 Text(finishLabel).font(.maru(16)).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, Theme.Sp.s16)
                     .background(Theme.verm, in: RoundedRectangle(cornerRadius: Theme.Rad.btn))
             }.buttonStyle(PressableStyle()).padding(.horizontal, Theme.Sp.s32).padding(.bottom, 50)
                 .opacity(burned ? 1 : 0)
+                .allowsHitTesting(burned)   // 透明のうちは押せない（同 低-1 ①）
         }
         .onAppear {
             withAnimation(reduceMotion ? nil : .easeOut(duration: 0.8)) { burned = true }   // 焼き付き0.8s

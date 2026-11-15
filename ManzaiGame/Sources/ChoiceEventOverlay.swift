@@ -299,6 +299,7 @@ struct ChoiceEventOverlay: View {
     }
 
     private func choose(_ id: String) {
+        guard chosenID == nil else { return }   // 続けて押した2つ目で返事の文だけ替わらないように（double_tap_audit_1115 #2）
         let before = session.state
         session.applyEventChoice(id)
         showEffects(before: before, after: session.state, choice: id)
