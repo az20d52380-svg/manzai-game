@@ -145,7 +145,7 @@ struct CalendarView: View {
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).multilineTextAlignment(.center)
             // 去年まで朱だった週が判子に変わる理由が画面に無かった（code_review_1108 指摘2・表示だけ）
-            Text("過ぎた週のうち、出られなかった大会は塗りません")   // これからの大会は塗る＝条件を文に（playtest_y9／female_y3 の中）
+            Text("過ぎた週は、出た大会だけ塗ります")   // これからの大会は塗る＝条件を文に（playtest_y9／female_y3 の中）
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(1).minimumScaleFactor(0.8)
         }
@@ -179,7 +179,11 @@ struct CalendarView: View {
 
     /// 過ぎた週の塗り：THE HANA は通過しないと次の段に出られないので、実際に出た週（大会の記録がある週）だけ塗る。道中の大会はこれまでどおり（code_review_1107c #8）。表示専用。
     static func paintsPastWeek(tournamentName: String, category: BandCategory?) -> Bool {
-        guard tournamentName.hasPrefix("HANA") else { return true }
+        guard tournamentName.hasPrefix("HANA") else {
+            // 【候補 calendar_audit_1115 中-2 案①】道中の大会も、見送った・払えず出なかった週は塗らない＝出た週だけ朱。印の無い週（旧セーブ）は従来どおり塗る
+            guard let c = category else { return true }
+            return c == .taikai
+        }
         return category == .taikai
     }
 
