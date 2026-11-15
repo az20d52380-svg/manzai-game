@@ -532,7 +532,7 @@ struct FinalsPresentationView: View {
                     Text("番").font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                     Text("／ 全10組").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.haiSumi)
                 }
-                Text(verbatim: session.combiName).font(YoseFont.mincho(22)).foregroundStyle(YoseColor.sumi)
+                Text(session.combiName).font(YoseFont.mincho(22)).foregroundStyle(YoseColor.sumi)
                     .lineLimit(1).minimumScaleFactor(0.6)
             }
             .padding(.horizontal, 28).padding(.vertical, 8)
@@ -795,7 +795,7 @@ struct FinalsPresentationView: View {
             // 合計の木札ボード（コンビ名＋暫定順位＋合計）
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: session.combiName).font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
+                    Text(session.combiName).font(YoseFont.mincho(20)).foregroundStyle(YoseColor.sumi)
                         .lineLimit(1).minimumScaleFactor(0.6)
                     YoseTag(text: "暫定\(selfRank)位", style: .solidEnji)
                 }
@@ -839,7 +839,7 @@ struct FinalsPresentationView: View {
             // 誰の採点かを明示する黒漆バー
             HStack(spacing: 8) {
                 Text("\(d.order)番手").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
-                Text(verbatim: session.combiName).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinari)
+                Text(session.combiName).font(YoseFont.mincho(17)).foregroundStyle(YoseColor.kinari)
                     .lineLimit(1).minimumScaleFactor(0.6)
                 Spacer(minLength: 4)
                 Text(allShown ? "開票 完了" : "\(revealedJudges) / 7 人 開票")

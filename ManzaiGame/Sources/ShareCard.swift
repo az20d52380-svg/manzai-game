@@ -16,7 +16,7 @@ struct ShareCardView: View {
                 Text(headline).font(.system(size: 72, weight: .heavy, design: .serif)).foregroundStyle(YoseColor.shu)
                     .minimumScaleFactor(0.4).lineLimit(1)
                 Rectangle().fill(YoseColor.sumi).frame(height: 3)
-                Text(verbatim: combiName).font(.system(size: 52, weight: .bold, design: .serif)).foregroundStyle(YoseColor.sumi)
+                Text(combiName).font(.system(size: 52, weight: .bold, design: .serif)).foregroundStyle(YoseColor.sumi)
                     .minimumScaleFactor(0.4).lineLimit(2).multilineTextAlignment(.center)
                 if let detail { Text(detail).font(.system(size: 30, weight: .bold)).foregroundStyle(YoseColor.haiSumi) }
             }

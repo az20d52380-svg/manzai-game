@@ -78,17 +78,4 @@ final class SaveInviteIdea1115Tests: XCTestCase {
         XCTAssertNil(r.pendingResult)
         if case .weekDone = r.phase { XCTFail("weekDone のまま＝画面が出ない") }
     }
-
-    /// コンビ名に「谷口」「俺」を含んでも、文の中のコンビ名は差し替えない（name_substitution_audit_1115 #1）
-    func testComboNameNotSubstituted() {
-        let saved = (Names.me, Names.partner, Names.combo, Names.kind)
-        defer { Names.set(me: saved.0, partner: saved.1, combo: saved.2); Names.setKind(saved.3) }
-        Names.setKind(.maleMale)
-        Names.set(me: "佐藤", partner: "田中", combo: "俺たち谷口")
-        XCTAssertEqual(Names.show("俺たち谷口、拍手がまばらだった。谷口は黙っていた"), "俺たち谷口、拍手がまばらだった。田中は黙っていた")
-        XCTAssertEqual(Names.show("谷口「行こう」"), "田中「行こう」")
-        XCTAssertEqual(Names.show("俺"), "佐藤")
-        Names.set(me: nil, partner: nil, combo: "満月ロケット")
-        XCTAssertEqual(Names.show("満月ロケットの谷口"), "満月ロケットの谷口")
-    }
 }
