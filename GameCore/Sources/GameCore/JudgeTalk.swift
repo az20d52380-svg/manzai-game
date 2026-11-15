@@ -40,6 +40,7 @@ public enum JudgeTalk {
         public var stamina: Double
         public var mental: Double
         public var hana: Double
+        public var isVideo: Bool = false  // THE HANA 1回戦＝動画審査（客席が無い＝客席・会場の語を含む紙講評を出さない）
 
         public init(netaName: String? = nil, kata: NetaKata? = nil, isTeppan: Bool = false, isRevivalNeta: Bool = false,
                     isFresh: Bool = false, burst: Bool = false, margin: Double? = nil, order: Int? = nil, lastOrder: Int = 10,
@@ -480,9 +481,20 @@ public enum JudgeTalk {
             else if let m = s.margin, m < -10 { pool = Paper.failFar }
             else { pool = Paper.fail + paperNetaLines(scene: s, passed: false) }
         }
-        let template = pick(pool, scene: s, salt: salt, k: 21) ?? "{入り}、要確認。"
+        var usable = pool
+        if s.isVideo {   // 動画審査：客前の語を含む行を除く。束が全部消えたら（ハマった夜など）通常の束から
+            usable = pool.filter { !isVenueLine($0) }
+            if usable.isEmpty { usable = (passed ? Paper.pass : Paper.fail).filter { !isVenueLine($0) } }
+            if usable.isEmpty { usable = pool }
+        }
+        let template = pick(usable, scene: s, salt: salt, k: 21) ?? "{入り}、要確認。"
         let judge = judgeNames[mix(salt, 22) % judgeNames.count]
         return (fill(template, scene: s, salt: salt), judge)
+    }
+
+    /// 客席・会場がある前提の行（動画審査では出さない）
+    static func isVenueLine(_ t: String) -> Bool {
+        ["客", "会場", "沸", "席", "身を乗り出"].contains { t.contains($0) }
     }
 
     static func paperNetaLines(scene s: Scene, passed: Bool) -> [String] {
