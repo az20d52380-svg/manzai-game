@@ -1450,6 +1450,13 @@ final class GameSession {
                             totalPrize += rs.filter(\.isStage).reduce(0) { $0 + $1.prize }
                         }
                     }
+                    // 優勝の週も weekDone を経ない＝同じ週の敗者復活の通過（t21）が付かなかった（gp_final_audit_1115）。
+                    // 決勝そのものを称号の判定に入れるかは判断待ち（trophy_meta_audit_1115 #4）なので、決勝以外だけ渡す
+                    if outcome.champion {
+                        for r in runner.snapshot().weekResults where r.isStage && r.name != "GP決勝" {
+                            TrophyBook.onStage(r, state: runner.state, config: config)
+                        }
+                    }
                     yearHistory.append(YearRecord(year: runner.year, roundsPassed: outcome.roundsPassed,
                                                   reachedFinal: outcome.reachedFinal, champion: outcome.champion,
                                                   bankrupt: outcome.bankrupt,
