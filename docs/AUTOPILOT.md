@@ -484,3 +484,5 @@
 556. [済 11/16 定期] visual_y1_1116 の低（第3週の経験点の二重）の候補 claude/exp-card-sub-dedup-cand（aa4552119）＝green・目視済・decision_brief 11/16 定期へ。
 
 557. [済 11/16 定期] 女女の2年目の年表に HANA の行が出ることを本体で目視＝1年目だけ出ない（候補 yearend-hana-line の理由を確認）。
+
+558. [済 11/16 定期・sonnet・docs/gender_text_check_1116_v0.md] 11/09 以降に入った日本語83行（画面の文 約12行）の性別の点検＝女女・男女で不自然な文0・FirstPersonLiteralTests を壊す追加なし。
