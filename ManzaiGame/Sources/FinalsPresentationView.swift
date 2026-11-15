@@ -257,6 +257,8 @@ struct FinalsPresentationView: View {
             case "comments": beat = .comments; revealedJudges = 7
             case "comments2": beat = .comments; revealedJudges = 7; commentStep = 1   // 2人目（最低点の審査員）の講評（judge_comments_visual_1026_v0）
             case "board": beat = .board; shown = 10; boardAuto = true
+            case "board10": beat = .board; shown = d.entries.count; boardAuto = false   // 大トリの年の主ボタンの文言（finals_stage_audit_1115 低-1）
+            case "hold": beat = .open; revealedJudges = 6; holdingSeventh = true          // 7人目の前の溜め＝無効の見た目（同 低-2・解除されないので撮影専用）
             case "duel": beat = .duel; revealVotes = 5; duelFull = true
             case "win": beat = .result
             case "door": beat = .perform; entranceFull = true
