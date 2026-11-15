@@ -480,3 +480,5 @@
 554. [済 11/16 定期・sonnet・docs/code_review_unaudited_1116_v0.md] 11/09 以降の点検で触れていないファイル（YoseComponents・WaIcons・EventBackdropTable・StoreIDs 等）のコード点検＝高中0・低4。WaIcon が未使用（並べるだけ）・ほかは直す所なし。
 
 555. [済 11/16 定期] 判断待ちの一覧（45本）とキューの未済の行に出てくる候補ブランチ＝どれも存在し、本体に入った物なし＝一覧の書き直し不要。
+
+556. [済 11/16 定期] visual_y1_1116 の低（第3週の経験点の二重）の候補 claude/exp-card-sub-dedup-cand（aa4552119）＝green・目視済・decision_brief 11/16 定期へ。
