@@ -26,6 +26,7 @@ struct AbilityUpView: View {
     @State private var pulse = false
     @State private var hint: HintSpec?   // 初めて開いた時だけの説明（`？` で読み返せる）
     @State private var bumped: Ability? = nil
+    @State private var tapGen = 0   // ＋の連打で前の時計が次の光を早く消さないための番号（stale_timer_audit_1115 #1）
     /// 確定の演出（Gemini R7 §2-A）：押すと全項目が同時に跳ね・光り、0.45秒の「焼き付けの間」を置いてから閉じる。余韻中に触れたら即閉じる
     @State private var confirming = false
     @State private var confirmBump = false
@@ -117,6 +118,8 @@ struct AbilityUpView: View {
                 skillToLearn = nil
             }
             Button("やめる", role: .cancel) { skillToLearn = nil }
+        } message: {
+            if !taps.isEmpty { Text("押した能力アップも、ここで一緒に確定する。") }   // 黙って確定しない（abilityup_audit_1115 #1）
         }
     }
 
@@ -268,8 +271,10 @@ struct AbilityUpView: View {
             taps += Array(repeating: a, count: steps)
             if !reduceMotion { bumped = a }   // 視差を減らす時は拡大しない（行の山吹光りだけ）
         }
-        Task { try? await Task.sleep(nanoseconds: 100_000_000); withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.5))) { bumped = nil } }
-        Task { try? await Task.sleep(nanoseconds: 250_000_000); withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { flash = nil } }
+        tapGen += 1
+        let gen = tapGen
+        Task { try? await Task.sleep(nanoseconds: 100_000_000); guard tapGen == gen else { return }; withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.5))) { bumped = nil } }
+        Task { try? await Task.sleep(nanoseconds: 250_000_000); guard tapGen == gen else { return }; withAnimation(Theme.Motion.r(.easeOut(duration: 0.25))) { flash = nil } }
     }
 
     private func row(_ a: Ability) -> some View {

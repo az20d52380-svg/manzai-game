@@ -298,12 +298,21 @@ struct StageCeremony: View {
         UserDefaults.standard.set(true, forKey: Self.seenKey)
         let short = !first || reduceMotion
         Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
-        try? await Task.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)
+        try? await MZSpeed.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)   // 「はやい」に合わせる（settings_leak_audit_1115 #2）
         guard !done else { return }
+        if Task.isCancelled { abandon(); return }
         withAnimation(Theme.Motion.r(.easeOut(duration: short ? 0.25 : 0.6))) { spot = 1.4 }   // スポットイン
-        try? await Task.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
+        try? await MZSpeed.sleep(nanoseconds: short ? 250_000_000 : 650_000_000)
         guard !done else { return }
+        if Task.isCancelled { abandon(); return }
         finish()
+    }
+
+    /// 儀の最中に画面ごと消えた時：絞った BGM だけ戻し、onDone（開示列の音など）は走らせない（cancelled_sleep_audit_1115 #1）。
+    /// done は立てない＝同じ画面がまた出たら儀を最初からやり直せる（黒い幕のまま止まらない・review_fixes_1115 1-2）
+    private func abandon() {
+        guard !done else { return }
+        Sound.duck(1, over: 0.4)
     }
 
     private func finish() {
