@@ -8,6 +8,14 @@
 set -u
 cd "$(dirname "$0")/.."
 R=$(pwd)
+# 11/16：毎時の定期の回が1本ずつ起動して4本が同時に走り、同じシミュレータでテストを切り合って「失敗0なのに赤」が出た＝二重起動を断る
+LOCK="$R/.git/refresh_candidates.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [ -f "$LOCK/pid" ] && kill -0 "$(cat "$LOCK/pid")" 2>/dev/null; then echo "見送り：別の取り込み直しが動いている（pid $(cat "$LOCK/pid")）"; exit 0; fi
+  rm -rf "$LOCK"; mkdir "$LOCK" || exit 1
+fi
+echo $$ > "$LOCK/pid"
+trap 'rm -rf "$LOCK"' EXIT
 DD=${1:-/tmp/mz_dd_cand}
 MIN=${2:-50}
 U=E5D11233-FE99-429F-A55C-8B0FA5793568

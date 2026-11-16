@@ -86,7 +86,7 @@ struct RentStatementView: View {
                         Spacer()
                         Text((Int(money) < 0 ? "−" : "") + RentStatement.yen(Int(money)))   // 数え上げの途中の (−1, 0) で「−0」を出さない（number_display_audit_1115 #3）
                             .font(YoseFont.numLarge)
-                            .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinText)
+                            .foregroundStyle(Int(money) < 0 ? YoseColor.shu : YoseColor.kinText)   // 色も丸めた値で（−1〜0 の一瞬に「0円」が赤くならない＝code_review_1116_night #1）
                             .contentTransition(.numericText(value: money))
                     }
                     .padding(.vertical, 6).padding(.horizontal, 8)
