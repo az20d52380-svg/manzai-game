@@ -145,4 +145,26 @@ final class SaveInviteIdea1115Tests: XCTestCase {
         XCTAssertNil(after.inviteWaiting, "新しい年に誘いの待ちが残った")
         XCTAssertNotEqual(r.pendingChoiceEvent, .weekendInvite, "新しい年の頭に前の年の誘いが出た")
     }
+
+    /// 大会の結果画面の途中で閉じて再開しても、知名度・経験点の札の値が残る（code_review_results_1117 低）
+    func testResultDeltasSurviveRestore() throws {
+        for seed in UInt64(1)...40 {
+            let s = GameSession(seed: seed)
+            for _ in 0..<400 where !s.finished {
+                if s.pendingResult != nil, s.lastResultFameDelta != 0 || s.lastResultExpDelta.values.contains(where: { $0 != 0 }) {
+                    s.saveNow()
+                    let save = try JSONDecoder().decode(GameSession.SaveData.self, from: try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1")))
+                    let r = GameSession(restoring: save)
+                    XCTAssertNotNil(r.pendingResult)
+                    XCTAssertEqual(r.lastResultFameDelta, s.lastResultFameDelta, accuracy: 1e-9)
+                    for c in ExpCurrency.allCases { XCTAssertEqual(r.lastResultExpDelta[c] ?? 0, s.lastResultExpDelta[c] ?? 0, accuracy: 1e-9) }
+                    return
+                }
+                if s.watchingFinal { s.finishWatchingFinal(winner: "—"); continue }
+                if case .freeAction = s.phase, s.pendingChoiceEvent == nil, s.state.money < 250_000 { s.choose(.job(.標準)); continue }   // 休むだけだと交通費が尽きて大会に出られない
+                guard policyStep(s) else { break }
+            }
+        }
+        XCTFail("増分のある結果画面に1度も届かなかった")
+    }
 }

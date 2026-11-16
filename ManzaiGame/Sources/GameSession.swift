@@ -342,6 +342,13 @@ final class GameSession {
         self.smallWon = save.smallWon ?? 0
         self.inviteIdea = save.inviteIdea ?? false
         self.inviteWaiting = save.inviteWaiting ?? false
+        // 結果画面の途中で閉じて再開した時も「知名度 +n」「経験点」の札を出す（code_review_results_1117 低・表示のみ）
+        if self.pendingResult != nil {
+            self.lastResultFameDelta = save.resultFameDelta ?? 0
+            if let e = save.resultExpDelta, e.count == ExpCurrency.allCases.count {
+                self.lastResultExpDelta = Dictionary(uniqueKeysWithValues: zip(ExpCurrency.allCases, e))
+            }
+        }
         self.youthNoticeYear = save.youthNoticeYear ?? 0
         self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
@@ -1298,6 +1305,8 @@ final class GameSession {
         var youthNoticeYear: Int?         // 年初の知らせを出した年（旧セーブ＝nil＝0＝まだ）
         var tiredNoticeYear: Int?
         var inviteWaiting: Bool?          // 週末に決まり次の週の頭で出す誘い（旧セーブ＝nil＝なし・code_review_1116_night #4）
+        var resultFameDelta: Double?      // 結果画面が出ている間だけ：その大会の知名度の増分（旧セーブ＝nil＝札なし・code_review_results_1117）
+        var resultExpDelta: [Double]?     // 同じく経験点の増分（ExpCurrency.allCases の順）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1368,7 +1377,9 @@ final class GameSession {
                             injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID,
                             inviteIdea: (pendingChoiceEvent == .weekendInvite || inviteWaiting) ? inviteIdea : nil,
                             youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear,
-                            inviteWaiting: inviteWaiting ? true : nil)
+                            inviteWaiting: inviteWaiting ? true : nil,
+                            resultFameDelta: pendingResult != nil ? lastResultFameDelta : nil,
+                            resultExpDelta: pendingResult != nil ? ExpCurrency.allCases.map { lastResultExpDelta[$0] ?? 0 } : nil)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
