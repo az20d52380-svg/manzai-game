@@ -127,23 +127,37 @@ struct CalendarView: View {
         }
     }
 
+    @ViewBuilder private var stampKeys: some View {
+        ForEach([BandCategory.keiko, .baito, .kaifuku, .offer], id: \.label) { cat in   // 「仕」（オファーを受けた週）も凡例に（calendar_audit_1115 低-3 ①）
+            HStack(spacing: 4) {
+                Text(cat.label.prefix(1)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    .frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                Text(cat.label)
+            }
+            .accessibilityElement(children: .ignore).accessibilityLabel("「\(cat.label.prefix(1))」は\(cat.label)の週")   // 記号と名前を2回読まない（voiceover_audit_1115 N2）
+        }
+    }
+
+    @ViewBuilder private var tournamentKeys: some View {
+        HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
+        HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
+    }
+
     private var legend: some View {
         VStack(spacing: 6) {
-        HStack(spacing: 12) {
-            ForEach([BandCategory.keiko, .baito, .kaifuku, .offer], id: \.label) { cat in   // 「仕」（オファーを受けた週）も凡例に（calendar_audit_1115 低-3 ①）
-                HStack(spacing: 4) {
-                    Text(cat.label.prefix(1)).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-                        .frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-                    Text(cat.label)
-                }
+        // 大きい文字では1行に収まらず「稽…」と切れた＝収まらなければ判子4つと大会・今週の2行に折る（表示のみ・11/15 夕の目視）
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) { stampKeys; tournamentKeys }
+            VStack(spacing: 6) {
+                HStack(spacing: 12) { stampKeys }
+                HStack(spacing: 12) { tournamentKeys }
             }
-            HStack(spacing: 4) { Rectangle().fill(YoseColor.shu).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("大会") }
-            HStack(spacing: 4) { Rectangle().stroke(YoseColor.kinBright, lineWidth: 3).frame(width: 20, height: 20).overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5)); Text("今週") }
         }
             // 「頂GP」が何か初見で分からなかった（visual_check_1027d #1・表示だけ）
             Text("頂GP＝頂グランプリ（1回戦から勝ち上がり、第\(cal.gpFinalWeek)週が決勝）")
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
                 .lineLimit(2).multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)   // 大きい文字で1行に詰められて「第47…」と切れた
             // 去年まで朱だった週が判子に変わる理由が画面に無かった（code_review_1108 指摘2・表示だけ）
             Text("過ぎた週のうち、出られなかった大会は塗りません")   // これからの大会は塗る＝条件を文に（playtest_y9／female_y3 の中）
                 .font(YoseFont.gothic(11, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
