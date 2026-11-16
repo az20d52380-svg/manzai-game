@@ -383,7 +383,7 @@ private struct EventGlowLayer: View {
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2)).position(x: w * 0.22, y: 32)
             }
         case .theater:
-            ForEach([w * 0.24, w * 0.76], id: \.self) { lx in
+            ForEach(Array([w * 0.24, w * 0.76].enumerated()), id: \.offset) { _, lx in
                 halo(lx, 58, 74, Color(hex: 0xFF9A4A), 0.5)
                 if night { TheaterLantern(lit: true).position(x: lx, y: 58) }
             }
@@ -584,7 +584,7 @@ private struct KeikobaBackdrop: View {
                 .position(x: w - 44, y: 106)
 
                 // 手前：パイプ椅子2脚と長机（ネタ帳）
-                ForEach([w * 0.34, w * 0.66], id: \.self) { cx in
+                ForEach(Array([w * 0.34, w * 0.66].enumerated()), id: \.offset) { _, cx in
                     ZStack {
                         RoundedRectangle(cornerRadius: 2).stroke(YoseColor.sumi, lineWidth: 2).frame(width: 34, height: 42)
                         Rectangle().fill(Color(hex: 0x4A5560)).frame(width: 36, height: 14).offset(y: -8)
@@ -625,7 +625,7 @@ private struct StationBackdrop: View {
                 .position(x: w / 2, y: floorY - 24)
 
                 // ホーム屋根と鉄骨柱
-                ForEach([w * 0.30, w * 0.84], id: \.self) { px in
+                ForEach(Array([w * 0.30, w * 0.84].enumerated()), id: \.offset) { _, px in
                     Rectangle().fill(Color(hex: 0x6A7076)).frame(width: 16, height: floorY)
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
                         .position(x: px, y: floorY / 2)
@@ -1008,7 +1008,7 @@ private struct FamiresBackdrop: View {
                 .position(x: w / 2, y: 22)
 
                 // 左右の赤いボックス席ソファ（背もたれの区切りと座面）
-                ForEach([w * 0.18, w * 0.82], id: \.self) { sx in
+                ForEach(Array([w * 0.18, w * 0.82].enumerated()), id: \.offset) { _, sx in
                     ZStack {
                         Rectangle().fill(YoseColor.shu)
                         Rectangle().fill(YoseColor.sumi.opacity(0.7)).frame(height: 1.5).offset(y: -8)
@@ -1127,7 +1127,7 @@ private struct SentoBackdrop: View {
                         LinearGradient(colors: [Color(hex: 0x1E293B).opacity(0.45), .clear], startPoint: .top, endPoint: .bottom).frame(height: 60)
                         Spacer()
                     }
-                    ForEach([w * 0.16, w * 0.84], id: \.self) { lx in
+                    ForEach(Array([w * 0.16, w * 0.84].enumerated()), id: \.offset) { _, lx in
                         RadialGradient(colors: [YoseColor.kinBright.opacity(0.7), .clear], center: .center, startRadius: 2, endRadius: 46)
                             .frame(width: 92, height: 92).position(x: lx, y: 18).blendMode(.screen)
                         Circle().fill(YoseColor.kinBright).frame(width: 14, height: 14)
@@ -1181,7 +1181,7 @@ private struct TheaterBackdrop: View {
                     .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
                     .position(x: w / 2, y: 13)
                 // 寄席提灯2つ（和紙色の胴＝縞と混ざらない）
-                ForEach([w * 0.24, w * 0.76], id: \.self) { lx in
+                ForEach(Array([w * 0.24, w * 0.76].enumerated()), id: \.offset) { _, lx in
                     VStack(spacing: 0) {
                         Rectangle().fill(YoseColor.sumi).frame(width: 2, height: 8)
                         TheaterLantern(lit: false)
@@ -1737,7 +1737,7 @@ private struct OfficeBackdrop: View {
                 .position(x: w * 0.74, y: 76)
 
                 // 事務机の左右の脚
-                ForEach([w / 2 - 112, w / 2 + 112], id: \.self) { lx in
+                ForEach(Array([w / 2 - 112, w / 2 + 112].enumerated()), id: \.offset) { _, lx in
                     Rectangle().fill(Color(hex: 0x7A5C3C)).frame(width: 12, height: h - (floorY + 34))
                         .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
                         .position(x: lx, y: (floorY + 34) + (h - (floorY + 34)) / 2)
