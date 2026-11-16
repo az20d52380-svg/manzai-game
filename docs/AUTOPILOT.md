@@ -57,6 +57,7 @@
 - テストが「失敗0なのに TEST FAILED（signal kill）」の時（11/08）：まず `ps aux | grep -E "xcodebuild|refresh_candidates"` で同じ iPhone 17 を使う別のセッションを確かめる（refresh_candidates.sh は一時フォルダで動くので git status には出ない）。
 - 漏れ点検の常駐メモリは**必ず iPhone 17 の UDID でプロセスを絞る**（`pgrep -f "Devices/E5D11233-FE99-429F-A55C-8B0FA5793568/.*ManzaiGame.app/ManzaiGame"`）。オーナーの 17 Pro / Pro Max でも ManzaiGame が動いていることがあり、名前だけの pgrep はそちらを拾う（11/09 に発覚・それより前の soak のメモリ値も同じ取り違えの恐れ）。
 - 漏れ点検（11/08〜）：soak は**6分以上**回す（3分では 11/08 の落ちる不具合を拾えなかった）。落ちたら `~/Library/Logs/DiagnosticReports/ManzaiGame-*.ips` の triggered スレッドを読む。SwiftUI の `ForEach(0..<xs.count)`＋`xs[i]` は、xs が減る画面で範囲外になる＝要素ごと渡す。
+- 取り込み直しの終わりを待つ時（11/16 夕 事故）：`while pgrep -f refresh_candidates.sh` は**待つ側の zsh -c の命令文自体に当たり永久に終わらない**（11/16 に別の回の待ちが3本残った）。`pgrep -f "^/bin/bash tools/refresh_candidates"` で数える。
 - シミュレータ（iPhone 17）を使うサブエージェントは**同時に1本だけ**（2026-10-15：並行で上書き合い、落ちたように見えた・撮り直しが出た）
 
 ## 中断中（未コミットの変更が作業ツリーにある）
@@ -384,5 +385,5 @@
 629. [済 11/16 午後 定期・sonnet・docs/code_review_misc3_1116_v0.md] FinalsBroadcastIntro・CalendarView・SettingsView の点検＝高0・中0・低3・要確認2。低-1（決勝の導入で審査員席→ファイナリストの最初の1コマだけ10組中7組が点灯）を試し版 views-a11y-1116 に足した（3c50ab27b・ビルド green）。低-2・低-3（VoiceOver の読み方）は並べるだけ。試し版 views-a11y には値札の読み上げ名のテスト ViewsA11y1116Tests も足した（f2c58d240・テストのビルドまで）。
 630. [済 11/16 午後 定期・sonnet・docs/code_review_shopviews_1116_v0.md] 予選の知らせ・ガチャ・お店の点検＝高0・中0・低4・要確認3（二重付与・二重消費・残高が負は無し）。一番重い低-1＝ガチャ購入の待ち中に「とじる」で閉じると、購入と抽選は通り衣装も入るが結果の画面が出ない（お金の損得なし）。課金の画面＝公開前の判断の行（156・229・439）と一緒に並べるだけ。
 631. [済 11/16 午後 定期・sonnet・docs/code_review_weekrunner_1116_v0.md] WeekRunner・GameEngine の点検（11/02 以降の差分を重点）＝高0・中0・低1・要確認3・乱数の消費順と Python 正典の食い違いは0。低1＝決勝で1本目のネタが未選択だと「弱い1本目＋2本目なし」より有利（netaScoreBonus の guard が先に0を返す・画面の補完で起きにくい）＝直すなら規律A・判断の行へ並べるだけ。
-632. [ ] （11/16 夕 定期）vocab-ochi-cand に本体を取り込むと GameCore のテストが1件落ちる＝どのテストか・候補側で直せるか（本体は触らない）。
+632. [済 11/16 夕 定期＝落ちるのは JudgeTalkTests.testVocabShape：候補の新しい語「決め台詞の締め」が後から本体に入った禁止語「決め」に掛かる。同じ所は finals-mc-tri-cand が「話の締め」で直し済み（重複）＝候補は直さず refresh_candidates.sh の対象から外した（枝は消していない）] （11/16 夕 定期）vocab-ochi-cand に本体を取り込むと GameCore のテストが1件落ちる＝どのテストか・候補側で直せるか（本体は触らない）。
 633. [ ] （11/16 夕 定期）候補3本（all-1110-bundle・pass-banner・rec-1110-bundle）が本体の YoseMilestoneFX.swift と衝突＝本体の版に候補の差分を載せ直せるか。
