@@ -169,6 +169,8 @@ final class GameSession {
     private(set) var abandoned = false
     /// 観客版決勝を観ている最中（監査H-01: 決勝に進めなかった年の第47週・RootView が切り替える）
     private(set) var watchingFinal = false
+    /// 目視フックの早送り中（MZ_YEARS）。真の間は画面を読み込み中だけにして、週の画面の .task が途中の状態を触らないように（DEBUG の早送りだけが立てる）
+    private(set) var debugFastForwarding = false
     /// 今年の観客版決勝を観終えたか（1年1回）
     private(set) var didWatchFinal = false
     /// 借金の知らせを出した最も深い段（0=未・1=初マイナス・2=−50万割れ・3=−80万割れ）。1キャリアで各段1回（表示のみ・golden非対象）
@@ -1756,7 +1758,20 @@ final class GameSession {
 
     /// QA用（複数年）: n 年ぶん年末まで自動プレイして翌年へ進める（MZ_YEARS=n）。区切りに当たったら止まる。
     /// 自由週は「金が細ればバイト・体力があればネタ作り・無ければ休む」の素朴な台本（夜逃げで止まらないように）。
-    func debugAdvanceYears(_ n: Int) {
+    /// 目視フック用（MZ_YEARS）：1年ごとにメインを明け渡す。14年を同期で回すとメインが約50秒塞がり、システムに落とされる（visual_hana_late_1117。DEBUG のみ・進め方と乱数は debugAdvanceYears と同じ）
+    func debugAdvanceYearsYielding(_ n: Int) async {
+        debugFastForwarding = true
+        defer { debugFastForwarding = false }
+        for _ in 0..<n {
+            let y = year
+            debugAdvanceYears(1, applyStopWeek: false)
+            if year == y { return }   // 年が進まなかった（解散・キャリアの終わり）＝元と同じく途中週の停止もしない
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        debugAdvanceYears(0)   // MZ_STOPWEEK の停止だけ
+    }
+
+    func debugAdvanceYears(_ n: Int, applyStopWeek: Bool = true) {
         let care = ProcessInfo.processInfo.environment["MZ_CARE"] == "1"
         for _ in 0..<n {
             var steps = 0
@@ -1778,7 +1793,7 @@ final class GameSession {
             startNextYear()
         }
         // MZ_STOPWEEK=w: 今の年の第w週の自由行動の手前まで同じ台本で進めて止める（最終年＝careerYears 年目の年末を手で遊ぶ用）
-        if let w = Int(ProcessInfo.processInfo.environment["MZ_STOPWEEK"] ?? ""), w > 0 {
+        if applyStopWeek, let w = Int(ProcessInfo.processInfo.environment["MZ_STOPWEEK"] ?? ""), w > 0 {
             var steps = 0
             while !finished, !winFinale, steps < 600 {
                 if case .freeAction = phase, week >= w, pendingResult == nil, pendingChoiceEvent == nil, !watchingFinal { return }

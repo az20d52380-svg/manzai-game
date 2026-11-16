@@ -102,7 +102,7 @@ struct RootView: View {
             // MZ_STOPWEEK だけ（MZ_YEARS なし）は 0 年＝1年目の途中週で止める（visual_check_midyear_1025_v0 §3）
             let yearsEnv = ProcessInfo.processInfo.environment["MZ_YEARS"] ?? (ProcessInfo.processInfo.environment["MZ_STOPWEEK"] != nil ? "0" : "")
             if let n = Int(yearsEnv), n >= 0, session.year == 1 {
-                session.debugAdvanceYears(n)
+                await session.debugAdvanceYearsYielding(n)
             }
             // MZ_GPLOST=1：頂GP の予選で落ちた扱いにする（日程表の塗りの目視＝C-25。DEBUG のみ・乱数は消費しない）
             if ProcessInfo.processInfo.environment["MZ_GPLOST"] != nil { session.debugMarkGPLost() }
@@ -407,7 +407,11 @@ struct RootView: View {
     }
 
     @ViewBuilder private var content: some View {
-        if session.winFinale {
+        if session.debugFastForwarding {   // 目視フックの早送り中（DEBUG のみ立つ）
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Theme.bgGradient.ignoresSafeArea())
+        } else if session.winFinale {
             FinalsPresentationView(session: session)                 // M-1本家型 決勝演出（籤→7審査員→ボード→めくり→優勝）
         } else if session.watchingFinal {
             // 決勝に進めなかった年の第47週＝今年の決勝を客席から観る（監査H-01）
