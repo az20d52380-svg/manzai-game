@@ -212,6 +212,8 @@
 650. [済 11/17 定期] 本体 MZ_HANANEXT 追加後の点検＝run_checks（GameCore 476・アプリ 442 TEST SUCCEEDED・同期 3/3・config 103/103・効果 62・発火 26 一致・UTF-8 壊れ0）＝異常なし。
 651. [済 11/17 定期・sonnet・docs/visual_hana_late_1117_v0.md] 女女の後半の年（5・10・15年目）と HANA 勝ち上がりの日程表の目視＝崩れ・男性語・名前の揺れ0・HANA準決勝(42)/決勝(44)の塗りも正しい。
 652. [済 11/17 定期・DEBUG のみ] 目視フック MZ_YEARS が10年を超えるとアプリが約50秒で落とされる（早送りがメインを塞ぐ＝SIGKILL）→1年ごとに明け渡す debugAdvanceYearsYielding＋早送り中は読み込み中だけ出す debugFastForwarding。15年目第43週まで届くのを確認・run_checks 全 green（アプリ 443）。待ちは MZ_YEARS=14 で約4分。
+653. [済 11/17 定期] 候補122本と本体の衝突＝既知の古い3本（151）だけ＝652 の直しで新しい衝突なし。
+654. [済 11/17 定期・DEBUG のみ] 目視フック stage_result の週が46固定で、HANA決勝の結果が「第46週」と出ていた（visual_hana_late_1117 中）→HANA の段は本番の週（決勝＝第44週）を使う。目視で「第44週・本番」を確認・GameCore 476／アプリ 443 green。
 650. [済 11/17 未明 定期・sonnet・docs/review_fixes_1116_v0.md] 11/16 の直し約20本の見直し＝高0・中0・低2・要確認1。直した：低-1 誘いの保留（inviteWaiting）が年の切り替えで落ちず、最終週に立つと翌年の頭に出る→startNextYear で落とす（WeekRunner も新年に pendingInvite を落とす＝断る扱いと揃えた・表示のみ・GameCore 476／アプリ 442 green）。低-2（字間の見出しの読み上げ名）は実機の VoiceOver 確認待ち。試し版3本（deb1cb84f・8b5793820・b8e4c5689）は 98fa0dc09 で意図して本体へ（624/625/629）。DEBUG フックは全部 #if DEBUG の中。サブエージェントは1回止まり、再開で書き終えた。
 651. [済 11/17 未明 定期] 650 の再発防止テスト testWaitingInviteDroppedAtNewYear（年末のセーブに誘いの待ちを立てて再開→次の年へ＝待ちが消え、札も出ない）。直しを外すと赤（新しい年の頭に前の年の誘いの札が出る＝実際に起きる不具合だった）・直しありで green。アプリ 443。selftest 29行 DONE。
 652. [済 11/17 未明 定期] 650 と同じ型（画面側の記録が年の切り替えで残る）を GameSession の全フラグで洗い直した＝startNextYear で触らない28個のうち、didFire* は「キャリアで一度」の設計・lossStreak 等は持ち越す設計・週のイベント上限は 129 の論点＝直す所なし。判断が要る1つを 653 へ。
