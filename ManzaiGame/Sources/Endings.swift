@@ -57,8 +57,8 @@ enum EndingID: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .nightEscape: "お金が尽きた先にある終わり"
         case .breakup: "相方と会わない日が続いた先にある終わり"
-        case .gaveUp: "決勝を知らないまま十五年が過ぎ、二人が離れていた"
-        case .keptGoing: "決勝を知らないまま十五年。それでも二人は近くにいた"
+        case .gaveUp: "決勝の舞台に立たないまま十五年が過ぎ、二人が離れていた"
+        case .keptGoing: "決勝の舞台に立たないまま十五年。それでも二人は近くにいた"
         case .tenYearsClose: "決勝の舞台を知って、十五年で区切った"
         case .tenYearsTrue: "決勝の舞台を知って、十五年、二人は近くにいた"
         case .championRetire: "頂に立つ"
