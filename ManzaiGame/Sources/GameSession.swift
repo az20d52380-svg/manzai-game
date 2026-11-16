@@ -1221,6 +1221,7 @@ final class GameSession {
         weekBanter = nil
         stablePicks = [:]   // 使った文の記録（usedPicks）はキャリア通算＝年が替わっても消さない
         pendingChoiceEvent = nil
+        inviteWaiting = false   // 年をまたいだ誘いは出さない（WeekRunner も新年に pendingInvite を落とす＝断る扱い・review_fixes_1116 低-1）
         choiceApplied = false
         lastEventRollWeek = -1
         lastBanterRollWeek = -1
