@@ -37,3 +37,4 @@
 - 直し：`debugAdvanceYearsYielding`（1年ごとに 20ms メインを明け渡す・進め方と乱数は同じ）＋早送りの間は画面を読み込み中だけにする `debugFastForwarding`（明け渡しの間に週の画面の .task が状態を触り、6年目第41週で早送りが止まったため）。RootView の MZ_YEARS はこちらを使う。
 - 確認：MZ_YEARS=14 MZ_STOPWEEK=43 MZ_HANANEXT=3（女女）で約4分で「15年目 第43週・THE HANA 決勝 まで あと1週」に届く＝崩れ・男性語なし（体力0で練習・ネタは休演、帯の注意「体力が少ない。今週は休むのも手だ」と独白「夜更かしをやめよう」は既知の促しの重なり 146 と同じ型）。run_checks 全 green（GameCore 476・アプリ 443）。
 - 中の stage_result「第46週」は目視フックの固定値（RootView の stage_result は week: 46 で作る）＝本番の HANA 決勝は第44週の結果で出る。直す所なし。
+- 「実力10・相性20 が年で同じ」は見本の値ではなく本物の値：相性は上限（GameConfig.compatCap=20）に届いて止まり、実力は目視の台本（MZ_CARE）が経験点を振らない（画面に「未振分あり」）ため年初の値のまま＝AUTOPILOT 常設「能力は器で止まり G のままになりがち＝台本の癖」と同じ。遊ぶ人の画面の不具合ではない。
