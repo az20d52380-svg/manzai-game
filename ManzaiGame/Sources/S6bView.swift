@@ -240,6 +240,7 @@ struct S6bView: View {
             }.buttonStyle(PressableStyle()).padding(.horizontal, Theme.Sp.s32).padding(.bottom, 50)
                 .opacity(burned ? 1 : 0)
                 .allowsHitTesting(burned)   // 透明のうちは押せない（同 低-1 ①）
+                .accessibilityHidden(!burned)   // 透明のうちは読み上げにも出さない（voiceover_audit_1115 N1）
         }
         .onAppear {
             withAnimation(reduceMotion ? nil : .easeOut(duration: 0.8)) { burned = true }   // 焼き付き0.8s

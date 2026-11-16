@@ -19,6 +19,7 @@ public struct YoseChampionCelebrationView: View {
     public let partnerLine: String         // 例：「……なあ、腹減ったな。焼肉、特上頼んでいいか？」
     public let mcName: String              // 例：「司会・鳴海」
     public let mcComment: String           // 例：「見事4票獲得！今年の漫才日本一は『満月ロケット』です！！」
+    public let proceedLabel: String        // 最下部の進行ボタン（頂GP＝番組エンディングへ続く／THE HANA＝キャリアの週へ戻る）
     public let onFinish: () -> Void
 
     // アニメーション時間軸ステート
@@ -51,6 +52,7 @@ public struct YoseChampionCelebrationView: View {
         partnerLine: String = "「やったね。ここまで、本当によく頑張った」",
         mcName: String = "司会・鳴海",
         mcComment: String = "「決まりました！！今夜、幾千組の頂点に立ったのは——この2人です！」",
+        proceedLabel: String = "表彰式・エンディングへ進む",
         onFinish: @escaping () -> Void = {}
     ) {
         self.tournamentName = tournamentName
@@ -61,6 +63,7 @@ public struct YoseChampionCelebrationView: View {
         self.partnerLine = partnerLine
         self.mcName = mcName
         self.mcComment = mcComment
+        self.proceedLabel = proceedLabel
         self.onFinish = onFinish
     }
 
@@ -444,7 +447,7 @@ public struct YoseChampionCelebrationView: View {
     private var proceedActionBar: some View {
         Button(action: onFinish) {
             HStack(spacing: 8) {
-                Text("表彰式・エンディングへ進む")
+                Text(proceedLabel)
                     .font(YoseFont.gothic(16, weight: .heavy))
                 Image(systemName: "arrowtriangle.right.fill").accessibilityHidden(true)
                     .font(.system(size: Font.mzScaled(12), weight: .black))
