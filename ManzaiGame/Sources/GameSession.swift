@@ -339,6 +339,7 @@ final class GameSession {
         self.smallEntered = save.smallEntered ?? 0
         self.smallWon = save.smallWon ?? 0
         self.inviteIdea = save.inviteIdea ?? false
+        self.inviteWaiting = save.inviteWaiting ?? false
         self.youthNoticeYear = save.youthNoticeYear ?? 0
         self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
@@ -1309,6 +1310,7 @@ final class GameSession {
         var inviteIdea: Bool?             // 出ている誘いの札が発想付きか（旧セーブ＝nil＝なし・save_restore_audit_1115 #1）
         var youthNoticeYear: Int?         // 年初の知らせを出した年（旧セーブ＝nil＝0＝まだ）
         var tiredNoticeYear: Int?
+        var inviteWaiting: Bool?          // 週末に決まり次の週の頭で出す誘い（旧セーブ＝nil＝なし・code_review_1116_night #4）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1377,8 +1379,9 @@ final class GameSession {
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
                             injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID,
-                            inviteIdea: pendingChoiceEvent == .weekendInvite ? inviteIdea : nil,
-                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear)
+                            inviteIdea: (pendingChoiceEvent == .weekendInvite || inviteWaiting) ? inviteIdea : nil,
+                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear,
+                            inviteWaiting: inviteWaiting ? true : nil)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
