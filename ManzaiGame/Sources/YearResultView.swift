@@ -294,7 +294,7 @@ struct YearResultView: View {
                             Text(String(line[..<r.lowerBound])).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
                                 .padding(.horizontal, 6).padding(.vertical, 2).frame(minWidth: 48)
                                 .background(YoseColor.kuroUrushi)
-                            Text(String(line[r.upperBound...])).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)
+                            Text(NotebookView.breakAtSpaces(String(line[r.upperBound...]))).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)   // 語の途中で折らない（大会の記録と同じ・AUTOPILOT 571）
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 0)
                             if line.hasSuffix("（客席から）") { YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た") }   // 客席から観た決勝は戦績タブと同じ灰の札（playtest_v13 §2-4）
