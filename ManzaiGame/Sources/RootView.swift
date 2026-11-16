@@ -106,6 +106,8 @@ struct RootView: View {
             }
             // MZ_GPLOST=1：頂GP の予選で落ちた扱いにする（日程表の塗りの目視＝C-25。DEBUG のみ・乱数は消費しない）
             if ProcessInfo.processInfo.environment["MZ_GPLOST"] != nil { session.debugMarkGPLost() }
+            // MZ_HANANEXT=n：今年の THE HANA を段 n に出られる扱いに（女女の準決勝・決勝の帯の目視＝visual_hana_y2_3_1116 中。DEBUG のみ）
+            if let n = Int(ProcessInfo.processInfo.environment["MZ_HANANEXT"] ?? "") { session.debugMarkHanaNext(n) }
             // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
             if let mk = ProcessInfo.processInfo.environment["MZ_SAVEMAKE"] {
                 var st = mk == "champ" ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 10; st.money = 500_000

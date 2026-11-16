@@ -1523,6 +1523,16 @@ final class GameSession {
         runner = WeekRunner(restoring: snap, config: config)
     }
 
+    /// QA用（MZ_HANANEXT=段）：今年の THE HANA を「段 n に出られる」扱いにする（女女の準決勝・決勝の帯や日程表の目視用。DEBUG のみ・乱数は消費しない）。
+    /// 1回戦の後（第33週以降）に掛ける＝MZ_STOPWEEK=41 MZ_HANANEXT=2 で準決勝の前週、43 と 3 で決勝の前週。
+    func debugMarkHanaNext(_ n: Int) {
+        var snap = runner.snapshot()
+        snap.state.hanaYear = year
+        snap.state.hanaNext = n
+        runner = WeekRunner(restoring: snap, config: config)
+        state = runner.state   // 帯・日程表は session.state を読む
+    }
+
     /// QA用: 既定行動で自動プレイし、最初の大会/GP結果（S3）が出た時点で止める。
     /// stopAtEntry=true なら最初の大会入口（tournamentDecision）で止める（入口画面の目視用）。
     /// 画面レイアウトの目視確認を素早く行うための開発フック（リリースには含まれない）。

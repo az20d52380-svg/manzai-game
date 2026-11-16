@@ -30,6 +30,7 @@
 - 後半の年の目視（10/26〜）：`MZ_YEARS` が 5 以上だと素の台本は途中で解散する＝`MZ_CARE=1` を足す（331535b から MZ_CARE もネタが無い週はネタを書く。能力は器で止まり G のままになりがち＝台本の癖）。撮影は `MZ_NOCHIP=1`（DEBUG の🏆/💪チップが実力カードに被る）。MZ_STOPWEEK を付けると週が2以上になり、作り直し型のフック（calendar・shop・allocate 等）もその年のまま開く（later_years_visual_1026_v0）。
 - 年末の目視の注意（10/27〜）：`MZ_UI=yearend` は debugPlayToEnd（バイトと休みの交互）で走り MZ_CARE は効かない＝週の画面（debugFreeWeek）と数値が合わないのは別走行のため（docs/fame_gap_y7_1027_v0.md）。年末の「G▶G」もこの台本の癖。
 - 年末総決算の下の段の目視（10/26 昼〜）：`MZ_UI=yearend MZ_SCROLL=history|events|breakdown|radar`。
+- THE HANA の準決勝・決勝の前週（11/16 夜〜）：`MZ_KIND=femaleFemale MZ_UI=week MZ_YEARS=1 MZ_STOPWEEK=41 MZ_HANANEXT=2`（準決勝）／`STOPWEEK=43 HANANEXT=3`（決勝）＝今年の HANA の進みだけ立てる DEBUG フック。
 - THE HANA の目視（11/16〜）：HANA に出るのは女女だけ＝`MZ_KIND=femaleFemale`（femaleMale は男女コンビで出ない）。結果画面は `MZ_UI=hana_result`（MZ_PASS=0 で敗退）・`hana_video`・`hana_entry`。
 - オファーの札の目視（11/09〜）：`MZ_UI=offers`（知名度60＝札3枚・体力25以下でオファーが来た週で止まる・`MZ_STAMINA=100` なら最初のオファーで止まる）。
 - 週で文面が変わるイベントの目視（10/26 夜〜）：`MZ_UI=event MZ_EV=styleTalk|weekend MZ_EVWEEK=<n>`（文面は (年×48＋週) で回る）。
@@ -207,6 +208,7 @@
 646. [済 11/16 夜 定期] code_review_misc5 低-2：数字の跳ね（punch）が140ms以内に続けて変わると、前の戻しが次の跳ねを途中で引っ込める→世代番号で前の戻しを無視（NetaStage の glowGen と同じ型・表示のみ・アプリ 442 green・目視 MZ_UI=cards 崩れなし）。低-1・低-3（演出ひかえめの縁の明滅の並走＝最後は必ず消える）・低-4（広告は未接続）は並べるだけ。
 647. [済 11/16 夜 定期・sonnet・docs/code_review_store4_1116_v0.md] StageOutfit・StoreIDs・YoseComponents・CharacterAvatars の点検＝高0・中0・低1（StageOutfit:63 の MainActor.assumeIsolated＝メイン外から呼ぶと落ちるが、今の呼び元は全部メイン）。商品ID4つは Configuration.storekit と一致・未知の衣装IDは標準に戻って落ちない・コンビ4種の顔と色の取り違えなし＝直す所なし。
 648. [済 11/16 夜 定期・sonnet・docs/visual_y2_3_1116_v0.md] 2・3年目の週画面（第3/20/40/46週・計8枚）＝崩れ・文字切れ・年週の食い違い0。中2は既知＝体力20で「休むのも手」と体力−20の営業オファーが並ぶ（162 と同じ・促しとオファーの出し分けは判断もの）／MZ_STOPWEEK=46 で第47週が出る（フックが46週を回してから止まる）。低「年末まであと1週」に「通った。次の本番に向けて…」＝先週の通過の余韻の台詞で、第46週に準決勝を通れば第47週は決勝＝合っている（直さない）。他の低は既知の重なり。
+649. [済 11/16 夜 定期・sonnet・docs/visual_hana_y2_3_1116_v0.md] 女女（THE HANA の経路）2・3年目の目視6枚＝崩れ・文字切れ・男性語0（主人公は「私」）・HANA 1回戦の「あと1週」と日程表の位置は合う。中＝準決勝・決勝の帯を出す状態が作れない→DEBUG フック `MZ_HANANEXT=段` を足した（GameSession.debugMarkHanaNext・乱数非消費・session.state も更新）。目視：2年目第41週「THE HANA 準決勝 まで あと1週」・第43週「THE HANA 決勝 まで あと1週」＝崩れなし。アプリ 442 green。低2（3年目 w43 の帯と吹き出しの休む／バイトの食い違い・見本の能力値が年で同じ）は並べるだけ。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
