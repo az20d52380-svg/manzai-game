@@ -339,6 +339,7 @@ final class GameSession {
         self.smallEntered = save.smallEntered ?? 0
         self.smallWon = save.smallWon ?? 0
         self.inviteIdea = save.inviteIdea ?? false
+        self.inviteWaiting = save.inviteWaiting ?? false
         self.youthNoticeYear = save.youthNoticeYear ?? 0
         self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
@@ -1293,6 +1294,7 @@ final class GameSession {
         var inviteIdea: Bool?             // 出ている誘いの札が発想付きか（旧セーブ＝nil＝なし・save_restore_audit_1115 #1）
         var youthNoticeYear: Int?         // 年初の知らせを出した年（旧セーブ＝nil＝0＝まだ）
         var tiredNoticeYear: Int?
+        var inviteWaiting: Bool?          // 週末に決まり次の週の頭で出す誘い（旧セーブ＝nil＝なし・code_review_1116_night #4）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1361,8 +1363,9 @@ final class GameSession {
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
                             injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID,
-                            inviteIdea: pendingChoiceEvent == .weekendInvite ? inviteIdea : nil,
-                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear)
+                            inviteIdea: (pendingChoiceEvent == .weekendInvite || inviteWaiting) ? inviteIdea : nil,
+                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear,
+                            inviteWaiting: inviteWaiting ? true : nil)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
@@ -1595,6 +1598,12 @@ final class GameSession {
     /// DEBUG: ネタ帳「大会の記録」（MZ_UI=notebook MZ_TAB=kiroku）の目視用に、判の4種（通過/敗退/休/優勝）を踏む記録を積む。
     /// 客席から（観戦）と自組の優勝が同じ週に並ぶのは見本だけ（判の種類を1画面で見るため。本編では同じ年に両方は出ない・playtest_v13 §2-1）
     func debugSeedKirokuLog() {
+        if ProcessInfo.processInfo.environment["MZ_KIROKU"] == "hana" {   // MZ_KIROKU=hana：THE HANA を勝ち上がった年の行（本編の summarize と同じ形で作る）
+            let rows: [(Int, String, Bool, Int)] = [(12, "GP1回戦", true, 0), (20, "GP2回戦", false, 0)]
+                + config.calendar.hanaTournaments.map { ($0.week, $0.name, true, $0.prize) }
+            log = rows.map { Self.summarize(WeekSummary(year: year, week: $0.0, results: [StageResult(name: $0.1, passed: $0.2, prize: $0.3)], state: state)) }
+            return
+        }
         log = ["第12週: 頂GP 1回戦 通過", "第20週: 頂GP 2回戦 敗退", "第30週: 体調ダウン 休",
                "第\(config.calendar.gpFinalWeek)週: 頂GP 決勝 優勝「ひだまり座」（客席から）", "第\(config.calendar.gpFinalWeek)週: 頂GP 決勝 優勝 +\(config.calendar.gpPrize / 10000)万"]
     }
