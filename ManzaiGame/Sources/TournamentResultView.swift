@@ -175,6 +175,7 @@ struct TournamentResultView: View {
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
                                 if r.passed && isHanaFinal {
+                                    guard !showHanaChamp else { return }   // 連打で優勝の音が二重に鳴らない（code_review_results_1117 低）
                                     Sound.play(.fanfare); Sound.play(.cheerBig)   // 頂GP 決勝の優勝と同じ音（優勝演出の画面は音を鳴らさない・code_review_1107e #1）
                                     withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true }
                                 }
