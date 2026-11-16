@@ -386,4 +386,4 @@
 630. [済 11/16 午後 定期・sonnet・docs/code_review_shopviews_1116_v0.md] 予選の知らせ・ガチャ・お店の点検＝高0・中0・低4・要確認3（二重付与・二重消費・残高が負は無し）。一番重い低-1＝ガチャ購入の待ち中に「とじる」で閉じると、購入と抽選は通り衣装も入るが結果の画面が出ない（お金の損得なし）。課金の画面＝公開前の判断の行（156・229・439）と一緒に並べるだけ。
 631. [済 11/16 午後 定期・sonnet・docs/code_review_weekrunner_1116_v0.md] WeekRunner・GameEngine の点検（11/02 以降の差分を重点）＝高0・中0・低1・要確認3・乱数の消費順と Python 正典の食い違いは0。低1＝決勝で1本目のネタが未選択だと「弱い1本目＋2本目なし」より有利（netaScoreBonus の guard が先に0を返す・画面の補完で起きにくい）＝直すなら規律A・判断の行へ並べるだけ。
 632. [済 11/16 夕 定期＝落ちるのは JudgeTalkTests.testVocabShape：候補の新しい語「決め台詞の締め」が後から本体に入った禁止語「決め」に掛かる。同じ所は finals-mc-tri-cand が「話の締め」で直し済み（重複）＝候補は直さず refresh_candidates.sh の対象から外した（枝は消していない）] （11/16 夕 定期）vocab-ochi-cand に本体を取り込むと GameCore のテストが1件落ちる＝どのテストか・候補側で直せるか（本体は触らない）。
-633. [ ] （11/16 夕 定期）候補3本（all-1110-bundle・pass-banner・rec-1110-bundle）が本体の YoseMilestoneFX.swift と衝突＝本体の版に候補の差分を載せ直せるか。
+633. [x] 済（11/16 夜の定期：3本とも本体から遅れ0・merge-tree で衝突なし＝別の回で載せ直し済みを確認のみ）（11/16 夕 定期）候補3本（all-1110-bundle・pass-banner・rec-1110-bundle）が本体の YoseMilestoneFX.swift と衝突＝本体の版に候補の差分を載せ直せるか。
