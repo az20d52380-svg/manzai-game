@@ -66,7 +66,7 @@ struct YoseYearTurnCurtainView: View {
                 joshikimakuHeader
                 HStack(spacing: 8) {
                     Rectangle().fill(YoseColor.kin).frame(width: 20, height: 1.5)
-                    Text("新 シ ー ズ ン 開 幕")
+                    Text("新 シ ー ズ ン 開 幕").accessibilityLabel("新シーズン開幕")
                         .font(YoseFont.gothic(13, weight: .heavy)).tracking(1.5)
                         .foregroundStyle(YoseColor.kinBright)
                     Rectangle().fill(YoseColor.kin).frame(width: 20, height: 1.5)
