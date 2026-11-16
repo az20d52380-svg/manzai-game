@@ -35,6 +35,11 @@ struct AbilityUpView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 和の五色（閃・語・間・存・胆）＝正本 §2 の経験点5色
+    /// 値札1マスの読み上げ名（「ネタ種 4」・持ち分が足りない時は「、足りない」）
+    static func costLabel(_ c: ExpCurrency, _ n: Int, short: Bool) -> String {
+        short ? "\(c.displayName) \(n)、足りない" : "\(c.displayName) \(n)"
+    }
+
     private func wa(_ c: ExpCurrency) -> Color {
         switch c {
         case .閃き: return YoseColor.expSen
@@ -351,9 +356,11 @@ struct AbilityUpView: View {
                             .frame(maxWidth: .infinity, minHeight: 40)
                             .background(short ? YoseColor.ginNezu : wa(c).opacity(0.18))
                             .overlay(Rectangle().stroke(short ? YoseColor.haiSumi.opacity(0.5) : wa(c), lineWidth: 1))
+                            .accessibilityLabel(Self.costLabel(c, n, short: short))   // 裸の数字で読まない（code_review_views_1116 #1）
                     } else {
                         Text("-").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.ginNezu)
                             .frame(maxWidth: .infinity, minHeight: 40)
+                            .accessibilityHidden(true)   // 使わない経験点の空き＝読まない
                     }
                 }
             }
