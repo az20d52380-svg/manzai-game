@@ -22,7 +22,7 @@
 - アプリ側のテスト（10/19 深夜〜）：点検の時は `cd ManzaiGame && xcodebuild test …`（10/27 時点 276本）も回す。状態のバイト比較は `outputFormatting = .sortedKeys`（itemCounts の辞書の並びで赤になる＝c6803b4）。
 - 同期の確認（10/19 夜〜）：`cd tools && python3 check_golden_sync.py` は 3年 golden・12週台本・golden_features の3つを突き合わせる。
 - 定数の同期（10/27 夜〜）：`cd tools && python3 check_config_sync.py` は swift test が直接触らない定数を中心に36個（イベントの発生率と上限・知名度・誘い・すれ違い・生活苦・飲み物・成長上限の曲線・ネタの式）の Swift 既定値と Python 正典を突き合わせる（不一致で終了コード1）。check_golden_sync.py の最後でも自動で回る。
-- 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。
+- 実測の基準表（10/19〜）：docs/band_reference_1019_v1.md（直した実測機・ボット4種×ネタ×EVENTS_APP・n=1000）。　**11/16 夜に今のコードで測り直した＝docs/band_reference_1116_v2.md（同じ表・10/19 の値を括弧で並記）。比べる時はこちら。**
 - 実測の決まり（2026-10-19 追記3）：EVENTS_APP=True のイベント効果は 10/19 にアプリと同じ素の加減算へ直した（events_app_raw_effect_v0）。それより前の True の値は低めに出ている。
 - 実測の決まり（2026-10-19 追記）：アプリの帯に近いのは EVENTS_APP=True（イベントの抽選をアプリと同じに）。既定にするかはオーナー判断待ち＝それまでは帯を測る時に False/True を併記する。
 - 実測の決まり（2026-10-14〜）：帯を測る時は、ネタ無し（これまで）に加えて**ネタ込み**（`sim_career.NETA_ON=True, NETA_V2=True`＝アプリと同じ式）も併記する。ネタ無しだけだとアプリの帯より低く出る（`neta_bonus_remeasure_v0.md`）
@@ -364,3 +364,5 @@
 611. [済 11/16 夜 定期] 580 の直し（文字色を戻した）をダークモードで目視＝大会の記録（HANA の行）・年末総決算の出来事とも墨色で読める（直す前は既定の文字色＝ダークでは白くなる所だった）。
 612. [済 11/16 夜 定期] 大きい文字（accessibility-large）で決勝の入口・お店の下側・休みの札を目視＝崩れなし（休みの札は本体だと体力80で「+60」＝候補 rest-cap-preview が直す所の再確認）。
 613. [済 11/16 夜 定期・sonnet・docs/second_pen_measure_1116_v0.md・tools/exp_second_pen_1116_v0.py] 決勝の2本目の減点 0／1.5／3 の実測（n=1000・ネタ込み・EVENTS_APP）＝決勝に出る割合は同じ・優勝はやり込みだけ 21.7／18.1／15.6%（決勝の61〜63%で減点）。他3型は掛からない。decision_brief の行に添えた。注意：10/19 の基準表とはその後の変更で数字が合わない。
+
+614. [済 11/16 夜 定期・sonnet・docs/band_reference_1116_v2.md] 実測の基準表を今のコード（169ea8657）で測り直し（measure_band_reference_v1.py 無修正・n=1000）。10/19 から大きく動いた所：ローテの決勝 19.8→66.5%（ネタ込み）／79.1%（EVENTS_APP）・のんびり改 4.3→46.8%・必要充足（EVENTS_APP なし）は決勝 43.1→28.7%・解散 0.6→17.3%。1年目決勝と夜逃げは全部0%。常設の作業の基準表の行を v2 に向けた。
