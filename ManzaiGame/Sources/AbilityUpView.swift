@@ -35,6 +35,11 @@ struct AbilityUpView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 和の五色（閃・語・間・存・胆）＝正本 §2 の経験点5色
+    /// 値札1マスの読み上げ名（「ネタ種 4」・持ち分が足りない時は「、足りない」）
+    static func costLabel(_ c: ExpCurrency, _ n: Int, short: Bool) -> String {
+        short ? "\(c.displayName) \(n)、足りない" : "\(c.displayName) \(n)"
+    }
+
     private func wa(_ c: ExpCurrency) -> Color {
         switch c {
         case .閃き: return YoseColor.expSen
@@ -110,15 +115,15 @@ struct AbilityUpView: View {
             ForEach(Skill.allCases, id: \.self) { skillCard($0) }
         }
         .confirmationDialog(skillToLearn.map { "「\($0.rawValue)」を覚える？" } ?? "", isPresented: Binding(
-            get: { skillToLearn != nil }, set: { if !$0 { skillToLearn = nil } }), titleVisibility: .visible) {
+            get: { skillToLearn != nil }, set: { if !$0 { skillToLearn = nil } }), titleVisibility: .visible,
+            presenting: skillToLearn) { k in   // 対象は引数で受ける＝閉じる時の nil 化が先に走っても覚えられる（code_review_views_1116 要確認C）
             Button("覚える") {
-                guard let k = skillToLearn else { return }
                 if !taps.isEmpty { _ = session.allocate(taps); taps.removeAll() }   // 押した段を先に確定してから覚える
                 if session.learnSkill(k) { Haptics.tick() }
                 skillToLearn = nil
             }
             Button("やめる", role: .cancel) { skillToLearn = nil }
-        } message: {
+        } message: { _ in
             if !taps.isEmpty { Text("押した能力アップも、ここで一緒に確定する。") }   // 黙って確定しない（abilityup_audit_1115 #1）
         }
     }
@@ -351,9 +356,11 @@ struct AbilityUpView: View {
                             .frame(maxWidth: .infinity, minHeight: 40)
                             .background(short ? YoseColor.ginNezu : wa(c).opacity(0.18))
                             .overlay(Rectangle().stroke(short ? YoseColor.haiSumi.opacity(0.5) : wa(c), lineWidth: 1))
+                            .accessibilityLabel(Self.costLabel(c, n, short: short))   // 裸の数字で読まない（code_review_views_1116 #1）
                     } else {
                         Text("-").font(YoseFont.gothic(13, weight: .bold)).foregroundStyle(YoseColor.ginNezu)
                             .frame(maxWidth: .infinity, minHeight: 40)
+                            .accessibilityHidden(true)   // 使わない経験点の空き＝読まない
                     }
                 }
             }
