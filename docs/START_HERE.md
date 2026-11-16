@@ -694,6 +694,9 @@ cd GameCore && swift test
 - `calendar_audit_1115_v0.md` — 日程表・カレンダーの表示のコード点検（11/15・読むだけ・コードは直していない）
 - `notebook_intro_ending_audit_1115_v0.md` — 手帳・導入・エンディングのコード点検（11/15・7件全部低・落ちる所なし）
 - `qualifier_finals_intro_audit_1115_v0.md` — 予選の知らせ・初舞台・決勝進出の発表・決勝の導入のコード点検（11/15・4件全部低）
+- `s6b_combo_neta_select_audit_1115_v0.md` — 千秋楽（S6b）・コンビの型選び・ネタ選びのコード点検（11/15・3件全部低）
+- `finals_stage_audit_1115_v0.md` — 決勝の見せ方（FinalsPresentation・FinalsTalk）と舞台の部品のコード点検（11/15・3件全部低）
+- `visual_y15_1115_v0.md` — 結成15年目（最終年）の画面の目視（11/15・9枚・崩れなし・軽4件）
 - `cancelled_sleep_audit_1115_v0.md` — 取り消された sleep の後の副作用 点検（2026-11-15・読むだけ・コード未変更）
 - `choice_effect_audit_1115_v0.md` — 選択肢イベントの「札・文」と実際の効果の食い違い点検（11/15・読むだけ）
 - `choice_gate_audit_1115_v0.md` — 選択肢イベントの「押せる選択肢が0」点検（11/15・読むだけ）
@@ -733,3 +736,8 @@ cd GameCore && swift test
 - `test_formula_copies_1115_v0.md` — テスト側の式の写し 洗い出し（2026-11-15・読むだけ・コード未変更）
 - `trophy_meta_audit_1115_v0.md` — トロフィー・図鑑・周回メタの解除/記録条件の点検（11/15・読むだけ）
 - `yearend_audit_1115_v0.md` — 年末総決算の数字の出所の点検（11/15・読むだけ・コード不変）
+- `release_research_gaps_1115_v0.md` — 発売前の未確認2点：前払式支払手段の条文本文（法3・4・5・14条／施行令4・6条）と広告の単価・年齢区分（2025改定）の調べ（2026-11-15・材料のみ・判断はオーナー）
+- `event_backgrounds_audit_1115_v0.md` — イベント背景まわりの点検（11/15・読むだけ・高0中0低3・低-3 を b5819050d で直した）
+- `gp_final_audit_1115_v0.md` — GP 準決勝→敗者復活→決勝→年末のコード点検（11/15・中1低3・中 #1（t21）を 626b01d16 で直した・低は未）
+- `notice_priority_audit_1115_v0.md` — 週の画面の「知らせ」の優先順位と取りこぼしの点検（11/15・中2低6・N2 を 7f2773b56 で直した・N1 は判断待ち（decision_brief_2026-11-08））
+- `voiceover_audit_1115_v0.md` — 読み上げ（VoiceOver）点検（11/15・中1低3・4件とも 90768d5d2 で直した）

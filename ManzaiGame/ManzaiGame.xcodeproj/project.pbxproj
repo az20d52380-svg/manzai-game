@@ -96,6 +96,7 @@
 		8E0F99F0D2841DC8DB104063 /* DynastyPlaytest1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E0B0769E2FD9798657ADACB /* DynastyPlaytest1107Tests.swift */; };
 		8F8EA73EBE8FB72EF969B0BE /* Endings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDB5AAD38FD1DA6F6F41B71 /* Endings.swift */; };
 		90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */; };
+		90F9F9EB7C557D1DBA394BF0 /* Coverage1115Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7513854B0F9CA8F3962ACE /* Coverage1115Tests.swift */; };
 		91217B57A08A20012B50956D /* MPLUSRounded1c-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9190D4D20F09CECE172AEB03 /* MPLUSRounded1c-Black.ttf */; };
 		91723692D04B2F63B7FBD319 /* ChoiceEventPairing1027Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */; };
 		91739408737C3DF915CFEF2D /* KirokuCalendarHana1107Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B96675CA30EB03A4395279 /* KirokuCalendarHana1107Tests.swift */; };
@@ -114,6 +115,7 @@
 		A8FF5567E87E89520907F182 /* FirstStageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B661217CF9AAE526E8E6A97A /* FirstStageView.swift */; };
 		AA437492EC9B9B0CE554CC9D /* YearResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A274A5E67200827BEBFC258E /* YearResultView.swift */; };
 		AC8082ECD71EB2B651C7148D /* se_cheer_big.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 830E02F56C82E09D32BEB3E6 /* se_cheer_big.mp3 */; };
+		ACC3A92E9510118052C7CEA8 /* KirokuBreakAtSpaces1116Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491663CE3624DC37D70977B8 /* KirokuBreakAtSpaces1116Tests.swift */; };
 		AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */; };
 		B0F5B9FCA317BB4218FC62A4 /* se_fanfare.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 32A860D27554F188BD2E3F64 /* se_fanfare.mp3 */; };
 		B15553F0FCBC5026F36C43C7 /* se_don.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 318839C80DE7D3B33B89A595 /* se_don.mp3 */; };
@@ -211,6 +213,7 @@
 		3E0B0769E2FD9798657ADACB /* DynastyPlaytest1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynastyPlaytest1107Tests.swift; sourceTree = "<group>"; };
 		3F066C29B4170D0D02565018 /* GachaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaView.swift; sourceTree = "<group>"; };
 		4492DE4A3DD4D05998D96B2B /* StoreMeta1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMeta1107Tests.swift; sourceTree = "<group>"; };
+		491663CE3624DC37D70977B8 /* KirokuBreakAtSpaces1116Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KirokuBreakAtSpaces1116Tests.swift; sourceTree = "<group>"; };
 		4AD82B142FBAB45CCE873CB9 /* QualifierNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QualifierNoticeView.swift; sourceTree = "<group>"; };
 		4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaWireTests.swift; sourceTree = "<group>"; };
 		4EE7F6B8DDE4970A034B1FDA /* EventBackgrounds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBackgrounds.swift; sourceTree = "<group>"; };
@@ -268,6 +271,7 @@
 		A799C1CDD04C665A5DE37ABB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A7AA9F09135C86DEFF334300 /* ManzaiGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManzaiGameTests.swift; sourceTree = "<group>"; };
 		A8E1FB9ADBD057D33018A580 /* StageOutfit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StageOutfit.swift; sourceTree = "<group>"; };
+		AA7513854B0F9CA8F3962ACE /* Coverage1115Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coverage1115Tests.swift; sourceTree = "<group>"; };
 		ABFC0E36E7A7C5EA5126CA65 /* ChoiceEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceEventData.swift; sourceTree = "<group>"; };
 		AC61E4DA1FE6EF7E62016D0F /* se_drumroll.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = se_drumroll.mp3; sourceTree = "<group>"; };
 		AC9ECFF0506EA5AD8DE06B8B /* PersistedEnumPin1110AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistedEnumPin1110AppTests.swift; sourceTree = "<group>"; };
@@ -511,6 +515,7 @@
 				858AC39FBD833DAC003C42AB /* ChoiceEventPairing1027Tests.swift */,
 				C0FD8C5D4F11D970B78D68B9 /* CommandCatalogTests.swift */,
 				CFD8B75760298597E65DDD33 /* Coverage1026AppTests.swift */,
+				AA7513854B0F9CA8F3962ACE /* Coverage1115Tests.swift */,
 				64A0AC14184761CCC95B6AB2 /* CoverageRAppTests.swift */,
 				3E0B0769E2FD9798657ADACB /* DynastyPlaytest1107Tests.swift */,
 				1BB6759204D40D8E2D08075C /* EndingJudge15Years1108Tests.swift */,
@@ -522,6 +527,7 @@
 				02D4C1B21E1D9D3943E6AB9C /* GachaTests.swift */,
 				1B4CF30B342B9B5FE0EFF6B2 /* GameSessionCoverage1111Tests.swift */,
 				E1E22C76349AA19C4DB0E3CE /* InnerVoice1026Tests.swift */,
+				491663CE3624DC37D70977B8 /* KirokuBreakAtSpaces1116Tests.swift */,
 				95B96675CA30EB03A4395279 /* KirokuCalendarHana1107Tests.swift */,
 				DADF63CFDC2C3AC6F53F3AD4 /* LoadsTheme1109Tests.swift */,
 				7F6EE2F3EED1EA43FDF2F924 /* LogRoundTrip1026Tests.swift */,
@@ -800,6 +806,7 @@
 				91723692D04B2F63B7FBD319 /* ChoiceEventPairing1027Tests.swift in Sources */,
 				CDB07DD7D5C98BA8BB44BD2E /* CommandCatalogTests.swift in Sources */,
 				AF76AF2A86669154722EFA3A /* Coverage1026AppTests.swift in Sources */,
+				90F9F9EB7C557D1DBA394BF0 /* Coverage1115Tests.swift in Sources */,
 				0BB49DDE416D206C2C1FD166 /* CoverageRAppTests.swift in Sources */,
 				8E0F99F0D2841DC8DB104063 /* DynastyPlaytest1107Tests.swift in Sources */,
 				5603895BB7959D5D16C8CC79 /* EndingJudge15Years1108Tests.swift in Sources */,
@@ -811,6 +818,7 @@
 				E0993B0616427A13EC1A21EA /* GachaTests.swift in Sources */,
 				1754A68E95CA0433A21AF49B /* GameSessionCoverage1111Tests.swift in Sources */,
 				90937A43A894A0D5C4F51B58 /* InnerVoice1026Tests.swift in Sources */,
+				ACC3A92E9510118052C7CEA8 /* KirokuBreakAtSpaces1116Tests.swift in Sources */,
 				91739408737C3DF915CFEF2D /* KirokuCalendarHana1107Tests.swift in Sources */,
 				A7F7AD0B63218B226448BFAB /* LoadsTheme1109Tests.swift in Sources */,
 				C941978CE9B7B3F368E23E5C /* LogRoundTrip1026Tests.swift in Sources */,
