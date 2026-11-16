@@ -1403,6 +1403,7 @@ final class GameSession {
             switch phase {
             case .weekDone(let summary):
                 state = summary.state
+                if state.money >= 0, debtWarnTier > 0 { debtWarnTier = 0 }   // 完済したら借金の知らせの段を戻す＝また借金になれば知らせる（AUTOPILOT 653 案②・表示のみ）
                 if capturingActedWeek, actedWeekEndState == nil { actedWeekEndState = summary.state }
                 for r in summary.results where r.isStage {
                     TrophyBook.onStage(r, state: summary.state, config: config)

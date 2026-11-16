@@ -39,6 +39,17 @@ final class GameSessionCoverage1111Tests: IsolatedStoreTestCase {
         XCTAssertEqual(s.week, week)
     }
 
+    // 3b. 完済した週の終わりに段が0へ戻る＝また借金になれば知らせる（AUTOPILOT 653 案②）
+    func testDebtWarnTierResetsAfterRepay() {
+        let s = GameSession(seed: 1)
+        s.markDebtWarned(2)
+        XCTAssertGreaterThanOrEqual(s.state.money, 0)
+        guard case .freeAction = s.phase else { return XCTFail("最初の週が自由行動でない") }
+        s.choose(.rest(.完全休養))
+        XCTAssertEqual(s.debtWarnTier, 0, "所持金が0以上の週を終えたら段は戻る")
+        XCTAssertEqual(s.debtNoticeTierToShow(money: -1), 1)
+    }
+
     // 3. 借金の知らせ：同じ段・浅い段は記録を戻さない／深い段へだけ進む
     func testDebtWarnTierOnlyMovesDeeper() {
         let s = GameSession(seed: 1)
