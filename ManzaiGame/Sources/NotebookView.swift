@@ -154,6 +154,16 @@ struct NotebookView: View {
 
     // MARK: きろく（大会履歴＋称号）
 
+    /// 空白・「「」「（」の前でだけ折る（区切りの間の8字以下のかたまりは字の間に U+2060 を挟む）。
+    /// 例「頂GP 決勝 優勝「ひだまり座」（客席から）」は「優勝」「「ひだまり座」」「（客席から）」の間で折れ、名前の途中では折れない
+    static func breakAtSpaces(_ s: String) -> String {
+        s.split(separator: " ", omittingEmptySubsequences: false).map { word -> String in
+            var pieces: [String] = [], cur = ""
+            for c in word { if (c == "「" || c == "（") && !cur.isEmpty && cur != "「" { pieces.append(cur); cur = "" }; cur.append(c) }
+            pieces.append(cur)
+            return pieces.map { $0.count <= 8 ? $0.map(String.init).joined(separator: "\u{2060}") : $0 }.joined()
+        }.joined(separator: " ")
+    }
     private struct LogEntry: Hashable { let week: String; let title: String; let mark: String; let prize: Int }
 
     private var logEntries: [LogEntry] {
@@ -233,7 +243,7 @@ struct NotebookView: View {
                             .font(YoseFont.number(13)).foregroundStyle(YoseColor.haiSumi)
                             .frame(width: 52, alignment: .leading)
                         Rectangle().fill(YoseColor.kiDark).frame(width: 1.5, height: 24)
-                        Text(e.title).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                        Text(Self.breakAtSpaces(e.title)).font(YoseFont.gothic(14, weight: .heavy)).foregroundStyle(YoseColor.sumi)   // 大きい文字で「THE HANA 決／勝 優勝」と語の途中で折れた＝空白でだけ折る
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if e.prize > 0 {
                             Text("+\(e.prize)万").font(YoseFont.number(13)).foregroundStyle(YoseColor.shu)

@@ -215,8 +215,8 @@ struct GachaView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(owned ? "\(o.displayName)\(wornNow == o ? "、着用中" : "")"
-                            : "未入手の衣装\(canX ? "、交換できる" : "")\(o == .kuromontsuki ? "、広告カット付き" : "")")
-        .accessibilityAddTraits(wornNow == o && owned ? .isSelected : [])
+                            : "未入手の衣装、\(o.rarity == nil ? o.displayName : (o.rarity?.label ?? ""))\(canX ? "、交換できる" : "")\(o == .kuromontsuki ? "、広告カット付き" : "")")
+        .accessibilityAddTraits(wornNow == o && owned ? .isSelected : [])   // 未入手も札に出ている字（レア度か名前）を読む（voiceover_audit_1115 N4）
     }
 
     // MARK: 結果
