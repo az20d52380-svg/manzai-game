@@ -159,7 +159,7 @@ struct YosePassCelebrationView: View {
                 ctx.stroke(p, with: .color(YoseColor.enji.opacity(0.35)), lineWidth: 1)
             }.accessibilityHidden(true)
             VStack(spacing: 2) {
-                Text("◆ 次 の 舞 台 へ ◆").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
+                Text("◆ 次 の 舞 台 へ ◆").accessibilityLabel("次の舞台へ").font(YoseFont.gothic(12, weight: .heavy)).tracking(1.5)
                     .foregroundStyle(YoseColor.kin.opacity(revealed ? 1 : 0.25))
                 ZStack {
                     Text("判 定 中").font(YoseFont.mincho(30)).tracking(10).foregroundStyle(YoseColor.kin.opacity(0.35))
@@ -342,7 +342,7 @@ struct YoseBigSuccessCutIn: View {
     private func band(sw: CGFloat) -> some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 0) {
-                Text("練 習 大 成 功").font(YoseFont.gothic(12, weight: .heavy)).tracking(3).foregroundStyle(YoseColor.kin)
+                Text("練 習 大 成 功").accessibilityLabel("練習大成功").font(YoseFont.gothic(12, weight: .heavy)).tracking(3).foregroundStyle(YoseColor.kin)
                 YoseGoldText(text: title, size: 29)
                     .lineLimit(1).minimumScaleFactor(0.6)
             }
