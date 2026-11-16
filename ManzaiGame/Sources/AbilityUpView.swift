@@ -115,15 +115,15 @@ struct AbilityUpView: View {
             ForEach(Skill.allCases, id: \.self) { skillCard($0) }
         }
         .confirmationDialog(skillToLearn.map { "「\($0.rawValue)」を覚える？" } ?? "", isPresented: Binding(
-            get: { skillToLearn != nil }, set: { if !$0 { skillToLearn = nil } }), titleVisibility: .visible) {
+            get: { skillToLearn != nil }, set: { if !$0 { skillToLearn = nil } }), titleVisibility: .visible,
+            presenting: skillToLearn) { k in   // 対象は引数で受ける＝閉じる時の nil 化が先に走っても覚えられる（code_review_views_1116 要確認C）
             Button("覚える") {
-                guard let k = skillToLearn else { return }
                 if !taps.isEmpty { _ = session.allocate(taps); taps.removeAll() }   // 押した段を先に確定してから覚える
                 if session.learnSkill(k) { Haptics.tick() }
                 skillToLearn = nil
             }
             Button("やめる", role: .cancel) { skillToLearn = nil }
-        } message: {
+        } message: { _ in
             if !taps.isEmpty { Text("押した能力アップも、ここで一緒に確定する。") }   // 黙って確定しない（abilityup_audit_1115 #1）
         }
     }
