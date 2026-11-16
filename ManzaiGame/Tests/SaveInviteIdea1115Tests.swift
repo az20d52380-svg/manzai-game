@@ -122,4 +122,27 @@ final class SaveInviteIdea1115Tests: XCTestCase {
         XCTAssertNil(r.pendingResult)
         if case .weekDone = r.phase { XCTFail("weekDone のまま＝画面が出ない") }
     }
+
+    /// 誘いの待ちは年をまたがない（WeekRunner が新年に pendingInvite を落とすのと揃える・review_fixes_1116 低-1）
+    /// 年末のセーブに待ちを立てて再開→次の年へ進めると、待ちは消えて札も出ない。
+    func testWaitingInviteDroppedAtNewYear() throws {
+        let s = GameSession(seed: 7)
+        for _ in 0..<800 where !s.finished && !s.winFinale {   // debugAdvanceYears と同じ進め方（決勝の観戦も閉じる）
+            if s.watchingFinal { s.finishWatchingFinal(winner: "—"); continue }
+            if case .freeAction = s.phase, s.pendingChoiceEvent == nil, s.pendingResult == nil, s.state.money < 250_000 { s.choose(.job(.標準)); continue }   // 休むだけだと夜逃げで年末に届かない
+            guard policyStep(s) else { break }
+        }
+        try XCTSkipUnless(s.finished && !s.careerOver, "年末まで届かなかった")
+        s.saveNow()
+        var save = try JSONDecoder().decode(GameSession.SaveData.self, from: try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1")))
+        save.inviteWaiting = true
+        let r = GameSession(restoring: save)
+        XCTAssertTrue(r.finished)
+        r.startNextYear()
+        XCTAssertFalse(r.finished, "次の年へ進まなかった")
+        r.saveNow()
+        let after = try JSONDecoder().decode(GameSession.SaveData.self, from: try XCTUnwrap(GameSession.store.data(forKey: "manzai.save.v1")))
+        XCTAssertNil(after.inviteWaiting, "新しい年に誘いの待ちが残った")
+        XCTAssertNotEqual(r.pendingChoiceEvent, .weekendInvite, "新しい年の頭に前の年の誘いが出た")
+    }
 }
