@@ -69,7 +69,11 @@ struct FirstStageView: View {
             }
             if let onSkip {
                 VStack { HStack { Spacer()
-                    Button("とばす ▶") { task?.cancel(); Sound.play(.cursor); onSkip() }
+                    Button("とばす ▶") {
+                        guard !finished else { return }   // 連打・「第1週へ」との二重で先へ2回進まない（code_review_misc5_1116 中-2）
+                        finished = true
+                        task?.cancel(); Sound.play(.cursor); onSkip()
+                    }
                         .buttonStyle(YoseButtonStyle(.secondary)).padding(.trailing, 12).padding(.top, 6)
                         .accessibilityLabel("とばす")
                 }; Spacer() }
@@ -132,6 +136,10 @@ struct FirstStageView: View {
     // MARK: 時間軸
 
     private func start() {
+        // 画面が一度消えて戻った時（onDisappear で task を取り消した後）：もう押していれば
+        // 「ツッコむ」に戻さず「第1週へ」の場面へ（押した後に ready へ戻ると press が効かず固まる＝code_review_misc5_1116 #1）
+        if pressed { phase = .bitter; return }
+        task?.cancel()
         task = Task { @MainActor in
             guard await wait(1.6) else { return }
             phase = .ready; Sound.play(.pop); Haptics.soft(0.5)
