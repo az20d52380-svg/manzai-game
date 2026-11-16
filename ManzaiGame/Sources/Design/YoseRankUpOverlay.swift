@@ -121,7 +121,7 @@ struct YoseRankUpOverlay: View {
         HStack(spacing: 8) {
             Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 24, height: 1.5)
             Rectangle().fill(YoseColor.kinBright).frame(width: 6, height: 6).rotationEffect(.degrees(45))
-            Text("番 付 昇 格")
+            Text("番 付 昇 格").accessibilityLabel("番付昇格")
                 .font(YoseFont.mincho(22))
                 .tracking(4)
                 .foregroundStyle(
