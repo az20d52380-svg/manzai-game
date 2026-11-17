@@ -27,6 +27,8 @@ struct NetaPickRow: View {
             } label: {
                 currentSummary
             }.buttonStyle(PressableStyle())
+            .accessibilityValue(expanded ? "候補を開いています" : "")   // ▼▲だけでは開閉が伝わらない（code_review_minor5_1117 #7）
+            .accessibilityHint(expanded ? "ダブルタップで候補を閉じる" : "ダブルタップでほかのネタを選ぶ")
 
             if expanded {
                 VStack(spacing: 6) {
