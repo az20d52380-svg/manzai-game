@@ -237,6 +237,8 @@
 667. [済 11/17 夜 定期] 本体（663 の直し後）の点検＝run_checks（GameCore 476・アプリ 451 TEST SUCCEEDED・同期 3/3・config 103/103・効果 62・発火 26 一致・UTF-8 壊れ0）＝異常なし。
 668. [済 11/17 夜 定期・sonnet・docs/code_review_eventbg_1117_v0.md] 点検の少ない EventBackgrounds・EventBackdropTable・YoseMotion・GachaRatesView＝高0・中2・低8・要確認4（落ちる所なし・背景の対応漏れなし・確率の定数は一致）。直した：中-2 選択イベントの背景の高さの動きが「視差効果を減らす」でも動いていた→Theme.Motion.r を通す（ChoiceEventOverlay 2か所）／低-7 数字の跳ね（YoseNumberBounce・YoseExpPing）の戻しを世代番号で古いものを無視（646 と同じ型）。表示のみ・アプリ 451 green・止まった画面の見た目は不変（動きだけの直しのため撮影なし）。
 669. [ ] （11/17 夜 定期・判断が要る＝課金の表示）code_review_eventbg_1117 中-1：ガチャの割合ページの注記「回数で変わりません」（GachaRatesView.swift:67）が、初回1回は特別が必ず出る実装（GachaState.swift:106）と食い違う。文面を「初回の1回だけ特別が確定」と足すか、実装を変えるかはオーナー判断（公開前に要）。
+670. [~ 11/17 深夜 定期・docs/code_review_share_settings_1117_v0.md（前の回の未コミットの点検を保存）] ShareCard・FirstStageView・SettingsView・FinalistAnnounceView の点検＝高0・中1（要確認）・低7。直す：#1 音量ゲージのドラッグがスクロールを奪う恐れ（minimumDistance）・#2 初舞台の波紋が出ない・#3〜#6 読み上げ/コメント・#8 飛ばした時の二重読み上げ。#7 は小さいので後回し。
+
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
