@@ -109,7 +109,7 @@ struct FinalistAnnounceView: View {
         .accessibilityAction { tapAdvance() }   // 読み上げ中の二度押しでも同じく進む（voiceover_audit_1109_v0・a11y_check_1026_voiceover_v0 #1 と同形）
         .onAppear { start() }
         .onDisappear { task?.cancel() }
-        .onChange(of: called) { _, _ in UIAccessibility.post(notification: .announcement, argument: caption) }   // 読み上げた組名を VoiceOver にも伝える（a11y_check_1019）
+        .onChange(of: called) { _, _ in if stage == .read { UIAccessibility.post(notification: .announcement, argument: caption) } }   // 飛ばした時は stage 側の1回だけ（code_review_share_settings_1117 #8）   // 読み上げた組名を VoiceOver にも伝える（a11y_check_1019）
         .onChange(of: stage) { _, _ in UIAccessibility.post(notification: .announcement, argument: caption) }
         #if DEBUG
         .onAppear {   // 目視用：MZ_HOLD_AT=読み上げ済み組数 で読み上げをその位置で止める
