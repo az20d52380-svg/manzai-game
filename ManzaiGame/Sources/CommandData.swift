@@ -129,7 +129,7 @@ enum CommandCatalog {
         case "ラジオ": return "ラジオで喋る。軽い仕事で、喋りが磨かれる"
         case "ロケ":   return "ロケに出る。お金になるけど、くたびれる"
         case "営業":   return "地方の営業回り。一番お金になる"
-        default:       return name
+        default:       return "\(name)の仕事を受ける"   // 題と同じ文字にしない（code_review_abilityup_misc_1117 #6）
         }
     }
 
