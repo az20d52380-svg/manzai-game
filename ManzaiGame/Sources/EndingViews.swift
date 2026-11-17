@@ -18,6 +18,8 @@ struct EndingFlowView: View {
     private enum Stage { case s6b, cards, art }
     @State private var stage: Stage = .cards
     @State private var recorded = false
+    /// 図鑑の読み返しの間だけ、見た時のコンビの形と相方名を当てる（閉じたら戻す・表示のみ）
+    @State private var replayRestore: (kind: ComboKind, partner: String)?
 
     private var cards: [ReminiscenceCard] { ending.cards(riftChoice: session?.riftWarnChoice) }
     private var usesS6b: Bool { session != nil && !replay && [.tenYearsClose, .championRetire, .championPair].contains(ending) }
@@ -49,6 +51,14 @@ struct EndingFlowView: View {
             if Int(ProcessInfo.processInfo.environment["MZ_ENDSTEP"] ?? "") != nil, !cards.isEmpty { stage = .cards }   // MZ_ENDSTEP=<番号>: その場面カードを直接
             #endif
             if !replay && record { EndingBook.record(ending, partner: Names.partner) }
+            if replay, let r = EndingBook.load()[ending] {
+                replayRestore = (Names.kind, Names.partner)
+                Names.setKind(ComboKind.from(r.lastComboKind))
+                if !r.lastPartnerName.isEmpty { Names.partner = r.lastPartnerName }
+            }
+        }
+        .onDisappear {
+            if let r = replayRestore { Names.setKind(r.kind); Names.partner = r.partner; replayRestore = nil }
         }
     }
 
