@@ -36,6 +36,7 @@ struct NetaStageBadge: View {
         .background(YoseColor.kinBright.opacity(glow ? 0.9 : 0))
         .overlay(Rectangle().stroke(glow ? YoseColor.kinBright : YoseColor.kiDark, lineWidth: glow ? 2.5 : 1))
         .fixedSize()
+        .accessibilityElement(children: .ignore)   // 子の Text と二重に読まない（code_review_finalstalk_misc_1118 #3）
         .accessibilityLabel("仕上がり \(NetaStage.names[idx])")
         .onAppear { check(idx) }
         .onChange(of: idx) { _, n in check(n) }
