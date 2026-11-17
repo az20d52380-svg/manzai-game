@@ -208,6 +208,6 @@ enum EndingBook {
         if var r = all[id] { r.count += 1; r.lastPartnerName = partner; r.lastComboKind = kind.rawValue; all[id] = r }
         else { all[id] = EndingRecord(count: 1, firstSeenAt: Date(), lastPartnerName: partner, lastComboKind: kind.rawValue) }
         let raw = Dictionary(uniqueKeysWithValues: all.map { ($0.key.rawValue, $0.value) })
-        if let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
+        if !TrophyBook.debugSample("MZ_BOOKSEEN"), let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
     }
 }
