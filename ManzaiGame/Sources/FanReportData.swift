@@ -55,6 +55,7 @@ enum FanReportData {
     static func burst(name: String, salt: Int, known: Bool = false) -> String {
         let pool = known ? burstLines : burstLinesUnknown
         let n = pool.count
+        guard n > 0 else { return "" }   // 絞った後のプールが空でも落ちない（code_review_curtain_fan_1117 低）
         return pool[((salt % n) + n) % n].replacingOccurrences(of: "〈名〉", with: name)
     }
 
