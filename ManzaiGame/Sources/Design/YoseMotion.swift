@@ -44,8 +44,10 @@ struct YoseRowGlowModifier: ViewModifier {
         content
             .background(YoseColor.kinBright.opacity(glow ? 0.35 : 0))
             .onChange(of: trigger) { _, _ in
-                glow = true
-                withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { glow = false }
+                glow = true   // 同じ処理内で戻すと光が描かれない＝次の描画で戻す（code_review_dialogue_motion_1117 #6）
+                DispatchQueue.main.async {
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { glow = false }
+                }
             }
     }
 }
