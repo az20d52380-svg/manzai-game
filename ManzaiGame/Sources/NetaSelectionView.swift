@@ -27,6 +27,8 @@ struct NetaPickRow: View {
             } label: {
                 currentSummary
             }.buttonStyle(PressableStyle())
+            .accessibilityValue(expanded ? "候補を開いています" : "")   // ▼▲だけでは開閉が伝わらない（code_review_minor5_1117 #7）
+            .accessibilityHint(expanded ? "ダブルタップで候補を閉じる" : "ダブルタップでほかのネタを選ぶ")
 
             if expanded {
                 VStack(spacing: 6) {
@@ -68,7 +70,7 @@ struct NetaPickRow: View {
     }
 
     private var changeLabel: some View {
-        let unset = selected == nil && !session.activeNetas.isEmpty
+        let unset = selected == nil && !candidates.isEmpty   // 開いても候補0件（決勝でネタ1本）なら朱の「選ぶ」で誘わない（code_review_minor5_1117 #1）
         return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(unset && !expanded ? 14 : 12, weight: .heavy))
             .lineLimit(1).fixedSize()   // 「とじる ▲」が名前に押されて2行に折れていた
             .foregroundStyle(unset && !expanded ? YoseColor.kinari : YoseColor.sumi)

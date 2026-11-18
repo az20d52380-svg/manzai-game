@@ -51,15 +51,35 @@ enum DialogueData {
             return Advice(name: "俺", text: pick(lowMoney, salt: week, scene: "mono.lowMoney", picker))
         }
         // 負けた翌週の一言（温度事故の停止）＝連敗プールより先。lossStreakで単発/反復を分ける（0003・Fable13便）。
+        // 今年もう大会が無い週は「次の大会」「残りの大会」に触れる行を外す。大会が3週以上先なら「大会が近い」も外す
+        // （code_review_dialogue_motion_1117 #1・#2・表示のみ・乱数非消費。絞った時は別の scene で使用済みを数える）
+        let noStage = nextMilestone == nil
+        let stageFar = (nextMilestone?.weeksLeft ?? 99) > 2
+        func trimmed(_ pool: [String], _ scene: String) -> ([String], String) {
+            guard noStage || stageFar else { return (pool, scene) }
+            let out = pool.filter { line in
+                if line.contains("大会が近い") { return false }
+                if noStage && (line.contains("次の大会") || line.contains("残りの大会") || line.contains("次に出る大会")) { return false }
+                return true
+            }
+            if out.count == pool.count || out.isEmpty { return (pool, scene) }
+            return (out, scene + (noStage ? ".noStage" : ".far"))
+        }
         if justLost {
-            return Advice(name: "俺", text: pick(lossStreak >= 2 ? justLostRepeat : justLostSingle, salt: Int(state.fame.isFinite ? state.fame : 0) &+ lossStreak &+ week,
-                                                scene: lossStreak >= 2 ? "mono.justLostRepeat" : "mono.justLostSingle", picker))
+            let (pool, scene) = trimmed(lossStreak >= 2 ? justLostRepeat : justLostSingle,
+                                        lossStreak >= 2 ? "mono.justLostRepeat" : "mono.justLostSingle")
+            return Advice(name: "俺", text: pick(pool, salt: Int(state.fame.isFinite ? state.fame : 0) &+ lossStreak &+ week,
+                                                scene: scene, picker))
         }
         if lossStreak >= 2 {
-            return Advice(name: "俺", text: pick(losing, salt: lossStreak &+ week, scene: "mono.losing", picker))
+            let (pool, scene) = trimmed(losing, "mono.losing")
+            return Advice(name: "俺", text: pick(pool, salt: lossStreak &+ week, scene: scene, picker))
         }
         if justPassed {
-            return Advice(name: "俺", text: pick(passedLines, salt: Int(state.fame.isFinite ? state.fame : 0) &+ week, scene: "mono.passed", picker))
+            // 通過したが今年もう大会が無い週は「次の会場」「次の本番」等を外す（同 #3）
+            let rest = passedLines.filter { !$0.contains("次") }
+            let (pool, scene) = noStage && !rest.isEmpty ? (rest, "mono.passed.noStage") : (passedLines, "mono.passed")
+            return Advice(name: "俺", text: pick(pool, salt: Int(state.fame.isFinite ? state.fame : 0) &+ week, scene: scene, picker))
         }
         if let m = nextMilestone, m.weeksLeft == 2 {   // 1週前は掛け合い/平常に譲る（最頻出の単一行の間引き・監査D-04）
             // 弱点が無い（全能力ほぼ同値）週は弱点句を省く（監査B-03）
