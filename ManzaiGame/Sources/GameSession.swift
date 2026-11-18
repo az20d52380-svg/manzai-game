@@ -169,6 +169,8 @@ final class GameSession {
     private(set) var abandoned = false
     /// 観客版決勝を観ている最中（監査H-01: 決勝に進めなかった年の第47週・RootView が切り替える）
     private(set) var watchingFinal = false
+    /// 目視フックの早送り中（MZ_YEARS）。真の間は画面を読み込み中だけにして、週の画面の .task が途中の状態を触らないように（DEBUG の早送りだけが立てる）
+    private(set) var debugFastForwarding = false
     /// 今年の観客版決勝を観終えたか（1年1回）
     private(set) var didWatchFinal = false
     /// 借金の知らせを出した最も深い段（0=未・1=初マイナス・2=−50万割れ・3=−80万割れ）。1キャリアで各段1回（表示のみ・golden非対象）
@@ -339,6 +341,14 @@ final class GameSession {
         self.smallEntered = save.smallEntered ?? 0
         self.smallWon = save.smallWon ?? 0
         self.inviteIdea = save.inviteIdea ?? false
+        self.inviteWaiting = save.inviteWaiting ?? false
+        // 結果画面の途中で閉じて再開した時も「知名度 +n」「経験点」の札を出す（code_review_results_1117 低・表示のみ）
+        if self.pendingResult != nil {
+            self.lastResultFameDelta = save.resultFameDelta ?? 0
+            if let e = save.resultExpDelta, e.count == ExpCurrency.allCases.count {
+                self.lastResultExpDelta = Dictionary(uniqueKeysWithValues: zip(ExpCurrency.allCases, e))
+            }
+        }
         self.youthNoticeYear = save.youthNoticeYear ?? 0
         self.tiredNoticeYear = save.tiredNoticeYear ?? 0
         // lastAction/lastGains 等の「直前の選択への反応」装飾は復元しない（再開直後は直前の選択が存在しない）
@@ -673,7 +683,7 @@ final class GameSession {
         let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
         guard uiEventRng.nextUniform() < rate else { return }
         // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
-        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker())   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
+        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker(), noStage: nextMilestoneForEvent() == nil)   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
     }
 
     /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。
@@ -681,7 +691,8 @@ final class GameSession {
         if lossStreak >= 2 { return .streak }
         if state.money < 50_000 { return .broke }
         if justPassedStage { return .afterPass }
-        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week) { return .eve }
+        // 動画審査（女性コンビの THE HANA 1回戦）は舞台に立たない＝電車・会場・席の「大会前」の掛け合いは出さない（選択イベントの前夜と同じ除外・code_review_dialoguedata_1118 #2）
+        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week), !(state.femaleCombo == true && m.week == config.calendar.hanaTournaments.first?.week) { return .eve }
         if let m = nextMilestoneForEvent(), m.week - week >= 6 { return .lull }
         return .plain
     }
@@ -1227,6 +1238,7 @@ final class GameSession {
         weekBanter = nil
         stablePicks = [:]   // 使った文の記録（usedPicks）はキャリア通算＝年が替わっても消さない
         pendingChoiceEvent = nil
+        inviteWaiting = false   // 年をまたいだ誘いは出さない（WeekRunner も新年に pendingInvite を落とす＝断る扱い・review_fixes_1116 低-1）
         choiceApplied = false
         lastEventRollWeek = -1
         lastBanterRollWeek = -1
@@ -1300,6 +1312,9 @@ final class GameSession {
         var inviteIdea: Bool?             // 出ている誘いの札が発想付きか（旧セーブ＝nil＝なし・save_restore_audit_1115 #1）
         var youthNoticeYear: Int?         // 年初の知らせを出した年（旧セーブ＝nil＝0＝まだ）
         var tiredNoticeYear: Int?
+        var inviteWaiting: Bool?          // 週末に決まり次の週の頭で出す誘い（旧セーブ＝nil＝なし・code_review_1116_night #4）
+        var resultFameDelta: Double?      // 結果画面が出ている間だけ：その大会の知名度の増分（旧セーブ＝nil＝札なし・code_review_results_1117）
+        var resultExpDelta: [Double]?     // 同じく経験点の増分（ExpCurrency.allCases の順）
     }
 
     /// 所持金から借金の段（円。−50万・−80万を割った段）。表示専用
@@ -1369,8 +1384,11 @@ final class GameSession {
                             didShowRiftHint: didShowRiftHint,
                             usedPicks: usedPicks, usedFanLines: usedFanLines, shownOnce: Array(shownOnce).sorted(), weeksWithoutPartner: weeksWithoutPartner,
                             injuryNoticeWeeks: injuryNoticeWeeks, smallEntered: smallEntered, smallWon: smallWon, writeNetaID: writeNetaID,
-                            inviteIdea: pendingChoiceEvent == .weekendInvite ? inviteIdea : nil,
-                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear)
+                            inviteIdea: (pendingChoiceEvent == .weekendInvite || inviteWaiting) ? inviteIdea : nil,
+                            youthNoticeYear: youthNoticeYear, tiredNoticeYear: tiredNoticeYear,
+                            inviteWaiting: inviteWaiting ? true : nil,
+                            resultFameDelta: pendingResult != nil ? lastResultFameDelta : nil,
+                            resultExpDelta: pendingResult != nil ? ExpCurrency.allCases.map { lastResultExpDelta[$0] ?? 0 } : nil)
         do {
             let data = try JSONEncoder().encode(save)
             Self.store.set(data, forKey: Self.saveKey)
@@ -1526,6 +1544,16 @@ final class GameSession {
         var snap = runner.snapshot()
         snap.gpAlive = false
         runner = WeekRunner(restoring: snap, config: config)
+    }
+
+    /// QA用（MZ_HANANEXT=段）：今年の THE HANA を「段 n に出られる」扱いにする（女女の準決勝・決勝の帯や日程表の目視用。DEBUG のみ・乱数は消費しない）。
+    /// 1回戦の後（第33週以降）に掛ける＝MZ_STOPWEEK=41 MZ_HANANEXT=2 で準決勝の前週、43 と 3 で決勝の前週。
+    func debugMarkHanaNext(_ n: Int) {
+        var snap = runner.snapshot()
+        snap.state.hanaYear = year
+        snap.state.hanaNext = n
+        runner = WeekRunner(restoring: snap, config: config)
+        state = runner.state   // 帯・日程表は session.state を読む
     }
 
     /// QA用: 既定行動で自動プレイし、最初の大会/GP結果（S3）が出た時点で止める。
@@ -1750,7 +1778,20 @@ final class GameSession {
 
     /// QA用（複数年）: n 年ぶん年末まで自動プレイして翌年へ進める（MZ_YEARS=n）。区切りに当たったら止まる。
     /// 自由週は「金が細ればバイト・体力があればネタ作り・無ければ休む」の素朴な台本（夜逃げで止まらないように）。
-    func debugAdvanceYears(_ n: Int) {
+    /// 目視フック用（MZ_YEARS）：1年ごとにメインを明け渡す。14年を同期で回すとメインが約50秒塞がり、システムに落とされる（visual_hana_late_1117。DEBUG のみ・進め方と乱数は debugAdvanceYears と同じ）
+    func debugAdvanceYearsYielding(_ n: Int) async {
+        debugFastForwarding = true
+        defer { debugFastForwarding = false }
+        for _ in 0..<n {
+            let y = year
+            debugAdvanceYears(1, applyStopWeek: false)
+            if year == y { return }   // 年が進まなかった（解散・キャリアの終わり）＝元と同じく途中週の停止もしない
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        debugAdvanceYears(0)   // MZ_STOPWEEK の停止だけ
+    }
+
+    func debugAdvanceYears(_ n: Int, applyStopWeek: Bool = true) {
         let care = ProcessInfo.processInfo.environment["MZ_CARE"] == "1"
         for _ in 0..<n {
             var steps = 0
@@ -1772,7 +1813,7 @@ final class GameSession {
             startNextYear()
         }
         // MZ_STOPWEEK=w: 今の年の第w週の自由行動の手前まで同じ台本で進めて止める（最終年＝careerYears 年目の年末を手で遊ぶ用）
-        if let w = Int(ProcessInfo.processInfo.environment["MZ_STOPWEEK"] ?? ""), w > 0 {
+        if applyStopWeek, let w = Int(ProcessInfo.processInfo.environment["MZ_STOPWEEK"] ?? ""), w > 0 {
             var steps = 0
             while !finished, !winFinale, steps < 600 {
                 if case .freeAction = phase, week >= w, pendingResult == nil, pendingChoiceEvent == nil, !watchingFinal { return }
