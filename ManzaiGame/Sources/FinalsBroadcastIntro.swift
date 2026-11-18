@@ -394,7 +394,10 @@ struct FinalsBroadcastIntro: View {
 
     private func advanceStage() {
         guard !done else { return }
-        if let n = stage.next { stage = n } else { finish() }
+        if let n = stage.next {
+            step = 0; slam = false; titleIn = false   // 場面を替える同じ描画で戻す＝前の場面の step が次の場面の最初の1コマに残らない（code_review_misc3_1116 低-1）
+            stage = n
+        } else { finish() }
     }
 
     /// 場面の自動進行用：タップで既に先へ進んでいたら何もしない（キャンセルが届く前に古い場面の待ちが明けても1場面飛ばさない＝code_review_1108g #1）。
