@@ -1,6 +1,6 @@
 // Item.swift
 // 円で買うアイテム（docs/item_design_v0.md §1-A/1-B を v3 経済に合わせた最小実装・2026-10-12）。
-// 三大原則：恒久的な強さは売らない（例外＝ICレコーダー1点）／年間の回数制限／能力は直接上げず経験点か体力で渡す。
+// 三大原則：恒久的な強さは売らない（例外＝ICレコーダー1点・ただし今は店に並ばない）／年間の回数制限／能力は直接上げず経験点か体力で渡す。
 // ★golden不変：購入は乱数を引かず、gen_golden の台本は何も買わない＝フラグは全て nil のまま＝式は恒等。
 // Python鏡像：tools/balance_sim.py の ITEMS / buy_item（ルール5）。数値は全て【仮】。
 
@@ -57,6 +57,7 @@ extension GameEngine {
             break   // 効果は今年の購入回数（itemCounts・年初に消える）を体調ダウン判定が読む
         case .銭湯の回数券:
             s.sentoTickets = config.itemSentoTickets
+        // ↓ 中古のICレコーダー・ネタ作家の勉強会・ボイトレ短期集中・稽古場の年契約は、今は config.shopLineup に無い＝canBuy で弾かれ届かない（将来用に残す）。
         case .中古のICレコーダー:
             s.hasRecorder = true
         case .新幹線回数券:
