@@ -86,7 +86,7 @@ struct RentStatementView: View {
                         Spacer()
                         Text((Int(money) < 0 ? "−" : "") + RentStatement.yen(Int(money)))   // 数え上げの途中の (−1, 0) で「−0」を出さない（number_display_audit_1115 #3）
                             .font(YoseFont.numLarge)
-                            .foregroundStyle(money < 0 ? YoseColor.shu : YoseColor.kinText)
+                            .foregroundStyle(Int(money) < 0 ? YoseColor.shu : YoseColor.kinText)   // 色も丸めた値で（−1〜0 の一瞬に「0円」が赤くならない＝code_review_1116_night #1）
                             .contentTransition(.numericText(value: money))
                     }
                     .padding(.vertical, 6).padding(.horizontal, 8)
@@ -119,8 +119,9 @@ struct RentStatementView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityAction { onDone() }   // ダブルタップで閉じる
-        .accessibilityLabel(statement.paid ? "月末の支払い。合計\(statement.total)円。今月も払えた。"
+        .accessibilityLabel(statement.paid ? "月末の支払い。合計\(statement.total)円。今月も払えた。所持金は\(statement.moneyAfter)円。"
                             : "月末の支払い。合計\(statement.total)円。\(statement.shortfall)円足りない。")
+        .accessibilityHint("ダブルタップで閉じる")   // 閉じ方の案内（code_review_minor5_1117 #4）
         .task {
             money = Double(statement.moneyBefore)
             let step: UInt64 = reduceMotion ? 0 : 90_000_000

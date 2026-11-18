@@ -118,7 +118,7 @@ public enum JudgeTalk {
             .一言: ["張り上げのツッコミ", "見栄切りのツッコミ", "正面向きのツッコミ", "名指しのツッコミ"],
             .締め: ["大団円の締め", "拍手待ちの締め", "晴れ姿の締め", "一礼の締め"],
         ],
-        nil: [   // 型が分からない時（ネタ未選択・型をなくした後はほぼ全部ここ）。型に寄らない日常の具体物で各口8語（judge_comment_score_v6 §4）
+        nil: [   // 型が分からない時（ネタ未選択・型をなくした後はほぼ全部ここ）。型に寄らない日常の具体物（judge_comment_score_v6 §4・語数は口ごとに違う＝「中」は11語）
             .入り: ["挨拶の入り", "第一声の入り", "名乗りの入り", "世間話の入り", "問いかけの入り", "季節の話の入り", "身の上話の入り", "近況の入り"],
             .中: ["二つ目の話の場面", "言い直しの場面", "例え話の場面", "口喧嘩の場面", "勘違いの場面", "聞き返しの場面", "寄り道の場面", "打ち明け話の場面", "脱線の場面", "思い出話の場面", "噂話の場面"],
             .一言: ["一つ目のツッコミ", "合いの手のツッコミ", "返しのツッコミ", "短いツッコミ", "呆れ声のツッコミ", "小声のツッコミ", "念押しのツッコミ", "冷静なツッコミ"],
@@ -286,7 +286,8 @@ public enum JudgeTalk {
                 "{中}で客席は爆発してた！ だからこそ{締め}、もっと押し込めただろ！")
             add(s.isFresh, "おろしたての{題}でこの熱か！ 舞台でかけ込んだらどうなっちまうんだよ！",
                 "{題}、まだ自分の言葉になってねえ！ {一言}が台本読んでる声だったぞ！")
-            add(top, "トップでこの熱だ！ {入り}で客席ごと起こしやがった！",
+            // 爆発した夜に低い側が「客は冷えてる」と言わない（code_review_judgetalk_1118 #4）
+            add(top && (high || !s.burst), "トップでこの熱だ！ {入り}で客席ごと起こしやがった！",
                 "トップの客は冷えてんだよ！ {入り}で一回、客席に火ぃつけに行け！")
         case "目白 慧":
             add(s.isTeppan, "{題}は場数で磨いた跡が見えます。{一言}の位置が、一字単位で決まっていました。",
@@ -471,14 +472,16 @@ public enum JudgeTalk {
             else if s.stamina < 30 { pool = Paper.passStaminaLow }
             else if s.mental < 20 { pool = Paper.passMentalLow }
             else if s.burst { pool = Paper.passBurst }
-            else { pool = Paper.pass + paperNetaLines(scene: s, passed: true) }
+            // 来歴と食い違う行は来歴で振り分ける（code_review_judgetalk_1118 #2：再演の通過に「古くない」・おろしたての敗退に「古い形」が並ばない）
+            else { pool = Paper.pass + paperNetaLines(scene: s, passed: true) + (s.isRevivalNeta ? [] : [Paper.passNotOld]) }
         } else {
-            if s.stamina < 30 { pool = Paper.failStaminaLow }
+            // 大差（-10 超）の敗退は点差の行を先に＝状態の行の「中身は通る水準／それだけで落とした」と食い違わない（code_review_judgetalk_1118 #1・乱数は使わない）
+            if let m = s.margin, m < -10 { pool = Paper.failFar }
+            else if s.stamina < 30 { pool = Paper.failStaminaLow }
             else if s.mental < 20 { pool = Paper.failMentalLow }
             else if s.compat < 8 { pool = Paper.failChemistryLow }
             else if let m = s.margin, m >= -3 { pool = Paper.failNear }
-            else if let m = s.margin, m < -10 { pool = Paper.failFar }
-            else { pool = Paper.fail + paperNetaLines(scene: s, passed: false) }
+            else { pool = Paper.fail + paperNetaLines(scene: s, passed: false) + (s.isRevivalNeta ? [Paper.failOldForm] : []) }
         }
         let template = pick(pool, scene: s, salt: salt, k: 21) ?? "{入り}、要確認。"
         let judge = judgeNames[mix(salt, 22) % judgeNames.count]
@@ -495,6 +498,10 @@ public enum JudgeTalk {
 
     /// 紙講評のプール（「良かった点→直す点」・体言止め寄り・1〜3行）
     enum Paper {
+        /// 再演ネタの敗退だけに出す（元は fail の汎用行）
+        static let failOldForm = "古い形を、そのまま持ってきたように見えた。{締め}だけ今の話にすること。"
+        /// 再演でないネタの通過だけに出す（元は pass の汎用行）
+        static let passNotOld = "{題}、古くない。{一言}の言い方が今の客に近い。"
         static let pass: [String] = [
             "{入り}、良し。{締め}の前に山をもう一つ。",
             "{題}、設定の発明あり。{中}の広げ方をもう一段。",
@@ -513,7 +520,6 @@ public enum JudgeTalk {
             "前半と後半の長さの釣り合いが良い。{中}をあと少し詰められる。",
             "{題}、素材は十分。飾りを三割減らした形を見てみたい。",
             "{題}、この場に合った題材。客の知っている話から入れている。",
-            "{題}、古くない。{一言}の言い方が今の客に近い。",
             "{入り}の形を、どこかで見た客がいる。{中}で新しい方へ曲げられた。",
             "{題}、よくできている。{中}はもう少し勢いに任せてもいい。",
             "磨かれた{入り}。ただ、劇場でかけていた頃の荒さが無い。",
@@ -551,7 +557,6 @@ public enum JudgeTalk {
             "{題}、よくまとまっている。まとめたぶん、{中}の勢いが削がれた。",
             "{入り}はよく磨かれている。その分、劇場で見た頃の荒さが消えた。",
             "大会向けに形を整えた跡が見える。{一言}の素の速さを、もっと前に出すこと。",
-            "古い形を、そのまま持ってきたように見えた。{締め}だけ今の話にすること。",
         ]
         /// 敗退・あと一歩（点差が小さい）
         static let failNear: [String] = [

@@ -437,7 +437,7 @@ struct FinalsPresentationView: View {
     /// LIVE ヘッダーの場面名
     private var liveSceneName: String {
         switch beat {
-        case .lot: return "出番くじ"
+        case .lot: return "出順抽選"
         case .preceding: return "ファーストラウンド"
         case .perform: return "登場・ネタ披露"
         case .open: return "採点発表"
