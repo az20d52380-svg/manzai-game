@@ -346,6 +346,7 @@ struct YoseBigSuccessCutIn: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .allowsHitTesting(false)
+        .accessibilityElement(children: .ignore).accessibilityLabel(title)   // 帯の「種」「+6」を1字ずつ読まず題だけ読む（code_review_yose_store_1118 #16）
         .task { await run() }
     }
 
