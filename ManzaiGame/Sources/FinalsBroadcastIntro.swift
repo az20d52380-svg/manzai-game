@@ -73,15 +73,16 @@ struct FinalsBroadcastIntro: View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
                 Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
-                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari).fixedSize()   // 大きい文字で2行に折れない（code_review_stageframe_fbintro_1119 #2）
             }
             .padding(.horizontal, 7).padding(.vertical, 4)
             .background(YoseColor.shu)
             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
-            Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
+            Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1).minimumScaleFactor(0.6)
+                .accessibilityAddTraits(.isHeader)   // 大きい文字で「…」にせず縮める・見出し（同 #2・#3）
             Spacer()
             Button { finish() } label: {
-                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1).fixedSize()
                     .padding(.horizontal, 10).frame(height: 30)
                     .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
             }
@@ -214,6 +215,8 @@ struct FinalsBroadcastIntro: View {
                                 .frame(maxWidth: .infinity).frame(height: 46)
                                 .background(on ? YoseColor.kinari : YoseColor.kuroUrushi.opacity(0.7))
                                 .overlay(Rectangle().stroke(on ? YoseColor.kin : YoseColor.haiSumi.opacity(0.35), lineWidth: 1))
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel(on ? judges[i].replacingOccurrences(of: " ", with: "") : "未紹介の審査員")   // 名字と名前を別々に読まない（code_review_stageframe_fbintro_1119 #3）
                             }
                         }
                         .padding(.horizontal, 6).padding(.vertical, 10)
@@ -237,6 +240,7 @@ struct FinalsBroadcastIntro: View {
                     .background(YoseColor.kuroUrushi)
                     .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
                     .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.5), lineWidth: 1).padding(5))
+                    .accessibilityHidden(true)   // 同じ名前をテロップでも読む＝木札は読まない（同 #3）
                     .id(cur)
                     .transition(.asymmetric(insertion: .opacity, removal: .identity))   // 前の名前と重ならない
                 } else {
@@ -394,7 +398,10 @@ struct FinalsBroadcastIntro: View {
 
     private func advanceStage() {
         guard !done else { return }
-        if let n = stage.next { stage = n } else { finish() }
+        if let n = stage.next {
+            step = 0; slam = false; titleIn = false   // 場面を替える同じ描画で戻す＝前の場面の step が次の場面の最初の1コマに残らない（code_review_misc3_1116 低-1）
+            stage = n
+        } else { finish() }
     }
 
     /// 場面の自動進行用：タップで既に先へ進んでいたら何もしない（キャンセルが届く前に古い場面の待ちが明けても1場面飛ばさない＝code_review_1108g #1）。
