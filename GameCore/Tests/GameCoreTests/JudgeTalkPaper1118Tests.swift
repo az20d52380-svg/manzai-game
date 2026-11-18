@@ -23,3 +23,14 @@ final class JudgeTalkPaper1118Tests: XCTestCase {
         }
     }
 }
+
+final class JudgeTalkBurstTop1118Tests: XCTestCase {
+    /// 爆発した夜（burst）にトップでも、低い側の白波は「トップの客は冷えてんだよ」を言わない（#4）
+    func testLowSideNoColdCrowdOnBurst() {
+        guard let j = JudgeTalk.judgeNames.first(where: { $0.hasPrefix("白波") }) else { return }
+        let lines = JudgeTalk.sceneLines(judge: j, scene: .init(burst: true, order: 1), high: false)
+        XCTAssertFalse(lines.contains { $0.contains("冷えてんだよ") })
+        let calm = JudgeTalk.sceneLines(judge: j, scene: .init(burst: false, order: 1), high: false)
+        XCTAssertTrue(calm.contains { $0.contains("冷えてんだよ") })
+    }
+}
