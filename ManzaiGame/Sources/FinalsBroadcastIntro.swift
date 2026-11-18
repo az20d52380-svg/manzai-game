@@ -73,15 +73,16 @@ struct FinalsBroadcastIntro: View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
                 Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
-                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari).fixedSize()   // 大きい文字で2行に折れない（code_review_stageframe_fbintro_1119 #2）
             }
             .padding(.horizontal, 7).padding(.vertical, 4)
             .background(YoseColor.shu)
             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
-            Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
+            Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1).minimumScaleFactor(0.6)
+                .accessibilityAddTraits(.isHeader)   // 大きい文字で「…」にせず縮める・見出し（同 #2・#3）
             Spacer()
             Button { finish() } label: {
-                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1).fixedSize()
                     .padding(.horizontal, 10).frame(height: 30)
                     .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
             }

@@ -48,6 +48,7 @@ struct StageFrame: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
+        .accessibilityHidden(true)   // 舞台は飾り＝読み上げ対象外（足元の名札「俺」「谷口」が読まれていた＝code_review_stageframe_fbintro_1119 #1）
     }
 
     // MARK: 背景面（緞帳／金屏風）
