@@ -779,6 +779,7 @@ struct FinalsPresentationView: View {
 
     /// 講評に差し込む本番の材料（1本目のネタ・出順・ハマった夜・敗者復活経由・コンビの状態）。表示専用。
     private var judgeScene: JudgeTalk.Scene {
+        if spectator { return JudgeTalk.Scene() }   // 観戦の年は自分のネタ・状態を講評に混ぜない（code_review_judgetalk_1118 #8）
         let burst = session.pendingResult?.results.last(where: { $0.name == "GP決勝" })?.burst ?? false
         return JudgeTalk.Scene.from(state: s, neta: session.selectedNeta, config: session.config, year: session.year,
                                     burst: burst, order: d.order, viaRevival: session.reachedFinalViaRevival)
