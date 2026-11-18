@@ -68,6 +68,7 @@ struct S6bView: View {
             // 千秋楽の興行ビラ（和紙の地・金と朱の二重枠・墨のハードシャドウ）
             VStack(spacing: 12) {
                 Text("千 秋 楽").font(YoseFont.mincho(44)).foregroundStyle(YoseColor.sumi)
+                    .accessibilityLabel("千秋楽").accessibilityAddTraits(.isHeader)   // 1字ずつ読まない・見出し（同 #9・#4）
                     .shadow(color: YoseColor.kin, radius: 0, x: 2, y: 2)
                 HStack(spacing: 8) {
                     Rectangle().fill(YoseColor.shu).frame(height: 2)
@@ -83,7 +84,7 @@ struct S6bView: View {
                     Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
                     HStack(spacing: 4) {
                         ForEach(0..<4, id: \.self) { t in
-                            if t > 0 { Text("▶").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.haiSumi) }
+                            if t > 0 { Text("▶").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }   // 矢印は読ませない（同 #8）
                             YoseTag(text: Self.venueNames[t], style: t == venueTier ? .solidEnji : .outlineSumi)
                                 .opacity(t <= venueTier ? 1 : 0.5)
                         }
@@ -189,7 +190,7 @@ struct S6bView: View {
     private var nenpyou: some View {
         VStack(spacing: Theme.Sp.s16) {
             Spacer()
-            Text("年表").font(.maru(12)).tracking(2).foregroundStyle(.white.opacity(0.75))   // 暗い地で読める濃さに（0.5 は沈んだ）
+            Text("年表").font(.maru(12)).tracking(2).foregroundStyle(.white.opacity(0.75)).accessibilityAddTraits(.isHeader)   // 暗い地で読める濃さに（0.5 は沈んだ）
             // 1年＝1行（結成からの頂グランプリの到達）。最後の行が優勝の年
             // 15年ぶんは小さい画面・大きい文字で入りきらない＝入らない時だけスクロール（タップで進むのは同じ）
             ViewThatFits(in: .vertical) {

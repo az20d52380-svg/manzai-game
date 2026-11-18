@@ -115,7 +115,7 @@ struct QualifierNoticeView: View {
         VStack(spacing: 0) {
             VStack(spacing: 4) {
                 Text(sender).font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.kin)
-                Text("\(roundLabel) 通過者").font(YoseFont.mincho(22)).foregroundStyle(.white)
+                Text("\(roundLabel) 通過者").font(YoseFont.mincho(22)).foregroundStyle(.white).accessibilityAddTraits(.isHeader)   // 見出し（同 #4）
             }.padding(.top, 96).padding(.bottom, 14)
             ScrollViewReader { proxy in
             ScrollView {
@@ -163,7 +163,7 @@ struct QualifierNoticeView: View {
     // MARK: 相方とのトーク
     private var chatScreen: some View {
         VStack(spacing: 0) {
-            Text(partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).padding(.top, 96).padding(.bottom, 12)
+            Text(partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).accessibilityAddTraits(.isHeader).padding(.top, 96).padding(.bottom, 12)
             ScrollView {
                 VStack(spacing: 10) {
                     bubble(false, "見た？")
