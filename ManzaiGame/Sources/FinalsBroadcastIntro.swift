@@ -215,6 +215,8 @@ struct FinalsBroadcastIntro: View {
                                 .frame(maxWidth: .infinity).frame(height: 46)
                                 .background(on ? YoseColor.kinari : YoseColor.kuroUrushi.opacity(0.7))
                                 .overlay(Rectangle().stroke(on ? YoseColor.kin : YoseColor.haiSumi.opacity(0.35), lineWidth: 1))
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel(on ? judges[i].replacingOccurrences(of: " ", with: "") : "未紹介の審査員")   // 名字と名前を別々に読まない（code_review_stageframe_fbintro_1119 #3）
                             }
                         }
                         .padding(.horizontal, 6).padding(.vertical, 10)
@@ -238,6 +240,7 @@ struct FinalsBroadcastIntro: View {
                     .background(YoseColor.kuroUrushi)
                     .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
                     .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.5), lineWidth: 1).padding(5))
+                    .accessibilityHidden(true)   // 同じ名前をテロップでも読む＝木札は読まない（同 #3）
                     .id(cur)
                     .transition(.asymmetric(insertion: .opacity, removal: .identity))   // 前の名前と重ならない
                 } else {
