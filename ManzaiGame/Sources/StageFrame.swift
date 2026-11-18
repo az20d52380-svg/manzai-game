@@ -294,8 +294,7 @@ struct StageCeremony: View {
     }
 
     private func run() async {
-        let first = !UserDefaults.standard.bool(forKey: Self.seenKey)
-        UserDefaults.standard.set(true, forKey: Self.seenKey)
+        let first = !UserDefaults.standard.bool(forKey: Self.seenKey)   // 見た印は finish() で立てる＝途中で消えたら次も初回の長い版（code_review_views_1116 #3）
         let short = !first || reduceMotion
         Sound.duck(0.3, over: 0.2)                                   // 客電が落ちる＝BGMを絞る
         try? await MZSpeed.sleep(nanoseconds: short ? 120_000_000 : 350_000_000)   // 「はやい」に合わせる（settings_leak_audit_1115 #2）
@@ -318,6 +317,7 @@ struct StageCeremony: View {
     private func finish() {
         guard !done else { return }
         done = true
+        UserDefaults.standard.set(true, forKey: Self.seenKey)
         Sound.duck(1, over: 0.4)
         withAnimation(Theme.Motion.r(.easeIn(duration: 0.3))) { veil = 0 }            // 明転
         onDone()
@@ -473,6 +473,7 @@ struct StageMakuri: View {
                     Text(verbatim: String(c)).font(YoseFont.mincho(fs)).foregroundStyle(YoseColor.sumi)   // 名前の1字＝「俺」1字がちょうど一致して自分の名前に化けない（name_substitution_audit_1115 #1）
                 }
             }
+            .accessibilityElement(children: .ignore).accessibilityLabel(name)   // 縦書きの1字ずつで止まらない（code_review_views_1116 要確認A）
             .padding(.vertical, big ? 14 : 8).frame(width: big ? 64 : 34)
             .background(YoseColor.washiFeatured)
             .overlay { if big { Rectangle().stroke(YoseColor.kin, lineWidth: 1).padding(3) } }

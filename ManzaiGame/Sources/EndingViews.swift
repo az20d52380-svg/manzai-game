@@ -14,10 +14,13 @@ struct EndingFlowView: View {
     var replay = false              // true＝図鑑の読み返し（記録しない・最後は「とじる」）
     var record = true               // DEBUG の MZ_ENDING 直行は記録しない
     var onFinish: () -> Void
+    @State private var finished = false
 
     private enum Stage { case s6b, cards, art }
     @State private var stage: Stage = .cards
     @State private var recorded = false
+    /// 図鑑の読み返しの間だけ、見た時のコンビの形と相方名を当てる（閉じたら戻す・表示のみ）
+    @State private var replayRestore: (kind: ComboKind, partner: String)?
 
     private var cards: [ReminiscenceCard] { ending.cards(riftChoice: session?.riftWarnChoice) }
     private var usesS6b: Bool { session != nil && !replay && [.tenYearsClose, .championRetire, .championPair].contains(ending) }
@@ -49,6 +52,14 @@ struct EndingFlowView: View {
             if Int(ProcessInfo.processInfo.environment["MZ_ENDSTEP"] ?? "") != nil, !cards.isEmpty { stage = .cards }   // MZ_ENDSTEP=<番号>: その場面カードを直接
             #endif
             if !replay && record { EndingBook.record(ending, partner: Names.partner) }
+            if replay, let r = EndingBook.load()[ending] {
+                replayRestore = (Names.kind, Names.partner)
+                Names.setKind(ComboKind.from(r.lastComboKind))
+                if !r.lastPartnerName.isEmpty { Names.partner = r.lastPartnerName }
+            }
+        }
+        .onDisappear {
+            if let r = replayRestore { Names.setKind(r.kind); Names.partner = r.partner; replayRestore = nil }
         }
     }
 
@@ -68,7 +79,7 @@ struct EndingFlowView: View {
             LinearGradient(colors: [YoseColor.kuroUrushi, YoseColor.enji.opacity(0.8)], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
             VStack(spacing: 18) {
                 Spacer()
-                EndingArt(id: ending, goldRows: finalYears.isEmpty ? EndingArt.sampleGoldRows : finalYears)
+                EndingArt(id: ending, goldRows: finalYears)   // 実際に決勝へ出た年だけ金縁＝図鑑の読み返し（session=nil）や決勝なしで見本の4・8年目を出さない（code_review_ending_curtain_1118 #2）
                     .aspectRatio(4.0 / 3.0, contentMode: .fit)
                     .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3))
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1).padding(-2))
@@ -92,7 +103,7 @@ struct EndingFlowView: View {
                     ShareCardButton(combiName: session.combiName, headline: ending.title, detail: "No.\(ending.number)　\(ending.kind.label)")
                         .foregroundStyle(YoseColor.kinari)
                 }
-                Button(action: onFinish) { Text(replay ? "とじる" : "もう一度 ▶") }
+                Button(action: { guard !finished else { return }; finished = true; onFinish() }) { Text(replay ? "とじる" : "もう一度 ▶") }   // 連打で2回呼ばない（#6）
                     .buttonStyle(YoseButtonStyle(.primary))
                     .padding(.horizontal, 14).padding(.bottom, 30)
             }
@@ -374,7 +385,7 @@ struct EndingGalleryView: View {
                 }
                 if let rec {
                     Text(id.title).font(YoseFont.mincho(15)).foregroundStyle(YoseColor.sumi).lineLimit(1)
-                    Text("\(Self.dateText(rec.firstSeenAt))　\(rec.count)回　相方：\(rec.lastPartnerName)")
+                    Text("\(Self.dateText(rec.firstSeenAt))　\(rec.count)回　\(rec.lastPartnerName.isEmpty ? "" : "相方：" + rec.lastPartnerName)")
                         .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi).lineLimit(1).minimumScaleFactor(0.7)
                 } else {
                     Text("？？？").font(YoseFont.mincho(15)).foregroundStyle(YoseColor.haiSumi)
