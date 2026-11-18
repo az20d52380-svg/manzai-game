@@ -60,7 +60,10 @@ struct TournamentResultView: View {
             FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
                                  burst: r.burst == true || debugForceFanReport,
                                  salt: salt,
-                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used)
+                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used,
+                                 prelim: ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "HANA2回戦", "HANA準決勝"].contains(r.name),
+                                 finalYear: summary.year >= session.config.careerYears,
+                                 short: ["GP1回戦", "GP2回戦"].contains(r.name))
         }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
@@ -127,7 +130,7 @@ struct TournamentResultView: View {
 
                 VStack(spacing: 0) {
                     // 一文字幕の上に大会名（黒漆＋消金の二重枠の看板。GP系は頂グランプリの札）
-                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ 本番", tag: isMidTournament || isHana ? nil : "頂グランプリ")   // THE HANA は題名に大会名が入っている＝札を重ねない
+                    StageSign(title: GPName.display(r.name), subtitle: "第\(summary.week)週 ・ \(isHanaVideo ? "結果発表" : "本番")", tag: isMidTournament || isHana ? nil : "頂グランプリ")   // THE HANA は題名に大会名が入っている＝札を重ねない
                         .padding(.top, 8)
                         .scaleEffect(signIn ? 1 : 1.15)          // アイキャッチ：1.15→1.0 で打ち出す（se_shaku_wooden_clap）
                         .animation(Theme.Motion.r(.spring(response: 0.3, dampingFraction: 0.6)), value: signIn)
@@ -175,6 +178,7 @@ struct TournamentResultView: View {
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
                                 if r.passed && isHanaFinal {
+                                    guard !showHanaChamp else { return }   // 連打で優勝の音が二重に鳴らない（code_review_results_1117 低）
                                     Sound.play(.fanfare); Sound.play(.cheerBig)   // 頂GP 決勝の優勝と同じ音（優勝演出の画面は音を鳴らさない・code_review_1107e #1）
                                     withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true }
                                 }
@@ -271,7 +275,8 @@ struct TournamentResultView: View {
         .onAppear {   // 目視用：MZ_UI=result_done で演出を最後まで進めた状態で開く
             if ProcessInfo.processInfo.environment["MZ_UI"] == "pass", ProcessInfo.processInfo.environment["MZ_PASS"] == "board" { qualDone = true; ceremonyDone = true; finishReveal(); showPass = true }   // MZ_UI=pass MZ_PASS=board で回戦突破の看板の場面から始める（キュー308）
             if ["result_done", "lose_done", "hana_result"].contains(ProcessInfo.processInfo.environment["MZ_UI"]) { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil { showPass = true } }   // MZ_PASSFX=1 で回戦突破の祝いを直接開く
-            if ProcessInfo.processInfo.environment["MZ_UI"] == "stage_result" { qualDone = true; ceremonyDone = true; finishReveal(); if let n = Int(ProcessInfo.processInfo.environment["MZ_CLIMAX"] ?? ""), !climaxPages.isEmpty { climaxIndex = min(n, climaxPages.count - 1) } }   // MZ_CLIMAX=<n> で山場の n ページ目を直接開く
+            if ProcessInfo.processInfo.environment["MZ_UI"] == "stage_result" { qualDone = true; ceremonyDone = true; finishReveal(); if ProcessInfo.processInfo.environment["MZ_PASSFX"] != nil, result.passed, isHanaFinal { showHanaChamp = true }   // MZ_STAGE=HANA決勝 MZ_PASS=1 MZ_PASSFX=1 で THE HANA 優勝演出
+            if let n = Int(ProcessInfo.processInfo.environment["MZ_CLIMAX"] ?? ""), !climaxPages.isEmpty { climaxIndex = min(n, climaxPages.count - 1) } }   // MZ_CLIMAX=<n> で山場の n ページ目を直接開く
         }
         #endif
         .overlay {
@@ -297,7 +302,8 @@ struct TournamentResultView: View {
             if showHanaChamp {   // 決勝の通過＝優勝。タップで先へ
                 YoseChampionCelebrationView(tournamentName: "THE HANA 決勝", generationText: "結成\(summary.year)年目",
                                             duoName: session.combiName, prizeAmountYen: r.prize,
-                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」") {
+                                            partnerName: Names.partner, partnerLine: "「やったね。本当に、やったね」",
+                                            proceedLabel: "次へ 進む") {   // HANA の後は番組エンディングもキャリアの終わりも無い＝週へ戻る
                     showHanaChamp = false; session.acknowledgeResult()
                 }
                 .transition(.opacity)

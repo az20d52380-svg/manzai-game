@@ -121,7 +121,7 @@ struct YoseRankUpOverlay: View {
         HStack(spacing: 8) {
             Rectangle().fill(YoseColor.kin.opacity(0.7)).frame(width: 24, height: 1.5)
             Rectangle().fill(YoseColor.kinBright).frame(width: 6, height: 6).rotationEffect(.degrees(45))
-            Text("番 付 昇 格")
+            Text("番 付 昇 格").accessibilityLabel("番付昇格")
                 .font(YoseFont.mincho(22))
                 .tracking(4)
                 .foregroundStyle(
@@ -285,6 +285,7 @@ struct YoseRankUpOverlay: View {
             stamped = true
             shownValue = item.afterValue
             try? await Task.sleep(nanoseconds: 1_100_000_000)
+            if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
             dismissImmediately()
             return
         }
@@ -294,6 +295,7 @@ struct YoseRankUpOverlay: View {
 
         // 0.34s: 白金フラッシュ＋新ランク木札の叩きつけ＋火花
         try? await Task.sleep(nanoseconds: 340_000_000)
+        if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
         guard !isDismissed else { return }
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         flash = 0.08
@@ -302,22 +304,27 @@ struct YoseRankUpOverlay: View {
         burstTrigger += 1
         withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeOffset = 6 }
         try? await Task.sleep(nanoseconds: 45_000_000)
+        if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
         withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeOffset = -4 }
         try? await Task.sleep(nanoseconds: 50_000_000)
+        if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
         withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeOffset = 0 }
 
         // 0.55s: 朱印『昇格』＋数値更新
         try? await Task.sleep(nanoseconds: 120_000_000)
+        if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
         guard !isDismissed else { return }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { stamped = true }
         withAnimation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.72))) { shownValue = item.afterValue }
         withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeOffset = 3 }
         try? await Task.sleep(nanoseconds: 45_000_000)
+        if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
         withAnimation(Theme.Motion.r(.linear(duration: 0.05))) { shakeOffset = 0 }
 
         // 余韻のあと自動クローズ（タップで即閉じ）
         try? await Task.sleep(nanoseconds: 1_300_000_000)
+        if Task.isCancelled { return }   // 取り消し後に振動・閉じる処理を走らせない（code_review_fx4_1116 中-1）
         guard !isDismissed else { return }
         dismissImmediately()
     }
