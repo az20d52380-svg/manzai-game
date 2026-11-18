@@ -18,7 +18,12 @@ struct ChoiceEventOverlay: View {
     var onClose: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var text: ChoiceEventText { ChoiceEventData.text(for: kind, year: session.year, week: session.week) }
+    /// 出た時の文面を固定する（選んだ効果で所持金・体力が動いても、言い換えが途中で替わらない）
+    @State private var frozenText: ChoiceEventText?
+    private var text: ChoiceEventText {
+        frozenText ?? ChoiceEventData.text(for: kind, year: session.year, week: session.week,
+                                           money: session.state.money, stamina: session.state.stamina)
+    }
     private var scene: EventScene { ChoiceEventData.scene(for: kind) }
     private var backdrop: EventBackdrop { EventBackdrop.forEvent(kind) }
 
@@ -106,6 +111,7 @@ struct ChoiceEventOverlay: View {
         .contentShape(Rectangle())
         .onTapGesture { advance() }
         .onAppear {
+            if frozenText == nil { frozenText = text }
             Sound.play(.event)   // イベント発生の一音
             setupShown = chunkEnd(text.setup, from: 0)   // 最初の場面もまとめて出す
             if isFlavor { setupShown = text.setup.count }   // 選択肢なし＝全部並べる
@@ -140,7 +146,7 @@ struct ChoiceEventOverlay: View {
     private var sceneHeader: some View {
         EventStageBackdropView(backdrop: backdrop)
             .frame(height: backdropHeight)
-            .animation(Theme.Motion.appear, value: footerReady)
+            .animation(Theme.Motion.r(Theme.Motion.appear), value: footerReady)
             .overlay(alignment: .topLeading) {
                 // 場所・時間帯の木札（背景が何色でも読める）
                 HStack(spacing: 6) {
@@ -271,7 +277,7 @@ struct ChoiceEventOverlay: View {
         }
         .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 14).padding(.bottom, 14)   // 上 6→14：会話5行の札で最後の吹き出しと選択肢がくっつかない（event_card_audit_1019 §1）
         .frame(minHeight: 40)
-        .animation(Theme.Motion.appear, value: footerReady)
+        .animation(Theme.Motion.r(Theme.Motion.appear), value: footerReady)
     }
 
     private var closeButton: some View {
@@ -324,7 +330,7 @@ struct ChoiceEventOverlay: View {
         if let i = ordered.firstIndex(where: { $0.0.hasPrefix("所持金") }), i >= 3 { ordered.insert(ordered.remove(at: i), at: 2) }
         var all = Array(ordered.prefix(3))
         // 数字に出ない効果（来週の効き・余力・拘束・空気）は一言の札で添える（効果自体は不変・数字なし）
-        if let note = ChoiceEventData.hiddenEffectNote(for: kind, choice: choice) { all.append((note, false, Theme.mentalDeep)) }
+        if let note = ChoiceEventData.hiddenEffectNote(for: kind, choice: choice) { all.append((note, ChoiceEventData.hiddenEffectNoteIsGood(for: kind, choice: choice), Theme.mentalDeep)) }
         guard !all.isEmpty else { return }
         Sound.play(ups.isEmpty ? .pop : .grain)
         withAnimation(Theme.Motion.emphSpring) {
