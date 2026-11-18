@@ -683,7 +683,7 @@ final class GameSession {
         let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
         guard uiEventRng.nextUniform() < rate else { return }
         // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
-        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker())   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
+        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker(), noStage: nextMilestoneForEvent() == nil)   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
     }
 
     /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。
@@ -691,7 +691,8 @@ final class GameSession {
         if lossStreak >= 2 { return .streak }
         if state.money < 50_000 { return .broke }
         if justPassedStage { return .afterPass }
-        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week) { return .eve }
+        // 動画審査（女性コンビの THE HANA 1回戦）は舞台に立たない＝電車・会場・席の「大会前」の掛け合いは出さない（選択イベントの前夜と同じ除外・code_review_dialoguedata_1118 #2）
+        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week), !(state.femaleCombo == true && m.week == config.calendar.hanaTournaments.first?.week) { return .eve }
         if let m = nextMilestoneForEvent(), m.week - week >= 6 { return .lull }
         return .plain
     }
