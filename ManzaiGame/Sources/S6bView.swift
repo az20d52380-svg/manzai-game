@@ -64,68 +64,11 @@ struct S6bView: View {
             }
             .frame(height: 24).overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 2) }
             .background(alignment: .bottom) { Rectangle().fill(YoseColor.sumi).frame(height: 2).offset(y: 2) }
-            Spacer(minLength: 0)
-            // 千秋楽の興行ビラ（和紙の地・金と朱の二重枠・墨のハードシャドウ）
-            VStack(spacing: 12) {
-                Text("千 秋 楽").font(YoseFont.mincho(44)).foregroundStyle(YoseColor.sumi)
-                    .accessibilityLabel("千秋楽").accessibilityAddTraits(.isHeader)   // 1字ずつ読まない・見出し（同 #9・#4）
-                    .shadow(color: YoseColor.kin, radius: 0, x: 2, y: 2)
-                HStack(spacing: 8) {
-                    Rectangle().fill(YoseColor.shu).frame(height: 2)
-                    Rectangle().fill(YoseColor.shu).frame(width: 6, height: 6).rotationEffect(.degrees(45))
-                    Rectangle().fill(YoseColor.shu).frame(height: 2)
-                }
-                .padding(.horizontal, 20)
-                Text("\(session.combiName)　最後の舞台").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
-                    .lineLimit(1).minimumScaleFactor(0.6)
-                // 最終到達舞台（4段階のうち、どこまで来たか）
-                VStack(spacing: 6) {
-                    Text("最終到達舞台").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
-                    Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
-                    HStack(spacing: 4) {
-                        ForEach(0..<4, id: \.self) { t in
-                            if t > 0 { Text("▶").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }   // 矢印は読ませない（同 #8）
-                            YoseTag(text: Self.venueNames[t], style: t == venueTier ? .solidEnji : .outlineSumi)
-                                .opacity(t <= venueTier ? 1 : 0.5)
-                        }
-                    }
-                }
-                .padding(.vertical, 12).frame(maxWidth: .infinity)
-                .yoseKifuda()
-                // 所持金を舞台に懸ける＝残金が減って0になる（元の額を一拍見せてから）
-                VStack(spacing: 4) {
-                    Text("所持金を全額、最後の舞台に懸ける").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(2).minimumScaleFactor(0.7).multilineTextAlignment(.center)
-                    HStack(spacing: 10) {
-                        VStack(spacing: 0) {
-                            Text("所持金").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
-                            Text(Yen.text(max(0, s.money))).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
-                                .lineLimit(1).minimumScaleFactor(0.6)
-                        }
-                        Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(14))).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
-                        VStack(spacing: 0) {
-                            Text("残金").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
-                            Text(Yen.text(counted ? 0 : max(0, s.money)))
-                                .font(YoseFont.number(26, weight: .black)).monospacedDigit().foregroundStyle(YoseColor.shu)
-                                .contentTransition(.numericText())
-                                .lineLimit(1).minimumScaleFactor(0.5)   // 7桁の残金が「¥7,796,0／00」と2行に折れていた（10/26 目視）
-                        }
-                    }
-                    .padding(.vertical, 8).padding(.horizontal, 14)
-                    .frame(maxWidth: .infinity)
-                    .background(YoseColor.ki.opacity(0.55))
-                    .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
-                    .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "全額投入", angle: -6).offset(x: 6, y: -16) }
-                }
+            // 収まる時は今のまま上下中央・大きい文字で縦に収まらない時だけスクロール（ボタンが画面外に出ない＝code_review_stage_qual_s6b_1119 #7）
+            ViewThatFits(in: .vertical) {
+                VStack(spacing: 0) { Spacer(minLength: 0); kougyouBira; Spacer(minLength: 0) }
+                ScrollView(.vertical, showsIndicators: false) { kougyouBira.padding(.vertical, 16) }
             }
-            .padding(.vertical, 36).padding(.horizontal, 20)
-            .frame(maxWidth: .infinity)
-            .background(YoseColor.washi)
-            .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
-            .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3).padding(2.5))
-            .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5).padding(6))
-            .background(alignment: .bottom) { Rectangle().fill(YoseColor.kuroUrushi).offset(y: 5) }
-            .padding(.horizontal, 20)
-            Spacer(minLength: 0)
             Button { if kougyouOnly { onFinish() } else { advance(.montage) } } label: { Text("最後の舞台へ上がる ▶") }
                 .buttonStyle(YoseButtonStyle(.primary))
                 .padding(.horizontal, 14).padding(.bottom, 30)
@@ -136,6 +79,69 @@ struct S6bView: View {
             if reduceMotion { Task { try? await Task.sleep(nanoseconds: 1_500_000_000); counted = true } }
             else { withAnimation(Theme.Motion.r(.easeInOut(duration: 1.8).delay(1.0))) { counted = true } }
         }
+    }
+
+    // 千秋楽の興行ビラ（和紙の地・金と朱の二重枠・墨のハードシャドウ）
+    private var kougyouBira: some View {
+        VStack(spacing: 12) {
+            Text("千 秋 楽").font(YoseFont.mincho(44)).foregroundStyle(YoseColor.sumi)
+                .accessibilityLabel("千秋楽").accessibilityAddTraits(.isHeader)   // 1字ずつ読まない・見出し（同 #9・#4）
+                .shadow(color: YoseColor.kin, radius: 0, x: 2, y: 2)
+            HStack(spacing: 8) {
+                Rectangle().fill(YoseColor.shu).frame(height: 2)
+                Rectangle().fill(YoseColor.shu).frame(width: 6, height: 6).rotationEffect(.degrees(45))
+                Rectangle().fill(YoseColor.shu).frame(height: 2)
+            }
+            .padding(.horizontal, 20)
+            Text("\(session.combiName)　最後の舞台").font(YoseFont.mincho(18)).foregroundStyle(YoseColor.sumi)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            // 最終到達舞台（4段階のうち、どこまで来たか）
+            VStack(spacing: 6) {
+                Text("最終到達舞台").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
+                Text(venueName).font(YoseFont.bannerTitle).tracking(3).foregroundStyle(YoseColor.shu)
+                HStack(spacing: 4) {
+                    ForEach(0..<4, id: \.self) { t in
+                        if t > 0 { Text("▶").font(.system(size: Font.mzScaled(8))).foregroundStyle(YoseColor.haiSumi).accessibilityHidden(true) }   // 矢印は読ませない（同 #8）
+                        YoseTag(text: Self.venueNames[t], style: t == venueTier ? .solidEnji : .outlineSumi)
+                            .opacity(t <= venueTier ? 1 : 0.5)
+                    }
+                }
+            }
+            .padding(.vertical, 12).frame(maxWidth: .infinity)
+            .yoseKifuda()
+            // 所持金を舞台に懸ける＝残金が減って0になる（元の額を一拍見せてから）
+            VStack(spacing: 4) {
+                Text("所持金を全額、最後の舞台に懸ける").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi).lineLimit(2).minimumScaleFactor(0.7).multilineTextAlignment(.center)
+                HStack(spacing: 10) {
+                    VStack(spacing: 0) {
+                        Text("所持金").font(YoseFont.captionBold).foregroundStyle(YoseColor.haiSumi)
+                        Text(Yen.text(max(0, s.money))).font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                            .lineLimit(1).minimumScaleFactor(0.6)
+                    }
+                    Image(systemName: "arrowtriangle.right.fill").font(.system(size: Font.mzScaled(14))).foregroundStyle(YoseColor.shu).accessibilityHidden(true)
+                    VStack(spacing: 0) {
+                        Text("残金").font(YoseFont.captionBold).foregroundStyle(YoseColor.enji)
+                        Text(Yen.text(counted ? 0 : max(0, s.money)))
+                            .font(YoseFont.number(26, weight: .black)).monospacedDigit().foregroundStyle(YoseColor.shu)
+                            .contentTransition(.numericText())
+                            .lineLimit(1).minimumScaleFactor(0.5)   // 7桁の残金が「¥7,796,0／00」と2行に折れていた（10/26 目視）
+                    }
+                }
+                .padding(.vertical, 8).padding(.horizontal, 14)
+                .frame(maxWidth: .infinity)
+                .background(YoseColor.ki.opacity(0.55))
+                .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 1.5))
+                .overlay(alignment: .topTrailing) { YoseHankoStamp(text: "全額投入", angle: -6).offset(x: 6, y: -16) }
+            }
+        }
+        .padding(.vertical, 36).padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+        .background(YoseColor.washi)
+        .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2.5))
+        .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 3).padding(2.5))
+        .overlay(Rectangle().stroke(YoseColor.shu, lineWidth: 1.5).padding(6))
+        .background(alignment: .bottom) { Rectangle().fill(YoseColor.kuroUrushi).offset(y: 5) }
+        .padding(.horizontal, 20)
     }
 
     private static let venueNames = ["町の劇場", "ホール", "アリーナ", "ドーム"]

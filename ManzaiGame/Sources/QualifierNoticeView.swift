@@ -161,9 +161,16 @@ struct QualifierNoticeView: View {
     }
 
     // MARK: 相方とのトーク
+    private func scrollChatEnd(_ proxy: ScrollViewProxy) {
+        if reduceMotion { proxy.scrollTo("chatEnd", anchor: .bottom) }
+        else { withAnimation(.easeOut(duration: 0.25)) { proxy.scrollTo("chatEnd", anchor: .bottom) } }
+    }
+
+    // MARK: 相方とのトーク
     private var chatScreen: some View {
         VStack(spacing: 0) {
             Text(partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).accessibilityAddTraits(.isHeader).padding(.top, 96).padding(.bottom, 12)
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 10) {
                     bubble(false, "見た？")
@@ -173,7 +180,12 @@ struct QualifierNoticeView: View {
                     ForEach(0..<max(0, msgs - 2), id: \.self) { i in
                         if i < resultLines.count { bubble(false, resultLines[i]) }
                     }
+                    Color.clear.frame(height: 1).id("chatEnd")
                 }.padding(.horizontal, 16)
+            }
+            // 新着が来たら最後の吹き出しまで送る（大きい文字で新着が画面の外に出ていた＝code_review_stage_qual_s6b_1119 #3）
+            .onChange(of: msgs) { _, _ in scrollChatEnd(proxy) }
+            .onChange(of: chosen) { _, _ in scrollChatEnd(proxy) }
             }
             if !chosen && msgs >= 1 {
                 HStack(spacing: 12) {
