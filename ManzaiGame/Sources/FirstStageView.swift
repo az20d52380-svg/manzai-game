@@ -69,7 +69,11 @@ struct FirstStageView: View {
             }
             if let onSkip {
                 VStack { HStack { Spacer()
-                    Button("とばす ▶") { task?.cancel(); Sound.play(.cursor); onSkip() }
+                    Button("とばす ▶") {
+                        guard !finished else { return }   // 連打・「第1週へ」との二重で先へ2回進まない（code_review_misc5_1116 中-2）
+                        finished = true
+                        task?.cancel(); Sound.play(.cursor); onSkip()
+                    }
                         .buttonStyle(YoseButtonStyle(.secondary)).padding(.trailing, 12).padding(.top, 6)
                         .accessibilityLabel("とばす")
                 }; Spacer() }
@@ -132,6 +136,10 @@ struct FirstStageView: View {
     // MARK: 時間軸
 
     private func start() {
+        // 画面が一度消えて戻った時（onDisappear で task を取り消した後）：もう押していれば
+        // 「ツッコむ」に戻さず「第1週へ」の場面へ（押した後に ready へ戻ると press が効かず固まる＝code_review_misc5_1116 #1）
+        if pressed { phase = .bitter; return }
+        task?.cancel()
         task = Task { @MainActor in
             guard await wait(1.6) else { return }
             phase = .ready; Sound.play(.pop); Haptics.soft(0.5)
@@ -148,9 +156,11 @@ struct FirstStageView: View {
         Sound.play(.don); Haptics.rigid(0.9)
         task = Task { @MainActor in
             guard await wait(0.1) else { return }
+            ripple = false   // 波紋の円は warm で挿入される＝挿入の後のフレームで広げる（同じ処理内だと広がりが描かれない・code_review_share_settings_1117 #2）
             phase = .burst; Sound.play(.cheerBig); Haptics.confirm(); flash += 1; burstTick += 1
+            guard await wait(0.03) else { return }
             withAnimation(Theme.Motion.r(.easeOut(duration: 0.8))) { ripple = true }
-            guard await wait(0.9) else { return }
+            guard await wait(0.87) else { return }
             shake += 1; burstTick += 1; Haptics.tick()
             guard await wait(1.1) else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.6))) { phase = .stamped }
