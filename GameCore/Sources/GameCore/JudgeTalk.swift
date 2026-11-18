@@ -471,14 +471,16 @@ public enum JudgeTalk {
             else if s.stamina < 30 { pool = Paper.passStaminaLow }
             else if s.mental < 20 { pool = Paper.passMentalLow }
             else if s.burst { pool = Paper.passBurst }
-            else { pool = Paper.pass + paperNetaLines(scene: s, passed: true) }
+            // 来歴と食い違う行は来歴で振り分ける（code_review_judgetalk_1118 #2：再演の通過に「古くない」・おろしたての敗退に「古い形」が並ばない）
+            else { pool = Paper.pass + paperNetaLines(scene: s, passed: true) + (s.isRevivalNeta ? [] : [Paper.passNotOld]) }
         } else {
-            if s.stamina < 30 { pool = Paper.failStaminaLow }
+            // 大差（-10 超）の敗退は点差の行を先に＝状態の行の「中身は通る水準／それだけで落とした」と食い違わない（code_review_judgetalk_1118 #1・乱数は使わない）
+            if let m = s.margin, m < -10 { pool = Paper.failFar }
+            else if s.stamina < 30 { pool = Paper.failStaminaLow }
             else if s.mental < 20 { pool = Paper.failMentalLow }
             else if s.compat < 8 { pool = Paper.failChemistryLow }
             else if let m = s.margin, m >= -3 { pool = Paper.failNear }
-            else if let m = s.margin, m < -10 { pool = Paper.failFar }
-            else { pool = Paper.fail + paperNetaLines(scene: s, passed: false) }
+            else { pool = Paper.fail + paperNetaLines(scene: s, passed: false) + (s.isRevivalNeta ? [Paper.failOldForm] : []) }
         }
         let template = pick(pool, scene: s, salt: salt, k: 21) ?? "{入り}、要確認。"
         let judge = judgeNames[mix(salt, 22) % judgeNames.count]
@@ -495,6 +497,10 @@ public enum JudgeTalk {
 
     /// 紙講評のプール（「良かった点→直す点」・体言止め寄り・1〜3行）
     enum Paper {
+        /// 再演ネタの敗退だけに出す（元は fail の汎用行）
+        static let failOldForm = "古い形を、そのまま持ってきたように見えた。{締め}だけ今の話にすること。"
+        /// 再演でないネタの通過だけに出す（元は pass の汎用行）
+        static let passNotOld = "{題}、古くない。{一言}の言い方が今の客に近い。"
         static let pass: [String] = [
             "{入り}、良し。{締め}の前に山をもう一つ。",
             "{題}、設定の発明あり。{中}の広げ方をもう一段。",
@@ -513,7 +519,6 @@ public enum JudgeTalk {
             "前半と後半の長さの釣り合いが良い。{中}をあと少し詰められる。",
             "{題}、素材は十分。飾りを三割減らした形を見てみたい。",
             "{題}、この場に合った題材。客の知っている話から入れている。",
-            "{題}、古くない。{一言}の言い方が今の客に近い。",
             "{入り}の形を、どこかで見た客がいる。{中}で新しい方へ曲げられた。",
             "{題}、よくできている。{中}はもう少し勢いに任せてもいい。",
             "磨かれた{入り}。ただ、劇場でかけていた頃の荒さが無い。",
@@ -551,7 +556,6 @@ public enum JudgeTalk {
             "{題}、よくまとまっている。まとめたぶん、{中}の勢いが削がれた。",
             "{入り}はよく磨かれている。その分、劇場で見た頃の荒さが消えた。",
             "大会向けに形を整えた跡が見える。{一言}の素の速さを、もっと前に出すこと。",
-            "古い形を、そのまま持ってきたように見えた。{締め}だけ今の話にすること。",
         ]
         /// 敗退・あと一歩（点差が小さい）
         static let failNear: [String] = [
