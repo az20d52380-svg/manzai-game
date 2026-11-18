@@ -124,16 +124,11 @@ struct YosePassCelebrationView: View {
                 .background(Color.black)
                 .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
 
-                Spacer(minLength: 16)
-                VStack(spacing: 26) {
-                    signboard
-                    resultCard
-                    if !judgeComment.isEmpty { reviewCard }
-                    bonusPlate
+                // 収まる時は今のまま中央に・大きい文字で縦に収まらない時だけスクロール（下のボーナス札が切れない＝code_review_yose_store_1118 #6）
+                ViewThatFits(in: .vertical) {
+                    VStack(spacing: 0) { Spacer(minLength: 16); passStack; Spacer(minLength: 10) }
+                    ScrollView(.vertical, showsIndicators: false) { passStack.padding(.vertical, 16) }
                 }
-                .padding(.horizontal, 22)
-                .offset(y: shakeY)
-                Spacer(minLength: 10)
                 Text("画面をタップして進む ▶")
                     .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.7))
                     .opacity(finished ? 1 : 0).padding(.bottom, 26)
@@ -147,6 +142,17 @@ struct YosePassCelebrationView: View {
         .contentShape(Rectangle())
         .onTapGesture { if finished { onFinish() } else { snapToFinal() } }
         .task { await run() }
+    }
+
+    private var passStack: some View {
+        VStack(spacing: 26) {
+            signboard
+            resultCard
+            if !judgeComment.isEmpty { reviewCard }
+            bonusPlate
+        }
+        .padding(.horizontal, 22)
+        .offset(y: shakeY)
     }
 
     // 上：黒漆の合否看板（最初は空枠 → 点灯して金文字）

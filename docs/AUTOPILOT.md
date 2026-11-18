@@ -254,6 +254,7 @@
 684. [済 11/18 夜 定期・sonnet・docs/code_review_gamesession_diff_1118_v0.md] GameSession の 11/12 以降の変更（約23コミット）の点検＝高0・中1・低4・要確認2（golden・乱数に響く変更なし）。直した（表示のみ）：#1 結果画面の「知名度 +n」が decideTournament／advanceAuto を通らない経路（行動の後・結果を閉じた直後に続けて結果）で前の大会の値のまま残りセーブにも載る→ choose と acknowledgeResult でも結果が出たら今の値に更新。GameCore 479 green・ビルド OK。
 685. [済 11/18 夜 定期・sonnet・docs/code_review_yose_store_1118_v0.md] 寄席の部品（YoseComponents・YoseMilestoneFX・YoseTokens・YoseCatalog）と StoreIDs の点検＝高0・中6・低10（落ちる所なし・製品IDは storekit と4つ一致）。直した（表示のみ）：#1 袋文字の縁取り8枚を読み上げから外す・#2 「予 選 通 過」を空白なしで読む／「判 定 中」は消えた後は読ませない・#4 ヘッダーの「とばす ▶」を1行に縮める・#5 看板の金文字を1行に縮める。
 686. [ ] （11/18 夜 定期）code_review_yose_store_1118 の残り：#3 予選通過演出に VoiceOver の「次へ」の口が無い（要実機）・#6 予選通過画面がスクロールせず大きい文字で下が切れる（ScrollView か dynamicTypeSize 上限）・低 #7〜#16。GameSession の残り（code_review_gamesession_diff_1118 #3 称号 t15/t16 の判定時点は判断が要る・#2/#4/#5/#7 は低）。
+687. [済 11/19 未明 定期] 686 の #6：予選通過の画面を ViewThatFits で「収まれば今のまま中央・収まらない時だけスクロール」に（表示のみ）。ビルド OK・accessibility-large で MZ_UI=pass MZ_PASS=board を1枚＝崩れなし（寄席の字は固定サイズが多く、収まる側で出た）。684・685（前の回の未コミット分）もビルド OK・GameCore 479 green で 059f314dd・9402abc36 にコミット。
 
 ## 判断待ち（作らない・オーナーに1つずつ聞く）
 - （10/25 自走）結成15年の初優勝の帯：M12D0.8（11年目以降だけ決勝ライン+12・伸び×0.8＝今と同じ 1.8%）か M8D0.6（2.1%・11年目以降にも0.4%）か。推奨＝M8D0.6（docs/fifteen_years_1020_v0.md）
