@@ -15,6 +15,7 @@ struct YoseGoldText: View {
                     if dx != 0 || dy != 0 {
                         Text(text).font(YoseFont.mincho(size)).tracking(tracking).foregroundStyle(Color.black)
                             .offset(x: CGFloat(dx) * size * 0.04, y: CGFloat(dy) * size * 0.04 + size * 0.05)
+                            .accessibilityHidden(true)   // 縁取りは読ませない（code_review_yose_store_1118 #1）
                     }
                 }
             }
@@ -23,6 +24,7 @@ struct YoseGoldText: View {
                     .init(color: Color(hex: 0xFFFBE6), location: 0), .init(color: YoseColor.kinBright, location: 0.45),
                     .init(color: Color(hex: 0xB8861B), location: 0.85), .init(color: YoseColor.kinBright, location: 1)],
                     startPoint: .top, endPoint: .bottom))
+                .accessibilityLabel(text.replacingOccurrences(of: " ", with: ""))   // 字間の空白で1字ずつ読まれない（同 #2）
         }
     }
 }
@@ -165,7 +167,9 @@ struct YosePassCelebrationView: View {
                     Text("判 定 中").font(YoseFont.mincho(30)).tracking(10).foregroundStyle(YoseColor.kin.opacity(0.35))
                         .opacity(revealed ? 0 : 1)
                         .transaction { $0.animation = nil }
+                        .accessibilityLabel("判定中").accessibilityHidden(revealed)   // 消えた後は読ませない（同 #2）
                     YoseGoldText(text: "予 選 通 過", size: 54, tracking: 4)
+                        .lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字で看板の幅を越えない（同 #5）
                         .scaleEffect(revealed ? 1 : 1.5).opacity(revealed ? 1 : 0)
                 }
             }

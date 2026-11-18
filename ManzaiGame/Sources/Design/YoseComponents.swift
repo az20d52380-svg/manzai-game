@@ -40,6 +40,7 @@ struct YoseHeaderBar: View {
                 if let closeAction {
                     Button(closeTitle, action: closeAction)
                         .font(YoseFont.gothic(12, weight: .heavy))
+                        .lineLimit(1).minimumScaleFactor(0.6)   // 「とばす ▶」が大きい文字で幅64に収まらず切れる（同 #4）
                         .foregroundStyle(YoseColor.kinari)
                         .frame(width: 64, height: 28)
                         .background(YoseColor.kuroUrushi.opacity(0.6))
