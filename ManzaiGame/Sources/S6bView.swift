@@ -39,7 +39,8 @@ struct S6bView: View {
             switch phase {
             case .kougyou: kougyou.transition(.opacity)
             case .montage:
-                ReminiscencePlayer(cards: montageCards, title: "これまでの話") { advance(.nenpyou) }   // 既定の「はじまりの話」は導入の題＝エンディングの振り返りには合わない.transition(.opacity)
+                // 既定の「はじまりの話」は導入の題＝エンディングの振り返りには合わない
+                ReminiscencePlayer(cards: montageCards, title: "これまでの話") { advance(.nenpyou) }.transition(.opacity)   // コメントに紛れていた切替を生かす（code_review_stage_qual_s6b_1119 #10）
             case .nenpyou: nenpyou.transition(.opacity)
             case .wall: wall.transition(.opacity)
             }
