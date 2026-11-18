@@ -234,7 +234,7 @@ struct FinalsBroadcastIntro: View {
                 if cur >= 0 {
                     VStack(spacing: 4) {
                         Text("審査員").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kin)
-                        Text(judges[cur]).font(YoseFont.mincho(34)).foregroundStyle(YoseColor.kinari).tracking(2)
+                        Text(judges[cur]).font(YoseFont.mincho(34)).foregroundStyle(YoseColor.kinari).tracking(2).lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字・狭い端末で2行に折れて枠を出ない（code_review_stageframe_fbintro_1119 #4）
                     }
                     .padding(.vertical, 14).frame(maxWidth: .infinity)
                     .background(YoseColor.kuroUrushi)
@@ -589,7 +589,7 @@ struct FinalsBroadcastEnding: View {
                 HStack(spacing: 0) {
                     Text("司会 鳴海").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).frame(height: 44).background(YoseColor.enji)
-                    Text("「以上、頂グランプリ決勝でした。」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi)
+                    Text("「以上、頂グランプリ決勝でした。」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)   // 導入側の帯と同じく折らずに縮める（同 #6）
                         .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 44).background(YoseColor.washi)
                 }
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
