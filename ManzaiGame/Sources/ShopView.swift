@@ -14,6 +14,14 @@ struct ShopView: View {
     @State private var purchases: [ShopItem] = []
     @State private var showGacha = false
 
+    /// 目視用のスクロール位置（DEBUG のみ MZ_SCROLL=bottom。本番は常に上から）
+    static var debugScrollAnchor: UnitPoint {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MZ_SCROLL"] == "bottom" { return .bottom }
+        #endif
+        return .top
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             YoseHeaderBar(title: "お店", closeAction: onClose)
@@ -48,6 +56,7 @@ struct ShopView: View {
                 }
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 6).padding(.bottom, 24)
             }
+            .defaultScrollAnchor(Self.debugScrollAnchor)   // 目視用：MZ_SCROLL=bottom で下（品書きの下側・回数券など）から開く（AUTOPILOT 609）
         }
         .background(YoseColor.kinari.ignoresSafeArea())
         .onAppear { if visitStart == nil { visitStart = session.state } }
