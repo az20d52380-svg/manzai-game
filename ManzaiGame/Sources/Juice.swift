@@ -174,15 +174,19 @@ private struct PunchModifier<T: Equatable>: ViewModifier {
     let value: T
     var peak: CGFloat = 1.22
     @State private var punched = false
+    @State private var gen = 0   // 連続で変わった時、前の跳ねの戻しが次の跳ねを途中で引っ込めない（code_review_misc5_1116 低-2）
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func body(content: Content) -> some View {
         content
             .scaleEffect(punched ? peak : 1)
             .onChange(of: value) { _, _ in
                 guard !reduceMotion else { return }
+                gen += 1
+                let g = gen
                 withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.45))) { punched = true }
                 Task {
                     try? await Task.sleep(nanoseconds: 140_000_000)
+                    guard gen == g else { return }
                     withAnimation(Theme.Motion.r(.spring(response: 0.30, dampingFraction: 0.65))) { punched = false }
                 }
             }
