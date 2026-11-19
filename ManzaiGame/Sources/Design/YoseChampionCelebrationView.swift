@@ -40,6 +40,7 @@ public struct YoseChampionCelebrationView: View {
     @State private var isCompleted: Bool = false
     /// 進むボタン・画面が消えた後に、遅れて走る段の音と触覚を出さない（delayed_callback_audit_1108_v0）
     @State private var isGone: Bool = false
+    @State private var didFinish: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -148,6 +149,8 @@ public struct YoseChampionCelebrationView: View {
                 .opacity(phase >= 5 ? 1 : 0)
                 .offset(y: phase >= 5 ? 0 : 18)
                 .allowsHitTesting(phase >= 5)
+                // 見えない間は読み上げからも外す＝演出の途中に「次へ」を押せない（#2）
+                .accessibilityHidden(phase < 5)
                 .animation(Theme.Motion.r(.easeOut(duration: 0.3)), value: phase >= 5)
             }
             .yoseShake(trigger: shakeTrigger, intensity: .heavy, axis: .vertical)
@@ -176,6 +179,7 @@ public struct YoseChampionCelebrationView: View {
             handleScreenTap()
         }
         .onAppear {
+            isGone = false
             runCelebrationTimeline()
         }
         .onDisappear { isGone = true }
@@ -209,6 +213,10 @@ public struct YoseChampionCelebrationView: View {
             Spacer()
 
             Text(isCompleted ? "タップで進む ▶" : "スキップ ▶▶")
+                // 全画面タップは読み上げの要素にならない＝この札をボタンとして押せるように（#3）
+                .accessibilityLabel(isCompleted ? "次へ進む" : "スキップ")
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction { handleScreenTap() }
                 .font(YoseFont.gothic(12, weight: .heavy))
                 .foregroundStyle(YoseColor.sumi)
                 .padding(.horizontal, 8)
@@ -218,7 +226,7 @@ public struct YoseChampionCelebrationView: View {
                 .overlay(RoundedRectangle(cornerRadius: 2).stroke(YoseColor.sumi, lineWidth: 1.5))
         }
         .padding(.horizontal, 14)
-        .frame(height: 40)
+        .frame(minHeight: 40)  // 大きい文字では高さを伸ばす（#4）
         .background(YoseColor.kuroUrushi.opacity(0.95))
         .overlay(alignment: .bottom) {
             Rectangle().fill(YoseColor.kinBright).frame(height: 1.5)
@@ -278,12 +286,16 @@ public struct YoseChampionCelebrationView: View {
                             isLanded: phase >= 3
                         )
                     }
+                    // 縁取りの8枚ずつを含めて「優勝」1回だけ読む（code_review_champion_1119 #1）
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("優勝")
                     .padding(.vertical, 2)
 
                     // 主役コンビ名の白和紙・二重枠めくり額縁
                     if phase >= 4 {
                         VStack(spacing: 4) {
                             Text("CHAMPION DUO")
+                                .accessibilityHidden(true)
                                 .font(YoseFont.gothic(12, weight: .black))
                                 .tracking(2.0)
                                 .foregroundStyle(YoseColor.shu)
@@ -432,7 +444,8 @@ public struct YoseChampionCelebrationView: View {
                     .font(YoseFont.mincho(14))
                     .lineSpacing(3)
                     .foregroundStyle(YoseColor.kinari)
-                    .lineLimit(2)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.85)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 10)
@@ -444,16 +457,18 @@ public struct YoseChampionCelebrationView: View {
 
     /// 最下部の進行ボタン
     private var proceedActionBar: some View {
-        Button(action: onFinish) {
+        Button(action: finishOnce) {
             HStack(spacing: 8) {
                 Text(proceedLabel)
                     .font(YoseFont.gothic(16, weight: .heavy))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Image(systemName: "arrowtriangle.right.fill").accessibilityHidden(true)
                     .font(.system(size: Font.mzScaled(12), weight: .black))
             }
             .foregroundStyle(YoseColor.kinari)
             .frame(maxWidth: .infinity)
-            .frame(height: 46)
+            .frame(minHeight: 46)  // 大きい文字では高さを伸ばす（#4）
             .background(YoseColor.shu)
             .overlay(Rectangle().stroke(YoseColor.kinBright, lineWidth: 2))
             .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))
@@ -542,8 +557,15 @@ public struct YoseChampionCelebrationView: View {
         } else {
             // 完成後のタップ：次画面へ進む
             YoseFX.impact(.rigid, intensity: 0.75)
-            onFinish()
+            finishOnce()
         }
+    }
+
+    /// 次へは1回だけ（フェード中の連打で onFinish を二度呼ばない・#5）
+    private func finishOnce() {
+        guard !didFinish else { return }
+        didFinish = true
+        onFinish()
     }
 
     private func completeImmediately() {
