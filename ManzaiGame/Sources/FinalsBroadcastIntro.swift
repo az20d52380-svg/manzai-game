@@ -54,7 +54,7 @@ struct FinalsBroadcastIntro: View {
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 26)
         }
         .contentShape(Rectangle())
-        .onTapGesture { advanceStage() }
+        .onTapGesture { tapAdvance() }
         .task(id: stage) { await run(stage) }
         .onDisappear { if !done { Sound.duck(1, over: 0.2) } }   // finish を通らず消えた時も絞った BGM を戻す（sound_state_audit_1115 #1）
         .onAppear {
@@ -405,6 +405,14 @@ struct FinalsBroadcastIntro: View {
     }
 
     /// 場面の自動進行用：タップで既に先へ進んでいたら何もしない（キャンセルが届く前に古い場面の待ちが明けても1場面飛ばさない＝code_review_1108g #1）。
+    /// タップで送る時だけ、場面が替わってから0.4秒は受けない（二度押しでタイトルコールを見損なわない＝code_review_stageframe_fbintro_1119 #5）。自動の送りとスキップは今のまま
+    @State private var lastTapAdvance = Date.distantPast
+    private func tapAdvance() {
+        guard Date().timeIntervalSince(lastTapAdvance) > 0.4 else { return }
+        lastTapAdvance = Date()
+        advanceStage()
+    }
+
     private func advanceStage(from s: FinalsIntroStage) {
         guard stage == s else { return }
         advanceStage()
