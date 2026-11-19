@@ -86,6 +86,7 @@ struct StageScene: View {
                 }
             }
         }
+        .accessibilityHidden(true)   // 背景の飾り（ポスターの「寄」「席」・名札）を1字ずつ読ませない（code_review_stage_qual_s6b_1119 #1）
     }
 
     /// 寄席ポスター（朱地に白抜き・小道具）
@@ -228,7 +229,7 @@ struct ManzaiFigure: View {
             .rotationEffect(.degrees(tilt), anchor: .bottom)
         }
         .onAppear {
-            guard !reduceMotion else { return }
+            guard !reduceMotion, breathe > 0 else { return }   // 周期0（ガチャの静止画）で繰り返しを掛けない（同 #2）
             withAnimation(Theme.Motion.r(.easeInOut(duration: breathe).repeatForever(autoreverses: true))) {
                 inhale = true
             }
