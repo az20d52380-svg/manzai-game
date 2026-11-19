@@ -3,11 +3,20 @@
 # GameCore とアプリのテストが green の時だけ push する。衝突（pbxproj だけなら xcodegen で作り直す）・赤は push しない。
 # 使い方: tools/refresh_candidates.sh [derivedDataPath] [MIN=50] [名前の正規表現=全部]（11/09：3つ目で対象の候補を絞れる＝本体と pbxproj だけ衝突した数本を直す時など）   作業場所は一時ディレクトリに作って消す。
 # 本体に別の形で入った候補（vitalbar-numberpop＝d3c26557・the-hana 2本＝THE HANA 本実装）は対象から外す（11/09）。
+# vocab-ochi は finals-mc-tri の「話の締め」と同じ所の重複で、本体の禁止語「決め」に掛かり必ず赤＝外す（11/16 夕・AUTOPILOT 632）。
 # 別の作業場所に出しっぱなしの候補は origin の版を分離 HEAD で扱う（11/09）。
 # 11/08 の自走で手で回した手順を道具にした（AUTOPILOT 済 11/08 昼・続き7）。1本あたり約2分。シミュレータ iPhone 17 を使う。
 set -u
 cd "$(dirname "$0")/.."
 R=$(pwd)
+# 11/16：毎時の定期の回が1本ずつ起動して4本が同時に走り、同じシミュレータでテストを切り合って「失敗0なのに赤」が出た＝二重起動を断る
+LOCK="$R/.git/refresh_candidates.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [ -f "$LOCK/pid" ] && kill -0 "$(cat "$LOCK/pid")" 2>/dev/null; then echo "見送り：別の取り込み直しが動いている（pid $(cat "$LOCK/pid")）"; exit 0; fi
+  rm -rf "$LOCK"; mkdir "$LOCK" || exit 1
+fi
+echo $$ > "$LOCK/pid"
+trap 'rm -rf "$LOCK"' EXIT
 DD=${1:-/tmp/mz_dd_cand}
 MIN=${2:-50}
 U=E5D11233-FE99-429F-A55C-8B0FA5793568
@@ -18,7 +27,7 @@ GIT_TERMINAL_PROMPT=0 git fetch -q origin '+refs/heads/claude/*:refs/remotes/ori
 for rb in $(git branch -r --format='%(refname:short)' | grep -E '^origin/claude/.*(candidate|-cand)'); do
   lb=${rb#origin/}; git rev-parse -q --verify "refs/heads/$lb" >/dev/null || git branch -q "$lb" "$rb" 2>/dev/null
 done
-for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -vE '^claude/(q-candidate|vitalbar-numberpop-cand|the-hana-candidate|the-hana-candidate-r1027)$' | grep -E "${3:-.}"); do
+for b in $(git branch --format='%(refname:short)' | grep -E 'candidate|-cand' | grep -vE '^claude/(q-candidate|vitalbar-numberpop-cand|the-hana-candidate|the-hana-candidate-r1027|vocab-ochi-cand)$' | grep -E "${3:-.}"); do
   # 11/10：遅れは遠隔の枝で数える（手元にだけ取り込み済み・未 push の枝を飛ばさない＝AUTOPILOT 312）
   GIT_TERMINAL_PROMPT=0 git fetch -q origin "+refs/heads/${b}:refs/remotes/origin/${b}" 2>/dev/null
   if git rev-parse -q --verify "origin/${b}" >/dev/null; then behind=$(git rev-list --count "origin/${b}..$MAIN"); else behind=$(git rev-list --count "$b..$MAIN"); fi
