@@ -297,6 +297,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 済 11/20 定期（その次の回）：週99%・前回点検以降コミットなし＝点検省略。キューは全件オーナー判断待ち。
 - 済 11/20 定期（次の回）：週99%・前回の点検（479 green・golden 一致）以降コミットなし＝同じ点検は省略。キューは全件オーナー判断待ち。
 - 済 11/20 定期：週99%のため点検2本。GameCore swift test 479 green・check_golden_sync config 103/103 一致。
 - 【済 11/20 定期】網羅の測り直し（tools/run_coverage.sh）：GameCore 行 99.77%・未通過5行＝Allocation.swift:112（recipe 無しの `?? []`＝affordableRaw が先に0で返すので到達不能）・ChoiceEventEffect.swift:36（空でない配列の min の `?? .表現`）・Career.swift:97／WeekRunner.swift:130／JudgeTalk.swift:486（構造上の行）＝テストを足す所なし。アプリ側は Juice 26%・RentStatement 7%・FinalsBroadcastIntro 0%・SoundManager 52%（演出・画面寄り＝selftest/目視で見る所。RentStatement の計算部分 breakdown/make/yen は ManzaiGameTests ほか3本で既に通っていて、低いのは View の行が大半なため）。週98→99%。
