@@ -290,7 +290,7 @@ struct YearResultView: View {
                             Text(String(line[..<r.lowerBound])).font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kin)
                                 .padding(.horizontal, 6).padding(.vertical, 2).frame(minWidth: 48)
                                 .background(YoseColor.kuroUrushi)
-                            Text(NotebookView.breakAtSpaces(String(line[r.upperBound...]))).font(YoseFont.mincho(14))   // 語の途中で折らない（大会の記録と同じ・AUTOPILOT 571）.lineSpacing(3).foregroundStyle(YoseColor.sumi)
+                            Text(NotebookView.breakAtSpaces(String(line[r.upperBound...]))).font(YoseFont.mincho(14)).lineSpacing(3).foregroundStyle(YoseColor.sumi)   // 語の途中で折らない（大会の記録と同じ・AUTOPILOT 571）
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 0)
                             if line.hasSuffix("（客席から）") { YoseTag(text: "観戦", style: .outlineHai).accessibilityLabel("観戦、出場せず客席から観た") }   // 客席から観た決勝は戦績タブと同じ灰の札（playtest_v13 §2-4）
@@ -384,7 +384,7 @@ struct YearResultView: View {
         var (pool, scene) = Self.yearEndPool(o, fame: Int(s.fame.isFinite ? s.fame : 0), year: session.year)
         // 結成最終年の年末には「来年」が無い（year10_visual_1026_v0 §2-2）。来年を語る行を外す（各プール13行中2行）。
         if session.careerOver || session.year >= session.config.careerYears {   // 優勝・夜逃げ・解散で早く終わる年も（code_review_2026-10-26c §2-1）
-            let kept = pool.filter { !$0.contains("来年") }
+            let kept = pool.filter { l in !["来年", "年明け", "年が明け", "正月"].contains { l.contains($0) } }   // 年明けの予定を語る行も同じ（code_review_results_1117 低）
             if !kept.isEmpty { pool = kept }
         }
         // その年の戦績に合わない独白（勝ちが多い年の「予選で落ちる日が多かった」等）は外す
