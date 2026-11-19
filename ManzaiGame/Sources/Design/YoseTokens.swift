@@ -83,6 +83,7 @@ struct YoseOutlinedText: View {
                     if dx != 0 || dy != 0 {
                         Text(text).font(font).foregroundStyle(outlineColor)
                             .offset(x: CGFloat(dx) * outlineWidth, y: CGFloat(dy) * outlineWidth)
+                            .accessibilityHidden(true)   // 縁取りの8枚は読ませない（本体の1枚だけ読む＝code_review_yose_store_1118 #1）
                     }
                 }
             }
