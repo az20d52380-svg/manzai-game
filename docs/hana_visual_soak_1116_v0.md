@@ -33,3 +33,5 @@
 ## 確かめた結果（親・11/16）
 - 中「年末に HANA の成績が出ない」：年表（YearResultView:157 historyBlock）は yearHistory が2年以上の時だけ＝1年目の女女は HANA の結果が年末にどこにも出ない（2年目以降は年表の各年の下に出る）。判の右に1行足す候補 claude/yearend-hana-line-cand（d10e10dfe・GameCore 474／アプリ 436 green・目視で「THE HANA 1回戦 敗退」が収まる）を作り、decision_brief の 11/16 定期 に載せた（本体には入れていない）。
 - THE HANA の結果画面：フックは既にある＝`MZ_UI=hana_result`（MZ_PASS=0 で敗退）・ほかに hana_video（動画審査の知らせ）・hana_entry。親が本体で1枚撮った（通過・講評・「次へ 進む」）＝崩れなし。
+- 候補 yearend-hana-line の大きい文字（accessibility-large）：判の右「THE HANA 1回戦 敗退」は1行で収まる（「頂グランプリ 到達段階」の2行折りは本体と同じ）。sim の文字の大きさは large に戻した。
+- 本体の2年目（MZ_YEARS=1 MZ_CARE=1 女女）の年表：1年目・2年目とも「THE HANA 1回戦 敗退」が各年の下に出る＝HANA が年末に出ないのは1年目だけ（候補の理由どおり）。
