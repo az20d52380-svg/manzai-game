@@ -437,7 +437,7 @@ struct FinalsPresentationView: View {
     /// LIVE ヘッダーの場面名
     private var liveSceneName: String {
         switch beat {
-        case .lot: return "出番くじ"
+        case .lot: return "出順抽選"
         case .preceding: return "ファーストラウンド"
         case .perform: return "登場・ネタ披露"
         case .open: return "採点発表"
@@ -645,7 +645,8 @@ struct FinalsPresentationView: View {
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text("\(e.total)").font(YoseFont.number(36, weight: .black)).foregroundStyle(YoseColor.sumi)
                     .contentTransition(.numericText())
-                Text("点").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).fixedSize()   // 大きい文字で「61点／6」と2行に割れていた（11/19 目視・名前の側が縮む）
+                Text("点").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi).fixedSize()
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
@@ -779,6 +780,7 @@ struct FinalsPresentationView: View {
 
     /// 講評に差し込む本番の材料（1本目のネタ・出順・ハマった夜・敗者復活経由・コンビの状態）。表示専用。
     private var judgeScene: JudgeTalk.Scene {
+        if spectator { return JudgeTalk.Scene() }   // 観戦の年は自分のネタ・状態を講評に混ぜない（code_review_judgetalk_1118 #8）
         let burst = session.pendingResult?.results.last(where: { $0.name == "GP決勝" })?.burst ?? false
         return JudgeTalk.Scene.from(state: s, neta: session.selectedNeta, config: session.config, year: session.year,
                                     burst: burst, order: d.order, viaRevival: session.reachedFinalViaRevival)
