@@ -89,6 +89,7 @@ struct FinalistAnnounceView: View {
                     Button { if passed { Sound.play(.success) }; onFinish() } label: {
                         Text("つづける").font(YoseFont.gothic(16)).foregroundStyle(YoseColor.washi)
                             .padding(.horizontal, 40).padding(.vertical, 11).overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.6)))
+                            .contentShape(Rectangle().inset(by: -6))   // 見た目そのままで押せる範囲を44pt以上に（code_review_rankup_cal_finalist_1119 #15）
                     }.transition(.opacity)
                 }
                 Color.clear.frame(height: 30)   // 固定：上下の余白を上と真ん中の Spacer で等分＝並びが画面の中ほどに来る
