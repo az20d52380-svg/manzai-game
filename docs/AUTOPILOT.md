@@ -297,6 +297,7 @@
 - 0056 なくしたノートの「組んだ日から書いてるノート」は何のノートか（ネタ帳／予定とお金の記録 等）。採点で△（意味が通りにくい）。設定を決めるのでオーナー判断（`dialogue_score_events_0041_0057_v0.md`）
 
 ## 済
+- 【済 11/20 定期】網羅の測り直し（tools/run_coverage.sh）：GameCore 行 99.77%・未通過5行＝Allocation.swift:112（recipe 無しの `?? []`＝affordableRaw が先に0で返すので到達不能）・ChoiceEventEffect.swift:36（空でない配列の min の `?? .表現`）・Career.swift:97／WeekRunner.swift:130／JudgeTalk.swift:486（構造上の行）＝テストを足す所なし。アプリ側は Juice 26%・RentStatement 7%・FinalsBroadcastIntro 0%・SoundManager 52%（演出・画面寄り＝selftest/目視で見る所）。週98%。
 - 済 11/19 定期：週98%のため点検2本。GameCore swift test 479 green・check_golden_sync 一致（config 103/103）（本体 1363a64ef）。
 - （11/16 夜 定期）11/15 以前の済（161件）は docs/AUTOPILOT_done.md の「11/16 夜 定期に移した分」へ移した（読まなくてよい）。
 - （11/09 定期）ここまでの済は docs/AUTOPILOT_done.md の「11/09 に移した分」へ移した（読まなくてよい）。新しい済はキューの中に「[済」で書き、溜まったらまた移す。キューの次の番号は 242（193〜202 は 11/09 の済で、他の [済 40本も 11/09 定期の2回目で移した）。（11/10 深夜：キューの済110行を「11/10 深夜 定期に移した分」へ移した）
