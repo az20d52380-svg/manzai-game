@@ -14,7 +14,6 @@ struct FinalistAnnounceView: View {
     private enum Stage { case wait, line, read, after }
     @State private var stage: Stage = .wait
     @State private var called = 0            // 読み上げ済みの組数
-    @State private var lastCallFlash = false
     @State private var dim = false           // 最後の2組の溜め
     @State private var task: Task<Void, Never>?
     @State private var skipStep = false
@@ -152,8 +151,10 @@ struct FinalistAnnounceView: View {
         let rows = [Array(all.prefix(all.count / 2)), Array(all.suffix(all.count - all.count / 2))]
         return VStack(spacing: 26) {
             ForEach(0..<2, id: \.self) { r in
-                HStack(spacing: 8) {
-                    ForEach(rows[r]) { s in silhouette(s) }
+                // 幅が足りない端末（375pt 以下）だけ隙間を詰めて両端を切らない（code_review_rankup_cal_finalist_1119 #11）
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) { ForEach(rows[r]) { s in silhouette(s) } }
+                    HStack(spacing: 2) { ForEach(rows[r]) { s in silhouette(s) } }
                 }
             }
         }

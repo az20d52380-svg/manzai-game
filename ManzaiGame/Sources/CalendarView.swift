@@ -11,25 +11,21 @@ struct CalendarView: View {
     let session: GameSession
     var onClose: () -> Void
 
-    @State private var breathe = false
     @State private var toast: String?
     @State private var toastToken = UUID()   // 後のトーストを先の消去タイマーが早く消さない（code_review_2026-10-19e §3）
 
     private var cal: CalendarConfig { session.config.calendar }
-    private var weeks: Int { session.config.weeks }
 
     var body: some View {
         ZStack {
             YoseColor.kinari.ignoresSafeArea()
             VStack(spacing: 0) {
                 YoseHeaderBar(title: "年間香盤", closeAction: onClose)
-                VStack(spacing: 10) {
-                    summary
-                    grid
-                    legend   // 凡例は表のすぐ下
-                    Spacer(minLength: 0)
+                // 収まれば今のまま上詰め・収まらない時（小さい画面・大きい文字）だけスクロール（code_review_rankup_cal_finalist_1119 #7）
+                ViewThatFits(in: .vertical) {
+                    content.frame(maxHeight: .infinity, alignment: .top)
+                    ScrollView { content }
                 }
-                .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12)
             }
 
             if let toast {
@@ -38,7 +34,15 @@ struct CalendarView: View {
                     .transition(.opacity)
             }
         }
-        .onAppear { breathe = true }
+    }
+
+    private var content: some View {
+        VStack(spacing: 10) {
+            summary
+            grid
+            legend   // 凡例は表のすぐ下
+        }
+        .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 12)
     }
 
     private var summary: some View {
