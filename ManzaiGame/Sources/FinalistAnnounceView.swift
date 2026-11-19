@@ -135,7 +135,7 @@ struct FinalistAnnounceView: View {
                 Text(caption)
                     .font(YoseFont.mincho(big ? 26 : 16))
                     .foregroundStyle(hot ? YoseColor.kinBright : YoseColor.kuroUrushi)
-                    .multilineTextAlignment(.center).minimumScaleFactor(0.6)
+                    .multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.6)   // 2行までで縮める＝組ごとに高さが跳ねない（同 #12）
                     .frame(maxWidth: .infinity, minHeight: 64)
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .background(hot ? Color.black.opacity(0.85) : YoseColor.washi.opacity(0.95), in: RoundedRectangle(cornerRadius: 14))
