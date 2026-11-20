@@ -147,6 +147,7 @@ final class JudgeTalkTests: XCTestCase {
         t += P.failStaminaLow + P.passMentalLow + P.failMentalLow + P.failChemistryLow
         let rich = JudgeTalk.Scene(isTeppan: true, isRevivalNeta: true, isFresh: true)
         t += JudgeTalk.paperNetaLines(scene: rich, passed: true) + JudgeTalk.paperNetaLines(scene: rich, passed: false)
+        t += [P.failOldForm, P.passNotOld]
         t += JudgeTalk.pickups.compactMap { $0.reply }
         return Array(Set(t))
     }
