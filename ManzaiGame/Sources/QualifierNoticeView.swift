@@ -111,7 +111,7 @@ struct QualifierNoticeView: View {
         VStack(spacing: 0) {
             VStack(spacing: 4) {
                 Text(sender).font(YoseFont.gothic(14, weight: .bold)).foregroundStyle(YoseColor.kin)
-                Text("\(roundLabel) 通過者").font(YoseFont.mincho(22)).foregroundStyle(.white)
+                Text("\(roundLabel) 通過者").font(YoseFont.mincho(22)).foregroundStyle(.white).accessibilityAddTraits(.isHeader)   // 見出し（同 #4）
             }.padding(.top, 96).padding(.bottom, 14)
             ScrollViewReader { proxy in
             ScrollView {
@@ -157,9 +157,16 @@ struct QualifierNoticeView: View {
     }
 
     // MARK: 相方とのトーク
+    private func scrollChatEnd(_ proxy: ScrollViewProxy) {
+        if reduceMotion { proxy.scrollTo("chatEnd", anchor: .bottom) }
+        else { withAnimation(.easeOut(duration: 0.25)) { proxy.scrollTo("chatEnd", anchor: .bottom) } }
+    }
+
+    // MARK: 相方とのトーク
     private var chatScreen: some View {
         VStack(spacing: 0) {
-            Text(partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).padding(.top, 96).padding(.bottom, 12)
+            Text(partnerName).font(YoseFont.gothic(16, weight: .bold)).foregroundStyle(.white).accessibilityAddTraits(.isHeader).padding(.top, 96).padding(.bottom, 12)
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 10) {
                     bubble(false, "見た？")
@@ -169,7 +176,12 @@ struct QualifierNoticeView: View {
                     ForEach(0..<max(0, msgs - 2), id: \.self) { i in
                         if i < resultLines.count { bubble(false, resultLines[i]) }
                     }
+                    Color.clear.frame(height: 1).id("chatEnd")
                 }.padding(.horizontal, 16)
+            }
+            // 新着が来たら最後の吹き出しまで送る（大きい文字で新着が画面の外に出ていた＝code_review_stage_qual_s6b_1119 #3）
+            .onChange(of: msgs) { _, _ in scrollChatEnd(proxy) }
+            .onChange(of: chosen) { _, _ in scrollChatEnd(proxy) }
             }
             if !chosen && msgs >= 1 {
                 HStack(spacing: 12) {
@@ -230,10 +242,10 @@ struct QualifierNoticeView: View {
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.35)) { stage = isChat ? .chat : .list }
         task = Task {
             if isChat {
-                try? await Task.sleep(nanoseconds: 900_000_000)
+                try? await MZSpeed.sleep(nanoseconds: 900_000_000)   // 演出の間は「はやい」設定に合わせる（code_review_stage_qual_s6b_1119 #5）
                 withAnimation(reduceMotion ? nil : .default) { msgs = 1 }
             } else {
-                try? await Task.sleep(nanoseconds: 3_200_000_000)   // 目で探す間
+                try? await MZSpeed.sleep(nanoseconds: 3_200_000_000)   // 目で探す間
                 if Task.isCancelled { return }
                 withAnimation(reduceMotion ? nil : .easeOut(duration: 0.4)) { scanned = true }
                 if passed { Sound.play(.success); Haptics.rare() }
@@ -248,12 +260,12 @@ struct QualifierNoticeView: View {
         withAnimation(reduceMotion ? nil : .default) { chosen = true; msgs = 2 }
         task?.cancel()
         task = Task {
-            try? await Task.sleep(nanoseconds: passed ? 1_100_000_000 : 2_600_000_000)   // 落選は既読のまま無音の間
+            try? await MZSpeed.sleep(nanoseconds: passed ? 1_100_000_000 : 2_600_000_000)   // 落選は既読のまま無音の間
             for i in 0..<resultLines.count {
                 if Task.isCancelled { return }
                 withAnimation(reduceMotion ? nil : .default) { msgs = 3 + i }
                 if passed { Sound.play(.tap) }
-                try? await Task.sleep(nanoseconds: passed ? 800_000_000 : 1_400_000_000)
+                try? await MZSpeed.sleep(nanoseconds: passed ? 800_000_000 : 1_400_000_000)
             }
             if Task.isCancelled { return }   // 閉じた後に成功音が鳴らない（code_review_2026-10-19b §1-3）
             if passed { Sound.play(.success) }
