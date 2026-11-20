@@ -119,8 +119,9 @@ struct RentStatementView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityAction { onDone() }   // ダブルタップで閉じる
-        .accessibilityLabel(statement.paid ? "月末の支払い。合計\(statement.total)円。今月も払えた。"
+        .accessibilityLabel(statement.paid ? "月末の支払い。合計\(statement.total)円。今月も払えた。所持金は\(statement.moneyAfter)円。"
                             : "月末の支払い。合計\(statement.total)円。\(statement.shortfall)円足りない。")
+        .accessibilityHint("ダブルタップで閉じる")   // 閉じ方の案内（code_review_minor5_1117 #4）
         .task {
             money = Double(statement.moneyBefore)
             let step: UInt64 = reduceMotion ? 0 : 90_000_000
