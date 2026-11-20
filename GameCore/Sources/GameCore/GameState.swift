@@ -46,8 +46,8 @@ public struct GameState: Codable {
     public var exp胆力 = 0.0
 
     // --- 持ちネタ（正典: docs/neta_system_redesign_v2.md）。selectedNetaID は Phase 1-a で本番スコアに効く ---
-    // ★golden不変: perform（GameEngine.swift:145-158）はこれらを一切読まない＝合否スコア・乱数消費順に非干渉。
-    //   exp* 追加（上 30-38）と完全に同型の「セーブに乗る器」。init では代入しない＝既定値に委ねる（exp* と同様）。
+    // ★golden不変: GameEngine の performはこれらを一切読まない＝合否スコア・乱数消費順に非干渉。
+    //   上の exp* の節と完全に同型の「セーブに乗る器」。init では代入しない＝既定値に委ねる（exp* と同様）。
     /// アクティブな持ちネタ（少数・磨き対象＝鉄板枠。v2 §2-2）
     public var netas: [Neta] = []
     /// 保管庫（多数・年跨ぎ資産＝倉庫。いつでも大会に呼び戻せる。古いネタは玉突きで消えない。v2 §2-2）
