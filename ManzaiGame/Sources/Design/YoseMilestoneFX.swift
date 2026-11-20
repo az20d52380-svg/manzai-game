@@ -15,6 +15,7 @@ struct YoseGoldText: View {
                     if dx != 0 || dy != 0 {
                         Text(text).font(YoseFont.mincho(size)).tracking(tracking).foregroundStyle(Color.black)
                             .offset(x: CGFloat(dx) * size * 0.04, y: CGFloat(dy) * size * 0.04 + size * 0.05)
+                            .accessibilityHidden(true)   // 縁取りは読ませない（code_review_yose_store_1118 #1）
                     }
                 }
             }
@@ -23,6 +24,7 @@ struct YoseGoldText: View {
                     .init(color: Color(hex: 0xFFFBE6), location: 0), .init(color: YoseColor.kinBright, location: 0.45),
                     .init(color: Color(hex: 0xB8861B), location: 0.85), .init(color: YoseColor.kinBright, location: 1)],
                     startPoint: .top, endPoint: .bottom))
+                .accessibilityLabel(text.replacingOccurrences(of: " ", with: ""))   // 字間の空白で1字ずつ読まれない（同 #2）
         }
     }
 }
@@ -122,16 +124,11 @@ struct YosePassCelebrationView: View {
                 .background(Color.black)
                 .overlay(alignment: .bottom) { Rectangle().fill(YoseColor.kin).frame(height: 1.5) }
 
-                Spacer(minLength: 16)
-                VStack(spacing: 26) {
-                    signboard
-                    resultCard
-                    if !judgeComment.isEmpty { reviewCard }
-                    bonusPlate
+                // 収まる時は今のまま中央に・大きい文字で縦に収まらない時だけスクロール（下のボーナス札が切れない＝code_review_yose_store_1118 #6）
+                ViewThatFits(in: .vertical) {
+                    VStack(spacing: 0) { Spacer(minLength: 16); passStack; Spacer(minLength: 10) }
+                    ScrollView(.vertical, showsIndicators: false) { passStack.padding(.vertical, 16) }
                 }
-                .padding(.horizontal, 22)
-                .offset(y: shakeY)
-                Spacer(minLength: 10)
                 Text("画面をタップして進む ▶")
                     .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.kinari.opacity(0.7))
                     .opacity(finished ? 1 : 0).padding(.bottom, 26)
@@ -145,6 +142,17 @@ struct YosePassCelebrationView: View {
         .contentShape(Rectangle())
         .onTapGesture { if finished { onFinish() } else { snapToFinal() } }
         .task { await run() }
+    }
+
+    private var passStack: some View {
+        VStack(spacing: 26) {
+            signboard
+            resultCard
+            if !judgeComment.isEmpty { reviewCard }
+            bonusPlate
+        }
+        .padding(.horizontal, 22)
+        .offset(y: shakeY)
     }
 
     // 上：黒漆の合否看板（最初は空枠 → 点灯して金文字）
@@ -165,7 +173,9 @@ struct YosePassCelebrationView: View {
                     Text("判 定 中").font(YoseFont.mincho(30)).tracking(10).foregroundStyle(YoseColor.kin.opacity(0.35))
                         .opacity(revealed ? 0 : 1)
                         .transaction { $0.animation = nil }
+                        .accessibilityLabel("判定中").accessibilityHidden(revealed)   // 消えた後は読ませない（同 #2）
                     YoseGoldText(text: "予 選 通 過", size: 54, tracking: 4)
+                        .lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字で看板の幅を越えない（同 #5）
                         .scaleEffect(revealed ? 1 : 1.5).opacity(revealed ? 1 : 0)
                 }
             }
@@ -336,6 +346,7 @@ struct YoseBigSuccessCutIn: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .allowsHitTesting(false)
+        .accessibilityElement(children: .ignore).accessibilityLabel(title)   // 帯の「種」「+6」を1字ずつ読まず題だけ読む（code_review_yose_store_1118 #16）
         .task { await run() }
     }
 

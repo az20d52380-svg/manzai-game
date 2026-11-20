@@ -27,6 +27,8 @@ struct NetaPickRow: View {
             } label: {
                 currentSummary
             }.buttonStyle(PressableStyle())
+            .accessibilityValue(expanded ? "候補を開いています" : "")   // ▼▲だけでは開閉が伝わらない（code_review_minor5_1117 #7）
+            .accessibilityHint(expanded ? "ダブルタップで候補を閉じる" : "ダブルタップでほかのネタを選ぶ")
 
             if expanded {
                 VStack(spacing: 6) {
@@ -55,7 +57,7 @@ struct NetaPickRow: View {
             if ProcessInfo.processInfo.environment["MZ_NETA_PICK"] != nil {
                 expanded = true
                 Task { try? await Task.sleep(nanoseconds: 1_500_000_000)
-                    if let n = candidates.first(where: { $0.id != selected?.id }) { onSelect(n.id); withAnimation(Theme.Motion.appearQuick) { expanded = false } } }
+                    if let n = candidates.first(where: { $0.id != selected?.id }) { onSelect(n.id); withAnimation(Theme.Motion.r(Theme.Motion.appearQuick)) { expanded = false } } }
             }
             #endif
         }
@@ -68,7 +70,7 @@ struct NetaPickRow: View {
     }
 
     private var changeLabel: some View {
-        let unset = selected == nil && !session.activeNetas.isEmpty
+        let unset = selected == nil && !candidates.isEmpty   // 開いても候補0件（決勝でネタ1本）なら朱の「選ぶ」で誘わない（code_review_minor5_1117 #1）
         return Text(expanded ? "とじる ▲" : (unset ? "ネタを選ぶ ▼" : "変更 ▼")).font(YoseFont.gothic(unset && !expanded ? 14 : 12, weight: .heavy))
             .lineLimit(1).fixedSize()   // 「とじる ▲」が名前に押されて2行に折れていた
             .foregroundStyle(unset && !expanded ? YoseColor.kinari : YoseColor.sumi)
@@ -99,8 +101,10 @@ struct NetaPickRow: View {
                         .lineLimit(1).fixedSize()
                     NetaStageBadge(netaID: neta.id, polish: neta.polish)
                     Spacer(minLength: 0)
-                    changeLabel
+                    if dynamicTypeSize < .xxLarge { changeLabel }
                 }
+                // 大きい文字では「変更」を下の段へ（完成度・段の札・変更が縮まず横に収まらない＝code_review_netasel_radar_1118 #1）
+                if dynamicTypeSize >= .xxLarge { HStack { Spacer(minLength: 0); changeLabel } }
                 tags(neta)
             }
         } else {
@@ -119,7 +123,7 @@ struct NetaPickRow: View {
         let isThis = neta.id == selected?.id
         return Button {
             onSelect(neta.id)
-            withAnimation(Theme.Motion.appearQuick) { expanded = false }
+            withAnimation(Theme.Motion.r(Theme.Motion.appearQuick)) { expanded = false }
         } label: {
             VStack(alignment: .leading, spacing: 5) {
                 let bigText = dynamicTypeSize >= .xxLarge   // 上の行と同じく、大きい文字では名前だけ上の段へ（「婚活…」と切れていた）

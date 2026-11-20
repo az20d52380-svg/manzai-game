@@ -48,6 +48,7 @@ struct StageFrame: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
+        .accessibilityHidden(true)   // 舞台は飾り＝読み上げ対象外（足元の名札「俺」「谷口」が読まれていた＝code_review_stageframe_fbintro_1119 #1）
     }
 
     // MARK: 背景面（緞帳／金屏風）
@@ -249,22 +250,6 @@ struct FlipCard<Front: View, Back: View>: View, Animatable {
     }
 }
 
-// MARK: テロップ（暗い地の上に置いてよい短く太い字＝白字＋墨の縁）
-
-struct Telop: View {
-    let text: String
-    var size: CGFloat = 22
-    var color: Color = .white
-    var body: some View {
-        let edge = Theme.sumi
-        Text(text).font(.maru(size, weight: .black)).foregroundStyle(color)
-            .shadow(color: edge, radius: 0, x: 2, y: 0).shadow(color: edge, radius: 0, x: -2, y: 0)
-            .shadow(color: edge, radius: 0, x: 0, y: 2).shadow(color: edge, radius: 0, x: 0, y: -2)
-            .shadow(color: .black.opacity(0.35), radius: 4, y: 3)
-            .multilineTextAlignment(.center)
-    }
-}
-
 // MARK: 開演の儀（客電が落ちる→暗転→スポットイン→明転・visual_genre_overhaul_v1 §6 L11）
 
 /// 本番画面の最初の相として重ねる。初回は約1.5秒、2回目以降は約0.6秒。タップで即終わる（K6）。
@@ -370,24 +355,6 @@ struct YTelop: View {
         YoseOutlinedText(text: text, font: YoseFont.gothic(size, weight: .black), fill: color,
                          outlineColor: YoseColor.sumi, outlineWidth: 1.5, dropShadowY: 2)
             .multilineTextAlignment(.center)
-    }
-}
-
-/// 送りの合図 ▼（朱・上下に弾む。演出ひかえめでは止まる）
-struct YoseAdvanceCue: View {
-    var color: Color = YoseColor.kinBright
-    @State private var bob = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    var body: some View {
-        Image(systemName: "arrowtriangle.down.fill").accessibilityHidden(true)
-            .font(.system(size: Font.mzScaled(12), weight: .black)).foregroundStyle(color)
-            .shadow(color: YoseColor.sumi, radius: 0, x: 0, y: 1)
-            .offset(y: bob ? 3 : 0)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(Theme.Motion.r(.easeInOut(duration: 0.55).repeatForever(autoreverses: true))) { bob = true }
-            }
-            .accessibilityHidden(true)
     }
 }
 
