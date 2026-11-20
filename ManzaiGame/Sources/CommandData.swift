@@ -130,7 +130,7 @@ enum CommandCatalog {
         case "ラジオ": return "ラジオで喋る。軽い仕事で、喋りが磨かれる"
         case "ロケ":   return "ロケに出る。お金になるけど、くたびれる"
         case "営業":   return "地方の営業回り。一番お金になる"
-        default:       return name
+        default:       return name   // 4種以外は来ない（来たら名前のまま＝CommandCatalogTests.testOfferBlurbFallbackIsName）
         }
     }
 
