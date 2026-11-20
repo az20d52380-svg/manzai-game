@@ -57,9 +57,13 @@ struct ShareCardButton: View {
             }
         }
         .task(id: "\(combiName)|\(headline)|\(detail ?? "")") {
-            let r = ImageRenderer(content: ShareCardView(combiName: combiName, headline: headline, detail: detail))
-            r.scale = 2
-            if let ui = r.uiImage { image = Image(uiImage: ui) }
+            image = nil   // 作り直す間に前の画像（古い名前・見出し）で共有できないように（code_review_share_settings_1117 #7）
+            for attempt in 0..<2 {   // 作れなかった時は1回だけやり直す
+                if attempt > 0 { try? await Task.sleep(nanoseconds: 300_000_000); if Task.isCancelled { return } }
+                let r = ImageRenderer(content: ShareCardView(combiName: combiName, headline: headline, detail: detail))
+                r.scale = 2
+                if let ui = r.uiImage { image = Image(uiImage: ui); return }
+            }
         }
     }
 }
