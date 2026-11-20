@@ -13,7 +13,7 @@ struct SettingsView: View {
     @AppStorage("vol_bgm") private var bgm: Double = 0.6   // SoundManager の既定（0.6）とそろえる（code_review_2026-10-19f §1）
     @AppStorage("vol_se") private var se: Double = 0.8
     @AppStorage(MZSpeed.key) private var animSpeed: Int = 0
-    /// 0=通常 1=確認1段目 2=確認2段目
+    /// 0=通常 1=確認中（モーダルは1段だけ・code_review_share_settings_1117 #6）
     @State private var restartStep = 0
     @StateObject private var store = StoreManager.shared
     @State private var restoring = false
@@ -63,6 +63,10 @@ struct SettingsView: View {
                             if let m = store.lastMessage {
                                 Text(m).font(YoseFont.mincho(13)).foregroundStyle(YoseColor.sumi)
                             }
+                            Color.clear.frame(height: 0)
+                                .onChange(of: store.lastMessage) { _, m in   // 復元の結果を読み上げる（#4）
+                                    if let m { UIAccessibility.post(notification: .announcement, argument: m) }
+                                }
                             Button { cover = .rates } label: { linkRow("衣装ガチャの提供割合", external: false, inApp: true) }
                                 .buttonStyle(.plain)
                         }
@@ -160,7 +164,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)
-                Text("このキャリア").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                Text("このキャリア").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
             }
             Text("※解散すると、今のコンビの記録は消えて最初からになります（図鑑・衣装・購入は残ります）").font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
             restartBlock(onQuitRun)
@@ -196,18 +200,29 @@ struct SettingsView: View {
                 .overlay { GeometryReader { geo in
                     HStack(spacing: 0) { ForEach(1..<10, id: \.self) { _ in Spacer(); Rectangle().fill(YoseColor.sumi.opacity(0.3)).frame(width: 1) }; Spacer() }
                         .allowsHitTesting(false)
+                    // 触れただけで値が飛ばないよう、タップ位置か横向きのドラッグだけ反映（縦の指はスクロールへ・#1）
                     Color.clear.contentShape(Rectangle())
-                        .gesture(DragGesture(minimumDistance: 0).onChanged { g in
-                            let r: Double = Double(g.location.x / geo.size.width)
-                            value.wrappedValue = (min(max(r, 0.0), 1.0) * 10.0).rounded() / 10.0
+                        .onTapGesture(coordinateSpace: .local) { p in setGauge(value, p.x, geo.size.width) }
+                        .gesture(DragGesture(minimumDistance: 8).onChanged { g in
+                            guard abs(g.translation.width) > abs(g.translation.height) else { return }
+                            setGauge(value, g.location.x, geo.size.width)
                         })
                 } }
+                .accessibilityHidden(true)
             Button { step(value, 0.1) } label: { Text("＋").font(YoseFont.gothic(18, weight: .black)) }
                 .accessibilityLabel("\(label)を上げる")
                 .buttonStyle(YoseButtonStyle(.secondary)).frame(width: 40).disabled(value.wrappedValue >= 0.999)
             Text("\(Int((value.wrappedValue * 100).rounded()))").font(YoseFont.number(20, weight: .heavy)).foregroundStyle(YoseColor.sumi)
                 .lineLimit(1).minimumScaleFactor(0.5).frame(width: 36, alignment: .trailing)
+                .accessibilityLabel("\(label)の音量")   // 何の数字かを読む（#3）
+                .accessibilityValue("\(Int((value.wrappedValue * 100).rounded()))")
         }
+    }
+
+    private func setGauge(_ v: Binding<Double>, _ x: CGFloat, _ w: CGFloat) {
+        guard w > 0 else { return }
+        let r = Double(x / w)
+        v.wrappedValue = (min(max(r, 0.0), 1.0) * 10.0).rounded() / 10.0
     }
 
     private func step(_ v: Binding<Double>, _ d: Double) {
@@ -304,7 +319,7 @@ struct GlossaryView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 8) {
                                     Rectangle().fill(YoseColor.enji).frame(width: 5, height: 18)
-                                    Text(g.title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                                    Text(g.title).font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
                                 }
                                 VStack(alignment: .leading, spacing: 12) {
                                     ForEach(g.rows, id: \.0) { r in
