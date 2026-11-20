@@ -413,10 +413,22 @@ enum DialogueData {
     // 帯×プール×salt=週番号の決定的回転。1本=2〜3行（話者交互）。本文は manzai-drama-voice Skill を通す。
     // 返り値 nil=その帯の在庫なし（View は独白へフォールバック）。
 
-    static func banter(band: BanterBand, salt: Int, picker: Picker? = nil) -> [Advice]? {
-        guard let pools = banterPools[band], !pools.isEmpty else { return nil }
-        if let picker { return pools[picker("banter.\(band)", pools.count, salt)] }
+    static func banter(band: BanterBand, salt: Int, picker: Picker? = nil, noStage: Bool = false) -> [Advice]? {
+        guard var pools = banterPools[band], !pools.isEmpty else { return nil }
+        var scene = "banter.\(band)"
+        // 今年もう大会が無い週は、通過後・連敗の帯から「次の会場／次の本番／次の大会」に触れる掛け合いを外す
+        // （独白の trimmed と同じ扱い・code_review_dialoguedata_1118 #1・表示のみ・乱数非消費。絞った時は別の scene で使用済みを数える）
+        if noStage, band == .afterPass || band == .streak {
+            let out = pools.filter { !mentionsNextStage($0) }
+            if !out.isEmpty && out.count < pools.count { pools = out; scene += ".noStage" }
+        }
+        if let picker { return pools[picker(scene, pools.count, salt)] }
         return pools[((salt % pools.count) + pools.count) % pools.count]
+    }
+
+    /// 掛け合いが「次の大会・本番・会場」に触れるか（「次の日」は日常なので数えない）
+    static func mentionsNextStage(_ lines: [Advice]) -> Bool {
+        lines.contains { $0.text.replacingOccurrences(of: "次の日", with: "").contains("次") }
     }
     // 相方は谷口固定（MVP・標準語＝2026-10-20 オーナー決定で関西弁をやめた）。2周目ガチャ相方の実装時は相方分岐に差し替える（ChoiceEventData と同じ扱い）。
     // Skill採点済（A表16項目・B表7項目・V表5項目・全○）。谷口に切り札型口癖（腹減ったな等）は置かない（感情最大点に温存）。

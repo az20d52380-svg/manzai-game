@@ -144,6 +144,7 @@
 		CD03DC71FC6F945B75424040 /* EventScene1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CDAEF7EEFB5FED882FF2B3 /* EventScene1108Tests.swift */; };
 		CDB07DD7D5C98BA8BB44BD2E /* CommandCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FD8C5D4F11D970B78D68B9 /* CommandCatalogTests.swift */; };
 		D1ADCEC11D059311E59DF4F1 /* EventBackdropTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4BA2136C9EB85F7BCBF1C5 /* EventBackdropTable.swift */; };
+		D52C77B330AFD16110AC6B30 /* BanterNoStage1118Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0D64B78A7BDA0CD115C00F /* BanterNoStage1118Tests.swift */; };
 		D6DD3EA8BA750EBBFE6DBB11 /* se_rankup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C0518515B27DFACD1B80A893 /* se_rankup.mp3 */; };
 		D77894E998538F74B1007C23 /* MetaWireTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D138B8B3DC1EEE1D98949BB /* MetaWireTests.swift */; };
 		D782B299A77D14F37CE5CAA1 /* SoundInterruption1108Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A9DEDD228736371D634684 /* SoundInterruption1108Tests.swift */; };
@@ -354,6 +355,7 @@
 		F840A919C087A92A94339899 /* RadarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChart.swift; sourceTree = "<group>"; };
 		FA673092EEA63EF1E2CC53DF /* TrophyHana1107Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrophyHana1107Tests.swift; sourceTree = "<group>"; };
 		FA7AD058E3ABD3F4D7ACFD3B /* bgm_tension.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm_tension.mp3; sourceTree = "<group>"; };
+		FC0D64B78A7BDA0CD115C00F /* BanterNoStage1118Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanterNoStage1118Tests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -522,6 +524,7 @@
 				1E384E7503D8C397FE3D2A3C /* AppSaveFixture1110Tests.swift */,
 				340E4B0117C5AF8BBEC2AC57 /* AppSaveFixtureTests.swift */,
 				9104A4D1D6023F30CCB420FA /* BankruptStageWeek1109Tests.swift */,
+				FC0D64B78A7BDA0CD115C00F /* BanterNoStage1118Tests.swift */,
 				D0F9105074AAE601AE20BEEC /* BrokenSaveTwice1110Tests.swift */,
 				61D8FA3ECAAAD197A1C553E9 /* CalendarGPPaint1109Tests.swift */,
 				5E648FAD15E0681C8BFD554D /* CalendarPreoccupied1115Tests.swift */,
@@ -819,6 +822,7 @@
 				61BF87754F77F1E515A791D0 /* AppSaveFixture1110Tests.swift in Sources */,
 				E58B538509C7357838D5078F /* AppSaveFixtureTests.swift in Sources */,
 				1D14CB5C98BE6BAAC3FF5D27 /* BankruptStageWeek1109Tests.swift in Sources */,
+				D52C77B330AFD16110AC6B30 /* BanterNoStage1118Tests.swift in Sources */,
 				40503861F27E52A6F60B1191 /* BrokenSaveTwice1110Tests.swift in Sources */,
 				F61C95794E366AB2BFB959FC /* CalendarGPPaint1109Tests.swift in Sources */,
 				9F1AFE6D5A19399C306975A3 /* CalendarPreoccupied1115Tests.swift in Sources */,

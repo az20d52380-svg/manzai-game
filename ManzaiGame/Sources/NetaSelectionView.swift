@@ -57,7 +57,7 @@ struct NetaPickRow: View {
             if ProcessInfo.processInfo.environment["MZ_NETA_PICK"] != nil {
                 expanded = true
                 Task { try? await Task.sleep(nanoseconds: 1_500_000_000)
-                    if let n = candidates.first(where: { $0.id != selected?.id }) { onSelect(n.id); withAnimation(Theme.Motion.appearQuick) { expanded = false } } }
+                    if let n = candidates.first(where: { $0.id != selected?.id }) { onSelect(n.id); withAnimation(Theme.Motion.r(Theme.Motion.appearQuick)) { expanded = false } } }
             }
             #endif
         }
@@ -101,8 +101,10 @@ struct NetaPickRow: View {
                         .lineLimit(1).fixedSize()
                     NetaStageBadge(netaID: neta.id, polish: neta.polish)
                     Spacer(minLength: 0)
-                    changeLabel
+                    if dynamicTypeSize < .xxLarge { changeLabel }
                 }
+                // 大きい文字では「変更」を下の段へ（完成度・段の札・変更が縮まず横に収まらない＝code_review_netasel_radar_1118 #1）
+                if dynamicTypeSize >= .xxLarge { HStack { Spacer(minLength: 0); changeLabel } }
                 tags(neta)
             }
         } else {
@@ -121,7 +123,7 @@ struct NetaPickRow: View {
         let isThis = neta.id == selected?.id
         return Button {
             onSelect(neta.id)
-            withAnimation(Theme.Motion.appearQuick) { expanded = false }
+            withAnimation(Theme.Motion.r(Theme.Motion.appearQuick)) { expanded = false }
         } label: {
             VStack(alignment: .leading, spacing: 5) {
                 let bigText = dynamicTypeSize >= .xxLarge   // 上の行と同じく、大きい文字では名前だけ上の段へ（「婚活…」と切れていた）
