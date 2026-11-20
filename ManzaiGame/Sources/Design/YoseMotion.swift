@@ -23,6 +23,7 @@ struct YoseNumberBounceModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let value: Double
     @State private var bump = false
+    @State private var bumpGen = 0   // 0.08秒以内に続けて変わった時、前の戻しが次の跳ねを消さないように
     func body(content: Content) -> some View {
         content
             .contentTransition(.numericText(value: value))
@@ -31,7 +32,9 @@ struct YoseNumberBounceModifier: ViewModifier {
             .animation(Theme.Motion.r(.spring(response: 0.28, dampingFraction: 0.72)), value: bump)
             .onChange(of: value) { _, _ in
                 bump = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { bump = false }
+                bumpGen &+= 1
+                let gen = bumpGen
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { if gen == bumpGen { bump = false } }
             }
     }
 }
@@ -44,8 +47,10 @@ struct YoseRowGlowModifier: ViewModifier {
         content
             .background(YoseColor.kinBright.opacity(glow ? 0.35 : 0))
             .onChange(of: trigger) { _, _ in
-                glow = true
-                withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { glow = false }
+                glow = true   // 同じ処理内で戻すと光が描かれない＝次の描画で戻す（code_review_dialogue_motion_1117 #6）
+                DispatchQueue.main.async {
+                    withAnimation(Theme.Motion.r(.easeOut(duration: 0.28))) { glow = false }
+                }
             }
     }
 }
@@ -60,6 +65,7 @@ struct YoseExpPingModifier: ViewModifier {
     @State private var ring = false
     @State private var ringOn = false
     @State private var glow = false
+    @State private var bumpGen = 0   // 続けて増えた時、前の戻しが次の跳ねを消さないように
     func body(content: Content) -> some View {
         content
             .scaleEffect(bump ? 1.35 : 1.0)
@@ -78,7 +84,9 @@ struct YoseExpPingModifier: ViewModifier {
                 }
                 ring = false; ringOn = true
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.5)) { bump = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { withAnimation(.spring(response: 0.28, dampingFraction: 0.5)) { bump = false } }
+                bumpGen &+= 1
+                let gen = bumpGen
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { if gen == bumpGen { withAnimation(.spring(response: 0.28, dampingFraction: 0.5)) { bump = false } } }
                 DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.3)) { ring = true; ringOn = false } }
             }
     }
