@@ -66,7 +66,7 @@ struct YoseYearTurnCurtainView: View {
                 joshikimakuHeader
                 HStack(spacing: 8) {
                     Rectangle().fill(YoseColor.kin).frame(width: 20, height: 1.5)
-                    Text("新 シ ー ズ ン 開 幕")
+                    Text("新 シ ー ズ ン 開 幕").accessibilityLabel("新シーズン開幕")
                         .font(YoseFont.gothic(13, weight: .heavy)).tracking(1.5)
                         .foregroundStyle(YoseColor.kinBright)
                     Rectangle().fill(YoseColor.kin).frame(width: 20, height: 1.5)
@@ -396,7 +396,7 @@ struct YoseYearTurnCurtainView: View {
 
         // 1.0s: 朱印『開幕』
         guard await pause(110_000_000) else { return }
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        // 触覚は YoseStampImpactModifier（stamped の変化で .success）に任せる＝二重に鳴らさない（code_review_ending_curtain_1118 #1）
         withAnimation(Theme.Motion.r(.spring(response: 0.22, dampingFraction: 0.55))) { stamped = true }
         burstTrigger += 1
         withAnimation(Theme.Motion.r(.linear(duration: 0.04))) { shakeY = 3 }

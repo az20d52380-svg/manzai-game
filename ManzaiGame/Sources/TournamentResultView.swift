@@ -60,7 +60,10 @@ struct TournamentResultView: View {
             FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
                                  burst: r.burst == true || debugForceFanReport,
                                  salt: salt,
-                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used)
+                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used,
+                                 prelim: ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "HANA2回戦", "HANA準決勝"].contains(r.name),
+                                 finalYear: summary.year >= session.config.careerYears,
+                                 short: ["GP1回戦", "GP2回戦"].contains(r.name))
         }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）
@@ -175,6 +178,7 @@ struct TournamentResultView: View {
                             Button {
                                 guard nextArmed || !isFirstLap else { return }
                                 if r.passed && isHanaFinal {
+                                    guard !showHanaChamp else { return }   // 連打で優勝の音が二重に鳴らない（code_review_results_1117 低）
                                     Sound.play(.fanfare); Sound.play(.cheerBig)   // 頂GP 決勝の優勝と同じ音（優勝演出の画面は音を鳴らさない・code_review_1107e #1）
                                     withAnimation(Theme.Motion.r(.easeIn(duration: 0.2))) { showHanaChamp = true }
                                 }
