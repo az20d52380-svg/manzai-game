@@ -645,7 +645,8 @@ struct FinalsPresentationView: View {
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text("\(e.total)").font(YoseFont.number(36, weight: .black)).foregroundStyle(YoseColor.sumi)
                     .contentTransition(.numericText())
-                Text("点").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+                    .lineLimit(1).fixedSize()   // 大きい文字で「61点／6」と2行に割れていた（11/19 目視・名前の側が縮む）
+                Text("点").font(YoseFont.gothic(16, weight: .heavy)).foregroundStyle(YoseColor.sumi).fixedSize()
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
