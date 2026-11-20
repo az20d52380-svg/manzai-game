@@ -60,7 +60,7 @@ struct RootView: View {
             case "qual_notice": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "GP1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 予選の知らせ（通知→一覧）の目視（MZ_PASS=0 で落選。MZ_OPEN=1 で通知を開いた後から）
             case "hana_video": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "HANA1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // THE HANA 動画審査の結果の知らせの目視
             case "hana_result": TournamentResultView(session: session, summary: WeekSummary(year: 1, week: 32, results: [StageResult(name: "HANA1回戦", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", prize: 0)], state: session.state))   // THE HANA 動画審査の結果画面の目視（MZ_PASS=0 で敗退）
-            case "stage_result": TournamentResultView(session: session, summary: WeekSummary(year: session.year, week: 46, results: [StageResult(name: ProcessInfo.processInfo.environment["MZ_STAGE"] ?? "敗者復活", passed: ProcessInfo.processInfo.environment["MZ_PASS"] == "1", prize: ProcessInfo.processInfo.environment["MZ_PASS"] == "1" ? (session.config.calendar.hanaTournaments.first { $0.name == ProcessInfo.processInfo.environment["MZ_STAGE"] }?.prize ?? 0) : 0)], state: session.state))   // 大会の結果画面の目視（MZ_STAGE=敗者復活／GP準決勝 で山場のページ・既定は敗退・MZ_PASS=1 で通過）
+            case "stage_result": TournamentResultView(session: session, summary: WeekSummary(year: session.year, week: session.config.calendar.hanaTournaments.first { $0.name == ProcessInfo.processInfo.environment["MZ_STAGE"] }?.week ?? 46, results: [StageResult(name: ProcessInfo.processInfo.environment["MZ_STAGE"] ?? "敗者復活", passed: ProcessInfo.processInfo.environment["MZ_PASS"] == "1", prize: ProcessInfo.processInfo.environment["MZ_PASS"] == "1" ? (session.config.calendar.hanaTournaments.first { $0.name == ProcessInfo.processInfo.environment["MZ_STAGE"] }?.prize ?? 0) : 0)], state: session.state))   // 大会の結果画面の目視（週は HANA の段なら本番の週・他は46＝visual_hana_late_1117 中。MZ_STAGE=敗者復活／GP準決勝 で山場のページ・既定は敗退・MZ_PASS=1 で通過）
             case "final_entry": StagePreludeView(session: session, title: "頂GP 決勝", isFinal: true, requiredLength: NetaCatalog.lengthForGPFinal)   // 決勝の入口（2本目の枠と一言）の目視。ネタを持たせるには MZ_STOPWEEK=12 MZ_CARE=1 を足す（AUTOPILOT 596）
             case "hana_entry": TournamentEntryView(session: session, spec: session.config.calendar.hanaTournaments[max(0, min(Int(ProcessInfo.processInfo.environment["MZ_HANAIDX"] ?? "") ?? 0, session.config.calendar.hanaTournaments.count - 1))])   // THE HANA 1回戦（動画審査）の入口の目視
             case "qual_line": QualifierNoticeView(combiName: session.combiName, partnerName: Names.partner, year: 1, roundName: "GP準々決勝", passed: ProcessInfo.processInfo.environment["MZ_PASS"] != "0", onFinish: {})   // 準々決勝の相方のメッセージの目視
@@ -102,10 +102,12 @@ struct RootView: View {
             // MZ_STOPWEEK だけ（MZ_YEARS なし）は 0 年＝1年目の途中週で止める（visual_check_midyear_1025_v0 §3）
             let yearsEnv = ProcessInfo.processInfo.environment["MZ_YEARS"] ?? (ProcessInfo.processInfo.environment["MZ_STOPWEEK"] != nil ? "0" : "")
             if let n = Int(yearsEnv), n >= 0, session.year == 1 {
-                session.debugAdvanceYears(n)
+                await session.debugAdvanceYearsYielding(n)
             }
             // MZ_GPLOST=1：頂GP の予選で落ちた扱いにする（日程表の塗りの目視＝C-25。DEBUG のみ・乱数は消費しない）
             if ProcessInfo.processInfo.environment["MZ_GPLOST"] != nil { session.debugMarkGPLost() }
+            // MZ_HANANEXT=n：今年の THE HANA を段 n に出られる扱いに（女女の準決勝・決勝の帯の目視＝visual_hana_y2_3_1116 中。DEBUG のみ）
+            if let n = Int(ProcessInfo.processInfo.environment["MZ_HANANEXT"] ?? "") { session.debugMarkHanaNext(n) }
             // 監査直しの目視用: MZ_SAVEMAKE=champ|yearend|yearend_old で中断セーブを作る（MZ_ALLOWSAVE=1 と併用）
             if let mk = ProcessInfo.processInfo.environment["MZ_SAVEMAKE"] {
                 var st = mk == "champ" ? GameSession.debugMaxedState() : GameState(config: GameConfig()); st.compat = 10; st.money = 500_000
@@ -407,7 +409,11 @@ struct RootView: View {
     }
 
     @ViewBuilder private var content: some View {
-        if session.winFinale {
+        if session.debugFastForwarding {   // 目視フックの早送り中（DEBUG のみ立つ）
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Theme.bgGradient.ignoresSafeArea())
+        } else if session.winFinale {
             FinalsPresentationView(session: session)                 // M-1本家型 決勝演出（籤→7審査員→ボード→めくり→優勝）
         } else if session.watchingFinal {
             // 決勝に進めなかった年の第47週＝今年の決勝を客席から観る（監査H-01）
