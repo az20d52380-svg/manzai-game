@@ -54,7 +54,7 @@ struct FinalsBroadcastIntro: View {
             .padding(.horizontal, YoseMetrics.screenMargin).padding(.top, 8).padding(.bottom, 26)
         }
         .contentShape(Rectangle())
-        .onTapGesture { advanceStage() }
+        .onTapGesture { tapAdvance() }
         .task(id: stage) { await run(stage) }
         .onDisappear { if !done { Sound.duck(1, over: 0.2) } }   // finish を通らず消えた時も絞った BGM を戻す（sound_state_audit_1115 #1）
         .onAppear {
@@ -73,17 +73,19 @@ struct FinalsBroadcastIntro: View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
                 Rectangle().fill(Color.white).frame(width: 6, height: 6).opacity(blink ? 1 : 0.25)
-                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari)
+                Text("LIVE 生放送").font(YoseFont.gothic(12, weight: .black)).tracking(0.5).foregroundStyle(YoseColor.kinari).fixedSize()   // 大きい文字で2行に折れない（code_review_stageframe_fbintro_1119 #2）
             }
             .padding(.horizontal, 7).padding(.vertical, 4)
             .background(YoseColor.shu)
             .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
-            Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1)
+            Text(sceneTitle).font(YoseFont.gothic(13, weight: .heavy)).foregroundStyle(YoseColor.kin).lineLimit(1).minimumScaleFactor(0.6)
+                .accessibilityAddTraits(.isHeader)   // 大きい文字で「…」にせず縮める・見出し（同 #2・#3）
             Spacer()
             Button { finish() } label: {
-                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+                Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1).fixedSize()
                     .padding(.horizontal, 10).frame(height: 30)
                     .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
+                    .contentShape(Rectangle().inset(by: -8))   // 見た目はそのまま押せる範囲だけ広げる（code_review_stageframe_fbintro_1119 #7）
             }
         }
     }
@@ -214,6 +216,8 @@ struct FinalsBroadcastIntro: View {
                                 .frame(maxWidth: .infinity).frame(height: 46)
                                 .background(on ? YoseColor.kinari : YoseColor.kuroUrushi.opacity(0.7))
                                 .overlay(Rectangle().stroke(on ? YoseColor.kin : YoseColor.haiSumi.opacity(0.35), lineWidth: 1))
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel(on ? judges[i].replacingOccurrences(of: " ", with: "") : "未紹介の審査員")   // 名字と名前を別々に読まない（code_review_stageframe_fbintro_1119 #3）
                             }
                         }
                         .padding(.horizontal, 6).padding(.vertical, 10)
@@ -231,12 +235,13 @@ struct FinalsBroadcastIntro: View {
                 if cur >= 0 {
                     VStack(spacing: 4) {
                         Text("審査員").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kin)
-                        Text(judges[cur]).font(YoseFont.mincho(34)).foregroundStyle(YoseColor.kinari).tracking(2)
+                        Text(judges[cur]).font(YoseFont.mincho(34)).foregroundStyle(YoseColor.kinari).tracking(2).lineLimit(1).minimumScaleFactor(0.5)   // 大きい文字・狭い端末で2行に折れて枠を出ない（code_review_stageframe_fbintro_1119 #4）
                     }
                     .padding(.vertical, 14).frame(maxWidth: .infinity)
                     .background(YoseColor.kuroUrushi)
                     .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 2))
                     .overlay(Rectangle().stroke(YoseColor.kin.opacity(0.5), lineWidth: 1).padding(5))
+                    .accessibilityHidden(true)   // 同じ名前をテロップでも読む＝木札は読まない（同 #3）
                     .id(cur)
                     .transition(.asymmetric(insertion: .opacity, removal: .identity))   // 前の名前と重ならない
                 } else {
@@ -394,10 +399,21 @@ struct FinalsBroadcastIntro: View {
 
     private func advanceStage() {
         guard !done else { return }
-        if let n = stage.next { stage = n } else { finish() }
+        if let n = stage.next {
+            step = 0; slam = false; titleIn = false   // 場面を替える同じ描画で戻す＝前の場面の step が次の場面の最初の1コマに残らない（code_review_misc3_1116 低-1）
+            stage = n
+        } else { finish() }
     }
 
     /// 場面の自動進行用：タップで既に先へ進んでいたら何もしない（キャンセルが届く前に古い場面の待ちが明けても1場面飛ばさない＝code_review_1108g #1）。
+    /// タップで送る時だけ、場面が替わってから0.4秒は受けない（二度押しでタイトルコールを見損なわない＝code_review_stageframe_fbintro_1119 #5）。自動の送りとスキップは今のまま
+    @State private var lastTapAdvance = Date.distantPast
+    private func tapAdvance() {
+        guard Date().timeIntervalSince(lastTapAdvance) > 0.4 else { return }
+        lastTapAdvance = Date()
+        advanceStage()
+    }
+
     private func advanceStage(from s: FinalsIntroStage) {
         guard stage == s else { return }
         advanceStage()
@@ -559,22 +575,22 @@ struct FinalsBroadcastEnding: View {
                 Spacer(minLength: 0)
                 VStack(spacing: 14) {
                     Text("頂グランプリ 決勝").font(YoseFont.gothic(13, weight: .heavy)).tracking(2).foregroundStyle(YoseColor.kin)
-                        .opacity(step >= 1 ? 1 : 0)
+                        .opacity(step >= 1 ? 1 : 0).accessibilityHidden(step < 1)   // 点く前は読まない（同 #6(b)）
                     VStack(spacing: 4) {
                         Text("今夜の頂").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         Text(winnerName).font(YoseFont.mincho(32)).foregroundStyle(champion ? YoseColor.kinBright : YoseColor.washi)
                             .lineLimit(1).minimumScaleFactor(0.5)
                     }
-                    .opacity(step >= 2 ? 1 : 0).scaleEffect(step >= 2 ? 1 : 1.2)
+                    .opacity(step >= 2 ? 1 : 0).scaleEffect(step >= 2 ? 1 : 1.2).accessibilityHidden(step < 2)
                     if !duelNames.isEmpty {
                         Text("最終決戦  " + duelNames.joined(separator: " ／ "))
                             .font(YoseFont.mincho(13)).foregroundStyle(YoseColor.washi).multilineTextAlignment(.center)
-                            .opacity(step >= 3 ? 1 : 0)
+                            .opacity(step >= 3 ? 1 : 0).accessibilityHidden(step < 3)
                     }
                     if !allNames.isEmpty {   // 本日の出場組（クレジット）
                         Text("出場  " + allNames.joined(separator: "・"))
                             .font(YoseFont.mincho(12)).foregroundStyle(YoseColor.ginNezu).multilineTextAlignment(.center)
-                            .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0)
+                            .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0).accessibilityHidden(step < 4)
                     }
                 }
                 .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
@@ -582,11 +598,11 @@ struct FinalsBroadcastEnding: View {
                 HStack(spacing: 0) {
                     Text("司会 鳴海").font(YoseFont.gothic(12, weight: .black)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).frame(height: 44).background(YoseColor.enji)
-                    Text("「以上、頂グランプリ決勝でした。」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi)
+                    Text("「以上、頂グランプリ決勝でした。」").font(YoseFont.mincho(14)).foregroundStyle(YoseColor.sumi).lineLimit(1).minimumScaleFactor(0.6)   // 導入側の帯と同じく折らずに縮める（同 #6）
                         .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 44).background(YoseColor.washi)
                 }
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
-                .opacity(step >= 3 ? 1 : 0).animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
+                .opacity(step >= 3 ? 1 : 0).accessibilityHidden(step < 3).animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 26)
             }
             VStack { HStack { Spacer()
@@ -594,6 +610,7 @@ struct FinalsBroadcastEnding: View {
                     Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).frame(height: 28)
                         .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
+                        .contentShape(Rectangle().inset(by: -8))   // 同 #7
                 }.padding(.trailing, 8).padding(.top, 34)
             }; Spacer() }
         }
