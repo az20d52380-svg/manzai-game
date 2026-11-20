@@ -61,6 +61,36 @@ struct RadarChart: View {
     }
 
     var body: some View {
+        // Canvas の中身は withAnimation で補間されない＝Animatable な部品に progress を渡して 0→1 を毎フレーム描く
+        // （code_review_curtain_fan_1117 要確認・年初→今の0.8秒の変形が一瞬で最終形になっていた）
+        RadarCanvas(axes: axes, progress: progress)
+        .onAppear {
+            if animate && !reduceMotion { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8))) { progress = 1 } }
+            else { progress = 1 }
+        }
+        // 図は Canvas 1枚で読み上げが無かった＝能力ごとの「現在（年初）」を文で読む（a11y_check_1026_voiceover_v0 #4・表示は不変）
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("能力の図")
+        .accessibilityValue(axes.map { ax in
+            let now = Int(ax.value.rounded()), was = Int(ax.base.rounded())
+            return now == was ? "\(ax.name) \(now)" : "\(ax.name) \(now)、年初は\(was)"
+        }.joined(separator: "。"))
+    }
+}
+
+/// レーダーの描画本体。progress を animatableData にして、開始→現在の変形をフレームごとに補間させる
+private struct RadarCanvas: View, Animatable {
+    let axes: [(name: String, value: Double, base: Double, cap: Double, color: Color)]
+    var progress: CGFloat
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    /// 上限で割った割合（0〜1 に収める＝負の能力でも中心を越えない）
+    private func ratio(_ v: Double, _ cap: Double) -> Double { cap > 0 ? min(1, max(0, v / cap)) : 0 }
+
+    var body: some View {
         Canvas { ctx, size in
             let n = axes.count
             guard n >= 3 else { return }
@@ -93,13 +123,13 @@ struct RadarChart: View {
             }
 
             // 開始（4月）＝inkFaint線
-            let basePoly = polygon { i in min(1, axes[i].base / axes[i].cap) }
+            let basePoly = polygon { i in ratio(axes[i].base, axes[i].cap) }
             ctx.stroke(basePoly, with: .color(Theme.inkFaint), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
 
             // 現在＝能力色面（開始→現在へ progress でモーフ）
             let curPoly = polygon { i in
-                let base = min(1, axes[i].base / axes[i].cap)
-                let cur = min(1, axes[i].value / axes[i].cap)
+                let base = ratio(axes[i].base, axes[i].cap)
+                let cur = ratio(axes[i].value, axes[i].cap)
                 return base + (cur - base) * Double(progress)
             }
             ctx.fill(curPoly, with: .color(Theme.verm.opacity(0.16)))
@@ -107,8 +137,8 @@ struct RadarChart: View {
 
             // 頂点の能力色ドット＋軸ラベル
             for i in 0..<n {
-                let base = min(1, axes[i].base / axes[i].cap)
-                let cur = min(1, axes[i].value / axes[i].cap)
+                let base = ratio(axes[i].base, axes[i].cap)
+                let cur = ratio(axes[i].value, axes[i].cap)
                 let f = base + (cur - base) * Double(progress)
                 let v = pt(i, f)
                 ctx.fill(Path(ellipseIn: CGRect(x: v.x - 3, y: v.y - 3, width: 6, height: 6)), with: .color(axes[i].color))
@@ -117,17 +147,6 @@ struct RadarChart: View {
                          at: lp, anchor: .center)
             }
         }
-        .onAppear {
-            if animate && !reduceMotion { withAnimation(Theme.Motion.r(.easeInOut(duration: 0.8))) { progress = 1 } }
-            else { progress = 1 }
-        }
-        // 図は Canvas 1枚で読み上げが無かった＝能力ごとの「現在（年初）」を文で読む（a11y_check_1026_voiceover_v0 #4・表示は不変）
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("能力の図")
-        .accessibilityValue(axes.map { ax in
-            let now = Int(ax.value.rounded()), was = Int(ax.base.rounded())
-            return now == was ? "\(ax.name) \(now)" : "\(ax.name) \(now)、年初は\(was)"
-        }.joined(separator: "。"))
     }
 }
 
