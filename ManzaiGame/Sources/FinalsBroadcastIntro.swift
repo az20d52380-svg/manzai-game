@@ -85,6 +85,7 @@ struct FinalsBroadcastIntro: View {
                 Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari).lineLimit(1).fixedSize()
                     .padding(.horizontal, 10).frame(height: 30)
                     .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
+                    .contentShape(Rectangle().inset(by: -8))   // 見た目はそのまま押せる範囲だけ広げる（code_review_stageframe_fbintro_1119 #7）
             }
         }
     }
@@ -574,22 +575,22 @@ struct FinalsBroadcastEnding: View {
                 Spacer(minLength: 0)
                 VStack(spacing: 14) {
                     Text("頂グランプリ 決勝").font(YoseFont.gothic(13, weight: .heavy)).tracking(2).foregroundStyle(YoseColor.kin)
-                        .opacity(step >= 1 ? 1 : 0)
+                        .opacity(step >= 1 ? 1 : 0).accessibilityHidden(step < 1)   // 点く前は読まない（同 #6(b)）
                     VStack(spacing: 4) {
                         Text("今夜の頂").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         Text(winnerName).font(YoseFont.mincho(32)).foregroundStyle(champion ? YoseColor.kinBright : YoseColor.washi)
                             .lineLimit(1).minimumScaleFactor(0.5)
                     }
-                    .opacity(step >= 2 ? 1 : 0).scaleEffect(step >= 2 ? 1 : 1.2)
+                    .opacity(step >= 2 ? 1 : 0).scaleEffect(step >= 2 ? 1 : 1.2).accessibilityHidden(step < 2)
                     if !duelNames.isEmpty {
                         Text("最終決戦  " + duelNames.joined(separator: " ／ "))
                             .font(YoseFont.mincho(13)).foregroundStyle(YoseColor.washi).multilineTextAlignment(.center)
-                            .opacity(step >= 3 ? 1 : 0)
+                            .opacity(step >= 3 ? 1 : 0).accessibilityHidden(step < 3)
                     }
                     if !allNames.isEmpty {   // 本日の出場組（クレジット）
                         Text("出場  " + allNames.joined(separator: "・"))
                             .font(YoseFont.mincho(12)).foregroundStyle(YoseColor.ginNezu).multilineTextAlignment(.center)
-                            .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0)
+                            .padding(.horizontal, 20).opacity(step >= 4 ? 1 : 0).accessibilityHidden(step < 4)
                     }
                 }
                 .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
@@ -601,7 +602,7 @@ struct FinalsBroadcastEnding: View {
                         .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 44).background(YoseColor.washi)
                 }
                 .overlay(Rectangle().stroke(YoseColor.kin, lineWidth: 1.5))
-                .opacity(step >= 3 ? 1 : 0).animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
+                .opacity(step >= 3 ? 1 : 0).accessibilityHidden(step < 3).animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: step)
                 .padding(.horizontal, YoseMetrics.screenMargin).padding(.bottom, 26)
             }
             VStack { HStack { Spacer()
@@ -609,6 +610,7 @@ struct FinalsBroadcastEnding: View {
                     Text("スキップ ▶▶").accessibilityLabel("スキップ").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
                         .padding(.horizontal, 10).frame(height: 28)
                         .overlay(Rectangle().stroke(YoseColor.kinari.opacity(0.7), lineWidth: 1.5))
+                        .contentShape(Rectangle().inset(by: -8))   // 同 #7
                 }.padding(.trailing, 8).padding(.top, 34)
             }; Spacer() }
         }
