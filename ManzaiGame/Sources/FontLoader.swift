@@ -24,7 +24,8 @@ enum FontLoader {
 
     /// 登録済みか（Font.maru のフォールバック判定用）。ファイル名は MPLUSRounded1c-*.ttf だが、
     /// フォント内部の PostScript 名は RoundedMplus1c-*（2026-10-08 判明。名前違いで全量が system 丸ゴに落ちていた）。
-    static var isAvailable: Bool {
-        UIFont(name: "RoundedMplus1c-Bold", size: 12) != nil
-    }
+    /// 4太さすべてが登録できた時だけ true（1つ欠けると .custom が標準書体に落ちて混ざる）。初回参照で1回だけ調べる（registerAll は App.init で先に済む）
+    /// code_review_finalstalk_misc_1118 #6
+    static let isAvailable: Bool = ["RoundedMplus1c-Medium", "RoundedMplus1c-Bold", "RoundedMplus1c-ExtraBold", "RoundedMplus1c-Black"]
+        .allSatisfy { UIFont(name: $0, size: 12) != nil }
 }

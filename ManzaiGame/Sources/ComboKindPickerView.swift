@@ -14,6 +14,7 @@ struct ComboKindPickerView: View {
             YoseHeaderBar(title: "コンビ結成")
             VStack(spacing: 18) {
                 Text("どんなコンビにする？").font(YoseFont.sectionTitle).foregroundStyle(YoseColor.sumi)
+                    .accessibilityAddTraits(.isHeader)
                     .padding(.top, 22)
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                     ForEach(order, id: \.self) { kind in card(kind) }
@@ -35,7 +36,7 @@ struct ComboKindPickerView: View {
             picked = kind
             Haptics.confirm()
             // 0.3秒で次へ進むので、読み上げでは選んだ形を先に伝える（a11y_check_1026 低6）
-            UIAccessibility.post(notification: .announcement, argument: "\(kind.cardTitle)、\(kind.cardSub)にした")
+            UIAccessibility.post(notification: .announcement, argument: "\(kind.cardTitle)、\(kind.cardSub)を選んだ")   // 「女にした」と聞こえた（code_review_minor5_1117 #5）
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onSelect(kind) }
         } label: {
             VStack(spacing: 10) {

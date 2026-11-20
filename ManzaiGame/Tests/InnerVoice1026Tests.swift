@@ -35,15 +35,15 @@ final class InnerVoice1026Tests: XCTestCase {
         s.stamina = 25
         XCTAssertEqual(scene(s, justLost: true).0, "mono.lowMoney", "25 ちょうどは体力の警告にしない")
         s.money = 30_000
-        XCTAssertEqual(scene(s, justLost: true).0, "mono.justLostSingle", "3万ちょうどはお金の警告にしない")
+        XCTAssertEqual(scene(s, justLost: true, milestone: ("X", 2)).0, "mono.justLostSingle", "3万ちょうどはお金の警告にしない")
     }
 
     func testJustLostSingleVsRepeatAndLosing() {
         let s = calm()
-        XCTAssertEqual(scene(s, lossStreak: 1, justLost: true).0, "mono.justLostSingle")
-        XCTAssertEqual(scene(s, lossStreak: 2, justLost: true).0, "mono.justLostRepeat")
-        XCTAssertEqual(scene(s, lossStreak: 2, justPassed: true).0, "mono.losing", "連敗は通過の余韻より先")
-        XCTAssertEqual(scene(s, lossStreak: 1, justPassed: true).0, "mono.passed")
+        XCTAssertEqual(scene(s, lossStreak: 1, justLost: true, milestone: ("X", 2)).0, "mono.justLostSingle")
+        XCTAssertEqual(scene(s, lossStreak: 2, justLost: true, milestone: ("X", 2)).0, "mono.justLostRepeat")
+        XCTAssertEqual(scene(s, lossStreak: 2, justPassed: true, milestone: ("X", 2)).0, "mono.losing", "連敗は通過の余韻より先")
+        XCTAssertEqual(scene(s, lossStreak: 1, justPassed: true, milestone: ("X", 2)).0, "mono.passed")
     }
 
     func testMilestoneTwoWeeksWeakAndPlainWithSubstitution() {
@@ -78,5 +78,48 @@ final class InnerVoice1026Tests: XCTestCase {
     func testChooseEmptyPoolIsNil() {
         XCTAssertNil(DialogueData.choose([], salt: 1, scene: "x", picker: nil))
         XCTAssertEqual(DialogueData.choose(["a", "b"], salt: -1, scene: "x", picker: nil), "b", "負の salt も範囲に折り返す")
+    }
+}
+
+// 今年もう大会が無い／大会が遠い週の負けの独白（code_review_dialogue_motion_1117 #1・#2・表示のみ）
+final class InnerVoiceNoStage1117Tests: XCTestCase {
+    private func calm() -> GameState {
+        var s = GameState(config: GameConfig()); s.recoveryWeeks = 0; s.stamina = 100; s.money = 1_000_000; return s
+    }
+    private func allLines(lossStreak: Int, justLost: Bool, milestone: (name: String, weeksLeft: Int)?) -> (Set<String>, Set<String>) {
+        var texts = Set<String>(), scenes = Set<String>()
+        for i in 0..<80 {
+            var sc = ""
+            let a = DialogueData.innerVoice(state: calm(), lossStreak: lossStreak, justPassed: false, justLost: justLost,
+                                            nextMilestone: milestone, weakAbility: "", week: 7,
+                                            picker: { s, n, _ in sc = s; return i % n })
+            texts.insert(a.text); scenes.insert(sc)
+        }
+        return (texts, scenes)
+    }
+    func testNoStageDropsNextStageLines() {
+        for (ls, jl) in [(1, true), (2, true), (2, false)] {
+            let (t, sc) = allLines(lossStreak: ls, justLost: jl, milestone: nil)
+            XCTAssertFalse(t.contains { $0.contains("次の大会") || $0.contains("残りの大会") || $0.contains("次に出る大会") || $0.contains("大会が近い") }, "\(ls) \(jl)")
+            XCTAssertTrue(sc.allSatisfy { $0.hasSuffix(".noStage") }, "\(sc)")
+        }
+    }
+    func testFarStageDropsOnlyNearLine() {
+        let (t, _) = allLines(lossStreak: 2, justLost: false, milestone: ("X", 8))
+        XCTAssertFalse(t.contains { $0.contains("大会が近い") })
+        XCTAssertTrue(t.contains { $0.contains("次の大会") })
+        let (t2, sc2) = allLines(lossStreak: 2, justLost: false, milestone: ("X", 2))
+        XCTAssertTrue(t2.contains { $0.contains("大会が近い") })
+        XCTAssertEqual(sc2, ["mono.losing"])
+    }
+    func testPassedNoStageDropsNextLines() {
+        var t = Set<String>()
+        for i in 0..<80 {
+            let a = DialogueData.innerVoice(state: calm(), lossStreak: 0, justPassed: true, justLost: false,
+                                            nextMilestone: nil, weakAbility: "", week: 7,
+                                            picker: { s, n, _ in XCTAssertEqual(s, "mono.passed.noStage"); return i % n })
+            t.insert(a.text)
+        }
+        XCTAssertFalse(t.contains { $0.contains("次") })
     }
 }
