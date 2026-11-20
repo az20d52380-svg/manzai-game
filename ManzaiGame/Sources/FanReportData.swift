@@ -55,6 +55,7 @@ enum FanReportData {
     static func burst(name: String, salt: Int, known: Bool = false) -> String {
         let pool = known ? burstLines : burstLinesUnknown
         let n = pool.count
+        guard n > 0 else { return "" }   // 絞った後のプールが空でも落ちない（code_review_curtain_fan_1117 低）
         return pool[((salt % n) + n) % n].replacingOccurrences(of: "〈名〉", with: name)
     }
 
@@ -429,18 +430,34 @@ enum FanReportData {
         return fresh + old
     }
 
-    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false, used: [String] = []) -> [String] {
+    /// 状況に合わない文を外す（決勝・単発の大会で「予選」／最終年で「来年」「次の予選」／短尺の回戦で「4分」・code_review_fan_talk_avatar_1118 #1〜#3）。
+    /// 外すと空になる時は元のまま（声が出ないよりよい）。乱数非消費。
+    static func fits(_ t: String, prelim: Bool, finalYear: Bool, short: Bool) -> Bool {
+        if !prelim && t.contains("予選") { return false }
+        if finalYear && (t.contains("来年") || t.contains("次の予選")) { return false }
+        if short && t.contains("4分") { return false }
+        return true
+    }
+
+    static func voices(name: String, passed: Bool, margin: Double?, burst: Bool, salt: Int, known: Bool = false, used: [String] = [],
+                       prelim: Bool = true, finalYear: Bool = false, short: Bool = false) -> [String] {
         let count = 2 + ((salt / 7) % 3 + 3) % 3 + (burst ? 1 : 0)   // 2〜4
         // 無名の時の絞り込みは事前に済ませた版を使う（呼ぶたびに絞り直すと、全体のテストで実行機が落ちるほど重かった＝11/08）
-        let A = known ? bandA : bandAUnknown, B = known ? bandB : bandBUnknown
-        let C = known ? bandC : bandCUnknown, D = known ? bandD : bandDUnknown
+        let plain = prelim && !finalYear && !short   // 既定の状況では絞らない（従来と同じ並び）
+        func sel(_ p: [String]) -> [String] {
+            if plain { return p }
+            let f = p.filter { fits($0, prelim: prelim, finalYear: finalYear, short: short) }
+            return f.isEmpty ? p : f
+        }
+        let A = sel(known ? bandA : bandAUnknown), B = sel(known ? bandB : bandBUnknown)
+        let C = sel(known ? bandC : bandCUnknown), D = sel(known ? bandD : bandDUnknown)
         let band: [String]
         let isA: Bool, isC: Bool
         if passed { isA = (margin ?? 0) >= 8; isC = false; band = isA ? A : B }
         else if let m = margin, m >= -3 { isA = false; isC = true; band = C }
         else if let m = margin, m >= -10 { isA = false; isC = ((salt % 2) + 2) % 2 == 0; band = isC ? C : D }
         else { isA = false; isC = false; band = D }
-        let bursts = known ? burstLines : burstLinesUnknown
+        let bursts = sel(known ? burstLines : burstLinesUnknown)
         var lines: [String] = []
         if burst, let b = ordered(bursts, salt: salt, name: name, used: used).first { lines.append(b) }
         // このキャリアで未使用の声を、同じ帯→隣の帯（A↔B・C↔D）の順で先に使い、それも尽きたら使い済みを古い順に戻す
@@ -457,7 +474,7 @@ enum FanReportData {
         }
         // 5回に1回、最後の1枚を逆の空気のレポに差し替える（合否は予感であって確定ではない）
         if !burst, ((salt % 5) + 5) % 5 == 0, lines.count >= 2 {
-            lines[lines.count - 1] = ordered(passed ? misPass : misFail, salt: salt / 5, name: name, used: used).first ?? lines[lines.count - 1]
+            lines[lines.count - 1] = ordered(sel(passed ? misPass : misFail), salt: salt / 5, name: name, used: used).first ?? lines[lines.count - 1]
         }
         return lines.map { $0.replacingOccurrences(of: "〈名〉", with: name) }
     }

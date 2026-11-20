@@ -88,6 +88,14 @@ enum TrophyBook {
     static let key = "mz.trophies"
     static let counterKey = "mz.trophyCounters"
     static let recordKey = "mz.careerRecords"
+    /// 目視用の見本（MZ_TROPHIES／MZ_RECORDS）を読んでいる間は保存しない＝見本の値が実保存に混ざらない（DEBUG のみ・code_review_endings_meta_1117 #2）
+    static func debugSample(_ name: String) -> Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment[name] != nil
+        #else
+        return false
+        #endif
+    }
     private static var store: UserDefaults { GameSession.store }
 
     static func load() -> Set<TrophyID> {
@@ -105,7 +113,7 @@ enum TrophyBook {
     static func award(_ id: TrophyID) -> Bool {
         var all = load()
         guard all.insert(id).inserted else { return false }
-        if let data = try? JSONEncoder().encode(all.map(\.rawValue).sorted()) { store.set(data, forKey: key) }
+        if !debugSample("MZ_TROPHIES"), let data = try? JSONEncoder().encode(all.map(\.rawValue).sorted()) { store.set(data, forKey: key) }
         return true
     }
 
@@ -138,14 +146,14 @@ enum TrophyBook {
         r.totalWins += 1
         r.bestStreak = max(r.bestStreak, streak)
         r.fastestWinYear = min(r.fastestWinYear ?? Int.max, year)
-        if let data = try? JSONEncoder().encode(r) { store.set(data, forKey: recordKey) }
+        if !debugSample("MZ_RECORDS"), let data = try? JSONEncoder().encode(r) { store.set(data, forKey: recordKey) }
     }
 
     /// THE HANA で優勝した時だけ呼ぶ
     static func recordHanaWin() {
         var r = loadRecords()
         r.hanaWins = (r.hanaWins ?? 0) + 1
-        if let data = try? JSONEncoder().encode(r) { store.set(data, forKey: recordKey) }
+        if !debugSample("MZ_RECORDS"), let data = try? JSONEncoder().encode(r) { store.set(data, forKey: recordKey) }
     }
 
     // MARK: 判定（GameSession の各入力確定点から呼ぶ）
