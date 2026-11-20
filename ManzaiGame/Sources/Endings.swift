@@ -178,6 +178,7 @@ struct EndingRecord: Codable, Equatable {
     var count: Int
     var firstSeenAt: Date
     var lastPartnerName: String
+    var lastComboKind: String?   // 見た時のコンビの形（旧データ＝nil＝男コンビ）。図鑑の読み返しの一人称・相方名に使う（表示のみ・code_review_endings_meta_1117 #1）
 }
 
 enum EndingBook {
@@ -202,11 +203,11 @@ enum EndingBook {
     }
 
     /// 見た終わりを記録（初回は日付を残し、以降は回数と相方の名前を更新）
-    static func record(_ id: EndingID, partner: String) {
+    static func record(_ id: EndingID, partner: String, kind: ComboKind = Names.kind) {
         var all = load()
-        if var r = all[id] { r.count += 1; r.lastPartnerName = partner; all[id] = r }
-        else { all[id] = EndingRecord(count: 1, firstSeenAt: Date(), lastPartnerName: partner) }
+        if var r = all[id] { r.count += 1; r.lastPartnerName = partner; r.lastComboKind = kind.rawValue; all[id] = r }
+        else { all[id] = EndingRecord(count: 1, firstSeenAt: Date(), lastPartnerName: partner, lastComboKind: kind.rawValue) }
         let raw = Dictionary(uniqueKeysWithValues: all.map { ($0.key.rawValue, $0.value) })
-        if let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
+        if !TrophyBook.debugSample("MZ_BOOKSEEN"), let data = try? JSONEncoder().encode(raw) { GameSession.store.set(data, forKey: key) }
     }
 }
