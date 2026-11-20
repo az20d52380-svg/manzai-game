@@ -43,8 +43,23 @@ enum ChoiceEventData {
         }
     }
 
+    /// 一言の札が良い効果か（良い効果は伸びる側の札の見た目で出す＝減る側の和紙の札に並べない・code_review_choiceevent_1117 #5・表示のみ）
+    static func hiddenEffectNoteIsGood(for kind: ChoiceEventKind, choice id: String) -> Bool {
+        switch (kind, id) {
+        case (.wroteOneTonight, "B"), (.riftWarning, "A"): return true
+        default: return false
+        }
+    }
+
     /// year/week を渡すと、何度も来るイベント（§102 先輩の誘い＝1キャリア約19回）は週ごとに文面を替える（同じ週の再描画は同じ文面）。
-    static func text(for kind: ChoiceEventKind, year: Int, week: Int) -> ChoiceEventText {
+    /// money／stamina を渡すと、連敗の相談（styleTalk）は状況に合う言い換えを選ぶ（お金・疲れを語る文が、余裕のある時に出ない）。
+    /// 体力50未満→疲れの版・所持金5万未満→お金の版・それ以外→元の版と静かな版を週で交互（表示のみ・乱数非消費・code_review_choiceevent_1117 #1）
+    static func text(for kind: ChoiceEventKind, year: Int, week: Int, money: Int? = nil, stamina: Double? = nil) -> ChoiceEventText {
+        if kind == .styleTalk, let money, let stamina {
+            if stamina < 50 { return styleTalkTired }
+            if money < 50_000 { return styleTalkMoney }
+            return ((year &* 48 &+ week) % 2 + 2) % 2 == 0 ? styleTalk : styleTalkQuiet
+        }
         let v: [ChoiceEventText]
         switch kind {
         case .weekendInvite: v = weekendInviteVariants
