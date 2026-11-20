@@ -402,6 +402,7 @@ struct NotebookView: View {
                 Button { commitRename(neta.id) } label: {
                     Image(systemName: "checkmark.square.fill").foregroundStyle(YoseColor.shu).accessibilityHidden(true)
                 }.buttonStyle(PressableStyle())
+                .accessibilityLabel("題名を決める")   // 絵だけのボタン＝読み上げが「ボタン」だけだった（code_review_note_end_1117 低）
             }
         } else {
             Button {
