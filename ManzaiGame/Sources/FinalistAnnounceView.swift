@@ -14,7 +14,6 @@ struct FinalistAnnounceView: View {
     private enum Stage { case wait, line, read, after }
     @State private var stage: Stage = .wait
     @State private var called = 0            // 読み上げ済みの組数
-    @State private var lastCallFlash = false
     @State private var dim = false           // 最後の2組の溜め
     @State private var task: Task<Void, Never>?
     @State private var skipStep = false
@@ -107,6 +106,7 @@ struct FinalistAnnounceView: View {
                     Button { if passed { Sound.play(.success) }; onFinish() } label: {
                         Text("つづける").font(YoseFont.gothic(16)).foregroundStyle(YoseColor.washi)
                             .padding(.horizontal, 40).padding(.vertical, 11).overlay(Capsule().stroke(YoseColor.ginNezu.opacity(0.6)))
+                            .contentShape(Rectangle().inset(by: -6))   // 見た目そのままで押せる範囲を44pt以上に（code_review_rankup_cal_finalist_1119 #15）
                     }.transition(.opacity)
                 }
                 Color.clear.frame(height: 30)   // 固定：上下の余白を上と真ん中の Spacer で等分＝並びが画面の中ほどに来る
@@ -125,7 +125,7 @@ struct FinalistAnnounceView: View {
         .onTapGesture { tapAdvance() }
         .onAppear { start() }
         .onDisappear { task?.cancel() }
-        .onChange(of: called) { _, _ in UIAccessibility.post(notification: .announcement, argument: caption) }   // 読み上げた組名を VoiceOver にも伝える（a11y_check_1019）
+        .onChange(of: called) { _, _ in if stage == .read { UIAccessibility.post(notification: .announcement, argument: caption) } }   // 飛ばした時は stage 側の1回だけ（code_review_share_settings_1117 #8）   // 読み上げた組名を VoiceOver にも伝える（a11y_check_1019）
         .onChange(of: stage) { _, _ in UIAccessibility.post(notification: .announcement, argument: caption) }
         #if DEBUG
         .onAppear {   // 目視用：MZ_HOLD_AT=読み上げ済み組数 で読み上げをその位置で止める
@@ -152,7 +152,7 @@ struct FinalistAnnounceView: View {
                 Text(caption)
                     .font(YoseFont.mincho(big ? 26 : 16))
                     .foregroundStyle(hot ? YoseColor.kinBright : YoseColor.kuroUrushi)
-                    .multilineTextAlignment(.center).minimumScaleFactor(0.6)
+                    .multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.6)   // 2行までで縮める＝組ごとに高さが跳ねない（同 #12）
                     .frame(maxWidth: .infinity, minHeight: 64)
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .background(hot ? Color.black.opacity(0.85) : YoseColor.washi.opacity(0.95), in: RoundedRectangle(cornerRadius: 14))
@@ -169,8 +169,10 @@ struct FinalistAnnounceView: View {
         let rows = [Array(all.prefix(all.count / 2)), Array(all.suffix(all.count - all.count / 2))]
         return VStack(spacing: 26) {
             ForEach(0..<2, id: \.self) { r in
-                HStack(spacing: 8) {
-                    ForEach(rows[r]) { s in silhouette(s) }
+                // 幅が足りない端末（375pt 以下）だけ隙間を詰めて両端を切らない（code_review_rankup_cal_finalist_1119 #11）
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) { ForEach(rows[r]) { s in silhouette(s) } }
+                    HStack(spacing: 2) { ForEach(rows[r]) { s in silhouette(s) } }
                 }
             }
         }
