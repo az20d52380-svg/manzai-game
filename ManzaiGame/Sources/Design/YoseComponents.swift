@@ -25,6 +25,7 @@ struct YoseHeaderBar: View {
                     Text(title)
                         .font(YoseFont.gothic(19, weight: .heavy)).tracking(1)
                         .lineLimit(1).minimumScaleFactor(0.5)   // 長い題（エンディング図鑑）が途中で折れない
+                        .accessibilityAddTraits(.isHeader)   // ローターで見出しとして移れる（code_review_yose_store_1118 #11）
                         .foregroundStyle(YoseColor.kin)
                         .shadow(color: YoseColor.kuroUrushi, radius: 0, x: 0, y: 1.5)
                     if let subtitle {
@@ -40,6 +41,7 @@ struct YoseHeaderBar: View {
                 if let closeAction {
                     Button(closeTitle, action: closeAction)
                         .font(YoseFont.gothic(12, weight: .heavy))
+                        .lineLimit(1).minimumScaleFactor(0.6)   // 「とばす ▶」が大きい文字で幅64に収まらず切れる（同 #4）
                         .foregroundStyle(YoseColor.kinari)
                         .frame(width: 64, height: 28)
                         .background(YoseColor.kuroUrushi.opacity(0.6))
@@ -84,6 +86,8 @@ struct YoseButtonStyle: ButtonStyle {
         guard isEnabled else { return 0 }
         return role == .command ? YoseMetrics.shadowCommand : YoseMetrics.shadowCard
     }
+    /// 影ぶんの高さは有効/無効で変えない（押せなくなった時に2〜3pt縮んで並びが揺れない＝code_review_yose_store_1118 #8）
+    private var reservedDepth: CGFloat { role == .command ? YoseMetrics.shadowCommand : YoseMetrics.shadowCard }
     private var fillColor: Color {
         guard isEnabled else { return YoseColor.ginNezu }
         if role == .kifuda { return YoseColor.ki }
@@ -137,7 +141,7 @@ struct YoseButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: YoseMetrics.radius).fill(YoseColor.sumi)
                     .offset(y: depth).opacity(isEnabled ? 1 : 0)
             )
-            .padding(.bottom, depth)   // 影ぶんの高さを確保（押下時の沈みで隣が動かない）
+            .padding(.bottom, reservedDepth)   // 影ぶんの高さを確保（押下時の沈みで隣が動かない）
             .animation(Theme.Motion.r(.easeOut(duration: 0.06)), value: configuration.isPressed)
             .onChange(of: configuration.isPressed) { _, p in if p && isEnabled { YoseHaptic.press(); if !silent { Sound.play(.cursor) } } }
     }
@@ -275,7 +279,7 @@ struct YoseGauge: View {
     var showTicks = true
 
     var body: some View {
-        let ratio = total > 0 ? min(max(value / total, 0), 1) : 0
+        let ratio = total > 0 && value.isFinite && total.isFinite ? min(max(value / total, 0), 1) : 0   // NaN で幅が NaN にならない（同 #14）
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Rectangle().fill(YoseColor.ginNezu)
@@ -313,7 +317,7 @@ struct YoseSpeechBox: View {
                     Text(roleLabel).font(.system(size: Font.mzScaled(12, cap: 1.1), weight: .heavy)).lineLimit(1).minimumScaleFactor(0.85).foregroundStyle(YoseColor.kin)
                         .padding(.horizontal, 4).padding(.vertical, 1).background(YoseColor.kuroUrushi)
                 }
-                Text(speaker).font(.custom("HiraMinProN-W6", fixedSize: Font.mzScaled(15, cap: 1.1))).foregroundStyle(YoseColor.kinari)
+                Text(speaker).font(.custom("HiraMinProN-W6", fixedSize: Font.mzScaled(15, cap: 1.1))).lineLimit(1).minimumScaleFactor(0.7).foregroundStyle(YoseColor.kinari)   // 長い名前が縦に折れて本文を狭めない（同 #7）
                     .padding(.horizontal, 8).padding(.vertical, 6).frame(minWidth: 58)
                     .background(YoseColor.shu)
                     .overlay(Rectangle().stroke(YoseColor.sumi, lineWidth: 2))
@@ -331,6 +335,7 @@ struct YoseSpeechBox: View {
             .padding(.horizontal, 12).padding(.vertical, 10)
             .yoseHarigami()
         }
+        .accessibilityElement(children: .combine)   // 役・話者・本文を1回で読む（同 #7）
         .onAppear { guard !reduceMotion else { return }; withAnimation(Theme.Motion.r(.easeOut(duration: 0.5).repeatForever(autoreverses: true))) { blink = true } }
     }
 }
