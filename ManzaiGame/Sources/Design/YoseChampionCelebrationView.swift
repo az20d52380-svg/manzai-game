@@ -226,7 +226,7 @@ public struct YoseChampionCelebrationView: View {
                 .overlay(RoundedRectangle(cornerRadius: 2).stroke(YoseColor.sumi, lineWidth: 1.5))
         }
         .padding(.horizontal, 14)
-        .frame(height: 40)
+        .frame(minHeight: 40)  // 大きい文字では高さを伸ばす（#4）
         .background(YoseColor.kuroUrushi.opacity(0.95))
         .overlay(alignment: .bottom) {
             Rectangle().fill(YoseColor.kinBright).frame(height: 1.5)
@@ -444,7 +444,8 @@ public struct YoseChampionCelebrationView: View {
                     .font(YoseFont.mincho(14))
                     .lineSpacing(3)
                     .foregroundStyle(YoseColor.kinari)
-                    .lineLimit(2)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.85)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 10)
@@ -460,12 +461,14 @@ public struct YoseChampionCelebrationView: View {
             HStack(spacing: 8) {
                 Text(proceedLabel)
                     .font(YoseFont.gothic(16, weight: .heavy))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Image(systemName: "arrowtriangle.right.fill").accessibilityHidden(true)
                     .font(.system(size: Font.mzScaled(12), weight: .black))
             }
             .foregroundStyle(YoseColor.kinari)
             .frame(maxWidth: .infinity)
-            .frame(height: 46)
+            .frame(minHeight: 46)  // 大きい文字では高さを伸ばす（#4）
             .background(YoseColor.shu)
             .overlay(Rectangle().stroke(YoseColor.kinBright, lineWidth: 2))
             .background(Rectangle().fill(YoseColor.sumi).offset(y: 3))

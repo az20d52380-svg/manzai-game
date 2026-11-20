@@ -47,7 +47,7 @@ struct ParticleBurst: View {
                         guard t >= 0, t < life else { return }
                         let ox = size.width * origin.x
                         let oy = size.height * origin.y
-                        for i in 0..<count {
+                        for i in 0..<max(0, count) {   // 負の枚数で落ちない（code_review_juice_sound_share_1119 #3）
                             let seed = Double(i * 7919 + burstSeq * 104729)
                             let r1 = jhash(seed + 0.1), r2 = jhash(seed + 0.2)
                             let r3 = jhash(seed + 0.3), r4 = jhash(seed + 0.4)
