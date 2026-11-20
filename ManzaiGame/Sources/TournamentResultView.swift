@@ -60,7 +60,10 @@ struct TournamentResultView: View {
             FanReportData.voices(name: session.combiName, passed: r.passed, margin: r.margin,
                                  burst: r.burst == true || debugForceFanReport,
                                  salt: salt,
-                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used)
+                                 known: FanReportData.isKnown(year: summary.year, fame: session.state.fame), used: used,
+                                 prelim: ["GP1回戦", "GP2回戦", "GP3回戦", "GP準々決勝", "HANA2回戦", "HANA準決勝"].contains(r.name),
+                                 finalYear: summary.year >= session.config.careerYears,
+                                 short: ["GP1回戦", "GP2回戦"].contains(r.name))
         }
     }
     /// 発火した山場ページ（準決敗退/敗者復活敗退のみ非空。Fable doc02・golden非干渉）

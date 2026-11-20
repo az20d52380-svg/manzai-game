@@ -34,7 +34,7 @@ struct AbilityUpView: View {
     @State private var confirmFinished = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// 和の五色（閃・語・間・存・胆）＝正本 §2 の経験点5色
+    /// 和の五色（画面の一字は 種・帳・間・見・場＝Theme.currencyChar）＝正本 §2 の経験点5色
     /// 値札1マスの読み上げ名（「ネタ種 4」・持ち分が足りない時は「、足りない」）
     static func costLabel(_ c: ExpCurrency, _ n: Int, short: Bool) -> String {
         short ? "\(c.displayName) \(n)、足りない" : "\(c.displayName) \(n)"
@@ -107,7 +107,7 @@ struct AbilityUpView: View {
 
     private var skillsSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("特技").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi)
+            Text("特技").font(YoseFont.gothic(15, weight: .heavy)).foregroundStyle(YoseColor.sumi).accessibilityAddTraits(.isHeader)
                 .padding(.top, 8)
             Text("余った経験点で覚える。一度覚えたらずっと効く")
                 .font(YoseFont.gothic(12, weight: .bold)).foregroundStyle(YoseColor.haiSumi)
@@ -178,7 +178,7 @@ struct AbilityUpView: View {
             .init(term: "経験点", text: "練習やネタ書きでたまる。種・帳・間・見・場の数字が、いま持っている分。"),
             .init(term: "＋", text: "能力の「＋」で経験点を使うと、その能力が上がり、実力が伸びる。"),
             .init(term: "おまかせ", text: "迷ったら「おまかせ」。自動で割り振る。「確定」を押すまで決まらない。"),
-            .init(term: "ランク", text: "G、F……と上がっていく。「Fまで5」は、Fに上がるまでの残り。"),
+            .init(term: "ランク", text: "ランクはG、F、E……と上がっていく。上の「現在」と「アップ後」を見比べると分かる。"),
         ])
     }
 
@@ -258,7 +258,7 @@ struct AbilityUpView: View {
     /// 下の表の見出し：横＝経験点5種（今の持ち分・使った分は減って見える）
     private var matrixHeader: some View {
         HStack(spacing: 4) {
-            Text("持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari)
+            Text("持ち分").font(YoseFont.gothic(12, weight: .heavy)).foregroundStyle(YoseColor.kinari).accessibilityAddTraits(.isHeader)
                 .frame(width: 58 + 4 + 28 + 4 + 36 + 4, alignment: .leading).padding(.leading, 6)
             ForEach(ExpCurrency.allCases, id: \.self) { c in
                 VStack(spacing: 1) {
@@ -465,8 +465,8 @@ struct AbilityUpView: View {
         guard !taps.isEmpty else { onClose(); return }
         confirming = true
         Sound.play(.tap)   // 木札を盤に打つ音（既存の決定音）
-        withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.45))) { confirmBump = true }
-        withAnimation(.easeOut(duration: 0.05)) { confirmGlow = true }
+        if !reduceMotion { withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.45))) { confirmBump = true } }   // 視差を減らす時は拡大しない（plusTap とそろえる・code_review_abilityup_misc_1117 #3）
+        withAnimation(Theme.Motion.r(.easeOut(duration: 0.05))) { confirmGlow = true }
         var hold: UInt64 = 450_000_000
         #if DEBUG
         if ProcessInfo.processInfo.environment["MZ_HOLD"] != nil { hold = 20_000_000_000; return }   // 目視用：余韻の最中で止める（タップで閉じる）

@@ -156,9 +156,11 @@ struct FirstStageView: View {
         Sound.play(.don); Haptics.rigid(0.9)
         task = Task { @MainActor in
             guard await wait(0.1) else { return }
+            ripple = false   // 波紋の円は warm で挿入される＝挿入の後のフレームで広げる（同じ処理内だと広がりが描かれない・code_review_share_settings_1117 #2）
             phase = .burst; Sound.play(.cheerBig); Haptics.confirm(); flash += 1; burstTick += 1
+            guard await wait(0.03) else { return }
             withAnimation(Theme.Motion.r(.easeOut(duration: 0.8))) { ripple = true }
-            guard await wait(0.9) else { return }
+            guard await wait(0.87) else { return }
             shake += 1; burstTick += 1; Haptics.tick()
             guard await wait(1.1) else { return }
             withAnimation(Theme.Motion.r(.spring(response: 0.25, dampingFraction: 0.6))) { phase = .stamped }

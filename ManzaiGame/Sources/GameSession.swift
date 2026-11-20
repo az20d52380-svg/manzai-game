@@ -417,8 +417,10 @@ final class GameSession {
         if case .train(.ネタ合わせ) = action, runner.lastTrainingDone == nil { weeksWithoutPartner = prevWithoutPartner + 1 }   // 休みに差し替わった週は相方と合わせていない（code_review_2026-10-19j §3）
         applyNetaWork(for: action)   // ネタ作り/ネタ見せ会/フリーライブの後段フック（RNG非消費・golden不変・v2 §3）
         actedWeekEndState = nil; capturingActedWeek = true
+        let fameBeforeAct = state.fame
         pump()
         capturingActedWeek = false
+        if pendingResult != nil { lastResultFameDelta = state.fame - fameBeforeAct }   // 大会の結果がこの経路で出た時も「知名度 +n」を今の結果の値に（前の大会の値を残さない＝code_review_gamesession_diff_1118 #1）
         // 差はすべて「押した週の末」まで（体調ダウン後の療養週が pump で続けて進んでも混ぜない＝stamina_audit_1115 N1）
         let st = actedWeekEndState ?? self.state
         lastGains = Ability.allCases.compactMap { a in
@@ -683,7 +685,7 @@ final class GameSession {
         let rate = farFromStage ? 0.55 : 0.30   // 【仮】UI頻度定数（体感調整はここ・GameConfigに置かない=判定非関与）
         guard uiEventRng.nextUniform() < rate else { return }
         // 中身の選択は salt=週番号の決定的回転（乱数は発火の1drawのみ＝UI列の消費を最小に）。
-        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker())   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
+        weekBanter = DialogueData.banter(band: banterBand(), salt: year &* 131 &+ week, picker: picker(), noStage: nextMilestoneForEvent() == nil)   // 年も混ぜる＝毎年同じ週に同じ掛け合いにしない／直近の掛け合いは避ける
     }
 
     /// 掛け合いの帯（innerVoice の優先順位と同じ並び: 連敗 > 金欠 > 通過後 > 大会前 > 空白帯 > 平常）。
@@ -691,7 +693,8 @@ final class GameSession {
         if lossStreak >= 2 { return .streak }
         if state.money < 50_000 { return .broke }
         if justPassedStage { return .afterPass }
-        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week) { return .eve }
+        // 動画審査（女性コンビの THE HANA 1回戦）は舞台に立たない＝電車・会場・席の「大会前」の掛け合いは出さない（選択イベントの前夜と同じ除外・code_review_dialoguedata_1118 #2）
+        if let m = nextMilestoneForEvent(), (1...2).contains(m.week - week), !(state.femaleCombo == true && m.week == config.calendar.hanaTournaments.first?.week) { return .eve }
         if let m = nextMilestoneForEvent(), m.week - week >= 6 { return .lull }
         return .plain
     }
@@ -1010,8 +1013,10 @@ final class GameSession {
     func acknowledgeResult() {
         guard pendingResult != nil else { return }   // 最後のページの二度タップで週が2つ進まない（呼び手はすべて結果を見せている時だけ・code_review_2026-10-19c §2-2／19d）
         pendingResult = nil
+        let fameBefore = state.fame
         phase = runner.begin()
         pump()
+        if pendingResult != nil { lastResultFameDelta = state.fame - fameBefore }   // 続けて次の結果が出た時に前の大会の「知名度 +n」を残さない（code_review_gamesession_diff_1118 #1）
         saveNow()
     }
 
